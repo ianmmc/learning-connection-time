@@ -21,7 +21,7 @@ import sys
 from typing import Optional
 
 # Add utilities to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "infrastructure" / "utilities"))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "utilities"))
 from common import (
     standardize_state,
     validate_required_columns,
@@ -58,18 +58,24 @@ def normalize_nces_ccd(df: pd.DataFrame, year: str) -> pd.DataFrame:
         Normalized DataFrame
     """
     logger.info("Normalizing NCES CCD data...")
-    
+
     # NCES CCD column mappings (adjust based on actual NCES columns)
+    # Support both uppercase (real NCES) and lowercase (sample data)
     column_map = {
         'LEAID': 'district_id',
+        'leaid': 'district_id',
         'LEA_NAME': 'district_name',
+        'lea_name': 'district_name',
         'STATE': 'state',
+        'state': 'state',
         'MEMBER': 'enrollment',          # Total membership
+        'total_students': 'enrollment',  # Sample data format
         'TEACHERS': 'instructional_staff',  # FTE teachers
+        'total_teachers': 'instructional_staff',  # Sample data format
         'TOTAL_STAFF': 'total_staff',
         'SCH_COUNT': 'schools',
     }
-    
+
     # Rename columns
     normalized = df.rename(columns=column_map)
     
