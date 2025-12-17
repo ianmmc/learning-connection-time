@@ -1,0 +1,158 @@
+# Data Sources Configuration
+# Update this file as you add new data sources
+
+federal:
+  nces_ccd:
+    name: "NCES Common Core of Data"
+    base_url: "https://nces.ed.gov/ccd/data/"
+    download_page: "https://nces.ed.gov/ccd/files.asp"
+    years:
+      - "2022-23"
+      - "2021-22"
+      - "2020-21"
+    tables:
+      district_directory:
+        description: "Basic district information"
+        key_fields: ["LEAID", "LEA_NAME", "STATE_FIPS"]
+      district_membership:
+        description: "Student enrollment by grade"
+        key_fields: ["LEAID", "MEMBER", "GRADE_*"]
+      district_staff:
+        description: "Staff counts by role"
+        key_fields: ["LEAID", "TEACHERS", "INSTRUCT_AIDE"]
+    notes: |
+      - Files often split into multiple parts (_1, _2, _3)
+      - Tab-delimited format (.txt)
+      - Schema changes year-to-year
+      - October count for enrollment
+    
+  crdc:
+    name: "Civil Rights Data Collection"
+    base_url: "https://ocrdata.ed.gov/assets/downloads/"
+    years:
+      - "2020-21"
+      - "2018-19"
+      - "2017-18"
+    frequency: "Biennial"
+    tables:
+      enrollment:
+        description: "Student counts with demographics"
+      staff:
+        description: "Teacher and staff data"
+      classes:
+        description: "Class size information"
+    notes: |
+      - More detailed than CCD
+      - Biennial collection
+      - School-level data available
+      - CSV format
+
+state:
+  california:
+    name: "California Department of Education"
+    code: "CA"
+    agency_url: "https://www.cde.ca.gov/ds/"
+    api:
+      available: true
+      base_url: "https://api.cde.ca.gov/dataquest/"
+      docs: "https://www.cde.ca.gov/re/di/ws/"
+    key_datasets:
+      enrollment:
+        name: "Enrollment by School"
+        update: "Annual"
+      staffing:
+        name: "Staff Demographics"
+        update: "Annual"
+      sarc:
+        name: "School Accountability Report Card"
+        update: "Annual"
+    notes: |
+      - Excellent API access
+      - Well-documented
+      - Regular updates
+      - Most data at school level
+  
+  texas:
+    name: "Texas Education Agency"
+    code: "TX"
+    agency_url: "https://tea.texas.gov/reports-and-data"
+    data_portal: "https://rptsvr1.tea.texas.gov/perfreport/snapshot/"
+    key_datasets:
+      peims:
+        name: "Public Education Information Management System"
+        description: "Comprehensive district data"
+        update: "Annual"
+      enrollment:
+        name: "Enrollment Data"
+        update: "Annual"
+      staff:
+        name: "Personnel Data"
+        update: "Annual"
+    notes: |
+      - PEIMS is primary source
+      - Comprehensive data
+      - Large state (high impact)
+      - Good documentation
+  
+  new_york:
+    name: "New York State Education Department"
+    code: "NY"
+    agency_url: "https://data.nysed.gov/"
+    data_portal: "https://data.nysed.gov/"
+    key_datasets:
+      enrollment:
+        name: "District Enrollment"
+        update: "Annual"
+      staff:
+        name: "Professional Personnel"
+        update: "Annual"
+      report_cards:
+        name: "School Report Cards"
+        update: "Annual"
+    notes: |
+      - Good open data platform
+      - District-level readily available
+      - Historical data accessible
+  
+  florida:
+    name: "Florida Department of Education"
+    code: "FL"
+    agency_url: "http://www.fldoe.org/accountability/data-sys/"
+    key_datasets:
+      enrollment:
+        name: "Student Enrollment"
+        update: "Annual"
+      staff:
+        name: "Staff Data"
+        update: "Annual"
+    notes: |
+      - Fast-growing state
+      - Large charter sector
+      - Multiple data portals
+
+# Add more states here as needed
+# Suggested next: IL, PA, OH, GA, NC, MI, NJ
+
+update_frequency:
+  federal_ccd: "Annual (typically released September-November)"
+  federal_crdc: "Biennial (odd years, spring release)"
+  state: "Varies by state (typically annual, fall release)"
+
+data_formats:
+  federal:
+    - "Tab-delimited text (.txt)"
+    - "CSV"
+    - "Fixed-width (older years)"
+  state:
+    - "CSV"
+    - "Excel (.xlsx)"
+    - "JSON (APIs)"
+    - "Database dumps"
+
+common_challenges:
+  - "Multi-part files requiring concatenation"
+  - "Schema changes between years"
+  - "FTE vs headcount reporting differences"
+  - "Missing data for some districts"
+  - "Charter school reporting variations"
+  - "Timing mismatches across sources"

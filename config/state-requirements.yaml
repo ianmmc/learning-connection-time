@@ -1,0 +1,213 @@
+# State Instructional Time Requirements
+# Statutory minimum instructional minutes per day by state and grade level
+# Source: State education codes and regulations
+
+# Note: These are MINIMUM requirements. Many districts exceed them.
+# Last Updated: December 2025
+
+states:
+  california:
+    code: "CA"
+    reference: "CA Education Code § 46200-46206"
+    requirements:
+      kindergarten: 
+        minutes_per_day: 200  # Approximation from annual requirement
+        minutes_per_year: 36000
+        notes: "Minimum 36,000 minutes per year"
+      grades_1_3:
+        minutes_per_day: 200
+        minutes_per_year: 36000
+        notes: "Minimum 36,000 minutes per year"
+      grades_4_8:
+        minutes_per_day: 200
+        minutes_per_year: 36000
+        notes: "Minimum 36,000 minutes per year"
+      grades_9_12:
+        minutes_per_day: 360
+        minutes_per_year: 64800
+        notes: "Minimum 64,800 minutes per year"
+    calculation_method: "Use grade-weighted average based on enrollment"
+  
+  texas:
+    code: "TX"
+    reference: "TX Education Code § 25.081"
+    requirements:
+      all_grades:
+        minutes_per_day: 420
+        hours_per_day: 7
+        days_per_year: 180
+        notes: "7 hours per day minimum, all grades"
+    calculation_method: "Same for all grades"
+    notes: |
+      - Highest requirement in the nation
+      - Makes interesting comparison case
+      - No variation by grade level
+  
+  new_york:
+    code: "NY"
+    reference: "NY Education Law § 3204"
+    requirements:
+      kindergarten:
+        minutes_per_day: 150
+        hours_per_day: 2.5
+        notes: "Half-day kindergarten minimum"
+      grades_1_6:
+        minutes_per_day: 300
+        hours_per_day: 5
+        notes: "5 hours per day minimum"
+      grades_7_8:
+        minutes_per_day: 330
+        hours_per_day: 5.5
+        notes: "5.5 hours per day minimum"
+      grades_9_12:
+        minutes_per_day: 330
+        hours_per_day: 5.5
+        notes: "5.5 hours per day minimum"
+    calculation_method: "Use grade-weighted average"
+  
+  florida:
+    code: "FL"
+    reference: "FL Statute § 1003.01, § 1011.61"
+    requirements:
+      grades_k_3:
+        minutes_per_day: 240  # Approximation from annual
+        hours_per_year: 720
+        notes: "720 hours per year minimum"
+      grades_4_12:
+        minutes_per_day: 300  # Approximation from annual
+        hours_per_year: 900
+        notes: "900 hours per year minimum"
+    calculation_method: "Use grade-weighted average"
+  
+  illinois:
+    code: "IL"
+    reference: "105 ILCS 5/10-19"
+    requirements:
+      kindergarten:
+        minutes_per_day: 240
+        hours_per_day: 4
+        notes: "Half-day: 2 hours minimum; Full-day: 4 hours"
+      grades_1_12:
+        minutes_per_day: 300
+        hours_per_day: 5
+        notes: "5 clock hours per day minimum"
+    calculation_method: "Same for grades 1-12"
+  
+  pennsylvania:
+    code: "PA"
+    reference: "24 PA Code § 11.3"
+    requirements:
+      kindergarten:
+        minutes_per_day: 140  # Approximation
+        hours_per_year: 450
+        notes: "Minimum 450 hours per year (half-day)"
+      grades_1_12:
+        minutes_per_day: 330  # Approximation
+        hours_per_year: 990
+        notes: "Minimum 990 hours per year"
+    calculation_method: "Use grade-weighted average"
+  
+  ohio:
+    code: "OH"
+    reference: "OH Rev Code § 3313.48"
+    requirements:
+      all_grades:
+        hours_per_year: 910
+        minutes_per_day: 303  # Approximation (910 hours / 180 days)
+        notes: "910 hours per year for all grades"
+    calculation_method: "Same for all grades"
+
+# Calculation Guidelines
+
+calculation_notes: |
+  For districts with multiple grade levels:
+  
+  1. Get enrollment by grade level (from NCES CCD or state data)
+  2. Apply appropriate minutes_per_day for each grade span
+  3. Calculate weighted average:
+     
+     weighted_minutes = Σ(enrollment_i × minutes_i) / total_enrollment
+  
+  Example:
+    Elementary (K-8):  6,000 students × 200 minutes = 1,200,000
+    High School (9-12): 2,500 students × 360 minutes = 900,000
+    Total: 8,500 students
+    
+    Weighted = (1,200,000 + 900,000) / 8,500 = 247 minutes/day
+
+default_values:
+  when_state_unknown:
+    minutes_per_day: 300
+    notes: "Use 300 minutes (5 hours) as default when state requirement unknown"
+  
+  when_grade_data_unavailable:
+    use: "weighted_national_average"
+    value: 315
+    notes: "Use 315 minutes when grade-level enrollment not available"
+
+common_patterns:
+  elementary_range: "240-300 minutes"
+  middle_school_range: "300-360 minutes"
+  high_school_range: "330-420 minutes"
+  
+  states_with_same_all_grades:
+    - "TX (420)"
+    - "OH (303)"
+  
+  states_with_grade_variation:
+    - "CA (200 elem, 360 HS)"
+    - "NY (300 elem, 330 middle/HS)"
+    - "FL (240 K-3, 300 4-12)"
+
+data_quality_notes: |
+  - Requirements are MINIMUMS - actual schedules often exceed
+  - Some states specify annual hours, others daily hours
+  - Lunch, recess may or may not count as "instructional time"
+  - Conversions assume 180-day school year where not specified
+  - Requirements change periodically - verify with current statute
+
+validation_ranges:
+  minimum_reasonable: 180  # 3 hours
+  maximum_reasonable: 480  # 8 hours
+  typical_range:
+    elementary: [240, 300]
+    middle_school: [300, 360]
+    high_school: [330, 420]
+
+# States to Add (Priority Order)
+future_states:
+  high_priority:
+    - code: "GA"
+      name: "Georgia"
+      reason: "Large population, interesting policy environment"
+    - code: "NC"
+      name: "North Carolina"
+      reason: "Large, growing, good data"
+    - code: "MI"
+      name: "Michigan"
+      reason: "Urban centers, policy interest"
+  
+  medium_priority:
+    - code: "NJ"
+      name: "New Jersey"
+    - code: "VA"
+      name: "Virginia"
+    - code: "WA"
+      name: "Washington"
+    - code: "AZ"
+      name: "Arizona"
+    - code: "MA"
+      name: "Massachusetts"
+  
+  lower_priority:
+    # Add as project scales
+    - "Other states as needed for comprehensive coverage"
+
+# References
+references:
+  education_commission_of_states: "https://www.ecs.org/"
+  state_education_codes: "See individual state legal codes"
+  nces_documentation: "https://nces.ed.gov/"
+
+last_updated: "2025-12-16"
+update_schedule: "Review annually, update when states change requirements"

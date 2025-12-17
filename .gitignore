@@ -1,0 +1,79 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Data files - keep structure but not actual data
+data/raw/**/*.csv
+data/raw/**/*.txt
+data/raw/**/*.xlsx
+data/raw/**/*.xls
+data/raw/**/*.zip
+data/processed/
+data/enriched/
+data/exports/
+*.parquet
+*.feather
+
+# Keep structure indicators
+!data/raw/**/README.md
+!data/raw/**/.gitkeep
+!**/README.md
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+config/secrets.yaml
+*.key
+*.pem
+
+# Outputs
+outputs/**/*
+!outputs/README.md
+*.pdf
+*.png
+*.jpg
+!docs/**/*.png
+!docs/**/*.jpg
+
+# Database
+*.db
+*.sqlite
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Temporary
+temp/
+tmp/
+*.tmp
