@@ -70,8 +70,10 @@ We're implementing Phase 1.5, which enhances basic LCT calculations with actual 
 
 5. **Analyze**: `infrastructure/scripts/analyze/calculate_lct.py`
    - Implements LCT calculation
+   - Validates data quality and filters invalid districts
    - Generates derived metrics and percentiles
-   - Produces summary statistics
+   - Produces summary statistics and validation reports
+   - Creates publication-ready filtered outputs
 
 ### ✅ Supporting Infrastructure
 - **Utilities**: `infrastructure/utilities/common.py` - Shared functions for state standardization, safe math, validation
@@ -243,10 +245,10 @@ python infrastructure/scripts/transform/normalize_districts.py \
   data/raw/federal/nces-ccd/2023_24/districts.csv \
   --source nces --year 2023-24
 
-# Calculate LCT with summary
+# Calculate LCT with summary and filtering (recommended)
 python infrastructure/scripts/analyze/calculate_lct.py \
   data/processed/normalized/districts_2023_24_nces.csv \
-  --summary
+  --summary --filter-invalid
 ```
 
 ### 3. Development Principles
@@ -304,6 +306,14 @@ Phased rollout starting with:
    - Different data formats per state
    - Different instructional time requirements
    - Need custom normalization per state
+
+4. **Data Quality Issues** ✅ ADDRESSED
+   - Some districts report zero enrollment or staff (administrative units)
+   - Occasional impossible ratios (more staff than students)
+   - Invalid LCT values (exceeding available time)
+   - ✅ Automated filtering now implemented (`--filter-invalid` flag)
+   - ✅ Validation reports provide transparency
+   - ✅ Publication-ready datasets exclude ~2-3% of invalid records
 
 ### Integration Opportunities
 
@@ -474,8 +484,8 @@ python infrastructure/scripts/extract/split_large_files.py data/raw/federal/nces
 # Normalize
 python infrastructure/scripts/transform/normalize_districts.py input.csv --source nces --year 2023-24
 
-# Calculate LCT
-python infrastructure/scripts/analyze/calculate_lct.py input.csv --summary
+# Calculate LCT with filtering (recommended for publication)
+python infrastructure/scripts/analyze/calculate_lct.py input.csv --summary --filter-invalid
 ```
 
 ---

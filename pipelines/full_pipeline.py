@@ -240,23 +240,24 @@ class PipelineRunner:
         logger.info("\n" + "="*60)
         logger.info("STEP 5: CALCULATE LEARNING CONNECTION TIME")
         logger.info("="*60)
-        
+
         # Find normalized file
         normalized_dir = self.root / "data" / "processed" / "normalized"
         input_files = list(normalized_dir.glob(f"districts_{self.year.replace('-', '_')}*.csv"))
-        
+
         if not input_files:
             logger.error(f"No normalized files found in {normalized_dir}")
             return False
-        
+
         input_file = input_files[0]
-        
+
         script = self.scripts_dir / "analyze" / "calculate_lct.py"
         args = [
             str(input_file),
-            "--summary"
+            "--summary",
+            "--filter-invalid"  # Create filtered file for publication
         ]
-        
+
         return self.run_script(script, args)
 
     def step_export_deliverables(self) -> bool:
@@ -287,9 +288,17 @@ class PipelineRunner:
 
         files_copied = []
 
-        # Copy LCT results
-        lct_files = list(normalized_dir.glob(f"districts_{self.year.replace('-', '_')}*_with_lct.csv"))
+        # Copy filtered LCT results (publication-ready, valid districts only)
+        lct_files = list(normalized_dir.glob(f"districts_{self.year.replace('-', '_')}*_with_lct_valid.csv"))
         for file in lct_files:
+            dest = outputs_dir / file.name
+            shutil.copy2(file, dest)
+            files_copied.append(file.name)
+            logger.info(f"  Copied: {file.name} (publication-ready)")
+
+        # Copy validation report
+        validation_files = list(normalized_dir.glob(f"districts_{self.year.replace('-', '_')}*_validation_report.txt"))
+        for file in validation_files:
             dest = outputs_dir / file.name
             shutil.copy2(file, dest)
             files_copied.append(file.name)
@@ -332,21 +341,32 @@ This directory contains publication-ready datasets for sharing and discussion.
 """
 
         for file_name in sorted(files_copied):
-            if "with_lct.csv" in file_name and "summary" not in file_name:
+            if "with_lct_valid.csv" in file_name:
                 readme_content += f"""
 ### {file_name}
-**Complete LCT Analysis Results**
-- All districts with calculated Learning Connection Time metrics
+**LCT Analysis Results - Publication Ready** ✨
+- **VALIDATED DISTRICTS ONLY** - Data quality filters applied
+- Excludes districts with: zero enrollment, zero staff, impossible ratios
 - Includes: LCT minutes/hours, student-teacher ratios, percentiles, categories
-- Ready for: Analysis, visualization, comparison
+- Ready for: Presentations, policy discussions, public sharing
+- **Use this file for all external communications**
+"""
+            elif "validation_report.txt" in file_name:
+                readme_content += f"""
+### {file_name}
+**Data Quality Validation Report**
+- How many districts were filtered and why
+- Validation criteria applied
+- Data quality statistics
+- Transparency documentation for methodology
 """
             elif "summary.txt" in file_name and "bell" not in file_name:
                 readme_content += f"""
 ### {file_name}
 **Summary Statistics**
-- Overall statistics for all districts
-- Percentile distributions
-- Category breakdowns
+- Overall statistics for valid districts
+- State-by-state averages
+- Distribution information
 """
             elif "nces.csv" in file_name and "with_lct" not in file_name:
                 readme_content += f"""
@@ -354,7 +374,7 @@ This directory contains publication-ready datasets for sharing and discussion.
 **Normalized District Data**
 - Standardized district information
 - Enrollment and staff counts
-- Before LCT calculation
+- Before LCT calculation (all districts, unfiltered)
 """
             elif "bell_schedules" in file_name:
                 readme_content += f"""
@@ -379,11 +399,14 @@ This directory contains publication-ready datasets for sharing and discussion.
 
 ## Usage Notes
 
-### For Presentations
-Use the `*_with_lct.csv` file for creating visualizations and comparisons.
+### For Presentations and Public Sharing
+**Use the `*_with_lct_valid.csv` file** - This contains only validated districts that passed all data quality checks. This is the publication-ready dataset.
 
 ### For Quick Reference
 Check the `*_summary.txt` file for overall statistics and distributions.
+
+### For Transparency
+Review the `*_validation_report.txt` to see what data was filtered out and why. This supports methodological transparency in discussions.
 
 ### For Validation
 Compare the normalized data (`*_nces.csv`) with the LCT results to verify calculations.

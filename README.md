@@ -103,6 +103,33 @@ Automatically detects and concatenates files split across multiple parts:
 3. **New York** - NYSED data portal
 4. **Florida** - State reports
 
+### 📦 Data Not Included in Repository
+
+**This repository contains code and workflows only.** Data files are excluded from version control due to size constraints and best practices.
+
+**Why data is excluded:**
+- Raw datasets can be 50MB+ per file
+- GitHub has size limits (1GB repo, 100MB per file)
+- Data is fully reproducible via pipeline scripts
+- All sources are public and documented
+
+**To obtain data:**
+
+1. **Run the pipeline** (recommended):
+   ```bash
+   python pipelines/full_pipeline.py --year 2023-24
+   ```
+   This downloads, processes, and analyzes data automatically.
+
+2. **Manual download**: See `docs/DATA_SOURCES.md` for direct download links
+
+3. **Use sample data**: Quick testing with small datasets
+   ```bash
+   python pipelines/full_pipeline.py --year 2023-24 --sample
+   ```
+
+**Output location**: `outputs/datasets/YEAR/` contains publication-ready results.
+
 ## Development Workflow
 
 ### For New Development
