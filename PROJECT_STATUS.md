@@ -1,8 +1,8 @@
 # Project Status & Handoff to Claude Code
 
-**Date**: December 16, 2025  
-**Project**: Instructional Minute Metric  
-**Location**: `/Users/ianmmc/Development/instructional_minute_metric`
+**Date**: December 16, 2025
+**Project**: Instructional Minute Metric
+**Location**: `/Users/ianmmc/Development/learning-connection-time`
 
 ---
 

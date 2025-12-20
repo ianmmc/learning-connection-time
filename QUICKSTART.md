@@ -6,7 +6,7 @@ Get up and running with the Instructional Minute Metric project in minutes.
 
 ### 1. Python Environment
 ```bash
-cd /Users/ianmmc/Development/instructional_minute_metric
+cd /Users/ianmmc/Development/learning-connection-time
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -29,12 +29,16 @@ python infrastructure/scripts/make_executable.py
 
 ### Quick Test (2 minutes)
 ```bash
-# Run complete pipeline with sample data
+# Run complete pipeline with sample data (basic)
 python pipelines/full_pipeline.py --year 2023-24 --sample
+
+# Run with bell schedule enrichment (optional)
+python pipelines/full_pipeline.py --year 2023-24 --sample --enrich-bell-schedules --tier 2
 ```
 
 This will:
 - ✅ Create sample data (3 districts)
+- ✅ Optionally enrich with bell schedules (if --enrich-bell-schedules)
 - ✅ Normalize to standard schema
 - ✅ Calculate LCT metrics
 - ✅ Generate summary statistics
@@ -61,6 +65,17 @@ python infrastructure/scripts/download/fetch_nces_ccd.py --year 2023-24
 ```bash
 python infrastructure/scripts/extract/split_large_files.py data/raw/federal/nces-ccd/2023_24/
 ```
+
+### Step 2.5: Enrich with Bell Schedules (Optional but Recommended)
+```bash
+# For top districts, gather actual instructional time
+python infrastructure/scripts/enrich/fetch_bell_schedules.py \
+  data/processed/normalized/top_districts.csv \
+  --tier 1 \
+  --year 2023-24
+```
+
+Note: This step is optional but provides more accurate instructional time data than state statutory requirements.
 
 ### Step 3: Normalize the Data
 ```bash
@@ -146,7 +161,7 @@ df.groupby('state')['lct_minutes'].mean()
 ### Scripts Not Found
 Make sure you're in the project root:
 ```bash
-cd /Users/ianmmc/Development/instructional_minute_metric
+cd /Users/ianmmc/Development/learning-connection-time
 pwd  # Should show the project directory
 ```
 
@@ -168,10 +183,20 @@ Scripts create sample data automatically. For real data:
 2. Verify you have internet connection
 3. Check NCES website for data availability
 
+## Bell Schedule Enrichment
+
+For more accurate LCT calculations, consider gathering actual bell schedules:
+
+**Tier 1** (Top 25 districts): Detailed manual-assisted search
+**Tier 2** (Districts 26-100): Automated search with fallback
+**Tier 3** (Districts 101+): Use state statutory requirements only
+
+See `docs/BELL_SCHEDULE_SAMPLING_METHODOLOGY.md` for complete methodology.
+
 ## Next Steps
 
 1. **Review the full context**: Read `Claude.md` for complete project understanding
-2. **Check documentation**: See `docs/PROJECT_CONTEXT.md`, `docs/METHODOLOGY.md`
+2. **Check documentation**: See `docs/PROJECT_CONTEXT.md`, `docs/METHODOLOGY.md`, `docs/BELL_SCHEDULE_SAMPLING_METHODOLOGY.md`
 3. **Start developing**: Pick a priority from the "Immediate Next Steps" in `Claude.md`
 
 ## Getting Help

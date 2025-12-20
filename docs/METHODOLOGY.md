@@ -20,29 +20,60 @@ LCT = (Daily Instructional Minutes × Instructional Staff Count) / Student Enrol
 
 #### 1. Daily Instructional Minutes
 
-**Definition**: The statutory minimum instructional time required per day
+**Definition**: The actual or statutory instructional time per day
 
-**Source**: State education codes and regulations
+**Sources**:
+1. **Primary (Phase 1.5+)**: Actual bell schedules from district/school websites
+2. **Fallback (Phase 1)**: State statutory minimum requirements
 
 **Variations**:
-- Range: 240-420 minutes across U.S. states
+- Range: 240-420 minutes across U.S. states (statutory)
+- Actual schedules often exceed statutory minimums
 - Grade-level differences in many states
-- May differ from actual instructional time
+- District-specific policies may vary
 
-**Current Approach**: Use state statutory minimums
+**Implementation Tiers**:
 
-**Example Values**:
+**Tier 1 - Actual Bell Schedules (Preferred)**:
+- Web search for district-wide bell schedule policies
+- Sample 2-3 schools per level (elementary, middle, high)
+- Extract actual instructional minutes from schedules
+- Document sources and confidence levels
+- Used for top 25-100 largest districts
+
+**Tier 2 - Automated Search with Fallback**:
+- Automated web search for bell schedules
+- Quick extraction if found
+- Fall back to state requirements if not found
+- Used for districts 26-100
+
+**Tier 3 - State Statutory Requirements Only**:
+- Use state statutory minimums from `config/state-requirements.yaml`
+- Applied based on district state and grade levels
+- Grade-weighted averages for districts with multiple levels
+- Used for districts 101+ or when schedules unavailable
+
+**Example Values (Statutory)**:
 ```
-California (K-8):     200 minutes
+California (K-8):     200 minutes (minimum)
 Texas (all grades):   420 minutes
 New York (9-12):      330 minutes
 Florida (4-12):       300 minutes
 ```
 
-**Implementation**:
-- Stored in `config/state-requirements.yaml`
-- Applied based on district state and grade levels
-- Grade-weighted averages for districts with multiple levels
+**Example Values (Actual - from bell schedules)**:
+```
+Los Angeles Unified Elementary:  360 minutes (actual)
+NYC DOE Middle School:            375 minutes (actual)
+Chicago PS High School:           390 minutes (actual)
+```
+
+**Data Quality Tracking**:
+- Source: `web_search`, `district_policy`, `school_sample`, or `state_statutory`
+- Confidence: `high`, `medium`, `low`, or `assumed`
+- Documentation: URLs and sampling methodology recorded
+
+See `docs/BELL_SCHEDULE_SAMPLING_METHODOLOGY.md` for complete methodology.
 
 #### 2. Instructional Staff Count
 

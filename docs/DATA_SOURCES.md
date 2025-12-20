@@ -27,12 +27,29 @@ This document catalogs all data sources for the Instructional Minute Metric proj
 | Finance | Revenue and expenditures | Contextual analysis |
 
 #### Access Methods
+
+**Primary Source: NCES Direct**
 1. **Bulk Download**: https://nces.ed.gov/ccd/data/
-2. **Data Files**: Tab-delimited text (`.txt`), CSV
-3. **Format Notes**: 
+2. **Data Files**: Tab-delimited text (`.txt`), CSV, ZIP archives
+3. **Format Notes**:
    - Large files often split into multiple parts (`_1`, `_2`, `_3`, etc.)
    - Fixed-width format in older years
    - Schema changes year-over-year (document carefully!)
+
+**Alternative Source: data.gov** (Recommended for automated access)
+1. **Catalog**: https://catalog.data.gov/dataset/?tags=nces
+2. **School District Characteristics**: https://catalog.data.gov/dataset/school-district-characteristics-current-4aa03
+   - Direct CSV download: `data-nces.opendata.arcgis.com/datasets/nces::school-district-characteristics-current-1.csv`
+   - Years: 2017-18 through 2021-22 (updated May 2024)
+   - Includes: Enrollment, teacher counts, directory info
+   - Advantages: Direct CSV URLs, no manual download needed, stable links
+   - Limitation: ~2 years behind NCES direct releases
+3. **Historic CCD Files**: Individual year releases (e.g., 2018-19) with separate directory, membership, and staff files
+4. **API Access**: data.gov catalog API for programmatic discovery
+
+**When to Use Each**:
+- **NCES Direct**: For most recent data (2023-24+)
+- **data.gov**: For development/testing, automated pipelines, historic analysis (2017-2022)
 
 #### Data Quality Notes
 - Very comprehensive for enrollment

@@ -1,0 +1,4 @@
+district_id,district_name,state,enrollment,tier,status,fetch_date,year,elem_minutes,elem_confidence,elem_method,elem_sources,elem_notes,middle_minutes,middle_confidence,middle_method,middle_sources,middle_notes,high_minutes,high_confidence,high_method,high_sources,high_notes,overall_notes,researcher,review_status
+0600001,Los Angeles Unified,CA,430000,1,pending,,,360,,,,,375,,,,,390,,,,,,,
+3600001,New York City DOE,NY,900000,1,pending,,,,,,,,,,,,,,,,,,,
+1700001,Chicago Public Schools,IL,330000,1,pending,,,,,,,,,,,,,,,,,,,

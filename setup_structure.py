@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Create the directory structure for instructional_minute_metric project
+Create the directory structure for learning-connection-time project
 """
 
 from pathlib import Path

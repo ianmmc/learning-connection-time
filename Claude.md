@@ -29,14 +29,15 @@ We acknowledge the metric has methodological challenges:
 - **Averaging deception**: District metrics mask within-district disparities
 
 ### Evolution Strategy (6 Phases)
-1. **Phase 1 (Current)**: Basic LCT from available data
-2. **Phase 2**: Add teacher quality weights
-3. **Phase 3**: Account for differentiated student needs
-4. **Phase 4**: Include interaction quality dimensions
-5. **Phase 5**: Opportunity-to-connect scores
-6. **Phase 6**: Outcome-validated connection time
+1. **Phase 1**: Basic LCT using state statutory requirements
+2. **Phase 1.5 (Current)**: Enrich with actual bell schedules where available
+3. **Phase 2**: Add teacher quality weights
+4. **Phase 3**: Account for differentiated student needs
+5. **Phase 4**: Include interaction quality dimensions
+6. **Phase 5**: Opportunity-to-connect scores
+7. **Phase 6**: Outcome-validated connection time
 
-We're starting with Phase 1, fully aware of its limitations but understanding its rhetorical value.
+We're implementing Phase 1.5, which enhances basic LCT calculations with actual instructional time data from bell schedules rather than relying solely on state statutory minimums.
 
 ---
 
@@ -52,16 +53,22 @@ We're starting with Phase 1, fully aware of its limitations but understanding it
 1. **Download**: `infrastructure/scripts/download/fetch_nces_ccd.py`
    - Fetches NCES Common Core of Data
    - Supports sample data generation for testing
-   
-2. **Extract**: `infrastructure/scripts/extract/split_large_files.py`
+
+2. **Enrich**: `infrastructure/scripts/enrich/fetch_bell_schedules.py` ⭐ NEW
+   - Fetches actual bell schedules from district/school websites
+   - Three-tier methodology (detailed, automated, statutory)
+   - Tracks data quality and sources
+   - Optional enrichment step in pipeline
+
+3. **Extract**: `infrastructure/scripts/extract/split_large_files.py`
    - Handles multi-part files (filename_1, filename_2, etc.)
    - Automatically concatenates with proper header handling
-   
-3. **Transform**: `infrastructure/scripts/transform/normalize_districts.py`
+
+4. **Transform**: `infrastructure/scripts/transform/normalize_districts.py`
    - Normalizes data from various sources to standard schema
    - Supports both federal (NCES) and state-specific formats
-   
-4. **Analyze**: `infrastructure/scripts/analyze/calculate_lct.py`
+
+5. **Analyze**: `infrastructure/scripts/analyze/calculate_lct.py`
    - Implements LCT calculation
    - Generates derived metrics and percentiles
    - Produces summary statistics
@@ -88,7 +95,7 @@ We're starting with Phase 1, fully aware of its limitations but understanding it
 ## Directory Structure
 
 ```
-instructional_minute_metric/
+learning-connection-time/
 ├── config/                          # Configuration files
 │   ├── data-sources.yaml
 │   └── state-requirements.yaml
@@ -131,6 +138,7 @@ instructional_minute_metric/
 ├── infrastructure/
 │   ├── scripts/
 │   │   ├── download/              # Data acquisition
+│   │   ├── enrich/                # Data enrichment (bell schedules)
 │   │   ├── extract/               # Parsing and combining
 │   │   ├── transform/             # Cleaning and normalization
 │   │   └── analyze/               # Metric calculations
@@ -209,8 +217,11 @@ The `split_large_files.py` script automatically:
 # Create sample data for testing
 python infrastructure/scripts/download/fetch_nces_ccd.py --year 2023-24 --sample
 
-# Test the full pipeline
+# Test the full pipeline (basic)
 python pipelines/full_pipeline.py --year 2023-24 --sample
+
+# Test with bell schedule enrichment
+python pipelines/full_pipeline.py --year 2023-24 --sample --enrich-bell-schedules --tier 2
 ```
 
 ### 2. Process Real Data Incrementally
@@ -218,6 +229,11 @@ python pipelines/full_pipeline.py --year 2023-24 --sample
 ```bash
 # Download full dataset
 python infrastructure/scripts/download/fetch_nces_ccd.py --year 2023-24
+
+# Enrich with bell schedules (optional, for top districts)
+python infrastructure/scripts/enrich/fetch_bell_schedules.py \
+  data/processed/normalized/top_25_districts.csv \
+  --tier 1 --year 2023-24
 
 # Handle multi-part files if present
 python infrastructure/scripts/extract/split_large_files.py data/raw/federal/nces-ccd/2023_24/
@@ -273,11 +289,11 @@ Phased rollout starting with:
 
 ### Known Data Gaps
 
-1. **Temporal Data Missing from Standards**
-   - Bell schedules not in OneRoster
-   - Period duration not standardized
-   - Actual vs. statutory time not tracked
-   - This is a fundamental limitation requiring workarounds
+1. **Temporal Data Missing from Standards** ⭐ PARTIALLY ADDRESSED
+   - Bell schedules not in OneRoster ✅ Now collected via web scraping
+   - Period duration not standardized ✅ Extracted from bell schedules where available
+   - Actual vs. statutory time not tracked ✅ Actual time used for Tier 1 & 2 districts
+   - Remaining limitation: Not all districts have publicly available schedules
 
 2. **Multi-Part File Reality**
    - Large datasets often split by data providers
@@ -437,13 +453,20 @@ python infrastructure/scripts/make_executable.py
 
 ### Full Pipeline
 ```bash
+# Basic pipeline
 python pipelines/full_pipeline.py --year 2023-24 --sample
+
+# With bell schedule enrichment
+python pipelines/full_pipeline.py --year 2023-24 --enrich-bell-schedules --tier 1
 ```
 
 ### Individual Steps
 ```bash
 # Download
 python infrastructure/scripts/download/fetch_nces_ccd.py --year 2023-24
+
+# Enrich with bell schedules (optional)
+python infrastructure/scripts/enrich/fetch_bell_schedules.py districts.csv --tier 1 --year 2023-24
 
 # Extract multi-part files
 python infrastructure/scripts/extract/split_large_files.py data/raw/federal/nces-ccd/2023_24/
@@ -494,5 +517,5 @@ python infrastructure/scripts/analyze/calculate_lct.py input.csv --summary
 ---
 
 **Last Updated**: December 16, 2025
-**Project Location**: `/Users/ianmmc/Development/instructional_minute_metric`
+**Project Location**: `/Users/ianmmc/Development/learning-connection-time`
 **Status**: Ready for active development with Claude Code

@@ -6,7 +6,7 @@ Creating a data pipeline for calculating Learning Connection Time (LCT) and rela
 ## Directory Structure
 
 ```
-/Development/instructional_minute_metric/
+/Development/learning-connection-time/
 ├── README.md
 ├── .gitignore
 ├── config/

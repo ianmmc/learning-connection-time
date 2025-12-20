@@ -53,7 +53,7 @@ cat data/processed/normalized/districts_2023_24_nces_with_lct_summary.txt
 ## Project Structure
 
 ```
-instructional_minute_metric/
+learning-connection-time/
 ├── data/               # Raw → processed → enriched → exports
 ├── docs/               # Documentation and analysis reports
 ├── infrastructure/     # Data pipeline scripts
@@ -70,6 +70,7 @@ instructional_minute_metric/
 
 ### ✅ Complete Processing Pipeline
 - **Download**: Fetch NCES CCD and state data
+- **Enrich**: Gather actual bell schedules from district websites ⭐ NEW
 - **Extract**: Handle multi-part files automatically
 - **Transform**: Normalize to standard schema
 - **Analyze**: Calculate LCT with derived metrics
@@ -78,9 +79,11 @@ instructional_minute_metric/
 Automatically detects and concatenates files split across multiple parts:
 - `filename_1.csv`, `filename_2.csv`, `filename_3.csv` → `filename_combined.csv`
 
-### ✅ State-by-State Analysis
-- Configurable instructional time requirements (240-420 min/day range)
-- Support for state-specific data formats
+### ✅ Actual vs. Statutory Instructional Time
+- **Tier 1**: Detailed bell schedule collection from top districts
+- **Tier 2**: Automated web search with fallback
+- **Tier 3**: State statutory requirements (240-420 min/day range)
+- Quality tracking with confidence levels
 - Phased rollout: CA, TX, NY, FL first
 
 ### ✅ Data Quality
@@ -118,11 +121,15 @@ python pipelines/full_pipeline.py --year 2023-24 --sample
 
 **Real data (production):**
 ```bash
-# Full pipeline
+# Full pipeline (basic)
 python pipelines/full_pipeline.py --year 2023-24
+
+# Full pipeline with bell schedule enrichment
+python pipelines/full_pipeline.py --year 2023-24 --enrich-bell-schedules --tier 1
 
 # Or step-by-step:
 python infrastructure/scripts/download/fetch_nces_ccd.py --year 2023-24
+python infrastructure/scripts/enrich/fetch_bell_schedules.py districts.csv --tier 1 --year 2023-24
 python infrastructure/scripts/extract/split_large_files.py data/raw/federal/nces-ccd/2023_24/
 python infrastructure/scripts/transform/normalize_districts.py input.csv --source nces --year 2023-24
 python infrastructure/scripts/analyze/calculate_lct.py input.csv --summary
@@ -133,6 +140,7 @@ python infrastructure/scripts/analyze/calculate_lct.py input.csv --summary
 ### Essential Reading
 - **[PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md)** - Mission, strategy, evolution plan
 - **[METHODOLOGY.md](docs/METHODOLOGY.md)** - Calculation approach and limitations
+- **[BELL_SCHEDULE_SAMPLING_METHODOLOGY.md](docs/BELL_SCHEDULE_SAMPLING_METHODOLOGY.md)** - Bell schedule collection methodology ⭐ NEW
 - **[DATA_SOURCES.md](docs/DATA_SOURCES.md)** - Where to get data
 - **[Scripts README](infrastructure/scripts/README.md)** - All scripts documented
 

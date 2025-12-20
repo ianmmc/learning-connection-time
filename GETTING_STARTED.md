@@ -16,7 +16,7 @@ This guide will help you get the project up and running and begin calculating Le
 The project has been initialized, but you need to create the full directory structure:
 
 ```bash
-cd /Users/ianmmc/Development/instructional_minute_metric
+cd /Users/ianmmc/Development/learning-connection-time
 python3 setup_structure.py
 ```
 
