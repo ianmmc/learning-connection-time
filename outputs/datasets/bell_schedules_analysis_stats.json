@@ -1,0 +1,15 @@
+{
+  "total_districts": 29,
+  "total_enrollment": 4693851.0,
+  "avg_enrollment": 161856.93103448275,
+  "median_enrollment": 160223.0,
+  "avg_instructional_minutes": 341.17241379310343,
+  "median_instructional_minutes": 331.0,
+  "min_instructional_minutes": 300.0,
+  "max_instructional_minutes": 400.0,
+  "avg_lct": 22.60551724137931,
+  "median_lct": 23.17,
+  "min_lct": 14.73,
+  "max_lct": 39.83,
+  "avg_student_teacher_ratio": 15.886206896551723
+}

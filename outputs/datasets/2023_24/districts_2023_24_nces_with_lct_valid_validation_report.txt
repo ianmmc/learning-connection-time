@@ -1,0 +1,24 @@
+============================================================
+DATA QUALITY VALIDATION REPORT
+============================================================
+
+Total districts processed: 17,842
+Valid districts: 17,346 (97.2%)
+Invalid districts: 496 (2.8%)
+
+Validation Failures:
+  - Zero enrollment: 325
+  - Zero instructional staff: 191
+  - LCT > daily minutes: 53
+  - Staff > enrollment: 305
+
+Note: Districts may fail multiple validation checks.
+
+Validation Criteria:
+  1. enrollment > 0
+  2. instructional_staff > 0
+  3. lct_minutes <= daily_instructional_minutes
+  4. instructional_staff <= enrollment
+
+Invalid districts are excluded from publication-ready outputs
+but retained in the complete dataset for future reference.

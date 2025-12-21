@@ -1,0 +1,294 @@
+============================================================
+LEARNING CONNECTION TIME ANALYSIS SUMMARY
+============================================================
+
+Total Districts: 17,842
+Valid Districts: 17,346
+Districts with LCT: 17,346
+
+LCT Statistics (Valid Districts Only):
+  Minimum: 0.2 minutes
+  Maximum: 360.0 minutes
+  Mean:    29.0 minutes
+  Median:  26.5 minutes
+  Std Dev: 17.1 minutes
+
+============================================================
+STATE-LEVEL SUMMARY (Valid Districts Only)
+============================================================
+
+AK:
+  Mean LCT:   27.8 minutes
+  Median LCT: 28.0 minutes
+  Districts:  54
+
+AL:
+  Mean LCT:   20.8 minutes
+  Median LCT: 21.0 minutes
+  Districts:  150
+
+AR:
+  Mean LCT:   36.5 minutes
+  Median LCT: 32.7 minutes
+  Districts:  260
+
+AZ:
+  Mean LCT:   27.5 minutes
+  Median LCT: 21.0 minutes
+  Districts:  204
+
+BI:
+  Mean LCT:   30.5 minutes
+  Median LCT: 26.6 minutes
+  Districts:  174
+
+CA:
+  Mean LCT:   19.1 minutes
+  Median LCT: 17.2 minutes
+  Districts:  1982
+
+CO:
+  Mean LCT:   30.3 minutes
+  Median LCT: 26.1 minutes
+  Districts:  185
+
+CT:
+  Mean LCT:   34.7 minutes
+  Median LCT: 31.6 minutes
+  Districts:  200
+
+DC:
+  Mean LCT:   35.6 minutes
+  Median LCT: 33.2 minutes
+  Districts:  64
+
+DE:
+  Mean LCT:   24.5 minutes
+  Median LCT: 23.7 minutes
+  Districts:  42
+
+FL:
+  Mean LCT:   20.5 minutes
+  Median LCT: 20.3 minutes
+  Districts:  81
+
+GA:
+  Mean LCT:   27.4 minutes
+  Median LCT: 26.1 minutes
+  Districts:  234
+
+HI:
+  Mean LCT:   25.8 minutes
+  Median LCT: 25.8 minutes
+  Districts:  1
+
+IA:
+  Mean LCT:   28.2 minutes
+  Median LCT: 26.9 minutes
+  Districts:  327
+
+ID:
+  Mean LCT:   26.2 minutes
+  Median LCT: 22.3 minutes
+  Districts:  187
+
+IL:
+  Mean LCT:   29.4 minutes
+  Median LCT: 28.1 minutes
+  Districts:  861
+
+IN:
+  Mean LCT:   26.1 minutes
+  Median LCT: 24.5 minutes
+  Districts:  413
+
+KS:
+  Mean LCT:   32.0 minutes
+  Median LCT: 29.8 minutes
+  Districts:  287
+
+KY:
+  Mean LCT:   24.1 minutes
+  Median LCT: 23.3 minutes
+  Districts:  171
+
+LA:
+  Mean LCT:   26.8 minutes
+  Median LCT: 25.3 minutes
+  Districts:  189
+
+MA:
+  Mean LCT:   32.8 minutes
+  Median LCT: 31.4 minutes
+  Districts:  398
+
+MD:
+  Mean LCT:   27.0 minutes
+  Median LCT: 26.3 minutes
+  Districts:  25
+
+ME:
+  Mean LCT:   38.2 minutes
+  Median LCT: 33.5 minutes
+  Districts:  206
+
+MI:
+  Mean LCT:   23.9 minutes
+  Median LCT: 21.9 minutes
+  Districts:  877
+
+MN:
+  Mean LCT:   30.8 minutes
+  Median LCT: 26.6 minutes
+  Districts:  543
+
+MO:
+  Mean LCT:   36.3 minutes
+  Median LCT: 31.2 minutes
+  Districts:  557
+
+MP:
+  Mean LCT:   21.1 minutes
+  Median LCT: 21.1 minutes
+  Districts:  1
+
+MS:
+  Mean LCT:   31.9 minutes
+  Median LCT: 28.4 minutes
+  Districts:  152
+
+MT:
+  Mean LCT:   43.5 minutes
+  Median LCT: 33.4 minutes
+  Districts:  397
+
+NC:
+  Mean LCT:   23.6 minutes
+  Median LCT: 23.5 minutes
+  Districts:  335
+
+ND:
+  Mean LCT:   39.5 minutes
+  Median LCT: 34.6 minutes
+  Districts:  168
+
+NE:
+  Mean LCT:   35.3 minutes
+  Median LCT: 33.2 minutes
+  Districts:  249
+
+NH:
+  Mean LCT:   35.9 minutes
+  Median LCT: 33.0 minutes
+  Districts:  194
+
+NJ:
+  Mean LCT:   33.7 minutes
+  Median LCT: 32.4 minutes
+  Districts:  651
+
+NM:
+  Mean LCT:   34.4 minutes
+  Median LCT: 27.4 minutes
+  Districts:  152
+
+NV:
+  Mean LCT:   20.9 minutes
+  Median LCT: 18.5 minutes
+  Districts:  20
+
+NY:
+  Mean LCT:   33.9 minutes
+  Median LCT: 32.1 minutes
+  Districts:  993
+
+OH:
+  Mean LCT:   23.6 minutes
+  Median LCT: 21.9 minutes
+  Districts:  991
+
+OK:
+  Mean LCT:   26.0 minutes
+  Median LCT: 24.6 minutes
+  Districts:  539
+
+OR:
+  Mean LCT:   29.7 minutes
+  Median LCT: 22.7 minutes
+  Districts:  196
+
+PA:
+  Mean LCT:   37.1 minutes
+  Median LCT: 27.6 minutes
+  Districts:  725
+
+PR:
+  Mean LCT:   36.8 minutes
+  Median LCT: 36.8 minutes
+  Districts:  1
+
+RI:
+  Mean LCT:   30.8 minutes
+  Median LCT: 28.9 minutes
+  Districts:  64
+
+SC:
+  Mean LCT:   30.9 minutes
+  Median LCT: 26.3 minutes
+  Districts:  80
+
+SD:
+  Mean LCT:   33.2 minutes
+  Median LCT: 29.4 minutes
+  Districts:  149
+
+TN:
+  Mean LCT:   26.5 minutes
+  Median LCT: 25.0 minutes
+  Districts:  147
+
+TX:
+  Mean LCT:   29.9 minutes
+  Median LCT: 28.0 minutes
+  Districts:  1207
+
+UT:
+  Mean LCT:   22.1 minutes
+  Median LCT: 19.6 minutes
+  Districts:  155
+
+VA:
+  Mean LCT:   29.4 minutes
+  Median LCT: 27.3 minutes
+  Districts:  132
+
+VI:
+  Mean LCT:   31.7 minutes
+  Median LCT: 31.7 minutes
+  Districts:  2
+
+VT:
+  Mean LCT:   33.1 minutes
+  Median LCT: 32.3 minutes
+  Districts:  106
+
+WA:
+  Mean LCT:   25.6 minutes
+  Median LCT: 22.0 minutes
+  Districts:  312
+
+WI:
+  Mean LCT:   29.6 minutes
+  Median LCT: 27.8 minutes
+  Districts:  451
+
+WV:
+  Mean LCT:   28.7 minutes
+  Median LCT: 27.7 minutes
+  Districts:  55
+
+WY:
+  Mean LCT:   34.8 minutes
+  Median LCT: 32.0 minutes
+  Districts:  50
+

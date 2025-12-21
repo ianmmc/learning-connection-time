@@ -1,0 +1,4 @@
+minutes_confidence,district_id,enrollment,daily_instructional_minutes,lct_minutes
+assumed,2,12427.0,360.0,22.7
+high,12,2476220.0,348.6,22.7
+medium,15,2205204.0,332.7,22.5
