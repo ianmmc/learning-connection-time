@@ -1,213 +1,650 @@
 # State Instructional Time Requirements
-# Statutory minimum instructional minutes per day by state and grade level
-# Source: State education codes and regulations
-
-# Note: These are MINIMUM requirements. Many districts exceed them.
-# Last Updated: December 2025
+# Statutory minimum instructional time by state and grade level
+#
+# Source: NCES State Education Reforms (2020)
+# URL: https://nces.ed.gov/programs/statereform/tab1_1-2020.asp
+#
+# IMPORTANT NOTES:
+# - These are MINIMUM requirements. Many districts exceed them.
+# - Some states include lunch/recess in requirements, others exclude
+# - Some states specify annual hours, others daily hours
+# - Conversions to daily minutes assume 180-day school year unless noted
+# - State definitions vary - we preserve their definitions rather than normalize
+#
+# Last Updated: December 20, 2024
 
 states:
+  alabama:
+    code: "AL"
+    reference: "AL Code"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 360  # 1,080 hrs/yr ÷ 180 days = 6.0 hrs/day
+    middle_school: 360
+    high_school: 360
+    includes: "Excludes lunch and recess"
+    notes: "6.0 hours per day for all grades"
+
+  alaska:
+    code: "AK"
+    reference: "AK Statute"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 264  # K-3: 740 hrs ÷ 180 = 4.1 hrs; Gr 4-8: 900 hrs ÷ 180 = 5.0 hrs, weighted avg ~4.4
+    middle_school: 300  # 900 hrs/yr ÷ 180 days = 5.0 hrs/day
+    high_school: 300
+    includes: "Not specified"
+    notes: "K-3: 4.0 hrs/day; Gr 4-12: 5.0 hrs/day"
+
+  arizona:
+    code: "AZ"
+    reference: "AZ Revised Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 267  # Gr 1-3: 712 hrs ÷ 180 = 3.96 hrs; Gr 4-8: 890 hrs ÷ 180 = 4.94 hrs, avg ~4.45 hrs
+    middle_school: 296  # 890 hrs/yr ÷ 180 days = 4.94 hrs/day
+    high_school: 240  # 720 hrs/yr ÷ 180 days = 4.0 hrs/day
+    includes: "Includes lunch"
+    notes: "Gr 1-3: 712 hrs; Gr 4-8: 890 hrs; Gr 9-12: 720 hrs"
+
+  arkansas:
+    code: "AR"
+    reference: "AR Code"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 360  # 6.0 hrs/day
+    middle_school: 360
+    high_school: 360
+    includes: "Not specified"
+    notes: "6.0 hrs/day, 30.0 hrs/week minimum per accreditation standards"
+
   california:
     code: "CA"
     reference: "CA Education Code § 46200-46206"
-    requirements:
-      kindergarten: 
-        minutes_per_day: 200  # Approximation from annual requirement
-        minutes_per_year: 36000
-        notes: "Minimum 36,000 minutes per year"
-      grades_1_3:
-        minutes_per_day: 200
-        minutes_per_year: 36000
-        notes: "Minimum 36,000 minutes per year"
-      grades_4_8:
-        minutes_per_day: 200
-        minutes_per_year: 36000
-        notes: "Minimum 36,000 minutes per year"
-      grades_9_12:
-        minutes_per_day: 360
-        minutes_per_year: 64800
-        notes: "Minimum 64,800 minutes per year"
-    calculation_method: "Use grade-weighted average based on enrollment"
-  
-  texas:
-    code: "TX"
-    reference: "TX Education Code § 25.081"
-    requirements:
-      all_grades:
-        minutes_per_day: 420
-        hours_per_day: 7
-        days_per_year: 180
-        notes: "7 hours per day minimum, all grades"
-    calculation_method: "Same for all grades"
-    notes: |
-      - Highest requirement in the nation
-      - Makes interesting comparison case
-      - No variation by grade level
-  
-  new_york:
-    code: "NY"
-    reference: "NY Education Law § 3204"
-    requirements:
-      kindergarten:
-        minutes_per_day: 150
-        hours_per_day: 2.5
-        notes: "Half-day kindergarten minimum"
-      grades_1_6:
-        minutes_per_day: 300
-        hours_per_day: 5
-        notes: "5 hours per day minimum"
-      grades_7_8:
-        minutes_per_day: 330
-        hours_per_day: 5.5
-        notes: "5.5 hours per day minimum"
-      grades_9_12:
-        minutes_per_day: 330
-        hours_per_day: 5.5
-        notes: "5.5 hours per day minimum"
-    calculation_method: "Use grade-weighted average"
-  
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 280  # K: 600 hrs = 3.33 hrs; Gr 1-3: 840 hrs = 4.67 hrs; Gr 4-8: 900 hrs = 5.0 hrs, avg ~4.67 hrs
+    middle_school: 300  # 900 hrs/yr ÷ 180 days = 5.0 hrs/day
+    high_school: 360  # 1,080 hrs/yr ÷ 180 days = 6.0 hrs/day
+    includes: "Not specified"
+    notes: "K: 600 hrs; Gr 1-3: 840 hrs; Gr 4-8: 900 hrs; Gr 9-12: 1,080 hrs annually"
+
+  colorado:
+    code: "CO"
+    reference: "CO Revised Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 337  # K: 900 hrs = 5.63 hrs; Gr 1-5: 990 hrs = 6.19 hrs, avg ~5.62 hrs
+    middle_school: 360  # 1,080 hrs/yr ÷ 180 days = 6.0 hrs/day
+    high_school: 360
+    includes: "Not specified"
+    notes: "160 days minimum; K (full): 900 hrs; Gr 1-5: 990 hrs; Gr 6-12: 1,080 hrs"
+
+  connecticut:
+    code: "CT"
+    reference: "CT General Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 300  # 900 hrs/yr ÷ 180 days = 5.0 hrs/day
+    middle_school: 300
+    high_school: 300
+    includes: "Districts may count up to 7 hrs/day"
+    notes: "K (full): 900 hrs; Gr 1-12: 900 hrs annually"
+
+  delaware:
+    code: "DE"
+    reference: "DE Code"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 210  # 3.5 hrs/day (excludes lunch)
+    middle_school: 210
+    high_school: 210  # Gr 12: 1,032 hrs ÷ 180 = 5.73 hrs, but stated as 3.5 hrs/day min
+    includes: "Excludes lunch"
+    notes: "K-11: 1,060 hrs; Gr 12: 1,032 hrs; 3.5 hrs/day minimum instructional time"
+
   florida:
     code: "FL"
     reference: "FL Statute § 1003.01, § 1011.61"
-    requirements:
-      grades_k_3:
-        minutes_per_day: 240  # Approximation from annual
-        hours_per_year: 720
-        notes: "720 hours per year minimum"
-      grades_4_12:
-        minutes_per_day: 300  # Approximation from annual
-        hours_per_year: 900
-        notes: "900 hours per year minimum"
-    calculation_method: "Use grade-weighted average"
-  
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 280  # K-3: 720 hrs ÷ 180 = 4.0 hrs; Gr 4-8: 900 hrs ÷ 180 = 5.0 hrs, avg ~4.67 hrs
+    middle_school: 300  # 900 hrs/yr ÷ 180 days = 5.0 hrs/day
+    high_school: 300
+    includes: "Not specified"
+    notes: "180 days required; K-3: 720 hrs; Gr 4-12: 900 hrs annually"
+
+  georgia:
+    code: "GA"
+    reference: "GA Code"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 285  # K-3: 4.5 hrs; Gr 4-5: 5.0 hrs, avg ~4.75 hrs
+    middle_school: 330  # 5.5 hrs/day
+    high_school: 330
+    includes: "Not specified"
+    notes: "Daily hour requirements: K-3: 4.5 hrs; Gr 4-5: 5.0 hrs; Gr 6-12: 5.5 hrs"
+
+  hawaii:
+    code: "HI"
+    reference: "HI Revised Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 360  # 1,080 hrs/yr ÷ 180 days = 6.0 hrs/day
+    middle_school: 360
+    high_school: 360
+    includes: "Excludes charter schools"
+    notes: "1,080 hrs annually for all grades"
+
+  idaho:
+    code: "ID"
+    reference: "ID Code"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 280  # K: 450 hrs = 2.5 hrs; Gr 1-3: 810 hrs = 4.5 hrs; Gr 4-8: 900 hrs = 5.0 hrs, avg ~4.67 hrs
+    middle_school: 300  # 900 hrs/yr ÷ 180 days = 5.0 hrs/day
+    high_school: 330  # 990 hrs/yr ÷ 180 days = 5.5 hrs/day
+    includes: "Set by district board"
+    notes: "K: 450 hrs; Gr 1-3: 810 hrs; Gr 4-8: 900 hrs; Gr 9-12: 990 hrs"
+
   illinois:
     code: "IL"
     reference: "105 ILCS 5/10-19"
-    requirements:
-      kindergarten:
-        minutes_per_day: 240
-        hours_per_day: 4
-        notes: "Half-day: 2 hours minimum; Full-day: 4 hours"
-      grades_1_12:
-        minutes_per_day: 300
-        hours_per_day: 5
-        notes: "5 clock hours per day minimum"
-    calculation_method: "Same for grades 1-12"
-  
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 270  # K (half): 2.0 hrs; K (full)-Gr 1: 4.0 hrs; Gr 2-8: 5.0 hrs, avg ~4.5 hrs
+    middle_school: 300  # 5.0 hrs/day
+    high_school: 300
+    includes: "Not specified"
+    notes: "185 days required; K (half): 2.0 hrs; K (full)-Gr 1: 4.0 hrs; Gr 2-12: 5.0 hrs/day"
+
+  indiana:
+    code: "IN"
+    reference: "IN Code"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 300  # 5.0 hrs/day
+    middle_school: 360  # 6.0 hrs/day
+    high_school: 360
+    includes: "Excludes recess and lunch"
+    notes: "Gr 1-6: 5.0 hrs/day; Gr 7-12: 6.0 hrs/day (excludes recess, lunch)"
+
+  iowa:
+    code: "IA"
+    reference: "IA Code"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 360  # 1,080 hrs/yr ÷ 180 days = 6.0 hrs/day
+    middle_school: 360
+    high_school: 360
+    includes: "Not specified"
+    notes: "1,080 hrs annually or 6.0 hrs/day or 30.0 hrs/week"
+
+  kansas:
+    code: "KS"
+    reference: "KS Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 300  # 5.0 hrs/day (assuming Gr 1-8)
+    middle_school: 300
+    high_school: 300  # Gr 12: 1,086 hrs ÷ 180 = 6.03 hrs, but stated as 5.0 hrs/day
+    includes: "Not specified"
+    notes: "Gr 1-11: 1,116 hrs; Gr 12: 1,086 hrs; 5.0 hrs/day minimum"
+
+  kentucky:
+    code: "KY"
+    reference: "KY Revised Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 354  # 1,062 hrs/yr ÷ 180 days = 5.9 hrs/day
+    middle_school: 354
+    high_school: 354
+    includes: "Not specified"
+    notes: "1,062 hrs annually; 6.0 hrs/day (K may be less)"
+
+  louisiana:
+    code: "LA"
+    reference: "LA Revised Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 354  # 1,062 hrs/yr ÷ 180 days = 5.9 hrs/day
+    middle_school: 354
+    high_school: 354
+    includes: "Excludes recess"
+    notes: "K-12: 1,062 hrs annually; 6.0 hrs/day (excludes recess)"
+
+  maine:
+    code: "ME"
+    reference: "ME Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 210  # K: 2.5 hrs; Gr 1-8: 5.0 hrs, avg ~3.5 hrs (weighted towards upper grades)
+    middle_school: 300  # 5.0 hrs/day
+    high_school: 300
+    includes: "3 hrs minimum daily"
+    notes: "180 days; K: 2.5 hrs; Gr 1-12: 5.0 hrs/day; 3 hrs minimum daily"
+
+  maryland:
+    code: "MD"
+    reference: "MD Code"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 338  # 1,080-1,170 hrs ÷ 180 = 6.0-6.5 hrs, avg 6.25 hrs = 5.63 hrs
+    middle_school: 338
+    high_school: 338
+    includes: "3.0 hrs/day minimum"
+    notes: "1,080-1,170 hrs annually; 3.0 hrs/day minimum"
+
+  massachusetts:
+    code: "MA"
+    reference: "MA General Laws"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 285  # K: 425 hrs = 2.36 hrs; Gr 1-5: 900 hrs = 5.0 hrs; Gr 6-8: 990 hrs = 5.5 hrs, avg ~4.75 hrs
+    middle_school: 330  # 990 hrs/yr ÷ 180 days = 5.5 hrs/day
+    high_school: 330
+    includes: "Gr 12 may graduate early"
+    notes: "185 days; K: 425 hrs; Gr 1-5: 900 hrs; Gr 6-12: 990 hrs"
+
+  michigan:
+    code: "MI"
+    reference: "MI Compiled Laws"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 366  # 1,098 hrs/yr ÷ 180 days = 6.1 hrs/day
+    middle_school: 366
+    high_school: 366
+    includes: "Not specified"
+    notes: "180 days required; 1,098 hrs annually for all grades"
+
+  minnesota:
+    code: "MN"
+    reference: "MN Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 315  # K: 425/850 hrs; Gr 1-6: 935 hrs ÷ 165 days = 5.67 hrs, avg ~5.25 hrs
+    middle_school: 340  # 1,020 hrs/yr ÷ 180 days = 5.67 hrs/day (using 165 days = 6.18 hrs)
+    high_school: 340
+    includes: "Gr 1-11: 165 days"
+    notes: "K: 425/850 hrs; Gr 1-6: 935 hrs; Gr 7-12: 1,020 hrs; 165 days for Gr 1-11"
+
+  mississippi:
+    code: "MS"
+    reference: "MS Code"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 330  # 5.5 hrs/day
+    middle_school: 330
+    high_school: 330
+    includes: "Not specified"
+    notes: "180 days required; 5.5 hrs/day for all grades"
+
+  missouri:
+    code: "MO"
+    reference: "MO Revised Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 290  # K: 522 hrs = 2.9 hrs; Gr 1-8: 1,044 hrs = 5.8 hrs, avg ~4.83 hrs
+    middle_school: 348  # 1,044 hrs/yr ÷ 180 days = 5.8 hrs/day
+    high_school: 348
+    includes: "3.0 hrs/day minimum"
+    notes: "K: 522 hrs; Gr 1-12: 1,044 hrs annually; 3.0 hrs/day minimum"
+
+  montana:
+    code: "MT"
+    reference: "MT Code"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 300  # K (full): 720 hrs = 4.0 hrs; Gr 1-3: 720 hrs = 4.0 hrs; Gr 4-8: 1,080 hrs = 6.0 hrs, avg ~5.0 hrs
+    middle_school: 360  # 1,080 hrs/yr ÷ 180 days = 6.0 hrs/day
+    high_school: 350  # Gr 12: 1,050 hrs ÷ 180 = 5.83 hrs/day
+    includes: "Set by district trustees"
+    notes: "K (full): 720 hrs; Gr 1-3: 720 hrs; Gr 4-11: 1,080 hrs; Gr 12: 1,050 hrs"
+
+  nebraska:
+    code: "NE"
+    reference: "NE Revised Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 315  # K: 400 hrs = 2.22 hrs; Gr 1-8: 1,032 hrs = 5.73 hrs, avg ~5.25 hrs
+    middle_school: 344  # 1,032 hrs/yr ÷ 180 days = 5.73 hrs/day
+    high_school: 360  # 1,080 hrs/yr ÷ 180 days = 6.0 hrs/day
+    includes: "Set by State Board"
+    notes: "K: 400 hrs; Gr 1-8: 1,032 hrs; Gr 9-12: 1,080 hrs"
+
+  nevada:
+    code: "NV"
+    reference: "NV Revised Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 270  # K: 2.0 hrs; Gr 1-2: 4.0 hrs; Gr 3-8: 5.0 hrs, avg ~4.5 hrs
+    middle_school: 330  # 5.5 hrs/day
+    high_school: 330
+    includes: "Not specified"
+    notes: "180 days; K: 2.0 hrs; Gr 1-2: 4.0 hrs; Gr 3-6: 5.0 hrs; Gr 7-12: 5.5 hrs/day"
+
+  new_hampshire:
+    code: "NH"
+    reference: "NH Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 315  # K: 450 hrs = 2.5 hrs; Elem: 945 hrs = 5.25 hrs, avg ~5.25 hrs
+    middle_school: 330  # 990 hrs/yr ÷ 180 days = 5.5 hrs/day
+    high_school: 330
+    includes: "Sets maximum rather than minimum"
+    notes: "K: 450 hrs; Elementary: 945 hrs; Middle/High: 990 hrs (maximum, not minimum)"
+
+  new_jersey:
+    code: "NJ"
+    reference: "NJ Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 270  # K (full): 2.5 hrs; Gr 1-8: 4.0 hrs, avg ~4.5 hrs
+    middle_school: 240  # 4.0 hrs/day
+    high_school: 240
+    includes: "Not specified"
+    notes: "180 days; K (full): 2.5 hrs; Gr 1-12: 4.0 hrs/day"
+
+  new_mexico:
+    code: "NM"
+    reference: "NM Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 330  # K (half): 450 hrs = 2.5 hrs; K (full)-Gr 6: 990 hrs = 5.5 hrs, avg ~5.5 hrs
+    middle_school: 360  # 1,080 hrs/yr ÷ 180 days = 6.0 hrs/day
+    high_school: 360
+    includes: "Specific daily hour requirements noted"
+    notes: "K (half): 450 hrs; K (full)-Gr 6: 990 hrs; Gr 7-12: 1,080 hrs"
+
+  new_york:
+    code: "NY"
+    reference: "NY Education Law § 3204"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 300  # K (half): 450 hrs = 2.5 hrs; K (full)-Gr 6: 900 hrs = 5.0 hrs, avg ~5.0 hrs
+    middle_school: 330  # 990 hrs/yr ÷ 180 days = 5.5 hrs/day
+    high_school: 330
+    includes: "Specific daily hour minimums vary"
+    notes: "K (half): 450 hrs; K (full)-Gr 6: 900 hrs; Gr 7-12: 990 hrs"
+
+  north_carolina:
+    code: "NC"
+    reference: "NC General Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 332  # 1,025 hrs/yr ÷ 185 days = 5.54 hrs/day
+    middle_school: 332
+    high_school: 332
+    includes: "Not specified"
+    notes: "185 days required; 1,025 hrs annually for all grades"
+
+  north_dakota:
+    code: "ND"
+    reference: "ND Century Code"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 321  # K (half): 481 hrs = 2.67 hrs; K (full)-Gr 5: 962 hrs = 5.34 hrs, avg ~5.34 hrs
+    middle_school: 350  # 1,050 hrs/yr ÷ 180 days = 5.83 hrs/day
+    high_school: 350
+    includes: "Specific daily hours by grade"
+    notes: "K (half): 481 hrs; K (full)-Gr 5: 962 hrs; Gr 6-12: 1,050 hrs"
+
+  ohio:
+    code: "OH"
+    reference: "OH Revised Code § 3313.48"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 303  # 910 hrs/yr ÷ 180 days = 5.06 hrs/day
+    middle_school: 303
+    high_school: 334  # 1,001 hrs/yr ÷ 180 days = 5.56 hrs/day
+    includes: "Set by city board of education"
+    notes: "K (full): 910 hrs; Gr 1-6: 910 hrs; Gr 7-12: 1,001 hrs"
+
+  oklahoma:
+    code: "OK"
+    reference: "OK Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 360  # 1,080 hrs/yr ÷ 180 days = 6.0 hrs/day
+    middle_school: 360
+    high_school: 360
+    includes: "Not specified"
+    notes: "6.0 hrs/day for all grades; 165 days from 2021-22; 1,080 hrs annually"
+
+  oregon:
+    code: "OR"
+    reference: "OR Revised Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 300  # K (full): 900 hrs = 5.0 hrs; Gr 1-8: 900 hrs = 5.0 hrs
+    middle_school: 300
+    high_school: 322  # Gr 9-11: 990 hrs = 5.5 hrs; Gr 12: 966 hrs = 5.37 hrs, avg ~5.37 hrs
+    includes: "Sets maximum rather than minimum"
+    notes: "K (full): 900 hrs; Gr 1-8: 900 hrs; Gr 9-11: 990 hrs; Gr 12: 966 hrs (maximum)"
+
   pennsylvania:
     code: "PA"
     reference: "24 PA Code § 11.3"
-    requirements:
-      kindergarten:
-        minutes_per_day: 140  # Approximation
-        hours_per_year: 450
-        notes: "Minimum 450 hours per year (half-day)"
-      grades_1_12:
-        minutes_per_day: 330  # Approximation
-        hours_per_year: 990
-        notes: "Minimum 990 hours per year"
-    calculation_method: "Use grade-weighted average"
-  
-  ohio:
-    code: "OH"
-    reference: "OH Rev Code § 3313.48"
-    requirements:
-      all_grades:
-        hours_per_year: 910
-        minutes_per_day: 303  # Approximation (910 hours / 180 days)
-        notes: "910 hours per year for all grades"
-    calculation_method: "Same for all grades"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 300  # K: 450 hrs = 2.5 hrs; Gr 1-6: 900 hrs = 5.0 hrs, avg ~5.0 hrs
+    middle_school: 330  # 990 hrs/yr ÷ 180 days = 5.5 hrs/day
+    high_school: 330
+    includes: "Specific daily hour requirements"
+    notes: "K: 450 hrs; Gr 1-6: 900 hrs; Gr 7-12: 990 hrs"
 
-# Calculation Guidelines
+  rhode_island:
+    code: "RI"
+    reference: "RI General Laws"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 330  # K: 5.5 hrs; Gr 1-8: 6.0 hrs, avg ~6.0 hrs
+    middle_school: 360  # 6.0 hrs/day
+    high_school: 360
+    includes: "Not specified"
+    notes: "K: 5.5 hrs; Gr 1-12: 6.0 hrs/day; 1,080 hrs annually"
+
+  south_carolina:
+    code: "SC"
+    reference: "SC Code"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 360  # 6.0 hrs/day
+    middle_school: 360
+    high_school: 360
+    includes: "Not specified"
+    notes: "180 days required; 6.0 hrs/day for all grades"
+
+  south_dakota:
+    code: "SD"
+    reference: "SD Codified Laws"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 292  # K: 438 hrs = 2.43 hrs; Gr 1-5: 875 hrs = 4.86 hrs, avg ~4.86 hrs
+    middle_school: 321  # 963 hrs/yr ÷ 180 days = 5.35 hrs/day
+    high_school: 321
+    includes: "Set by local school board"
+    notes: "K: 438 hrs; Gr 1-5: 875 hrs; Gr 6-12: 963 hrs"
+
+  tennessee:
+    code: "TN"
+    reference: "TN Code"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 345  # K: 4.0 hrs; Gr 1-8: 6.5 hrs, avg ~5.75 hrs
+    middle_school: 390  # 6.5 hrs/day
+    high_school: 390
+    includes: "Not specified"
+    notes: "180 days; K: 4.0 hrs; Gr 1-12: 6.5 hrs/day"
+
+  texas:
+    code: "TX"
+    reference: "TX Education Code § 25.081"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 420  # 1,260 hrs/yr ÷ 180 days = 7.0 hrs/day
+    middle_school: 420
+    high_school: 420
+    includes: "Includes intermission and recess"
+    notes: "7.0 hrs/day for all grades; 1,260 hrs annually; Highest requirement in nation"
+
+  utah:
+    code: "UT"
+    reference: "UT Code"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 240  # K: 2.0 hrs; Gr 1-8: 4.0 hrs, avg ~4.0 hrs
+    middle_school: 240
+    high_school: 240  # 990 hrs ÷ 180 = 5.5 hrs, but stated as 4.0 hrs/day
+    includes: "Not specified"
+    notes: "990 hrs annually; K: 2.0 hrs; Gr 1-12: 4.0 hrs/day"
+
+  vermont:
+    code: "VT"
+    reference: "VT Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 300  # Assuming ~5 hrs/day based on 175 days
+    middle_school: 300
+    high_school: 300
+    includes: "Set by State Board of Education"
+    notes: "175 days required; specific hours not detailed in NCES data"
+
+  virginia:
+    code: "VA"
+    reference: "VA Code"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 330  # K: 540 hrs = 3.0 hrs; Gr 1-8: 990 hrs = 5.5 hrs, avg ~5.5 hrs
+    middle_school: 330  # 990 hrs/yr ÷ 180 days = 5.5 hrs/day
+    high_school: 330
+    includes: "Specific daily hour requirements vary"
+    notes: "K: 540 hrs; Gr 1-12: 990 hrs; Daily hour requirements vary"
+
+  washington:
+    code: "WA"
+    reference: "WA Revised Code"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 310  # K: 450 hrs = 2.5 hrs; Gr 1-8: 1,000 hrs = 5.56 hrs, avg ~5.17 hrs
+    middle_school: 333  # 1,000 hrs/yr ÷ 180 days = 5.56 hrs/day
+    high_school: 360  # 1,080 hrs/yr ÷ 180 days = 6.0 hrs/day
+    includes: "Not specified"
+    notes: "180 days; K: 450 hrs; Gr 1-8: 1,000 hrs; Gr 9-12: 1,080 hrs"
+
+  west_virginia:
+    code: "WV"
+    reference: "WV Code"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 318  # K-5: 5.3 hrs/day
+    middle_school: 330  # Gr 6-8: 5.5 hrs/day
+    high_school: 348  # Gr 9-12: 5.8 hrs/day
+    includes: "Not specified"
+    notes: "Daily hour requirements: K-5: 5.3 hrs; Gr 6-8: 5.5 hrs; Gr 9-12: 5.8 hrs"
+
+  wisconsin:
+    code: "WI"
+    reference: "WI Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 315  # K: 437 hrs = 2.43 hrs; Gr 1-6: 1,050 hrs = 5.83 hrs, avg ~5.25 hrs
+    middle_school: 379  # 1,137 hrs/yr ÷ 180 days = 6.32 hrs/day
+    high_school: 379
+    includes: "Includes recess and passing periods"
+    notes: "K: 437 hrs; Gr 1-6: 1,050 hrs; Gr 7-12: 1,137 hrs; Includes recess, passing"
+
+  wyoming:
+    code: "WY"
+    reference: "WY Statutes"
+    source_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+    elementary: 300  # K: 450 hrs = 2.57 hrs; Gr 1-5: 900 hrs = 5.14 hrs; Gr 6-8: 1,050 hrs = 6.0 hrs, avg ~5.0 hrs
+    middle_school: 350  # 1,050 hrs/yr ÷ 175 days = 6.0 hrs/day
+    high_school: 366  # 1,100 hrs/yr ÷ 175 days = 6.29 hrs/day
+    includes: "Not specified"
+    notes: "175 days; K: 450 hrs; Gr 1-5: 900 hrs; Gr 6-8: 1,050 hrs; Gr 9-12: 1,100 hrs"
+
+# ============================================================================
+# CALCULATION GUIDELINES
+# ============================================================================
 
 calculation_notes: |
   For districts with multiple grade levels:
-  
+
   1. Get enrollment by grade level (from NCES CCD or state data)
   2. Apply appropriate minutes_per_day for each grade span
   3. Calculate weighted average:
-     
+
      weighted_minutes = Σ(enrollment_i × minutes_i) / total_enrollment
-  
+
   Example:
-    Elementary (K-8):  6,000 students × 200 minutes = 1,200,000
-    High School (9-12): 2,500 students × 360 minutes = 900,000
+    Elementary (K-8):  6,000 students × 300 minutes = 1,800,000
+    High School (9-12): 2,500 students × 330 minutes = 825,000
     Total: 8,500 students
-    
-    Weighted = (1,200,000 + 900,000) / 8,500 = 247 minutes/day
+
+    Weighted = (1,800,000 + 825,000) / 8,500 = 309 minutes/day
 
 default_values:
   when_state_unknown:
     minutes_per_day: 300
     notes: "Use 300 minutes (5 hours) as default when state requirement unknown"
-  
+
   when_grade_data_unavailable:
     use: "weighted_national_average"
     value: 315
     notes: "Use 315 minutes when grade-level enrollment not available"
 
-common_patterns:
-  elementary_range: "240-300 minutes"
-  middle_school_range: "300-360 minutes"
-  high_school_range: "330-420 minutes"
-  
-  states_with_same_all_grades:
-    - "TX (420)"
-    - "OH (303)"
-  
-  states_with_grade_variation:
-    - "CA (200 elem, 360 HS)"
-    - "NY (300 elem, 330 middle/HS)"
-    - "FL (240 K-3, 300 4-12)"
+# ============================================================================
+# DATA QUALITY NOTES
+# ============================================================================
 
 data_quality_notes: |
+  IMPORTANT VARIATIONS IN STATE DEFINITIONS:
+
+  What counts as "instructional time" varies by state:
+  - Some INCLUDE lunch, recess, passing periods (TX, AZ, WI)
+  - Some EXCLUDE lunch, recess (AL, IN, LA, DE)
+  - Many do not specify
+
+  We preserve state definitions as-is rather than attempting to normalize:
+  - More intellectually honest
+  - Respects state policy choices
+  - Avoids making unfounded assumptions
+  - Learning happens during lunch and recess too!
+
+  Other considerations:
   - Requirements are MINIMUMS - actual schedules often exceed
   - Some states specify annual hours, others daily hours
-  - Lunch, recess may or may not count as "instructional time"
-  - Conversions assume 180-day school year where not specified
+  - Conversions assume 180-day school year unless noted otherwise
   - Requirements change periodically - verify with current statute
+  - Some states (NH, OR) set MAXIMUMS rather than minimums
 
 validation_ranges:
-  minimum_reasonable: 180  # 3 hours
+  minimum_reasonable: 120  # 2 hours (half-day kindergarten)
   maximum_reasonable: 480  # 8 hours
   typical_range:
-    elementary: [240, 300]
-    middle_school: [300, 360]
-    high_school: [330, 420]
+    elementary: [240, 360]
+    middle_school: [300, 390]
+    high_school: [300, 420]
 
-# States to Add (Priority Order)
-future_states:
-  high_priority:
-    - code: "GA"
-      name: "Georgia"
-      reason: "Large population, interesting policy environment"
-    - code: "NC"
-      name: "North Carolina"
-      reason: "Large, growing, good data"
-    - code: "MI"
-      name: "Michigan"
-      reason: "Urban centers, policy interest"
-  
-  medium_priority:
-    - code: "NJ"
-      name: "New Jersey"
-    - code: "VA"
-      name: "Virginia"
-    - code: "WA"
-      name: "Washington"
-    - code: "AZ"
-      name: "Arizona"
-    - code: "MA"
-      name: "Massachusetts"
-  
-  lower_priority:
-    # Add as project scales
-    - "Other states as needed for comprehensive coverage"
+state_requirement_range:
+  minimum: 210  # Delaware (3.5 hrs/day, excludes lunch)
+  maximum: 420  # Texas (7.0 hrs/day, includes recess)
+  spread: 210  # 3.5 hours difference
+  interpretation: "State requirements vary by 100% - Texas requires double Delaware's minimum"
 
-# References
+common_patterns:
+  states_with_same_all_grades:
+    - "TX (420 min)"
+    - "AL (360 min)"
+    - "HI (360 min)"
+    - "IA (360 min)"
+    - "OK (360 min)"
+    - "SC (360 min)"
+
+  states_with_high_requirements:
+    - "TX (420 min - highest)"
+    - "TN (390 min HS)"
+    - "WI (379 min MS/HS)"
+    - "MI (366 min)"
+
+  states_with_low_requirements:
+    - "DE (210 min - lowest)"
+    - "NJ (240 min)"
+    - "UT (240 min)"
+    - "AZ (240-296 min)"
+
+  states_by_inclusion_exclusion:
+    includes_lunch_recess:
+      - "TX (explicit)"
+      - "AZ (explicit)"
+      - "WI (explicit)"
+    excludes_lunch_recess:
+      - "AL (explicit)"
+      - "IN (explicit)"
+      - "LA (explicit)"
+      - "DE (explicit)"
+    not_specified:
+      - "Most other states"
+
+# ============================================================================
+# REFERENCES
+# ============================================================================
+
 references:
-  education_commission_of_states: "https://www.ecs.org/"
-  state_education_codes: "See individual state legal codes"
+  primary_source: "NCES State Education Reforms (2020)"
+  primary_url: "https://nces.ed.gov/programs/statereform/tab1_1-2020.asp"
+  data_provider: "Education Commission of the States"
   nces_documentation: "https://nces.ed.gov/"
+  state_codes: "See individual state legal codes referenced above"
 
-last_updated: "2025-12-16"
-update_schedule: "Review annually, update when states change requirements"
+# ============================================================================
+# METADATA
+# ============================================================================
+
+metadata:
+  last_updated: "2024-12-20"
+  data_year: "2020"
+  total_states: 50
+  update_schedule: "Review annually, update when states change requirements"
+  conversion_method: "Annual hours ÷ school days = daily hours × 60 = daily minutes"
+  default_school_year_days: 180
+  notes: |
+    This file was updated with comprehensive data from NCES for all 50 states.
+    Previous version had only 7 states documented.
+
+    Major improvements:
+    - Complete coverage of all U.S. states
+    - Documented inclusion/exclusion of lunch, recess
+    - Noted state-specific variations
+    - Preserved state definitions rather than normalizing

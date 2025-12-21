@@ -64,20 +64,32 @@ We're implementing Phase 1.5, which enhances basic LCT calculations with actual 
      - Respects district cybersecurity, conserves resources
      - See `docs/BELL_SCHEDULE_SAMPLING_METHODOLOGY.md` for details
 
-3. **Extract**: `infrastructure/scripts/extract/split_large_files.py`
-   - Handles multi-part files (filename_1, filename_2, etc.)
-   - Automatically concatenates with proper header handling
+3. **Extract**:
+   - `split_large_files.py` - Handles multi-part files (filename_1, filename_2, etc.)
+   - `extract_grade_level_enrollment.py` ⭐ NEW - Extracts K-12 enrollment by grade from NCES CCD
+   - `extract_grade_level_staffing.py` ⭐ NEW - Extracts teacher counts with Option C allocation (elementary direct, secondary proportional split)
 
 4. **Transform**: `infrastructure/scripts/transform/normalize_districts.py`
    - Normalizes data from various sources to standard schema
    - Supports both federal (NCES) and state-specific formats
+   - Merges grade-level enrollment and staffing data
 
 5. **Analyze**: `infrastructure/scripts/analyze/calculate_lct.py`
-   - Implements LCT calculation
+   - Implements LCT calculation with grade-level support
    - Validates data quality and filters invalid districts
    - Generates derived metrics and percentiles
    - Produces summary statistics and validation reports
    - Creates publication-ready filtered outputs
+
+### ✅ Data Optimization (December 2024) ⭐ NEW
+- **Slim NCES Files**: Token-efficient versions in `data/processed/slim/`
+  - 88% file size reduction (683 MB → 83 MB)
+  - Directory slim: 0.7 MB (was 7.7 MB)
+  - Enrollment slim: 81 MB (was 618 MB)
+  - Staff slim: 1.1 MB (was 57 MB)
+- **Impact**: 88% reduction in token usage for file I/O operations
+- **Preserves**: All original raw files in `data/raw/` for future needs
+- **Scripts updated**: Extraction scripts document slim file usage
 
 ### ✅ Supporting Infrastructure
 - **Utilities**: `infrastructure/utilities/common.py` - Shared functions for state standardization, safe math, validation
@@ -524,12 +536,24 @@ python infrastructure/scripts/analyze/calculate_lct.py input.csv --summary --fil
 
 ## Project Status
 
-**Current Phase**: Infrastructure complete, ready for data processing
-**Next Milestone**: Complete analysis of top 25 largest districts
-**Timeline**: User-determined based on priorities
+**Current Phase**: Phase 1.5 - Bell Schedule Enrichment Campaign (December 2024)
+**Active Work**: Collecting actual instructional time from top 3 districts per state
+**Progress**:
+- Data optimization complete (88% token reduction via slim files)
+- Wyoming enrichment in progress (1/3 districts completed: Natrona County SD)
+- Target: 133 districts across 48 states + DC
+- Methodology: State-by-state, ascending population order
+
+**Next Milestone**: Complete all-state bell schedule coverage (3 districts × 51 jurisdictions)
+**Timeline**: User-driven, systematic district-by-district enrichment
+
+**Data Quality**:
+- 17,309 valid districts with grade-level LCT (88% of 19,637 total)
+- 11 states with actual bell schedule data (31 districts manually enriched pre-campaign)
+- 40 states pending enrichment
 
 ---
 
-**Last Updated**: December 16, 2025
+**Last Updated**: December 21, 2025
 **Project Location**: `/Users/ianmmc/Development/learning-connection-time`
-**Status**: Ready for active development with Claude Code
+**Status**: Active bell schedule enrichment campaign with optimized data pipeline

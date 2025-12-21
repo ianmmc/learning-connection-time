@@ -86,7 +86,14 @@ class BellScheduleMerger(DataProcessor):
         logger.info(f"Loading state requirements from {config_path}")
         with open(config_path, 'r') as f:
             config = yaml.safe_load(f)
-            self.state_requirements = config.get('states', {})
+            states_by_name = config.get('states', {})
+
+        # Create lookup by state code (AL, CA, etc.) for easier access
+        self.state_requirements = {}
+        for state_name, state_data in states_by_name.items():
+            state_code = state_data.get('code', '').upper()
+            if state_code:
+                self.state_requirements[state_code] = state_data
 
         logger.info(f"  Loaded state requirements for {len(self.state_requirements)} states")
 
@@ -127,25 +134,30 @@ class BellScheduleMerger(DataProcessor):
                     return minutes, source, confidence
 
         # Fall back to state statutory requirements
-        state_lower = state.lower() if state else None
-        if state_lower in self.state_requirements:
-            state_data = self.state_requirements[state_lower]
+        # Handle NaN values (which are floats)
+        if pd.isna(state) or not isinstance(state, str):
+            state_upper = None
+        else:
+            state_upper = state.upper()
+
+        if state_upper and state_upper in self.state_requirements:
+            state_data = self.state_requirements[state_upper]
 
             # Try to get specific grade level
             level_key = grade_level if grade_level == 'elementary' else f"{grade_level}_school"
             if level_key in state_data:
                 minutes = state_data[level_key]
-                source = state_data.get('source', 'State statute')
+                source = state_data.get('reference', 'State statute')
                 return minutes, source, 'statutory'
 
             # Try elementary as default
             if 'elementary' in state_data:
                 minutes = state_data['elementary']
-                source = state_data.get('source', 'State statute')
+                source = state_data.get('reference', 'State statute')
                 return minutes, source, 'statutory'
 
-        # Default to 360 minutes
-        return 360, 'Default assumption (6-hour day)', 'assumed'
+        # Default to 300 minutes
+        return 300, 'Default assumption (5-hour day)', 'assumed'
 
     def merge_data(self, districts_df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -155,55 +167,60 @@ class BellScheduleMerger(DataProcessor):
             districts_df: DataFrame with normalized district data
 
         Returns:
-            DataFrame with daily_instructional_minutes added
+            DataFrame with grade-level instructional minutes added
         """
         logger.info("Merging bell schedule data with district data...")
 
         # Ensure district_id is string for matching
         districts_df['district_id'] = districts_df['district_id'].astype(str)
 
-        # Add columns for instructional minutes and metadata
-        districts_df['daily_instructional_minutes'] = None
-        districts_df['minutes_source'] = None
-        districts_df['minutes_confidence'] = None
+        # Add columns for instructional minutes by grade level
+        grade_levels = ['elementary', 'middle', 'high']
 
-        # Track statistics
-        actual_count = 0
-        statutory_count = 0
-        assumed_count = 0
+        for grade_level in grade_levels:
+            districts_df[f'daily_instructional_minutes_{grade_level}'] = None
+            districts_df[f'minutes_source_{grade_level}'] = None
+            districts_df[f'minutes_confidence_{grade_level}'] = None
 
-        # Process each district
+        # Track statistics by grade level
+        stats = {
+            'elementary': {'actual': 0, 'statutory': 0, 'assumed': 0},
+            'middle': {'actual': 0, 'statutory': 0, 'assumed': 0},
+            'high': {'actual': 0, 'statutory': 0, 'assumed': 0}
+        }
+
+        # Process each district for all grade levels
         for idx, row in districts_df.iterrows():
             district_id = str(row['district_id'])
             state = row.get('state', '')
 
-            # Determine grade level (default to elementary for district-level data)
-            grade_level = row.get('grade_level', 'elementary')
+            # Get instructional minutes for each grade level
+            for grade_level in grade_levels:
+                minutes, source, confidence = self.get_instructional_minutes(
+                    district_id, state, grade_level
+                )
 
-            # Get instructional minutes
-            minutes, source, confidence = self.get_instructional_minutes(
-                district_id, state, grade_level
-            )
+                # Update dataframe
+                districts_df.at[idx, f'daily_instructional_minutes_{grade_level}'] = minutes
+                districts_df.at[idx, f'minutes_source_{grade_level}'] = source
+                districts_df.at[idx, f'minutes_confidence_{grade_level}'] = confidence
 
-            # Update dataframe
-            districts_df.at[idx, 'daily_instructional_minutes'] = minutes
-            districts_df.at[idx, 'minutes_source'] = source
-            districts_df.at[idx, 'minutes_confidence'] = confidence
+                # Track statistics
+                if confidence == 'high' or confidence == 'medium':
+                    stats[grade_level]['actual'] += 1
+                elif confidence == 'statutory':
+                    stats[grade_level]['statutory'] += 1
+                else:
+                    stats[grade_level]['assumed'] += 1
 
-            # Track statistics
-            if confidence == 'high':
-                actual_count += 1
-            elif confidence == 'statutory':
-                statutory_count += 1
-            else:
-                assumed_count += 1
-
-        # Report statistics
+        # Report statistics by grade level
         total = len(districts_df)
-        logger.info(f"\nData source breakdown:")
-        logger.info(f"  Actual bell schedules: {actual_count:,} ({actual_count/total*100:.1f}%)")
-        logger.info(f"  State statutory: {statutory_count:,} ({statutory_count/total*100:.1f}%)")
-        logger.info(f"  Assumed (default): {assumed_count:,} ({assumed_count/total*100:.1f}%)")
+        logger.info(f"\nData source breakdown by grade level:")
+        for grade_level in grade_levels:
+            logger.info(f"\n{grade_level.capitalize()}:")
+            logger.info(f"  Actual bell schedules: {stats[grade_level]['actual']:,} ({stats[grade_level]['actual']/total*100:.1f}%)")
+            logger.info(f"  State statutory: {stats[grade_level]['statutory']:,} ({stats[grade_level]['statutory']/total*100:.1f}%)")
+            logger.info(f"  Assumed (default): {stats[grade_level]['assumed']:,} ({stats[grade_level]['assumed']/total*100:.1f}%)")
 
         return districts_df
 
@@ -252,6 +269,8 @@ class BellScheduleMerger(DataProcessor):
             output_file.stem + '_summary.txt'
         )
 
+        grade_levels = ['elementary', 'middle', 'high']
+
         with open(summary_file, 'w') as f:
             f.write("=" * 80 + "\n")
             f.write("BELL SCHEDULE ENRICHMENT SUMMARY\n")
@@ -259,22 +278,31 @@ class BellScheduleMerger(DataProcessor):
 
             f.write(f"Total districts processed: {len(df)}\n\n")
 
-            f.write("DATA SOURCE BREAKDOWN:\n")
-            if 'minutes_confidence' in df.columns:
-                counts = df['minutes_confidence'].value_counts()
-                for conf, count in counts.items():
-                    pct = count / len(df) * 100
-                    f.write(f"  {conf}: {count:,} ({pct:.1f}%)\n")
+            # Summary by grade level
+            for grade_level in grade_levels:
+                conf_col = f'minutes_confidence_{grade_level}'
+                min_col = f'daily_instructional_minutes_{grade_level}'
 
-            f.write("\nINSTRUCTIONAL MINUTES STATISTICS:\n")
-            if 'daily_instructional_minutes' in df.columns:
-                f.write(f"  Mean: {df['daily_instructional_minutes'].mean():.1f}\n")
-                f.write(f"  Median: {df['daily_instructional_minutes'].median():.1f}\n")
-                f.write(f"  Min: {df['daily_instructional_minutes'].min():.1f}\n")
-                f.write(f"  Max: {df['daily_instructional_minutes'].max():.1f}\n")
-                f.write(f"  Std Dev: {df['daily_instructional_minutes'].std():.1f}\n")
+                f.write("=" * 80 + "\n")
+                f.write(f"{grade_level.upper()} SCHOOLS\n")
+                f.write("=" * 80 + "\n\n")
 
-            f.write("\n" + "=" * 80 + "\n")
+                if conf_col in df.columns:
+                    f.write("DATA SOURCE BREAKDOWN:\n")
+                    counts = df[conf_col].value_counts()
+                    for conf, count in counts.items():
+                        pct = count / len(df) * 100
+                        f.write(f"  {conf}: {count:,} ({pct:.1f}%)\n")
+
+                if min_col in df.columns:
+                    f.write("\nINSTRUCTIONAL MINUTES STATISTICS:\n")
+                    f.write(f"  Mean: {df[min_col].mean():.1f}\n")
+                    f.write(f"  Median: {df[min_col].median():.1f}\n")
+                    f.write(f"  Min: {df[min_col].min():.1f}\n")
+                    f.write(f"  Max: {df[min_col].max():.1f}\n")
+                    f.write(f"  Std Dev: {df[min_col].std():.1f}\n\n")
+
+            f.write("=" * 80 + "\n")
 
         logger.info(f"Summary saved to {summary_file}")
 

@@ -66,6 +66,7 @@ def normalize_nces_ccd(df: pd.DataFrame, year: str) -> pd.DataFrame:
         'leaid': 'district_id',
         'LEA_NAME': 'district_name',
         'lea_name': 'district_name',
+        'ST': 'state',                   # Two-letter state code in directory file
         'STATE': 'state',
         'state': 'state',
         'MEMBER': 'enrollment',          # Total membership
@@ -74,6 +75,7 @@ def normalize_nces_ccd(df: pd.DataFrame, year: str) -> pd.DataFrame:
         'total_teachers': 'instructional_staff',  # Sample data format
         'TOTAL_STAFF': 'total_staff',
         'SCH_COUNT': 'schools',
+        'OPERATIONAL_SCHOOLS': 'schools',  # In directory file
     }
 
     # Rename columns
@@ -163,35 +165,84 @@ def normalize_state_data(df: pd.DataFrame, state: str, year: str) -> pd.DataFram
     return normalized
 
 
+def merge_grade_level_data(
+    df: pd.DataFrame,
+    enrollment_file: Optional[Path] = None,
+    staffing_file: Optional[Path] = None
+) -> pd.DataFrame:
+    """
+    Merge grade-level enrollment and staffing data into normalized districts
+
+    Args:
+        df: Normalized district DataFrame
+        enrollment_file: Path to grade-level enrollment file (optional)
+        staffing_file: Path to grade-level staffing file (optional)
+
+    Returns:
+        DataFrame with grade-level columns added
+    """
+    result = df.copy()
+
+    # Merge enrollment data if provided
+    if enrollment_file and enrollment_file.exists():
+        logger.info(f"Merging grade-level enrollment from {enrollment_file}")
+        df_enrollment = pd.read_csv(enrollment_file)
+
+        result = pd.merge(
+            result,
+            df_enrollment,
+            on='district_id',
+            how='left'
+        )
+
+        logger.info(f"  Added {len(df_enrollment.columns)} enrollment columns")
+
+    # Merge staffing data if provided
+    if staffing_file and staffing_file.exists():
+        logger.info(f"Merging grade-level staffing from {staffing_file}")
+        df_staffing = pd.read_csv(staffing_file)
+
+        result = pd.merge(
+            result,
+            df_staffing,
+            on='district_id',
+            how='left'
+        )
+
+        logger.info(f"  Added {len(df_staffing.columns)} staffing columns")
+
+    return result
+
+
 def validate_normalized_data(df: pd.DataFrame) -> bool:
     """
     Validate normalized data meets quality requirements
-    
+
     Args:
         df: Normalized DataFrame
-    
+
     Returns:
         True if validation passes
     """
     logger.info("Validating normalized data...")
-    
+
     # Check required columns
     required = ['district_id', 'district_name', 'state', 'year', 'data_source']
     if not validate_required_columns(df, required, "Normalized data"):
         return False
-    
+
     # Check for null values in key columns
     for col in ['district_id', 'state']:
         null_count = df[col].isna().sum()
         if null_count > 0:
             logger.warning(f"  {null_count:,} null values in {col}")
-    
+
     # Check data types
     if 'enrollment' in df.columns:
         if df['enrollment'].dtype not in ['float64', 'int64']:
             logger.error("enrollment column is not numeric")
             return False
-    
+
     if 'instructional_staff' in df.columns:
         if df['instructional_staff'].dtype not in ['float64', 'int64']:
             logger.error("instructional_staff column is not numeric")
@@ -248,22 +299,32 @@ def main():
         action="store_true",
         help="Only validate without saving"
     )
-    
+    parser.add_argument(
+        "--enrollment-file",
+        type=Path,
+        help="Grade-level enrollment file (from extract_grade_level_enrollment.py)"
+    )
+    parser.add_argument(
+        "--staffing-file",
+        type=Path,
+        help="Grade-level staffing file (from extract_grade_level_staffing.py)"
+    )
+
     args = parser.parse_args()
-    
+
     # Setup logging
     setup_logging()
-    
+
     # Validate arguments
     if args.source == 'state' and not args.state:
         logger.error("--state required for state data")
         return 1
-    
+
     # Load input data
     if not args.input_file.exists():
         logger.error(f"Input file not found: {args.input_file}")
         return 1
-    
+
     logger.info(f"Loading {args.input_file}")
     try:
         df = pd.read_csv(args.input_file, low_memory=False)
@@ -271,7 +332,7 @@ def main():
     except Exception as e:
         logger.error(f"Error loading data: {e}")
         return 1
-    
+
     # Normalize based on source
     if args.source == 'nces':
         normalized = normalize_nces_ccd(df, args.year)
@@ -280,7 +341,33 @@ def main():
     else:
         logger.error(f"Unknown source: {args.source}")
         return 1
-    
+
+    # Merge grade-level data if provided
+    if args.enrollment_file or args.staffing_file:
+        normalized = merge_grade_level_data(
+            normalized,
+            enrollment_file=args.enrollment_file,
+            staffing_file=args.staffing_file
+        )
+
+        # Add computed total enrollment and staff if not present
+        if 'enrollment_total' in normalized.columns and 'enrollment' not in normalized.columns:
+            normalized['enrollment'] = normalized['enrollment_total']
+            logger.info("Added total enrollment column from grade-level sum")
+
+        if 'instructional_staff' not in normalized.columns:
+            # Calculate total instructional staff from grade-level data
+            if all(col in normalized.columns for col in ['instructional_staff_elementary', 'instructional_staff_middle', 'instructional_staff_high']):
+                normalized['instructional_staff'] = (
+                    normalized['instructional_staff_elementary'].fillna(0) +
+                    normalized['instructional_staff_middle'].fillna(0) +
+                    normalized['instructional_staff_high'].fillna(0)
+                )
+                logger.info("Added total instructional_staff column from grade-level sum")
+            elif 'teachers_total' in normalized.columns:
+                normalized['instructional_staff'] = normalized['teachers_total']
+                logger.info("Added total instructional_staff column from teachers_total")
+
     # Validate
     if not validate_normalized_data(normalized):
         logger.error("Validation failed")

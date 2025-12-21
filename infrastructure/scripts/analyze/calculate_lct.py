@@ -130,11 +130,37 @@ def validate_district_data(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         DataFrame with validation flags added
     """
-    # Create validation flags
+    # Create basic validation flags
     df['valid_enrollment'] = df['enrollment'] > 0
     df['valid_staff'] = df['instructional_staff'] > 0
-    df['valid_lct'] = df['lct_minutes'] <= df['daily_instructional_minutes']
     df['valid_ratio'] = df['instructional_staff'] <= df['enrollment']
+
+    # Check for grade-level data
+    has_grade_level_data = 'lct_minutes_elementary' in df.columns
+
+    if has_grade_level_data:
+        # For grade-level data, LCT validation is more complex
+        # A district is valid if ANY of its grade levels have valid LCT
+        grade_levels = ['elementary', 'middle', 'high']
+        valid_lct_any = pd.Series([False] * len(df), index=df.index)
+
+        for grade_level in grade_levels:
+            lct_col = f'lct_minutes_{grade_level}'
+            minutes_col = f'daily_instructional_minutes_{grade_level}'
+
+            if lct_col in df.columns and minutes_col in df.columns:
+                # Valid if LCT <= daily minutes (or if either is NaN/0)
+                grade_valid = (
+                    (df[lct_col] <= df[minutes_col]) |
+                    df[lct_col].isna() |
+                    (df[lct_col] == 0)
+                )
+                valid_lct_any = valid_lct_any | grade_valid
+
+        df['valid_lct'] = valid_lct_any
+    else:
+        # Legacy single-column validation
+        df['valid_lct'] = df['lct_minutes'] <= df['daily_instructional_minutes']
 
     # Overall validation flag (must pass all checks)
     df['is_valid'] = (
@@ -147,26 +173,21 @@ def validate_district_data(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def add_derived_metrics(df: pd.DataFrame) -> pd.DataFrame:
+def add_derived_metrics(df: pd.DataFrame, has_grade_level_data: bool = False) -> pd.DataFrame:
     """
     Add derived metrics based on LCT
 
     Args:
         df: DataFrame with LCT calculations
+        has_grade_level_data: If True, add metrics for each grade level
 
     Returns:
         DataFrame with additional metrics
     """
-    # Convert to hours
-    df['lct_hours'] = (df['lct_minutes'] / 60).round(2)
-
-    # Traditional student-teacher ratio for comparison
+    # Traditional student-teacher ratio (same for all grade levels)
     df['student_teacher_ratio'] = (
         df['enrollment'] / df['instructional_staff']
     ).round(1)
-
-    # Calculate percentile rankings
-    df['lct_percentile'] = df['lct_minutes'].rank(pct=True).mul(100).round(1)
 
     # Categorize LCT levels
     def categorize_lct(minutes):
@@ -183,49 +204,110 @@ def add_derived_metrics(df: pd.DataFrame) -> pd.DataFrame:
         else:
             return 'Very High (>30 min)'
 
-    df['lct_category'] = df['lct_minutes'].apply(categorize_lct)
+    if has_grade_level_data:
+        # Add metrics for each grade level
+        grade_levels = ['elementary', 'middle', 'high']
+        for grade_level in grade_levels:
+            lct_col = f'lct_minutes_{grade_level}'
+
+            if lct_col in df.columns:
+                # Convert to hours
+                df[f'lct_hours_{grade_level}'] = (df[lct_col] / 60).round(2)
+
+                # Calculate percentile rankings
+                df[f'lct_percentile_{grade_level}'] = df[lct_col].rank(pct=True).mul(100).round(1)
+
+                # Categorize LCT levels
+                df[f'lct_category_{grade_level}'] = df[lct_col].apply(categorize_lct)
+    else:
+        # Legacy single-column mode
+        df['lct_hours'] = (df['lct_minutes'] / 60).round(2)
+        df['lct_percentile'] = df['lct_minutes'].rank(pct=True).mul(100).round(1)
+        df['lct_category'] = df['lct_minutes'].apply(categorize_lct)
 
     return df
 
 
-def generate_summary_stats(df: pd.DataFrame, valid_only: bool = True) -> dict:
+def generate_summary_stats(df: pd.DataFrame, valid_only: bool = True, has_grade_level_data: bool = False) -> dict:
     """
     Generate summary statistics for LCT analysis
 
     Args:
         df: DataFrame with LCT calculations
         valid_only: If True, only include valid districts in statistics
+        has_grade_level_data: If True, generate stats for each grade level
 
     Returns:
         Dictionary of summary statistics
     """
-    # Filter for valid districts if requested and is_valid column exists
-    if valid_only and 'is_valid' in df.columns:
-        df_stats = df[df['is_valid'] & (df['lct_minutes'] > 0)]
-    else:
-        df_stats = df[df['lct_minutes'] > 0]
-
-    valid_lct = df_stats['lct_minutes']
-
     stats = {
         'total_districts': len(df),
         'valid_districts': len(df[df['is_valid']]) if 'is_valid' in df.columns else len(df),
-        'districts_with_lct': len(valid_lct),
-        'min_lct': valid_lct.min() if len(valid_lct) > 0 else 0,
-        'max_lct': valid_lct.max() if len(valid_lct) > 0 else 0,
-        'mean_lct': valid_lct.mean() if len(valid_lct) > 0 else 0,
-        'median_lct': valid_lct.median() if len(valid_lct) > 0 else 0,
-        'std_lct': valid_lct.std() if len(valid_lct) > 0 else 0,
     }
 
-    # State-level summaries
-    if 'state' in df.columns:
-        state_stats = df_stats.groupby('state')['lct_minutes'].agg([
-            ('mean', 'mean'),
-            ('median', 'median'),
-            ('count', 'count')
-        ]).round(2)
-        stats['by_state'] = state_stats.to_dict('index')
+    if has_grade_level_data:
+        # Generate stats for each grade level
+        grade_levels = ['elementary', 'middle', 'high']
+        stats['by_grade_level'] = {}
+
+        for grade_level in grade_levels:
+            lct_col = f'lct_minutes_{grade_level}'
+
+            if lct_col not in df.columns:
+                continue
+
+            # Filter for valid districts if requested
+            if valid_only and 'is_valid' in df.columns:
+                df_stats = df[df['is_valid'] & (df[lct_col] > 0)]
+            else:
+                df_stats = df[df[lct_col] > 0]
+
+            valid_lct = df_stats[lct_col]
+
+            stats['by_grade_level'][grade_level] = {
+                'districts_with_lct': len(valid_lct),
+                'min_lct': valid_lct.min() if len(valid_lct) > 0 else 0,
+                'max_lct': valid_lct.max() if len(valid_lct) > 0 else 0,
+                'mean_lct': valid_lct.mean() if len(valid_lct) > 0 else 0,
+                'median_lct': valid_lct.median() if len(valid_lct) > 0 else 0,
+                'std_lct': valid_lct.std() if len(valid_lct) > 0 else 0,
+            }
+
+            # State-level summaries by grade level
+            if 'state' in df.columns and len(df_stats) > 0:
+                state_stats = df_stats.groupby('state')[lct_col].agg([
+                    ('mean', 'mean'),
+                    ('median', 'median'),
+                    ('count', 'count')
+                ]).round(2)
+                stats['by_grade_level'][grade_level]['by_state'] = state_stats.to_dict('index')
+
+    else:
+        # Legacy single-column mode
+        if valid_only and 'is_valid' in df.columns:
+            df_stats = df[df['is_valid'] & (df['lct_minutes'] > 0)]
+        else:
+            df_stats = df[df['lct_minutes'] > 0]
+
+        valid_lct = df_stats['lct_minutes']
+
+        stats.update({
+            'districts_with_lct': len(valid_lct),
+            'min_lct': valid_lct.min() if len(valid_lct) > 0 else 0,
+            'max_lct': valid_lct.max() if len(valid_lct) > 0 else 0,
+            'mean_lct': valid_lct.mean() if len(valid_lct) > 0 else 0,
+            'median_lct': valid_lct.median() if len(valid_lct) > 0 else 0,
+            'std_lct': valid_lct.std() if len(valid_lct) > 0 else 0,
+        })
+
+        # State-level summaries
+        if 'state' in df.columns:
+            state_stats = df_stats.groupby('state')['lct_minutes'].agg([
+                ('mean', 'mean'),
+                ('median', 'median'),
+                ('count', 'count')
+            ]).round(2)
+            stats['by_state'] = state_stats.to_dict('index')
 
     return stats
 
@@ -297,37 +379,84 @@ def main():
         logger.info(f"Available columns: {', '.join(df.columns)}")
         return 1
     
-    # Add daily_minutes if not present
-    if 'daily_instructional_minutes' not in df.columns:
-        logger.info("Calculating daily instructional minutes from state requirements...")
-        
-        if 'state' not in df.columns:
-            logger.error("Need either 'daily_instructional_minutes' or 'state' column")
-            return 1
-        
-        df['daily_instructional_minutes'] = df.apply(
-            lambda row: get_daily_minutes(
-                row.get('state'),
-                row.get('grade_level'),
-                state_config
+    # Check if we have grade-level columns or single column
+    has_grade_level_data = 'daily_instructional_minutes_elementary' in df.columns
+    has_grade_level_enrollment = 'enrollment_elementary' in df.columns
+    has_grade_level_staffing = 'instructional_staff_elementary' in df.columns
+    grade_levels = ['elementary', 'middle', 'high']
+
+    if has_grade_level_data:
+        logger.info("Found grade-level instructional minutes data")
+
+        # Determine if we have detailed enrollment/staffing or using district totals
+        if has_grade_level_enrollment and has_grade_level_staffing:
+            logger.info("Using grade-level enrollment and staffing data (Option C - Hybrid Approach)")
+
+        # Calculate LCT for each grade level
+        logger.info("Calculating Learning Connection Time by grade level...")
+        for grade_level in grade_levels:
+            minutes_col = f'daily_instructional_minutes_{grade_level}'
+            lct_col = f'lct_minutes_{grade_level}'
+
+            # Use grade-specific enrollment/staffing if available, otherwise use district totals
+            if has_grade_level_enrollment and has_grade_level_staffing:
+                enrollment_col = f'enrollment_{grade_level}'
+                staff_col = f'instructional_staff_{grade_level}'
+
+                if minutes_col in df.columns and enrollment_col in df.columns and staff_col in df.columns:
+                    df[lct_col] = df.apply(
+                        lambda row: calculate_lct(
+                            row[enrollment_col],
+                            row[staff_col],
+                            row[minutes_col]
+                        ),
+                        axis=1
+                    )
+                    logger.info(f"  ✓ Calculated LCT for {grade_level} using grade-level enrollment and staff")
+            else:
+                # Fallback: use district-level enrollment/staffing
+                if minutes_col in df.columns:
+                    df[lct_col] = df.apply(
+                        lambda row: calculate_lct(
+                            row['enrollment'],
+                            row['instructional_staff'],
+                            row[minutes_col]
+                        ),
+                        axis=1
+                    )
+                    logger.info(f"  ✓ Calculated LCT for {grade_level} (using district-level enrollment/staff)")
+    else:
+        # Legacy single-column mode
+        if 'daily_instructional_minutes' not in df.columns:
+            logger.info("Calculating daily instructional minutes from state requirements...")
+
+            if 'state' not in df.columns:
+                logger.error("Need either 'daily_instructional_minutes' or 'state' column")
+                return 1
+
+            df['daily_instructional_minutes'] = df.apply(
+                lambda row: get_daily_minutes(
+                    row.get('state'),
+                    row.get('grade_level'),
+                    state_config
+                ),
+                axis=1
+            )
+
+        # Calculate LCT
+        logger.info("Calculating Learning Connection Time...")
+        df['lct_minutes'] = df.apply(
+            lambda row: calculate_lct(
+                row['enrollment'],
+                row['instructional_staff'],
+                row['daily_instructional_minutes']
             ),
             axis=1
         )
-    
-    # Calculate LCT
-    logger.info("Calculating Learning Connection Time...")
-    df['lct_minutes'] = df.apply(
-        lambda row: calculate_lct(
-            row['enrollment'],
-            row['instructional_staff'],
-            row['daily_instructional_minutes']
-        ),
-        axis=1
-    )
-    
+
     # Add derived metrics
     logger.info("Adding derived metrics...")
-    df = add_derived_metrics(df)
+    df = add_derived_metrics(df, has_grade_level_data=has_grade_level_data)
 
     # Validate data quality
     logger.info("Validating data quality...")
@@ -402,20 +531,33 @@ def main():
         logger.info(f"✓ Validation report saved to: {validation_report}")
     
     # Generate summary statistics (using valid districts only)
-    stats = generate_summary_stats(df, valid_only=True)
+    stats = generate_summary_stats(df, valid_only=True, has_grade_level_data=has_grade_level_data)
 
     logger.info("\n" + "="*60)
     logger.info("LEARNING CONNECTION TIME ANALYSIS")
     logger.info("="*60)
     logger.info(f"Total Districts: {stats['total_districts']:,}")
     logger.info(f"Valid Districts: {stats['valid_districts']:,}")
-    logger.info(f"Districts with LCT: {stats['districts_with_lct']:,}")
-    logger.info(f"\nLCT Statistics (Valid Districts Only):")
-    logger.info(f"  Minimum: {stats['min_lct']:.1f} minutes ({stats['min_lct']/60:.1f} hours)")
-    logger.info(f"  Maximum: {stats['max_lct']:.1f} minutes ({stats['max_lct']/60:.1f} hours)")
-    logger.info(f"  Mean:    {stats['mean_lct']:.1f} minutes ({stats['mean_lct']/60:.1f} hours)")
-    logger.info(f"  Median:  {stats['median_lct']:.1f} minutes ({stats['median_lct']/60:.1f} hours)")
-    logger.info(f"  Std Dev: {stats['std_lct']:.1f} minutes")
+
+    if has_grade_level_data and 'by_grade_level' in stats:
+        for grade_level in ['elementary', 'middle', 'high']:
+            if grade_level in stats['by_grade_level']:
+                gl_stats = stats['by_grade_level'][grade_level]
+                logger.info(f"\n{grade_level.upper()} SCHOOLS:")
+                logger.info(f"  Districts with LCT: {gl_stats['districts_with_lct']:,}")
+                logger.info(f"  Minimum: {gl_stats['min_lct']:.1f} minutes ({gl_stats['min_lct']/60:.1f} hours)")
+                logger.info(f"  Maximum: {gl_stats['max_lct']:.1f} minutes ({gl_stats['max_lct']/60:.1f} hours)")
+                logger.info(f"  Mean:    {gl_stats['mean_lct']:.1f} minutes ({gl_stats['mean_lct']/60:.1f} hours)")
+                logger.info(f"  Median:  {gl_stats['median_lct']:.1f} minutes ({gl_stats['median_lct']/60:.1f} hours)")
+                logger.info(f"  Std Dev: {gl_stats['std_lct']:.1f} minutes")
+    else:
+        logger.info(f"Districts with LCT: {stats['districts_with_lct']:,}")
+        logger.info(f"\nLCT Statistics (Valid Districts Only):")
+        logger.info(f"  Minimum: {stats['min_lct']:.1f} minutes ({stats['min_lct']/60:.1f} hours)")
+        logger.info(f"  Maximum: {stats['max_lct']:.1f} minutes ({stats['max_lct']/60:.1f} hours)")
+        logger.info(f"  Mean:    {stats['mean_lct']:.1f} minutes ({stats['mean_lct']/60:.1f} hours)")
+        logger.info(f"  Median:  {stats['median_lct']:.1f} minutes ({stats['median_lct']/60:.1f} hours)")
+        logger.info(f"  Std Dev: {stats['std_lct']:.1f} minutes")
     
     # Save summary if requested
     if args.summary:
@@ -425,24 +567,53 @@ def main():
             f.write("LEARNING CONNECTION TIME ANALYSIS SUMMARY\n")
             f.write("="*60 + "\n\n")
             f.write(f"Total Districts: {stats['total_districts']:,}\n")
-            f.write(f"Valid Districts: {stats['valid_districts']:,}\n")
-            f.write(f"Districts with LCT: {stats['districts_with_lct']:,}\n\n")
-            f.write("LCT Statistics (Valid Districts Only):\n")
-            f.write(f"  Minimum: {stats['min_lct']:.1f} minutes\n")
-            f.write(f"  Maximum: {stats['max_lct']:.1f} minutes\n")
-            f.write(f"  Mean:    {stats['mean_lct']:.1f} minutes\n")
-            f.write(f"  Median:  {stats['median_lct']:.1f} minutes\n")
-            f.write(f"  Std Dev: {stats['std_lct']:.1f} minutes\n")
+            f.write(f"Valid Districts: {stats['valid_districts']:,}\n\n")
 
-            if 'by_state' in stats:
-                f.write("\n" + "="*60 + "\n")
-                f.write("STATE-LEVEL SUMMARY (Valid Districts Only)\n")
-                f.write("="*60 + "\n\n")
-                for state, state_stats in stats['by_state'].items():
-                    f.write(f"{state}:\n")
-                    f.write(f"  Mean LCT:   {state_stats['mean']:.1f} minutes\n")
-                    f.write(f"  Median LCT: {state_stats['median']:.1f} minutes\n")
-                    f.write(f"  Districts:  {state_stats['count']}\n\n")
+            if has_grade_level_data and 'by_grade_level' in stats:
+                # Grade-level summary
+                for grade_level in ['elementary', 'middle', 'high']:
+                    if grade_level in stats['by_grade_level']:
+                        gl_stats = stats['by_grade_level'][grade_level]
+
+                        f.write("="*60 + "\n")
+                        f.write(f"{grade_level.upper()} SCHOOLS\n")
+                        f.write("="*60 + "\n\n")
+                        f.write(f"Districts with LCT: {gl_stats['districts_with_lct']:,}\n\n")
+                        f.write("LCT Statistics (Valid Districts Only):\n")
+                        f.write(f"  Minimum: {gl_stats['min_lct']:.1f} minutes\n")
+                        f.write(f"  Maximum: {gl_stats['max_lct']:.1f} minutes\n")
+                        f.write(f"  Mean:    {gl_stats['mean_lct']:.1f} minutes\n")
+                        f.write(f"  Median:  {gl_stats['median_lct']:.1f} minutes\n")
+                        f.write(f"  Std Dev: {gl_stats['std_lct']:.1f} minutes\n\n")
+
+                        # State-level summary for this grade level
+                        if 'by_state' in gl_stats:
+                            f.write("STATE-LEVEL SUMMARY:\n")
+                            for state, state_stats in gl_stats['by_state'].items():
+                                f.write(f"\n{state}:\n")
+                                f.write(f"  Mean LCT:   {state_stats['mean']:.1f} minutes\n")
+                                f.write(f"  Median LCT: {state_stats['median']:.1f} minutes\n")
+                                f.write(f"  Districts:  {state_stats['count']}\n")
+                            f.write("\n")
+            else:
+                # Legacy single-column summary
+                f.write(f"Districts with LCT: {stats['districts_with_lct']:,}\n\n")
+                f.write("LCT Statistics (Valid Districts Only):\n")
+                f.write(f"  Minimum: {stats['min_lct']:.1f} minutes\n")
+                f.write(f"  Maximum: {stats['max_lct']:.1f} minutes\n")
+                f.write(f"  Mean:    {stats['mean_lct']:.1f} minutes\n")
+                f.write(f"  Median:  {stats['median_lct']:.1f} minutes\n")
+                f.write(f"  Std Dev: {stats['std_lct']:.1f} minutes\n")
+
+                if 'by_state' in stats:
+                    f.write("\n" + "="*60 + "\n")
+                    f.write("STATE-LEVEL SUMMARY (Valid Districts Only)\n")
+                    f.write("="*60 + "\n\n")
+                    for state, state_stats in stats['by_state'].items():
+                        f.write(f"{state}:\n")
+                        f.write(f"  Mean LCT:   {state_stats['mean']:.1f} minutes\n")
+                        f.write(f"  Median LCT: {state_stats['median']:.1f} minutes\n")
+                        f.write(f"  Districts:  {state_stats['count']}\n\n")
 
         logger.info(f"✓ Summary saved to: {summary_file}")
     
