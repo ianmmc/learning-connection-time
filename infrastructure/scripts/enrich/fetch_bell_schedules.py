@@ -51,7 +51,20 @@ logger = logging.getLogger(__name__)
 
 
 class BellScheduleFetcher(DataProcessor):
-    """Fetches and processes bell schedule data from school websites"""
+    """Fetches and processes bell schedule data from school websites
+
+    IMPORTANT - Security Block Protocol:
+    If a district has Cloudflare, WAF, or similar security measures:
+    1. Try ONE web search + ONE primary page fetch
+    2. If blocked (Cloudflare 1016/1020, 403, multiple 404s, inaccessible content)
+    3. Immediately add to manual_followup_needed.json
+    4. Move to next district
+
+    DO NOT attempt multiple workarounds - if main site is blocked, school sites will be too.
+    Respect district cybersecurity and conserve resources.
+
+    See docs/BELL_SCHEDULE_SAMPLING_METHODOLOGY.md for full protocol.
+    """
 
     def __init__(self, tier: int = 2, sample_size: int = 2, year: str = "2023-24"):
         """

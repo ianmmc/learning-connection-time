@@ -59,6 +59,10 @@ We're implementing Phase 1.5, which enhances basic LCT calculations with actual 
    - Three-tier methodology (detailed, automated, statutory)
    - Tracks data quality and sources
    - Optional enrichment step in pipeline
+   - **Security Block Protocol**: ONE-attempt rule for Cloudflare/WAF-protected districts
+     - Try ONE search + ONE fetch, then immediately add to manual follow-up if blocked
+     - Respects district cybersecurity, conserves resources
+     - See `docs/BELL_SCHEDULE_SAMPLING_METHODOLOGY.md` for details
 
 3. **Extract**: `infrastructure/scripts/extract/split_large_files.py`
    - Handles multi-part files (filename_1, filename_2, etc.)

@@ -229,6 +229,71 @@ site:[district-domain] "bell schedule"
 site:[district-domain] filetype:pdf schedule
 ```
 
+## Handling Security-Hardened Districts
+
+### Immediate Manual Follow-up Protocol
+
+**IMPORTANT**: If a district has implemented security measures that block automated access, immediately add them to manual follow-up. Do not attempt multiple workarounds.
+
+#### Indicators to Add to Manual Follow-up Immediately:
+
+1. **Cloudflare Blocks**
+   - Error codes: 1016, 1020, 1015, etc.
+   - "Checking your browser" messages
+   - Captcha challenges
+
+2. **Web Application Firewall (WAF) Blocks**
+   - 403 Forbidden errors on district domain
+   - "Access Denied" messages
+   - Similar security responses
+
+3. **Multiple 404 Errors**
+   - Bell schedule pages return 404
+   - Multiple school sites return 404
+   - Indicates content restructuring or access restrictions
+
+4. **Inaccessible Content**
+   - Document viewers that don't render
+   - PDFs blocked from direct download
+   - JavaScript-dependent content that won't load
+
+#### Efficient Process:
+
+**ONE attempt per district:**
+1. Try ONE web search for district-wide bell schedule
+2. Try ONE fetch of primary district bell schedule page
+3. If blocked/inaccessible → add to `manual_followup_needed.json` immediately
+4. Move to next district
+
+**Why this approach:**
+- Districts with Cloudflare on main site will have it on school sites too
+- Playwright/browser automation will trigger same blocks
+- Respects district cybersecurity measures (they should be commended!)
+- Conserves computational resources
+- Manual follow-up is more appropriate for these cases
+
+#### Adding to Manual Follow-up:
+
+Document in `manual_followup_needed.json`:
+```json
+{
+  "district_id": "XXXXXXX",
+  "district_name": "District Name",
+  "state": "XX",
+  "reason": "Cloudflare/WAF protection blocks automated access",
+  "notes": "District has implemented security measures. Actual times likely available through [method]. State statutory: [mins].",
+  "suggested_action": "Manual data collection through district contact or alternative access method"
+}
+```
+
+### When to Persist with Web Scraping
+
+Only continue automated attempts when:
+- Initial page loads successfully
+- Content is accessible in HTML
+- No security blocks encountered
+- PDFs are downloadable
+
 ## Validation Rules
 
 ### Red Flags (require manual review)
