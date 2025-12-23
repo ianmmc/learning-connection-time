@@ -50,6 +50,84 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+class HTTPErrorTracker:
+    """Track HTTP errors and trigger auto-flagging at threshold
+
+    Per ENRICHMENT_SAFEGUARDS.md Rule 1:
+    - 4 or more 404 errors = AUTO-FLAG for manual follow-up
+    - Multiple 404s indicate hardened cybersecurity, not missing pages
+    """
+
+    def __init__(self, threshold: int = 4):
+        self.errors_404 = []
+        self.threshold = threshold
+
+    def record_404(self, url: str):
+        """Record a 404 error"""
+        self.errors_404.append(url)
+
+    def should_flag_manual_followup(self) -> bool:
+        """Check if we've hit the threshold"""
+        return len(self.errors_404) >= self.threshold
+
+    def get_summary(self) -> dict:
+        """Get error summary for flagging"""
+        return {
+            "total_404s": len(self.errors_404),
+            "urls_tried": self.errors_404,
+            "threshold": self.threshold,
+            "flagged": self.should_flag_manual_followup()
+        }
+
+
+def flag_for_manual_followup(district_info: dict, error_summary: dict):
+    """Add district to manual follow-up list
+
+    Per ENRICHMENT_SAFEGUARDS.md Rule 3:
+    Required fields: district_id, district_name, state, enrollment, reason, attempts
+    """
+    followup_file = Path('data/enriched/bell-schedules/manual_followup_needed.json')
+
+    # Load existing data
+    if followup_file.exists():
+        with open(followup_file, 'r') as f:
+            data = json.load(f)
+    else:
+        data = {
+            "districts_needing_manual_review": [],
+            "completed_manual_collections": [],
+            "last_updated": None
+        }
+
+    # Create entry
+    entry = {
+        "district_id": district_info['district_id'],
+        "district_name": district_info['district_name'],
+        "state": district_info['state'],
+        "enrollment": district_info.get('enrollment'),
+        "reason": f"Automated collection failed - {error_summary.get('total_404s', 0)} 404 errors",
+        "attempts": [{
+            "date": datetime.now().strftime("%Y-%m-%d"),
+            "method": "WebSearch + WebFetch",
+            "total_404s": error_summary.get('total_404s', 0),
+            "urls_tried": error_summary.get('urls_tried', [])
+        }],
+        "next_steps": "Manual collection needed",
+        "priority": "high",
+        "flagged_date": datetime.now().strftime("%Y-%m-%d")
+    }
+
+    data['districts_needing_manual_review'].append(entry)
+    data['last_updated'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # Save
+    followup_file.parent.mkdir(parents=True, exist_ok=True)
+    with open(followup_file, 'w') as f:
+        json.dump(data, f, indent=2)
+
+    logger.warning(f"Flagged {district_info['district_name']} for manual follow-up")
+
+
 class BellScheduleFetcher(DataProcessor):
     """Fetches and processes bell schedule data from school websites
 
@@ -88,9 +166,13 @@ class BellScheduleFetcher(DataProcessor):
         district_name: str,
         state: str,
         enrollment: int
-    ) -> Dict:
+    ) -> Optional[Dict]:
         """
         Fetch bell schedules for a district.
+
+        Per ENRICHMENT_SAFEGUARDS.md Rule 4:
+        Returns None if enrichment fails (triggers manual follow-up)
+        Never returns statutory fallback data
 
         Args:
             district_id: District identifier
@@ -99,7 +181,7 @@ class BellScheduleFetcher(DataProcessor):
             enrollment: Total student enrollment
 
         Returns:
-            Dictionary with bell schedule data and metadata
+            Dictionary with bell schedule data and metadata, or None if failed
         """
         logger.info(f"Fetching bell schedules for {district_name}, {state}")
 
@@ -145,82 +227,62 @@ class BellScheduleFetcher(DataProcessor):
         """
         Tier 1: Detailed search with representative school sampling.
 
-        Strategy:
-        1. Search for district-wide bell schedule policy
-        2. If not found, sample 2-3 schools per level
-        3. Extract actual instructional minutes
-        4. Document sources with high confidence
+        NOT YET IMPLEMENTED - Requires web scraping implementation
+        See docs/ENRICHMENT_SAFEGUARDS.md for requirements
         """
-        district_name = result['district_name']
-        state = result['state']
-
-        # Search for district-wide bell schedule
-        result['notes'].append(
-            f"Tier 1: Attempting detailed search for {district_name}"
+        raise NotImplementedError(
+            f"Tier {self.tier} enrichment not yet implemented. "
+            "Tier 1 requires web scraping implementation with: "
+            "1. HTTPErrorTracker for 404 detection, "
+            "2. Security block handling (Cloudflare/WAF), "
+            "3. Return None on failure (not statutory fallback). "
+            "Options: (1) Use Tier 3 (--tier 3) for statutory-only, "
+            "(2) Manually collect bell schedules, or "
+            "(3) Implement web scraping in this method. "
+            "See docs/ENRICHMENT_SAFEGUARDS.md for detailed requirements."
         )
-
-        # This is where web search/scraping would occur
-        # For now, this is a template for the implementation
-        result['notes'].append(
-            "TEMPLATE: Web search would be performed here using WebSearch/WebFetch tools"
-        )
-        result['notes'].append(
-            f"Search query: '{district_name} {state} bell schedule {self.year}'"
-        )
-
-        # Template for storing results
-        for level in ['elementary', 'middle', 'high']:
-            result[level] = {
-                'instructional_minutes': None,  # To be filled by web scraping
-                'start_time': None,
-                'end_time': None,
-                'lunch_duration': None,
-                'passing_periods': None,
-                'schools_sampled': [],
-                'source_urls': [],
-                'confidence': 'template',  # Will be 'high', 'medium', 'low', or 'assumed'
-                'method': 'tier1_template'
-            }
-
-        return result
 
     def _tier2_automated_search(self, result: Dict) -> Dict:
         """
-        Tier 2: Automated search with fallback to state requirements.
+        Tier 2: Automated search (NOT YET IMPLEMENTED)
 
-        Strategy:
-        1. Quick automated search for district bell schedule
-        2. If found, extract data
-        3. If not found, fall back to state statutory requirements
+        CRITICAL: Per ENRICHMENT_SAFEGUARDS.md Rule 2:
+        Must NOT fall back to statutory requirements
+        Must return None on failure to trigger manual follow-up
+
+        See docs/ENRICHMENT_SAFEGUARDS.md for requirements
         """
-        district_name = result['district_name']
-        state = result['state']
-
-        result['notes'].append(
-            f"Tier 2: Automated search for {district_name}"
+        raise NotImplementedError(
+            f"Tier {self.tier} enrichment not yet implemented. "
+            "Tier 2 requires automated web scraping with: "
+            "1. HTTPErrorTracker for 404 detection, "
+            "2. Security block handling (Cloudflare/WAF), "
+            "3. Return None on failure (not statutory fallback). "
+            "CRITICAL: Must NOT fall back to statutory data. "
+            "Options: (1) Use Tier 3 (--tier 3) for statutory-only, "
+            "(2) Manually collect bell schedules, or "
+            "(3) Implement web scraping in this method. "
+            "See docs/ENRICHMENT_SAFEGUARDS.md for detailed requirements."
         )
-
-        # Template for automated search
-        result['notes'].append(
-            "TEMPLATE: Automated web search would be performed here"
-        )
-
-        # Fall back to state statutory requirements
-        result = self._apply_state_requirements(result, confidence='medium')
-
-        return result
 
     def _tier3_statutory_only(self, result: Dict) -> Dict:
         """
         Tier 3: Use state statutory requirements only.
 
         No web searching - just apply known state requirements.
+
+        Per ENRICHMENT_SAFEGUARDS.md Rule 2:
+        Sets enriched=False and data_quality_tier='statutory_fallback'
         """
         result['notes'].append(
             f"Tier 3: Using state statutory requirements for {result['state']}"
         )
 
-        result = self._apply_state_requirements(result, confidence='low')
+        result = self._apply_state_requirements(result, confidence='statutory')
+
+        # CRITICAL: Mark as NOT enriched (per ENRICHMENT_SAFEGUARDS.md Rule 2)
+        result['enriched'] = False
+        result['data_quality_tier'] = 'statutory_fallback'
 
         return result
 
@@ -321,8 +383,10 @@ class BellScheduleFetcher(DataProcessor):
             logger.info(f"Total districts: {len(df)}")
             return
 
-        # Process each district
+        # Process each district - Per ENRICHMENT_SAFEGUARDS.md Rule 5
         results = []
+        stats = {'enriched': 0, 'statutory': 0, 'flagged_for_manual': 0, 'errors': 0}
+
         for idx, row in df.iterrows():
             try:
                 result = self.fetch_district_bell_schedules(
@@ -332,6 +396,21 @@ class BellScheduleFetcher(DataProcessor):
                     enrollment=row['enrollment']
                 )
 
+                # Handle None returns (enrichment failed, flagged for manual follow-up)
+                if result is None:
+                    logger.info(f"Flagged {row['district_name']} - continuing to next district")
+                    stats['flagged_for_manual'] += 1
+                    continue
+
+                # Check if actually enriched or just statutory
+                if result.get('enriched', True):  # Default True for backward compatibility
+                    stats['enriched'] += 1
+                elif result.get('data_quality_tier') == 'statutory_fallback':
+                    stats['statutory'] += 1
+                else:
+                    # Unknown status - log warning
+                    logger.warning(f"Unclear enrichment status for {row['district_name']}")
+
                 # Flatten result for CSV output
                 flat_result = {
                     'district_id': result['district_id'],
@@ -340,6 +419,8 @@ class BellScheduleFetcher(DataProcessor):
                     'enrollment': result['enrollment'],
                     'year': result['year'],
                     'tier': result['tier'],
+                    'enriched': result.get('enriched', True),
+                    'data_quality_tier': result.get('data_quality_tier', 'unknown'),
                     'elementary_minutes': result['elementary'].get('instructional_minutes'),
                     'elementary_confidence': result['elementary'].get('confidence'),
                     'middle_minutes': result['middle'].get('instructional_minutes'),
@@ -355,11 +436,26 @@ class BellScheduleFetcher(DataProcessor):
                     f"Processed {idx + 1}/{len(df)}: {row['district_name']}"
                 )
 
+            except NotImplementedError as e:
+                logger.error(f"Implementation error for {row['district_name']}: {str(e)}")
+                stats['errors'] += 1
+                raise  # Re-raise to stop execution
             except Exception as e:
                 logger.error(
                     f"Error processing {row['district_name']}: {str(e)}"
                 )
+                stats['errors'] += 1
                 continue
+
+        # Report statistics
+        logger.info("\n" + "="*60)
+        logger.info("ENRICHMENT STATISTICS")
+        logger.info("="*60)
+        logger.info(f"Enriched (actual bell schedules): {stats['enriched']}")
+        logger.info(f"Statutory fallback: {stats['statutory']}")
+        logger.info(f"Flagged for manual follow-up: {stats['flagged_for_manual']}")
+        logger.info(f"Errors: {stats['errors']}")
+        logger.info("="*60)
 
         # Create output DataFrame
         output_df = pd.DataFrame(results)

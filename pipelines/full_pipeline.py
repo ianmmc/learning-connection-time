@@ -126,13 +126,15 @@ class PipelineRunner:
 
     def step_enrich_bell_schedules(self) -> bool:
         """
-        Step 2: Enrich with bell schedules (optional)
+        Step 4: Enrich with bell schedules (optional)
+
+        NOTE: Must run AFTER normalization (Step 3)
 
         Returns:
             True if successful
         """
         logger.info("\n" + "="*60)
-        logger.info("STEP 2: ENRICH WITH BELL SCHEDULES")
+        logger.info("STEP 4: ENRICH WITH BELL SCHEDULES")
         logger.info("="*60)
 
         if not self.enrich_bell_schedules:
@@ -140,16 +142,18 @@ class PipelineRunner:
             logger.info("Use --enrich-bell-schedules to enable")
             return True
 
-        # Find normalized file to enrich
+        # Find normalized file to enrich - CRITICAL: Must exist
         normalized_dir = self.root / "data" / "processed" / "normalized"
 
         # Look for latest normalized file
         input_files = list(normalized_dir.glob(f"districts_{self.year.replace('-', '_')}*.csv"))
 
         if not input_files:
-            logger.warning("No normalized files found yet, skipping enrichment")
-            logger.info("Note: Bell schedule enrichment should run after normalization")
-            return True
+            logger.error("ERROR: Cannot enrich bell schedules - normalized file not found")
+            logger.error(f"Expected file matching: {normalized_dir}/districts_{self.year.replace('-', '_')}*.csv")
+            logger.error("Normalization must complete before enrichment")
+            logger.error("This is a pipeline ordering error - enrichment requires normalized data")
+            return False  # Fail loudly instead of silently skipping
 
         input_file = input_files[0]
 
@@ -164,13 +168,13 @@ class PipelineRunner:
 
     def step_extract(self) -> bool:
         """
-        Step 3: Extract and combine multi-part files
+        Step 2: Extract and combine multi-part files
 
         Returns:
             True if successful
         """
         logger.info("\n" + "="*60)
-        logger.info("STEP 3: EXTRACT AND COMBINE FILES")
+        logger.info("STEP 2: EXTRACT AND COMBINE FILES")
         logger.info("="*60)
         
         # Check if there are multi-part files
@@ -195,13 +199,13 @@ class PipelineRunner:
     
     def step_normalize(self) -> bool:
         """
-        Step 4: Normalize data to standard schema
+        Step 3: Normalize data to standard schema
 
         Returns:
             True if successful
         """
         logger.info("\n" + "="*60)
-        logger.info("STEP 4: NORMALIZE DATA")
+        logger.info("STEP 3: NORMALIZE DATA")
         logger.info("="*60)
         
         # Find input file
@@ -466,12 +470,13 @@ For questions about methodology or data quality, see project documentation in th
             logger.info(f"Bell schedule tier: {self.tier}")
         logger.info(f"Started: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
 
-        # Run each step
+        # Run each step - CRITICAL: Enrichment must run AFTER normalization
+        # Per MEGATHINK_ANALYSIS_REPORT.md Issue 4: Step ordering fixed
         steps = [
             ("Download", self.step_download),
-            ("Enrich Bell Schedules", self.step_enrich_bell_schedules),
             ("Extract", self.step_extract),
             ("Normalize", self.step_normalize),
+            ("Enrich Bell Schedules", self.step_enrich_bell_schedules),  # Moved after normalization
             ("Calculate LCT", self.step_calculate_lct),
             ("Export Deliverables", self.step_export_deliverables),
         ]

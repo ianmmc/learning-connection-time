@@ -6,21 +6,30 @@ This script enriches district data by merging manually collected bell schedules
 with normalized district data. Where actual bell schedules are available, it uses
 those instructional minutes; otherwise, it falls back to state statutory requirements.
 
+Supports loading bell schedules from:
+- A single consolidated JSON file with district IDs as keys
+- A directory containing individual district JSON files (loads all .json files)
+- Mixed: directory can contain both consolidated and individual files
+
 Usage:
     python merge_bell_schedules.py <districts_file> [options]
 
     Options:
-        --bell-schedules PATH   Path to bell schedules JSON (default: data/enriched/bell-schedules/bell_schedules_manual_collection_2024_25.json)
+        --bell-schedules PATH   Path to bell schedules JSON file or directory (default: data/enriched/bell-schedules/)
         --output PATH           Output file path (default: auto-generated)
         --year YEAR            School year (e.g., "2024-25")
 
 Examples:
-    # Merge bell schedules with normalized district data
+    # Merge all bell schedules from directory (default)
     python merge_bell_schedules.py data/processed/normalized/districts_2023_24_nces.csv
 
     # Specify custom bell schedules file
     python merge_bell_schedules.py data/processed/normalized/districts_2023_24_nces.csv \
         --bell-schedules data/enriched/bell-schedules/custom_schedules.json
+
+    # Load from specific directory
+    python merge_bell_schedules.py data/processed/normalized/districts_2023_24_nces.csv \
+        --bell-schedules data/enriched/bell-schedules/
 """
 
 import argparse
@@ -62,18 +71,76 @@ class BellScheduleMerger(DataProcessor):
         self.state_requirements = {}
 
     def load_bell_schedules(self):
-        """Load bell schedule data from JSON file"""
+        """Load bell schedule data from JSON file or directory
+
+        Supports two modes:
+        1. Single consolidated JSON file with district IDs as keys
+        2. Directory containing individual district JSON files
+        """
         if not self.bell_schedules_path.exists():
-            logger.warning(f"Bell schedules file not found: {self.bell_schedules_path}")
+            logger.warning(f"Bell schedules path not found: {self.bell_schedules_path}")
             return
 
-        logger.info(f"Loading bell schedules from {self.bell_schedules_path}")
-        with open(self.bell_schedules_path, 'r') as f:
-            data = json.load(f)
+        self.bell_schedules = {}
 
-        # The JSON has district IDs as keys
-        self.bell_schedules = data
-        logger.info(f"  Loaded bell schedules for {len(self.bell_schedules)} districts")
+        # If it's a directory, load all JSON files
+        if self.bell_schedules_path.is_dir():
+            logger.info(f"Loading bell schedules from directory: {self.bell_schedules_path}")
+            json_files = list(self.bell_schedules_path.glob("*.json"))
+
+            # Filter out files we don't want to load
+            excluded_patterns = ['manual_followup', 'tier3_statutory_fallback']
+            json_files = [
+                f for f in json_files
+                if not any(pattern in f.name for pattern in excluded_patterns)
+            ]
+
+            for json_file in json_files:
+                try:
+                    with open(json_file, 'r') as f:
+                        data = json.load(f)
+
+                    # Check if this is an individual district file or consolidated file
+                    if 'district_id' in data:
+                        # Individual district file
+                        # Skip if this is statutory fallback data (enriched=False)
+                        if data.get('enriched', True) == False:
+                            continue
+
+                        district_id = str(data['district_id'])
+                        self.bell_schedules[district_id] = data
+                    elif isinstance(data, dict):
+                        # Consolidated file with district IDs as keys - merge it
+                        for district_id, district_data in data.items():
+                            # Skip statutory fallback entries
+                            if district_data.get('enriched', True) == False:
+                                continue
+                            self.bell_schedules[str(district_id)] = district_data
+                    else:
+                        logger.warning(f"Skipping {json_file.name}: unexpected format")
+
+                except Exception as e:
+                    logger.warning(f"Error loading {json_file.name}: {e}")
+                    continue
+
+            logger.info(f"  Loaded bell schedules for {len(self.bell_schedules)} districts from {len(json_files)} files")
+
+        # If it's a file, load the single consolidated JSON
+        else:
+            logger.info(f"Loading bell schedules from file: {self.bell_schedules_path}")
+            with open(self.bell_schedules_path, 'r') as f:
+                data = json.load(f)
+
+            # Check format
+            if 'district_id' in data:
+                # Individual district file
+                district_id = str(data['district_id'])
+                self.bell_schedules[district_id] = data
+                logger.info(f"  Loaded bell schedule for 1 district")
+            else:
+                # Consolidated file with district IDs as keys
+                self.bell_schedules = data
+                logger.info(f"  Loaded bell schedules for {len(self.bell_schedules)} districts")
 
     def load_state_requirements(self):
         """Load state statutory requirements as fallback"""
@@ -102,7 +169,7 @@ class BellScheduleMerger(DataProcessor):
         district_id: str,
         state: str,
         grade_level: str = 'elementary'
-    ) -> tuple[Optional[int], str, str]:
+    ) -> tuple[Optional[int], str, str, str]:
         """
         Get instructional minutes for a district, preferring actual bell schedules
 
@@ -112,7 +179,7 @@ class BellScheduleMerger(DataProcessor):
             grade_level: Grade level (elementary, middle, high)
 
         Returns:
-            Tuple of (minutes, source, confidence)
+            Tuple of (minutes, source, confidence, method)
         """
         # First, try to get from bell schedules
         if str(district_id) in self.bell_schedules:
@@ -131,7 +198,8 @@ class BellScheduleMerger(DataProcessor):
                 if minutes:
                     source = level_data.get('source', 'Actual bell schedule')
                     confidence = level_data.get('confidence', 'high')
-                    return minutes, source, confidence
+                    method = level_data.get('method', 'unknown')
+                    return minutes, source, confidence, method
 
         # Fall back to state statutory requirements
         # Handle NaN values (which are floats)
@@ -148,16 +216,16 @@ class BellScheduleMerger(DataProcessor):
             if level_key in state_data:
                 minutes = state_data[level_key]
                 source = state_data.get('reference', 'State statute')
-                return minutes, source, 'statutory'
+                return minutes, source, 'statutory', 'state_statutory'
 
             # Try elementary as default
             if 'elementary' in state_data:
                 minutes = state_data['elementary']
                 source = state_data.get('reference', 'State statute')
-                return minutes, source, 'statutory'
+                return minutes, source, 'statutory', 'state_statutory'
 
         # Default to 300 minutes
-        return 300, 'Default assumption (5-hour day)', 'assumed'
+        return 300, 'Default assumption (5-hour day)', 'assumed', 'default'
 
     def merge_data(self, districts_df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -181,6 +249,7 @@ class BellScheduleMerger(DataProcessor):
             districts_df[f'daily_instructional_minutes_{grade_level}'] = None
             districts_df[f'minutes_source_{grade_level}'] = None
             districts_df[f'minutes_confidence_{grade_level}'] = None
+            districts_df[f'minutes_method_{grade_level}'] = None
 
         # Track statistics by grade level
         stats = {
@@ -196,7 +265,7 @@ class BellScheduleMerger(DataProcessor):
 
             # Get instructional minutes for each grade level
             for grade_level in grade_levels:
-                minutes, source, confidence = self.get_instructional_minutes(
+                minutes, source, confidence, method = self.get_instructional_minutes(
                     district_id, state, grade_level
                 )
 
@@ -204,11 +273,13 @@ class BellScheduleMerger(DataProcessor):
                 districts_df.at[idx, f'daily_instructional_minutes_{grade_level}'] = minutes
                 districts_df.at[idx, f'minutes_source_{grade_level}'] = source
                 districts_df.at[idx, f'minutes_confidence_{grade_level}'] = confidence
+                districts_df.at[idx, f'minutes_method_{grade_level}'] = method
 
-                # Track statistics
-                if confidence == 'high' or confidence == 'medium':
+                # Track statistics - CRITICAL: Check method, not confidence
+                # This ensures statutory data isn't counted as "actual" even if confidence is high/medium
+                if method != 'state_statutory' and method != 'default':
                     stats[grade_level]['actual'] += 1
-                elif confidence == 'statutory':
+                elif method == 'state_statutory':
                     stats[grade_level]['statutory'] += 1
                 else:
                     stats[grade_level]['assumed'] += 1
@@ -324,7 +395,7 @@ def main():
     parser.add_argument(
         '--bell-schedules',
         type=Path,
-        help='Path to bell schedules JSON file (default: data/enriched/bell-schedules/bell_schedules_manual_collection_2024_25.json)'
+        help='Path to bell schedules JSON file or directory (default: data/enriched/bell-schedules/ - loads all JSON files)'
     )
 
     parser.add_argument(
@@ -347,11 +418,12 @@ def main():
         logger.error(f"Input file not found: {args.districts_file}")
         sys.exit(1)
 
-    # Determine bell schedules file
+    # Determine bell schedules path (file or directory)
     if args.bell_schedules:
         bell_schedules_path = args.bell_schedules
     else:
-        bell_schedules_path = Path("data/enriched/bell-schedules/bell_schedules_manual_collection_2024_25.json")
+        # Default to directory to load all bell schedule files
+        bell_schedules_path = Path("data/enriched/bell-schedules/")
 
     # Determine output file
     if args.output:

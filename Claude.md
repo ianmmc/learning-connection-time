@@ -41,6 +41,43 @@ We're implementing Phase 1.5, which enhances basic LCT calculations with actual 
 
 ---
 
+## Important: Current Date and Data Years
+
+**Current Date:** December 21, 2025
+**Current School Year:** 2025-26 (Fall 2025 - Spring 2026)
+
+### Data Year Strategy
+
+**For Historical Datasets:**
+- **Primary campaign dataset:** 2023-24 (NCES CCD data, enrollment/staffing)
+- **Legacy collection:** 2024-25 (preliminary bell schedule work)
+- Federal and state datasets are typically 1-2 years behind current year
+
+**For Bell Schedule Web Searches - Year Preference Order:**
+1. **2025-26** (current year - most likely posted on websites)
+2. **2024-25** (recent year - still commonly available, preferred over 2023-24)
+3. **2023-24** (acceptable - matches primary dataset year)
+
+Schools typically post current and recent year schedules. All three years (2025-26, 2024-25, 2023-24) represent normalized post-COVID operations and can be used interchangeably as proxies for instructional time.
+
+**Example Search Queries:**
+- ✅ "District Name bell schedule 2025-26" (try first - current year)
+- ✅ "District Name bell schedule 2024-25" (try second - recent year)
+- ✅ "District Name bell schedule 2023-24" (try third - acceptable)
+
+**CRITICAL: COVID-Era Data Exclusion**
+**❌ DO NOT USE data from these school years:**
+- **2019-20** (COVID-19 shutdowns began March 2020)
+- **2020-21** (Remote/hybrid learning, abnormal schedules)
+- **2021-22** (Continued disruptions and transitions)
+- **2022-23** (Transitional year, still recovering)
+
+These years do not represent typical instructional time due to pandemic disruptions. If data from 2023-24 and later is unavailable, prefer **2018-19** (pre-COVID) over any COVID-era year.
+
+**Rationale:** Bell schedules are generally stable across years under normal operations. Using recent schedules (2025-26, 2024-25, or 2023-24) as a proxy for 2023-24 instructional time is methodologically sound, while COVID-era schedules would introduce systematic bias toward artificially reduced instructional time.
+
+---
+
 ## What's Been Completed
 
 ### ✅ Infrastructure Setup
@@ -107,6 +144,8 @@ We're implementing Phase 1.5, which enhances basic LCT calculations with actual 
 - `docs/PROJECT_CONTEXT.md` - Mission and background
 - `docs/DATA_SOURCES.md` - Data source catalog
 - `docs/METHODOLOGY.md` - Calculation methodology and limitations
+- `docs/BELL_SCHEDULE_SAMPLING_METHODOLOGY.md` - Bell schedule collection methodology
+- `docs/BELL_SCHEDULE_OPERATIONS_GUIDE.md` - ⭐ Operational procedures, tools, and troubleshooting
 
 ---
 
@@ -249,6 +288,7 @@ python pipelines/full_pipeline.py --year 2023-24 --sample --enrich-bell-schedule
 python infrastructure/scripts/download/fetch_nces_ccd.py --year 2023-24
 
 # Enrich with bell schedules (optional, for top districts)
+# NOTE: For manual enrichment, see docs/BELL_SCHEDULE_OPERATIONS_GUIDE.md
 python infrastructure/scripts/enrich/fetch_bell_schedules.py \
   data/processed/normalized/top_25_districts.csv \
   --tier 1 --year 2023-24
@@ -403,11 +443,26 @@ python infrastructure/scripts/transform/normalize_districts.py \
 2. `docs/METHODOLOGY.md` - Review calculation approach and known limitations
 3. `infrastructure/scripts/README.md` - Comprehensive script documentation
 
+### For Bell Schedule Enrichment ⭐
+1. **`docs/QUICK_REFERENCE_BELL_SCHEDULES.md`** - START HERE for quick reference
+   - One-page cheat sheet with most common commands
+   - Tool priority guidelines (local > remote)
+   - Quick decision trees and checklists
+2. **`docs/BELL_SCHEDULE_OPERATIONS_GUIDE.md`** - Complete operational procedures
+   - Full tool inventory (tesseract, pdftotext, ocrmypdf, etc.)
+   - Step-by-step SOPs for images, PDFs, HTML
+   - Detailed troubleshooting decision trees
+   - Token efficiency best practices
+   - Prevents session stalls by encoding fallback strategies
+3. `docs/BELL_SCHEDULE_SAMPLING_METHODOLOGY.md` - Methodology and sampling approach
+4. `infrastructure/scripts/enrich/fetch_bell_schedules.py` - Automation script
+
 ### For Common Tasks
 - **Add new data source**: Edit `config/data-sources.yaml` and create download script
 - **Update state requirements**: Edit `config/state-requirements.yaml`
 - **Modify LCT calculation**: Edit `infrastructure/scripts/analyze/calculate_lct.py`
 - **Add state-specific normalization**: Edit `infrastructure/scripts/transform/normalize_districts.py`
+- **Manual bell schedule enrichment**: Follow `docs/BELL_SCHEDULE_OPERATIONS_GUIDE.md`
 
 ---
 
@@ -537,23 +592,95 @@ python infrastructure/scripts/analyze/calculate_lct.py input.csv --summary --fil
 ## Project Status
 
 **Current Phase**: Phase 1.5 - Bell Schedule Enrichment Campaign (December 2024)
-**Active Work**: Collecting actual instructional time from top 3 districts per state
-**Progress**:
-- Data optimization complete (88% token reduction via slim files)
-- Wyoming enrichment in progress (1/3 districts completed: Natrona County SD)
-- Target: 133 districts across 48 states + DC
-- Methodology: State-by-state, ascending population order
+**Active Work**: Collecting actual instructional time from U.S. school districts
 
-**Next Milestone**: Complete all-state bell schedule coverage (3 districts × 51 jurisdictions)
-**Timeline**: User-driven, systematic district-by-district enrichment
+### Terminology & Standards
+📖 **IMPORTANT**: See `docs/TERMINOLOGY.md` for standardized vocabulary
+- **Automated enrichment**: Claude-collected via web scraping/PDF extraction
+- **Human-provided**: User manually collected and placed in manual_import_files/
+- **Actual bell schedules**: Real data from schools (counts as enriched) ✓
+- **Statutory fallback**: State minimums only (does NOT count as enriched) ✗
 
-**Data Quality**:
-- 17,309 valid districts with grade-level LCT (88% of 19,637 total)
-- 11 states with actual bell schedule data (31 districts manually enriched pre-campaign)
-- 40 states pending enrichment
+### Current Dataset: 2023-24
+
+**Wyoming Campaign Progress:**
+- ✅ Laramie County SD #1 (13,355 students) - automated enrichment ⭐ NEW
+- ✅ Natrona County SD #1 (12,446 students) - automated enrichment
+- ✅ Campbell County SD #1 (8,571 students) - automated enrichment
+- ✅ Sweetwater County SD #1 (4,842 students) - human-provided data
+- ✅ Albany County SD #1 (3,810 students) - human-provided data
+
+**Total 2023-24 Enriched:** 5 districts with actual bell schedules ✅ **WYOMING COMPLETE**
+- Tracking file: `data/processed/normalized/enrichment_reference.csv`
+- Dataset: 19,637 total districts
+- Enrichment rate: 0.025%
+
+**Data Quality Standards:**
+- ✅ 135 statutory fallback files moved to `tier3_statutory_fallback/` (do NOT count as enriched)
+- ✅ Only actual bell schedules counted in enrichment metrics
+- ✅ Manual follow-up: 0 pending (Wyoming districts resolved)
+
+### Legacy Dataset: 2024-25
+
+**Preliminary Collection:** 29 districts
+- File: `bell_schedules_manual_collection_2024_25.json`
+- Includes:
+  - Top 25 largest: 24/25 collected (missing Memphis-Shelby County TN)
+  - Personal choice: 5/5 complete (San Mateo × 2, Evanston × 2, Pittsburgh × 1)
+- Mix of automated enrichment and human-provided data
+- **Status**: Separate dataset, not tracked in current campaign
+
+### Infrastructure Optimizations (Dec 21, 2025)
+
+**Completed:**
+- ✅ Data optimization (88% token reduction via slim files)
+- ✅ Process optimization (2.15-4.25M token savings)
+- ✅ Lightweight enrichment reference file (90% token reduction per load)
+- ✅ Batch enrichment framework with checkpoint/resume
+- ✅ Real-time progress tracker (`enrichment_progress.py`)
+- ✅ Smart candidate filtering (6,952 high-quality targets identified)
+- ✅ Terminology standardization (`docs/TERMINOLOGY.md`)
+
+### Known Issues to Resolve
+
+1. ~~**Missing district**: Laramie County SD #1 (Wyoming)~~ ✅ **RESOLVED** (Dec 21, 2025)
+   - Successfully enriched using automated web search
+   - Found actual school times: Elementary 400 min, High 355 min
+   - File: `5601980_2023-24.json`
+
+2. **Dataset year alignment**:
+   - 2024-25 collection (29 districts) vs 2023-24 campaign (5 districts)
+   - Different tracking systems
+   - Need to clarify campaign scope
+
+3. **Total enriched count discrepancy**:
+   - Expected: 35 districts (25 top + 5 personal + 5 Wyoming)
+   - Actual: 34 districts (29 in 2024-25 + 5 in 2023-24)
+   - Missing: Memphis-Shelby County Schools (TN) from top 25
+   - Note: Pittsburgh SD is 5th personal choice (user's CMU connection)
+
+### Next Steps
+
+1. **Clarify campaign scope**:
+   - Are we continuing with 2023-24 state-by-state campaign?
+   - Or building on 2024-25 preliminary work?
+   - Update tracking to reflect chosen approach
+
+2. **Resume enrichment work**:
+   - Continue with next state in population order
+   - Use 2025-26 school year in web searches (current year)
+   - Apply optimized batch processing tools
+
+3. **Documentation alignment**:
+   - Ensure all docs use standardized terminology
+   - Update SESSION_HANDOFF.md with accurate status
+   - Create clear "where we are" snapshot
 
 ---
 
 **Last Updated**: December 21, 2025
 **Project Location**: `/Users/ianmmc/Development/learning-connection-time`
-**Status**: Active bell schedule enrichment campaign with optimized data pipeline
+**Status**: Active enrichment campaign - Wyoming complete (5/5), ready for next state
+**Key Additions**:
+- Bell schedule search priority: 2025-26 > 2024-25 > 2023-24
+- **CRITICAL**: COVID-era data exclusion (2019-20 through 2022-23) - use 2018-19 if needed

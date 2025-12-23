@@ -343,6 +343,11 @@ def main():
         action="store_true",
         help="Create separate filtered file with only valid districts (recommended for publication)"
     )
+    parser.add_argument(
+        "--enriched-only",
+        action="store_true",
+        help="Filter to only include districts with actual bell schedules (not statutory fallback)"
+    )
 
     args = parser.parse_args()
     
@@ -358,7 +363,31 @@ def main():
     except Exception as e:
         logger.error(f"Error loading data: {e}")
         return 1
-    
+
+    # Apply enriched-only filter if requested
+    if args.enriched_only:
+        # Check if method columns exist
+        method_cols = [f'minutes_method_{level}' for level in ['elementary', 'middle', 'high']]
+        existing_method_cols = [col for col in method_cols if col in df.columns]
+
+        if existing_method_cols:
+            # Keep only districts where at least one level has actual data (not statutory or default)
+            initial_count = len(df)
+            mask = False
+            for level in ['elementary', 'middle', 'high']:
+                method_col = f'minutes_method_{level}'
+                if method_col in df.columns:
+                    # Include if method is NOT state_statutory and NOT default
+                    mask = mask | ((df[method_col] != 'state_statutory') & (df[method_col] != 'default'))
+
+            df = df[mask].copy()
+            filtered_count = len(df)
+            logger.info(f"  Filtered to {filtered_count:,} districts with actual bell schedules")
+            logger.info(f"  Excluded {initial_count - filtered_count:,} districts with only statutory/default data")
+        else:
+            logger.warning("  --enriched-only requested but no method columns found in data")
+            logger.warning("  Proceeding with all districts")
+
     # Load state requirements
     if args.state_config:
         config_path = args.state_config
@@ -526,7 +555,32 @@ def main():
                 f.write("  4. instructional_staff <= enrollment\n\n")
 
                 f.write("Invalid districts are excluded from publication-ready outputs\n")
-                f.write("but retained in the complete dataset for future reference.\n")
+                f.write("but retained in the complete dataset for future reference.\n\n")
+
+            # Add enrichment quality summary if method columns exist
+            has_enrichment_data = any(
+                f'minutes_method_{level}' in df.columns
+                for level in ['elementary', 'middle', 'high']
+            )
+
+            if has_enrichment_data:
+                f.write("="*60 + "\n")
+                f.write("ENRICHMENT QUALITY SUMMARY\n")
+                f.write("="*60 + "\n\n")
+                f.write("Data source breakdown by grade level:\n\n")
+
+                for level in ['elementary', 'middle', 'high']:
+                    method_col = f'minutes_method_{level}'
+                    if method_col in df.columns:
+                        f.write(f"{level.capitalize()}:\n")
+                        counts = df[method_col].value_counts()
+                        for method, count in counts.items():
+                            pct = (count / len(df)) * 100
+                            f.write(f"  {method}: {count:,} ({pct:.1f}%)\n")
+                        f.write("\n")
+
+                f.write("Note: 'state_statutory' = statutory minimum requirements\n")
+                f.write("      Other methods = actual bell schedules (enriched data)\n")
 
         logger.info(f"✓ Validation report saved to: {validation_report}")
     
