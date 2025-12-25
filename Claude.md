@@ -62,8 +62,16 @@ Schools typically post current and recent year schedules. All three years (2025-
 
 **Example Search Queries:**
 - ✅ "District Name bell schedule 2025-26" (try first - current year)
-- ✅ "District Name bell schedule 2024-25" (try second - recent year)
-- ✅ "District Name bell schedule 2023-24" (try third - acceptable)
+- ✅ "District Name daily schedule school day 2025-26" (alternative terms)
+- ✅ "District Name start end times dismissal arrival 2025-26" (time-focused)
+- ✅ "District Name bell schedule 2024-25" (fallback to prior year)
+- ✅ "District Name bell schedule 2023-24" (last resort - acceptable)
+
+**Effective Search Terms:**
+Districts use varying terminology. Include multiple terms to maximize discovery:
+- **Schedule terms:** "bell schedule", "daily schedule", "school day"
+- **Time terms:** "start time", "end time", "dismissal time", "arrival time", "dismissal", "start", "end"
+- **Combined:** Use multiple terms in one search for better results
 
 **CRITICAL: COVID-Era Data Exclusion**
 **❌ DO NOT USE data from these school years:**

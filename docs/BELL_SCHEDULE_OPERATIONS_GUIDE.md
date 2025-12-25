@@ -38,6 +38,54 @@ This operational guide provides step-by-step procedures, troubleshooting routine
 
 ---
 
+## Search Strategy Best Practices
+
+### Current School Year Awareness
+
+**CRITICAL: Always search for the CURRENT school year first**
+
+As of December 2024, the current school year is **2025-26** (Fall 2025 - Spring 2026).
+
+**Search Year Priority:**
+1. **2025-26** (current year) - Try FIRST
+2. **2024-25** (prior year) - Acceptable fallback
+3. **2023-24** (two years old) - Last resort, still valid for post-COVID data
+
+**❌ NEVER search for COVID-era years:** 2019-20, 2020-21, 2021-22, 2022-23
+
+### Effective Search Terms
+
+Use a variety of search terms to maximize discovery. Schools use different terminology:
+
+**Primary Terms:**
+- "bell schedule" - Most common official term
+- "daily schedule" - Alternative phrasing
+- "school day" - Broader term that often includes times
+
+**Time-Related Terms:**
+- "start time" / "start times"
+- "end time" / "dismissal time"
+- "arrival time"
+- "dismissal"
+
+**Example Search Patterns:**
+```
+Good: "[District Name] bell schedule 2025-26"
+Good: "[District Name] daily schedule 2025-26"
+Good: "[District Name] school start end times 2025-26"
+Good: "[School Name] bell schedule arrival dismissal"
+
+Avoid: "[District Name] bell schedule 2024-25"  # Unless 2025-26 fails
+```
+
+**Multi-Term Strategy:**
+If initial search doesn't find results, try combinations:
+- "bell schedule" + "school day"
+- "daily schedule" + "start" + "dismissal"
+- "[School Name]" + "arrival" + "end time"
+
+---
+
 ## Standard Operating Procedures
 
 ### SOP 1: Bell Schedule Discovery
@@ -45,10 +93,16 @@ This operational guide provides step-by-step procedures, troubleshooting routine
 **Objective:** Find bell schedule information for a district
 
 **Steps:**
-1. **Web Search** for district bell schedule
+1. **Web Search** for district bell schedule (use current school year 2025-26)
    ```
-   WebSearch("[District Name] bell schedule [year]")
-   WebSearch("[District Name] [School Name] daily schedule")
+   WebSearch("[District Name] bell schedule 2025-26")
+   WebSearch("[District Name] daily schedule school day 2025-26")
+   WebSearch("[District Name] start end times dismissal 2025-26")
+   ```
+
+   If no results, try prior year:
+   ```
+   WebSearch("[District Name] bell schedule 2024-25")
    ```
 
 2. **Evaluate Results** - Look for:
