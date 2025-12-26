@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Data files (large)
+data/raw/
+data/processed/
+data/enriched/bell-schedules/*.json
+
+# Outputs
+outputs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Environment
+.env
+!.env.example
+
+# Documentation
+docs/
+
+# Notebooks
+notebooks/

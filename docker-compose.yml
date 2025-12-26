@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: lct_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-learning_connection_time}
+      POSTGRES_USER: ${POSTGRES_USER:-lct_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lct_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./infrastructure/database/docker/backup:/backup
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lct_user} -d ${POSTGRES_DB:-learning_connection_time}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  default:
+    name: lct_network

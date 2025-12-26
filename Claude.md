@@ -136,6 +136,18 @@ These years do not represent typical instructional time due to pandemic disrupti
 - **Preserves**: All original raw files in `data/raw/` for future needs
 - **Scripts updated**: Extraction scripts document slim file usage
 
+### ✅ PostgreSQL Database Infrastructure (December 2025) ⭐ NEW
+- **Database**: PostgreSQL 16 (via Homebrew)
+- **ORM**: SQLAlchemy with declarative models
+- **Tables**: districts (17,842), state_requirements (50), bell_schedules (214), lct_calculations, data_lineage
+- **Benefits**:
+  - Query specific data vs. loading entire files (token efficiency)
+  - Data integrity constraints (foreign keys, check constraints)
+  - JSONB for flexible nested data (schools_sampled, source_urls)
+  - Same engine locally and in production (Supabase-ready)
+- **Location**: `infrastructure/database/`
+- **Setup**: See `docs/DATABASE_SETUP.md`
+
 ### ✅ Supporting Infrastructure
 - **Utilities**: `infrastructure/utilities/common.py` - Shared functions for state standardization, safe math, validation
 - **Pipeline**: `pipelines/full_pipeline.py` - End-to-end orchestration
@@ -154,6 +166,8 @@ These years do not represent typical instructional time due to pandemic disrupti
 - `docs/METHODOLOGY.md` - Calculation methodology and limitations
 - `docs/BELL_SCHEDULE_SAMPLING_METHODOLOGY.md` - Bell schedule collection methodology
 - `docs/BELL_SCHEDULE_OPERATIONS_GUIDE.md` - ⭐ Operational procedures, tools, and troubleshooting
+- `docs/DATABASE_SETUP.md` - ⭐ NEW PostgreSQL setup and usage guide
+- `docs/DATABASE_MIGRATION_NOTES.md` - ⭐ NEW Migration working notes
 
 ---
 
@@ -201,6 +215,13 @@ learning-connection-time/
 │   └── analysis-reports/          # Research findings
 │
 ├── infrastructure/
+│   ├── database/                  # PostgreSQL infrastructure ⭐ NEW
+│   │   ├── schema.sql            # Database DDL
+│   │   ├── models.py             # SQLAlchemy ORM models
+│   │   ├── connection.py         # Connection utilities
+│   │   ├── queries.py            # High-level query functions
+│   │   ├── export_json.py        # JSON export utility
+│   │   └── migrations/           # Data migration scripts
 │   ├── scripts/
 │   │   ├── download/              # Data acquisition
 │   │   ├── enrich/                # Data enrichment (bell schedules)
@@ -471,6 +492,8 @@ python infrastructure/scripts/transform/normalize_districts.py \
 - **Modify LCT calculation**: Edit `infrastructure/scripts/analyze/calculate_lct.py`
 - **Add state-specific normalization**: Edit `infrastructure/scripts/transform/normalize_districts.py`
 - **Manual bell schedule enrichment**: Follow `docs/BELL_SCHEDULE_OPERATIONS_GUIDE.md`
+- **Query database**: Use functions in `infrastructure/database/queries.py`
+- **Export database to JSON**: Run `python infrastructure/database/export_json.py`
 
 ---
 
@@ -519,10 +542,13 @@ This is part of "Reducing the Ratio" initiative to advance educational equity di
 - **pytest**: Testing
 - **jupyter**: Exploratory analysis
 
-### Optional Tools
-- **PostgreSQL**: For complex queries (not yet implemented)
+### Database Stack ⭐ NEW
+- **PostgreSQL 16**: Primary data store (via Homebrew)
+- **SQLAlchemy**: ORM with declarative models
+- **psycopg2**: PostgreSQL adapter
+
+### Visualization Tools
 - **Plotly/Matplotlib**: Visualizations
-- **SQLAlchemy**: Database abstraction
 
 ---
 
@@ -567,6 +593,26 @@ python infrastructure/scripts/transform/normalize_districts.py input.csv --sourc
 python infrastructure/scripts/analyze/calculate_lct.py input.csv --summary --filter-invalid
 ```
 
+### Database Operations ⭐ NEW
+```bash
+# Check database status
+psql -d learning_connection_time -c "SELECT COUNT(*) FROM districts;"
+
+# Re-import all data
+python infrastructure/database/migrations/import_all_data.py
+
+# Export to JSON (for sharing/backup)
+python infrastructure/database/export_json.py
+
+# Query enrichment status (Python)
+python -c "
+from infrastructure.database.connection import session_scope
+from infrastructure.database.queries import print_enrichment_report
+with session_scope() as session:
+    print_enrichment_report(session)
+"
+```
+
 ---
 
 ## Troubleshooting
@@ -609,36 +655,42 @@ python infrastructure/scripts/analyze/calculate_lct.py input.csv --summary --fil
 - **Actual bell schedules**: Real data from schools (counts as enriched) ✓
 - **Statutory fallback**: State minimums only (does NOT count as enriched) ✗
 
-### Current Dataset: 2023-24
+### Current Dataset: 2024-25
 
-**Wyoming Campaign Progress:**
-- ✅ Laramie County SD #1 (13,355 students) - automated enrichment ⭐ NEW
-- ✅ Natrona County SD #1 (12,446 students) - automated enrichment
-- ✅ Campbell County SD #1 (8,571 students) - automated enrichment
-- ✅ Sweetwater County SD #1 (4,842 students) - human-provided data
-- ✅ Albany County SD #1 (3,810 students) - human-provided data
+**Total Enriched: 77 districts** ✅ (as of December 25, 2025)
+- **Primary Storage**: PostgreSQL database (learning_connection_time) ⭐ NEW
+- **Backup/Export**: `data/enriched/bell-schedules/bell_schedules_manual_collection_2024_25.json`
+- Dataset: 17,842 districts in database
+- Enrichment rate: 0.43% (73 with 2024-25 schedules)
 
-**Total 2023-24 Enriched:** 5 districts with actual bell schedules ✅ **WYOMING COMPLETE**
-- Tracking file: `data/processed/normalized/enrichment_reference.csv`
-- Dataset: 19,637 total districts
-- Enrichment rate: 0.025%
+**Enrichment Breakdown by Collection Method:**
+- **Automated enrichment campaign**: Majority of districts collected via web scraping/PDF extraction
+- **Manual imports**: User-provided bell schedules from various sources
+- **Top 25 largest districts**: 25/25 collected (100% complete) ✅
+  - Includes Memphis-Shelby County TN (district ID 4700148)
+- **Personal choice**: San Mateo × 2, Evanston × 2, Pittsburgh
+- **State campaigns**: Wyoming, Montana (K-8/9-12 splits), South Dakota, Delaware, Connecticut, Iowa
+
+**States Represented:** 26 states ✅
+- **Northeast**: CT (3), DE (3), MD (3), PA (2), VT (3)
+- **Southeast**: AL (3), FL (7), GA (3), NC (2), TN (1), VA (1)
+- **Midwest**: IA (3), IL (3), ND (3), SD (3)
+- **West**: AK (3), AZ (3), CA (7), CO (3), HI (1), MT (6), NV (1), TX (3)
+- **Other**: DC (3), PR (1)
 
 **Data Quality Standards:**
-- ✅ 135 statutory fallback files moved to `tier3_statutory_fallback/` (do NOT count as enriched)
 - ✅ Only actual bell schedules counted in enrichment metrics
-- ✅ Manual follow-up: 0 pending (Wyoming districts resolved)
+- ✅ All files use standardized JSON schema with elementary/middle/high breakdowns
+- ✅ Source attribution in every file (method: automated_enrichment or human_provided)
 
-### Legacy Dataset: 2024-25
+### Legacy Dataset: 2023-24
 
-**Preliminary Collection:** 29 districts
-- File: `bell_schedules_manual_collection_2024_25.json`
-- Includes:
-  - Top 25 largest: 24/25 collected (missing Memphis-Shelby County TN)
-  - Personal choice: 5/5 complete (San Mateo × 2, Evanston × 2, Pittsburgh × 1)
-- Mix of automated enrichment and human-provided data
-- **Status**: Separate dataset, not tracked in current campaign
+**Wyoming Campaign:** 5 districts (separate tracking)
+- Tracking file: `data/processed/normalized/enrichment_reference.csv`
+- Note: 135 statutory fallback files excluded from counts (moved to tier3_statutory_fallback/)
+- **Status**: Complete, archived dataset
 
-### Infrastructure Optimizations (Dec 21, 2025)
+### Infrastructure Optimizations (Dec 21-25, 2025)
 
 **Completed:**
 - ✅ Data optimization (88% token reduction via slim files)
@@ -648,47 +700,56 @@ python infrastructure/scripts/analyze/calculate_lct.py input.csv --summary --fil
 - ✅ Real-time progress tracker (`enrichment_progress.py`)
 - ✅ Smart candidate filtering (6,952 high-quality targets identified)
 - ✅ Terminology standardization (`docs/TERMINOLOGY.md`)
+- ✅ **PostgreSQL database migration** (Dec 25, 2025) ⭐ NEW
+  - Migrated from JSON files to PostgreSQL 16
+  - 17,842 districts, 50 state requirements, 214 bell schedules
+  - Query utilities for token-efficient data access
+  - JSON export for backward compatibility
 
-### Known Issues to Resolve
+### Known Limitations
 
-1. ~~**Missing district**: Laramie County SD #1 (Wyoming)~~ ✅ **RESOLVED** (Dec 21, 2025)
-   - Successfully enriched using automated web search
-   - Found actual school times: Elementary 400 min, High 355 min
-   - File: `5601980_2023-24.json`
+1. ~~**Consolidated file size**: 41,624+ tokens~~ ✅ **RESOLVED** via PostgreSQL
+   - Data now queried from database instead of loading full JSON
+   - Export utility maintains backward compatibility
 
-2. **Dataset year alignment**:
-   - 2024-25 collection (29 districts) vs 2023-24 campaign (5 districts)
-   - Different tracking systems
-   - Need to clarify campaign scope
+2. **Coverage**: 77 of 17,842 U.S. districts (0.43%)
+   - Focused on largest districts and strategic sampling
+   - Sufficient for initial equity analysis and methodology validation
 
-3. **Total enriched count discrepancy**:
-   - Expected: 35 districts (25 top + 5 personal + 5 Wyoming)
-   - Actual: 34 districts (29 in 2024-25 + 5 in 2023-24)
-   - Missing: Memphis-Shelby County Schools (TN) from top 25
-   - Note: Pittsburgh SD is 5th personal choice (user's CMU connection)
+### Campaign Strategy Notes
 
-### Next Steps
+**Current Approach**: Database-driven workflow ⭐ UPDATED
+- Query unenriched districts: `get_unenriched_districts(session, min_enrollment=10000)`
+- Collect bell schedule data from district/school websites
+- Add to database: `add_bell_schedule(session, district_id, year, grade_level, ...)`
+- Export to JSON for sharing: `python infrastructure/database/export_json.py`
 
-1. **Clarify campaign scope**:
-   - Are we continuing with 2023-24 state-by-state campaign?
-   - Or building on 2024-25 preliminary work?
-   - Update tracking to reflect chosen approach
+**Legacy Approach** (still supported):
+- User provides files in `data/raw/manual_import_files/{State}/{District Name (STATE)}/`
+- Process using `infrastructure/scripts/utilities/batch_convert.py` for PDFs/HTML
+- Create individual JSON files: `{district_id}_2024-25.json`
 
-2. **Resume enrichment work**:
-   - Continue with next state in population order
-   - Use 2025-26 school year in web searches (current year)
-   - Apply optimized batch processing tools
-
-3. **Documentation alignment**:
-   - Ensure all docs use standardized terminology
-   - Update SESSION_HANDOFF.md with accurate status
-   - Create clear "where we are" snapshot
+**Future Expansion Options**:
+1. Expand coverage in existing 26 states (add more districts per state)
+2. Target underrepresented regions (e.g., more Southern and Mountain states)
+3. Fill out remaining large districts (100-200 range)
+4. Systematic state-by-state completion for policy impact
 
 ---
 
-**Last Updated**: December 21, 2025
+**Last Updated**: December 25, 2025
 **Project Location**: `/Users/ianmmc/Development/learning-connection-time`
-**Status**: Active enrichment campaign - Wyoming complete (5/5), ready for next state
+**Status**: Active enrichment campaign - State-by-state coverage expansion ✅
+**Primary Data Store**: PostgreSQL database (learning_connection_time) ⭐ NEW
+**Dataset**: Mixed (2023-24 legacy + 2024-25 current)
+**Milestones**:
+- ✅ Top 25 largest districts: 100% complete (25/25)
+- ✅ PostgreSQL database migration complete (Dec 25, 2025)
+- ✅ Wyoming legacy data migrated (5 districts, 15 schedules from 2023-24)
+- ✅ 20 states with ≥3 enriched districts
+- ✅ 79 total enriched districts across 26 states
 **Key Additions**:
 - Bell schedule search priority: 2025-26 > 2024-25 > 2023-24
 - **CRITICAL**: COVID-era data exclusion (2019-20 through 2022-23) - use 2018-19 if needed
+- **Data access**: Query database via `infrastructure/database/queries.py` for token efficiency
+- **State tracking**: `data/processed/normalized/state_enrichment_tracking.csv`

@@ -104,6 +104,9 @@ outputs/*
 *.db
 *.sqlite
 
+# Docker
+postgres_data/
+
 # Testing
 .pytest_cache/
 .coverage
