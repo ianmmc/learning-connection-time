@@ -84,6 +84,166 @@ If initial search doesn't find results, try combinations:
 - "daily schedule" + "start" + "dismissal"
 - "[School Name]" + "arrival" + "end time"
 
+### Using Gemini for Research Assistance
+
+**Purpose:** Leverage Google Gemini (via MCP) to accelerate discovery of bell schedule resources
+
+**Available Tool:** `mcp__gemini__gemini-query`
+
+**What Gemini is Good For:**
+- ✅ Identifying potential web pages, PDFs, and .docx files that might contain schedules
+- ✅ Understanding district structure (elementary/middle/high schools)
+- ✅ Suggesting search strategies for difficult-to-find districts
+- ✅ Recognizing general schedule patterns (e.g., "elementary typically 9am-3pm")
+
+**What Gemini is NOT Authoritative For:**
+- ❌ Specific start and end times (MUST verify with actual sources)
+- ❌ URLs (often outdated or incorrect - verify with WebSearch/WebFetch)
+- ❌ Exact instructional minutes
+- ❌ Current year schedules (may provide older data)
+
+**Recommended Workflow:**
+```
+1. Use Gemini for initial research and discovery
+   → "What are the schools in [District Name]?"
+   → "Where might I find bell schedules for [District Name]?"
+
+2. Verify URLs with WebSearch
+   → Find actual current URLs, not Gemini's suggestions
+
+3. Fetch and extract with WebFetch or local tools
+   → Get authoritative data from verified sources
+
+4. Insert verified data into database
+   → Only use data extracted from actual district sources
+```
+
+**Token Efficiency Note:** Use Gemini when it saves tokens by reducing blind searching. Skip it when direct searches are faster (e.g., obvious district website patterns).
+
+**Example:**
+```
+Good: Use Gemini to identify which schools to sample in a large district
+Bad:  Trust Gemini's provided start/end times without verification
+```
+
+---
+
+## District Accessibility Patterns ⭐ EMPIRICAL INSIGHTS
+
+Based on analysis of 15+ state enrichment campaigns (December 2025), certain patterns predict enrichment success.
+
+### Characteristics of Successfully Enriched Districts
+
+Districts that tend to have accessible bell schedules:
+
+| Pattern | Indicator | Example |
+|---------|-----------|---------|
+| **Dedicated bell schedule page** | URL contains "bell-schedule" or "school-hours" | `/about-us/bell-schedule` |
+| **District-wide policies** | Single authoritative schedule for all schools | "All elementary schools: 8:00-3:00" |
+| **Modern website infrastructure** | Recent site updates (2024-2025) | Copyright shows current year |
+| **Consistent URL patterns** | Predictable school subdomain structure | `{school}.district.org/schedules` |
+| **Multiple data sources** | District + individual school confirmation | Cross-reference available |
+| **PDF handbooks available** | Parent handbooks with schedule sections | Direct download links |
+
+### Characteristics of Blocked/Inaccessible Districts
+
+Districts that typically require manual follow-up:
+
+| Pattern | Indicator | Action |
+|---------|-----------|--------|
+| **Aggressive WAF/Cloudflare** | 403 errors on all pages | Add to manual follow-up immediately |
+| **Large page sizes** | Pages >100KB that timeout | Add to manual follow-up |
+| **Extensive 404 errors** | 4+ broken schedule links | Add to manual follow-up |
+| **Outdated websites** | Last update 2022 or earlier | Try 2-3 pages, then manual follow-up |
+| **JavaScript-only content** | Schedule in dynamic widgets | Add to manual follow-up |
+| **Login-required sections** | "Parent Portal" for schedules | Add to manual follow-up |
+
+### Success Rate by District Rank
+
+Empirical data from Idaho, Nebraska, Mississippi, Kansas campaigns:
+
+| Rank | Success Rate | Notes |
+|------|--------------|-------|
+| 1 | ~40% | Largest districts often have complex infrastructure |
+| 2 | ~45% | Still large, similar challenges |
+| 3 | ~50% | Moderate complexity |
+| 4-5 | ~80% | Sweet spot - enough resources for good websites |
+| 6-7 | ~85% | Smaller, simpler infrastructure |
+| 8-9 | ~80% | May have less web presence |
+
+**Key insight:** Districts ranked 4-9 have an ~83% success rate vs ~44% for ranks 1-3. The expanded candidate pool (Option A) leverages this pattern.
+
+### Pre-Screening Recommendations
+
+Before attempting enrichment, quick indicators of likely success:
+
+**Positive signals (try this district):**
+- ✅ Search results show dedicated schedule pages
+- ✅ District website is `.org` or `.k12.XX.us`
+- ✅ Multiple schools have consistent URL patterns
+- ✅ Search results include PDF documents
+
+**Warning signals (may need manual follow-up):**
+- ⚠️ No schedule pages in search results
+- ⚠️ Cloudflare or "Security Check" in search snippets
+- ⚠️ Only results from third-party sites (GreatSchools, Niche)
+- ⚠️ All results are 2+ years old
+
+### Notable Schedule Patterns Discovered
+
+During enrichment campaigns, several interesting patterns emerged:
+
+| Pattern | States/Districts | Notes |
+|---------|------------------|-------|
+| **Four-day school week** | ID (Nampa), rural districts | Mon-Thu, longer days |
+| **Three-tier bell schedules** | KS (Olathe) | Bus efficiency, staggered starts |
+| **A/B rotating blocks** | MS (Madison County, Rosa Scott HS) | 94-min blocks, alternate days |
+| **Wednesday modified** | KS (Wichita), NE (various) | Early release or "Ace Day" |
+| **Multi-zone districts** | MS (Rankin County) | 8 different schedule zones |
+| **Early high school start** | KS (Olathe, Shawnee Mission) | 7:40 AM high school |
+
+These patterns should be documented in notes fields when encountered.
+
+---
+
+## Quality Metrics Tracking
+
+### Per-District Metrics
+
+Track for each enrichment attempt:
+
+| Metric | Description | Target |
+|--------|-------------|--------|
+| Tool calls | WebSearch + WebFetch count | ≤4 per success |
+| Token usage | Approximate tokens consumed | ≤2,500 per success |
+| Time to success | Attempts before success | ≤3 attempts |
+| Data completeness | All three grade levels found | 100% |
+| Source quality | Verified vs estimated data | "high" confidence |
+
+### Per-State Metrics
+
+Track for each state:
+
+| Metric | Description | Target |
+|--------|-------------|--------|
+| Completion rate | Districts successfully enriched / 9 attempted | ≥33% (3/9) |
+| Manual follow-ups | Districts marked for manual | ≤6 per state |
+| Total attempts | Districts tried before reaching 3 | ≤6 average |
+| Session efficiency | Tokens per completed state | ≤15K tokens |
+
+### Cumulative Metrics
+
+Track across campaign:
+
+| Metric | Current Value | Notes |
+|--------|---------------|-------|
+| States completed (≥3) | 25/55 | 45% of states/territories |
+| Total enriched districts | 104 | 0.58% of 17,842 |
+| Total bell schedules | 296 | ~3 per district average |
+| Manual follow-up queue | 6 districts | Ready for human collection |
+| Success rate (ranks 1-3) | ~44% | Historical average |
+| Success rate (ranks 4-9) | ~83% | Historical average |
+
 ---
 
 ## Standard Operating Procedures
@@ -704,6 +864,19 @@ This is a living document. Update it when:
 
 ## Version History
 
+### Version 1.2 - December 26, 2025
+**Status:** Empirical insights and metrics update
+
+**Changes:**
+- Added "District Accessibility Patterns" section with empirical insights from 15+ state campaigns
+- Documented success rate by district rank (ranks 1-3: ~44%, ranks 4-9: ~83%)
+- Added pre-screening recommendations for predicting enrichment success
+- Documented notable schedule patterns (four-day weeks, A/B blocks, three-tier systems)
+- Added "Quality Metrics Tracking" section for per-district, per-state, and cumulative metrics
+- Updated cumulative metrics (25 states completed, 104 districts, 296 schedules)
+
+**Reason:** Analysis of Idaho, Nebraska, Mississippi, Kansas second-pass campaigns revealed clear patterns in district accessibility. These insights inform the expanded candidate pool strategy (Option A) and help predict which districts will succeed.
+
 ### Version 1.1 - December 21, 2024
 **Status:** Safeguards update
 
@@ -734,7 +907,7 @@ This is a living document. Update it when:
 
 ---
 
-**Last Updated:** December 21, 2024
+**Last Updated:** December 26, 2025
 **Status:** Active operational guide
 **Maintained by:** Project development sessions
 **Review Frequency:** After each major enrichment campaign milestone

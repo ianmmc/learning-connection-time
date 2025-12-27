@@ -543,7 +543,8 @@ This is part of "Reducing the Ratio" initiative to advance educational equity di
 - **jupyter**: Exploratory analysis
 
 ### Database Stack ⭐ NEW
-- **PostgreSQL 16**: Primary data store (via Homebrew)
+- **PostgreSQL 16**: Primary data store (Docker containerized)
+- **Docker Compose**: Container orchestration
 - **SQLAlchemy**: ORM with declarative models
 - **psycopg2**: PostgreSQL adapter
 
@@ -655,28 +656,29 @@ with session_scope() as session:
 - **Actual bell schedules**: Real data from schools (counts as enriched) ✓
 - **Statutory fallback**: State minimums only (does NOT count as enriched) ✗
 
-### Current Dataset: 2024-25
+### Current Dataset: 2024-25 + 2025-26
 
-**Total Enriched: 77 districts** ✅ (as of December 25, 2025)
-- **Primary Storage**: PostgreSQL database (learning_connection_time) ⭐ NEW
+**Total Enriched: 128 districts** ✅ (as of December 26, 2025)
+- **Primary Storage**: PostgreSQL database (learning_connection_time) ⭐ Docker containerized
 - **Backup/Export**: `data/enriched/bell-schedules/bell_schedules_manual_collection_2024_25.json`
 - Dataset: 17,842 districts in database
-- Enrichment rate: 0.43% (73 with 2024-25 schedules)
+- Enrichment rate: 0.72% (128 enriched districts)
 
 **Enrichment Breakdown by Collection Method:**
-- **Automated enrichment campaign**: Majority of districts collected via web scraping/PDF extraction
+- **State-by-state campaign**: Systematic enrichment following Option A protocol (Dec 2025+)
+- **Automated enrichment campaign**: Web scraping/PDF extraction for largest districts
 - **Manual imports**: User-provided bell schedules from various sources
 - **Top 25 largest districts**: 25/25 collected (100% complete) ✅
   - Includes Memphis-Shelby County TN (district ID 4700148)
 - **Personal choice**: San Mateo × 2, Evanston × 2, Pittsburgh
-- **State campaigns**: Wyoming, Montana (K-8/9-12 splits), South Dakota, Delaware, Connecticut, Iowa
+- **State campaigns**: 35 states with ≥3 districts each
 
-**States Represented:** 26 states ✅
-- **Northeast**: CT (3), DE (3), MD (3), PA (2), VT (3)
-- **Southeast**: AL (3), FL (7), GA (3), NC (2), TN (1), VA (1)
-- **Midwest**: IA (3), IL (3), ND (3), SD (3)
-- **West**: AK (3), AZ (3), CA (7), CO (3), HI (1), MT (6), NV (1), TX (3)
-- **Other**: DC (3), PR (1)
+**States Represented:** 43 states/territories ✅
+- **Northeast** (8): CT (3), DE (3), MD (3), NH (3), PA (2), RI (3), VT (3), ME (1)
+- **Southeast** (8): AL (3), AR (3), FL (7), GA (3), KY (3), LA (3), NC (2), SC (3), TN (1), VA (1)
+- **Midwest** (13): IA (3), IL (3), KS (3), MN (3), MS (3), ND (3), NE (3), OK (3), SD (3), WI (3)
+- **West** (13): AK (3), AZ (3), CA (7), CO (3), HI (1), ID (3), MT (5), NM (3), NV (1), OR (3), TX (4), UT (3), WY (5)
+- **Other** (2): DC (3), PR (1)
 
 **Data Quality Standards:**
 - ✅ Only actual bell schedules counted in enrichment metrics
@@ -701,10 +703,15 @@ with session_scope() as session:
 - ✅ Smart candidate filtering (6,952 high-quality targets identified)
 - ✅ Terminology standardization (`docs/TERMINOLOGY.md`)
 - ✅ **PostgreSQL database migration** (Dec 25, 2025) ⭐ NEW
-  - Migrated from JSON files to PostgreSQL 16
-  - 17,842 districts, 50 state requirements, 214 bell schedules
+  - Migrated from JSON files to PostgreSQL 16 (Docker containerized)
+  - 17,842 districts, 50 state requirements, 384 bell schedules (128 districts)
   - Query utilities for token-efficient data access
   - JSON export for backward compatibility
+- ✅ **Docker containerization** (Dec 25, 2025)
+  - PostgreSQL running in Docker container for portability
+  - `docker-compose up -d` for instant setup
+  - Persistent volumes for data safety
+  - Same environment local → production (Supabase-ready)
 
 ### Known Limitations
 
@@ -712,17 +719,68 @@ with session_scope() as session:
    - Data now queried from database instead of loading full JSON
    - Export utility maintains backward compatibility
 
-2. **Coverage**: 77 of 17,842 U.S. districts (0.43%)
-   - Focused on largest districts and strategic sampling
-   - Sufficient for initial equity analysis and methodology validation
+2. **Coverage**: 128 of 17,842 U.S. districts (0.72%)
+   - 35 states with ≥3 districts (64% state coverage)
+   - 43 states/territories represented
+   - Focused on largest districts and strategic state-by-state sampling
+   - Sufficient for robust equity analysis and methodology validation
 
 ### Campaign Strategy Notes
 
-**Current Approach**: Database-driven workflow ⭐ UPDATED
-- Query unenriched districts: `get_unenriched_districts(session, min_enrollment=10000)`
-- Collect bell schedule data from district/school websites
-- Add to database: `add_bell_schedule(session, district_id, year, grade_level, ...)`
-- Export to JSON for sharing: `python infrastructure/database/export_json.py`
+**Current Approach**: State-by-state enrichment with expanded candidate pool ⭐ UPDATED Dec 26, 2025
+
+**Standard Operating Procedure (Option A):**
+1. Process states in **ascending enrollment order** (from `state_enrichment_tracking.csv`)
+2. For each state, query districts **ranked 1-9 by enrollment**
+3. Attempt enrichment in rank order
+4. **Stop when 3 successful** enrichments achieved
+5. Mark any failed attempts for manual follow-up (`manual_followup_needed.json`)
+6. Move to next state
+
+**Why This Works:**
+- First pass (ranks 1-3): ~44% success rate
+- Expanded pool (ranks 4-9): ~83% success rate
+- Combined (ranks 1-9): ~90% state completion in single pass
+- Avoids context-switching overhead of revisiting states
+- Token-efficient: single session per state in most cases
+
+**Database Queries:**
+```sql
+-- Get districts ranked 1-9 by enrollment for a state
+SELECT nces_id, name, enrollment
+FROM districts
+WHERE state = 'XX'
+ORDER BY enrollment DESC
+LIMIT 9;
+```
+
+**Python Workflow:**
+```python
+from infrastructure.database.connection import session_scope
+from infrastructure.database.queries import add_bell_schedule
+
+with session_scope() as session:
+    add_bell_schedule(
+        session,
+        district_id="XXXXXXX",
+        year="2025-26",
+        grade_level="elementary",
+        instructional_minutes=360,
+        start_time="8:00 AM",
+        end_time="3:00 PM",
+        lunch_duration=30,
+        method="web_scraping",
+        confidence="high",
+        schools_sampled=["School A", "School B"],
+        source_urls=["https://..."],
+        notes="District-wide schedule"
+    )
+```
+
+**Evaluation Checkpoints:**
+- Review progress every 5-10 states
+- Track success rates by state and rank
+- Adjust strategy if patterns emerge
 
 **Legacy Approach** (still supported):
 - User provides files in `data/raw/manual_import_files/{State}/{District Name (STATE)}/`
@@ -730,26 +788,30 @@ with session_scope() as session:
 - Create individual JSON files: `{district_id}_2024-25.json`
 
 **Future Expansion Options**:
-1. Expand coverage in existing 26 states (add more districts per state)
-2. Target underrepresented regions (e.g., more Southern and Mountain states)
-3. Fill out remaining large districts (100-200 range)
-4. Systematic state-by-state completion for policy impact
+1. Continue state-by-state completion (current priority)
+2. Target underrepresented regions as coverage expands
+3. Manual follow-up for blocked districts after campaign completes
+4. Systematic national coverage for policy impact
 
 ---
 
-**Last Updated**: December 25, 2025
+**Last Updated**: December 26, 2025
 **Project Location**: `/Users/ianmmc/Development/learning-connection-time`
 **Status**: Active enrichment campaign - State-by-state coverage expansion ✅
 **Primary Data Store**: PostgreSQL database (learning_connection_time) ⭐ NEW
-**Dataset**: Mixed (2023-24 legacy + 2024-25 current)
+**Dataset**: Mixed (2023-24 legacy + 2024-25 + 2025-26 current campaign)
 **Milestones**:
 - ✅ Top 25 largest districts: 100% complete (25/25)
 - ✅ PostgreSQL database migration complete (Dec 25, 2025)
+- ✅ Docker containerization complete (Dec 25, 2025)
 - ✅ Wyoming legacy data migrated (5 districts, 15 schedules from 2023-24)
-- ✅ 20 states with ≥3 enriched districts
-- ✅ 79 total enriched districts across 26 states
+- ✅ **35 states with ≥3 enriched districts** (64% of 55 states/territories) - as of Dec 26, 2025
+- ✅ **128 total enriched districts** across 43 states/territories (0.72% of 17,842)
+- ✅ **Option A process adopted** (Dec 26, 2025) - attempt ranks 1-9 per state, stop at 3 successful
+- ✅ **South Carolina, Wisconsin, Minnesota campaigns complete** (Dec 26, 2025) - 9 districts enriched
 **Key Additions**:
 - Bell schedule search priority: 2025-26 > 2024-25 > 2023-24
 - **CRITICAL**: COVID-era data exclusion (2019-20 through 2022-23) - use 2018-19 if needed
 - **Data access**: Query database via `infrastructure/database/queries.py` for token efficiency
 - **State tracking**: `data/processed/normalized/state_enrichment_tracking.csv`
+- **Standard process**: Query ranks 1-9 per state, stop at 3 successful enrichments

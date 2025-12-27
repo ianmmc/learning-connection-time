@@ -14,6 +14,88 @@ Different quality tiers are used based on district size and resources available:
 | **Tier 2** | Automated search with fallback | Districts 26-100 | 1-2 schools per level or statutory |
 | **Tier 3** | State statutory only | Districts 101+ or unavailable | No sampling - use state requirements |
 
+---
+
+## State-by-State Enrichment Strategy ⭐ PRIMARY APPROACH
+
+**Effective December 26, 2025**
+
+### Standard Operating Procedure
+
+Process states in **ascending enrollment order** to systematically build national coverage:
+
+1. **Query districts ranked 1-9 by enrollment** for the target state
+2. **Attempt enrichment in rank order** (largest first)
+3. **Stop when 3 successful enrichments achieved**
+4. **Mark failed attempts for manual follow-up**
+5. **Move to next state**
+
+### Why Ranks 1-9?
+
+Based on empirical analysis (December 2025):
+
+| Rank Range | Success Rate | Notes |
+|------------|--------------|-------|
+| Ranks 1-3 | ~44% | Larger districts often have complex/blocked sites |
+| Ranks 4-9 | ~83% | Mid-size districts more accessible |
+| Combined 1-9 | ~90% | Sufficient pool to complete most states |
+
+### Database Query Pattern
+
+```sql
+-- Get districts ranked 1-9 by enrollment for a state
+SELECT nces_id, name, enrollment
+FROM districts
+WHERE state = 'XX'
+ORDER BY enrollment DESC
+LIMIT 9;
+```
+
+### Process Flow
+
+```
+For each state (ascending enrollment order):
+  ├─→ Query top 9 districts by enrollment
+  ├─→ For each district (rank 1 to 9):
+  │   ├─→ Attempt WebSearch + WebFetch
+  │   ├─→ If successful:
+  │   │   ├─→ Insert bell schedules into database
+  │   │   ├─→ Increment success count
+  │   │   └─→ If 3 successes → Stop, move to next state
+  │   └─→ If blocked/failed:
+  │       └─→ Add to manual_followup_needed.json
+  └─→ After 9 attempts: Move to next state
+```
+
+### Efficiency Metrics
+
+- **Token savings**: Single pass per state vs. revisiting incomplete states
+- **Human time savings**: No manual decision points between passes
+- **Completion rate**: ~90% of states complete in single session
+- **Remaining states**: ~10% may need manual intervention
+
+### Evaluation Checkpoints
+
+Review progress every **5-10 states** to assess:
+- Success rates by state and rank
+- Patterns in failed districts (security blocks, 404s, etc.)
+- Token efficiency per enrichment
+- Whether strategy adjustments are needed
+
+### State Tracking
+
+Progress tracked in: `data/processed/normalized/state_enrichment_tracking.csv`
+
+| Field | Description |
+|-------|-------------|
+| state | Two-letter state code |
+| state_name | Full state name |
+| total_enrollment | Total students in state |
+| total_districts | Number of districts |
+| enriched_districts | Districts with bell schedules |
+| needs_enrichment | YES if <3 enriched |
+| progress | X/3 progress indicator |
+
 ## Tier 1: Detailed Sampling Methodology
 
 ### Target Districts
@@ -402,6 +484,19 @@ Across all districts:
 
 ---
 
-**Version**: 1.0
-**Last Updated**: 2025-12-19
+**Version**: 1.1
+**Last Updated**: 2025-12-26
 **Status**: Active methodology for bell schedule enrichment
+
+### Version History
+
+**1.1 (December 26, 2025):**
+- Added State-by-State Enrichment Strategy (Option A) as primary approach
+- Documented ranks 1-9 candidate pool with empirical success rates
+- Added process flow, efficiency metrics, and evaluation checkpoints
+- Updated based on Idaho/Nebraska/Mississippi second-pass analysis
+
+**1.0 (December 19, 2025):**
+- Initial methodology document
+- Tier 1/2/3 sampling approach
+- Security block handling protocols
