@@ -161,7 +161,7 @@ data_source             # Source identifier
 
 #### `analyze/calculate_lct.py`
 
-Calculate Learning Connection Time (LCT) for districts.
+Calculate Learning Connection Time (LCT) for districts (legacy single-scope version).
 
 **Usage:**
 ```bash
@@ -199,6 +199,215 @@ python calculate_lct.py input.csv --state-config config/my-requirements.yaml
 ```
 LCT = (Daily Instructional Minutes × Instructional Staff) / Student Enrollment
 ```
+
+#### `analyze/calculate_lct_variants.py` ⭐ NEW (December 2025)
+
+Calculate all 7 LCT variants with QA dashboard and advanced features.
+
+**Usage:**
+```bash
+# Calculate all variants from database
+python calculate_lct_variants.py --year 2023-24
+
+# With Parquet export (70-80% size reduction)
+python calculate_lct_variants.py --year 2023-24 --parquet
+
+# Incremental calculation (only changed districts)
+python calculate_lct_variants.py --year 2023-24 --incremental
+
+# Disable run tracking
+python calculate_lct_variants.py --year 2023-24 --no-track
+```
+
+**Arguments:**
+- `--year`: School year (required)
+- `--parquet`: Export in Parquet format (optional, requires pyarrow)
+- `--incremental`: Only calculate changed districts (optional)
+- `--no-track`: Don't track run in database (optional)
+
+**Outputs:**
+- `lct_all_variants_<year>_<timestamp>.csv` - All 7 variants in one file
+- `lct_all_variants_<year>_valid_<timestamp>.csv` - Filtered valid calculations
+- `lct_variants_report_<year>_<timestamp>.txt` - Summary statistics
+- `lct_qa_report_<year>_<timestamp>.json` - QA validation report ⭐ NEW
+- `*.parquet` versions (if `--parquet` flag used)
+
+**Features:**
+- **7 LCT Variants**: teachers_only, teachers_elementary, teachers_secondary, teachers_core, instructional, instructional_plus_support, all
+- **QA Dashboard**: Real-time validation with hierarchy checks (see `docs/QA_DASHBOARD.md`)
+- **Incremental Processing**: Tracks runs in database, only recalculates when data changes
+- **Parquet Export**: Optional columnar format for large datasets
+- **Calculation Tracking**: Stores run metadata, QA results, and output files in database
+
+**QA Dashboard Output:**
+```
+============================================================
+QA DASHBOARD
+============================================================
+Status: PASS
+Pass Rate: 99.46%
+
+Hierarchy Checks:
+  ✓ Secondary < Overall Teachers
+  ✓ Teachers < Elementary
+  ✓ Teachers < Core
+  ✓ Core < Instructional
+  ✓ Instructional < Support
+  ✓ Support < All
+
+Outliers Detected: 20
+State Coverage: 48 states/territories
+============================================================
+```
+
+See `docs/QA_DASHBOARD.md` for detailed QA documentation.
+
+---
+
+### Enrich Scripts
+
+#### `enrich/interactive_enrichment.py` ⭐ NEW (December 2025)
+
+Interactive CLI for efficient bell schedule collection during state campaigns.
+
+**Usage:**
+```bash
+# Run state campaign (Option A protocol)
+python interactive_enrichment.py --state WI
+
+# Enrich single district
+python interactive_enrichment.py --district 5560580
+
+# Show campaign status
+python interactive_enrichment.py --status
+
+# Custom target and year
+python interactive_enrichment.py --state CA --year 2025-26 --target 5
+```
+
+**Arguments:**
+- `--state`: State code for campaign mode (e.g., WI)
+- `--district`: District NCES ID for single enrichment
+- `--year`: School year (default: 2025-26)
+- `--target`: Districts per state (default: 3)
+- `--status`: Show overall campaign status
+
+**Features:**
+- **Auto-query**: Fetches top 9 districts by enrollment from database
+- **Pre-populate**: Generates search queries automatically
+- **Interactive prompts**: Single-command data entry for elementary/middle/high
+- **Auto-commit**: Saves directly to database
+- **Progress tracking**: Shows enrichment progress in real-time
+- **Firewall detection**: Handles blocked districts gracefully
+
+**Workflow:**
+1. Script queries database for top unenriched districts in state
+2. For each district, displays info and search query
+3. User collects bell schedule data from web
+4. Interactive prompts for instructional minutes, start/end times
+5. Auto-saves to database
+6. Continues until 3 successful enrichments or user quits
+
+**Example Session:**
+```
+============================================================
+State Campaign: WI
+============================================================
+Current progress: 0/3 districts enriched
+
+Found 9 candidates (ranks 1-9 by enrollment)
+
+[Rank #1] Milwaukee Public Schools (WI)
+  NCES ID: 5560580
+  Enrollment: 75,568
+
+  Search query: "Milwaukee Public Schools" bell schedule 2025-26
+
+  [E]nrich, [S]kip, [B]locked, [Q]uit? e
+
+📋 Collecting schedule data for Milwaukee Public Schools...
+   Year: 2025-26
+   Enter 's' to skip a level, 'b' if blocked by firewall
+
+  ELEMENTARY:
+  Instructional minutes: 360
+  Start time (e.g., 8:00 AM): 8:00 AM
+  End time (e.g., 3:00 PM): 3:00 PM
+
+  MIDDLE:
+  Instructional minutes: 365
+  ...
+
+  Source URL (optional): https://mps.milwaukee.k12.wi.us/bell-schedule
+
+  ✓ Saved 3 schedule(s) to database
+
+  Progress: 1/3
+```
+
+See `docs/BELL_SCHEDULE_OPERATIONS_GUIDE.md` for manual collection procedures.
+
+---
+
+### Utility Scripts
+
+#### `utilities/generate_data_dictionary.py` ⭐ NEW (December 2025)
+
+Auto-generate Markdown data dictionary from SQLAlchemy database models.
+
+**Usage:**
+```bash
+# Generate data dictionary
+python generate_data_dictionary.py
+
+# Check output
+cat docs/data-dictionaries/database_schema_latest.md
+```
+
+**Outputs:**
+- `docs/data-dictionaries/database_schema_<timestamp>.md` - Timestamped version
+- `docs/data-dictionaries/database_schema_latest.md` - Symlink to latest
+
+**Generated Documentation:**
+- Table descriptions
+- Column names, types, constraints
+- Primary and foreign keys
+- Relationships between tables
+- Check constraints
+- Index information
+
+**Features:**
+- **Automatic**: Introspects SQLAlchemy models
+- **Up-to-date**: Always reflects current schema
+- **Versioned**: Timestamped copies for history
+- **Formatted**: Clean Markdown tables
+
+**Example Output:**
+```markdown
+## districts
+
+Primary table containing all U.S. school districts.
+
+| Column | Type | Nullable | Default | Description |
+|--------|------|----------|---------|-------------|
+| nces_id | VARCHAR(20) | NO | - | Primary key, NCES district ID |
+| name | VARCHAR(255) | NO | - | District name |
+| state | VARCHAR(2) | NO | - | Two-letter state code |
+| enrollment | INTEGER | YES | - | Total K-12 enrollment |
+...
+
+**Relationships:**
+- Has many: bell_schedules, lct_calculations
+
+**Indexes:**
+- idx_districts_state (state)
+- idx_districts_enrollment (enrollment)
+```
+
+**When to Run:**
+- After schema changes (new tables, columns)
+- Before major releases (documentation update)
+- For onboarding (share with collaborators)
 
 ---
 
@@ -492,4 +701,28 @@ if __name__ == "__main__":
 
 ---
 
-*Last Updated: December 16, 2025*
+## Recent Additions (December 2025)
+
+### Efficiency Enhancement Suite (Dec 27-28, 2025)
+
+Seven new capabilities added to improve workflow efficiency:
+
+1. **`calculate_lct_variants.py`** - All 7 LCT variants with QA dashboard
+2. **`interactive_enrichment.py`** - Interactive CLI for state campaigns
+3. **`generate_data_dictionary.py`** - Auto-generate schema documentation
+4. **Materialized views** - Pre-computed queries for fast lookups
+5. **Parquet export** - 70-80% file size reduction for large datasets
+6. **Incremental calculations** - Smart recalculation of changed data only
+7. **Calculation tracking** - Database-backed run history and QA reports
+
+**Impact**:
+- Token efficiency: Query-specific data vs. loading full files
+- Campaign efficiency: Single-session state completion (Option A protocol)
+- QA automation: Real-time validation with hierarchy checks
+- Documentation: Auto-generated, always up-to-date
+
+See `docs/QA_DASHBOARD.md` and `docs/DATABASE_SETUP.md` for detailed documentation.
+
+---
+
+*Last Updated: December 28, 2025*

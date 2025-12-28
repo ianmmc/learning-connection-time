@@ -534,6 +534,158 @@ def export_enriched_districts_csv(
 
 
 # =============================================================================
+# LCT VARIANT QUERIES
+# =============================================================================
+
+
+def get_lct_summary_by_scope(
+    session: Session, scope: str = "teachers_only", year: str = "2023-24"
+) -> Dict:
+    """Get LCT summary statistics for a specific scope."""
+    from sqlalchemy import func as sqlfunc
+    from .models import StaffCountsEffective, EnrollmentByGrade
+
+    # Map scope to column
+    scope_map = {
+        "teachers_only": StaffCountsEffective.scope_teachers_only,
+        "teachers_core": StaffCountsEffective.scope_teachers_core,
+        "instructional": StaffCountsEffective.scope_instructional,
+        "instructional_plus_support": StaffCountsEffective.scope_instructional_plus_support,
+        "all": StaffCountsEffective.scope_all,
+    }
+
+    staff_col = scope_map.get(scope)
+    if not staff_col:
+        raise ValueError(f"Unknown scope: {scope}")
+
+    # Get count of districts with this scope
+    count = (
+        session.query(sqlfunc.count(StaffCountsEffective.district_id))
+        .filter(staff_col.isnot(None))
+        .filter(staff_col > 0)
+        .scalar()
+    )
+
+    return {
+        "scope": scope,
+        "year": year,
+        "districts_with_data": count,
+    }
+
+
+def get_districts_needing_calculation(
+    session: Session,
+    last_run_id: Optional[str] = None,
+    year: str = "2023-24",
+) -> List[str]:
+    """
+    Get districts that need LCT recalculation.
+
+    If last_run_id is provided, returns only districts modified since that run.
+    """
+    from .models import StaffCountsEffective, EnrollmentByGrade, CalculationRun
+
+    # Get districts with staff and enrollment data
+    query = (
+        session.query(StaffCountsEffective.district_id)
+        .join(
+            EnrollmentByGrade,
+            StaffCountsEffective.district_id == EnrollmentByGrade.district_id,
+        )
+        .filter(EnrollmentByGrade.source_year == year)
+        .filter(StaffCountsEffective.scope_teachers_only.isnot(None))
+    )
+
+    if last_run_id:
+        # Get the last run timestamp
+        last_run = (
+            session.query(CalculationRun)
+            .filter(CalculationRun.run_id == last_run_id)
+            .first()
+        )
+        if last_run:
+            # Filter to districts modified after last run
+            query = query.filter(
+                or_(
+                    StaffCountsEffective.last_resolved_at > last_run.completed_at,
+                    EnrollmentByGrade.updated_at > last_run.completed_at,
+                )
+            )
+
+    return [r[0] for r in query.all()]
+
+
+def get_state_campaign_progress(session: Session, year: str = "2024-25") -> List[Dict]:
+    """
+    Get state-by-state enrichment progress for campaign tracking.
+
+    Returns states sorted by enrichment completion, with target of 3 per state.
+    """
+    from sqlalchemy import case, func as sqlfunc
+
+    results = (
+        session.query(
+            District.state,
+            sqlfunc.count(sqlfunc.distinct(District.nces_id)).label("total_districts"),
+            sqlfunc.count(sqlfunc.distinct(BellSchedule.district_id)).label("enriched"),
+            sqlfunc.sum(District.enrollment).label("total_enrollment"),
+        )
+        .outerjoin(
+            BellSchedule,
+            and_(
+                District.nces_id == BellSchedule.district_id,
+                BellSchedule.year == year,
+            ),
+        )
+        .group_by(District.state)
+        .order_by(sqlfunc.count(sqlfunc.distinct(BellSchedule.district_id)).desc())
+        .all()
+    )
+
+    return [
+        {
+            "state": r.state,
+            "total_districts": r.total_districts,
+            "enriched": r.enriched or 0,
+            "target": 3,
+            "complete": (r.enriched or 0) >= 3,
+            "total_enrollment": r.total_enrollment or 0,
+        }
+        for r in results
+    ]
+
+
+def get_next_enrichment_candidates(
+    session: Session,
+    state: str,
+    year: str = "2024-25",
+    limit: int = 9,
+) -> List[District]:
+    """
+    Get next candidates for enrichment in a state.
+
+    Returns top districts by enrollment that don't have bell schedules.
+    """
+    # Subquery for districts with schedules
+    enriched_ids = (
+        select(BellSchedule.district_id)
+        .filter(BellSchedule.year == year)
+        .distinct()
+        .scalar_subquery()
+    )
+
+    return (
+        session.query(District)
+        .filter(District.state == state.upper())
+        .filter(District.nces_id.not_in(enriched_ids))
+        .filter(District.enrollment.isnot(None))
+        .order_by(desc(District.enrollment))
+        .limit(limit)
+        .all()
+    )
+
+
+# =============================================================================
 # STATISTICS & REPORTING
 # =============================================================================
 

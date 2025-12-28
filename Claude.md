@@ -166,8 +166,10 @@ These years do not represent typical instructional time due to pandemic disrupti
 - `docs/METHODOLOGY.md` - Calculation methodology and limitations
 - `docs/BELL_SCHEDULE_SAMPLING_METHODOLOGY.md` - Bell schedule collection methodology
 - `docs/BELL_SCHEDULE_OPERATIONS_GUIDE.md` - ⭐ Operational procedures, tools, and troubleshooting
-- `docs/DATABASE_SETUP.md` - ⭐ NEW PostgreSQL setup and usage guide
-- `docs/DATABASE_MIGRATION_NOTES.md` - ⭐ NEW Migration working notes
+- `docs/DATABASE_SETUP.md` - ⭐ PostgreSQL setup, materialized views, and query utilities (Dec 2025)
+- `docs/DATABASE_MIGRATION_NOTES.md` - ⭐ Migration working notes
+- `docs/QA_DASHBOARD.md` - ⭐ NEW Automated quality validation and reporting (Dec 2025)
+- `docs/data-dictionaries/database_schema_latest.md` - ⭐ NEW Auto-generated schema docs (Dec 2025)
 
 ---
 
@@ -215,21 +217,29 @@ learning-connection-time/
 │   └── analysis-reports/          # Research findings
 │
 ├── infrastructure/
-│   ├── database/                  # PostgreSQL infrastructure ⭐ NEW
+│   ├── database/                  # PostgreSQL infrastructure ⭐
 │   │   ├── schema.sql            # Database DDL
-│   │   ├── models.py             # SQLAlchemy ORM models
+│   │   ├── models.py             # SQLAlchemy ORM models (with CalculationRun ⭐ NEW)
 │   │   ├── connection.py         # Connection utilities
-│   │   ├── queries.py            # High-level query functions
+│   │   ├── queries.py            # High-level query functions (extended Dec 2025 ⭐)
 │   │   ├── export_json.py        # JSON export utility
 │   │   └── migrations/           # Data migration scripts
+│   │       ├── create_materialized_views.sql  # ⭐ NEW (Dec 2025)
+│   │       └── import_all_data.py
 │   ├── scripts/
 │   │   ├── download/              # Data acquisition
 │   │   ├── enrich/                # Data enrichment (bell schedules)
+│   │   │   ├── fetch_bell_schedules.py
+│   │   │   └── interactive_enrichment.py  # ⭐ NEW (Dec 2025)
 │   │   ├── extract/               # Parsing and combining
 │   │   ├── transform/             # Cleaning and normalization
-│   │   └── analyze/               # Metric calculations
+│   │   ├── analyze/               # Metric calculations
+│   │   │   ├── calculate_lct.py
+│   │   │   └── calculate_lct_variants.py  # ⭐ NEW (Dec 2025, QA dashboard)
+│   │   └── utilities/             # Helper functions
+│   │       └── generate_data_dictionary.py  # ⭐ NEW (Dec 2025)
 │   ├── quality-assurance/tests/   # Test suite
-│   └── utilities/                 # Helper functions
+│   └── utilities/                 # Helper functions (common.py)
 │
 ├── notebooks/                      # Jupyter for exploration
 │   ├── exploratory/
@@ -492,8 +502,12 @@ python infrastructure/scripts/transform/normalize_districts.py \
 - **Modify LCT calculation**: Edit `infrastructure/scripts/analyze/calculate_lct.py`
 - **Add state-specific normalization**: Edit `infrastructure/scripts/transform/normalize_districts.py`
 - **Manual bell schedule enrichment**: Follow `docs/BELL_SCHEDULE_OPERATIONS_GUIDE.md`
+- **Interactive bell schedule enrichment**: Run `python infrastructure/scripts/enrich/interactive_enrichment.py --state XX` ⭐ NEW
 - **Query database**: Use functions in `infrastructure/database/queries.py`
 - **Export database to JSON**: Run `python infrastructure/database/export_json.py`
+- **Generate data dictionary**: Run `python infrastructure/scripts/utilities/generate_data_dictionary.py` ⭐ NEW
+- **View QA dashboard**: Run LCT calculation script with default settings ⭐ NEW
+- **Refresh materialized views**: Run `psql -d learning_connection_time -c "SELECT refresh_all_materialized_views();"` ⭐ NEW
 
 ---
 
@@ -520,7 +534,10 @@ This is part of "Reducing the Ratio" initiative to advance educational equity di
 
 ### File Naming
 - Scripts: `kebab-case.py`
-- Data files: `descriptive_name_YYYY_MM.csv`
+- Data files: `descriptive_name_YYYY_YY.csv` (school year format)
+- **Generated outputs**: Append ISO 8601 UTC timestamp: `name_YYYY_YY_<timestamp>.csv`
+  - Timestamp format: `YYYYMMDDTHHMMSSZ` (e.g., `20251228T012536Z`)
+  - Example: `lct_all_variants_2023_24_valid_20251228T012536Z.csv`
 - Config files: `kebab-case.yaml`
 - Documentation: `CAPS_WITH_UNDERSCORES.md` for important docs, `kebab-case.md` for others
 
@@ -592,6 +609,9 @@ python infrastructure/scripts/transform/normalize_districts.py input.csv --sourc
 
 # Calculate LCT with filtering (recommended for publication)
 python infrastructure/scripts/analyze/calculate_lct.py input.csv --summary --filter-invalid
+
+# Calculate LCT variants with QA dashboard and Parquet export ⭐ NEW (Dec 2025)
+python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2023-24 --parquet
 ```
 
 ### Database Operations ⭐ NEW
@@ -612,6 +632,36 @@ from infrastructure.database.queries import print_enrichment_report
 with session_scope() as session:
     print_enrichment_report(session)
 "
+```
+
+### Efficiency Tools ⭐ NEW (Dec 27-28, 2025)
+```bash
+# Interactive bell schedule enrichment
+python infrastructure/scripts/enrich/interactive_enrichment.py --state WI
+python infrastructure/scripts/enrich/interactive_enrichment.py --district 5560580
+python infrastructure/scripts/enrich/interactive_enrichment.py --status
+
+# Generate data dictionary from database schema
+python infrastructure/scripts/utilities/generate_data_dictionary.py
+
+# Refresh materialized views (after data changes)
+psql -d learning_connection_time -c "SELECT refresh_all_materialized_views();"
+
+# Query pre-computed views for fast lookups
+psql -d learning_connection_time -c "SELECT * FROM mv_state_enrichment_progress ORDER BY enriched DESC LIMIT 10;"
+psql -d learning_connection_time -c "SELECT * FROM mv_districts_with_lct_data WHERE state = 'WI';"
+
+# Calculate LCT with QA dashboard
+python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2023-24
+
+# Calculate LCT with Parquet export (70-80% size reduction)
+python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2023-24 --parquet
+
+# Incremental calculation (only changed districts)
+python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2023-24 --incremental
+
+# View QA report
+cat data/enriched/lct-calculations/lct_qa_report_2023_24_<timestamp>.json
 ```
 
 ---
@@ -692,7 +742,7 @@ with session_scope() as session:
 - Note: 135 statutory fallback files excluded from counts (moved to tier3_statutory_fallback/)
 - **Status**: Complete, archived dataset
 
-### Infrastructure Optimizations (Dec 21-25, 2025)
+### Infrastructure Optimizations (Dec 21-28, 2025)
 
 **Completed:**
 - ✅ Data optimization (88% token reduction via slim files)
@@ -702,7 +752,7 @@ with session_scope() as session:
 - ✅ Real-time progress tracker (`enrichment_progress.py`)
 - ✅ Smart candidate filtering (6,952 high-quality targets identified)
 - ✅ Terminology standardization (`docs/TERMINOLOGY.md`)
-- ✅ **PostgreSQL database migration** (Dec 25, 2025) ⭐ NEW
+- ✅ **PostgreSQL database migration** (Dec 25, 2025) ⭐
   - Migrated from JSON files to PostgreSQL 16 (Docker containerized)
   - 17,842 districts, 50 state requirements, 384 bell schedules (128 districts)
   - Query utilities for token-efficient data access
@@ -712,6 +762,14 @@ with session_scope() as session:
   - `docker-compose up -d` for instant setup
   - Persistent volumes for data safety
   - Same environment local → production (Supabase-ready)
+- ✅ **Efficiency Enhancement Suite** (Dec 27-28, 2025) ⭐ NEW
+  - **Query utilities library**: Extended `infrastructure/database/queries.py` with campaign tracking
+  - **QA dashboard automation**: Auto-generates validation reports and dashboards
+  - **Data dictionary generator**: `generate_data_dictionary.py` auto-generates from SQLAlchemy models
+  - **Materialized views**: 4 pre-computed views for common queries (14K+ rows cached)
+  - **Interactive enrichment tool**: `interactive_enrichment.py` CLI for state campaigns
+  - **Parquet export**: Optional 70-80% file size reduction for large datasets
+  - **Incremental calculations**: Tracks calculation runs, enables smart recalculation
 
 ### Known Limitations
 
@@ -795,7 +853,7 @@ with session_scope() as session:
 
 ---
 
-**Last Updated**: December 26, 2025
+**Last Updated**: December 28, 2025
 **Project Location**: `/Users/ianmmc/Development/learning-connection-time`
 **Status**: Active enrichment campaign - State-by-state coverage expansion ✅
 **Primary Data Store**: PostgreSQL database (learning_connection_time) ⭐ NEW
@@ -809,6 +867,7 @@ with session_scope() as session:
 - ✅ **128 total enriched districts** across 43 states/territories (0.72% of 17,842)
 - ✅ **Option A process adopted** (Dec 26, 2025) - attempt ranks 1-9 per state, stop at 3 successful
 - ✅ **South Carolina, Wisconsin, Minnesota campaigns complete** (Dec 26, 2025) - 9 districts enriched
+- ✅ **Efficiency Enhancement Suite** (Dec 27-28, 2025) - QA dashboard, materialized views, interactive enrichment, Parquet export, calculation tracking
 **Key Additions**:
 - Bell schedule search priority: 2025-26 > 2024-25 > 2023-24
 - **CRITICAL**: COVID-era data exclusion (2019-20 through 2022-23) - use 2018-19 if needed

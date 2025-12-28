@@ -40,8 +40,13 @@ This reframes "20:1 student-teacher ratio" into a more visceral equity metric.
 
 ### For Understanding the Analysis
 - **[Methodology](docs/METHODOLOGY.md)** - LCT calculation approach and limitations
+- **[QA Dashboard](docs/QA_DASHBOARD.md)** - Automated quality validation ⭐ NEW
 - **[Data Sources](docs/DATA_SOURCES.md)** - Data source catalog
 - **[Project Context](docs/PROJECT_CONTEXT.md)** - Mission and strategy
+
+### For Database and Infrastructure
+- **[Database Setup](docs/DATABASE_SETUP.md)** - PostgreSQL setup and materialized views ⭐ NEW
+- **[Data Dictionary](docs/data-dictionaries/database_schema_latest.md)** - Auto-generated schema docs
 
 ---
 

@@ -6,15 +6,74 @@ This document provides the detailed methodology for calculating Learning Connect
 
 ---
 
-## Core Calculation (Phase 1)
+## Core Calculation (Phase 1.5)
 
 ### Basic Formula
 
 ```
-LCT = (Daily Instructional Minutes × Instructional Staff Count) / Student Enrollment
+LCT = (Daily Instructional Minutes × Staff Count) / Student Enrollment
 ```
 
-**Result**: Minutes of potential individual teacher attention per student per day
+**Result**: Minutes of potential individual attention per student per day
+
+### LCT Variants (Multiple Staffing Scopes)
+
+As of December 2025, we calculate **seven LCT variants** using different staff definitions to provide rhetorical flexibility and analytical depth. **All scopes exclude Pre-K** from both enrollment and staffing.
+
+#### Base Scopes (5 variants)
+
+| Variant | Staff Scope | Enrollment | Use Case |
+|---------|-------------|------------|----------|
+| **LCT-Teachers** | K-12 teachers (elem+sec+kinder, NO ungraded) | K-12 | Most conservative measure |
+| **LCT-Core** | K-12 teachers + ungraded | K-12 | Includes all K-12 classroom staff |
+| **LCT-Instructional** | Core + coordinators + paras | K-12 | **Recommended primary metric** |
+| **LCT-Support** | Above + counselors/psychologists | K-12 | Holistic support view |
+| **LCT-All** | All staff (excl. Pre-K teachers) | K-12 | Maximum resource investment |
+
+#### Teacher-Level Variants (2 additional)
+
+| Variant | Staff Scope | Enrollment | Use Case |
+|---------|-------------|------------|----------|
+| **LCT-Teachers-Elementary** | Elem + Kinder teachers | K-5 only | Elementary-specific analysis |
+| **LCT-Teachers-Secondary** | Secondary teachers only | 6-12 only | Secondary-specific analysis |
+
+#### Key Methodology Decisions (December 2025)
+
+1. **Pre-K Exclusion**: All scopes exclude Pre-K from both enrollment and staffing due to heterogeneous Pre-K availability and different licensing requirements.
+
+2. **Ungraded Teachers**:
+   - **EXCLUDED** from LCT-Teachers, LCT-Teachers-Elementary, LCT-Teachers-Secondary
+   - **INCLUDED** in LCT-Core, LCT-Instructional, LCT-Support, LCT-All
+
+3. **Grade Boundaries**:
+   - Elementary (K-5): Kindergarten through Grade 5
+   - Secondary (6-12): Grades 6 through 12
+
+4. **QA Validation**: Level-based LCT calculations include `level_lct_notes` for transparency about data quality issues.
+
+**Key Findings** (December 2025 calculation):
+
+| Scope | Mean LCT | Median LCT | Districts |
+|-------|----------|------------|-----------|
+| Teachers-Only | 27.9 min | 25.2 min | 14,286 |
+| Teachers-Elementary | 34.3 min | 30.8 min | 13,090 |
+| Teachers-Secondary | 22.9 min | 20.1 min | 12,378 |
+| Teachers-Core | 29.5 min | 26.2 min | 14,305 |
+| Instructional | 38.4 min | 34.2 min | 14,314 |
+| Support | 42.2 min | 37.9 min | 14,271 |
+| All | 59.8 min | 54.5 min | 14,250 |
+
+**Observed Patterns**:
+- Elementary LCT > Overall > Secondary (lower student-teacher ratios in elementary)
+- Broadening from teachers-only to all-staff adds ~27 minutes (median)
+
+**Recommended Usage**:
+- **Policy discussions**: Use LCT-Instructional (balanced, defensible)
+- **Conservative estimates**: Use LCT-Teachers (most restrictive)
+- **Level comparisons**: Use LCT-Teachers-Elementary vs LCT-Teachers-Secondary
+- **Resource analysis**: Compare across all scopes to understand staffing mix impact
+
+See `docs/STAFFING_DATA_ENHANCEMENT_PLAN.md` for detailed scope definitions and data sources.
 
 ### Components
 
@@ -75,88 +134,132 @@ Chicago PS High School:           390 minutes (actual)
 
 See `docs/BELL_SCHEDULE_SAMPLING_METHODOLOGY.md` for complete methodology.
 
-#### 2. Instructional Staff Count
+#### 2. Staff Count (Multiple Scopes)
 
-**Definition**: Number of full-time equivalent (FTE) staff providing direct instruction
+**Definition**: Number of full-time equivalent (FTE) staff, with scope varying by LCT variant
 
-**Source**: NCES CCD Staff file (LEA 059) with grade-level allocation
+**Source**: NCES CCD Staff file (LEA 059) - provides 24 distinct staff categories
 
-**Included**:
-- Classroom teachers (all subjects)
-- Instructional aides/paraprofessionals
-- Specialists providing direct instruction (reading, math, etc.)
+**Staff Categories by Tier**:
 
-**Excluded**:
-- Administrators
-- Support staff (counselors, librarians)*
-- Substitute teachers (typically)
+**Tier 1 - Classroom Teachers** (used in all scopes):
+- Teachers (total)
+- Elementary Teachers
+- Secondary Teachers
+- Kindergarten Teachers
+- Pre-kindergarten Teachers
+- Ungraded Teachers
 
-*Note: Some specialists may be included in Phase 2+ with appropriate weighting
+**Tier 2 - Instructional Support** (added in LCT-Instructional):
+- Instructional Coordinators and Supervisors
+- Librarians/Media Specialists
+- Library/Media Support Staff
+- Paraprofessionals/Instructional Aides
 
-**Grade-Level Breakdown** (Phase 1.5+):
+**Tier 3 - Student Support** (added in LCT-Support):
+- Guidance Counselors
+- School Psychologists
+- Student Support Services Staff
 
-NCES provides staff in two categories:
-1. **Elementary Teachers** - Used directly for K-5
-2. **Secondary Teachers** - Split proportionally between middle (6-8) and high (9-12)
+**Tier 4 - Administrative** (added in LCT-All):
+- LEA Administrators
+- School Administrators
+- Administrative Support Staff
+- Other Staff
 
-**Allocation Method (Option C - Hybrid Approach)**:
+**Scope Calculation Formulas** (December 2025):
+
+```python
+# Teacher-level aggregates (NO Pre-K, NO ungraded)
+teachers_k12 = (teachers_elementary + teachers_secondary + teachers_kindergarten)
+teachers_elementary_k5 = (teachers_elementary + teachers_kindergarten)
+teachers_secondary_6_12 = teachers_secondary
+
+# LCT-Teachers: Most conservative K-12 teachers only (NO ungraded)
+scope_teachers_only = teachers_k12
+
+# LCT-Core: K-12 teachers + ungraded (NO Pre-K)
+scope_teachers_core = (teachers_elementary + teachers_secondary +
+                       teachers_kindergarten + teachers_ungraded)
+
+# LCT-Instructional: Core + coordinators + paras (NO Pre-K teachers)
+scope_instructional = (scope_teachers_core +
+                       instructional_coordinators +
+                       paraprofessionals)
+
+# LCT-Support: Instructional + counselors + psychologists
+scope_instructional_plus_support = (scope_instructional +
+                                    counselors_total +
+                                    psychologists +
+                                    student_support_services)
+
+# LCT-All: All staff except Pre-K teachers
+scope_all = sum(all_staff_categories) - teachers_prek
 ```
-Elementary Staff (K-5) = Elementary Teachers from NCES
 
-Middle Staff (6-8) = Secondary Teachers × (Middle Enrollment / Secondary Enrollment)
+**Critical Decision**: Ungraded teachers are **EXCLUDED** from `scope_teachers_only` but **INCLUDED** in `scope_teachers_core` and all broader scopes. This ensures the most conservative teacher scope excludes ambiguous grade assignments while broader scopes capture all classroom staff.
 
-High Staff (9-12) = Secondary Teachers × (High Enrollment / Secondary Enrollment)
-
-where Secondary Enrollment = Middle Enrollment + High Enrollment
-```
-
-**Rationale**:
-- Elementary teachers are directly reported by NCES
-- Secondary teachers must be allocated proportionally based on enrollment
-- Assumes similar student-teacher ratios across middle and high schools
-- More accurate than using district-wide totals for grade-specific LCT
-
-**Data Fields**:
-- `Elementary Teachers` field in NCES CCD LEA 059
-- `Secondary Teachers` field in NCES CCD LEA 059
+**Data Storage**:
+- `staff_counts` table: Historical raw data from all sources (one row per district/year/source)
+- `staff_counts_effective` table: Resolved current values with pre-calculated scopes
+- All 5 scope values are pre-computed for query performance
 
 **Challenges**:
 - FTE vs headcount reporting varies
 - Part-time teacher accounting inconsistent
-- Middle/high split is estimated, not actual
-- Some districts may have different ratios for middle vs high
 - Charter school reporting differs
+- Some staff categories may overlap (e.g., reading specialists counted as teachers)
 - District-level data may mask school-level variation
 
 #### 3. Student Enrollment
 
-**Definition**: Student membership count by grade level
+**Definition**: Student membership count, with scope varying by LCT variant
 
 **Source**: NCES CCD Membership file (LEA 052 - October count)
 
-**Grade-Level Breakdown** (Phase 1.5+):
+**Grade-Level Breakdown**:
 
-Individual grade counts aggregated into three levels:
-- **Elementary (K-5)**: Sum of Kindergarten + Grades 1-5
-- **Middle (6-8)**: Sum of Grades 6-8
-- **High (9-12)**: Sum of Grades 9-12
+Individual grade counts aggregated by level:
+- **Pre-K**: Pre-Kindergarten enrollment
+- **Elementary (K-5)**: Kindergarten + Grades 1-5
+- **Middle (6-8)**: Grades 6-8
+- **High (9-12)**: Grades 9-12
+- **Other**: Ungraded, Adult Ed, Grade 13
 
-**Data Structure**: The CCD Membership file provides student counts broken down by:
-- Grade (individual: K, 1, 2, ..., 12)
-- Race/Ethnicity
-- Sex
+**Enrollment by LCT Scope** (December 2025 - All scopes use K-12):
 
-**Aggregation Method**:
+| LCT Variant | Enrollment Used | Rationale |
+|-------------|-----------------|-----------|
+| **All base scopes** | **K-12 enrollment** | Pre-K excluded for consistency |
+| LCT-Teachers-Elementary | K-5 enrollment | Elementary grades only |
+| LCT-Teachers-Secondary | 6-12 enrollment | Secondary grades only |
+
+**Enrollment Calculations**:
 ```python
-enrollment_elementary = sum(Kindergarten, Grade 1, Grade 2, Grade 3, Grade 4, Grade 5)
-enrollment_middle = sum(Grade 6, Grade 7, Grade 8)
-enrollment_high = sum(Grade 9, Grade 10, Grade 11, Grade 12)
+# All base scopes use K-12 enrollment
+enrollment_k12 = sum(grades K through 12)  # excludes Pre-K
+
+# Level-based variants use level-specific enrollment
+enrollment_elementary = sum(grades K through 5)
+enrollment_secondary = sum(grades 6 through 12)
 ```
+
+**Data Storage**:
+- `enrollment_by_grade` table: Grade-level enrollment for each district
+- `enrollment_total`: Sum of all grades (including Pre-K)
+- `enrollment_k12`: Sum of K-12 only (excluding Pre-K)
+- `enrollment_elementary`: Sum of K-5
+- `enrollment_secondary`: Sum of 6-12
+
+**Pre-K Exclusion Rationale**:
+- Heterogeneous Pre-K availability across districts (some offer Pre-K, some don't)
+- Different state licensing requirements for Pre-K staffing
+- Excludes Pre-K from both enrollment AND staffing for mathematical consistency
 
 **Considerations**:
 - October count may not reflect year-average
 - Some students may be counted multiple times (dual enrollment)
-- Pre-K typically excluded from K-12 counts
+- Pre-K exclusion ensures mathematical consistency with teachers_core scope
 - Districts serving only some grade levels will have zero enrollment for others
 
 ---
@@ -303,60 +406,135 @@ LCT = 104,975 minutes / 8,500 students
 
 ## Quality Assurance
 
-### Data Quality Filtering (Implemented)
+### Data Quality Filtering (Scope-Aware)
 
-**Automated Validation**: All districts are validated against data quality criteria. Invalid districts are excluded from publication-ready outputs but retained in complete datasets for transparency.
+**Automated Validation**: All LCT calculations are validated against data quality criteria. Invalid calculations are excluded from publication-ready outputs but retained in complete datasets for transparency.
 
-**Validation Criteria**:
+**Universal Validation Criteria** (applied to all scopes):
 
-1. **enrollment > 0**: Districts must have at least one student
-2. **instructional_staff > 0**: Districts must have at least one teacher
-3. **lct_minutes ≤ daily_instructional_minutes**: LCT cannot exceed available time (physically impossible)
-4. **instructional_staff ≤ enrollment**: Cannot have more teachers than students
+1. **0 < LCT ≤ 360**: LCT must be positive and cannot exceed maximum daily instructional time
+2. **enrollment > 0**: Districts must have at least one student
+3. **staff_count > 0**: Staff count for the scope must be positive
+4. **staff_count ≤ enrollment**: Cannot have more staff than students (for the scope)
+
+**Scope-Specific Validation** (December 2025):
+
+| LCT Variant | Enrollment Check | Staff Check | Special Rules |
+|-------------|------------------|-------------|---------------|
+| LCT-Teachers | enrollment_k12 > 0 | teachers_k12 > 0 | K-12 only, NO ungraded |
+| LCT-Core | enrollment_k12 > 0 | teachers_core > 0 | K-12 only, includes ungraded |
+| LCT-Instructional | enrollment_k12 > 0 | scope_instructional > 0 | K-12 only |
+| LCT-Support | enrollment_k12 > 0 | scope_support > 0 | K-12 only |
+| LCT-All | enrollment_k12 > 0 | scope_all > 0 | K-12 only |
+| LCT-Teachers-Elementary | enrollment_elementary > 0 | teachers_elementary_k5 > 0 | K-5 only |
+| LCT-Teachers-Secondary | enrollment_secondary > 0 | teachers_secondary_6_12 > 0 | 6-12 only |
+
+**Level-Based QA Validation**:
+
+For teacher-level variants (Elementary, Secondary), additional validation checks:
+- `Elementary teachers but no elementary enrollment`: Flag districts with K-5 teachers but zero K-5 students
+- `Secondary enrollment but no secondary teachers`: Flag districts with 6-12 students but zero secondary teachers
+- `Elementary enrollment but no elementary teachers`: Flag districts with K-5 students but zero K-5 teachers
+- All issues captured in `level_lct_notes` column for transparency
 
 **Implementation**:
-- Script: `infrastructure/scripts/analyze/calculate_lct.py --filter-invalid`
-- Two outputs generated:
-  - `*_with_lct.csv`: Complete dataset with validation flags
-  - `*_with_lct_valid.csv`: Filtered dataset for publication
-- Validation report documents filtering details
+- Script: `infrastructure/scripts/analyze/calculate_lct_variants.py`
+- Outputs (with ISO 8601 UTC timestamp):
+  - `lct_all_variants_YYYY_YY_<timestamp>.csv`: Complete dataset with `level_lct_notes` column
+  - `lct_all_variants_YYYY_YY_valid_<timestamp>.csv`: Filtered (0 < LCT ≤ 360)
+  - `lct_variants_summary_YYYY_YY_<timestamp>.csv`: Summary statistics by scope
+  - `lct_variants_by_state_YYYY_YY_<timestamp>.csv`: State-level summary
+  - `lct_variants_report_YYYY_YY_<timestamp>.txt`: Detailed methodology and findings
 
-**Typical Results**:
-- ~97% of districts pass validation
-- ~2-3% filtered for data quality issues
-- Most common issues: zero enrollment or staff (administrative units)
+**Timestamp Convention**:
+- Format: `YYYYMMDDTHHMMSSZ` (ISO 8601, UTC, filesystem-safe)
+- Example: `lct_all_variants_2023_24_valid_20251228T012536Z.csv`
+- Benefits: Sortable, unambiguous timezone, enables version tracking
+
+**Results** (December 2025):
+
+| Scope | Valid Districts | Mean LCT | Median LCT |
+|-------|-----------------|----------|------------|
+| teachers_only | 14,286 | 27.9 min | 25.2 min |
+| teachers_elementary | 13,090 | 34.3 min | 30.8 min |
+| teachers_secondary | 12,378 | 22.9 min | 20.1 min |
+| teachers_core | 14,305 | 29.5 min | 26.2 min |
+| instructional | 14,314 | 38.4 min | 34.2 min |
+| instructional_plus_support | 14,271 | 42.2 min | 37.9 min |
+| all | 14,250 | 59.8 min | 54.5 min |
+
+**Districts with QA Notes**: 2,109 (14.3% of districts have level-based validation notes)
 
 **Publication Policy**:
-- **Always use filtered (`*_valid.csv`) files for external communications**
-- Validation report provides methodological transparency
-- Complete dataset available for research purposes
+- **Always use `*_valid.csv` files for external communications**
+- Report which scope(s) were used and why
+- Document any scope-specific filtering applied
 
 ### Statistical Validation Checks
 
-**Post-Filtering Checks**:
+**Post-Filtering Checks** (per scope):
 - [x] LCT values are positive
-- [x] LCT values are reasonable (0-360 minutes within daily time)
-- [x] Distribution shape analysis
-- [x] Correlation with known student-teacher ratios
+- [x] LCT values are ≤ 360 minutes (maximum daily time)
+- [x] Broader scopes produce higher LCT (expected pattern)
+- [x] Distribution shape analysis by scope
+- [x] State-level consistency across scopes
+
+**Expected Relationships** (validate these hold):
+```
+LCT-Teachers-Secondary < LCT-Teachers < LCT-Teachers-Elementary
+LCT-Teachers < LCT-Core < LCT-Instructional < LCT-Support < LCT-All
+```
+
+Note: Elementary > Overall > Secondary because elementary schools typically have lower student-teacher ratios.
 
 **Ongoing Monitoring**:
-- State-level mean/median comparison
+- State-level mean/median comparison by scope
 - Year-over-year consistency (when available)
 - Cross-validation with state-reported ratios
+- Scope ratio consistency (e.g., LCT-All / LCT-Teachers should be stable)
 
 ### Outlier Investigation
 
 When valid districts show unusual LCT patterns:
 
-**LCT < 10 minutes**:
-- Likely very high enrollment relative to staff
+**LCT < 10 minutes** (any scope):
+- Very high enrollment relative to staff
 - Common in large urban districts
-- Verify enrollment spike or staff reporting
+- Verify enrollment data accuracy
 
-**LCT > 50 minutes**:
-- Likely very low enrollment relative to staff
+**LCT > 100 minutes** (LCT-All scope):
+- Very low enrollment relative to total staff
 - Common in rural or specialized districts
-- Verify specialized program or reporting period
+- May indicate administrative-heavy staffing
+
+**Scope Ratio Anomalies**:
+- If LCT-All < LCT-Teachers: Data quality issue (scope_all calculation error)
+- If LCT-Core > LCT-Teachers: Pre-K data inconsistency
+- Investigate and flag for review
+
+### Data Source Transparency
+
+For mixed-year data (enrollment, staffing, and bell schedules from different years), document component years:
+
+```json
+{
+  "component_years": {
+    "enrollment": "2023-24",
+    "staffing": "2024-25",
+    "bell_schedule": "2025-26"
+  },
+  "data_sources": {
+    "enrollment": "nces_ccd",
+    "staffing": "nces_ccd",
+    "bell_schedule": "automated_enrichment"
+  }
+}
+```
+
+**Transparency Requirements**:
+- All published LCT values must include component year metadata
+- Data source must be documented for each component
+- Mixed-year calculations are acceptable with disclosure
 
 ---
 
@@ -494,9 +672,55 @@ Always provide:
 
 ---
 
-**Methodology Version**: 1.0 (Phase 1)  
-**Last Updated**: December 16, 2025  
-**Next Review**: Upon completion of initial district calculations
+**Methodology Version**: 2.0 (Pre-K Exclusion + Level Variants)
+**Last Updated**: December 27, 2025
+**Key Changes in v2.0**:
+- All scopes now use K-12 enrollment (Pre-K excluded)
+- All scopes exclude Pre-K teachers
+- Added teacher-level variants (Elementary, Secondary)
+- Ungraded teachers excluded from LCT-Teachers, included in broader scopes
+- Added `level_lct_notes` for QA transparency
+**Next Review**: Upon integration of state-level staffing data
+
+---
+
+## Data Source Precedence
+
+### Multi-Source Integration
+
+LCT calculations may draw from multiple data sources. When sources conflict, apply these precedence rules:
+
+**Rule 1 - Recency Wins**: For the same data type (e.g., staffing), prefer more recent data regardless of source.
+- Example: State 2024-25 data > NCES 2023-24 data
+
+**Rule 2 - NCES as Foundation**: When sources have the same year, prefer NCES CCD as the foundational source.
+- Example: NCES 2023-24 > State 2023-24 (same year)
+
+**Rule 3 - No Hybrids per District**: All staff data for a given district must come from a single source.
+- Do not mix NCES teachers with state paraprofessionals
+- If state data is incomplete, use NCES entirely for that district
+
+**Rule 4 - Complete Scope Coverage**: A state source must provide all categories needed for all 5 LCT scopes to be used.
+- Required: teachers (total, elem, sec, kinder), coordinators, paraprofessionals, counselors, psychologists, student support, administrators
+
+### Available Data Sources
+
+| Source | Type | Latest Year | Coverage | Access |
+|--------|------|-------------|----------|--------|
+| NCES CCD | Federal | 2023-24 | National (17,842 districts) | CSV download |
+| CRDC | Federal | 2021-22 | National (biennial) | Data portal |
+| Census School Finance | Federal | 2022-23 | National | CSV download |
+| State Portals | State | 2022-23 typical | State-specific | Varies |
+
+### Year-Over-Year Stability Assumption
+
+When using staffing data from a different year than enrollment:
+- Teacher turnover is ~8% annually (typical)
+- Staff-to-enrollment ratios are generally stable year-over-year
+- Acceptable to use 2022-23 or 2024-25 staffing with 2023-24 enrollment
+- Document the mixed years in output metadata
+
+See `docs/STAFFING_DATA_ENHANCEMENT_PLAN.md` for complete data source strategy
 
 ---
 

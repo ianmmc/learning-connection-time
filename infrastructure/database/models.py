@@ -10,6 +10,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import (
+    Boolean,
     CheckConstraint,
     Column,
     DateTime,
@@ -64,6 +65,15 @@ class District(Base):
         back_populates="district", cascade="all, delete-orphan"
     )
     lct_calculations: Mapped[List["LCTCalculation"]] = relationship(
+        back_populates="district", cascade="all, delete-orphan"
+    )
+    staff_counts: Mapped[List["StaffCounts"]] = relationship(
+        back_populates="district", cascade="all, delete-orphan"
+    )
+    staff_counts_effective: Mapped[Optional["StaffCountsEffective"]] = relationship(
+        back_populates="district", cascade="all, delete-orphan", uselist=False
+    )
+    enrollment_by_grade: Mapped[List["EnrollmentByGrade"]] = relationship(
         back_populates="district", cascade="all, delete-orphan"
     )
 
@@ -336,6 +346,92 @@ class LCTCalculation(Base):
         }
 
 
+class CalculationRun(Base):
+    """
+    Tracks LCT calculation runs for incremental processing.
+
+    Enables efficient recalculation by tracking what was processed when.
+    """
+    __tablename__ = "calculation_runs"
+
+    # Primary key
+    run_id: Mapped[str] = mapped_column(String(50), primary_key=True)
+
+    # Run metadata
+    year: Mapped[str] = mapped_column(String(10), nullable=False)
+    run_type: Mapped[str] = mapped_column(String(30), nullable=False)  # full, incremental
+    status: Mapped[str] = mapped_column(String(20), nullable=False)  # running, completed, failed
+
+    # Processing stats
+    districts_processed: Mapped[int] = mapped_column(Integer, default=0)
+    districts_skipped: Mapped[int] = mapped_column(Integer, default=0)
+    calculations_created: Mapped[int] = mapped_column(Integer, default=0)
+
+    # Input hashes for change detection
+    input_hash: Mapped[Optional[str]] = mapped_column(String(64))  # Hash of source data state
+    previous_run_id: Mapped[Optional[str]] = mapped_column(String(50))
+
+    # Timing
+    started_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+    # Output tracking
+    output_files = Column(JSONB, default=list)  # List of generated files
+    error_message: Mapped[Optional[str]] = mapped_column(Text)
+
+    # QA summary
+    qa_summary = Column(JSONB)  # QA report embedded
+
+    def __repr__(self) -> str:
+        return f"<CalculationRun {self.run_id}: {self.status}>"
+
+    @classmethod
+    def start_run(
+        cls,
+        session,
+        year: str,
+        run_type: str = "full",
+        previous_run_id: Optional[str] = None,
+    ) -> "CalculationRun":
+        """Start a new calculation run."""
+        from datetime import timezone
+        run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+        run = cls(
+            run_id=run_id,
+            year=year,
+            run_type=run_type,
+            status="running",
+            previous_run_id=previous_run_id,
+        )
+        session.add(run)
+        session.flush()
+        return run
+
+    def complete(
+        self,
+        districts_processed: int,
+        calculations_created: int,
+        output_files: List[str],
+        qa_summary: Optional[dict] = None,
+    ) -> None:
+        """Mark run as completed."""
+        self.status = "completed"
+        self.completed_at = datetime.utcnow()
+        self.districts_processed = districts_processed
+        self.calculations_created = calculations_created
+        self.output_files = output_files
+        self.qa_summary = qa_summary
+
+    def fail(self, error_message: str) -> None:
+        """Mark run as failed."""
+        self.status = "failed"
+        self.completed_at = datetime.utcnow()
+        self.error_message = error_message
+
+
 class DataLineage(Base):
     """
     Audit trail for data changes and imports.
@@ -401,3 +497,387 @@ class DataLineage(Base):
         )
         session.add(lineage)
         return lineage
+
+
+class DataSourceRegistry(Base):
+    """
+    Registry of available data sources with metadata.
+
+    Tracks federal, state, and other sources for staffing and enrollment data.
+    """
+    __tablename__ = "data_source_registry"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source_code: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    source_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    source_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    source_url: Mapped[Optional[str]] = mapped_column(Text)
+
+    # Coverage
+    geographic_scope: Mapped[Optional[str]] = mapped_column(String(50))
+    state: Mapped[Optional[str]] = mapped_column(String(2))
+
+    # Data availability
+    latest_year_available: Mapped[Optional[str]] = mapped_column(String(10))
+    years_available = Column(JSONB, default=list)
+
+    # Update tracking
+    last_checked_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    next_expected_release: Mapped[Optional[str]] = mapped_column(String(50))
+
+    # Access information
+    access_method: Mapped[Optional[str]] = mapped_column(String(50))
+    access_notes: Mapped[Optional[str]] = mapped_column(Text)
+    requires_authentication: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    # Quality assessment
+    reliability_score: Mapped[Optional[int]] = mapped_column(Integer)
+    notes: Mapped[Optional[str]] = mapped_column(Text)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    def __repr__(self) -> str:
+        return f"<DataSourceRegistry {self.source_code}: {self.source_name}>"
+
+
+class StaffCounts(Base):
+    """
+    Historical staff counts by category from all sources.
+
+    Multiple rows per district (one per source+year).
+    Contains granular staff data for LCT calculations.
+    """
+    __tablename__ = "staff_counts"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    # Foreign key
+    district_id: Mapped[str] = mapped_column(
+        String(10), ForeignKey("districts.nces_id", ondelete="CASCADE"), nullable=False
+    )
+
+    # Source tracking
+    source_year: Mapped[str] = mapped_column(String(10), nullable=False)
+    data_source: Mapped[str] = mapped_column(String(50), nullable=False)
+    source_url: Mapped[Optional[str]] = mapped_column(Text)
+    retrieved_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
+
+    # === TIER 1: CLASSROOM TEACHERS ===
+    teachers_total: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    teachers_elementary: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    teachers_kindergarten: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    teachers_secondary: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    teachers_prek: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    teachers_ungraded: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+
+    # === TIER 2: INSTRUCTIONAL SUPPORT ===
+    instructional_coordinators: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    librarians: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    library_support: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    paraprofessionals: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+
+    # === TIER 3: STUDENT SUPPORT ===
+    counselors_total: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    counselors_elementary: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    counselors_secondary: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    psychologists: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    student_support_services: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+
+    # === TIER 4: ADMINISTRATIVE ===
+    lea_administrators: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    school_administrators: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    lea_admin_support: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    school_admin_support: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+
+    # === AGGREGATES ===
+    lea_staff_total: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    school_staff_total: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    other_staff: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    all_other_support_staff: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+
+    # === CRDC-SPECIFIC ===
+    teachers_first_year: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    teachers_second_year: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    teachers_absent_10plus_days: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+
+    # Quality tracking
+    is_complete: Mapped[bool] = mapped_column(Boolean, default=True)
+    quality_notes: Mapped[Optional[str]] = mapped_column(Text)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    # Relationships
+    district: Mapped["District"] = relationship(back_populates="staff_counts")
+
+    # Constraints
+    __table_args__ = (
+        UniqueConstraint("district_id", "source_year", "data_source", name="uq_staff_counts"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<StaffCounts {self.district_id}/{self.source_year}/{self.data_source}>"
+
+
+class StaffCountsEffective(Base):
+    """
+    Resolved current staff counts after precedence rules.
+
+    One row per district. Primary query table for applications.
+    Contains pre-calculated scope values for all 5 LCT variants.
+    """
+    __tablename__ = "staff_counts_effective"
+
+    # Primary key (one row per district)
+    district_id: Mapped[str] = mapped_column(
+        String(10), ForeignKey("districts.nces_id", ondelete="CASCADE"), primary_key=True
+    )
+
+    # Source tracking
+    effective_year: Mapped[str] = mapped_column(String(10), nullable=False)
+    primary_source: Mapped[str] = mapped_column(String(50), nullable=False)
+    sources_used = Column(JSONB, default=list)
+
+    # === RESOLVED STAFF COUNTS ===
+    teachers_total: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    teachers_elementary: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    teachers_kindergarten: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    teachers_secondary: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    teachers_prek: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    teachers_ungraded: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    instructional_coordinators: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    librarians: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    library_support: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    paraprofessionals: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    counselors_total: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    counselors_elementary: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    counselors_secondary: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    psychologists: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    student_support_services: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    lea_administrators: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    school_administrators: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    lea_admin_support: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    school_admin_support: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    lea_staff_total: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    school_staff_total: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    other_staff: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+
+    # === TEACHER-LEVEL AGGREGATES (for level-based LCT) ===
+    teachers_k12: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))  # elem + sec + kinder (NO prek, NO ungraded)
+    teachers_elementary_k5: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))  # elem + kinder
+    teachers_secondary_6_12: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))  # secondary only
+
+    # === PRE-CALCULATED SCOPE VALUES ===
+    scope_teachers_only: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))  # Same as teachers_k12
+    scope_teachers_core: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))  # K-12 teachers + ungraded
+    scope_instructional: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    scope_instructional_plus_support: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    scope_all: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+
+    # Metadata
+    last_resolved_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
+    resolution_notes: Mapped[Optional[str]] = mapped_column(Text)
+
+    # Relationships
+    district: Mapped["District"] = relationship(back_populates="staff_counts_effective")
+
+    def __repr__(self) -> str:
+        return f"<StaffCountsEffective {self.district_id}: {self.effective_year}>"
+
+    def calculate_scopes(self) -> None:
+        """
+        Calculate all scope values from individual staff counts.
+
+        Key decisions (December 2025):
+        - All scopes exclude Pre-K teachers and use K-12 enrollment
+        - Ungraded teachers EXCLUDED from LCT-Teachers variants
+        - Ungraded teachers INCLUDED in LCT-Core, Instructional, Support, All
+        """
+        def safe_sum(*values):
+            return sum(float(v) if v is not None else 0 for v in values)
+
+        # Teacher-level aggregates (for level-based LCT)
+        # LCT-Teachers: elem + sec + kinder (NO prek, NO ungraded)
+        self.teachers_k12 = safe_sum(
+            self.teachers_elementary,
+            self.teachers_secondary,
+            self.teachers_kindergarten
+        ) or None
+
+        # LCT-Teachers-Elementary: elem + kinder
+        self.teachers_elementary_k5 = safe_sum(
+            self.teachers_elementary,
+            self.teachers_kindergarten
+        ) or None
+
+        # LCT-Teachers-Secondary: just secondary
+        self.teachers_secondary_6_12 = self.teachers_secondary
+
+        # scope_teachers_only: Same as teachers_k12 (NO ungraded, NO prek)
+        self.scope_teachers_only = self.teachers_k12
+
+        # scope_teachers_core: K-12 teachers + ungraded (NO prek)
+        self.scope_teachers_core = safe_sum(
+            self.teachers_elementary,
+            self.teachers_secondary,
+            self.teachers_kindergarten,
+            self.teachers_ungraded
+        ) or None
+
+        # scope_instructional: core + coordinators + paras
+        self.scope_instructional = safe_sum(
+            self.teachers_elementary,
+            self.teachers_secondary,
+            self.teachers_kindergarten,
+            self.teachers_ungraded,
+            self.instructional_coordinators,
+            self.paraprofessionals
+        ) or None
+
+        # scope_instructional_plus_support: instructional + counselors + psych + support
+        self.scope_instructional_plus_support = safe_sum(
+            self.teachers_elementary,
+            self.teachers_secondary,
+            self.teachers_kindergarten,
+            self.teachers_ungraded,
+            self.instructional_coordinators,
+            self.paraprofessionals,
+            self.counselors_total,
+            self.psychologists,
+            self.student_support_services
+        ) or None
+
+        # scope_all: All staff EXCEPT Pre-K teachers
+        self.scope_all = safe_sum(
+            self.teachers_elementary,
+            self.teachers_secondary,
+            self.teachers_kindergarten,
+            self.teachers_ungraded,
+            self.instructional_coordinators,
+            self.librarians,
+            self.library_support,
+            self.paraprofessionals,
+            self.counselors_total,
+            self.psychologists,
+            self.student_support_services,
+            self.lea_administrators,
+            self.school_administrators,
+            self.lea_admin_support,
+            self.school_admin_support,
+            self.other_staff
+        ) or None
+
+
+class EnrollmentByGrade(Base):
+    """
+    Grade-level enrollment for LCT-Core calculations.
+
+    Allows excluding Pre-K from the denominator when using
+    teachers_core (which excludes Pre-K teachers).
+    """
+    __tablename__ = "enrollment_by_grade"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    # Foreign key
+    district_id: Mapped[str] = mapped_column(
+        String(10), ForeignKey("districts.nces_id", ondelete="CASCADE"), nullable=False
+    )
+
+    # Source tracking
+    source_year: Mapped[str] = mapped_column(String(10), nullable=False)
+    data_source: Mapped[str] = mapped_column(String(50), default="nces_ccd")
+
+    # Enrollment by grade
+    enrollment_prek: Mapped[Optional[int]] = mapped_column(Integer)
+    enrollment_kindergarten: Mapped[Optional[int]] = mapped_column(Integer)
+    enrollment_grade_1: Mapped[Optional[int]] = mapped_column(Integer)
+    enrollment_grade_2: Mapped[Optional[int]] = mapped_column(Integer)
+    enrollment_grade_3: Mapped[Optional[int]] = mapped_column(Integer)
+    enrollment_grade_4: Mapped[Optional[int]] = mapped_column(Integer)
+    enrollment_grade_5: Mapped[Optional[int]] = mapped_column(Integer)
+    enrollment_grade_6: Mapped[Optional[int]] = mapped_column(Integer)
+    enrollment_grade_7: Mapped[Optional[int]] = mapped_column(Integer)
+    enrollment_grade_8: Mapped[Optional[int]] = mapped_column(Integer)
+    enrollment_grade_9: Mapped[Optional[int]] = mapped_column(Integer)
+    enrollment_grade_10: Mapped[Optional[int]] = mapped_column(Integer)
+    enrollment_grade_11: Mapped[Optional[int]] = mapped_column(Integer)
+    enrollment_grade_12: Mapped[Optional[int]] = mapped_column(Integer)
+    enrollment_grade_13: Mapped[Optional[int]] = mapped_column(Integer)
+    enrollment_ungraded: Mapped[Optional[int]] = mapped_column(Integer)
+    enrollment_adult_ed: Mapped[Optional[int]] = mapped_column(Integer)
+
+    # Aggregates
+    enrollment_total: Mapped[Optional[int]] = mapped_column(Integer)
+    enrollment_k12: Mapped[Optional[int]] = mapped_column(Integer)  # Total minus Pre-K
+    enrollment_elementary: Mapped[Optional[int]] = mapped_column(Integer)  # K-5
+    enrollment_secondary: Mapped[Optional[int]] = mapped_column(Integer)  # 6-12
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    # Relationships
+    district: Mapped["District"] = relationship(back_populates="enrollment_by_grade")
+
+    # Constraints
+    __table_args__ = (
+        UniqueConstraint("district_id", "source_year", "data_source", name="uq_enrollment_by_grade"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<EnrollmentByGrade {self.district_id}/{self.source_year}>"
+
+    def calculate_k12(self) -> None:
+        """Calculate K-12 enrollment (total minus Pre-K)."""
+        if self.enrollment_total is not None:
+            prek = self.enrollment_prek or 0
+            self.enrollment_k12 = self.enrollment_total - prek
+
+    def calculate_level_enrollments(self) -> None:
+        """Calculate level-based enrollment aggregates."""
+        def safe_sum(*values):
+            return sum(v or 0 for v in values)
+
+        # Elementary = K + grades 1-5
+        self.enrollment_elementary = safe_sum(
+            self.enrollment_kindergarten,
+            self.enrollment_grade_1,
+            self.enrollment_grade_2,
+            self.enrollment_grade_3,
+            self.enrollment_grade_4,
+            self.enrollment_grade_5
+        )
+
+        # Secondary = grades 6-12
+        self.enrollment_secondary = safe_sum(
+            self.enrollment_grade_6,
+            self.enrollment_grade_7,
+            self.enrollment_grade_8,
+            self.enrollment_grade_9,
+            self.enrollment_grade_10,
+            self.enrollment_grade_11,
+            self.enrollment_grade_12
+        )
+
+        # Also update K-12 if not already set
+        if self.enrollment_k12 is None:
+            self.calculate_k12()
