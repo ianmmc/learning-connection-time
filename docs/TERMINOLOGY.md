@@ -1,6 +1,6 @@
 # Project Terminology Guide
 
-**Last Updated:** December 21, 2024
+**Last Updated:** January 3, 2026
 
 This document standardizes vocabulary used throughout the Learning Connection Time project to prevent confusion between human and AI collaboration.
 
@@ -97,25 +97,23 @@ This document standardizes vocabulary used throughout the Learning Connection Ti
 
 ## Dataset Years
 
-### 2023-24 Data
-**Current campaign focus**
+### Current Dataset (Mixed Years: 2023-24, 2024-25, 2025-26)
+**PostgreSQL database tracks all years**
 
 **Storage:**
-- Individual JSON files: `data/enriched/bell-schedules/{district_id}_2023-24.json`
-- Tracking: `enrichment_reference.csv` (19,637 districts)
+- Database: `learning_connection_time` PostgreSQL database
+- Table: `bell_schedules` (schedule records for enriched districts)
+- Export: `data/enriched/bell-schedules/bell_schedules_manual_collection_2024_25.json` (backup/legacy)
 
 **Enrichment status:**
-- 4 districts enriched (Wyoming campaign)
-- Target: 3 per state × 51 = ~153 districts
+- See [../CLAUDE.md](../CLAUDE.md#project-status) for current enrichment counts and campaign progress
+- **State campaigns:** Following Option A protocol (ranks 1-9, stop at 3 successful)
 
-### 2024-25 Data
-**Earlier preliminary work**
-
-**Storage:**
-- Single collection file: `bell_schedules_manual_collection_2024_25.json`
-- Contains 29 districts (25 largest + 4 others)
-
-**Note:** Different year, different tracking system. Not included in current campaign counts.
+**Bell Schedule Search Priority:**
+- 2025-26 (current year, most likely posted)
+- 2024-25 (recent year, still available)
+- 2023-24 (acceptable, matches primary dataset year)
+- **NEVER use 2019-20 through 2022-23** (COVID-era exclusion)
 
 ---
 
@@ -212,13 +210,14 @@ Used in bell schedule JSON files to indicate collection approach:
 ## Enrichment Campaign Terminology
 
 ### Target Districts
-Districts identified for enrichment in the 2023-24 campaign
+Districts identified for enrichment campaign (mixed years: 2023-24, 2024-25, 2025-26)
 
 **Selection criteria:**
 - Population-based state ordering (ascending)
-- 3 districts per state
+- 3 districts per state (via Option A: attempt ranks 1-9, stop at 3 successful)
 - Minimum enrollment thresholds
 - Grade level diversity (K-12 coverage)
+- PostgreSQL database tracks all enrichment data
 
 ### Enrichment Status
 
@@ -282,17 +281,19 @@ Districts identified for enrichment in the 2023-24 campaign
 
 ## Examples of Correct Usage
 
-✓ "We have 4 Wyoming districts enriched with actual bell schedules in the 2023-24 dataset."
+✓ "We have enriched districts with actual bell schedules across multiple states." (Check CLAUDE.md for current counts)
 
 ✓ "Broward County required human-provided data because Claude encountered Cloudflare blocks."
 
-✓ "The manual collection file contains 29 districts from 2024-25 preliminary work."
+✓ "The database contains bell schedule records for enriched districts." (Check database for current counts)
 
 ✓ "This district uses statutory fallback, so it doesn't count as enriched."
 
 ✗ "We manually collected 135 districts." (These are statutory fallback, NOT enriched)
 
 ✗ "Manual enrichment for Los Angeles." (Unclear if human-provided or manual intervention)
+
+✗ "LCT is 185.5 minutes for SPED." (Calculation results live in outputs, not documentation)
 
 ---
 

@@ -770,6 +770,26 @@ cat data/enriched/lct-calculations/lct_qa_report_2023_24_<timestamp>.json
   - **Interactive enrichment tool**: `interactive_enrichment.py` CLI for state campaigns
   - **Parquet export**: Optional 70-80% file size reduction for large datasets
   - **Incremental calculations**: Tracks calculation runs, enables smart recalculation
+- ✅ **SPED Segmentation (v3 Self-Contained Focus)** (Jan 3, 2026) ⭐ NEW
+  - Segments LCT by SPED (Special Education) vs GenEd (General Education)
+  - Uses 2017-18 baseline ratios from IDEA 618 + CRDC federal data
+  - **Three LCT scopes** (v3 self-contained approach):
+    - `core_sped` - SPED teachers / self-contained SPED students
+    - `teachers_gened` - GenEd teachers / GenEd enrollment (includes mainstreamed SPED)
+    - `instructional_sped` - SPED teachers + paraprofessionals / self-contained students
+  - **Key insight**: Self-contained SPED students (~6.7% of all SPED) have distinct teacher-student ratios
+  - **Audit validation**: Weighted average of core_sped + teachers_gened = overall teachers_only LCT
+  - Database tables: `sped_state_baseline`, `sped_lea_baseline`, `sped_estimates`
+  - **Results**: See `data/enriched/lct-calculations/` for current LCT values by scope
+  - **Methodology**: See `docs/SPED_SEGMENTATION_IMPLEMENTATION.md` for full details
+- ✅ **Data Safeguards** (Jan 3, 2026) ⭐ NEW
+  - 6 validation flags for data quality assessment
+  - **Error flags** (ERR_): Likely data quality issues (flat staffing, impossible ratios, volatile enrollment, ratio ceiling)
+  - **Warning flags** (WARN_): Unusual but potentially valid (extreme LCT values)
+  - **Transparency-focused**: Flags data vs filtering, allows user-defined thresholds
+  - **Flag definitions and usage**: See `docs/METHODOLOGY.md#data-safeguards`
+  - **Current flag counts**: See QA reports in `data/enriched/lct-calculations/lct_qa_report_*.json`
+  - **Analysis**: See `docs/Proposed LCT Validation Safeguards from Gemini.md`
 
 ### Known Limitations
 
@@ -853,10 +873,10 @@ with session_scope() as session:
 
 ---
 
-**Last Updated**: December 28, 2025
+**Last Updated**: January 3, 2026
 **Project Location**: `/Users/ianmmc/Development/learning-connection-time`
-**Status**: Active enrichment campaign - State-by-state coverage expansion ✅
-**Primary Data Store**: PostgreSQL database (learning_connection_time) ⭐ NEW
+**Status**: Active development - SPED segmentation (v3), data safeguards, and bell schedule enrichment ✅
+**Primary Data Store**: PostgreSQL database (learning_connection_time) ⭐ Docker containerized
 **Dataset**: Mixed (2023-24 legacy + 2024-25 + 2025-26 current campaign)
 **Milestones**:
 - ✅ Top 25 largest districts: 100% complete (25/25)
@@ -868,9 +888,13 @@ with session_scope() as session:
 - ✅ **Option A process adopted** (Dec 26, 2025) - attempt ranks 1-9 per state, stop at 3 successful
 - ✅ **South Carolina, Wisconsin, Minnesota campaigns complete** (Dec 26, 2025) - 9 districts enriched
 - ✅ **Efficiency Enhancement Suite** (Dec 27-28, 2025) - QA dashboard, materialized views, interactive enrichment, Parquet export, calculation tracking
+- ✅ **SPED Segmentation v3 implemented** (Jan 3, 2026) - Self-contained focus with three LCT scopes (core_sped, teachers_gened, instructional_sped), audit validation passes, results in `data/enriched/lct-calculations/`
+- ✅ **Data Safeguards implemented** (Jan 3, 2026) - 6 validation flags for quality transparency, see `docs/METHODOLOGY.md` for definitions and QA reports for current counts
 **Key Additions**:
 - Bell schedule search priority: 2025-26 > 2024-25 > 2023-24
 - **CRITICAL**: COVID-era data exclusion (2019-20 through 2022-23) - use 2018-19 if needed
 - **Data access**: Query database via `infrastructure/database/queries.py` for token efficiency
 - **State tracking**: `data/processed/normalized/state_enrichment_tracking.csv`
 - **Standard process**: Query ranks 1-9 per state, stop at 3 successful enrichments
+- **SPED segmentation (v3)**: Self-contained SPED approach with three LCT variants: core_sped, teachers_gened, instructional_sped (see `docs/SPED_SEGMENTATION_IMPLEMENTATION.md`)
+- **Data safeguards**: 6 validation flags for quality transparency (see `docs/METHODOLOGY.md` Data Safeguards section)

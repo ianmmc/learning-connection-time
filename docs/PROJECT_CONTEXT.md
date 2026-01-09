@@ -67,38 +67,62 @@ LCT = 18 minutes per student per day
 - Temporal trends (year-over-year changes)
 - Relationship to outcomes (with appropriate caveats)
 
-## Current Status
+## Current Status (January 2026)
 
-**Phase**: Initial data infrastructure setup
-**Target**: Top 100-200 largest U.S. school districts
-**Data Sources**: Federal (NCES, CRDC) + State education agencies
+**Phase**: Phase 1.5 - Bell Schedule Enrichment & SPED Segmentation
+**Coverage**: 17,842 U.S. school districts in PostgreSQL database
+**Enrichment**: See [../CLAUDE.md](../CLAUDE.md#project-status) for current campaign progress
+**Data Sources**: Federal (NCES, CRDC, IDEA 618) + Bell schedules + State agencies
 
-### What We Have
+### What We Have ✅
 - Comprehensive project structure
+- PostgreSQL database with 17,842 districts
 - Multi-part file handling capability
-- Documentation framework
-- Initial processing scripts
+- SPED segmentation (v3 self-contained focus)
+- Data safeguards (6 validation flags)
+- Bell schedule enrichment (128 districts, 384 schedules)
+- LCT calculation engine with variants
+- QA dashboard and validation framework
+- Interactive enrichment tools
+- Grade-level analysis (elementary, middle, high)
+- Token-optimized infrastructure (88% size reduction)
 
-### What We Need
-- Data acquisition implementation
-- Normalization pipelines
-- LCT calculation engine
-- Validation framework
-- Analysis and reporting tools
+### Recent Achievements (Dec 2025 - Jan 2026)
+- PostgreSQL database migration complete
+- Docker containerization
+- SPED segmentation v3 (self-contained focus)
+- Data quality safeguards implemented
+- Materialized views for fast queries
+- Interactive enrichment CLI
+- Parquet export capability
+- Incremental calculation tracking
 
 ## Evolution Strategy
 
 LCT is designed to evolve through six phases, addressing limitations while maintaining the core rhetorical power of the basic metric:
 
-### Phase 1: Basic LCT (Current)
+### Phase 1: Basic LCT ✅ Complete
 - Uses available enrollment and staff data
 - Applies state statutory instructional minutes
 - Provides district-level comparisons
+- **Status:** Implemented with grade-level breakdowns
 
-**Limitations**:
+### Phase 1.5: Bell Schedule Enrichment & SPED Segmentation 🔄 In Progress
+- Actual instructional time collection (vs statutory fallback)
+- SPED segmentation (v3 self-contained focus):
+  - Three LCT scopes: core_sped, teachers_gened, instructional_sped
+  - Self-contained SPED vs mainstreamed SPED distinction
+  - Two-step ratio estimation using IDEA 618 + CRDC baselines
+  - See [SPED_SEGMENTATION_IMPLEMENTATION.md](SPED_SEGMENTATION_IMPLEMENTATION.md) for methodology
+- Data quality safeguards (6 validation flags)
+  - See [METHODOLOGY.md](METHODOLOGY.md#data-safeguards) for details
+- PostgreSQL database infrastructure
+
+**Current Limitations**:
 - Individualization fallacy (assumes all time could be 1-on-1)
 - Time-as-quality assumption (more time ≠ better education)
 - Averaging deception (masks within-district disparities)
+- SPED estimation uses state-level ratios (not LEA-specific)
 
 ### Phase 2: Teacher Quality Weights
 - Incorporate teacher experience, certification, education level
@@ -163,11 +187,14 @@ LCT is designed to evolve through six phases, addressing limitations while maint
 
 ## Success Criteria
 
-### Phase 1 (Initial Analysis)
-- [ ] Successfully calculate LCT for top 100 districts
-- [ ] Document data availability and limitations
-- [ ] Identify 3-5 compelling equity stories
-- [ ] Create visualization prototypes
+### Phase 1 (Initial Analysis) ✅ Mostly Complete
+- [x] Successfully calculate LCT for all districts in database
+- [x] Document data availability and limitations
+- [x] Enrich districts with actual bell schedules (ongoing campaign)
+- [x] Implement SPED segmentation (v3)
+- [x] Create data quality safeguards
+- [ ] Identify 3-5 compelling equity stories (in progress)
+- [ ] Create visualization prototypes (pending)
 
 ### Long-term
 - [ ] Establish LCT as recognized education metric
@@ -216,26 +243,26 @@ Outputs & Visualizations
 
 ## Next Steps
 
-1. **Immediate** (This Week)
-   - Complete directory structure
-   - Download sample NCES CCD data
-   - Test multi-part file handling
-   - Begin normalization script
+1. **Immediate** (This Month - January 2026)
+   - Continue state-by-state bell schedule enrichment
+   - Analyze SPED segmentation results for policy insights
+   - Document equity findings from SPED data
+   - Refine data safeguard thresholds based on review
 
-2. **Short-term** (This Month)
-   - Implement full NCES CCD pipeline
-   - Add CRDC data source
-   - Build LCT calculation engine
-   - Generate first district profiles
+2. **Short-term** (Next Quarter - Q1 2026)
+   - Complete bell schedule enrichment for remaining priority states
+   - Generate district-level SPED equity profiles
+   - Create visualization dashboard for LCT variants
+   - Draft initial SPED disparity analysis report
 
-3. **Medium-term** (This Quarter)
-   - Add 3-5 state data sources
-   - Complete validation framework
-   - Create visualization dashboard
-   - Draft initial analysis report
+3. **Medium-term** (H1 2026)
+   - Add state-specific data sources (CA, TX, NY)
+   - Expand SPED analysis with finer-grained data where available
+   - Develop interactive web tool for LCT exploration
+   - Publish methodology paper and findings
 
 ---
 
-**Document Version**: 1.0
-**Last Updated**: December 16, 2025
-**Status**: Initial setup phase
+**Document Version**: 2.0
+**Last Updated**: January 3, 2026
+**Status**: Phase 1.5 - Bell Schedule Enrichment & SPED Segmentation in progress

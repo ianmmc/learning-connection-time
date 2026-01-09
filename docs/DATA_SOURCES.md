@@ -72,6 +72,69 @@ This document catalogs all data sources for the Instructional Minute Metric proj
 
 ---
 
+### IDEA 618 Data Collection
+
+**Organization**: U.S. Department of Education Office of Special Education Programs (OSEP)
+**URL**: https://www2.ed.gov/about/reports/annual/osep/index.html
+
+#### Coverage
+- **Scope**: All states and territories (state-level data only)
+- **Frequency**: Annual
+- **Lag Time**: Typically 2-3 years
+- **Latest Available**: 2021-22 (as of Jan 2026)
+- **Used for SPED Baseline**: 2017-18 (pre-COVID)
+
+#### Key Tables
+
+| Table Name | Contains | Use for LCT |
+|-----------|----------|-------------|
+| Personnel | SPED teacher and paraprofessional FTE by state | SPED staffing ratios |
+| Child Count & Educational Environments | SPED student counts by educational environment | Self-contained vs mainstreamed categorization |
+
+#### Access Methods
+
+**Download Portal**: https://www2.ed.gov/programs/osepidea/618-data/state-level-data-files/index.html
+
+**Data Files**: CSV, Excel
+- Files organized by year and data type
+- Example files (2017-18):
+  - `bpersonnel2017-18.csv` - Teacher and para FTE
+  - `bchildcountandedenvironments2017-18.csv` - Student counts by environment
+
+#### Educational Environment Categories
+
+**Self-Contained SPED** (used for LCT SPED calculations):
+- Separate Class
+- Separate School
+- Inside regular class less than 40% of the day
+
+**Mainstreamed SPED** (counted as GenEd for LCT):
+- Inside regular class 80% or more of the day
+- Inside regular class 40% through 79% of the day
+
+#### Key Fields for LCT
+
+**From Personnel Table**:
+- State identifier
+- `SPEDTCH` columns: SPED teacher FTE (Ages 6-21)
+- `SPEDPARA` columns: SPED paraprofessional FTE (Ages 6-21)
+
+**From Child Count Table**:
+- State identifier
+- Student counts by educational environment (Ages 6-21)
+- Used to calculate self-contained proportion
+
+#### Usage in SPED Segmentation
+
+IDEA 618 provides state-level baseline data (2017-18 pre-COVID) for:
+1. State SPED teacher-to-self-contained-student ratios
+2. State SPED instructional (teachers + paras) ratios
+3. State self-contained proportion (self-contained / all SPED)
+
+These ratios are applied to LEA-level estimates in a two-step process. See `docs/SPED_SEGMENTATION_IMPLEMENTATION.md` for full methodology.
+
+---
+
 ### Civil Rights Data Collection (CRDC)
 
 **Organization**: U.S. Department of Education Office for Civil Rights
@@ -109,7 +172,15 @@ This document catalogs all data sources for the Instructional Minute Metric proj
 - School-level student enrollment
 - Teacher FTE by subject area
 - Class size distributions
+- **SPED enrollment** (LEA-level totals, no environment breakdown)
 - Can enable more sophisticated LCT calculations
+
+#### Usage in SPED Segmentation
+
+CRDC 2017-18 provides LEA-level SPED enrollment totals used to calculate district-specific SPED proportions:
+- `SCH_ENR_IDEA_M` + `SCH_ENR_IDEA_F` = Total SPED enrollment
+- Used in two-step ratio: `LEA SPED Proportion = CRDC SPED / CCD Total Enrollment`
+- Note: CRDC does not break down by educational environment (self-contained vs mainstreamed)
 
 ---
 
@@ -354,6 +425,6 @@ When adding a new state or data source:
 
 ---
 
-**Last Updated**: December 16, 2025
-**Sources Documented**: 2 federal, 4 state
-**Status**: Active development
+**Last Updated**: January 3, 2026
+**Sources Documented**: 3 federal (NCES CCD, CRDC, IDEA 618), 4 state, bell schedules (128 districts)
+**Status**: Active development - Phase 1.5 (Bell Schedule Enrichment & SPED Segmentation)

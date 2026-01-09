@@ -881,3 +881,276 @@ class EnrollmentByGrade(Base):
         # Also update K-12 if not already set
         if self.enrollment_k12 is None:
             self.calculate_k12()
+
+
+# =============================================================================
+# SPED SEGMENTATION BASELINE TABLES (2017-18 Pre-COVID Year)
+# =============================================================================
+
+
+class SpedStateBaseline(Base):
+    """
+    State-level SPED baseline data from IDEA 618 (2017-18).
+
+    Contains state-level SPED teachers and students for calculating
+    the state SPED teacher-to-student ratio (Ratio 4a).
+
+    Sources:
+    - IDEA 618 Personnel (State-level SPED teacher FTE)
+    - IDEA 618 Child Count (State-level SPED student count ages 6-21)
+    """
+    __tablename__ = "sped_state_baseline"
+
+    # Primary key
+    state: Mapped[str] = mapped_column(String(2), primary_key=True)
+
+    # Source tracking
+    source_year: Mapped[str] = mapped_column(String(10), nullable=False, default="2017-18")
+
+    # IDEA 618 Personnel: SPED Teachers (Ages 6-21)
+    sped_teachers_certified: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    sped_teachers_not_certified: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    sped_teachers_total: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+
+    # IDEA 618 Personnel: SPED Paraprofessionals (Ages 6-21)
+    sped_paras_qualified: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    sped_paras_not_qualified: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    sped_paras_total: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+
+    # Combined instructional staff (teachers + paras)
+    sped_instructional_total: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+
+    # IDEA 618 Child Count: SPED Students (Ages 6-21, school-age)
+    sped_students_ages_3_5: Mapped[Optional[int]] = mapped_column(Integer)
+    sped_students_ages_6_21: Mapped[Optional[int]] = mapped_column(Integer)
+    sped_students_total: Mapped[Optional[int]] = mapped_column(Integer)
+
+    # IDEA 618 Educational Environments: Self-Contained SPED (Ages 6-21)
+    # Self-contained = Separate Class + Separate School + <40% in regular class
+    # Excludes: Residential Facility, Correctional Facilities (not district-managed)
+    sped_students_self_contained: Mapped[Optional[int]] = mapped_column(Integer)
+    sped_students_mainstreamed: Mapped[Optional[int]] = mapped_column(Integer)  # 80%+ and 40-79% in regular class
+
+    # Calculated Ratios
+    # Ratio for estimating self-contained proportion at LEA level
+    ratio_self_contained_proportion: Mapped[Optional[float]] = mapped_column(Numeric(10, 6))
+    # Ratio for lct_core_sped: SPED Teachers / Self-Contained SPED Students
+    ratio_sped_teachers_per_student: Mapped[Optional[float]] = mapped_column(Numeric(10, 6))
+    # Ratio for lct_instructional_sped: (SPED Teachers + Paras) / Self-Contained SPED Students
+    ratio_sped_instructional_per_student: Mapped[Optional[float]] = mapped_column(Numeric(10, 6))
+
+    # Quality tracking
+    personnel_source_file: Mapped[Optional[str]] = mapped_column(String(255))
+    child_count_source_file: Mapped[Optional[str]] = mapped_column(String(255))
+    data_quality_notes: Mapped[Optional[str]] = mapped_column(Text)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    def __repr__(self) -> str:
+        return f"<SpedStateBaseline {self.state}: {self.sped_teachers_total} teachers, {self.sped_students_ages_6_21} students>"
+
+    def calculate_ratios(self) -> None:
+        """Calculate SPED staff ratios using self-contained student counts."""
+        # Calculate self-contained proportion (for LEA estimation)
+        if self.sped_students_ages_6_21 and self.sped_students_ages_6_21 > 0:
+            if self.sped_students_self_contained:
+                self.ratio_self_contained_proportion = float(self.sped_students_self_contained) / self.sped_students_ages_6_21
+
+        # Calculate staff ratios per self-contained student
+        if self.sped_students_self_contained and self.sped_students_self_contained > 0:
+            # Ratio for lct_core_sped: teachers / self-contained students
+            if self.sped_teachers_total:
+                self.ratio_sped_teachers_per_student = float(self.sped_teachers_total) / self.sped_students_self_contained
+
+            # Ratio for lct_instructional_sped: (teachers + paras) / self-contained students
+            if self.sped_instructional_total:
+                self.ratio_sped_instructional_per_student = float(self.sped_instructional_total) / self.sped_students_self_contained
+
+
+class SpedLeaBaseline(Base):
+    """
+    LEA-level SPED baseline data from CRDC and CCD (2017-18).
+
+    Contains LEA-level enrollment for calculating the SPED student proportion
+    (Ratio 4b: LEA SPED Students / LEA Total Students).
+
+    Sources:
+    - CRDC 2017-18 Enrollment (LEA-level SPED student counts)
+    - CCD 2017-18 LEA Membership (LEA-level total enrollment)
+    """
+    __tablename__ = "sped_lea_baseline"
+
+    # Primary key
+    lea_id: Mapped[str] = mapped_column(String(10), primary_key=True)
+
+    # LEA identification
+    lea_name: Mapped[Optional[str]] = mapped_column(String(255))
+    state: Mapped[str] = mapped_column(String(2), nullable=False)
+
+    # Source tracking
+    source_year: Mapped[str] = mapped_column(String(10), nullable=False, default="2017-18")
+
+    # CRDC: SPED Enrollment (IDEA students)
+    crdc_sped_enrollment_m: Mapped[Optional[int]] = mapped_column(Integer)
+    crdc_sped_enrollment_f: Mapped[Optional[int]] = mapped_column(Integer)
+    crdc_sped_enrollment_total: Mapped[Optional[int]] = mapped_column(Integer)
+
+    # CRDC: Total Enrollment (for validation)
+    crdc_total_enrollment_m: Mapped[Optional[int]] = mapped_column(Integer)
+    crdc_total_enrollment_f: Mapped[Optional[int]] = mapped_column(Integer)
+    crdc_total_enrollment: Mapped[Optional[int]] = mapped_column(Integer)
+
+    # CCD: Total Enrollment (primary source for total)
+    ccd_total_enrollment: Mapped[Optional[int]] = mapped_column(Integer)
+
+    # Calculated Ratio 4b: LEA SPED Students / LEA Total Students
+    ratio_sped_proportion: Mapped[Optional[float]] = mapped_column(Numeric(10, 6))
+
+    # Quality tracking
+    crdc_source_file: Mapped[Optional[str]] = mapped_column(String(255))
+    ccd_source_file: Mapped[Optional[str]] = mapped_column(String(255))
+    data_quality_notes: Mapped[Optional[str]] = mapped_column(Text)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    def __repr__(self) -> str:
+        return f"<SpedLeaBaseline {self.lea_id} ({self.state}): {self.crdc_sped_enrollment_total} SPED / {self.ccd_total_enrollment} total>"
+
+    def calculate_ratio(self) -> None:
+        """Calculate Ratio 4b: SPED proportion of total enrollment."""
+        # Prefer CCD total enrollment, fall back to CRDC if not available
+        total = self.ccd_total_enrollment or self.crdc_total_enrollment
+        if self.crdc_sped_enrollment_total and total and total > 0:
+            self.ratio_sped_proportion = float(self.crdc_sped_enrollment_total) / total
+
+
+class SpedEstimate(Base):
+    """
+    Current-year SPED estimates derived from baseline ratios.
+
+    Applies 2017-18 ratios to current year data to estimate:
+    - LEA SPED enrollment
+    - LEA SPED teachers
+    - LEA GenEd teachers
+
+    These estimates enable LCT-Teachers-SPED and LCT-Teachers-GenEd calculations.
+    """
+    __tablename__ = "sped_estimates"
+
+    # Primary key
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    # Foreign key to current districts
+    district_id: Mapped[str] = mapped_column(
+        String(10), ForeignKey("districts.nces_id", ondelete="CASCADE"), nullable=False
+    )
+
+    # Estimation context
+    estimate_year: Mapped[str] = mapped_column(String(10), nullable=False)
+    baseline_year: Mapped[str] = mapped_column(String(10), nullable=False, default="2017-18")
+
+    # Input values (from current year data)
+    current_total_enrollment: Mapped[Optional[int]] = mapped_column(Integer)
+    current_total_teachers: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+
+    # Ratios used (denormalized for transparency)
+    ratio_state_sped_teachers_per_student: Mapped[Optional[float]] = mapped_column(Numeric(10, 6))
+    ratio_state_sped_instructional_per_student: Mapped[Optional[float]] = mapped_column(Numeric(10, 6))
+    ratio_state_self_contained_proportion: Mapped[Optional[float]] = mapped_column(Numeric(10, 6))
+    ratio_lea_sped_proportion: Mapped[Optional[float]] = mapped_column(Numeric(10, 6))
+
+    # Fallback tracking (if LEA-specific ratio unavailable)
+    used_state_average_for_proportion: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    # Estimated values
+    estimated_sped_enrollment: Mapped[Optional[int]] = mapped_column(Integer)  # All SPED students
+    estimated_self_contained_sped: Mapped[Optional[int]] = mapped_column(Integer)  # Self-contained SPED only
+    estimated_gened_enrollment: Mapped[Optional[int]] = mapped_column(Integer)  # Total - Self-Contained
+    estimated_sped_teachers: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    estimated_sped_instructional: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))  # Teachers + Paras
+    estimated_gened_teachers: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+
+    # Quality tracking
+    estimation_method: Mapped[str] = mapped_column(String(50), nullable=False)
+    confidence: Mapped[str] = mapped_column(String(20), default="medium")
+    notes: Mapped[Optional[str]] = mapped_column(Text)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    # Constraints
+    __table_args__ = (
+        UniqueConstraint("district_id", "estimate_year", name="uq_sped_estimate"),
+        CheckConstraint("confidence IN ('high', 'medium', 'low')", name="chk_sped_confidence"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<SpedEstimate {self.district_id}/{self.estimate_year}: {self.estimated_sped_teachers} SPED, {self.estimated_gened_teachers} GenEd>"
+
+    def calculate_estimates(self) -> None:
+        """
+        Calculate SPED estimates from current year data and baseline ratios.
+
+        Method (January 2026 - Self-Contained Focus):
+        1. Estimated All SPED = Total Enrollment × LEA SPED Proportion
+        2. Estimated Self-Contained SPED = All SPED × State Self-Contained Proportion
+        3. Estimated GenEd Enrollment = Total - Self-Contained (includes mainstreamed SPED)
+        4. Estimated SPED Teachers = Self-Contained × State Teacher Ratio
+        5. Estimated SPED Instructional = Self-Contained × State Instructional Ratio
+        6. Estimated GenEd Teachers = Total Teachers - SPED Teachers
+        """
+        if not all([
+            self.current_total_enrollment,
+            self.current_total_teachers,
+            self.ratio_lea_sped_proportion,
+            self.ratio_state_sped_teachers_per_student,
+            self.ratio_state_self_contained_proportion
+        ]):
+            return
+
+        # Step 1: Estimate all SPED enrollment (for intermediate calculation)
+        sped_proportion = float(self.ratio_lea_sped_proportion)
+        self.estimated_sped_enrollment = int(round(self.current_total_enrollment * sped_proportion))
+
+        # Step 2: Estimate self-contained SPED (subset of all SPED)
+        self_contained_proportion = float(self.ratio_state_self_contained_proportion)
+        self.estimated_self_contained_sped = int(round(self.estimated_sped_enrollment * self_contained_proportion))
+
+        # Step 3: Estimate GenEd enrollment (Total - Self-Contained)
+        # GenEd now includes: non-SPED students + mainstreamed SPED students
+        self.estimated_gened_enrollment = self.current_total_enrollment - self.estimated_self_contained_sped
+
+        # Step 4: Estimate SPED teachers (ratio is per self-contained student)
+        teachers_per_student = float(self.ratio_state_sped_teachers_per_student)
+        self.estimated_sped_teachers = round(self.estimated_self_contained_sped * teachers_per_student, 2)
+
+        # Step 5: Estimate SPED instructional (teachers + paras, per self-contained student)
+        if self.ratio_state_sped_instructional_per_student:
+            instructional_per_student = float(self.ratio_state_sped_instructional_per_student)
+            self.estimated_sped_instructional = round(self.estimated_self_contained_sped * instructional_per_student, 2)
+
+        # Step 5: Estimate GenEd teachers
+        total_teachers = float(self.current_total_teachers)
+        self.estimated_gened_teachers = round(total_teachers - float(self.estimated_sped_teachers), 2)
+
+        # Validation: GenEd teachers should be positive
+        if self.estimated_gened_teachers < 0:
+            self.notes = (self.notes or "") + " WARNING: Negative GenEd teachers estimate."
+            self.confidence = "low"

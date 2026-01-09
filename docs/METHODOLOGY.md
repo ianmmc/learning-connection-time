@@ -437,6 +437,42 @@ For teacher-level variants (Elementary, Secondary), additional validation checks
 - `Elementary enrollment but no elementary teachers`: Flag districts with K-5 students but zero K-5 teachers
 - All issues captured in `level_lct_notes` column for transparency
 
+### Data Safeguards (January 2026)
+
+Additional safeguards identify potential data quality issues that don't warrant automatic exclusion but should be flagged for transparency. These flags are appended to the `level_lct_notes` column.
+
+**Error Flags (ERR_)** - Indicate likely data quality issues:
+
+| Flag | Condition | Description |
+|------|-----------|-------------|
+| `ERR_FLAT_STAFF` | All 5 base scopes have identical staff counts | District likely only reported teachers, filling other NCES categories with zeros |
+| `ERR_IMPOSSIBLE_SSR` | Staff-to-student ratio > 0.5 | More than 1 staff per 2 students is physically implausible for standard K-12 |
+| `ERR_VOLATILE` | K-12 enrollment < 50 | Small enrollment creates high statistical volatility (±30-40 min LCT per staff change) |
+| `ERR_RATIO_CEILING` | teachers_only = all staff (100%) | Indicates incomplete reporting (no support staff recorded) |
+
+**Warning Flags (WARN_)** - Indicate unusual but potentially valid data:
+
+| Flag | Condition | Description |
+|------|-----------|-------------|
+| `WARN_LCT_LOW` | LCT < 5 minutes | Very high enrollment relative to staff; may indicate large urban district |
+| `WARN_LCT_HIGH` | LCT > 120 minutes (teachers_only scope) | Very low enrollment relative to staff; may indicate small/specialized district |
+
+**Safeguard Counts** (2023-24 data):
+
+| Flag | Records Flagged | Estimated Districts |
+|------|-----------------|---------------------|
+| ERR_FLAT_STAFF | 170 | ~34 |
+| ERR_IMPOSSIBLE_SSR | 928 | ~185 |
+| ERR_VOLATILE | 2,451 | ~490 |
+| ERR_RATIO_CEILING | 170 | ~34 |
+| WARN_LCT_LOW | 410 | ~82 |
+| WARN_LCT_HIGH | 123 | ~123 |
+
+**Usage Recommendations**:
+- For **policy analysis**: Consider excluding `ERR_FLAT_STAFF` and `ERR_RATIO_CEILING` districts from LCT-All/Support scopes
+- For **state comparisons**: Exclude `ERR_VOLATILE` districts to reduce noise
+- For **publication**: Document which safeguards were applied and why
+
 **Implementation**:
 - Script: `infrastructure/scripts/analyze/calculate_lct_variants.py`
 - Outputs (with ISO 8601 UTC timestamp):
@@ -702,6 +738,12 @@ LCT calculations may draw from multiple data sources. When sources conflict, app
 
 **Rule 4 - Complete Scope Coverage**: A state source must provide all categories needed for all 5 LCT scopes to be used.
 - Required: teachers (total, elem, sec, kinder), coordinators, paraprofessionals, counselors, psychologists, student support, administrators
+
+**Rule 5 - NCES LEA Structure Precedence**: When state and federal sources disagree on LEA definitions (e.g., charter school treatment), **always use NCES CCD structure**.
+- **Rationale**: Maintains national cohesion and consistency across analyses
+- **Example**: California treats some charter schools as separate LEAs; if NCES treats them differently, use NCES structure
+- **Implementation**: Use NCES `LEAID` as primary key; crosswalk state identifiers to NCES IDs
+- **Documentation**: Note structural differences in state-specific documentation
 
 ### Available Data Sources
 

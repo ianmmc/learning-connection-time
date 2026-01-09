@@ -13,6 +13,12 @@ Teacher-Level Variants (3 additional):
 - LCT-Teachers-Elementary: elementary + kindergarten teachers / K-5 enrollment
 - LCT-Teachers-Secondary: secondary teachers / 6-12 enrollment
 
+SPED Segmentation Variants (January 2026):
+- LCT-Core-SPED: estimated SPED teachers / estimated SPED enrollment (for audit)
+- LCT-Teachers-GenEd: estimated GenEd teachers / estimated GenEd enrollment
+- LCT-Instructional-SPED: (SPED teachers + paras) / estimated SPED enrollment
+  (Uses 2017-18 baseline ratios from IDEA 618 + CRDC to estimate SPED/GenEd split)
+
 Key Decisions (December 2025):
 - ALL scopes use K-12 enrollment (exclude Pre-K)
 - ALL scopes exclude Pre-K teachers
@@ -81,6 +87,7 @@ from infrastructure.database.models import (
     StaffCountsEffective,
     EnrollmentByGrade,
     CalculationRun,
+    SpedEstimate,
 )
 
 
@@ -97,6 +104,16 @@ BASE_SCOPES = [
 TEACHER_LEVEL_SCOPES = [
     "teachers_elementary",
     "teachers_secondary",
+]
+
+# SPED segmentation variants (January 2026)
+# core_sped: SPED teachers / SPED students (for audit/reconciliation)
+# teachers_gened: GenEd teachers / GenEd students
+# instructional_sped: (SPED teachers + paras) / SPED students
+SPED_SCOPES = [
+    "core_sped",
+    "teachers_gened",
+    "instructional_sped",
 ]
 
 
@@ -237,6 +254,15 @@ def calculate_all_variants(session, year: str = "2023-24") -> pd.DataFrame:
         enrollment_map[e.district_id] = e
     print(f"  Found {len(enrollment_map):,} districts with grade-level enrollment")
 
+    # Get SPED estimates for SPED/GenEd variants (December 2025)
+    sped_map = {}
+    sped_estimates = session.query(SpedEstimate).filter(
+        SpedEstimate.estimate_year == year
+    ).all()
+    for s in sped_estimates:
+        sped_map[s.district_id] = s
+    print(f"  Found {len(sped_map):,} districts with SPED estimates")
+
     # Get districts for state info
     district_map = {}
     districts = session.query(District).all()
@@ -367,6 +393,83 @@ def calculate_all_variants(session, year: str = "2023-24") -> pd.DataFrame:
                 "level_lct_notes": level_lct_notes,
             })
 
+        # === SPED/GenEd Segmentation Variants (January 2026) ===
+        # Three metrics:
+        # - core_sped: SPED teachers / Self-Contained SPED students (for audit/reconciliation)
+        # - teachers_gened: GenEd teachers / GenEd students (includes mainstreamed SPED)
+        # - instructional_sped: (SPED teachers + paras) / Self-Contained SPED students
+        sped_estimate = sped_map.get(staff.district_id)
+        if sped_estimate and sped_estimate.confidence != "low":
+            sped_teachers = float(sped_estimate.estimated_sped_teachers) if sped_estimate.estimated_sped_teachers else None
+            sped_instructional = float(sped_estimate.estimated_sped_instructional) if sped_estimate.estimated_sped_instructional else None
+            gened_teachers = float(sped_estimate.estimated_gened_teachers) if sped_estimate.estimated_gened_teachers else None
+            # Use self-contained SPED for SPED LCT calculations
+            sped_enrollment = sped_estimate.estimated_self_contained_sped
+            gened_enrollment = sped_estimate.estimated_gened_enrollment
+
+            # LCT-Core-SPED: teachers only (for audit/reconciliation with teachers_gened)
+            if sped_teachers and sped_teachers > 0 and sped_enrollment and sped_enrollment > 0:
+                lct_core_sped = calculate_lct(minutes, sped_teachers, sped_enrollment)
+                if lct_core_sped is not None and lct_core_sped <= 360:  # Sanity check
+                    results.append({
+                        "district_id": staff.district_id,
+                        "district_name": district.name,
+                        "state": district.state,
+                        "staff_scope": "core_sped",
+                        "lct_value": round(lct_core_sped, 2),
+                        "instructional_minutes": minutes,
+                        "instructional_minutes_source": minutes_source,
+                        "instructional_minutes_year": minutes_year,
+                        "staff_count": sped_teachers,
+                        "staff_source": "sped_estimate_2017-18",
+                        "staff_year": year,
+                        "enrollment": sped_enrollment,
+                        "enrollment_type": "self_contained_sped",
+                        "level_lct_notes": f"Self-contained SPED estimate confidence: {sped_estimate.confidence}",
+                    })
+
+            # LCT-Teachers-GenEd
+            if gened_teachers and gened_teachers > 0 and gened_enrollment and gened_enrollment > 0:
+                lct_gened = calculate_lct(minutes, gened_teachers, gened_enrollment)
+                if lct_gened is not None and lct_gened <= 360:  # Sanity check
+                    results.append({
+                        "district_id": staff.district_id,
+                        "district_name": district.name,
+                        "state": district.state,
+                        "staff_scope": "teachers_gened",
+                        "lct_value": round(lct_gened, 2),
+                        "instructional_minutes": minutes,
+                        "instructional_minutes_source": minutes_source,
+                        "instructional_minutes_year": minutes_year,
+                        "staff_count": gened_teachers,
+                        "staff_source": "sped_estimate_2017-18",
+                        "staff_year": year,
+                        "enrollment": gened_enrollment,
+                        "enrollment_type": "gened_estimated",
+                        "level_lct_notes": f"GenEd estimate confidence: {sped_estimate.confidence}",
+                    })
+
+            # LCT-Instructional-SPED: teachers + paras (fuller picture of SPED support)
+            if sped_instructional and sped_instructional > 0 and sped_enrollment and sped_enrollment > 0:
+                lct_instr_sped = calculate_lct(minutes, sped_instructional, sped_enrollment)
+                if lct_instr_sped is not None and lct_instr_sped <= 360:  # Sanity check
+                    results.append({
+                        "district_id": staff.district_id,
+                        "district_name": district.name,
+                        "state": district.state,
+                        "staff_scope": "instructional_sped",
+                        "lct_value": round(lct_instr_sped, 2),
+                        "instructional_minutes": minutes,
+                        "instructional_minutes_source": minutes_source,
+                        "instructional_minutes_year": minutes_year,
+                        "staff_count": sped_instructional,
+                        "staff_source": "sped_estimate_2017-18",
+                        "staff_year": year,
+                        "enrollment": sped_enrollment,
+                        "enrollment_type": "self_contained_sped",
+                        "level_lct_notes": f"Self-contained SPED instructional estimate confidence: {sped_estimate.confidence}",
+                    })
+
         processed += 1
         if processed % 1000 == 0:
             print(f"  Processed {processed:,} / {len(staff_records):,}")
@@ -375,6 +478,136 @@ def calculate_all_variants(session, year: str = "2023-24") -> pd.DataFrame:
     print(f"  Districts with QA notes: {qa_issues:,}")
 
     return pd.DataFrame(results)
+
+
+def apply_data_safeguards(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Apply cross-scope data safeguards to flag questionable data.
+
+    Safeguards (based on Gemini analysis, January 2026):
+    - ERR_FLAT_STAFF: All 5 base scopes have identical staff counts
+    - ERR_IMPOSSIBLE_SSR: Staff-to-student ratio > 0.5 (more than 1 staff per 2 students)
+    - ERR_VOLATILE: K-12 enrollment < 50 (high statistical volatility)
+    - ERR_RATIO_CEILING: Teachers = 100% of all staff (incomplete reporting)
+    - WARN_LCT_LOW: LCT < 5 minutes (very high enrollment relative to staff)
+    - WARN_LCT_HIGH: LCT > 120 minutes for teachers_only scope
+
+    Flags are appended to level_lct_notes column, not used for filtering.
+    This maintains transparency while identifying suspect data.
+
+    Returns:
+        DataFrame with safeguard flags added to level_lct_notes
+    """
+    print("\nApplying data safeguards...")
+
+    # Make a copy to avoid modifying original during iteration
+    df = df.copy()
+
+    # Initialize counters
+    safeguard_counts = {
+        'ERR_FLAT_STAFF': 0,
+        'ERR_IMPOSSIBLE_SSR': 0,
+        'ERR_VOLATILE': 0,
+        'ERR_RATIO_CEILING': 0,
+        'WARN_LCT_LOW': 0,
+        'WARN_LCT_HIGH': 0,
+    }
+
+    # Group by district to check cross-scope conditions
+    base_scopes = ['teachers_only', 'teachers_core', 'instructional',
+                   'instructional_plus_support', 'all']
+
+    # Build district-level lookup for cross-scope checks
+    district_staff = {}  # district_id -> {scope: staff_count}
+    district_flags = {}  # district_id -> set of flags
+
+    for _, row in df.iterrows():
+        did = row['district_id']
+        scope = row['staff_scope']
+
+        if did not in district_staff:
+            district_staff[did] = {}
+            district_flags[did] = set()
+
+        if scope in base_scopes:
+            district_staff[did][scope] = row['staff_count']
+
+    # Check flat staffing and ratio ceiling per district
+    for did, scopes in district_staff.items():
+        if len(scopes) >= 5:  # Has all 5 base scopes
+            staff_values = [scopes.get(s) for s in base_scopes if s in scopes]
+
+            # Flat staffing: all values identical and not None
+            if len(set(v for v in staff_values if v is not None)) == 1:
+                district_flags[did].add('ERR_FLAT_STAFF')
+                safeguard_counts['ERR_FLAT_STAFF'] += 1
+
+            # Ratio ceiling: teachers_only = all (100% teachers)
+            teachers = scopes.get('teachers_only')
+            all_staff = scopes.get('all')
+            if teachers and all_staff and teachers > 0 and all_staff > 0:
+                if abs(teachers - all_staff) < 0.01:  # Effectively equal
+                    district_flags[did].add('ERR_RATIO_CEILING')
+                    safeguard_counts['ERR_RATIO_CEILING'] += 1
+
+    # Apply flags to individual rows
+    def add_safeguard_flags(row):
+        flags = []
+        did = row['district_id']
+        scope = row['staff_scope']
+        enrollment = float(row['enrollment']) if row['enrollment'] else 0
+        staff_count = float(row['staff_count']) if row['staff_count'] else 0
+        lct_value = float(row['lct_value']) if row['lct_value'] else 0
+        enrollment_type = row['enrollment_type']
+
+        # Add district-level flags (only to base scopes to avoid duplicates)
+        if scope in base_scopes:
+            flags.extend(district_flags.get(did, set()))
+
+        # SSR check: staff/enrollment > 0.5 (only for base scopes, not SPED which has high ratios by design)
+        if scope in base_scopes and staff_count and enrollment and enrollment > 0:
+            ssr = staff_count / enrollment
+            if ssr > 0.5:
+                flags.append('ERR_IMPOSSIBLE_SSR')
+
+        # Volatility check: k12 enrollment < 50
+        if enrollment_type == 'k12' and enrollment and enrollment < 50:
+            flags.append('ERR_VOLATILE')
+
+        # LCT outlier checks
+        if lct_value and lct_value < 5:
+            flags.append('WARN_LCT_LOW')
+
+        if scope == 'teachers_only' and lct_value and lct_value > 120:
+            flags.append('WARN_LCT_HIGH')
+
+        # Combine with existing notes
+        existing = row['level_lct_notes'] or ''
+        if flags:
+            flag_str = '; '.join(sorted(set(flags)))
+            if existing:
+                return f"{existing}; {flag_str}"
+            return flag_str
+        return existing
+
+    # Apply flags
+    df['level_lct_notes'] = df.apply(add_safeguard_flags, axis=1)
+
+    # Count safeguards in final data (convert to Python int for JSON serialization)
+    for flag in safeguard_counts.keys():
+        count = df['level_lct_notes'].str.contains(flag, na=False).sum()
+        safeguard_counts[flag] = int(count)
+
+    # Print summary
+    print("  Safeguard flags applied:")
+    for flag, count in safeguard_counts.items():
+        if count > 0:
+            print(f"    {flag}: {count:,} records")
+
+    total_flagged = df[df['level_lct_notes'].str.len() > 0]['district_id'].nunique()
+    print(f"  Total districts with any flag: {total_flagged:,}")
+
+    return df, safeguard_counts
 
 
 def generate_summary_statistics(df: pd.DataFrame) -> pd.DataFrame:
@@ -408,6 +641,7 @@ def generate_qa_report(
     summary: pd.DataFrame,
     timestamp: str,
     year: str,
+    safeguard_counts: Optional[Dict[str, int]] = None,
 ) -> Dict[str, Any]:
     """
     Generate comprehensive QA report for calculation run.
@@ -417,6 +651,7 @@ def generate_qa_report(
     # Scope order for validation
     scope_order = [
         "teachers_only", "teachers_elementary", "teachers_secondary",
+        "core_sped", "teachers_gened", "instructional_sped",  # SPED segmentation (January 2026)
         "teachers_core", "instructional", "instructional_plus_support", "all"
     ]
 
@@ -494,7 +729,7 @@ def generate_qa_report(
             "timestamp": timestamp,
             "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "year": year,
-            "version": "2.0",
+            "version": "3.0",  # Updated for safeguards
         },
         "data_quality": {
             "total_calculations": total_calculations,
@@ -502,6 +737,15 @@ def generate_qa_report(
             "invalid_calculations": invalid_calculations,
             "pass_rate": round(valid_calculations / total_calculations * 100, 2) if total_calculations > 0 else 0,
             "districts_with_qa_notes": districts_with_notes,
+        },
+        "safeguards": safeguard_counts or {},
+        "safeguard_definitions": {
+            "ERR_FLAT_STAFF": "All 5 base scopes have identical staff counts (incomplete reporting)",
+            "ERR_IMPOSSIBLE_SSR": "Staff-to-student ratio > 0.5 (more than 1 staff per 2 students)",
+            "ERR_VOLATILE": "K-12 enrollment < 50 (high statistical volatility)",
+            "ERR_RATIO_CEILING": "Teachers = 100% of all staff (incomplete reporting)",
+            "WARN_LCT_LOW": "LCT < 5 minutes (very high enrollment relative to staff)",
+            "WARN_LCT_HIGH": "LCT > 120 minutes for teachers_only scope",
         },
         "scope_summary": {
             row['staff_scope']: {
@@ -576,6 +820,11 @@ def main():
     print("  teachers_elementary: elem+kinder teachers / K-5 enrollment")
     print("  teachers_secondary:  secondary teachers / 6-12 enrollment")
     print()
+    print("SPED SEGMENTATION (January 2026):")
+    print("  core_sped:          SPED teachers / SPED enrollment (for audit)")
+    print("  teachers_gened:     GenEd teachers / GenEd enrollment")
+    print("  instructional_sped: (SPED teachers+paras) / SPED enrollment")
+    print()
 
     # Generate timestamp for all output files
     timestamp = get_utc_timestamp()
@@ -591,7 +840,10 @@ def main():
             print("No LCT values calculated. Check data availability.")
             sys.exit(1)
 
-        # Save detailed results
+        # Apply data safeguards (January 2026)
+        df, safeguard_counts = apply_data_safeguards(df)
+
+        # Save detailed results (includes safeguard flags)
         detail_file = output_dir / f"lct_all_variants_{year_str}_{timestamp}.csv"
         df.to_csv(detail_file, index=False)
         print(f"\nSaved detailed results to {detail_file}")
@@ -622,6 +874,7 @@ def main():
 
         # Order scopes for display
         scope_order = ["teachers_only", "teachers_elementary", "teachers_secondary",
+                       "core_sped", "teachers_gened", "instructional_sped",
                        "teachers_core", "instructional", "instructional_plus_support", "all"]
 
         for scope in scope_order:
@@ -658,6 +911,9 @@ def main():
             f.write("teachers_only:           K-12 teachers (elem+sec+kinder, NO ungraded)\n")
             f.write("teachers_elementary:     Elementary+Kinder teachers / K-5 enrollment\n")
             f.write("teachers_secondary:      Secondary teachers / 6-12 enrollment\n")
+            f.write("core_sped:               SPED teachers / SPED enrollment (for audit)\n")
+            f.write("teachers_gened:          GenEd teachers / GenEd enrollment\n")
+            f.write("instructional_sped:      (SPED teachers+paras) / SPED enrollment\n")
             f.write("teachers_core:           K-12 teachers + ungraded\n")
             f.write("instructional:           core + coordinators + paraprofessionals\n")
             f.write("instructional_plus_support: above + counselors + psychologists + support\n")
@@ -705,7 +961,7 @@ def main():
         ]
 
         # Generate and save QA report (JSON)
-        qa_report = generate_qa_report(df, valid_df, summary, timestamp, args.year)
+        qa_report = generate_qa_report(df, valid_df, summary, timestamp, args.year, safeguard_counts)
         qa_file = output_dir / f"lct_qa_report_{year_str}_{timestamp}.json"
         with open(qa_file, 'w') as f:
             json.dump(qa_report, f, indent=2)
@@ -724,6 +980,17 @@ def main():
             print(f"  {status} {check}")
         if qa_report['outliers']:
             print(f"Outliers Detected: {len(qa_report['outliers'])}")
+
+        # Print safeguard summary (January 2026)
+        print("\nData Safeguards (flagged records):")
+        safeguards = qa_report.get('safeguards', {})
+        for flag, count in sorted(safeguards.items()):
+            if count > 0:
+                flag_type = "ERR" if flag.startswith("ERR") else "WARN"
+                print(f"  [{flag_type}] {flag}: {count:,}")
+        total_safeguard_flags = sum(safeguards.values())
+        if total_safeguard_flags == 0:
+            print("  No safeguard flags triggered")
 
         # Parquet export (optional)
         if args.parquet:

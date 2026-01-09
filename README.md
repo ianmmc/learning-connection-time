@@ -25,28 +25,36 @@ This reframes "20:1 student-teacher ratio" into a more visceral equity metric.
 
 ---
 
-## 📚 Essential Documentation
+## 📚 Documentation Map
 
-### For Developers
-- **[Claude.md](Claude.md)** - Complete project briefing (comprehensive)
-- **[.claude/SESSION_HANDOFF.md](.claude/SESSION_HANDOFF.md)** - Current session status
-- **[Terminology Guide](docs/TERMINOLOGY.md)** - Standardized vocabulary ⭐ READ FIRST
+> **Note:** Documentation describes methodology (WHAT/HOW), not calculation results (which live in `data/enriched/lct-calculations/` and `outputs/`)
+
+### Quick Reference
+- **[CLAUDE.md](CLAUDE.md)** - Current project status, milestones, campaign progress (THE working document)
+- **[TERMINOLOGY.md](docs/TERMINOLOGY.md)** - Standardized vocabulary ⭐ READ FIRST
+- **This README** - Quick start and commands
+
+### Methodology & Analysis (Canonical Sources)
+- **[METHODOLOGY.md](docs/METHODOLOGY.md)** - LCT formulas, data safeguards, validation rules
+- **[SPED_SEGMENTATION_IMPLEMENTATION.md](docs/SPED_SEGMENTATION_IMPLEMENTATION.md)** - SPED methodology (core_sped, teachers_gened, instructional_sped)
+- **[DATA_SOURCES.md](docs/DATA_SOURCES.md)** - Data source details (NCES, CRDC, IDEA 618)
+- **[PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md)** - Mission, evolution strategy (Phases 1-6)
+
+### Operations & Infrastructure
+- **[DATABASE_SETUP.md](docs/DATABASE_SETUP.md)** - PostgreSQL schema, queries, setup
+- **[QA_DASHBOARD.md](docs/QA_DASHBOARD.md)** - Automated quality validation
 - **[Infrastructure Scripts README](infrastructure/scripts/README.md)** - Script documentation
 
-### For Bell Schedule Enrichment
+### Bell Schedule Enrichment
 - **[Operations Guide](docs/BELL_SCHEDULE_OPERATIONS_GUIDE.md)** - Detailed procedures
 - **[Quick Reference](docs/QUICK_REFERENCE_BELL_SCHEDULES.md)** - One-page cheat sheet
-- **[Sampling Methodology](docs/BELL_SCHEDULE_SAMPLING_METHODOLOGY.md)** - What to collect and why
+- **[Sampling Methodology](docs/BELL_SCHEDULE_SAMPLING_METHODOLOGY.md)** - Collection approach
 
-### For Understanding the Analysis
-- **[Methodology](docs/METHODOLOGY.md)** - LCT calculation approach and limitations
-- **[QA Dashboard](docs/QA_DASHBOARD.md)** - Automated quality validation ⭐ NEW
-- **[Data Sources](docs/DATA_SOURCES.md)** - Data source catalog
-- **[Project Context](docs/PROJECT_CONTEXT.md)** - Mission and strategy
-
-### For Database and Infrastructure
-- **[Database Setup](docs/DATABASE_SETUP.md)** - PostgreSQL setup and materialized views ⭐ NEW
-- **[Data Dictionary](docs/data-dictionaries/database_schema_latest.md)** - Auto-generated schema docs
+### Where to Find Results
+- **Current LCT values:** `data/enriched/lct-calculations/lct_all_variants_*.csv`
+- **QA reports:** `data/enriched/lct-calculations/lct_qa_report_*.json`
+- **Enrichment counts:** [CLAUDE.md](CLAUDE.md#project-status)
+- **Data dictionary:** `docs/data-dictionaries/database_schema_latest.md`
 
 ---
 
@@ -77,7 +85,7 @@ python infrastructure/scripts/enrich/enrichment_progress.py --state WY
 
 ---
 
-## 📊 Current Status (December 2024)
+## 📊 Current Status (January 2026)
 
 ### Phase 1.5: Bell Schedule Enrichment Campaign
 
@@ -87,33 +95,32 @@ python infrastructure/scripts/enrich/enrichment_progress.py --state WY
 - **Actual bell schedules** = Real data from schools (counts as enriched ✓)
 - **Statutory fallback** = State minimums only (does NOT count as enriched ✗)
 
-**Current Dataset (2023-24):**
-- **Districts enriched:** 4/19,637 (0.02%)
-- **Wyoming progress:** 4 districts with actual bell schedules
-  - ✅ Natrona County SD #1 (automated)
-  - ✅ Campbell County SD #1 (automated)
-  - ✅ Sweetwater County SD #1 (human-provided)
-  - ✅ Albany County SD #1 (human-provided)
-  - ❌ Laramie County SD #1 (missing - needs investigation)
-- **Manual follow-up:** 0 pending
-- **Quality standard:** Statutory fallback NOT counted as enriched (135 files moved to tier3_statutory_fallback/)
+**Current Dataset:**
+- **Data Store:** PostgreSQL database (learning_connection_time)
+- **Campaign Progress:** See [CLAUDE.md](CLAUDE.md#project-status) for current enrichment counts and milestones
+- **State Campaigns:** Following Option A protocol (ranks 1-9, stop at 3 successful)
 
-**Legacy Dataset (2024-25):**
-- **Preliminary collection:** 29 districts in `bell_schedules_manual_collection_2024_25.json`
-- Top 25 largest districts + 4 user-selected districts
-- Separate from current campaign tracking
-
-**Optimization Status:**
+**Infrastructure Enhancements:**
+- ✅ PostgreSQL database migration (Dec 2025)
+- ✅ Docker containerization complete
+- ✅ SPED segmentation implemented (v3 self-contained focus)
+- ✅ Data safeguards implemented (6 flags for quality validation)
+- ✅ QA dashboard automation (auto-generated validation reports)
+- ✅ Materialized views for fast queries (14K+ cached rows)
+- ✅ Interactive enrichment tool (state campaign CLI)
 - ✅ Data optimization complete (88% size reduction via slim files)
-- ✅ Process optimization complete (2.15-4.25M token savings)
-- ✅ Enrichment infrastructure ready (3x efficiency improvement)
 - ✅ Terminology standardized (docs/TERMINOLOGY.md)
-- ✅ Data quality cleanup (statutory fallback properly separated)
 
-**Next Steps:**
-- Resolve missing districts (Laramie County + 1 from 2024-25 collection)
-- Clarify campaign direction (2023-24 state campaign vs 2024-25 expansion)
-- Resume enrichment work with clear targets
+**Recent Milestones:**
+- ✅ Self-contained SPED segmentation (Jan 2026)
+  - Three LCT scopes: core_sped, teachers_gened, instructional_sped
+  - See [SPED_SEGMENTATION_IMPLEMENTATION.md](docs/SPED_SEGMENTATION_IMPLEMENTATION.md) for methodology
+  - Results in `data/enriched/lct-calculations/`
+- ✅ Data quality safeguards (Jan 2026)
+  - 6 validation flags for quality transparency
+  - See [METHODOLOGY.md](docs/METHODOLOGY.md#data-safeguards) for details
+- ✅ Efficiency Enhancement Suite (Dec 2025)
+  - Interactive enrichment, Parquet export, incremental calculations
 
 ---
 
@@ -152,28 +159,68 @@ python infrastructure/scripts/analyze/calculate_lct.py input.csv --summary --fil
 python infrastructure/scripts/enrich/enrichment_progress.py --campaign
 ```
 
-### Optimization Tools (New - Dec 2024)
+### Database Operations (PostgreSQL)
 
-**Lightweight Enrichment Reference** (90% token reduction)
+**Check Database Status**
 ```bash
-# Fast district lookup for enrichment
-python3 << 'EOF'
-import pandas as pd
-df = pd.read_csv('data/processed/normalized/enrichment_reference.csv')
-# Only 1.27 MB vs 4.2 MB, loads in 1-2K tokens vs 15-20K
-EOF
+psql -d learning_connection_time -c "SELECT COUNT(*) FROM districts;"
 ```
 
-**Smart District Filtering** (64% efficiency improvement)
+**Re-import All Data**
 ```bash
-# Filter to 6,952 high-quality candidates (from 19,502)
-python infrastructure/scripts/enrich/filter_enrichment_candidates.py --stats
+python infrastructure/database/migrations/import_all_data.py
 ```
 
-**Batch Enrichment** (checkpoint/resume capability)
+**Export to JSON** (for sharing/backup)
 ```bash
-# Process multiple districts with automatic checkpointing
-python infrastructure/scripts/enrich/batch_enrich_bell_schedules.py --state WY --batch-size 10
+python infrastructure/database/export_json.py
+```
+
+**Query Enrichment Status**
+```bash
+python -c "
+from infrastructure.database.connection import session_scope
+from infrastructure.database.queries import print_enrichment_report
+with session_scope() as session:
+    print_enrichment_report(session)
+"
+```
+
+**Refresh Materialized Views** (after data changes)
+```bash
+psql -d learning_connection_time -c "SELECT refresh_all_materialized_views();"
+```
+
+### Optimization Tools (Dec 2024-Jan 2026)
+
+**Interactive Bell Schedule Enrichment**
+```bash
+# State-by-state enrichment
+python infrastructure/scripts/enrich/interactive_enrichment.py --state WI
+
+# Specific district
+python infrastructure/scripts/enrich/interactive_enrichment.py --district 5560580
+
+# Check status
+python infrastructure/scripts/enrich/interactive_enrichment.py --status
+```
+
+**Calculate LCT with QA Dashboard**
+```bash
+# All variants with quality validation
+python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2023-24
+
+# With Parquet export (70-80% size reduction)
+python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2023-24 --parquet
+
+# Incremental calculation (only changed districts)
+python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2023-24 --incremental
+```
+
+**Generate Data Dictionary**
+```bash
+# Auto-generate from SQLAlchemy models
+python infrastructure/scripts/utilities/generate_data_dictionary.py
 ```
 
 ---
@@ -239,10 +286,19 @@ Automatically detects and concatenates split files:
 - Option C staffing allocation (elementary direct, secondary proportional)
 
 ### ✅ Data Quality & Validation
-- Automated filtering of invalid records (~2-3% filtered out)
+- Automated filtering of invalid records
+- 6 data safeguard flags (ERR and WARN categories)
 - Validation reports for transparency
 - Publication-ready datasets (`*_valid.csv` files)
-- Manual follow-up tracking for challenging cases
+- QA dashboard with auto-generated validation reports
+- See [METHODOLOGY.md](docs/METHODOLOGY.md#data-safeguards) for complete safeguard definitions
+
+### ✅ SPED Segmentation (v3 - Self-Contained Focus)
+- Separates self-contained SPED from mainstreamed SPED students
+- Three LCT scopes: core_sped (SPED teachers / self-contained), teachers_gened (GenEd teachers / GenEd enrollment), instructional_sped (SPED teachers + paras / self-contained)
+- Two-step ratio estimation using state-level baselines (IDEA 618 + CRDC 2017-18)
+- Audit validation passes (weighted average = overall LCT)
+- See [SPED_SEGMENTATION_IMPLEMENTATION.md](docs/SPED_SEGMENTATION_IMPLEMENTATION.md) for full methodology and results
 
 ### ✅ Token-Optimized Infrastructure (New)
 - **Slim files:** 88% size reduction for NCES data
@@ -259,7 +315,8 @@ Automatically detects and concatenates split files:
   - Directory: District identification and characteristics
   - Membership: Student enrollment by grade
   - Staff: Teacher and staff FTE counts
-- **Civil Rights Data Collection (CRDC)** - Biennial detailed data
+- **Civil Rights Data Collection (CRDC)** - Biennial detailed data, LEA-level SPED enrollment
+- **IDEA 618 Personnel & Environments** - State-level SPED teachers, paras, and educational environments (2017-18 baseline)
 
 ### State Sources (Phased Rollout)
 1. California - DataQuest API
@@ -374,20 +431,16 @@ Document in session handoff or create detailed notes in `docs/chat-history/`
 
 ## 🎯 Roadmap
 
-### Current: Phase 1.5 (Bell Schedule Enrichment)
-- ✅ Infrastructure complete (90% token reduction)
-- 🔄 Campaign in progress (135/~153 target)
-- Next: Complete Wyoming, scale to Vermont and beyond
+### Current: Phase 1.5 (Bell Schedule Enrichment & SPED Segmentation)
+- ✅ Infrastructure complete (database, optimizations, QA dashboard)
+- 🔄 State-by-state enrichment campaign in progress
+- 🔄 SPED analysis and equity insights
 
 ### Future Phases
-- **Phase 2:** Add teacher quality weights
-- **Phase 3:** Account for differentiated student needs
-- **Phase 4:** Include interaction quality dimensions
-- **Phase 5:** Opportunity-to-connect scores
-- **Phase 6:** Outcome-validated connection time
+See [PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md#evolution-strategy) for complete evolution roadmap (Phases 2-6)
 
 ---
 
-**Last Updated:** December 21, 2024
-**Current Focus:** Bell schedule enrichment campaign with optimized infrastructure
-**Project Status:** Active development with 3x efficiency improvement
+**Last Updated:** January 3, 2026
+**Current Focus:** SPED segmentation analysis and bell schedule enrichment campaign
+**Project Status:** Active development with PostgreSQL database, SPED segmentation (v3), and data safeguards
