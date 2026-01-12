@@ -31,8 +31,12 @@ from infrastructure.database.models import (
 )
 
 
-def get_state_ratios(session) -> tuple[dict, dict, dict]:
-    """Load state SPED teacher, instructional, and self-contained ratios."""
+def get_state_ratios(session) -> tuple[dict, dict, dict, dict]:
+    """Load state SPED teacher, instructional, and self-contained ratios.
+
+    Returns:
+        Tuple of (teacher_ratios, instructional_ratios, self_contained_ratios, national_averages)
+    """
     print("\n=== Loading State SPED Ratios ===")
 
     teacher_ratios = {}
@@ -52,7 +56,19 @@ def get_state_ratios(session) -> tuple[dict, dict, dict]:
     print(f"  Loaded teacher ratios for {len(teacher_ratios)} states")
     print(f"  Loaded instructional ratios for {len(instructional_ratios)} states")
     print(f"  Loaded self-contained ratios for {len(self_contained_ratios)} states")
-    return teacher_ratios, instructional_ratios, self_contained_ratios
+
+    # Calculate national averages as fallback for states missing data
+    # (ME, VT, WI don't have 2017-18 IDEA 618 staffing data)
+    national_averages = {
+        "teacher_ratio": sum(teacher_ratios.values()) / len(teacher_ratios) if teacher_ratios else 0,
+        "instructional_ratio": sum(instructional_ratios.values()) / len(instructional_ratios) if instructional_ratios else 0,
+        "self_contained_ratio": sum(self_contained_ratios.values()) / len(self_contained_ratios) if self_contained_ratios else 0,
+    }
+    print(f"  National averages (fallback): teacher={national_averages['teacher_ratio']:.4f}, "
+          f"instructional={national_averages['instructional_ratio']:.4f}, "
+          f"self_contained={national_averages['self_contained_ratio']:.4f}")
+
+    return teacher_ratios, instructional_ratios, self_contained_ratios, national_averages
 
 
 def get_state_avg_sped_proportions(session) -> dict:
@@ -98,7 +114,8 @@ def get_lea_proportions(session) -> dict:
 
 
 def apply_estimates(session, year: str, teacher_ratios: dict, instructional_ratios: dict,
-                    self_contained_ratios: dict, state_avgs: dict, lea_proportions: dict):
+                    self_contained_ratios: dict, national_averages: dict,
+                    state_avgs: dict, lea_proportions: dict):
     """
     Apply ratios to current year districts using self-contained SPED approach.
 
@@ -108,6 +125,9 @@ def apply_estimates(session, year: str, teacher_ratios: dict, instructional_rati
     3. GenEd Enrollment = Total - Self-Contained (includes mainstreamed SPED)
     4. SPED Teachers = Self-Contained × State Teacher Ratio
     5. GenEd Teachers = Total Teachers - SPED Teachers
+
+    For states without 2017-18 SPED staffing data (ME, VT, WI), uses national
+    average ratios as fallback.
     """
     print(f"\n=== Applying Estimates to {year} Districts ===")
 
@@ -127,21 +147,26 @@ def apply_estimates(session, year: str, teacher_ratios: dict, instructional_rati
     skipped_no_ratio = 0
     used_lea_ratio = 0
     used_state_avg = 0
+    used_national_avg = 0
     negative_gened = 0
 
     for district in districts:
         state = district.state
         lea_id = district.nces_id
 
-        # Get state ratios (all required)
+        # Get state ratios - fall back to national average if not available
         teacher_ratio = teacher_ratios.get(state)
         self_contained_ratio = self_contained_ratios.get(state)
-        if not teacher_ratio or not self_contained_ratio:
-            skipped_no_ratio += 1
-            continue
-
-        # Get state SPED instructional ratio (optional)
         instructional_ratio = instructional_ratios.get(state)
+        used_national_fallback = False
+
+        if not teacher_ratio or not self_contained_ratio:
+            # Use national averages as fallback (for ME, VT, WI, etc.)
+            teacher_ratio = national_averages["teacher_ratio"]
+            self_contained_ratio = national_averages["self_contained_ratio"]
+            instructional_ratio = national_averages["instructional_ratio"]
+            used_national_fallback = True
+            used_national_avg += 1
 
         # Get SPED proportion - prefer LEA-specific, fall back to state average
         if lea_id in lea_proportions:
@@ -178,13 +203,22 @@ def apply_estimates(session, year: str, teacher_ratios: dict, instructional_rati
         # Step 6: GenEd teachers
         estimated_gened_teachers = round(total_teachers - estimated_sped_teachers, 2)
 
-        # Check for negative GenEd teachers (indicates ratio mismatch)
-        notes = None
+        # Determine confidence and notes
+        notes_parts = []
         confidence = "medium"
+
+        if used_national_fallback:
+            notes_parts.append(f"State {state} missing SPED ratios; used national averages")
+            # Keep confidence at "medium" - national average is calculated from 53 states
+            # and is statistically robust, just less precise than state-specific ratios
+
         if estimated_gened_teachers < 0:
-            notes = "WARNING: Negative GenEd teachers (ratio mismatch)"
+            notes_parts.append("WARNING: Negative GenEd teachers (ratio mismatch)")
             confidence = "low"
             negative_gened += 1
+
+        notes = "; ".join(notes_parts) if notes_parts else None
+        estimation_method = "national_average_fallback" if used_national_fallback else "self_contained_ratio"
 
         # Create or update estimate
         existing = session.query(SpedEstimate).filter(
@@ -207,7 +241,7 @@ def apply_estimates(session, year: str, teacher_ratios: dict, instructional_rati
             existing.estimated_sped_teachers = Decimal(str(estimated_sped_teachers))
             existing.estimated_sped_instructional = Decimal(str(estimated_sped_instructional)) if estimated_sped_instructional else None
             existing.estimated_gened_teachers = Decimal(str(estimated_gened_teachers))
-            existing.estimation_method = "self_contained_ratio"
+            existing.estimation_method = estimation_method
             existing.confidence = confidence
             existing.notes = notes
             updated += 1
@@ -230,7 +264,7 @@ def apply_estimates(session, year: str, teacher_ratios: dict, instructional_rati
                 estimated_sped_teachers=Decimal(str(estimated_sped_teachers)),
                 estimated_sped_instructional=Decimal(str(estimated_sped_instructional)) if estimated_sped_instructional else None,
                 estimated_gened_teachers=Decimal(str(estimated_gened_teachers)),
-                estimation_method="self_contained_ratio",
+                estimation_method=estimation_method,
                 confidence=confidence,
                 notes=notes
             )
@@ -250,6 +284,7 @@ def apply_estimates(session, year: str, teacher_ratios: dict, instructional_rati
             "skipped_no_ratio": skipped_no_ratio,
             "used_lea_ratio": used_lea_ratio,
             "used_state_avg": used_state_avg,
+            "used_national_avg": used_national_avg,
             "negative_gened_warnings": negative_gened
         },
         created_by="apply_sped_estimates"
@@ -263,6 +298,7 @@ def apply_estimates(session, year: str, teacher_ratios: dict, instructional_rati
     print(f"    Skipped (no ratio): {skipped_no_ratio:,}")
     print(f"    Used LEA-specific ratio: {used_lea_ratio:,}")
     print(f"    Used state average: {used_state_avg:,}")
+    print(f"    Used national average fallback: {used_national_avg:,}")
     print(f"    Negative GenEd warnings: {negative_gened:,}")
 
     return created + updated
@@ -305,13 +341,13 @@ def main():
 
     with session_scope() as session:
         # Load baseline ratios
-        teacher_ratios, instructional_ratios, self_contained_ratios = get_state_ratios(session)
+        teacher_ratios, instructional_ratios, self_contained_ratios, national_averages = get_state_ratios(session)
         state_avgs = get_state_avg_sped_proportions(session)
         lea_proportions = get_lea_proportions(session)
 
         # Apply to current year
         total = apply_estimates(session, args.year, teacher_ratios, instructional_ratios,
-                                self_contained_ratios, state_avgs, lea_proportions)
+                                self_contained_ratios, national_averages, state_avgs, lea_proportions)
 
         # Show samples
         if total > 0:

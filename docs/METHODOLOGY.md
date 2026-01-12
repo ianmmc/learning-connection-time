@@ -456,17 +456,21 @@ Additional safeguards identify potential data quality issues that don't warrant 
 |------|-----------|-------------|
 | `WARN_LCT_LOW` | LCT < 5 minutes | Very high enrollment relative to staff; may indicate large urban district |
 | `WARN_LCT_HIGH` | LCT > 120 minutes (teachers_only scope) | Very low enrollment relative to staff; may indicate small/specialized district |
+| `WARN_SPED_RATIO_CAP` | SPED LCT would exceed 360 | High SPED teacher-to-self-contained-student ratio; LCT capped at 360 for consistency |
 
-**Safeguard Counts** (2023-24 data):
+**Note on SPED Ratio Cap**: Some states have high ratios of SPED teachers to self-contained SPED students (e.g., CT: 2.8 teachers per student). This produces theoretical LCT values exceeding the school day. These are capped at 360 minutes and flagged for transparency. The high ratio reflects that SPED teachers serve both self-contained and mainstreamed students, but we can only measure their ratio against self-contained enrollment.
+
+**Safeguard Counts** (2023-24 data, January 2026):
 
 | Flag | Records Flagged | Estimated Districts |
 |------|-----------------|---------------------|
-| ERR_FLAT_STAFF | 170 | ~34 |
-| ERR_IMPOSSIBLE_SSR | 928 | ~185 |
-| ERR_VOLATILE | 2,451 | ~490 |
-| ERR_RATIO_CEILING | 170 | ~34 |
-| WARN_LCT_LOW | 410 | ~82 |
-| WARN_LCT_HIGH | 123 | ~123 |
+| ERR_FLAT_STAFF | 190 | ~38 |
+| ERR_IMPOSSIBLE_SSR | 1,065 | ~213 |
+| ERR_VOLATILE | 2,945 | ~589 |
+| ERR_RATIO_CEILING | 190 | ~38 |
+| WARN_LCT_LOW | 416 | ~83 |
+| WARN_LCT_HIGH | 127 | ~127 |
+| WARN_SPED_RATIO_CAP | 8,800 | ~4,400 |
 
 **Usage Recommendations**:
 - For **policy analysis**: Consider excluding `ERR_FLAT_STAFF` and `ERR_RATIO_CEILING` districts from LCT-All/Support scopes

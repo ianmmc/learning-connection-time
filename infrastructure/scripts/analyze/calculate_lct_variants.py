@@ -19,6 +19,13 @@ SPED Segmentation Variants (January 2026):
 - LCT-Instructional-SPED: (SPED teachers + paras) / estimated SPED enrollment
   (Uses 2017-18 baseline ratios from IDEA 618 + CRDC to estimate SPED/GenEd split)
 
+State-Specific Data Integration (January 2026):
+- California: Uses actual SPED self-contained enrollment from CA CDE when available
+  - DATA PRECEDENCE: CA actual (2023-24) > Federal estimate (2017-18)
+  - Applies to 990 CA districts with actual SPED environment data
+  - Note: Requires CA staff data in NCES (currently unavailable for 2023-24)
+  - Teacher estimates still use 2017-18 federal ratios
+
 Key Decisions (December 2025):
 - ALL scopes use K-12 enrollment (exclude Pre-K)
 - ALL scopes exclude Pre-K teachers
@@ -88,6 +95,7 @@ from infrastructure.database.models import (
     EnrollmentByGrade,
     CalculationRun,
     SpedEstimate,
+    CASpedDistrictEnvironments,
 )
 
 
@@ -127,14 +135,15 @@ def get_instructional_minutes(
     Get instructional minutes for a district.
 
     Priority:
-    1. Bell schedule (enriched data)
-    2. State requirement (statutory fallback)
-    3. Default (360 minutes)
+    1. Bell schedule for requested grade level (enriched data)
+    2. Bell schedule for any available grade level (K-8 districts, etc.)
+    3. State requirement (statutory fallback)
+    4. Default (360 minutes)
 
     Returns:
         Tuple of (minutes, source, year)
     """
-    # Try bell schedule first
+    # Try bell schedule for requested grade level first
     bell = session.query(BellSchedule).filter(
         BellSchedule.district_id == district_id,
         BellSchedule.grade_level == grade_level
@@ -142,6 +151,18 @@ def get_instructional_minutes(
 
     if bell and bell.instructional_minutes:
         return bell.instructional_minutes, "bell_schedule", bell.year
+
+    # Try any available bell schedule (for K-8 districts, etc.)
+    # Priority: high > middle > elementary
+    for fallback_level in ["high", "middle", "elementary"]:
+        if fallback_level == grade_level:
+            continue  # Already tried this one
+        bell = session.query(BellSchedule).filter(
+            BellSchedule.district_id == district_id,
+            BellSchedule.grade_level == fallback_level
+        ).order_by(BellSchedule.year.desc()).first()
+        if bell and bell.instructional_minutes:
+            return bell.instructional_minutes, f"bell_schedule_{fallback_level}", bell.year
 
     # Fall back to state requirement
     state_req = session.query(StateRequirement).filter(
@@ -262,6 +283,16 @@ def calculate_all_variants(session, year: str = "2023-24") -> pd.DataFrame:
     for s in sped_estimates:
         sped_map[s.district_id] = s
     print(f"  Found {len(sped_map):,} districts with SPED estimates")
+
+    # Get CA actual SPED data (January 2026)
+    # PRECEDENCE: CA actual (if year matches) > Federal estimate > National average
+    ca_sped_map = {}
+    ca_sped_actual = session.query(CASpedDistrictEnvironments).filter(
+        CASpedDistrictEnvironments.year == year
+    ).all()
+    for ca in ca_sped_actual:
+        ca_sped_map[ca.nces_id] = ca
+    print(f"  Found {len(ca_sped_map):,} CA districts with actual SPED data for {year}")
 
     # Get districts for state info
     district_map = {}
@@ -398,19 +429,50 @@ def calculate_all_variants(session, year: str = "2023-24") -> pd.DataFrame:
         # - core_sped: SPED teachers / Self-Contained SPED students (for audit/reconciliation)
         # - teachers_gened: GenEd teachers / GenEd students (includes mainstreamed SPED)
         # - instructional_sped: (SPED teachers + paras) / Self-Contained SPED students
+
+        # DATA PRECEDENCE: CA actual (year-matched) > Federal estimate
+        ca_actual = ca_sped_map.get(staff.district_id)
         sped_estimate = sped_map.get(staff.district_id)
+
+        # Determine enrollment source and values
+        sped_enrollment = None
+        gened_enrollment = None
+        enrollment_source = None
+        enrollment_confidence = None
+
+        if ca_actual and ca_actual.confidence != "low":
+            # Use CA actual self-contained SPED enrollment (2023-24 or later)
+            sped_enrollment = ca_actual.sped_self_contained
+            # Calculate GenEd as total K-12 minus self-contained SPED
+            gened_enrollment = k12_enrollment - (sped_enrollment or 0) if sped_enrollment else None
+            enrollment_source = f"ca_actual_{year}"
+            enrollment_confidence = ca_actual.confidence
+        elif sped_estimate and sped_estimate.confidence != "low":
+            # Fallback to Federal estimate (2017-18 baseline)
+            sped_enrollment = sped_estimate.estimated_self_contained_sped
+            gened_enrollment = sped_estimate.estimated_gened_enrollment
+            enrollment_source = "sped_estimate_2017-18"
+            enrollment_confidence = sped_estimate.confidence
+
+        # Teacher estimates: Always use 2017-18 federal ratios (we don't have CA actual teacher splits)
         if sped_estimate and sped_estimate.confidence != "low":
             sped_teachers = float(sped_estimate.estimated_sped_teachers) if sped_estimate.estimated_sped_teachers else None
             sped_instructional = float(sped_estimate.estimated_sped_instructional) if sped_estimate.estimated_sped_instructional else None
             gened_teachers = float(sped_estimate.estimated_gened_teachers) if sped_estimate.estimated_gened_teachers else None
-            # Use self-contained SPED for SPED LCT calculations
-            sped_enrollment = sped_estimate.estimated_self_contained_sped
-            gened_enrollment = sped_estimate.estimated_gened_enrollment
 
             # LCT-Core-SPED: teachers only (for audit/reconciliation with teachers_gened)
             if sped_teachers and sped_teachers > 0 and sped_enrollment and sped_enrollment > 0:
                 lct_core_sped = calculate_lct(minutes, sped_teachers, sped_enrollment)
-                if lct_core_sped is not None and lct_core_sped <= 360:  # Sanity check
+                # Cap at 360 but flag if it would exceed (high SPED teacher ratio)
+                sped_capped = False
+                if lct_core_sped is not None and lct_core_sped > 360:
+                    sped_capped = True
+                    lct_core_sped = 360.0  # Cap at school day maximum
+                if lct_core_sped is not None and lct_core_sped <= 360:
+                    # Build notes, including cap flag if applicable
+                    core_sped_notes = f"Self-contained SPED enrollment: {enrollment_source}, confidence: {enrollment_confidence}"
+                    if sped_capped:
+                        core_sped_notes += "; WARN_SPED_RATIO_CAP: LCT capped at 360 (high teacher-to-student ratio)"
                     results.append({
                         "district_id": staff.district_id,
                         "district_name": district.name,
@@ -425,7 +487,8 @@ def calculate_all_variants(session, year: str = "2023-24") -> pd.DataFrame:
                         "staff_year": year,
                         "enrollment": sped_enrollment,
                         "enrollment_type": "self_contained_sped",
-                        "level_lct_notes": f"Self-contained SPED estimate confidence: {sped_estimate.confidence}",
+                        "enrollment_source": enrollment_source,
+                        "level_lct_notes": core_sped_notes,
                     })
 
             # LCT-Teachers-GenEd
@@ -445,14 +508,24 @@ def calculate_all_variants(session, year: str = "2023-24") -> pd.DataFrame:
                         "staff_source": "sped_estimate_2017-18",
                         "staff_year": year,
                         "enrollment": gened_enrollment,
-                        "enrollment_type": "gened_estimated",
-                        "level_lct_notes": f"GenEd estimate confidence: {sped_estimate.confidence}",
+                        "enrollment_type": "gened",
+                        "enrollment_source": enrollment_source,
+                        "level_lct_notes": f"GenEd enrollment: {enrollment_source}, confidence: {enrollment_confidence}",
                     })
 
             # LCT-Instructional-SPED: teachers + paras (fuller picture of SPED support)
             if sped_instructional and sped_instructional > 0 and sped_enrollment and sped_enrollment > 0:
                 lct_instr_sped = calculate_lct(minutes, sped_instructional, sped_enrollment)
-                if lct_instr_sped is not None and lct_instr_sped <= 360:  # Sanity check
+                # Cap at 360 but flag if it would exceed (high SPED instructional ratio)
+                instr_sped_capped = False
+                if lct_instr_sped is not None and lct_instr_sped > 360:
+                    instr_sped_capped = True
+                    lct_instr_sped = 360.0  # Cap at school day maximum
+                if lct_instr_sped is not None and lct_instr_sped <= 360:
+                    # Build notes, including cap flag if applicable
+                    instr_sped_notes = f"Self-contained SPED enrollment: {enrollment_source}, instructional staff confidence: {enrollment_confidence}"
+                    if instr_sped_capped:
+                        instr_sped_notes += "; WARN_SPED_RATIO_CAP: LCT capped at 360 (high instructional-to-student ratio)"
                     results.append({
                         "district_id": staff.district_id,
                         "district_name": district.name,
@@ -467,7 +540,8 @@ def calculate_all_variants(session, year: str = "2023-24") -> pd.DataFrame:
                         "staff_year": year,
                         "enrollment": sped_enrollment,
                         "enrollment_type": "self_contained_sped",
-                        "level_lct_notes": f"Self-contained SPED instructional estimate confidence: {sped_estimate.confidence}",
+                        "enrollment_source": enrollment_source,
+                        "level_lct_notes": instr_sped_notes,
                     })
 
         processed += 1
@@ -511,6 +585,7 @@ def apply_data_safeguards(df: pd.DataFrame) -> pd.DataFrame:
         'ERR_RATIO_CEILING': 0,
         'WARN_LCT_LOW': 0,
         'WARN_LCT_HIGH': 0,
+        'WARN_SPED_RATIO_CAP': 0,
     }
 
     # Group by district to check cross-scope conditions
@@ -746,6 +821,7 @@ def generate_qa_report(
             "ERR_RATIO_CEILING": "Teachers = 100% of all staff (incomplete reporting)",
             "WARN_LCT_LOW": "LCT < 5 minutes (very high enrollment relative to staff)",
             "WARN_LCT_HIGH": "LCT > 120 minutes for teachers_only scope",
+            "WARN_SPED_RATIO_CAP": "SPED LCT capped at 360 (high teacher-to-student ratio in self-contained SPED)",
         },
         "scope_summary": {
             row['staff_scope']: {
@@ -848,7 +924,8 @@ def main():
         df.to_csv(detail_file, index=False)
         print(f"\nSaved detailed results to {detail_file}")
 
-        # Filter for valid LCT (0 < LCT <= 360)
+        # Filter for valid LCT (0 < LCT <= 360 for all scopes)
+        # SPED scopes that would exceed 360 are capped with WARN_SPED_RATIO_CAP flag
         valid_df = df[(df['lct_value'] > 0) & (df['lct_value'] <= 360)]
         valid_file = output_dir / f"lct_all_variants_{year_str}_valid_{timestamp}.csv"
         valid_df.to_csv(valid_file, index=False)

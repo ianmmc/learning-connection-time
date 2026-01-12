@@ -69,18 +69,19 @@ LCT = 18 minutes per student per day
 
 ## Current Status (January 2026)
 
-**Phase**: Phase 1.5 - Bell Schedule Enrichment & SPED Segmentation
+**Phase**: Phase 1.5 - Bell Schedule Enrichment & SPED Segmentation + Layer 2 State Integration
 **Coverage**: 17,842 U.S. school districts in PostgreSQL database
+**Layer 2 Integrations**: California (Migration 003), Texas (Migration 005) ✅
 **Enrichment**: See [../CLAUDE.md](../CLAUDE.md#project-status) for current campaign progress
-**Data Sources**: Federal (NCES, CRDC, IDEA 618) + Bell schedules + State agencies
+**Data Sources**: Federal (NCES, CRDC, IDEA 618) + Bell schedules + State agencies (CA, TX)
 
 ### What We Have ✅
 - Comprehensive project structure
 - PostgreSQL database with 17,842 districts
 - Multi-part file handling capability
 - SPED segmentation (v3 self-contained focus)
-- Data safeguards (6 validation flags)
-- Bell schedule enrichment (128 districts, 384 schedules)
+- Data safeguards (7 validation flags)
+- Bell schedule enrichment (182 districts, 546 schedules)
 - LCT calculation engine with variants
 - QA dashboard and validation framework
 - Interactive enrichment tools
@@ -90,6 +91,7 @@ LCT = 18 minutes per student per day
 ### Recent Achievements (Dec 2025 - Jan 2026)
 - PostgreSQL database migration complete
 - Docker containerization
+- **Layer 2 state integrations: California and Texas complete**
 - SPED segmentation v3 (self-contained focus)
 - Data quality safeguards implemented
 - Materialized views for fast queries
@@ -190,7 +192,7 @@ LCT is designed to evolve through six phases, addressing limitations while maint
 ### Phase 1 (Initial Analysis) ✅ Mostly Complete
 - [x] Successfully calculate LCT for all districts in database
 - [x] Document data availability and limitations
-- [x] Enrich districts with actual bell schedules (ongoing campaign)
+- [x] Enrich districts with actual bell schedules (campaign complete - 182 districts, 50 U.S. states)
 - [x] Implement SPED segmentation (v3)
 - [x] Create data quality safeguards
 - [ ] Identify 3-5 compelling equity stories (in progress)
@@ -256,13 +258,14 @@ Outputs & Visualizations
    - Draft initial SPED disparity analysis report
 
 3. **Medium-term** (H1 2026)
-   - Add state-specific data sources (CA, TX, NY)
-   - Expand SPED analysis with finer-grained data where available
+   - Complete Layer 2 integrations for Florida and New York
+   - Enhance Texas with PEIMS data (if needed for deeper analysis)
+   - Expand SPED analysis with state-specific data where available
    - Develop interactive web tool for LCT exploration
    - Publish methodology paper and findings
 
 ---
 
-**Document Version**: 2.0
-**Last Updated**: January 3, 2026
-**Status**: Phase 1.5 - Bell Schedule Enrichment & SPED Segmentation in progress
+**Document Version**: 2.1
+**Last Updated**: January 11, 2026
+**Status**: Phase 1.5 - Bell Schedule Enrichment & SPED Segmentation + Layer 2 State Integration (CA, TX complete; FL, NY next)

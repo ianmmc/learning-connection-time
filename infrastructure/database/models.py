@@ -15,6 +15,7 @@ from sqlalchemy import (
     Column,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     Numeric,
     String,
@@ -45,6 +46,7 @@ class District(Base):
     # Core fields
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     state: Mapped[str] = mapped_column(String(2), nullable=False)
+    st_leaid: Mapped[Optional[str]] = mapped_column(String(20))  # State-assigned LEA ID (e.g., "CA-6275796")
     enrollment: Mapped[Optional[int]] = mapped_column(Integer)
     instructional_staff: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
     total_staff: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
@@ -74,6 +76,20 @@ class District(Base):
         back_populates="district", cascade="all, delete-orphan", uselist=False
     )
     enrollment_by_grade: Mapped[List["EnrollmentByGrade"]] = relationship(
+        back_populates="district", cascade="all, delete-orphan"
+    )
+
+    # Layer 2: State-level enhancements
+    ca_sped_environments: Mapped[List["CASpedDistrictEnvironments"]] = relationship(
+        back_populates="district", cascade="all, delete-orphan"
+    )
+    socioeconomic_data: Mapped[List["DistrictSocioeconomic"]] = relationship(
+        back_populates="district", cascade="all, delete-orphan"
+    )
+    funding_data: Mapped[List["DistrictFunding"]] = relationship(
+        back_populates="district", cascade="all, delete-orphan"
+    )
+    ca_lcff_funding: Mapped[List["CALCFFFunding"]] = relationship(
         back_populates="district", cascade="all, delete-orphan"
     )
 
@@ -707,8 +723,22 @@ class StaffCountsEffective(Base):
         - Ungraded teachers EXCLUDED from LCT-Teachers variants
         - Ungraded teachers INCLUDED in LCT-Core, Instructional, Support, All
         """
+        import math
+        from decimal import Decimal
+
         def safe_sum(*values):
-            return sum(float(v) if v is not None else 0 for v in values)
+            """Sum values, treating None and NaN as 0."""
+            total = 0
+            for v in values:
+                if v is None:
+                    continue
+                try:
+                    fv = float(v)
+                    if not math.isnan(fv):
+                        total += fv
+                except (TypeError, ValueError):
+                    continue
+            return total
 
         # Teacher-level aggregates (for level-based LCT)
         # LCT-Teachers: elem + sec + kinder (NO prek, NO ungraded)
@@ -1154,3 +1184,303 @@ class SpedEstimate(Base):
         if self.estimated_gened_teachers < 0:
             self.notes = (self.notes or "") + " WARNING: Negative GenEd teachers estimate."
             self.confidence = "low"
+
+
+# =============================================================================
+# LAYER 2: STATE-LEVEL ENHANCEMENTS (California Phase 2)
+# =============================================================================
+
+
+class CASpedDistrictEnvironments(Base):
+    """
+    California SPED enrollment by educational environment (district-level).
+
+    Replaces estimated self-contained proportions with actual district data
+    from California Department of Education SPED data files.
+
+    Source: CA CDE Special Education Enrollment by Educational Environment
+    Years: 2022-23, 2023-24, 2024-25
+    """
+    __tablename__ = "ca_sped_district_environments"
+
+    # Primary key
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    # Foreign key to districts
+    nces_id: Mapped[str] = mapped_column(
+        String(10), ForeignKey("districts.nces_id", ondelete="CASCADE"), nullable=False
+    )
+
+    # California CDS code for crosswalk
+    cds_code: Mapped[str] = mapped_column(String(7), nullable=False)
+
+    # Source tracking
+    year: Mapped[str] = mapped_column(String(10), nullable=False)
+    data_source: Mapped[str] = mapped_column(String(50), default="ca_cde_sped")
+
+    # Total SPED enrollment (with active IEPs)
+    sped_enrollment_total: Mapped[Optional[int]] = mapped_column(Integer)
+
+    # Educational environment breakdowns (5 categories from CA data)
+    # MAINSTREAMED (80%+ and 40-79% in regular class)
+    sped_mainstreamed: Mapped[Optional[int]] = mapped_column(Integer)
+    sped_mainstreamed_80_plus: Mapped[Optional[int]] = mapped_column(Integer)  # PS_RCGT80_N
+    sped_mainstreamed_40_79: Mapped[Optional[int]] = mapped_column(Integer)    # PS_RC4079_N
+
+    # SELF-CONTAINED (<40% and separate school)
+    sped_self_contained: Mapped[Optional[int]] = mapped_column(Integer)
+    sped_self_contained_lt_40: Mapped[Optional[int]] = mapped_column(Integer)  # PS_RCL40_N
+    sped_separate_school: Mapped[Optional[int]] = mapped_column(Integer)        # PS_SSOS_N
+
+    # PRESCHOOL (Ages 3-5, excluded from K-12 calculations)
+    sped_preschool: Mapped[Optional[int]] = mapped_column(Integer)             # PS_PSS_N
+
+    # MISSING/UNREPORTED
+    sped_missing: Mapped[Optional[int]] = mapped_column(Integer)               # PS_MUK_N
+
+    # Calculated proportion (for comparison with state baseline)
+    self_contained_proportion: Mapped[Optional[float]] = mapped_column(Numeric(10, 6))
+
+    # Quality tracking
+    confidence: Mapped[str] = mapped_column(String(20), default="high")
+    notes: Mapped[Optional[str]] = mapped_column(Text)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    # Relationships
+    district: Mapped["District"] = relationship(back_populates="ca_sped_environments")
+
+    # Constraints and Indexes
+    __table_args__ = (
+        UniqueConstraint("nces_id", "year", name="uq_ca_sped_environment"),
+        CheckConstraint("confidence IN ('high', 'medium', 'low')", name="chk_ca_sped_confidence"),
+        Index("ix_ca_sped_nces_id", "nces_id"),
+        Index("ix_ca_sped_year", "year"),
+        Index("ix_ca_sped_cds_code", "cds_code"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<CASpedDistrictEnvironments {self.nces_id}/{self.year}: {self.sped_enrollment_total} total, {self.sped_self_contained} self-contained>"
+
+    def calculate_proportion(self) -> None:
+        """Calculate self-contained proportion from actual counts."""
+        if self.sped_enrollment_total and self.sped_enrollment_total > 0:
+            if self.sped_self_contained:
+                self.self_contained_proportion = float(self.sped_self_contained) / self.sped_enrollment_total
+
+
+class DistrictSocioeconomic(Base):
+    """
+    District-level socioeconomic indicators (multi-state, multi-source).
+
+    Supports multiple poverty indicators:
+    - FRPM (Free/Reduced-Price Meal) - California, most states
+    - ENI (Economic Need Index) - New York
+    - Economically Disadvantaged - Texas, other states
+    - Title I poverty counts - Federal
+
+    Multiple sources per district allowed for comparison.
+    """
+    __tablename__ = "district_socioeconomic"
+
+    # Primary key
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    # Foreign key
+    nces_id: Mapped[str] = mapped_column(
+        String(10), ForeignKey("districts.nces_id", ondelete="CASCADE"), nullable=False
+    )
+
+    # Source tracking
+    year: Mapped[str] = mapped_column(String(10), nullable=False)
+    state: Mapped[str] = mapped_column(String(2), nullable=False)
+
+    # Core poverty indicator
+    poverty_indicator_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    poverty_percent: Mapped[Optional[float]] = mapped_column(Numeric(10, 6))
+    poverty_count: Mapped[Optional[int]] = mapped_column(Integer)
+    enrollment: Mapped[Optional[int]] = mapped_column(Integer)  # For validation
+
+    # Tiered/categorical data (e.g., Texas SCE tiers, NY poverty levels)
+    tier_1_count: Mapped[Optional[int]] = mapped_column(Integer)
+    tier_2_count: Mapped[Optional[int]] = mapped_column(Integer)
+    tier_3_count: Mapped[Optional[int]] = mapped_column(Integer)
+    tier_4_count: Mapped[Optional[int]] = mapped_column(Integer)
+    tier_5_count: Mapped[Optional[int]] = mapped_column(Integer)
+    tier_metadata = Column(JSONB)  # Flexible tier definitions
+
+    # Funding-related flags
+    title_i_eligible: Mapped[Optional[bool]] = mapped_column(Boolean)
+    schoolwide_program: Mapped[Optional[bool]] = mapped_column(Boolean)
+
+    # Source documentation
+    data_source: Mapped[str] = mapped_column(String(50), nullable=False)
+    source_url: Mapped[Optional[str]] = mapped_column(String(500))
+    collection_method: Mapped[Optional[str]] = mapped_column(String(100))
+
+    # Quality tracking
+    certification_status: Mapped[Optional[str]] = mapped_column(String(20))
+    notes: Mapped[Optional[str]] = mapped_column(Text)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
+
+    # Relationships
+    district: Mapped["District"] = relationship(back_populates="socioeconomic_data")
+
+    # Constraints and Indexes
+    __table_args__ = (
+        UniqueConstraint("nces_id", "year", "poverty_indicator_type", "data_source", name="uq_district_socioeconomic"),
+        CheckConstraint("poverty_percent BETWEEN 0 AND 1", name="chk_poverty_percent"),
+        Index("ix_socioeconomic_nces_id", "nces_id"),
+        Index("ix_socioeconomic_year", "year"),
+        Index("ix_socioeconomic_state", "state"),
+        Index("ix_socioeconomic_poverty_type", "poverty_indicator_type"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<DistrictSocioeconomic {self.nces_id}/{self.year}: {self.poverty_indicator_type} = {self.poverty_percent:.1%}>"
+
+
+class DistrictFunding(Base):
+    """
+    District-level funding data (multi-state, multi-source).
+
+    Supports federal and state funding sources:
+    - Federal: Title I, IDEA, Title III
+    - State: LCFF (CA), SCE (TX), Foundation (other states)
+
+    Multiple sources per district allowed for comparison.
+    """
+    __tablename__ = "district_funding"
+
+    # Primary key
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    # Foreign key
+    nces_id: Mapped[str] = mapped_column(
+        String(10), ForeignKey("districts.nces_id", ondelete="CASCADE"), nullable=False
+    )
+
+    # Source tracking
+    year: Mapped[str] = mapped_column(String(10), nullable=False)
+    state: Mapped[str] = mapped_column(String(2), nullable=False)
+
+    # Federal funding
+    title_i_allocation: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    idea_allocation: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    title_iii_allocation: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    other_federal: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+
+    # State funding (flexible structure)
+    state_formula_type: Mapped[Optional[str]] = mapped_column(String(50))
+    base_allocation: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    equity_adjustment: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    equity_adjustment_type: Mapped[Optional[str]] = mapped_column(String(100))
+    total_state_funding: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+
+    # Local funding
+    local_revenue: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+
+    # Per-pupil calculations
+    total_per_pupil: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    instructional_per_pupil: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+
+    # Source documentation
+    data_source: Mapped[str] = mapped_column(String(50), nullable=False)
+    source_url: Mapped[Optional[str]] = mapped_column(String(500))
+    fiscal_year: Mapped[Optional[str]] = mapped_column(String(10))
+
+    # Quality tracking
+    notes: Mapped[Optional[str]] = mapped_column(Text)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
+
+    # Relationships
+    district: Mapped["District"] = relationship(back_populates="funding_data")
+
+    # Constraints and Indexes
+    __table_args__ = (
+        UniqueConstraint("nces_id", "year", "data_source", name="uq_district_funding"),
+        Index("ix_funding_nces_id", "nces_id"),
+        Index("ix_funding_year", "year"),
+        Index("ix_funding_state", "state"),
+        Index("ix_funding_data_source", "data_source"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<DistrictFunding {self.nces_id}/{self.year}: {self.data_source}>"
+
+
+class CALCFFFunding(Base):
+    """
+    California-specific LCFF (Local Control Funding Formula) data.
+
+    Contains detailed breakdown of California's equity-based funding formula.
+    Source: CA CDE LCFF Summary Data Files
+    """
+    __tablename__ = "ca_lcff_funding"
+
+    # Primary key
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    # Foreign key
+    nces_id: Mapped[str] = mapped_column(
+        String(10), ForeignKey("districts.nces_id", ondelete="CASCADE"), nullable=False
+    )
+
+    # Source tracking
+    year: Mapped[str] = mapped_column(String(10), nullable=False)
+
+    # LCFF Components
+    base_grant: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    supplemental_grant: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    concentration_grant: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    total_lcff: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+
+    # Funded ADA (Average Daily Attendance)
+    funded_ada: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+
+    # Unduplicated Pupil Count (UPC) - for supplemental/concentration grants
+    unduplicated_pupil_count: Mapped[Optional[int]] = mapped_column(Integer)
+    upc_percentage: Mapped[Optional[float]] = mapped_column(Numeric(10, 6))
+
+    # Grade span breakdowns
+    base_tk_3: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    base_4_6: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    base_7_8: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    base_9_12: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+
+    # Source documentation
+    data_source: Mapped[str] = mapped_column(String(50), default="ca_cde_lcff")
+    source_url: Mapped[Optional[str]] = mapped_column(String(500))
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
+
+    # Relationships
+    district: Mapped["District"] = relationship(back_populates="ca_lcff_funding")
+
+    # Constraints and Indexes
+    __table_args__ = (
+        UniqueConstraint("nces_id", "year", name="uq_ca_lcff_funding"),
+        CheckConstraint("upc_percentage BETWEEN 0 AND 1", name="chk_upc_percentage"),
+        Index("ix_lcff_nces_id", "nces_id"),
+        Index("ix_lcff_year", "year"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<CALCFFFunding {self.nces_id}/{self.year}: ${self.total_lcff:,.0f}>"

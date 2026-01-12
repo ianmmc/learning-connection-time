@@ -130,6 +130,10 @@ def load_staff_data(staff_file: Path, year: str) -> pd.DataFrame:
     # Rename LEAID to district_id
     pivot_df = pivot_df.rename(columns={"LEAID": "district_id"})
 
+    # Normalize district_id: strip leading zeros to match Districts table format
+    # NCES files sometimes have 7-char LEAIDs (0600001) but Districts uses 6-char (600001)
+    pivot_df["district_id"] = pivot_df["district_id"].apply(lambda x: str(int(x)) if x else x)
+
     # Add metadata columns
     pivot_df["source_year"] = year
     pivot_df["data_source"] = "nces_ccd"
@@ -182,6 +186,10 @@ def load_enrollment_data(membership_file: Path, year: str) -> pd.DataFrame:
 
     # Rename LEAID to district_id
     pivot_df = pivot_df.rename(columns={"LEAID": "district_id"})
+
+    # Normalize district_id: strip leading zeros to match Districts table format
+    # NCES files sometimes have 7-char LEAIDs (0600001) but Districts uses 6-char (600001)
+    pivot_df["district_id"] = pivot_df["district_id"].apply(lambda x: str(int(x)) if x else x)
 
     # Calculate totals
     grade_columns = [col for col in pivot_df.columns if col.startswith("enrollment_")]

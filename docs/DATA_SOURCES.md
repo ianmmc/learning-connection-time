@@ -232,22 +232,34 @@ Each state maintains its own education data system. Quality, accessibility, and 
 
 **Agency**: Texas Education Agency (TEA)
 **URL**: https://tea.texas.gov/
+**Integration Status**: ✅ Layer 2 Complete (Migration 005, January 2026)
 
 #### Data Portal
 - **Name**: PEIMS (Public Education Information Management System)
 - **URL**: https://tea.texas.gov/reports-and-data
 
+#### Database Integration (Migration 005)
+- **Crosswalk**: NCES ↔ TEA via ST_LEAID field from NCES CCD files
+- **Coverage**: 1,207 Texas districts in database (1,193 with TEA identifiers)
+- **Tables Created**:
+  - `tx_district_identifiers` - TEA district numbers, charter status, district types
+  - `tx_sped_district_data` - Placeholder for future PEIMS enhancement
+  - `v_texas_districts` - Consolidated view for easy querying
+- **Key Discovery**: ST_LEAID field in NCES CCD contains state-assigned IDs for all 50 states
+- **Status**: Infrastructure ready for PEIMS data enhancement in future phases
+
 #### Key Datasets
-- Student enrollment
-- Personnel data (PEIMS)
-- Academic performance
+- Student enrollment (NCES CCD)
+- Personnel data (NCES CCD + PEIMS for enhancement)
+- Academic performance (TEA TAPR reports)
 - Financial data
 
 #### Strengths
 ✅ Comprehensive data
 ✅ Well-documented system
-✅ Large population
+✅ Large population (5.26M students in 2023-24)
 ✅ Regular updates
+✅ Official NCES ↔ TEA crosswalk available
 
 #### Instructional Time Requirement
 - **All Grades**: 7 hours per day minimum (420 minutes)
@@ -257,6 +269,8 @@ Each state maintains its own education data system. Quality, accessibility, and 
 - Second-largest state by population
 - High instructional time requirement makes interesting comparison
 - Growing population
+- Integration validated: 5.26M students (2023-24 NCES) vs 5.54M (2024-25 TEA) shows reasonable year-over-year growth
+- See `TEXAS_INTEGRATION_COMPLETE.md` for full integration report
 
 ---
 
@@ -425,6 +439,7 @@ When adding a new state or data source:
 
 ---
 
-**Last Updated**: January 3, 2026
-**Sources Documented**: 3 federal (NCES CCD, CRDC, IDEA 618), 4 state, bell schedules (128 districts)
-**Status**: Active development - Phase 1.5 (Bell Schedule Enrichment & SPED Segmentation)
+**Last Updated**: January 11, 2026
+**Sources Documented**: 3 federal (NCES CCD, CRDC, IDEA 618), 4 state (CA and TX integrated), bell schedules (182 districts)
+**Layer 2 Integrations**: California (Migration 003) ✅, Texas (Migration 005) ✅
+**Status**: Active development - Phase 1.5 (Bell Schedule Enrichment & SPED Segmentation) + Layer 2 State Integration (FL, NY next)

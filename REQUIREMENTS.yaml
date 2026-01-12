@@ -1,0 +1,511 @@
+project: learning-connection-time
+description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
+last_updated: "2026-01-12T03:30:00Z"
+
+requirements:
+  - id: REQ-001
+    description: Calculate LCT using formula (Daily Instructional Minutes × Staff) / Enrollment
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Returns decimal value representing minutes per student per day
+      - Handles zero enrollment gracefully (returns None or raises)
+      - Accepts instructional_minutes, staff_count, enrollment as inputs
+      - Result is mathematically correct per formula
+    tests:
+      - tests/test_lct_calculation.py::TestLCTCalculation::test_lct_basic_calculation
+      - tests/test_lct_calculation.py::TestLCTCalculation::test_lct_returns_float
+      - tests/test_lct_calculation.py::TestLCTCalculation::test_lct_rounds_to_two_decimals
+      - tests/test_lct_calculation.py::TestLCTCalculation::test_lct_zero_enrollment_returns_none
+      - tests/test_lct_calculation.py::TestLCTCalculation::test_lct_result_in_reasonable_range
+    created: "2025-01-10T22:00:00Z"
+    updated: "2025-01-10T22:00:00Z"
+
+  - id: REQ-002
+    description: Import and normalize NCES CCD district data
+    type: functional
+    priority: must
+    status: implemented
+    acceptance_criteria:
+      - Fetches data from NCES API or local files
+      - Normalizes district names and IDs
+      - Stores in PostgreSQL database
+      - Handles missing/null values appropriately
+    tests: []
+    created: "2025-01-10T22:00:00Z"
+    updated: "2025-01-10T22:00:00Z"
+
+  - id: REQ-003
+    description: Enrich districts with bell schedule data
+    type: functional
+    priority: must
+    status: implemented
+    acceptance_criteria:
+      - Fetches bell schedules from district websites
+      - Parses start/end times to calculate instructional minutes
+      - Stores enrichment data with source attribution
+      - Tracks confidence level of extracted data
+      - Leaves NCES data intact and available for reference and fallback
+      - Leaves state education authority (SEA) data intact and available for reference and fallback
+    tests: []
+    created: "2025-01-10T22:00:00Z"
+    updated: "2025-01-10T22:00:00Z"
+
+  - id: REQ-004
+    description: Calculate SPED-segmented LCT variants
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - Calculates 3 LCT scopes (all staff, gen ed only, SPED adjusted)
+      - Uses state-level SPED staffing ratios
+      - Handles missing SPED data gracefully
+    tests:
+      - tests/test_sped_segmentation.py::TestSpedSegmentedLCT::test_calculates_three_sped_scopes
+      - tests/test_sped_segmentation.py::TestSpedSegmentedLCT::test_core_sped_uses_sped_teachers_and_sped_enrollment
+      - tests/test_sped_segmentation.py::TestSpedSegmentedLCT::test_teachers_gened_uses_gened_teachers_and_gened_enrollment
+      - tests/test_sped_segmentation.py::TestSpedSegmentedLCT::test_instructional_sped_includes_paraprofessionals
+      - tests/test_sped_segmentation.py::TestSpedSegmentedLCT::test_uses_state_level_sped_staffing_ratios
+      - tests/test_sped_segmentation.py::TestSpedSegmentedLCT::test_handles_missing_sped_data_gracefully
+    created: "2025-01-10T22:00:00Z"
+    updated: "2025-01-10T22:00:00Z"
+
+  - id: REQ-005
+    description: Validate data integrity with 6 validation flags
+    type: non-functional
+    priority: must
+    status: implemented
+    acceptance_criteria:
+      - Flags anomalous enrollment values
+      - Flags missing instructional time data
+      - Flags out-of-range LCT calculations
+      - Flags stale/outdated source data
+      - Provides validation summary report
+    tests: []
+    created: "2025-01-10T22:00:00Z"
+    updated: "2025-01-10T22:00:00Z"
+
+  - id: REQ-006
+    description: Export data for visualization and reporting
+    type: functional
+    priority: should
+    status: proposed
+    acceptance_criteria:
+      - Exports to CSV format
+      - Exports to JSON format
+      - Supports filtering by state, district size, LCT range
+      - Includes metadata about data freshness
+    tests: []
+    created: "2025-01-10T22:00:00Z"
+    updated: "2025-01-10T22:00:00Z"
+
+  - id: REQ-007
+    description: Exclude COVID-era data (2019-2022) from analysis
+    type: constraint
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Rejects data from school years 2019-20 through 2022-23
+      - Logs warning when COVID-era data is encountered
+      - Prefers 2018-19 over COVID years when recent data unavailable
+    tests:
+      - tests/test_constraints.py::TestCovidEraExclusion::test_rejects_2019_20_school_year
+      - tests/test_constraints.py::TestCovidEraExclusion::test_rejects_2020_21_school_year
+      - tests/test_constraints.py::TestCovidEraExclusion::test_rejects_2021_22_school_year
+      - tests/test_constraints.py::TestCovidEraExclusion::test_rejects_2022_23_school_year
+      - tests/test_constraints.py::TestCovidEraExclusion::test_accepts_2023_24_school_year
+      - tests/test_constraints.py::TestCovidEraExclusion::test_prefers_2018_19_over_covid_years
+      - tests/test_constraints.py::TestCovidEraExclusion::test_logs_warning_for_covid_data
+      - tests/test_constraints.py::TestCovidEraExclusion::test_covid_era_year_list_complete
+    created: "2025-01-10T22:00:00Z"
+    updated: "2025-01-10T22:00:00Z"
+
+  - id: REQ-008
+    description: Calculate all 8 LCT staff scopes without data loss
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Generates exactly 8 scopes - teachers_only, teachers_elementary, teachers_secondary, core_sped, teachers_gened, instructional_sped, teachers_core, instructional, instructional_plus_support, all
+      - Each scope present in output CSV with non-zero district counts
+      - teachers_elementary scope has 15,000+ districts (based on NCES data availability)
+      - teachers_secondary scope has 14,000+ districts (based on NCES data availability)
+      - No scope is accidentally dropped during calculation or database operations
+      - Summary CSV includes all 10 scopes (8 + teachers_elementary + teachers_secondary)
+    tests:
+      - tests/test_lct_scope_calculations.py::TestScopeCalculations::test_all_scopes_calculated_without_data_loss
+      - tests/test_lct_scope_calculations.py::TestScopeCalculations::test_ungraded_excluded_from_teachers_only
+      - tests/test_lct_scope_calculations.py::TestRegressionPrevention::test_staff_import_does_not_zero_teacher_categories
+      - tests/test_lct_scope_calculations.py::TestRegressionPrevention::test_scope_counts_match_expected_district_availability
+    created: "2026-01-12T03:30:00Z"
+    updated: "2026-01-12T04:30:00Z"
+    notes: "Regression: teachers_elementary and teachers_secondary disappeared on 2026-01-10 due to staff import not preserving teacher-level breakdowns"
+
+  - id: REQ-009
+    description: Preserve elementary and secondary teacher counts during staff import
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Staff import reads Elementary Teachers, Kindergarten Teachers, Secondary Teachers from NCES CCD
+      - Pivot operation creates teachers_elementary, teachers_kindergarten, teachers_secondary columns
+      - StaffCountsEffective.teachers_elementary_k5 is non-null for 16,000+ districts
+      - StaffCountsEffective.teachers_secondary_6_12 is non-null for 15,000+ districts
+      - calculate_scopes() method correctly sums elem + kinder for teachers_elementary_k5
+      - Re-import does not zero out teacher-level breakdowns
+    tests:
+      - tests/test_lct_scope_calculations.py::TestScopeCalculations::test_elementary_teachers_preserved_from_nces
+      - tests/test_lct_scope_calculations.py::TestScopeCalculations::test_secondary_teachers_preserved_from_nces
+      - tests/test_lct_scope_calculations.py::TestScopeCalculations::test_handles_missing_teacher_categories_gracefully
+    created: "2026-01-12T03:30:00Z"
+    updated: "2026-01-12T03:30:00Z"
+    notes: "Root cause of REQ-008 regression - staff import pivot logic must be tested"
+
+  - id: REQ-010
+    description: Calculate elementary and secondary enrollment aggregates
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - EnrollmentByGrade.calculate_level_enrollments() is called after import
+      - enrollment_elementary equals sum of K + grades 1-5
+      - enrollment_secondary equals sum of grades 6-12
+      - Both fields are non-null for districts with grade-level data
+      - Sum of elementary + secondary approximately equals enrollment_k12 (within rounding)
+    tests:
+      - tests/test_lct_scope_calculations.py::TestEnrollmentLevelCalculations::test_elementary_enrollment_k_through_5
+      - tests/test_lct_scope_calculations.py::TestEnrollmentLevelCalculations::test_secondary_enrollment_grades_6_through_12
+      - tests/test_lct_scope_calculations.py::TestEnrollmentLevelCalculations::test_elementary_plus_secondary_equals_k12
+      - tests/test_lct_scope_calculations.py::TestEnrollmentLevelCalculations::test_handles_missing_grades_gracefully
+    created: "2026-01-12T03:30:00Z"
+    updated: "2026-01-12T03:30:00Z"
+
+  - id: REQ-011
+    description: Validate LCT scope hierarchy relationships
+    type: non-functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Mean LCT for teachers_only < teachers_core (teachers_only excludes ungraded)
+      - Mean LCT for teachers_core < instructional (instructional adds coordinators + paras)
+      - Mean LCT for instructional < instructional_plus_support (adds counselors + support)
+      - Mean LCT for instructional_plus_support < all (adds all other staff)
+      - Mean LCT for teachers_secondary < teachers_only (secondary typically higher SSR)
+      - QA report flags hierarchy violations
+    tests:
+      - tests/test_lct_scope_calculations.py::TestScopeHierarchy::test_scope_hierarchy_relationships
+      - tests/test_lct_scope_calculations.py::TestScopeHierarchy::test_teachers_secondary_less_than_teachers_only
+    created: "2026-01-12T03:30:00Z"
+    updated: "2026-01-12T03:30:00Z"
+    notes: "From QA_DASHBOARD.md hierarchy validation section"
+
+  - id: REQ-012
+    description: Apply data safeguards with 7 validation flags
+    type: non-functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - ERR_FLAT_STAFF - Detects when all 5 base scopes have identical staff counts
+      - ERR_IMPOSSIBLE_SSR - Flags staff-to-student ratio > 0.5 (more than 1 staff per 2 students)
+      - ERR_VOLATILE - Flags K-12 enrollment < 50 (high statistical volatility)
+      - ERR_RATIO_CEILING - Detects teachers = 100% of all staff (incomplete reporting)
+      - WARN_LCT_LOW - Flags LCT < 5 minutes (very high enrollment relative to staff)
+      - WARN_LCT_HIGH - Flags LCT > 120 minutes for teachers_only scope
+      - WARN_SPED_RATIO_CAP - Flags SPED LCT capped at 360 (high teacher-to-student ratio)
+      - Flags are added to level_lct_notes column, not used for filtering
+      - QA report includes safeguard counts and definitions
+    tests:
+      - tests/test_data_safeguards.py::TestDataSafeguards::test_err_flat_staff_detection
+      - tests/test_data_safeguards.py::TestDataSafeguards::test_err_impossible_ssr_detection
+      - tests/test_data_safeguards.py::TestDataSafeguards::test_err_volatile_detection
+      - tests/test_data_safeguards.py::TestDataSafeguards::test_err_ratio_ceiling_detection
+      - tests/test_data_safeguards.py::TestDataSafeguards::test_warn_lct_low_detection
+      - tests/test_data_safeguards.py::TestDataSafeguards::test_warn_lct_high_detection
+      - tests/test_data_safeguards.py::TestDataSafeguards::test_warn_sped_ratio_cap_detection
+      - tests/test_data_safeguards.py::TestDataSafeguards::test_safeguards_added_to_notes_not_filtering
+      - tests/test_data_safeguards.py::TestSafeguardDefinitions::test_all_safeguards_have_definitions
+      - tests/test_data_safeguards.py::TestSafeguardDefinitions::test_error_vs_warning_flags_distinction
+    created: "2026-01-12T03:30:00Z"
+    updated: "2026-01-12T03:30:00Z"
+    notes: "From METHODOLOGY.md Data Safeguards section and QA_DASHBOARD.md"
+
+  - id: REQ-013
+    description: LCT values must be within valid range 0-360 minutes
+    type: constraint
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - All LCT values > 0 (negative values indicate data error)
+      - All LCT values <= 360 (cannot exceed full school day)
+      - SPED scopes that would exceed 360 are capped with WARN_SPED_RATIO_CAP flag
+      - Invalid LCT values (<=0 or >360 for non-SPED scopes) are excluded from valid dataset
+      - QA report shows pass rate >= 99% (invalid calculations < 1%)
+    tests:
+      - tests/test_data_safeguards.py::TestLCTValueConstraints::test_lct_must_be_positive
+      - tests/test_data_safeguards.py::TestLCTValueConstraints::test_lct_must_not_exceed_360_for_non_sped
+      - tests/test_data_safeguards.py::TestLCTValueConstraints::test_sped_lct_capped_at_360_with_flag
+      - tests/test_data_safeguards.py::TestLCTValueConstraints::test_invalid_lct_excluded_from_valid_dataset
+      - tests/test_data_safeguards.py::TestLCTValueConstraints::test_qa_report_shows_high_pass_rate
+    created: "2026-01-12T03:30:00Z"
+    updated: "2026-01-12T03:30:00Z"
+
+  - id: REQ-014
+    description: Exclude Pre-K teachers and enrollment from all LCT scopes
+    type: constraint
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - All scopes use enrollment_k12 (excludes Pre-K)
+      - teachers_only scope excludes teachers_prek
+      - teachers_core scope excludes teachers_prek
+      - All other scopes exclude teachers_prek
+      - StaffCountsEffective.calculate_scopes() does not include teachers_prek in any scope
+      - LCT calculations verify enrollment_type = 'k12' for base scopes
+    tests:
+      - tests/test_lct_scope_calculations.py::TestScopeCalculations::test_prek_excluded_from_all_scopes
+      - tests/test_constraints.py::TestPreKExclusion::test_enrollment_k12_excludes_prek
+      - tests/test_constraints.py::TestPreKExclusion::test_all_scopes_use_k12_enrollment
+      - tests/test_constraints.py::TestPreKExclusion::test_teachers_prek_excluded_from_all_scopes
+      - tests/test_constraints.py::TestPreKExclusion::test_scope_calculation_never_includes_prek_field
+      - tests/test_constraints.py::TestPreKExclusion::test_lct_calculations_verify_enrollment_type_k12
+    created: "2026-01-12T03:30:00Z"
+    updated: "2026-01-12T03:30:00Z"
+    notes: "From METHODOLOGY.md - Key Decision December 2025"
+
+  - id: REQ-015
+    description: Generate QA dashboard with validation summary
+    type: non-functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Creates lct_qa_report_*.json with metadata, data_quality, safeguards, hierarchy_validation
+      - Reports overall_status as PASS or WARNING
+      - Includes pass_rate percentage (valid_calculations / total_calculations * 100)
+      - Lists all hierarchy checks with passed boolean
+      - Provides outlier detection (very low/high LCT values)
+      - Includes state_coverage with list of states
+      - Saves report to data/enriched/lct-calculations/
+    tests:
+      - tests/test_data_safeguards.py::TestQADashboard::test_qa_report_has_required_sections
+      - tests/test_data_safeguards.py::TestQADashboard::test_qa_report_calculates_pass_rate
+      - tests/test_data_safeguards.py::TestQADashboard::test_qa_report_validates_hierarchy_checks
+      - tests/test_data_safeguards.py::TestQADashboard::test_qa_report_includes_safeguard_counts
+      - tests/test_data_safeguards.py::TestQADashboard::test_qa_report_detects_outliers
+      - tests/test_data_safeguards.py::TestQADashboard::test_qa_report_includes_state_coverage
+      - tests/test_data_safeguards.py::TestQADashboard::test_qa_report_saved_to_correct_location
+      - tests/test_data_safeguards.py::TestQADashboard::test_qa_dashboard_determines_overall_status
+    created: "2026-01-12T03:30:00Z"
+    updated: "2026-01-12T03:30:00Z"
+    notes: "From QA_DASHBOARD.md"
+
+  - id: REQ-016
+    description: Track calculation runs in database for incremental updates
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - CalculationRun.start_run() creates record with timestamp
+      - Records year, run_type (full/incremental), input_hash
+      - CalculationRun.complete() updates with districts_processed, calculations_created
+      - Stores output_files list and qa_summary JSON
+      - Enables --incremental flag to skip unchanged districts
+      - Database tracks multiple runs for audit trail
+    tests:
+      - tests/test_infrastructure.py::TestCalculationRunTracking::test_start_run_creates_record_with_timestamp
+      - tests/test_infrastructure.py::TestCalculationRunTracking::test_records_year_and_run_type
+      - tests/test_infrastructure.py::TestCalculationRunTracking::test_stores_input_hash_for_change_detection
+      - tests/test_infrastructure.py::TestCalculationRunTracking::test_complete_updates_districts_processed_and_calculations_created
+      - tests/test_infrastructure.py::TestCalculationRunTracking::test_stores_output_files_list
+      - tests/test_infrastructure.py::TestCalculationRunTracking::test_stores_qa_summary_json
+      - tests/test_infrastructure.py::TestCalculationRunTracking::test_enables_incremental_flag_to_skip_unchanged_districts
+      - tests/test_infrastructure.py::TestCalculationRunTracking::test_database_tracks_multiple_runs_for_audit_trail
+    created: "2026-01-12T03:30:00Z"
+    updated: "2026-01-12T03:30:00Z"
+
+  - id: REQ-017
+    description: Support bell schedule enrichment with confidence levels
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - BellSchedule table stores grade_level (elementary, middle, high)
+      - Confidence levels - high, medium, low, assumed
+      - Method tracking - web_scraping, pdf_extraction, manual_entry, state_requirement
+      - Source URLs stored in JSONB array for transparency
+      - Schools sampled list stored for verification
+      - get_instructional_minutes() prioritizes - bell schedule (enriched) > state requirement > default 360
+    tests:
+      - tests/test_infrastructure.py::TestBellScheduleEnrichment::test_stores_grade_level_elementary_middle_high
+      - tests/test_infrastructure.py::TestBellScheduleEnrichment::test_confidence_levels_high_medium_low_assumed
+      - tests/test_infrastructure.py::TestBellScheduleEnrichment::test_method_tracking_web_scraping_pdf_manual_state
+      - tests/test_infrastructure.py::TestBellScheduleEnrichment::test_source_urls_stored_in_jsonb_array
+      - tests/test_infrastructure.py::TestBellScheduleEnrichment::test_schools_sampled_list_stored
+      - tests/test_infrastructure.py::TestBellScheduleEnrichment::test_get_instructional_minutes_prioritizes_bell_schedule
+      - tests/test_infrastructure.py::TestBellScheduleEnrichment::test_bell_schedule_enrichment_optional_step
+      - tests/test_infrastructure.py::TestBellScheduleEnrichment::test_enrichment_tracks_data_quality
+    created: "2026-01-12T03:30:00Z"
+    updated: "2026-01-12T03:30:00Z"
+    notes: "From BELL_SCHEDULE_SAMPLING_METHODOLOGY.md"
+
+  - id: REQ-018
+    description: SPED segmentation uses 2017-18 baseline ratios
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - Uses IDEA 618 Personnel data for state SPED teacher ratios
+      - Uses IDEA 618 Environments data for self-contained proportion
+      - Uses CRDC 2017-18 for LEA-level SPED enrollment
+      - Calculates 3 SPED scopes - core_sped, teachers_gened, instructional_sped
+      - core_sped uses SPED teachers / self-contained SPED students
+      - teachers_gened uses GenEd teachers / GenEd enrollment (includes mainstreamed SPED)
+      - instructional_sped uses (SPED teachers + paras) / self-contained SPED students
+      - State-level SPED data takes precedence when available (year-matched)
+    tests:
+      - tests/test_sped_segmentation.py::TestSpedBaselineRatios::test_uses_idea_618_personnel_for_teacher_ratios
+      - tests/test_sped_segmentation.py::TestSpedBaselineRatios::test_uses_idea_618_environments_for_self_contained_proportion
+      - tests/test_sped_segmentation.py::TestSpedBaselineRatios::test_uses_crdc_2017_18_for_lea_level_sped_enrollment
+      - tests/test_sped_segmentation.py::TestSpedBaselineRatios::test_calculates_three_sped_scopes_from_baseline
+      - tests/test_sped_segmentation.py::TestSpedBaselineRatios::test_california_actual_sped_takes_precedence
+      - tests/test_sped_segmentation.py::TestSpedBaselineRatios::test_teacher_estimates_always_use_2017_18_ratios
+      - tests/test_sped_segmentation.py::TestSpedLCTValidation::test_weighted_average_audit_validation
+    created: "2026-01-12T03:30:00Z"
+    updated: "2026-01-12T03:30:00Z"
+    notes: "From SPED_SEGMENTATION_IMPLEMENTATION.md v3 self-contained focus"
+
+  - id: REQ-019
+    description: Layer 2 state integration via ST_LEAID crosswalk
+    type: functional
+    priority: must
+    status: implemented
+    acceptance_criteria:
+      - districts table has st_leaid column for state-assigned IDs
+      - ST_LEAID format validated per state (TX-XXXXXX, CA-XX-XXXXX, etc.)
+      - NCES CCD LEA Universe files contain ST_LEAID for all 50 states
+      - State-specific identifier tables created (tx_district_identifiers, etc.)
+      - Crosswalk import populates both st_leaid and state-specific tables
+      - 100% of districts in database have st_leaid populated
+      - State-specific views created for easy querying (v_texas_districts, etc.)
+    tests: []
+    created: "2026-01-12T03:30:00Z"
+    updated: "2026-01-12T03:30:00Z"
+    notes: "From Texas integration - ST_LEAID discovery applies to all states"
+
+  - id: REQ-020
+    description: Database migrations preserve data integrity
+    type: constraint
+    priority: must
+    status: implemented
+    acceptance_criteria:
+      - LCT calculations produce identical results before and after migration
+      - District count remains constant before/after migration (17,842 for 2023-24)
+      - Enrollment totals match before/after within rounding error
+      - Staff totals match before/after within rounding error
+      - Baseline comparison report generated showing 0.0 difference in metrics
+      - Migration creates tables but does not modify existing enrollment/staff data
+    tests: []
+    created: "2026-01-12T03:30:00Z"
+    updated: "2026-01-12T03:30:00Z"
+    notes: "From Texas integration validation - bit-for-bit identical calculations"
+
+  - id: REQ-021
+    description: State data integration validates against state summaries
+    type: non-functional
+    priority: must
+    status: implemented
+    acceptance_criteria:
+      - Compare database enrollment totals against state education agency summaries
+      - Validate district counts match expected for state
+      - Accept year-over-year differences within reasonable range (±10%)
+      - Document validation results in integration completion report
+      - Flag discrepancies > 10% for manual review
+    tests: []
+    created: "2026-01-12T03:30:00Z"
+    updated: "2026-01-12T03:30:00Z"
+    notes: "From Texas integration - validated 5.26M (NCES 2023-24) vs 5.54M (TEA 2024-25)"
+
+  - id: REQ-022
+    description: Default-to-NCES strategy for state data integration
+    type: constraint
+    priority: should
+    status: implemented
+    acceptance_criteria:
+      - When year and quality are equal, prefer NCES CCD over SEA data for consistency
+      - Use ST_LEAID from NCES for state identifier crosswalk
+      - State-specific tables provide enhancement, not replacement
+      - Accept 1-2 year data lag typical of federal reporting
+      - Infrastructure ready for state-specific enhancements without schema changes
+    tests: []
+    created: "2026-01-12T03:30:00Z"
+    updated: "2026-01-12T03:40:00Z"
+    notes: "From Texas integration strategy - 'If in doubt, use NCES' for standardization"
+
+  - id: REQ-023
+    description: Data source precedence for enrollment and staffing
+    type: constraint
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Precedence order - Year-matched NCES > Year-matched SEA > Older NCES > Older SEA
+      - Year-matched NCES preferred for standardization and cross-state comparability
+      - Recency trumps source when year differs (newer NCES beats older SEA)
+      - StaffCountsEffective tracks primary_source and sources_used for transparency
+      - EnrollmentByGrade tracks data_source for lineage
+      - When merging sources, document decision in quality_notes or method_notes
+    tests:
+      - tests/test_data_precedence.py::TestEnrollmentStaffPrecedence::test_year_matched_nces_preferred_over_year_matched_sea
+      - tests/test_data_precedence.py::TestEnrollmentStaffPrecedence::test_year_matched_nces_preferred_over_older_sea
+      - tests/test_data_precedence.py::TestEnrollmentStaffPrecedence::test_year_matched_sea_preferred_over_older_nces
+      - tests/test_data_precedence.py::TestEnrollmentStaffPrecedence::test_older_nces_preferred_over_older_sea
+      - tests/test_data_precedence.py::TestEnrollmentStaffPrecedence::test_precedence_tracked_in_metadata
+    created: "2026-01-12T03:40:00Z"
+    updated: "2026-01-12T03:40:00Z"
+    notes: "Clarifies 'Default-to-NCES' strategy - standardization preferred when year-matched, recency matters when years differ"
+
+  - id: REQ-024
+    description: Instructional time data precedence hierarchy
+    type: constraint
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Priority order - Bell schedule (enriched) > State statutory requirement > Default 360 minutes
+      - get_instructional_minutes() implements this hierarchy
+      - Bell schedule by requested grade_level tried first
+      - Bell schedule fallback to other grade levels (high > middle > elementary)
+      - State requirement used when no bell schedule available
+      - Default 360 only when state requirement missing
+      - Returns tuple (minutes, source, year) for transparency
+    tests:
+      - tests/test_data_precedence.py::TestInstructionalTimePrecedence::test_bell_schedule_preferred_over_state_requirement
+      - tests/test_data_precedence.py::TestInstructionalTimePrecedence::test_state_requirement_preferred_over_default
+      - tests/test_data_precedence.py::TestInstructionalTimePrecedence::test_default_360_when_no_other_source
+      - tests/test_data_precedence.py::TestInstructionalTimePrecedence::test_bell_schedule_fallback_to_other_grade_levels
+      - tests/test_data_precedence.py::TestInstructionalTimePrecedence::test_get_instructional_minutes_returns_source_and_year
+    created: "2026-01-12T03:40:00Z"
+    updated: "2026-01-12T03:40:00Z"
+    notes: "Already implemented in get_instructional_minutes() function - formalizing as requirement"
+
+  - id: REQ-025
+    description: SPED data precedence with proportional estimate fallback
+    type: constraint
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Priority order - State actual (year-matched) > Federal estimate (2017-18) > State proportional estimate
+      - California actual SPED environment data takes precedence when available
+      - Federal IDEA 618 + CRDC 2017-18 baseline used when state actual unavailable
+      - If state provides only proportions, apply to federal baseline ratios
+      - Enrollment source tracked - ca_actual_YYYY-YY vs sped_estimate_2017-18
+      - Teacher estimates always use 2017-18 federal ratios (state splits unavailable)
+      - Confidence levels documented - high for state actual, medium for estimates
+    tests:
+      - tests/test_data_precedence.py::TestSpedDataPrecedence::test_state_actual_sped_preferred_over_federal_estimate
+      - tests/test_data_precedence.py::TestSpedDataPrecedence::test_federal_estimate_used_when_no_state_actual
+      - tests/test_data_precedence.py::TestSpedDataPrecedence::test_state_proportional_estimate_lowest_priority
+      - tests/test_data_precedence.py::TestSpedDataPrecedence::test_teacher_estimates_always_use_2017_18_ratios
+      - tests/test_data_precedence.py::TestSpedDataPrecedence::test_confidence_levels_documented_in_output
+      - tests/test_data_precedence.py::TestSpedDataPrecedence::test_enrollment_source_tracked_in_database
+    created: "2026-01-12T03:40:00Z"
+    updated: "2026-01-12T03:40:00Z"
+    notes: "From California SPED integration and SPED v3 implementation - DATA PRECEDENCE comment in calculate_lct_variants.py"

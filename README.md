@@ -103,8 +103,9 @@ python infrastructure/scripts/enrich/enrichment_progress.py --state WY
 **Infrastructure Enhancements:**
 - ✅ PostgreSQL database migration (Dec 2025)
 - ✅ Docker containerization complete
+- ✅ Layer 2 state integrations: California (Migration 003), Texas (Migration 005)
 - ✅ SPED segmentation implemented (v3 self-contained focus)
-- ✅ Data safeguards implemented (6 flags for quality validation)
+- ✅ Data safeguards implemented (7 flags for quality validation)
 - ✅ QA dashboard automation (auto-generated validation reports)
 - ✅ Materialized views for fast queries (14K+ cached rows)
 - ✅ Interactive enrichment tool (state campaign CLI)
@@ -112,12 +113,17 @@ python infrastructure/scripts/enrich/enrichment_progress.py --state WY
 - ✅ Terminology standardized (docs/TERMINOLOGY.md)
 
 **Recent Milestones:**
+- ✅ Texas Layer 2 integration (Jan 2026)
+  - NCES ↔ TEA crosswalk for 1,207 districts
+  - ST_LEAID discovery (applies to all 50 states)
+  - Infrastructure ready for PEIMS enhancement
+  - See `TEXAS_INTEGRATION_COMPLETE.md` for details
 - ✅ Self-contained SPED segmentation (Jan 2026)
   - Three LCT scopes: core_sped, teachers_gened, instructional_sped
   - See [SPED_SEGMENTATION_IMPLEMENTATION.md](docs/SPED_SEGMENTATION_IMPLEMENTATION.md) for methodology
   - Results in `data/enriched/lct-calculations/`
 - ✅ Data quality safeguards (Jan 2026)
-  - 6 validation flags for quality transparency
+  - 7 validation flags for quality transparency
   - See [METHODOLOGY.md](docs/METHODOLOGY.md#data-safeguards) for details
 - ✅ Efficiency Enhancement Suite (Dec 2025)
   - Interactive enrichment, Parquet export, incremental calculations
@@ -287,7 +293,7 @@ Automatically detects and concatenates split files:
 
 ### ✅ Data Quality & Validation
 - Automated filtering of invalid records
-- 6 data safeguard flags (ERR and WARN categories)
+- 7 data safeguard flags (ERR and WARN categories)
 - Validation reports for transparency
 - Publication-ready datasets (`*_valid.csv` files)
 - QA dashboard with auto-generated validation reports
@@ -318,17 +324,17 @@ Automatically detects and concatenates split files:
 - **Civil Rights Data Collection (CRDC)** - Biennial detailed data, LEA-level SPED enrollment
 - **IDEA 618 Personnel & Environments** - State-level SPED teachers, paras, and educational environments (2017-18 baseline)
 
-### State Sources (Phased Rollout)
-1. California - DataQuest API
-2. Texas - PEIMS data
-3. New York - NYSED data portal
-4. Florida - Growing population, good reporting
+### State Sources (Layer 2 Integration)
+1. ✅ **California** - DataQuest API, SPED environments, FRPM, LCFF funding (Migration 003)
+2. ✅ **Texas** - NCES ↔ TEA crosswalk, ready for PEIMS enhancement (Migration 005)
+3. 🔄 **Florida** - Next priority state
+4. 🔄 **New York** - Next priority state
 
 ### Actual Bell Schedules (Campaign)
 - Web scraping from district/school websites
-- 135 districts enriched with actual data
-- Following state population order
-- Target: 3 per state = ~153 districts
+- 182 districts enriched with actual data
+- Campaign COMPLETE (50 U.S. states with ≥3 districts each)
+- 546 bell schedule records (182 districts × 3 grade levels)
 
 ---
 
@@ -433,7 +439,7 @@ Document in session handoff or create detailed notes in `docs/chat-history/`
 
 ### Current: Phase 1.5 (Bell Schedule Enrichment & SPED Segmentation)
 - ✅ Infrastructure complete (database, optimizations, QA dashboard)
-- 🔄 State-by-state enrichment campaign in progress
+- ✅ State-by-state enrichment campaign COMPLETE (50 states with ≥3 districts)
 - 🔄 SPED analysis and equity insights
 
 ### Future Phases
@@ -441,6 +447,6 @@ See [PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md#evolution-strategy) for complet
 
 ---
 
-**Last Updated:** January 3, 2026
-**Current Focus:** SPED segmentation analysis and bell schedule enrichment campaign
-**Project Status:** Active development with PostgreSQL database, SPED segmentation (v3), and data safeguards
+**Last Updated:** January 11, 2026
+**Current Focus:** Layer 2 state integration (Florida and New York next)
+**Project Status:** Active development with PostgreSQL database, Layer 2 integrations (CA, TX complete), SPED segmentation (v3), data safeguards (7 flags), and bell schedule enrichment COMPLETE (182 districts, 50 states)
