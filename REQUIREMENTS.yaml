@@ -1,6 +1,6 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-01-12T03:30:00Z"
+last_updated: "2026-01-16T06:30:00Z"
 
 requirements:
   - id: REQ-001
@@ -26,21 +26,33 @@ requirements:
     description: Import and normalize NCES CCD district data
     type: functional
     priority: must
-    status: implemented
+    status: tested
     acceptance_criteria:
       - Fetches data from NCES API or local files
       - Normalizes district names and IDs
       - Stores in PostgreSQL database
       - Handles missing/null values appropriately
-    tests: []
+    tests:
+      - tests/test_nces_import.py::TestNCESDataFetch::test_fetches_data_from_nces_api
+      - tests/test_nces_import.py::TestNCESDataFetch::test_fetches_data_from_local_files
+      - tests/test_nces_import.py::TestNCESDataFetch::test_local_file_fallback_when_api_fails
+      - tests/test_nces_import.py::TestDistrictNormalization::test_normalizes_district_name_uppercase
+      - tests/test_nces_import.py::TestDistrictNormalization::test_normalizes_leaid_format
+      - tests/test_nces_import.py::TestDistrictNormalization::test_normalizes_state_code
+      - tests/test_nces_import.py::TestDatabaseStorage::test_stores_district_in_database
+      - tests/test_nces_import.py::TestDatabaseStorage::test_batch_insert_districts
+      - tests/test_nces_import.py::TestNullValueHandling::test_handles_null_enrollment
+      - tests/test_nces_import.py::TestNullValueHandling::test_handles_null_staff_counts
+      - tests/test_nces_import.py::TestNullValueHandling::test_flags_districts_with_critical_missing_data
+      - tests/test_nces_import.py::TestDataSourceIntegrity::test_tracks_data_source_nces_ccd
     created: "2025-01-10T22:00:00Z"
-    updated: "2025-01-10T22:00:00Z"
+    updated: "2026-01-16T00:00:00Z"
 
   - id: REQ-003
     description: Enrich districts with bell schedule data
     type: functional
     priority: must
-    status: implemented
+    status: tested
     acceptance_criteria:
       - Fetches bell schedules from district websites
       - Parses start/end times to calculate instructional minutes
@@ -48,9 +60,21 @@ requirements:
       - Tracks confidence level of extracted data
       - Leaves NCES data intact and available for reference and fallback
       - Leaves state education authority (SEA) data intact and available for reference and fallback
-    tests: []
+    tests:
+      - tests/test_bell_schedule_enrichment.py::TestBellScheduleFetch::test_fetches_schedule_from_district_website
+      - tests/test_bell_schedule_enrichment.py::TestBellScheduleFetch::test_handles_blocked_website
+      - tests/test_bell_schedule_enrichment.py::TestBellScheduleFetch::test_extracts_pdf_schedule
+      - tests/test_bell_schedule_enrichment.py::TestTimeCalculation::test_calculates_instructional_minutes_basic
+      - tests/test_bell_schedule_enrichment.py::TestTimeCalculation::test_handles_different_time_formats
+      - tests/test_bell_schedule_enrichment.py::TestSourceAttribution::test_stores_source_url
+      - tests/test_bell_schedule_enrichment.py::TestSourceAttribution::test_stores_extraction_method
+      - tests/test_bell_schedule_enrichment.py::TestConfidenceLevels::test_high_confidence_for_official_sources
+      - tests/test_bell_schedule_enrichment.py::TestConfidenceLevels::test_stores_confidence_with_enrichment
+      - tests/test_bell_schedule_enrichment.py::TestDataPreservation::test_nces_data_unchanged_after_enrichment
+      - tests/test_bell_schedule_enrichment.py::TestDataPreservation::test_sea_data_unchanged_after_enrichment
+      - tests/test_bell_schedule_enrichment.py::TestDataPreservation::test_nces_data_available_for_fallback
     created: "2025-01-10T22:00:00Z"
-    updated: "2025-01-10T22:00:00Z"
+    updated: "2026-01-16T00:00:00Z"
 
   - id: REQ-004
     description: Calculate SPED-segmented LCT variants
@@ -75,30 +99,59 @@ requirements:
     description: Validate data integrity with 6 validation flags
     type: non-functional
     priority: must
-    status: implemented
+    status: tested
     acceptance_criteria:
       - Flags anomalous enrollment values
       - Flags missing instructional time data
       - Flags out-of-range LCT calculations
       - Flags stale/outdated source data
       - Provides validation summary report
-    tests: []
+    tests:
+      - tests/test_validation.py::TestEnrollmentValidation::test_flags_negative_enrollment
+      - tests/test_validation.py::TestEnrollmentValidation::test_flags_zero_enrollment
+      - tests/test_validation.py::TestEnrollmentValidation::test_flags_extremely_high_enrollment
+      - tests/test_validation.py::TestEnrollmentValidation::test_passes_valid_enrollment
+      - tests/test_validation.py::TestInstructionalTimeValidation::test_flags_missing_instructional_minutes
+      - tests/test_validation.py::TestInstructionalTimeValidation::test_flags_zero_instructional_minutes
+      - tests/test_validation.py::TestInstructionalTimeValidation::test_passes_valid_instructional_time
+      - tests/test_validation.py::TestLCTRangeValidation::test_flags_negative_lct
+      - tests/test_validation.py::TestLCTRangeValidation::test_flags_lct_exceeds_360
+      - tests/test_validation.py::TestLCTRangeValidation::test_passes_valid_lct_range
+      - tests/test_validation.py::TestDataFreshnessValidation::test_flags_data_older_than_3_years
+      - tests/test_validation.py::TestDataFreshnessValidation::test_flags_covid_era_data
+      - tests/test_validation.py::TestValidationSummaryReport::test_generates_summary_report
+      - tests/test_validation.py::TestValidationSummaryReport::test_report_includes_pass_rate
     created: "2025-01-10T22:00:00Z"
-    updated: "2025-01-10T22:00:00Z"
+    updated: "2026-01-16T00:00:00Z"
 
   - id: REQ-006
     description: Export data for visualization and reporting
     type: functional
     priority: should
-    status: proposed
+    status: tested
     acceptance_criteria:
       - Exports to CSV format
       - Exports to JSON format
       - Supports filtering by state, district size, LCT range
       - Includes metadata about data freshness
-    tests: []
+    tests:
+      - tests/test_export.py::TestCSVExport::test_exports_districts_to_csv
+      - tests/test_export.py::TestCSVExport::test_csv_includes_all_lct_scopes
+      - tests/test_export.py::TestCSVExport::test_csv_handles_special_characters
+      - tests/test_export.py::TestJSONExport::test_exports_districts_to_json
+      - tests/test_export.py::TestJSONExport::test_json_includes_metadata
+      - tests/test_export.py::TestJSONExport::test_json_preserves_numeric_types
+      - tests/test_export.py::TestStateFiltering::test_filters_by_single_state
+      - tests/test_export.py::TestStateFiltering::test_filters_by_multiple_states
+      - tests/test_export.py::TestDistrictSizeFiltering::test_filters_by_minimum_enrollment
+      - tests/test_export.py::TestDistrictSizeFiltering::test_filters_top_n_largest
+      - tests/test_export.py::TestLCTRangeFiltering::test_filters_by_minimum_lct
+      - tests/test_export.py::TestLCTRangeFiltering::test_filters_by_lct_range
+      - tests/test_export.py::TestMetadataInclusion::test_includes_data_year
+      - tests/test_export.py::TestMetadataInclusion::test_includes_export_timestamp
+      - tests/test_export.py::TestMetadataInclusion::test_includes_source_data_freshness
     created: "2025-01-10T22:00:00Z"
-    updated: "2025-01-10T22:00:00Z"
+    updated: "2026-01-16T00:00:00Z"
 
   - id: REQ-007
     description: Exclude COVID-era data (2019-2022) from analysis
@@ -378,7 +431,7 @@ requirements:
     description: Layer 2 state integration via ST_LEAID crosswalk
     type: functional
     priority: must
-    status: implemented
+    status: tested
     acceptance_criteria:
       - districts table has st_leaid column for state-assigned IDs
       - ST_LEAID format validated per state (TX-XXXXXX, CA-XX-XXXXX, etc.)
@@ -387,16 +440,24 @@ requirements:
       - Crosswalk import populates both st_leaid and state-specific tables
       - 100% of districts in database have st_leaid populated
       - State-specific views created for easy querying (v_texas_districts, etc.)
-    tests: []
+    tests:
+      - tests/test_state_integration.py::TestSTLeaidCrosswalk::test_districts_table_has_st_leaid_column
+      - tests/test_state_integration.py::TestSTLeaidCrosswalk::test_st_leaid_format_validated_for_texas
+      - tests/test_state_integration.py::TestSTLeaidCrosswalk::test_st_leaid_format_validated_for_california
+      - tests/test_state_integration.py::TestSTLeaidCrosswalk::test_nces_ccd_lea_universe_contains_st_leaid
+      - tests/test_state_integration.py::TestSTLeaidCrosswalk::test_state_specific_identifier_tables_created
+      - tests/test_state_integration.py::TestSTLeaidCrosswalk::test_crosswalk_import_populates_st_leaid
+      - tests/test_state_integration.py::TestSTLeaidCrosswalk::test_all_districts_have_st_leaid_populated
+      - tests/test_state_integration.py::TestSTLeaidCrosswalk::test_state_specific_views_created
     created: "2026-01-12T03:30:00Z"
-    updated: "2026-01-12T03:30:00Z"
+    updated: "2026-01-16T00:00:00Z"
     notes: "From Texas integration - ST_LEAID discovery applies to all states"
 
   - id: REQ-020
     description: Database migrations preserve data integrity
     type: constraint
     priority: must
-    status: implemented
+    status: tested
     acceptance_criteria:
       - LCT calculations produce identical results before and after migration
       - District count remains constant before/after migration (17,842 for 2023-24)
@@ -404,41 +465,61 @@ requirements:
       - Staff totals match before/after within rounding error
       - Baseline comparison report generated showing 0.0 difference in metrics
       - Migration creates tables but does not modify existing enrollment/staff data
-    tests: []
+    tests:
+      - tests/test_state_integration.py::TestMigrationDataIntegrity::test_lct_calculations_identical_before_and_after_migration
+      - tests/test_state_integration.py::TestMigrationDataIntegrity::test_district_count_constant_after_migration
+      - tests/test_state_integration.py::TestMigrationDataIntegrity::test_enrollment_totals_match_within_rounding
+      - tests/test_state_integration.py::TestMigrationDataIntegrity::test_staff_totals_match_within_rounding
+      - tests/test_state_integration.py::TestMigrationDataIntegrity::test_migration_generates_baseline_comparison_report
+      - tests/test_state_integration.py::TestMigrationDataIntegrity::test_migration_does_not_modify_enrollment_data
+      - tests/test_state_integration.py::TestMigrationDataIntegrity::test_migration_does_not_modify_staff_data
     created: "2026-01-12T03:30:00Z"
-    updated: "2026-01-12T03:30:00Z"
+    updated: "2026-01-16T00:00:00Z"
     notes: "From Texas integration validation - bit-for-bit identical calculations"
 
   - id: REQ-021
     description: State data integration validates against state summaries
     type: non-functional
     priority: must
-    status: implemented
+    status: tested
     acceptance_criteria:
       - Compare database enrollment totals against state education agency summaries
       - Validate district counts match expected for state
       - Accept year-over-year differences within reasonable range (±10%)
       - Document validation results in integration completion report
       - Flag discrepancies > 10% for manual review
-    tests: []
+    tests:
+      - tests/test_state_integration.py::TestStateDataValidation::test_compares_enrollment_totals_against_state_summaries
+      - tests/test_state_integration.py::TestStateDataValidation::test_validates_district_counts_match_expected
+      - tests/test_state_integration.py::TestStateDataValidation::test_accepts_year_over_year_differences_within_10_percent
+      - tests/test_state_integration.py::TestStateDataValidation::test_documents_validation_results_in_report
+      - tests/test_state_integration.py::TestStateDataValidation::test_flags_discrepancies_greater_than_10_percent
     created: "2026-01-12T03:30:00Z"
-    updated: "2026-01-12T03:30:00Z"
+    updated: "2026-01-16T00:00:00Z"
     notes: "From Texas integration - validated 5.26M (NCES 2023-24) vs 5.54M (TEA 2024-25)"
 
   - id: REQ-022
     description: Default-to-NCES strategy for state data integration
     type: constraint
     priority: should
-    status: implemented
+    status: tested
     acceptance_criteria:
       - When year and quality are equal, prefer NCES CCD over SEA data for consistency
       - Use ST_LEAID from NCES for state identifier crosswalk
       - State-specific tables provide enhancement, not replacement
       - Accept 1-2 year data lag typical of federal reporting
       - Infrastructure ready for state-specific enhancements without schema changes
-    tests: []
+    tests:
+      - tests/test_state_integration.py::TestDefaultToNCESStrategy::test_prefers_nces_when_year_and_quality_equal
+      - tests/test_state_integration.py::TestDefaultToNCESStrategy::test_uses_st_leaid_from_nces_for_crosswalk
+      - tests/test_state_integration.py::TestDefaultToNCESStrategy::test_state_tables_provide_enhancement_not_replacement
+      - tests/test_state_integration.py::TestDefaultToNCESStrategy::test_accepts_1_2_year_data_lag_for_federal_reporting
+      - tests/test_state_integration.py::TestDefaultToNCESStrategy::test_rejects_data_lag_greater_than_3_years
+      - tests/test_state_integration.py::TestDefaultToNCESStrategy::test_infrastructure_ready_for_state_enhancements
+      - tests/test_state_integration.py::TestDefaultToNCESStrategy::test_nces_preferred_for_cross_state_comparability
+      - tests/test_state_integration.py::TestDefaultToNCESStrategy::test_documents_if_in_doubt_use_nces_principle
     created: "2026-01-12T03:30:00Z"
-    updated: "2026-01-12T03:40:00Z"
+    updated: "2026-01-16T00:00:00Z"
     notes: "From Texas integration strategy - 'If in doubt, use NCES' for standardization"
 
   - id: REQ-023
@@ -509,3 +590,64 @@ requirements:
     created: "2026-01-12T03:40:00Z"
     updated: "2026-01-12T03:40:00Z"
     notes: "From California SPED integration and SPED v3 implementation - DATA PRECEDENCE comment in calculate_lct_variants.py"
+
+  - id: REQ-026
+    description: Enforce 3-year temporal blending window for multi-source data
+    type: constraint
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Data from multiple sources must span ≤3 consecutive school years
+      - year_span column calculated from min/max of enrollment, staffing, bell schedule years
+      - within_3year_window boolean flag indicates validation status
+      - temporal_flags array tracks validation status - WARN_YEAR_GAP, ERR_SPAN_EXCEEDED
+      - WARN_YEAR_GAP added when sources span 2-3 years (valid but notable)
+      - ERR_SPAN_EXCEEDED added when sources span >3 years (requires resolution)
+      - Trigger trg_lct_temporal_validation auto-validates on INSERT/UPDATE
+      - SPED baseline (2017-18 IDEA 618/CRDC) exempt from 3-year rule as ratio proxy
+      - v_lct_temporal_validation view provides validation summary
+      - Resolution options - update source, seek user direction, accept with flag
+    tests:
+      - tests/test_temporal_validation.py::TestYearSpanCalculation::test_calculates_year_span_from_sources
+      - tests/test_temporal_validation.py::TestYearSpanCalculation::test_same_year_sources_span_is_1
+      - tests/test_temporal_validation.py::TestYearSpanCalculation::test_2_year_span_is_valid
+      - tests/test_temporal_validation.py::TestYearSpanCalculation::test_3_year_span_is_valid
+      - tests/test_temporal_validation.py::TestYearSpanCalculation::test_4_year_span_exceeds_window
+      - tests/test_temporal_validation.py::TestTemporalFlags::test_warn_year_gap_added_for_2_3_year_span
+      - tests/test_temporal_validation.py::TestTemporalFlags::test_err_span_exceeded_added_for_greater_than_3
+      - tests/test_temporal_validation.py::TestTemporalFlags::test_no_flags_for_same_year_data
+      - tests/test_temporal_validation.py::TestSpedBaselineException::test_sped_2017_18_exempt_from_3_year_rule
+      - tests/test_temporal_validation.py::TestSpedBaselineException::test_info_ratio_baseline_flag_for_sped_exception
+      - tests/test_temporal_validation.py::TestValidationTrigger::test_trigger_auto_validates_on_insert
+      - tests/test_temporal_validation.py::TestValidationTrigger::test_trigger_auto_validates_on_update
+    created: "2026-01-16T06:30:00Z"
+    updated: "2026-01-16T06:30:00Z"
+    notes: "From METHODOLOGY.md v2.1 - Temporal Data Blending section. Migration 008 implements this."
+
+  - id: REQ-027
+    description: Master crosswalk table for all state NCES-to-SEA mappings
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - state_district_crosswalk table stores all NCES ↔ state ID mappings
+      - Populated from NCES CCD ST_LEAID field for all 50 states + territories
+      - 17,842+ entries covering all districts in districts table
+      - State-specific import scripts use crosswalk table as source of truth
+      - Crosswalk validates against existing mappings and logs discrepancies
+      - Unique constraint on (nces_id, state, id_system) prevents duplicates
+      - Foreign key to districts table ensures referential integrity
+      - State-specific metadata tables (tx_district_identifiers, etc.) remain for extra data
+    tests:
+      - tests/test_crosswalk.py::TestCrosswalkTable::test_crosswalk_table_exists
+      - tests/test_crosswalk.py::TestCrosswalkTable::test_crosswalk_populated_from_st_leaid
+      - tests/test_crosswalk.py::TestCrosswalkTable::test_crosswalk_has_17842_plus_entries
+      - tests/test_crosswalk.py::TestCrosswalkTable::test_all_states_represented
+      - tests/test_crosswalk.py::TestCrosswalkLookup::test_florida_lookup_uses_crosswalk
+      - tests/test_crosswalk.py::TestCrosswalkLookup::test_california_lookup_uses_crosswalk
+      - tests/test_crosswalk.py::TestCrosswalkLookup::test_texas_lookup_uses_crosswalk
+      - tests/test_crosswalk.py::TestCrosswalkValidation::test_validates_against_existing_mappings
+      - tests/test_crosswalk.py::TestCrosswalkValidation::test_logs_discrepancies
+    created: "2026-01-16T06:30:00Z"
+    updated: "2026-01-16T06:30:00Z"
+    notes: "Migration 007 implements master crosswalk table. Refactored FL, CA, TX scripts to use it."

@@ -712,15 +712,21 @@ Always provide:
 
 ---
 
-**Methodology Version**: 2.0 (Pre-K Exclusion + Level Variants)
-**Last Updated**: December 27, 2025
+**Methodology Version**: 2.1 (Temporal Blending Rules)
+**Last Updated**: January 17, 2026
+**Key Changes in v2.1**:
+- Added 3-Year Window Rule for multi-source data blending
+- Added temporal validation flags (WARN_YEAR_GAP, ERR_SPAN_EXCEEDED)
+- Documented SPED baseline exception (2017-18 data exempt)
+- Added database infrastructure for temporal validation
+- Added master crosswalk table (state_district_crosswalk)
 **Key Changes in v2.0**:
 - All scopes now use K-12 enrollment (Pre-K excluded)
 - All scopes exclude Pre-K teachers
 - Added teacher-level variants (Elementary, Secondary)
 - Ungraded teachers excluded from LCT-Teachers, included in broader scopes
 - Added `level_lct_notes` for QA transparency
-**Next Review**: Upon integration of state-level staffing data
+**Next Review**: Upon integration of additional state-level data
 
 ---
 
@@ -767,6 +773,105 @@ When using staffing data from a different year than enrollment:
 - Document the mixed years in output metadata
 
 See `docs/STAFFING_DATA_ENHANCEMENT_PLAN.md` for complete data source strategy
+
+---
+
+## Temporal Data Blending (3-Year Window Rule)
+
+### Overview
+
+LCT calculations often combine data from multiple sources with different release years. This section documents the rules for acceptable temporal blending.
+
+### The 3-Year Window Rule
+
+**Rule**: When blending data from multiple sources, the **span** from oldest to newest source must not exceed 3 consecutive school years.
+
+**Definition**: Span = (newest year - oldest year + 1)
+
+**Examples**:
+
+| Datasets Used | Span | Valid? |
+|---------------|------|--------|
+| 2023-24 + 2024-25 + 2025-26 | 3 years | ✅ Valid |
+| 2023-24 + 2025-26 | 3 years | ✅ Valid (gap OK, span OK) |
+| 2024-25 + 2025-26 | 2 years | ✅ Valid |
+| 2023-24 + 2024-25 | 2 years | ✅ Valid |
+| 2023-24 + 2026-27 | 4 years | ❌ Invalid |
+| 2023-24 + 2025-26 + 2026-27 | 4 years | ❌ Invalid |
+
+### Resolution When Span Exceeds 3 Years
+
+When a calculation would require data spanning more than 3 years:
+
+1. **Upgrade older dataset**: Find a newer release of the older dataset (e.g., upgrade 2023-24 NCES to 2024-25)
+2. **Downgrade newer dataset**: Use an older release of the newer dataset (e.g., use 2025-26 schedule instead of 2026-27)
+3. **Don't blend**: Use single-year data from a consistent source
+4. **Seek user direction**: Flag for manual review and decision
+
+### Temporal Validation Flags
+
+Calculations include temporal quality flags:
+
+| Flag | Condition | Description |
+|------|-----------|-------------|
+| `WARN_YEAR_GAP` | Span 2-3 years | Valid but sources span multiple years |
+| `ERR_SPAN_EXCEEDED` | Span > 3 years | Requires resolution before use |
+| `INFO_CROSS_YEAR` | Different years used | Documents cross-year blending |
+| `INFO_RATIO_BASELINE` | Uses 2017-18 SPED ratios | Exempt from 3-year rule |
+
+### SPED Baseline Exception
+
+The 2017-18 IDEA 618 and CRDC data used for SPED ratio baselines is **exempt** from the 3-year rule because:
+
+1. **Pragmatic necessity**: Most recent pre-COVID data with complete SPED environment breakdowns
+2. **Ratio stability**: SPED teacher-to-student ratios are relatively stable over time
+3. **Methodological approach**: Used as proportional multipliers, not absolute values
+4. **Documentation**: Clearly documented as historical baseline proxy
+
+When newer state-level SPED data becomes available that meets quality requirements, it supersedes the 2017-18 baseline according to data precedence rules.
+
+### Database Implementation
+
+The database includes validation infrastructure:
+
+```sql
+-- Functions for temporal validation
+school_year_to_numeric('2023-24')  -- Returns: 2023
+year_span('2023-24', '2025-26')    -- Returns: 3
+is_within_3year_window('2023-24', '2024-25', '2025-26')  -- Returns: TRUE
+
+-- Columns in lct_calculations table
+year_span                 INTEGER   -- Calculated span in years
+within_3year_window       BOOLEAN   -- TRUE if span ≤ 3
+temporal_flags            TEXT[]    -- Array of validation flags
+
+-- Automatic validation trigger
+trg_lct_temporal_validation  -- Validates on INSERT/UPDATE
+```
+
+### Recalculation Policy
+
+When new data becomes available:
+
+1. **Automatic recalculation** with newest available data
+2. **3-year rule enforcement** ensures data coherence
+3. **Previous calculations preserved** in calculation history
+4. **Provenance tracking** documents what changed
+
+### Output Documentation
+
+Every LCT calculation output includes:
+
+```json
+{
+  "enrollment_source_year": "2023-24",
+  "staff_source_year": "2024-25",
+  "bell_schedule_source_year": "2025-26",
+  "year_span": 3,
+  "within_3year_window": true,
+  "temporal_flags": ["WARN_YEAR_GAP"]
+}
+```
 
 ---
 

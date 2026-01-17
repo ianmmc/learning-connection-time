@@ -43,7 +43,7 @@ We're implementing Phase 1.5, which enhances basic LCT calculations with actual 
 
 ## Important: Current Date and Data Years
 
-**Current Date:** December 21, 2025
+**Current Date:** January 17, 2026
 **Current School Year:** 2025-26 (Fall 2025 - Spring 2026)
 
 ### Data Year Strategy
@@ -153,6 +153,29 @@ These years do not represent typical instructional time due to pandemic disrupti
 - **Pipeline**: `pipelines/full_pipeline.py` - End-to-end orchestration
 - **Tests**: `infrastructure/quality-assurance/tests/test_utilities.py` - Unit tests
 - **Documentation**: Comprehensive README in scripts directory
+
+### ✅ SEA Integration Test Framework (January 2026) ⭐ NEW
+- **Base class**: `tests/test_sea_integration_base.py` - Abstract base with mixin classes
+- **State tests**: FL (71 tests), TX (54 tests), CA (58 tests), temporal (33 tests) - 480 total tests passing
+- **Template Method pattern**: Common test logic in base, state-specific values in subclasses
+- **7 test categories**: DataLoading, Crosswalk, Staff, Enrollment, LCT, DataIntegrity, RegressionPrevention
+- **Purpose**: Prevent regressions when SEA data is updated, validate crosswalks
+
+### ✅ Master Crosswalk Table (January 2026) ⭐ NEW
+- **Migration 007**: `state_district_crosswalk` table stores all NCES ↔ State ID mappings
+- **Populated from**: NCES CCD ST_LEAID field for all 50 states + territories
+- **Coverage**: 17,842 entries covering all districts in database
+- **Refactored scripts**: Florida, California, and Texas import scripts now use crosswalk as source of truth
+- **Benefits**: Single source of truth, validates against existing mappings, logs discrepancies
+
+### ✅ Temporal Validation (January 2026) ⭐ NEW
+- **Migration 008**: 3-year blending window rule for multi-source data
+- **Rule**: Data from multiple sources must span ≤3 consecutive school years
+- **Columns added**: `year_span`, `within_3year_window`, `temporal_flags` to lct_calculations
+- **Flags**: WARN_YEAR_GAP (2-3 year span), ERR_SPAN_EXCEEDED (>3 years)
+- **Exception**: SPED baseline (2017-18 IDEA 618/CRDC) exempt as ratio proxy
+- **Trigger**: `trg_lct_temporal_validation` auto-validates on INSERT/UPDATE
+- **View**: `v_lct_temporal_validation` for validation summary
 
 ### ✅ Configuration Files
 - `config/data-sources.yaml` - Data source definitions
@@ -382,6 +405,238 @@ Phased rollout starting with:
 
 ---
 
+## Data Architecture: Layered Integration ⭐ NEW (January 2026)
+
+### Overview
+
+The project uses a **layered data architecture** where NCES CCD serves as the foundation layer, with State Education Agency (SEA) data integrated as enrichment layers above it.
+
+```
+┌─────────────────────────────────────────────────────┐
+│                    Layer 2: SEA Data                │
+│   (FLDOE, TEA, CDE, NYSED - state-specific data)   │
+├─────────────────────────────────────────────────────┤
+│              Layer 1: NCES CCD Foundation           │
+│     (17,842 districts, enrollment, staffing)        │
+└─────────────────────────────────────────────────────┘
+```
+
+### Why This Architecture?
+
+1. **Consistency**: NCES CCD provides uniform baseline data across all states
+2. **Enrichment**: SEA data adds state-specific details (ADA, SPED breakdowns, funding)
+3. **Validation**: Cross-reference federal and state data to catch discrepancies
+4. **Flexibility**: States can be added incrementally without affecting the foundation
+
+### District ID Crosswalk
+
+Each state uses different district identifiers. The crosswalk maps between:
+- **NCES LEAID**: 7-digit federal identifier (e.g., `"0622710"` for LA Unified)
+- **State District ID**: State-specific format
+
+| State | ID Format | Example |
+|-------|-----------|---------|
+| FL | 2-digit | `"13"` (Miami-Dade) |
+| TX | TX-XXXXXX | `"TX-101912"` (Houston ISD) |
+| CA | XX-XXXXX | `"19-64733"` (Los Angeles Unified) |
+
+### Implemented SEA Integrations
+
+| State | Agency | Status | Test File | Key Data |
+|-------|--------|--------|-----------|----------|
+| California | CDE | ✅ Complete | `test_california_integration.py` | LCFF, ADA, SPED, FRPM |
+| Texas | TEA | ✅ Complete | `test_texas_integration.py` | NCES crosswalk via ST_LEAID |
+| Florida | FLDOE | ✅ Complete | `test_florida_integration.py` | Staff, enrollment, 82 districts |
+| New York | NYSED | 🔜 Next | - | NYC (33 sub-districts), upstate |
+| Illinois | ISBE | 🔜 Next | - | Chicago (City of Chicago SD 299) |
+
+### ⚠️ Complex Districts: NYC and Chicago
+
+**New York City** requires special handling:
+- NYC is administratively divided into **33 geographic districts** (Community School Districts 1-32 + District 75 citywide SPED)
+- NCES may report as single LEA or multiple depending on data vintage
+- State ID format: NY-XXXXXXX (7-digit)
+- Watch for: District 75 (citywide special education), charter schools
+
+**Chicago** requires special handling:
+- Officially "City of Chicago School District 299"
+- Single largest district in Illinois (~320K students)
+- State ID format: IL-XXXXXXX (typically IL-15-016-2990-26)
+- Watch for: Charter schools reported separately, selective enrollment schools
+
+### SEA Data Files
+
+Located in `data/raw/state/{state}/`:
+
+```
+data/raw/state/
+├── california/
+│   ├── lcff_snapshot_2023_24.csv      # Local Control Funding Formula
+│   ├── sped_counts_2023_24.csv        # Special Education counts
+│   └── frpm_counts_2023_24.csv        # Free/Reduced Price Meals
+├── texas/
+│   └── texas_nces_tea_crosswalk_2018_19.csv
+└── florida/
+    ├── florida_staff_2024_25.csv
+    └── florida_enrollment_2024_25.csv
+```
+
+---
+
+## SEA Integration Test Framework ⭐ NEW (January 2026)
+
+### Architecture
+
+The test framework uses a **Template Method pattern** with abstract base class and mixin classes:
+
+```
+SEAIntegrationTestBase (Abstract)
+    ├── SEADataLoadingTests (Mixin)
+    ├── SEACrosswalkTests (Mixin)
+    ├── SEAStaffValidationTests (Mixin)
+    ├── SEAEnrollmentValidationTests (Mixin)
+    ├── SEALCTCalculationTests (Mixin)
+    ├── SEADataIntegrityTests (Mixin)
+    └── SEARegressionPreventionTests (Mixin)
+```
+
+### Base Class Properties
+
+Each state test class must define:
+
+```python
+class StateSEAConfig(SEAIntegrationTestBase):
+    STATE_CODE = "XX"              # Two-letter code
+    STATE_NAME = "State Name"      # Full name
+    SEA_NAME = "Agency"            # e.g., "FLDOE", "TEA", "CDE"
+    DATA_YEAR = "2023-24"          # School year
+
+    EXPECTED_DISTRICTS = {
+        "District Name": {
+            "nces_leaid": "XXXXXXX",
+            "state_district_id": "XX-XXXXX",
+            "enrollment": 150000,
+            "total_teachers": 8000,
+            "expected_lct_teachers_only": 19.2,
+            "instructional_minutes": 360,
+        },
+    }
+
+    CROSSWALK = {
+        "XXXXXXX": "XX-XXXXX",  # NCES LEAID -> State ID
+    }
+```
+
+### Test Categories
+
+| Category | Tests | Purpose |
+|----------|-------|---------|
+| DataLoading | 5 | Verify SEA files exist and load correctly |
+| Crosswalk | 4 | Validate NCES ↔ State ID mappings |
+| StaffValidation | 1 | Teacher counts within 5% tolerance |
+| EnrollmentValidation | 1 | Enrollment within 5% tolerance |
+| LCTCalculation | 2 | Formula validation and range checks |
+| DataIntegrity | 2 | No duplicates, reasonable ratios |
+| RegressionPrevention | 3 | Prevent type coercion and zero-value bugs |
+
+### Adding a New State
+
+1. **Create SEA data directory**: `data/raw/state/{state}/`
+2. **Download SEA data files** (staff, enrollment, crosswalk)
+3. **Create test file**: `tests/test_{state}_integration.py`
+
+```python
+# tests/test_newstate_integration.py
+import pytest
+from pathlib import Path
+import pandas as pd
+from tests.test_sea_integration_base import (
+    SEAIntegrationTestBase,
+    SEADataLoadingTests,
+    SEACrosswalkTests,
+    SEAStaffValidationTests,
+    SEAEnrollmentValidationTests,
+    SEALCTCalculationTests,
+    SEADataIntegrityTests,
+    SEARegressionPreventionTests,
+)
+
+class NewStateSEAConfig(SEAIntegrationTestBase):
+    STATE_CODE = "NS"
+    STATE_NAME = "New State"
+    SEA_NAME = "NSDOE"
+    DATA_YEAR = "2023-24"
+
+    EXPECTED_DISTRICTS = {
+        # Add 3-5 key districts with expected values
+    }
+
+    CROSSWALK = {
+        # NCES LEAID -> State ID mappings
+    }
+
+    def get_data_files(self):
+        base = Path("data/raw/state/newstate")
+        return {
+            "staff": base / "staff_2023_24.csv",
+            "enrollment": base / "enrollment_2023_24.csv",
+        }
+
+    def load_staff_data(self):
+        return pd.read_csv(self.get_data_files()["staff"])
+
+    def load_enrollment_data(self):
+        return pd.read_csv(self.get_data_files()["enrollment"])
+
+class TestNewStateIntegration(
+    NewStateSEAConfig,
+    SEADataLoadingTests,
+    SEACrosswalkTests,
+    SEAStaffValidationTests,
+    SEAEnrollmentValidationTests,
+    SEALCTCalculationTests,
+    SEADataIntegrityTests,
+    SEARegressionPreventionTests,
+):
+    """Integration tests for New State SEA data."""
+    pass
+```
+
+4. **Run tests**: `pytest tests/test_newstate_integration.py -v`
+5. **Document in DATA_SOURCES.md**
+
+### Running SEA Integration Tests
+
+```bash
+# Run all SEA integration tests
+pytest tests/test_*_integration.py -v
+
+# Run specific state
+pytest tests/test_florida_integration.py -v
+
+# Run specific test category across all states
+pytest tests/test_*_integration.py -v -k "crosswalk"
+
+# See test counts by state
+pytest tests/test_*_integration.py --collect-only | grep "test session"
+```
+
+### Current Test Coverage
+
+| Category | Tests | Status |
+|----------|-------|--------|
+| Florida Integration | 71 | ✅ Pass |
+| Texas Integration | 54 | ✅ Pass |
+| California Integration | 58 | ✅ Pass |
+| State Integration (general) | 31 | ✅ Pass |
+| Temporal Validation | 33 | ✅ Pass |
+| Other Tests | 233 | ✅ Pass |
+| **Total** | **480** | ✅ All Pass |
+
+*Test categories include: bell schedule enrichment, constraints, data safeguards, LCT calculations, validation, export, and more.*
+
+---
+
 ## Current Challenges & Opportunities
 
 ### Known Data Gaps
@@ -460,6 +715,25 @@ cd infrastructure/quality-assurance/tests
 pytest test_utilities.py -v
 ```
 
+### Run SEA Integration Tests ⭐ NEW
+```bash
+# Run all SEA integration tests (179 tests across 3 states)
+pytest tests/test_*_integration.py -v
+
+# Run specific state integration tests
+pytest tests/test_florida_integration.py -v
+pytest tests/test_texas_integration.py -v
+pytest tests/test_california_integration.py -v
+
+# Run specific test category across all states
+pytest tests/test_*_integration.py -v -k "crosswalk"
+pytest tests/test_*_integration.py -v -k "enrollment"
+pytest tests/test_*_integration.py -v -k "lct"
+
+# Quick validation (collect only, no execution)
+pytest tests/test_*_integration.py --collect-only
+```
+
 ### Test Individual Components
 ```bash
 # Test state standardization
@@ -496,12 +770,23 @@ python infrastructure/scripts/transform/normalize_districts.py \
 3. `docs/BELL_SCHEDULE_SAMPLING_METHODOLOGY.md` - Methodology and sampling approach
 4. `infrastructure/scripts/enrich/fetch_bell_schedules.py` - Automation script
 
+### For SEA Integration ⭐ NEW
+1. **`tests/test_sea_integration_base.py`** - Base class and mixin definitions
+   - Abstract base class `SEAIntegrationTestBase`
+   - 7 mixin classes for test categories
+   - Helper functions for LCT and tolerance calculations
+2. **`tests/test_florida_integration.py`** - Florida reference implementation (71 tests)
+3. **`tests/test_texas_integration.py`** - Texas with TEA crosswalk (54 tests)
+4. **`tests/test_california_integration.py`** - California with CDE data (58 tests)
+5. **`data/raw/state/{state}/`** - SEA data files by state
+
 ### For Common Tasks
 - **Add new data source**: Edit `config/data-sources.yaml` and create download script
 - **Update state requirements**: Edit `config/state-requirements.yaml`
 - **Modify LCT calculation**: Edit `infrastructure/scripts/analyze/calculate_lct.py`
 - **Add state-specific normalization**: Edit `infrastructure/scripts/transform/normalize_districts.py`
 - **Manual bell schedule enrichment**: Follow `docs/BELL_SCHEDULE_OPERATIONS_GUIDE.md`
+- **Add new SEA integration**: Create `tests/test_{state}_integration.py` using base class ⭐ NEW
 - **Interactive bell schedule enrichment**: Run `python infrastructure/scripts/enrich/interactive_enrichment.py --state XX` ⭐ NEW
 - **Query database**: Use functions in `infrastructure/database/queries.py`
 - **Export database to JSON**: Run `python infrastructure/database/export_json.py`
@@ -876,27 +1161,34 @@ with session_scope() as session:
 
 ---
 
-**Last Updated**: January 10, 2026
+**Last Updated**: January 17, 2026
 **Project Location**: `/Users/ianmmc/Development/learning-connection-time`
-**Status**: Active development - SPED segmentation (v3), data safeguards; bell schedule campaign complete ✅
+**Status**: Active development - SEA integrations (NY, IL next); FL/TX/CA complete ✅
 **Primary Data Store**: PostgreSQL database (learning_connection_time) ⭐ Docker containerized
 **Dataset**: Mixed (2023-24 legacy + 2024-25 + 2025-26 current campaign)
-**Milestones**:
-- ✅ Top 25 largest districts: 100% complete (25/25)
-- ✅ PostgreSQL database migration complete (Dec 25, 2025)
-- ✅ Docker containerization complete (Dec 25, 2025)
-- ✅ Wyoming legacy data migrated (5 districts, 15 schedules from 2023-24)
-- ✅ **State-by-state enrichment campaign complete** (January 2026) - 50 U.S. states with ≥3 districts (91% coverage)
-- ✅ **182 total enriched districts** across 52 states/territories (1.02% of 17,842)
-- ✅ **Option A process adopted** (Dec 26, 2025) - attempt ranks 1-9 per state, stop at 3 successful
-- ✅ **Efficiency Enhancement Suite** (Dec 27-28, 2025) - QA dashboard, materialized views, interactive enrichment, Parquet export, calculation tracking
-- ✅ **SPED Segmentation v3 implemented** (Jan 3, 2026) - Self-contained focus with three LCT scopes (core_sped, teachers_gened, instructional_sped), audit validation passes, results in `data/enriched/lct-calculations/`
-- ✅ **Data Safeguards implemented** (Jan 3, 2026) - 7 validation flags for quality transparency, see `docs/METHODOLOGY.md` for definitions and QA reports for current counts
-**Key Additions**:
-- Bell schedule search priority: 2025-26 > 2024-25 > 2023-24
-- **CRITICAL**: COVID-era data exclusion (2019-20 through 2022-23) - use 2018-19 if needed
-- **Data access**: Query database via `infrastructure/database/queries.py` for token efficiency
-- **State tracking**: `data/processed/normalized/state_enrichment_tracking.csv`
-- **Standard process**: Query ranks 1-9 per state, stop at 3 successful enrichments
-- **SPED segmentation (v3)**: Self-contained SPED approach with three LCT variants: core_sped, teachers_gened, instructional_sped (see `docs/SPED_SEGMENTATION_IMPLEMENTATION.md`)
-- **Data safeguards**: 6 validation flags for quality transparency (see `docs/METHODOLOGY.md` Data Safeguards section)
+**Test Suite**: 480 tests passing (4 skipped for optional data files)
+
+**Recent Milestones**:
+- ✅ **Florida FLDOE Integration** (Jan 16-17, 2026) - 82 districts, LCT calculations complete
+- ✅ **Master Crosswalk Table** (Jan 16, 2026) - Migration 007, 17,842 NCES ↔ State ID mappings
+- ✅ **Temporal Validation** (Jan 16, 2026) - Migration 008, 3-year blending window rule
+- ✅ **SEA Integration Test Framework** (Jan 16, 2026) - 480 tests across FL/TX/CA, base class + mixins
+- ✅ **SPED Segmentation v3** (Jan 3, 2026) - Self-contained focus with three LCT scopes
+- ✅ **Data Safeguards** (Jan 3, 2026) - 7 validation flags for quality transparency
+
+**Completed Infrastructure**:
+- ✅ PostgreSQL database migration (Dec 25, 2025)
+- ✅ Docker containerization (Dec 25, 2025)
+- ✅ Bell schedule enrichment campaign: 182 districts across 52 states/territories
+- ✅ Efficiency Enhancement Suite (Dec 27-28, 2025)
+
+**Upcoming Work**:
+- 🔜 **New York State (NYSED)** - Complex: NYC has 33 sub-districts + District 75 citywide SPED
+- 🔜 **Illinois (ISBE)** - Complex: Chicago SD 299 is single largest district (~320K students)
+
+**Key Reference**:
+- **Crosswalk table**: `state_district_crosswalk` - single source of truth for all state mappings
+- **Temporal validation**: Data must span ≤3 consecutive school years (SPED 2017-18 baseline exempt)
+- **Data safeguards**: 7 flags (ERR_FLAT_STAFF, ERR_IMPOSSIBLE_SSR, ERR_VOLATILE, ERR_RATIO_CEILING, WARN_LCT_LOW, WARN_LCT_HIGH, WARN_SPED_RATIO_CAP)
+- **SPED segmentation (v3)**: core_sped, teachers_gened, instructional_sped scopes
+- **COVID exclusion**: 2019-20 through 2022-23 data excluded

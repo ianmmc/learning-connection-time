@@ -200,6 +200,7 @@ Each state maintains its own education data system. Quality, accessibility, and 
 
 **Agency**: California Department of Education (CDE)
 **URL**: https://www.cde.ca.gov/ds/
+**Integration Status**: ✅ Layer 2 Complete (January 2026)
 
 #### Data Portal
 - **Name**: DataQuest
@@ -210,6 +211,23 @@ Each state maintains its own education data system. Quality, accessibility, and 
 - Enrollment by school/district
 - Staff demographics and assignments
 - SARC (School Accountability Report Card) data
+- **LCFF Snapshot** - Local Control Funding Formula data
+- **SPED Counts** - Special Education enrollment
+- **FRPM Counts** - Free/Reduced Price Meals
+
+#### Local Data Files
+- `data/raw/state/california/lcff_snapshot_2023_24.csv`
+- `data/raw/state/california/sped_counts_2023_24.csv`
+- `data/raw/state/california/frpm_counts_2023_24.csv`
+
+#### Crosswalk
+- Uses county-district format: `XX-XXXXX` (e.g., `19-64733` for LA Unified)
+- NCES LEAID mapped via LCFF snapshot data
+
+#### Integration Tests
+- **Test file**: `tests/test_california_integration.py` (58 tests)
+- **Validates**: Crosswalk accuracy, enrollment/staff against NCES baseline
+- **Key districts**: Los Angeles Unified, San Diego Unified, Fresno Unified, Long Beach Unified, Santa Ana Unified, San Francisco Unified, Oakland Unified
 
 #### Strengths
 ✅ Excellent API access
@@ -265,6 +283,11 @@ Each state maintains its own education data system. Quality, accessibility, and 
 - **All Grades**: 7 hours per day minimum (420 minutes)
 - This is significantly higher than most states
 
+#### Integration Tests
+- **Test file**: `tests/test_texas_integration.py` (54 tests)
+- **Validates**: NCES↔TEA crosswalk, enrollment/staff accuracy
+- **Key districts**: Houston ISD, Dallas ISD, Cypress-Fairbanks ISD, Northside ISD, Katy ISD, Fort Bend ISD, Fort Worth ISD
+
 #### Notes
 - Second-largest state by population
 - High instructional time requirement makes interesting comparison
@@ -311,6 +334,7 @@ Each state maintains its own education data system. Quality, accessibility, and 
 
 **Agency**: Florida Department of Education (FLDOE)
 **URL**: http://www.fldoe.org/
+**Integration Status**: ✅ Layer 2 Complete (January 2026)
 
 #### Data Portal
 - **Name**: EdStats
@@ -320,6 +344,21 @@ Each state maintains its own education data system. Quality, accessibility, and 
 - Student enrollment
 - Teacher data
 - School grades and performance
+
+#### Local Data Files
+- `data/raw/state/florida/florida_staff_2024_25.csv`
+- `data/raw/state/florida/florida_enrollment_2024_25.csv`
+
+#### Crosswalk
+- Uses 2-digit district codes (e.g., `"13"` for Miami-Dade)
+- Some codes require leading zeros (e.g., `"06"` for Broward)
+- NCES LEAID: 7-digit federal ID (e.g., `"1200390"` for Miami-Dade)
+
+#### Integration Tests
+- **Test file**: `tests/test_florida_integration.py` (71 tests)
+- **Validates**: Crosswalk, enrollment/staff, state totals, LCT calculations
+- **Key districts**: Miami-Dade, Broward, Hillsborough, Orange, Duval, Palm Beach
+- **Includes**: State-level aggregate validation
 
 #### Strengths
 ✅ Growing state
@@ -434,12 +473,14 @@ When adding a new state or data source:
 4. Add instructional time requirements to `config/state-requirements.yaml`
 5. Create download script in `infrastructure/scripts/download/`
 6. Create processor in `src/python/processors/`
-7. Add validation tests
-8. Update documentation
+7. **Create SEA integration tests**: `tests/test_[state]_integration.py` (see `CLAUDE.md` for template)
+8. Add validation tests
+9. Update documentation
 
 ---
 
-**Last Updated**: January 11, 2026
-**Sources Documented**: 3 federal (NCES CCD, CRDC, IDEA 618), 4 state (CA and TX integrated), bell schedules (182 districts)
-**Layer 2 Integrations**: California (Migration 003) ✅, Texas (Migration 005) ✅
-**Status**: Active development - Phase 1.5 (Bell Schedule Enrichment & SPED Segmentation) + Layer 2 State Integration (FL, NY next)
+**Last Updated**: January 16, 2026
+**Sources Documented**: 3 federal (NCES CCD, CRDC, IDEA 618), 4 state (CA, TX, FL integrated), bell schedules (182 districts)
+**Layer 2 Integrations**: California ✅, Texas ✅, Florida ✅
+**Integration Tests**: 183 tests across FL (71), TX (54), CA (58) - see `tests/test_*_integration.py`
+**Status**: Active development - Phase 1.5 (Bell Schedule Enrichment & SPED Segmentation) + Layer 2 State Integration (NY next)
