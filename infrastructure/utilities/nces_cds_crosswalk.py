@@ -17,6 +17,10 @@ California CDS Format:
 NCES ST_LEAID Format for California:
 - "CA-CCCDDDD" (state prefix + 7-digit CDS code)
 
+Data Source:
+- Uses state_district_crosswalk table as single source of truth
+- Crosswalk populated from NCES CCD ST_LEAID field
+
 Usage:
     from infrastructure.utilities.nces_cds_crosswalk import cds_to_nces, nces_to_cds
 
@@ -30,6 +34,7 @@ Usage:
 import re
 from typing import Optional
 
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from infrastructure.database.models import District
@@ -147,7 +152,7 @@ def cds_to_nces(cds_code: str, session: Session) -> Optional[str]:
     """
     Find NCES ID for a California CDS code.
 
-    Queries the districts table to find matching ST_LEAID.
+    Uses state_district_crosswalk table as single source of truth.
 
     Args:
         cds_code: California CDS code (7 or 14 digits)
@@ -161,23 +166,27 @@ def cds_to_nces(cds_code: str, session: Session) -> Optional[str]:
         ...     nces_id = cds_to_nces("6275796", session)
         ...     print(nces_id)  # "0622710"
     """
-    # Normalize to ST_LEAID format
-    st_leaid = cds_to_st_leaid(cds_code)
+    # Normalize CDS code
+    normalized_cds = normalize_cds_code(cds_code)
 
-    # Query districts table
-    district = session.query(District).filter(
-        District.st_leaid == st_leaid,
-        District.state == "CA"
-    ).first()
+    # Query crosswalk table using state_district_id
+    result = session.execute(text("""
+        SELECT nces_id
+        FROM state_district_crosswalk
+        WHERE state = 'CA'
+          AND state_district_id = :cds
+          AND id_system = 'st_leaid'
+    """), {"cds": normalized_cds})
+    row = result.fetchone()
 
-    return district.nces_id if district else None
+    return row[0] if row else None
 
 
 def nces_to_cds(nces_id: str, session: Session) -> Optional[str]:
     """
     Find CDS code for an NCES ID.
 
-    Queries the districts table to extract CDS code from ST_LEAID.
+    Uses state_district_crosswalk table as single source of truth.
 
     Args:
         nces_id: NCES LEAID
@@ -191,17 +200,17 @@ def nces_to_cds(nces_id: str, session: Session) -> Optional[str]:
         ...     cds_code = nces_to_cds("0622710", session)
         ...     print(cds_code)  # "6275796"
     """
-    # Query districts table
-    district = session.query(District).filter(
-        District.nces_id == nces_id,
-        District.state == "CA"
-    ).first()
+    # Query crosswalk table
+    result = session.execute(text("""
+        SELECT state_district_id
+        FROM state_district_crosswalk
+        WHERE nces_id = :nces_id
+          AND state = 'CA'
+          AND id_system = 'st_leaid'
+    """), {"nces_id": nces_id})
+    row = result.fetchone()
 
-    if not district or not district.st_leaid:
-        return None
-
-    # Extract CDS from ST_LEAID
-    return st_leaid_to_cds(district.st_leaid)
+    return row[0] if row else None
 
 
 def get_district_by_cds(cds_code: str, session: Session, year: str = "2023-24") -> Optional[District]:
@@ -234,6 +243,8 @@ def bulk_cds_to_nces(cds_codes: list[str], session: Session) -> dict[str, Option
     """
     Convert multiple CDS codes to NCES IDs in a single query.
 
+    Uses state_district_crosswalk table as single source of truth.
+
     Args:
         cds_codes: List of CDS codes
         session: SQLAlchemy session
@@ -246,25 +257,26 @@ def bulk_cds_to_nces(cds_codes: list[str], session: Session) -> dict[str, Option
         ...     mapping = bulk_cds_to_nces(["6275796", "1964733"], session)
         ...     print(mapping)  # {"6275796": "0622710", "1964733": "0612345"}
     """
-    # Normalize all CDS codes to ST_LEAID format
-    st_leaids = [cds_to_st_leaid(cds) for cds in cds_codes]
+    # Normalize all CDS codes
+    normalized_codes = [normalize_cds_code(cds) for cds in cds_codes]
 
-    # Query all at once
-    districts = session.query(District).filter(
-        District.st_leaid.in_(st_leaids),
-        District.state == "CA"
-    ).all()
+    # Query crosswalk table for all at once
+    placeholders = ', '.join([f':cds_{i}' for i in range(len(normalized_codes))])
+    params = {f'cds_{i}': cds for i, cds in enumerate(normalized_codes)}
+
+    result = session.execute(text(f"""
+        SELECT state_district_id, nces_id
+        FROM state_district_crosswalk
+        WHERE state = 'CA'
+          AND state_district_id IN ({placeholders})
+          AND id_system = 'st_leaid'
+    """), params)
 
     # Build mapping
-    st_to_nces = {d.st_leaid: d.nces_id for d in districts}
+    cds_to_nces_map = {row[0]: row[1] for row in result.fetchall()}
 
-    # Convert back to CDS keys
-    result = {}
-    for cds_code in cds_codes:
-        st_leaid = cds_to_st_leaid(cds_code)
-        result[cds_code] = st_to_nces.get(st_leaid)
-
-    return result
+    # Return with original keys
+    return {cds: cds_to_nces_map.get(normalize_cds_code(cds)) for cds in cds_codes}
 
 
 def extract_county_code(cds_code: str) -> str:

@@ -2,11 +2,12 @@
 """
 Import Texas Education Agency (TEA) District Identifiers Crosswalk
 
-This script imports the TEA ↔ NCES crosswalk data from the NCES CCD file
-into the tx_district_identifiers and districts (st_leaid) tables.
+This script imports TEA district metadata into tx_district_identifiers table.
+Uses state_district_crosswalk table as source of truth for NCES ↔ TEA mapping.
 
-Data Source: NCES Common Core of Data (CCD) LEA Universe Survey
-Crosswalk File: data/raw/state/texas/district_identifiers/texas_nces_tea_crosswalk_2018_19.csv
+Data Source:
+- state_district_crosswalk table (populated from NCES CCD ST_LEAID field)
+- Optional: CSV file for additional TEA-specific metadata
 
 Usage:
     python import_tx_crosswalk.py
@@ -34,6 +35,43 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def get_nces_id_from_crosswalk(session, state: str, state_district_id: str) -> str:
+    """Look up NCES ID from state district ID using crosswalk table.
+
+    Args:
+        session: Database session
+        state: Two-letter state code (e.g., 'TX')
+        state_district_id: State's district ID (e.g., '101912' for Houston ISD)
+
+    Returns:
+        NCES LEAID or None if not found
+    """
+    result = session.execute(text("""
+        SELECT nces_id
+        FROM state_district_crosswalk
+        WHERE state = :state
+          AND state_district_id = :state_id
+          AND id_system = 'st_leaid'
+    """), {"state": state, "state_id": state_district_id})
+    row = result.fetchone()
+    return row[0] if row else None
+
+
+def load_texas_crosswalk(session) -> dict:
+    """Load Texas crosswalk from database.
+
+    Returns:
+        Dict mapping TEA district number -> NCES ID
+    """
+    result = session.execute(text("""
+        SELECT state_district_id, nces_id
+        FROM state_district_crosswalk
+        WHERE state = 'TX'
+          AND id_system = 'st_leaid'
+    """))
+    return {row[0]: row[1] for row in result.fetchall()}
+
+
 def load_crosswalk_data():
     """Load TEA ↔ NCES crosswalk CSV file."""
     crosswalk_file = project_root / 'data/raw/state/texas/district_identifiers/texas_nces_tea_crosswalk_2018_19.csv'
@@ -52,19 +90,48 @@ def load_crosswalk_data():
 
 
 def import_crosswalk(df):
-    """Import TEA district identifiers and update st_leaid in districts table."""
+    """Import TEA district identifiers and update st_leaid in districts table.
+
+    Uses state_district_crosswalk table as source of truth for NCES ↔ TEA mappings.
+    Validates CSV data against crosswalk and logs any discrepancies.
+    """
     with session_scope() as session:
         imported_count = 0
         updated_count = 0
         skipped_count = 0
+        mismatch_count = 0
+
+        # Load crosswalk from database (source of truth)
+        db_crosswalk = load_texas_crosswalk(session)
+        logger.info(f"Loaded {len(db_crosswalk)} Texas mappings from crosswalk table")
 
         for idx, row in df.iterrows():
             tea_district_no = str(row['TEA_DISTRICT_NO']).zfill(6)  # Ensure 6 digits
-            nces_leaid = str(row['NCES_LEAID'])
+            csv_nces_leaid = str(row['NCES_LEAID'])
             st_leaid = row['ST_LEAID']
             district_name = row['DISTRICT_NAME']
             lea_type_text = row['LEA_TYPE_TEXT']
             charter_text = row['CHARTER_LEA_TEXT']
+
+            # Extract state district ID from ST_LEAID (format: "TX-XXXXXX")
+            state_district_id = st_leaid.replace('TX-', '') if st_leaid.startswith('TX-') else tea_district_no
+
+            # Use crosswalk table as source of truth for NCES ID
+            db_nces_id = db_crosswalk.get(state_district_id)
+
+            if db_nces_id and db_nces_id != csv_nces_leaid:
+                logger.warning(
+                    f"NCES ID mismatch for {district_name}: "
+                    f"CSV={csv_nces_leaid}, crosswalk={db_nces_id} - using crosswalk"
+                )
+                mismatch_count += 1
+                nces_leaid = db_nces_id
+            elif db_nces_id:
+                nces_leaid = db_nces_id
+            else:
+                # Not in crosswalk, use CSV value but warn
+                logger.debug(f"District {state_district_id} not in crosswalk, using CSV NCES ID")
+                nces_leaid = csv_nces_leaid
 
             # Determine if charter
             is_charter = 'charter' in charter_text.lower()
@@ -143,6 +210,8 @@ def import_crosswalk(df):
         logger.info(f"   - Imported to tx_district_identifiers: {imported_count}")
         logger.info(f"   - Updated st_leaid in districts: {updated_count}")
         logger.info(f"   - Skipped (not in districts table): {skipped_count}")
+        if mismatch_count > 0:
+            logger.warning(f"   - NCES ID mismatches (used crosswalk): {mismatch_count}")
 
         return imported_count, updated_count, skipped_count
 
