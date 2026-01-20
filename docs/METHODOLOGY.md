@@ -734,26 +734,73 @@ Always provide:
 
 ### Multi-Source Integration
 
-LCT calculations may draw from multiple data sources. When sources conflict, apply these precedence rules:
+LCT calculations use a **layered architecture** with State Education Agency (SEA) data superseding federal NCES data when available:
 
-**Rule 1 - Recency Wins**: For the same data type (e.g., staffing), prefer more recent data regardless of source.
-- Example: State 2024-25 data > NCES 2023-24 data
+```
+┌─────────────────────────────────────────────────────┐
+│                Layer 2: SEA Data                    │
+│   (State-reported data - supersedes when available) │
+├─────────────────────────────────────────────────────┤
+│          Layer 1: NCES CCD Foundation               │
+│     (17,842 districts - national baseline)          │
+└─────────────────────────────────────────────────────┘
+```
 
-**Rule 2 - NCES as Foundation**: When sources have the same year, prefer NCES CCD as the foundational source.
-- Example: NCES 2023-24 > State 2023-24 (same year)
+**Precedence Rules (January 2026)**:
 
-**Rule 3 - No Hybrids per District**: All staff data for a given district must come from a single source.
-- Do not mix NCES teachers with state paraprofessionals
-- If state data is incomplete, use NCES entirely for that district
+**Rule 1 - State Over Federal**: SEA data supersedes NCES CCD data when available **and within 3-year temporal window**.
+- Example: PA SEA 2024-25 supersedes NCES 2023-24 (2-year span = valid)
+- Example: FL SEA 2024-25 supersedes NCES 2023-24 (2-year span = valid)
+- Example: Hypothetical 2026-27 SEA would NOT supersede 2023-24 NCES (4-year span = rejected)
 
-**Rule 4 - Complete Scope Coverage**: A state source must provide all categories needed for all 5 LCT scopes to be used.
-- Required: teachers (total, elem, sec, kinder), coordinators, paraprofessionals, counselors, psychologists, student support, administrators
+**Rule 2 - Temporal Validation Required**: All multi-source blending must satisfy the 3-year window rule.
+- See "Temporal Data Blending (3-Year Window Rule)" section below
+- Flags: `WARN_YEAR_GAP` (2-3 years), `ERR_SPAN_EXCEEDED` (>3 years)
+
+**Rule 3 - Single Source per District**: All staff data for a given district must come from a single source.
+- Do not mix SEA teachers with NCES paraprofessionals for same district
+- If SEA data is incomplete or outside temporal window, use NCES entirely for that district
+- Metadata tracking: `primary_source` and `sources_used` fields document which source was used
+
+**Rule 4 - Granular Enhancement (Selective)**: For states with granular teacher breakdowns:
+- **Florida**: Use `ese_teachers` (SPED) and `classroom_teachers` (GenEd) for SPED scopes
+- **Other states**: Use aggregate teacher counts only
+- NCES granular data (elementary/secondary) used where SEA doesn't provide breakdown
 
 **Rule 5 - NCES LEA Structure Precedence**: When state and federal sources disagree on LEA definitions (e.g., charter school treatment), **always use NCES CCD structure**.
 - **Rationale**: Maintains national cohesion and consistency across analyses
 - **Example**: California treats some charter schools as separate LEAs; if NCES treats them differently, use NCES structure
 - **Implementation**: Use NCES `LEAID` as primary key; crosswalk state identifiers to NCES IDs
 - **Documentation**: Note structural differences in state-specific documentation
+
+**Rule 6 - Career and Technical Center (CTC) Exclusion**: Multi-district CTCs are excluded from national LCT calculations.
+- **Rationale**: CTCs serve students part-time from multiple districts, causing artificially inflated teacher-to-student ratios in NCES data
+- **Impact**: ~196 districts (1.09% of total) excluded nationally
+- **Identification**: Pattern matching on district names (career, technical, vocational, etc.)
+- **See**: `docs/technical-notes/PA_CTC_DATA_DISCREPANCY.md` for detailed analysis
+
+### States with SEA Data Integration (Tier 1 Complete - January 2026)
+
+| State | Year | Staff Data | Enrollment Data | Districts | Status |
+|-------|------|------------|-----------------|-----------|--------|
+| FL | 2024-25 | ✅ Classroom + ESE teachers | ✅ Total K-12 | 76 | Complete |
+| IL | 2023-24 | ✅ Total teacher FTE | ✅ Total enrollment | 864 | Complete |
+| MA | 2024-25 | ✅ Teachers FTE | ✅ Total enrollment | 396 | **Complete (Jan 19, 2026)** |
+| MI | 2023-24 | ✅ Total teacher FTE | ✅ Total K-12 | 836 | Complete |
+| NY | 2023-24 | ✅ Staff by category | ✅ By subgroup | 625 | Complete |
+| PA | 2024-25 | ✅ Classroom teachers FTE | ✅ Total K-12 | 777 | Complete |
+| VA | 2025-26 | ✅ Teachers FTE | ✅ Total enrollment | 131 | Complete |
+
+**Total Tier 1: 7 states, 3,971 districts with SEA data superseding federal NCES**
+
+### Future State Integrations (Tier 2)
+
+| State | Districts | Data Availability | Priority |
+|-------|-----------|-------------------|----------|
+| TX | 1,234 | Identifiers only (need staff/enrollment) | High |
+| CA | 1,037 | Funding/SPED only (need staff/enrollment) | High |
+| OH | ~600 | Not yet sourced | Medium |
+| GA | ~200 | Not yet sourced | Medium |
 
 ### Available Data Sources
 
@@ -776,28 +823,33 @@ See `docs/STAFFING_DATA_ENHANCEMENT_PLAN.md` for complete data source strategy
 
 ---
 
-## Temporal Data Blending (3-Year Window Rule)
+## Temporal Data Blending (3-Year Window Rule - REQ-026)
 
 ### Overview
 
-LCT calculations often combine data from multiple sources with different release years. This section documents the rules for acceptable temporal blending.
+LCT calculations often combine data from multiple sources with different release years. This section documents the rules for acceptable temporal blending (REQ-026).
 
 ### The 3-Year Window Rule
 
-**Rule**: When blending data from multiple sources, the **span** from oldest to newest source must not exceed 3 consecutive school years.
+**Rule**: When blending data from multiple sources, the **year span** from oldest to newest source must not exceed 3 years.
 
-**Definition**: Span = (newest year - oldest year + 1)
+**Definition**: Year Span = |newest_start_year - oldest_start_year|
+
+**Clarification** (Corrected January 2026):
+- Same year (e.g., 2023-24 and 2023-24): span = 0
+- Adjacent years (e.g., 2023-24 and 2024-25): span = 1
+- 1-year gap (e.g., 2023-24 and 2025-26): span = 2
+- 2-year gap (e.g., 2023-24 and 2026-27): span = 3
 
 **Examples**:
 
-| Datasets Used | Span | Valid? |
-|---------------|------|--------|
-| 2023-24 + 2024-25 + 2025-26 | 3 years | ✅ Valid |
-| 2023-24 + 2025-26 | 3 years | ✅ Valid (gap OK, span OK) |
-| 2024-25 + 2025-26 | 2 years | ✅ Valid |
-| 2023-24 + 2024-25 | 2 years | ✅ Valid |
-| 2023-24 + 2026-27 | 4 years | ❌ Invalid |
-| 2023-24 + 2025-26 + 2026-27 | 4 years | ❌ Invalid |
+| Datasets Used | Year Span | Flags | Valid? |
+|---------------|-----------|-------|--------|
+| 2023-24, 2023-24 | 0 | None | ✅ Valid |
+| 2023-24, 2024-25 | 1 | None | ✅ Valid (adjacent years) |
+| 2023-24, 2025-26 | 2 | WARN_YEAR_GAP | ✅ Valid (1-year gap) |
+| 2023-24, 2026-27 | 3 | WARN_YEAR_GAP | ✅ Valid (2-year gap, at limit) |
+| 2023-24, 2027-28 | 4 | ERR_SPAN_EXCEEDED | ❌ Invalid (exceeds window) |
 
 ### Resolution When Span Exceeds 3 Years
 
@@ -808,16 +860,40 @@ When a calculation would require data spanning more than 3 years:
 3. **Don't blend**: Use single-year data from a consistent source
 4. **Seek user direction**: Flag for manual review and decision
 
+### Calculation Modes (January 2026)
+
+The system supports two calculation modes:
+
+**BLENDED Mode (Default)**:
+- Uses most recent available data for each component (enrollment, staffing, instructional time)
+- Automatically selects best available data within 3-year window
+- File naming: `lct_all_variants_<timestamp>.csv` (no year)
+
+**TARGET_YEAR Mode**:
+- Enrollment anchored to specific target year
+- Staff and instructional time can come from within 3-year window
+- File naming: `lct_all_variants_<year>_<timestamp>.csv` (year included)
+
+Usage:
+```bash
+# BLENDED mode (default)
+python calculate_lct_variants.py
+
+# TARGET_YEAR mode
+python calculate_lct_variants.py --target-year 2023-24
+```
+
 ### Temporal Validation Flags
 
 Calculations include temporal quality flags:
 
 | Flag | Condition | Description |
 |------|-----------|-------------|
-| `WARN_YEAR_GAP` | Span 2-3 years | Valid but sources span multiple years |
-| `ERR_SPAN_EXCEEDED` | Span > 3 years | Requires resolution before use |
+| None | Year span 0-1 | Same year or adjacent years (e.g., 2024-25 and 2023-24) |
+| `WARN_YEAR_GAP` | Year span 2-3 | Valid but sources have 1-2 year gap |
+| `ERR_SPAN_EXCEEDED` | Year span > 3 | Exceeds 3-year window, requires resolution |
 | `INFO_CROSS_YEAR` | Different years used | Documents cross-year blending |
-| `INFO_RATIO_BASELINE` | Uses 2017-18 SPED ratios | Exempt from 3-year rule |
+| `INFO_RATIO_BASELINE` | Uses 2017-18 SPED ratios | Exempt from 3-year rule (stable ratios) |
 
 ### SPED Baseline Exception
 
@@ -832,21 +908,28 @@ When newer state-level SPED data becomes available that meets quality requiremen
 
 ### Database Implementation
 
-The database includes validation infrastructure:
+The database includes validation infrastructure (corrected January 2026):
 
 ```sql
 -- Functions for temporal validation
 school_year_to_numeric('2023-24')  -- Returns: 2023
-year_span('2023-24', '2025-26')    -- Returns: 3
+year_span('2023-24', '2024-25')    -- Returns: 1 (adjacent years)
+year_span('2023-24', '2025-26')    -- Returns: 2 (1-year gap)
 is_within_3year_window('2023-24', '2024-25', '2025-26')  -- Returns: TRUE
 
 -- Columns in lct_calculations table
-year_span                 INTEGER   -- Calculated span in years
+year_span                 INTEGER   -- Year span (absolute difference in start years)
 within_3year_window       BOOLEAN   -- TRUE if span ≤ 3
 temporal_flags            TEXT[]    -- Array of validation flags
 
 -- Automatic validation trigger
 trg_lct_temporal_validation  -- Validates on INSERT/UPDATE
+
+-- CalculationRun tracking table
+calculation_mode          ENUM      -- 'blended' or 'target_year'
+target_year              VARCHAR   -- Target year (nullable, required for target_year mode)
+data_year_min            VARCHAR   -- Earliest source year actually used
+data_year_max            VARCHAR   -- Latest source year actually used
 ```
 
 ### Recalculation Policy

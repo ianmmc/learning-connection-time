@@ -27,7 +27,8 @@ END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
 -- Calculate year span between two school years
--- e.g., span('2023-24', '2025-26') -> 3
+-- e.g., span('2023-24', '2024-25') -> 1 (adjacent years)
+-- e.g., span('2023-24', '2025-26') -> 2 (1-year gap)
 CREATE OR REPLACE FUNCTION year_span(year1 VARCHAR(10), year2 VARCHAR(10))
 RETURNS INTEGER AS $$
 DECLARE
@@ -41,8 +42,9 @@ BEGIN
         RETURN NULL;
     END IF;
 
-    -- Span is the difference + 1 (inclusive)
-    RETURN ABS(y2 - y1) + 1;
+    -- Span is the absolute difference in start years (no +1)
+    -- 0 = same year, 1 = adjacent years, 2+ = gap between years
+    RETURN ABS(y2 - y1);
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
@@ -79,9 +81,9 @@ BEGIN
         RETURN TRUE;
     END IF;
 
-    -- Calculate span
+    -- Calculate span (absolute difference, no +1)
     SELECT MIN(y), MAX(y) INTO min_year, max_year FROM unnest(years) AS y;
-    span := max_year - min_year + 1;
+    span := max_year - min_year;
 
     RETURN span <= 3;
 END;
@@ -110,7 +112,7 @@ ADD COLUMN IF NOT EXISTS temporal_flags TEXT[];
 -- Update year_span for existing records
 UPDATE lct_calculations
 SET year_span = (
-    SELECT MAX(y) - MIN(y) + 1
+    SELECT MAX(y) - MIN(y)
     FROM (
         SELECT school_year_to_numeric(enrollment_source_year) AS y
         WHERE enrollment_source_year IS NOT NULL
@@ -138,9 +140,10 @@ WHERE within_3year_window IS NULL;
 -- 4. Temporal Data Quality Flags
 -- ============================================================================
 
--- Flag definitions:
--- WARN_YEAR_GAP: Sources span 2-3 years (valid but notable)
--- ERR_SPAN_EXCEEDED: Sources span >3 years (requires resolution)
+-- Flag definitions (based on year_span = |year1_start - year2_start|):
+-- No flags: span 0-1 (same year or adjacent years, e.g., 2024-25 and 2023-24)
+-- WARN_YEAR_GAP: Sources span 2-3 years (1-2 year gap, valid but notable)
+-- ERR_SPAN_EXCEEDED: Sources span >3 years (exceeds blending window, requires resolution)
 -- INFO_CROSS_YEAR: Different years used for different components
 -- INFO_RATIO_BASELINE: Uses SPED ratio baseline (2017-18, exempt from rule)
 
@@ -188,7 +191,7 @@ SELECT
     lc.staff_scope,
     CASE
         WHEN lc.year_span IS NULL THEN 'UNKNOWN'
-        WHEN lc.year_span = 1 THEN 'SAME_YEAR'
+        WHEN lc.year_span = 0 THEN 'SAME_YEAR'
         WHEN lc.year_span <= 3 THEN 'VALID_BLEND'
         ELSE 'SPAN_EXCEEDED'
     END AS temporal_status
@@ -205,9 +208,9 @@ DECLARE
     span INTEGER;
     flags TEXT[];
 BEGIN
-    -- Calculate span
+    -- Calculate span (absolute difference, no +1)
     span := (
-        SELECT MAX(y) - MIN(y) + 1
+        SELECT MAX(y) - MIN(y)
         FROM (
             SELECT school_year_to_numeric(NEW.enrollment_source_year) AS y
             WHERE NEW.enrollment_source_year IS NOT NULL
@@ -262,9 +265,10 @@ CREATE TRIGGER trg_lct_temporal_validation
 
 -- Add exemption note to SPED baseline records
 COMMENT ON COLUMN lct_calculations.temporal_flags IS
-'Temporal validation flags:
-- WARN_YEAR_GAP: Sources span 2-3 years (valid but notable)
-- ERR_SPAN_EXCEEDED: Sources span >3 years (requires resolution)
+'Temporal validation flags (based on year_span = |year1_start - year2_start|):
+- No flags: span 0-1 (same year or adjacent years, e.g., 2024-25 and 2023-24)
+- WARN_YEAR_GAP: Sources span 2-3 years (1-2 year gap, valid but notable)
+- ERR_SPAN_EXCEEDED: Sources span >3 years (exceeds blending window, requires resolution)
 - INFO_CROSS_YEAR: Different years used for different components
 - INFO_RATIO_BASELINE: Uses SPED ratio baseline (2017-18, exempt from 3-year rule)';
 

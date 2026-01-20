@@ -597,12 +597,13 @@ requirements:
     priority: must
     status: tested
     acceptance_criteria:
-      - Data from multiple sources must span ≤3 consecutive school years
-      - year_span column calculated from min/max of enrollment, staffing, bell schedule years
+      - Data from multiple sources must span ≤3 years apart (year_span calculated as absolute difference in start years)
+      - year_span = |year1_start - year2_start| (e.g., 2024-25 and 2023-24 = |2024-2023| = 1)
       - within_3year_window boolean flag indicates validation status
       - temporal_flags array tracks validation status - WARN_YEAR_GAP, ERR_SPAN_EXCEEDED
-      - WARN_YEAR_GAP added when sources span 2-3 years (valid but notable)
-      - ERR_SPAN_EXCEEDED added when sources span >3 years (requires resolution)
+      - No flags when year_span ≤ 1 (same year or adjacent years - e.g., 2024-25 and 2023-24)
+      - WARN_YEAR_GAP added when year_span is 2-3 (e.g., 2025-26 and 2023-24 has 1-year gap, span=2)
+      - ERR_SPAN_EXCEEDED added when year_span >3 (exceeds blending window)
       - Trigger trg_lct_temporal_validation auto-validates on INSERT/UPDATE
       - SPED baseline (2017-18 IDEA 618/CRDC) exempt from 3-year rule as ratio proxy
       - v_lct_temporal_validation view provides validation summary

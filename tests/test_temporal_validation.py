@@ -38,9 +38,16 @@ def school_year_to_numeric(year_str: Optional[str]) -> Optional[int]:
 def year_span(year1: Optional[str], year2: Optional[str]) -> Optional[int]:
     """Calculate year span between two school years.
 
+    Per REQ-026 (corrected): Returns absolute difference in start years.
+    - 0 = same year
+    - 1 = adjacent years (e.g., 2024-25 and 2023-24)
+    - 2 = 1-year gap
+    - 3 = 2-year gap
+
     Examples:
-        span('2023-24', '2025-26') -> 3
-        span('2023-24', '2023-24') -> 1
+        span('2023-24', '2023-24') -> 0
+        span('2023-24', '2024-25') -> 1
+        span('2023-24', '2025-26') -> 2
     """
     y1 = school_year_to_numeric(year1)
     y2 = school_year_to_numeric(year2)
@@ -48,7 +55,7 @@ def year_span(year1: Optional[str], year2: Optional[str]) -> Optional[int]:
     if y1 is None or y2 is None:
         return None
 
-    return abs(y2 - y1) + 1
+    return abs(y2 - y1)
 
 
 def is_within_3year_window(
@@ -58,7 +65,11 @@ def is_within_3year_window(
 ) -> bool:
     """Check if component years are within the 3-year window.
 
-    Returns True if all non-null years span ≤3 consecutive years.
+    Per REQ-026 (corrected): Returns True if years span ≤3 years apart.
+    - span = |max_year - min_year|
+    - 0-1 = no flags (same or adjacent years)
+    - 2-3 = warning (1-2 year gap)
+    - >3 = error (exceeds window)
     """
     years = []
 
@@ -81,10 +92,10 @@ def is_within_3year_window(
     if len(years) < 2:
         return True
 
-    # Calculate span
+    # Calculate span (absolute difference, not +1)
     min_year = min(years)
     max_year = max(years)
-    span = max_year - min_year + 1
+    span = max_year - min_year
 
     return span <= 3
 
@@ -97,9 +108,10 @@ def calculate_temporal_flags(
 ) -> list:
     """Calculate temporal validation flags for a calculation.
 
-    Returns list of flags:
-    - WARN_YEAR_GAP: Sources span 2-3 years (valid but notable)
-    - ERR_SPAN_EXCEEDED: Sources span >3 years (requires resolution)
+    Per REQ-026 (corrected):
+    - No flags: span 0-1 (same year or adjacent years like 2024-25 and 2023-24)
+    - WARN_YEAR_GAP: span 2-3 (1-2 year gap, e.g., 2025-26 and 2023-24)
+    - ERR_SPAN_EXCEEDED: span >3 (exceeds blending window)
     - INFO_RATIO_BASELINE: Uses SPED ratio baseline (2017-18, exempt)
     """
     flags = []
@@ -112,12 +124,13 @@ def calculate_temporal_flags(
                 years.append(y)
 
     if len(years) >= 2:
-        span = max(years) - min(years) + 1
+        span = max(years) - min(years)  # No +1, just absolute difference
 
         if span > 3:
             flags.append('ERR_SPAN_EXCEEDED')
-        elif span >= 2:
+        elif span >= 2:  # 2-3 year span gets warning
             flags.append('WARN_YEAR_GAP')
+        # span 0-1 gets no flags
 
     if is_sped_baseline:
         flags.append('INFO_RATIO_BASELINE')
@@ -133,32 +146,37 @@ class TestYearSpanCalculation:
     """Tests for calculating year span from multiple sources."""
 
     def test_calculates_year_span_from_sources(self):
-        """Year span calculated from min/max of component years."""
-        assert year_span('2023-24', '2025-26') == 3
-        assert year_span('2023-24', '2026-27') == 4
-        assert year_span('2020-21', '2023-24') == 4
+        """Year span calculated as absolute difference of start years."""
+        assert year_span('2023-24', '2025-26') == 2  # |2025-2023| = 2
+        assert year_span('2023-24', '2026-27') == 3  # |2026-2023| = 3
+        assert year_span('2020-21', '2023-24') == 3  # |2023-2020| = 3
 
-    def test_same_year_sources_span_is_1(self):
-        """Same year for all sources has span of 1."""
-        assert year_span('2023-24', '2023-24') == 1
+    def test_same_year_sources_span_is_0(self):
+        """Same year for all sources has span of 0."""
+        assert year_span('2023-24', '2023-24') == 0
 
         # Using the 3-year window function
         assert is_within_3year_window('2023-24', '2023-24', '2023-24') is True
 
-    def test_2_year_span_is_valid(self):
-        """2-year span is within the valid window."""
-        assert year_span('2023-24', '2024-25') == 2
+    def test_adjacent_year_sources_span_is_1(self):
+        """Adjacent years (e.g., 2024-25 and 2023-24) have span of 1."""
+        assert year_span('2023-24', '2024-25') == 1
         assert is_within_3year_window('2023-24', '2024-25', '2024-25') is True
 
-    def test_3_year_span_is_valid(self):
-        """3-year span is at the edge but still valid."""
-        assert year_span('2023-24', '2025-26') == 3
+    def test_2_year_span_is_valid(self):
+        """2-year span (1-year gap) is within window but gets warning."""
+        assert year_span('2023-24', '2025-26') == 2  # |2025-2023| = 2
         assert is_within_3year_window('2023-24', '2024-25', '2025-26') is True
+
+    def test_3_year_span_is_valid(self):
+        """3-year span (2-year gap) is at the edge but still valid."""
+        assert year_span('2023-24', '2026-27') == 3  # |2026-2023| = 3
+        assert is_within_3year_window('2023-24', '2025-26', '2026-27') is True
 
     def test_4_year_span_exceeds_window(self):
         """4-year span exceeds the 3-year window."""
-        assert year_span('2023-24', '2026-27') == 4
-        assert is_within_3year_window('2023-24', '2024-25', '2026-27') is False
+        assert year_span('2023-24', '2027-28') == 4  # |2027-2023| = 4
+        assert is_within_3year_window('2023-24', '2025-26', '2027-28') is False
 
     def test_handles_null_years(self):
         """Null years are ignored in span calculation."""
@@ -176,24 +194,24 @@ class TestTemporalFlags:
 
     def test_warn_year_gap_added_for_2_3_year_span(self):
         """WARN_YEAR_GAP flag added when sources span 2-3 years."""
-        # 2-year span
-        flags = calculate_temporal_flags('2023-24', '2024-25', '2024-25')
+        # 2-year span (1-year gap: 2025-26 and 2023-24)
+        flags = calculate_temporal_flags('2023-24', '2024-25', '2025-26')
         assert 'WARN_YEAR_GAP' in flags
         assert 'ERR_SPAN_EXCEEDED' not in flags
 
-        # 3-year span
-        flags = calculate_temporal_flags('2023-24', '2024-25', '2025-26')
+        # 3-year span (2-year gap: 2026-27 and 2023-24)
+        flags = calculate_temporal_flags('2023-24', '2025-26', '2026-27')
         assert 'WARN_YEAR_GAP' in flags
         assert 'ERR_SPAN_EXCEEDED' not in flags
 
     def test_err_span_exceeded_added_for_greater_than_3(self):
         """ERR_SPAN_EXCEEDED flag added when sources span >3 years."""
-        # 4-year span
-        flags = calculate_temporal_flags('2023-24', '2024-25', '2026-27')
+        # 4-year span (3-year gap: 2027-28 and 2023-24)
+        flags = calculate_temporal_flags('2023-24', '2025-26', '2027-28')
         assert 'ERR_SPAN_EXCEEDED' in flags
         assert 'WARN_YEAR_GAP' not in flags
 
-        # 5-year span
+        # 4-year span (2020-21 to 2024-25)
         flags = calculate_temporal_flags('2020-21', '2022-23', '2024-25')
         assert 'ERR_SPAN_EXCEEDED' in flags
 
@@ -202,11 +220,11 @@ class TestTemporalFlags:
         flags = calculate_temporal_flags('2023-24', '2023-24', '2023-24')
         assert len(flags) == 0
 
-    def test_info_cross_year_for_different_years(self):
-        """Different years used for different components noted."""
-        # This is a warning but still valid
+    def test_no_flags_for_adjacent_years(self):
+        """No flags for adjacent years (span = 1)."""
+        # 2024-25 and 2023-24 are adjacent (span = 1)
         flags = calculate_temporal_flags('2023-24', '2024-25', '2023-24')
-        assert 'WARN_YEAR_GAP' in flags  # 2-year span
+        assert len(flags) == 0
 
 
 class TestSpedBaselineException:
@@ -267,8 +285,8 @@ class TestValidationTrigger:
         """
         # Test that our validation logic would flag this correctly
         enrollment_year = '2023-24'
-        staffing_year = '2024-25'
-        bell_schedule_year = '2026-27'  # 4-year span
+        staffing_year = '2025-26'
+        bell_schedule_year = '2027-28'  # |2027-2023| = 4-year span
 
         # This should trigger ERR_SPAN_EXCEEDED
         assert not is_within_3year_window(enrollment_year, staffing_year, bell_schedule_year)
@@ -281,12 +299,12 @@ class TestValidationTrigger:
         Note: This tests the expected behavior. Actual trigger testing
         requires database integration tests.
         """
-        # Originally valid
+        # Originally valid (span 0)
         original_flags = calculate_temporal_flags('2023-24', '2023-24', '2023-24')
         assert len(original_flags) == 0
 
-        # After update to span 4 years
-        updated_flags = calculate_temporal_flags('2023-24', '2023-24', '2026-27')
+        # After update to 4-year span (|2027-2023| = 4)
+        updated_flags = calculate_temporal_flags('2023-24', '2024-25', '2027-28')
         assert 'ERR_SPAN_EXCEEDED' in updated_flags
 
 
@@ -323,23 +341,23 @@ class TestEdgeCases:
 
     def test_exactly_3_year_boundary(self):
         """Exactly 3-year span is valid (at boundary)."""
-        # 2023-24, 2024-25, 2025-26 = 3 year span
-        assert is_within_3year_window('2023-24', '2024-25', '2025-26') is True
-        flags = calculate_temporal_flags('2023-24', '2024-25', '2025-26')
+        # 2023-24 to 2026-27 = |2026-2023| = 3 year span
+        assert is_within_3year_window('2023-24', '2025-26', '2026-27') is True
+        flags = calculate_temporal_flags('2023-24', '2025-26', '2026-27')
         assert 'WARN_YEAR_GAP' in flags
         assert 'ERR_SPAN_EXCEEDED' not in flags
 
     def test_just_over_3_year_boundary(self):
         """Just over 3-year span is invalid."""
-        # 2023-24 to 2026-27 = 4 year span
-        assert is_within_3year_window('2023-24', '2025-26', '2026-27') is False
-        flags = calculate_temporal_flags('2023-24', '2025-26', '2026-27')
+        # 2023-24 to 2027-28 = |2027-2023| = 4 year span
+        assert is_within_3year_window('2023-24', '2025-26', '2027-28') is False
+        flags = calculate_temporal_flags('2023-24', '2025-26', '2027-28')
         assert 'ERR_SPAN_EXCEEDED' in flags
 
     def test_non_contiguous_years_calculated_correctly(self):
         """Non-contiguous years still use min/max for span."""
-        # 2020-21 and 2024-25 (skipping 2021-2023) = 5 year span
-        assert year_span('2020-21', '2024-25') == 5
+        # 2020-21 and 2024-25 (skipping 2021-2023) = |2024-2020| = 4 year span
+        assert year_span('2020-21', '2024-25') == 4
         assert is_within_3year_window('2020-21', None, '2024-25') is False
 
 
@@ -352,14 +370,14 @@ class TestResolutionOptions:
         When ERR_SPAN_EXCEEDED is flagged, one option is to find
         more recent source data to reduce the span.
         """
-        # Original: 5-year span (2020 to 2024)
-        flags_before = calculate_temporal_flags('2020-21', '2021-22', '2024-25')
+        # Original: 4-year span (|2024-2020| = 4)
+        flags_before = calculate_temporal_flags('2020-21', '2022-23', '2024-25')
         assert 'ERR_SPAN_EXCEEDED' in flags_before
 
-        # After updating enrollment and staffing sources: 3-year span (2022 to 2024)
+        # After updating to more recent sources: 2-year span (|2024-2022| = 2)
         flags_after = calculate_temporal_flags('2022-23', '2023-24', '2024-25')
         assert 'ERR_SPAN_EXCEEDED' not in flags_after
-        assert 'WARN_YEAR_GAP' in flags_after  # Still flagged but valid
+        assert 'WARN_YEAR_GAP' in flags_after  # Still warned but valid
 
     def test_resolution_option_user_direction(self):
         """Resolution: Flag for user direction.
@@ -367,6 +385,7 @@ class TestResolutionOptions:
         When span exceeds 3 years and update isn't possible,
         flag for manual review by user.
         """
+        # 5-year span (|2025-2020| = 5)
         flags = calculate_temporal_flags('2020-21', '2023-24', '2025-26')
         assert 'ERR_SPAN_EXCEEDED' in flags
         # This calculation should be queued for user review
@@ -377,6 +396,7 @@ class TestResolutionOptions:
         In some cases, data may be accepted with ERR_SPAN_EXCEEDED
         flag for transparency in reports.
         """
+        # 5-year span
         flags = calculate_temporal_flags('2020-21', '2023-24', '2025-26')
         assert 'ERR_SPAN_EXCEEDED' in flags
         # ERR_ prefix indicates error that should be addressed
@@ -427,10 +447,10 @@ class TestDatabaseIntegration:
         from sqlalchemy import text
 
         test_cases = [
-            ('2023-24', '2023-24', 1),
-            ('2023-24', '2024-25', 2),
-            ('2023-24', '2025-26', 3),
-            ('2023-24', '2026-27', 4),
+            ('2023-24', '2023-24', 0),  # Same year
+            ('2023-24', '2024-25', 1),  # Adjacent years
+            ('2023-24', '2025-26', 2),  # 1-year gap
+            ('2023-24', '2026-27', 3),  # 2-year gap
         ]
         for year1, year2, expected in test_cases:
             result = db_session.execute(
@@ -447,9 +467,10 @@ class TestDatabaseIntegration:
         from sqlalchemy import text
 
         test_cases = [
-            ('2023-24', '2023-24', '2023-24', True),
-            ('2023-24', '2024-25', '2025-26', True),  # 3-year span
-            ('2023-24', '2024-25', '2026-27', False),  # 4-year span
+            ('2023-24', '2023-24', '2023-24', True),  # span 0
+            ('2023-24', '2024-25', '2025-26', True),  # span 2 (within window)
+            ('2023-24', '2025-26', '2026-27', True),  # span 3 (at boundary)
+            ('2023-24', '2025-26', '2027-28', False),  # span 4 (exceeds)
         ]
         for enroll, staff, bell, expected in test_cases:
             result = db_session.execute(

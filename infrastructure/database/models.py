@@ -7,6 +7,7 @@ They provide Pythonic access to database records with validation and relationshi
 """
 
 from datetime import datetime
+from enum import Enum
 from typing import List, Optional
 
 from sqlalchemy import (
@@ -14,6 +15,7 @@ from sqlalchemy import (
     CheckConstraint,
     Column,
     DateTime,
+    Enum as SQLAlchemyEnum,
     ForeignKey,
     Index,
     Integer,
@@ -23,7 +25,21 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, validates
+
+
+class CalculationMode(str, Enum):
+    """
+    Calculation mode for LCT runs.
+
+    BLENDED: Use most recent available data within REQ-026 3-year window.
+             No specific year anchor - picks best available data per district.
+
+    TARGET_YEAR: Enrollment anchored to target year, staff and bell schedule
+                 data can come from within REQ-026 3-year window.
+    """
+    BLENDED = 'blended'
+    TARGET_YEAR = 'target_year'
 
 
 class Base(DeclarativeBase):
@@ -53,6 +69,10 @@ class District(Base):
     schools_count: Mapped[Optional[int]] = mapped_column(Integer)
     year: Mapped[str] = mapped_column(String(10), nullable=False)
     data_source: Mapped[str] = mapped_column(String(50), default="nces_ccd")
+
+    # Classification flags
+    is_career_technical_center: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_shared_service_entity: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
@@ -367,6 +387,10 @@ class CalculationRun(Base):
     Tracks LCT calculation runs for incremental processing.
 
     Enables efficient recalculation by tracking what was processed when.
+
+    Calculation Modes:
+    - BLENDED: Uses most recent data within REQ-026 3-year window (default)
+    - TARGET_YEAR: Enrollment anchored to target_year, staff/bell blended within window
     """
     __tablename__ = "calculation_runs"
 
@@ -374,9 +398,18 @@ class CalculationRun(Base):
     run_id: Mapped[str] = mapped_column(String(50), primary_key=True)
 
     # Run metadata
-    year: Mapped[str] = mapped_column(String(10), nullable=False)
+    calculation_mode: Mapped[CalculationMode] = mapped_column(
+        SQLAlchemyEnum(CalculationMode, name='calculation_mode_enum'),
+        nullable=False,
+        default=CalculationMode.BLENDED
+    )
+    target_year: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
     run_type: Mapped[str] = mapped_column(String(30), nullable=False)  # full, incremental
     status: Mapped[str] = mapped_column(String(20), nullable=False)  # running, completed, failed
+
+    # Data range tracking (computed from actual sources used)
+    data_year_min: Mapped[Optional[str]] = mapped_column(String(10))  # Earliest source year
+    data_year_max: Mapped[Optional[str]] = mapped_column(String(10))  # Latest source year
 
     # Processing stats
     districts_processed: Mapped[int] = mapped_column(Integer, default=0)
@@ -401,23 +434,55 @@ class CalculationRun(Base):
     qa_summary = Column(JSONB)  # QA report embedded
 
     def __repr__(self) -> str:
-        return f"<CalculationRun {self.run_id}: {self.status}>"
+        mode_str = f"mode={self.calculation_mode.value}"
+        year_str = f", target={self.target_year}" if self.target_year else ""
+        return f"<CalculationRun {self.run_id}: {self.status} ({mode_str}{year_str})>"
+
+    @validates('target_year')
+    def validate_target_year(self, key, value):
+        """
+        Validate target_year consistency with calculation_mode.
+
+        - TARGET_YEAR mode requires target_year to be set
+        - BLENDED mode allows target_year to be NULL (or set for reference)
+        """
+        # Note: validation happens after assignment, so we check in start_run
+        return value
 
     @classmethod
     def start_run(
         cls,
         session,
-        year: str,
+        calculation_mode: CalculationMode = CalculationMode.BLENDED,
+        target_year: Optional[str] = None,
         run_type: str = "full",
         previous_run_id: Optional[str] = None,
     ) -> "CalculationRun":
-        """Start a new calculation run."""
+        """
+        Start a new calculation run.
+
+        Args:
+            session: Database session
+            calculation_mode: BLENDED (default) or TARGET_YEAR
+            target_year: Required for TARGET_YEAR mode, optional for BLENDED
+            run_type: 'full' or 'incremental'
+            previous_run_id: ID of previous run for incremental processing
+
+        Raises:
+            ValueError: If TARGET_YEAR mode specified without target_year
+        """
         from datetime import timezone
+
+        # Validate mode/year consistency
+        if calculation_mode == CalculationMode.TARGET_YEAR and not target_year:
+            raise ValueError("target_year is required when calculation_mode is TARGET_YEAR")
+
         run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
         run = cls(
             run_id=run_id,
-            year=year,
+            calculation_mode=calculation_mode,
+            target_year=target_year,
             run_type=run_type,
             status="running",
             previous_run_id=previous_run_id,
@@ -432,14 +497,18 @@ class CalculationRun(Base):
         calculations_created: int,
         output_files: List[str],
         qa_summary: Optional[dict] = None,
+        data_year_min: Optional[str] = None,
+        data_year_max: Optional[str] = None,
     ) -> None:
-        """Mark run as completed."""
+        """Mark run as completed with data range information."""
         self.status = "completed"
         self.completed_at = datetime.utcnow()
         self.districts_processed = districts_processed
         self.calculations_created = calculations_created
         self.output_files = output_files
         self.qa_summary = qa_summary
+        self.data_year_min = data_year_min
+        self.data_year_max = data_year_max
 
     def fail(self, error_message: str) -> None:
         """Mark run as failed."""

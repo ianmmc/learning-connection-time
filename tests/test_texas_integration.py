@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Dict, Optional, Any
 import pandas as pd
 
-from tests.test_sea_integration_base import (
+from test_sea_integration_base import (
     SEAIntegrationTestBase,
     SEADataLoadingTests,
     SEACrosswalkTests,

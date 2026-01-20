@@ -33,7 +33,11 @@ Key Decisions (December 2025):
 - Ungraded teachers INCLUDED in other scopes
 
 Usage:
-    python calculate_lct_variants.py [--year 2023-24] [--output-dir path]
+    # Default: Blended mode - uses most recent data within REQ-026 3-year window
+    python calculate_lct_variants.py [--output-dir path]
+
+    # Target year mode: Enrollment anchored to target year, staff/bell blended
+    python calculate_lct_variants.py --target-year 2023-24 [--output-dir path]
 
 Reference: docs/STAFFING_DATA_ENHANCEMENT_PLAN.md
 """
@@ -94,6 +98,7 @@ from infrastructure.database.models import (
     StaffCountsEffective,
     EnrollmentByGrade,
     CalculationRun,
+    CalculationMode,
     SpedEstimate,
     CASpedDistrictEnvironments,
 )
@@ -253,46 +258,192 @@ def validate_level_lct(
     return elem_valid, sec_valid, notes
 
 
-def calculate_all_variants(session, year: str = "2023-24") -> pd.DataFrame:
+def get_most_recent_enrollment(session, target_year: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Get enrollment data, preferring target_year if specified, else most recent.
+
+    Args:
+        session: Database session
+        target_year: If specified, filter to this year (TARGET_YEAR mode)
+
+    Returns:
+        Dict mapping district_id to (enrollment_record, source_year)
+    """
+    from sqlalchemy import func
+
+    if target_year:
+        # TARGET_YEAR mode: enrollment anchored to specific year
+        enrollments = session.query(EnrollmentByGrade).filter(
+            EnrollmentByGrade.source_year == target_year
+        ).all()
+        return {e.district_id: (e, target_year) for e in enrollments}
+
+    # BLENDED mode: get most recent enrollment per district
+    # Subquery to find max year per district
+    subq = session.query(
+        EnrollmentByGrade.district_id,
+        func.max(EnrollmentByGrade.source_year).label('max_year')
+    ).group_by(EnrollmentByGrade.district_id).subquery()
+
+    enrollments = session.query(EnrollmentByGrade).join(
+        subq,
+        (EnrollmentByGrade.district_id == subq.c.district_id) &
+        (EnrollmentByGrade.source_year == subq.c.max_year)
+    ).all()
+
+    return {e.district_id: (e, e.source_year) for e in enrollments}
+
+
+def get_most_recent_sped(session, target_year: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Get SPED estimates, preferring target_year if specified, else most recent.
+
+    Args:
+        session: Database session
+        target_year: If specified, prefer this year but allow blending
+
+    Returns:
+        Dict mapping district_id to (sped_record, source_year)
+    """
+    from sqlalchemy import func
+
+    if target_year:
+        # First try target year
+        sped_estimates = session.query(SpedEstimate).filter(
+            SpedEstimate.estimate_year == target_year
+        ).all()
+        if sped_estimates:
+            return {s.district_id: (s, target_year) for s in sped_estimates}
+
+    # Get most recent SPED per district
+    subq = session.query(
+        SpedEstimate.district_id,
+        func.max(SpedEstimate.estimate_year).label('max_year')
+    ).group_by(SpedEstimate.district_id).subquery()
+
+    sped_estimates = session.query(SpedEstimate).join(
+        subq,
+        (SpedEstimate.district_id == subq.c.district_id) &
+        (SpedEstimate.estimate_year == subq.c.max_year)
+    ).all()
+
+    return {s.district_id: (s, s.estimate_year) for s in sped_estimates}
+
+
+def get_most_recent_ca_sped(session, target_year: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Get CA actual SPED data, preferring target_year if specified, else most recent.
+
+    Args:
+        session: Database session
+        target_year: If specified, prefer this year but allow blending
+
+    Returns:
+        Dict mapping nces_id to (ca_sped_record, source_year)
+    """
+    from sqlalchemy import func
+
+    if target_year:
+        ca_sped = session.query(CASpedDistrictEnvironments).filter(
+            CASpedDistrictEnvironments.year == target_year
+        ).all()
+        if ca_sped:
+            return {ca.nces_id: (ca, target_year) for ca in ca_sped}
+
+    # Get most recent CA SPED per district
+    subq = session.query(
+        CASpedDistrictEnvironments.nces_id,
+        func.max(CASpedDistrictEnvironments.year).label('max_year')
+    ).group_by(CASpedDistrictEnvironments.nces_id).subquery()
+
+    ca_sped = session.query(CASpedDistrictEnvironments).join(
+        subq,
+        (CASpedDistrictEnvironments.nces_id == subq.c.nces_id) &
+        (CASpedDistrictEnvironments.year == subq.c.max_year)
+    ).all()
+
+    return {ca.nces_id: (ca, ca.year) for ca in ca_sped}
+
+
+def calculate_year_span(years: List[str]) -> int:
+    """
+    Calculate year span from a list of school year strings.
+
+    Args:
+        years: List of school year strings like '2023-24', '2024-25'
+
+    Returns:
+        Absolute difference between max and min start years
+    """
+    if not years:
+        return 0
+
+    def extract_start_year(year_str: str) -> int:
+        return int(year_str.split('-')[0])
+
+    numeric_years = [extract_start_year(y) for y in years if y]
+    if len(numeric_years) < 2:
+        return 0
+
+    return max(numeric_years) - min(numeric_years)
+
+
+def calculate_all_variants(
+    session,
+    calculation_mode: CalculationMode = CalculationMode.BLENDED,
+    target_year: Optional[str] = None
+) -> tuple[pd.DataFrame, str, str]:
     """
     Calculate all LCT variants for all districts with staff data.
 
+    Args:
+        session: Database session
+        calculation_mode: BLENDED or TARGET_YEAR
+        target_year: Required for TARGET_YEAR mode, optional for BLENDED
+
     Returns:
-        DataFrame with LCT calculations for all scopes including teacher-level variants
+        Tuple of (DataFrame with LCT calculations, data_year_min, data_year_max)
     """
     print("Calculating LCT variants...")
+    mode_str = f"{calculation_mode.value}"
+    if target_year:
+        mode_str += f" (target: {target_year})"
+    print(f"  Mode: {mode_str}")
 
-    # Get all effective staff counts
-    staff_records = session.query(StaffCountsEffective).all()
-    print(f"  Found {len(staff_records):,} districts with staff data")
+    # Track all years used for data range reporting
+    all_years_used = set()
 
-    # Get enrollment by grade
-    enrollment_map = {}
-    enrollments = session.query(EnrollmentByGrade).filter(
-        EnrollmentByGrade.source_year == year
+    # Get all effective staff counts (excluding shared service entities)
+    # Shared service entities (CTCs, BOCES, cooperatives, etc.) serve students part-time
+    # from multiple districts, causing artificially inflated teacher-to-student ratios
+    staff_records = session.query(StaffCountsEffective).join(
+        District,
+        StaffCountsEffective.district_id == District.nces_id
+    ).filter(
+        District.is_shared_service_entity == False
     ).all()
-    for e in enrollments:
-        enrollment_map[e.district_id] = e
+    print(f"  Found {len(staff_records):,} districts with staff data (excluding shared service entities)")
+
+    # Get enrollment (mode-aware)
+    enrollment_with_years = get_most_recent_enrollment(
+        session,
+        target_year if calculation_mode == CalculationMode.TARGET_YEAR else None
+    )
+    enrollment_map = {k: v[0] for k, v in enrollment_with_years.items()}
+    enrollment_years = {k: v[1] for k, v in enrollment_with_years.items()}
     print(f"  Found {len(enrollment_map):,} districts with grade-level enrollment")
 
-    # Get SPED estimates for SPED/GenEd variants (December 2025)
-    sped_map = {}
-    sped_estimates = session.query(SpedEstimate).filter(
-        SpedEstimate.estimate_year == year
-    ).all()
-    for s in sped_estimates:
-        sped_map[s.district_id] = s
+    # Get SPED estimates (mode-aware - can blend in both modes)
+    sped_with_years = get_most_recent_sped(session, target_year)
+    sped_map = {k: v[0] for k, v in sped_with_years.items()}
+    sped_years = {k: v[1] for k, v in sped_with_years.items()}
     print(f"  Found {len(sped_map):,} districts with SPED estimates")
 
-    # Get CA actual SPED data (January 2026)
-    # PRECEDENCE: CA actual (if year matches) > Federal estimate > National average
-    ca_sped_map = {}
-    ca_sped_actual = session.query(CASpedDistrictEnvironments).filter(
-        CASpedDistrictEnvironments.year == year
-    ).all()
-    for ca in ca_sped_actual:
-        ca_sped_map[ca.nces_id] = ca
-    print(f"  Found {len(ca_sped_map):,} CA districts with actual SPED data for {year}")
+    # Get CA actual SPED data (mode-aware - can blend in both modes)
+    ca_sped_with_years = get_most_recent_ca_sped(session, target_year)
+    ca_sped_map = {k: v[0] for k, v in ca_sped_with_years.items()}
+    ca_sped_years = {k: v[1] for k, v in ca_sped_with_years.items()}
+    print(f"  Found {len(ca_sped_map):,} CA districts with actual SPED data")
 
     # Get districts for state info
     district_map = {}
@@ -318,6 +469,16 @@ def calculate_all_variants(session, year: str = "2023-24") -> pd.DataFrame:
         grade_enrollment = enrollment_map.get(staff.district_id)
         if not grade_enrollment:
             continue  # Skip districts without grade-level enrollment data
+
+        # Track years used for this district
+        enroll_year = enrollment_years.get(staff.district_id)
+        staff_eff_year = staff.effective_year
+        if enroll_year:
+            all_years_used.add(enroll_year)
+        if staff_eff_year:
+            all_years_used.add(staff_eff_year)
+        if minutes_year:
+            all_years_used.add(minutes_year)
 
         # ALL scopes now use K-12 enrollment (exclude Pre-K)
         k12_enrollment = grade_enrollment.enrollment_k12 or 0
@@ -445,8 +606,10 @@ def calculate_all_variants(session, year: str = "2023-24") -> pd.DataFrame:
             sped_enrollment = ca_actual.sped_self_contained
             # Calculate GenEd as total K-12 minus self-contained SPED
             gened_enrollment = k12_enrollment - (sped_enrollment or 0) if sped_enrollment else None
-            enrollment_source = f"ca_actual_{year}"
+            ca_sped_year = ca_sped_years.get(staff.district_id, "unknown")
+            enrollment_source = f"ca_actual_{ca_sped_year}"
             enrollment_confidence = ca_actual.confidence
+            all_years_used.add(ca_sped_year)
         elif sped_estimate and sped_estimate.confidence != "low":
             # Fallback to Federal estimate (2017-18 baseline)
             sped_enrollment = sped_estimate.estimated_self_contained_sped
@@ -473,6 +636,8 @@ def calculate_all_variants(session, year: str = "2023-24") -> pd.DataFrame:
                     core_sped_notes = f"Self-contained SPED enrollment: {enrollment_source}, confidence: {enrollment_confidence}"
                     if sped_capped:
                         core_sped_notes += "; WARN_SPED_RATIO_CAP: LCT capped at 360 (high teacher-to-student ratio)"
+                    sped_year = sped_years.get(staff.district_id, "2017-18")
+                    all_years_used.add(sped_year)
                     results.append({
                         "district_id": staff.district_id,
                         "district_name": district.name,
@@ -484,7 +649,7 @@ def calculate_all_variants(session, year: str = "2023-24") -> pd.DataFrame:
                         "instructional_minutes_year": minutes_year,
                         "staff_count": sped_teachers,
                         "staff_source": "sped_estimate_2017-18",
-                        "staff_year": year,
+                        "staff_year": sped_year,
                         "enrollment": sped_enrollment,
                         "enrollment_type": "self_contained_sped",
                         "enrollment_source": enrollment_source,
@@ -495,6 +660,8 @@ def calculate_all_variants(session, year: str = "2023-24") -> pd.DataFrame:
             if gened_teachers and gened_teachers > 0 and gened_enrollment and gened_enrollment > 0:
                 lct_gened = calculate_lct(minutes, gened_teachers, gened_enrollment)
                 if lct_gened is not None and lct_gened <= 360:  # Sanity check
+                    gened_sped_year = sped_years.get(staff.district_id, "2017-18")
+                    all_years_used.add(gened_sped_year)
                     results.append({
                         "district_id": staff.district_id,
                         "district_name": district.name,
@@ -506,7 +673,7 @@ def calculate_all_variants(session, year: str = "2023-24") -> pd.DataFrame:
                         "instructional_minutes_year": minutes_year,
                         "staff_count": gened_teachers,
                         "staff_source": "sped_estimate_2017-18",
-                        "staff_year": year,
+                        "staff_year": gened_sped_year,
                         "enrollment": gened_enrollment,
                         "enrollment_type": "gened",
                         "enrollment_source": enrollment_source,
@@ -526,6 +693,8 @@ def calculate_all_variants(session, year: str = "2023-24") -> pd.DataFrame:
                     instr_sped_notes = f"Self-contained SPED enrollment: {enrollment_source}, instructional staff confidence: {enrollment_confidence}"
                     if instr_sped_capped:
                         instr_sped_notes += "; WARN_SPED_RATIO_CAP: LCT capped at 360 (high instructional-to-student ratio)"
+                    instr_sped_year = sped_years.get(staff.district_id, "2017-18")
+                    all_years_used.add(instr_sped_year)
                     results.append({
                         "district_id": staff.district_id,
                         "district_name": district.name,
@@ -537,7 +706,7 @@ def calculate_all_variants(session, year: str = "2023-24") -> pd.DataFrame:
                         "instructional_minutes_year": minutes_year,
                         "staff_count": sped_instructional,
                         "staff_source": "sped_estimate_2017-18",
-                        "staff_year": year,
+                        "staff_year": instr_sped_year,
                         "enrollment": sped_enrollment,
                         "enrollment_type": "self_contained_sped",
                         "enrollment_source": enrollment_source,
@@ -551,7 +720,26 @@ def calculate_all_variants(session, year: str = "2023-24") -> pd.DataFrame:
     print(f"  Calculated {len(results):,} LCT values")
     print(f"  Districts with QA notes: {qa_issues:,}")
 
-    return pd.DataFrame(results)
+    # Compute data year range
+    def extract_start_year(year_str: str) -> int:
+        """Extract numeric start year from school year string."""
+        try:
+            return int(year_str.split('-')[0])
+        except (ValueError, AttributeError):
+            return 0
+
+    valid_years = [y for y in all_years_used if y and extract_start_year(y) > 2000]
+    if valid_years:
+        year_nums = [extract_start_year(y) for y in valid_years]
+        data_year_min = min(valid_years, key=extract_start_year)
+        data_year_max = max(valid_years, key=extract_start_year)
+        year_span = max(year_nums) - min(year_nums)
+        print(f"  Data year range: {data_year_min} to {data_year_max} (span: {year_span} years)")
+    else:
+        data_year_min = None
+        data_year_max = None
+
+    return pd.DataFrame(results), data_year_min, data_year_max
 
 
 def apply_data_safeguards(df: pd.DataFrame) -> pd.DataFrame:
@@ -701,10 +889,10 @@ def generate_summary_statistics(df: pd.DataFrame) -> pd.DataFrame:
 def generate_state_summary(df: pd.DataFrame) -> pd.DataFrame:
     """Generate summary statistics by state and scope."""
     summary = df.groupby(["state", "staff_scope"]).agg({
-        "lct_value": ["count", "mean", "median"],
+        "lct_value": ["count", "mean", "median", "std"],
     }).round(2)
 
-    summary.columns = ["count", "mean", "median"]
+    summary.columns = ["count", "mean", "median", "std"]
     summary = summary.reset_index()
 
     return summary
@@ -862,13 +1050,35 @@ def save_parquet(df: pd.DataFrame, filepath: Path) -> bool:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Calculate LCT variants")
-    parser.add_argument("--year", default="2023-24", help="School year")
+    parser = argparse.ArgumentParser(
+        description="Calculate LCT variants",
+        epilog="""
+Examples:
+  # Default: Blended mode - uses most recent data within REQ-026 3-year window
+  python calculate_lct_variants.py
+
+  # Target year mode: Enrollment anchored to target year, staff/bell blended
+  python calculate_lct_variants.py --target-year 2023-24
+        """
+    )
+    parser.add_argument(
+        "--target-year",
+        default=None,
+        help="Anchor enrollment to specific year (TARGET_YEAR mode). Without this flag, uses most recent data (BLENDED mode)."
+    )
     parser.add_argument("--output-dir", type=Path, default=None, help="Output directory")
     parser.add_argument("--parquet", action="store_true", help="Also save Parquet files")
     parser.add_argument("--incremental", action="store_true", help="Only recalculate changed districts")
     parser.add_argument("--no-track", action="store_true", help="Don't track run in database")
     args = parser.parse_args()
+
+    # Determine calculation mode
+    if args.target_year:
+        calculation_mode = CalculationMode.TARGET_YEAR
+        mode_display = f"TARGET_YEAR (enrollment anchored to {args.target_year})"
+    else:
+        calculation_mode = CalculationMode.BLENDED
+        mode_display = "BLENDED (most recent data within REQ-026 window)"
 
     # Default output directory
     output_dir = args.output_dir or project_root / "data" / "enriched" / "lct-calculations"
@@ -877,7 +1087,7 @@ def main():
     print("=" * 60)
     print("LCT VARIANT CALCULATIONS")
     print("=" * 60)
-    print(f"Year: {args.year}")
+    print(f"Mode: {mode_display}")
     print(f"Output: {output_dir}")
     print()
     print("SCOPE DEFINITIONS (December 2025):")
@@ -904,13 +1114,21 @@ def main():
 
     # Generate timestamp for all output files
     timestamp = get_utc_timestamp()
-    year_str = args.year.replace('-', '_')
+    # File naming: include year only for TARGET_YEAR mode
+    if args.target_year:
+        year_str = args.target_year.replace('-', '_') + "_"
+    else:
+        year_str = ""  # No year in filename for BLENDED mode
     print(f"Timestamp: {timestamp}")
     print()
 
     with session_scope() as session:
         # Calculate all variants
-        df = calculate_all_variants(session, args.year)
+        df, data_year_min, data_year_max = calculate_all_variants(
+            session,
+            calculation_mode=calculation_mode,
+            target_year=args.target_year
+        )
 
         if len(df) == 0:
             print("No LCT values calculated. Check data availability.")
@@ -920,26 +1138,26 @@ def main():
         df, safeguard_counts = apply_data_safeguards(df)
 
         # Save detailed results (includes safeguard flags)
-        detail_file = output_dir / f"lct_all_variants_{year_str}_{timestamp}.csv"
+        detail_file = output_dir / f"lct_all_variants_{year_str}{timestamp}.csv"
         df.to_csv(detail_file, index=False)
         print(f"\nSaved detailed results to {detail_file}")
 
         # Filter for valid LCT (0 < LCT <= 360 for all scopes)
         # SPED scopes that would exceed 360 are capped with WARN_SPED_RATIO_CAP flag
         valid_df = df[(df['lct_value'] > 0) & (df['lct_value'] <= 360)]
-        valid_file = output_dir / f"lct_all_variants_{year_str}_valid_{timestamp}.csv"
+        valid_file = output_dir / f"lct_all_variants_{year_str}valid_{timestamp}.csv"
         valid_df.to_csv(valid_file, index=False)
         print(f"Saved valid results to {valid_file}")
 
         # Generate and save summary statistics
         summary = generate_summary_statistics(valid_df)
-        summary_file = output_dir / f"lct_variants_summary_{year_str}_{timestamp}.csv"
+        summary_file = output_dir / f"lct_variants_summary_{year_str}{timestamp}.csv"
         summary.to_csv(summary_file, index=False)
         print(f"Saved summary to {summary_file}")
 
         # Generate state-level summary
         state_summary = generate_state_summary(valid_df)
-        state_file = output_dir / f"lct_variants_by_state_{year_str}_{timestamp}.csv"
+        state_file = output_dir / f"lct_variants_by_state_{year_str}{timestamp}.csv"
         state_summary.to_csv(state_file, index=False)
         print(f"Saved state summary to {state_file}")
 
@@ -963,18 +1181,24 @@ def main():
             print(f"  Districts: {int(row['districts']):,}")
             print(f"  Mean LCT:  {row['mean']:.1f} minutes")
             print(f"  Median:   {row['median']:.1f} minutes")
+            print(f"  Std Dev:   {row['std']:.1f} minutes")
             print(f"  Range:    {row['min']:.1f} - {row['max']:.1f} minutes")
             print()
 
         # Generate comparison text report
-        report_file = output_dir / f"lct_variants_report_{year_str}_{timestamp}.txt"
+        report_file = output_dir / f"lct_variants_report_{year_str}{timestamp}.txt"
         utc_now = datetime.now(timezone.utc)
         with open(report_file, "w") as f:
             f.write("=" * 60 + "\n")
             f.write("LCT VARIANT COMPARISON REPORT\n")
             f.write("=" * 60 + "\n\n")
             f.write(f"Generated: {utc_now.strftime('%Y-%m-%dT%H:%M:%SZ')} (UTC)\n")
-            f.write(f"Year: {args.year}\n\n")
+            f.write(f"Mode: {mode_display}\n")
+            if data_year_min and data_year_max:
+                f.write(f"Data Range: {data_year_min} to {data_year_max}\n")
+            if args.target_year:
+                f.write(f"Target Year: {args.target_year}\n")
+            f.write("\n")
 
             f.write("KEY METHODOLOGY DECISIONS (December 2025):\n")
             f.write("-" * 40 + "\n")
@@ -1038,8 +1262,14 @@ def main():
         ]
 
         # Generate and save QA report (JSON)
-        qa_report = generate_qa_report(df, valid_df, summary, timestamp, args.year, safeguard_counts)
-        qa_file = output_dir / f"lct_qa_report_{year_str}_{timestamp}.json"
+        # Pass data range info instead of single year
+        data_range_str = f"{data_year_min} to {data_year_max}" if data_year_min and data_year_max else "unknown"
+        qa_report = generate_qa_report(df, valid_df, summary, timestamp, data_range_str, safeguard_counts)
+        qa_report['calculation_mode'] = calculation_mode.value
+        qa_report['target_year'] = args.target_year
+        qa_report['data_year_min'] = data_year_min
+        qa_report['data_year_max'] = data_year_max
+        qa_file = output_dir / f"lct_qa_report_{year_str}{timestamp}.json"
         with open(qa_file, 'w') as f:
             json.dump(qa_report, f, indent=2)
         print(f"Saved QA report to {qa_file}")
@@ -1089,7 +1319,8 @@ def main():
             try:
                 run = CalculationRun.start_run(
                     session,
-                    year=args.year,
+                    calculation_mode=calculation_mode,
+                    target_year=args.target_year,
                     run_type="full",
                 )
                 run.complete(
@@ -1097,6 +1328,8 @@ def main():
                     calculations_created=len(df),
                     output_files=output_files,
                     qa_summary=qa_report,
+                    data_year_min=data_year_min,
+                    data_year_max=data_year_max,
                 )
                 session.commit()
                 print(f"\nCalculation run tracked: {run.run_id}")
