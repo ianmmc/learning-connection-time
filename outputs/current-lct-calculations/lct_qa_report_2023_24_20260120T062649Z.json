@@ -1,0 +1,380 @@
+{
+  "metadata": {
+    "timestamp": "20260120T062649Z",
+    "generated_at": "2026-01-20T06:27:44Z",
+    "year": "2023-24 to 2025-26",
+    "version": "3.0"
+  },
+  "data_quality": {
+    "total_calculations": 164797,
+    "valid_calculations": 163929,
+    "invalid_calculations": 868,
+    "pass_rate": 99.47,
+    "districts_with_qa_notes": 17040
+  },
+  "safeguards": {
+    "ERR_FLAT_STAFF": 185,
+    "ERR_IMPOSSIBLE_SSR": 772,
+    "ERR_VOLATILE": 2659,
+    "ERR_RATIO_CEILING": 185,
+    "WARN_LCT_LOW": 693,
+    "WARN_LCT_HIGH": 75,
+    "WARN_SPED_RATIO_CAP": 8754
+  },
+  "safeguard_definitions": {
+    "ERR_FLAT_STAFF": "All 5 base scopes have identical staff counts (incomplete reporting)",
+    "ERR_IMPOSSIBLE_SSR": "Staff-to-student ratio > 0.5 (more than 1 staff per 2 students)",
+    "ERR_VOLATILE": "K-12 enrollment < 50 (high statistical volatility)",
+    "ERR_RATIO_CEILING": "Teachers = 100% of all staff (incomplete reporting)",
+    "WARN_LCT_LOW": "LCT < 5 minutes (very high enrollment relative to staff)",
+    "WARN_LCT_HIGH": "LCT > 120 minutes for teachers_only scope",
+    "WARN_SPED_RATIO_CAP": "SPED LCT capped at 360 (high teacher-to-student ratio in self-contained SPED)"
+  },
+  "scope_summary": {
+    "all": {
+      "districts": 17108,
+      "mean": 58.21,
+      "median": 52.88,
+      "min": 0.35,
+      "max": 359.79
+    },
+    "core_sped": {
+      "districts": 15906,
+      "mean": 186.65,
+      "median": 186.23,
+      "min": 0.25,
+      "max": 360.0
+    },
+    "instructional": {
+      "districts": 17183,
+      "mean": 37.16,
+      "median": 33.13,
+      "min": 0.17,
+      "max": 359.38
+    },
+    "instructional_plus_support": {
+      "districts": 17143,
+      "mean": 40.78,
+      "median": 36.75,
+      "min": 0.17,
+      "max": 355.62
+    },
+    "instructional_sped": {
+      "districts": 15908,
+      "mean": 299.05,
+      "median": 340.9,
+      "min": 0.97,
+      "max": 360.0
+    },
+    "teachers_core": {
+      "districts": 17162,
+      "mean": 27.99,
+      "median": 25.22,
+      "min": 0.19,
+      "max": 352.14
+    },
+    "teachers_elementary": {
+      "districts": 15585,
+      "mean": 33.77,
+      "median": 30.01,
+      "min": 0.12,
+      "max": 360.0
+    },
+    "teachers_gened": {
+      "districts": 16655,
+      "mean": 26.19,
+      "median": 23.54,
+      "min": 0.25,
+      "max": 350.0
+    },
+    "teachers_only": {
+      "districts": 17144,
+      "mean": 26.68,
+      "median": 24.2,
+      "min": 0.1,
+      "max": 350.0
+    },
+    "teachers_secondary": {
+      "districts": 14135,
+      "mean": 22.19,
+      "median": 19.52,
+      "min": 0.05,
+      "max": 357.14
+    }
+  },
+  "hierarchy_validation": {
+    "Secondary < Overall Teachers": {
+      "passed": true,
+      "lower": {
+        "scope": "teachers_secondary",
+        "mean": 22.19
+      },
+      "higher": {
+        "scope": "teachers_only",
+        "mean": 26.68
+      }
+    },
+    "Teachers < Elementary": {
+      "passed": true,
+      "lower": {
+        "scope": "teachers_only",
+        "mean": 26.68
+      },
+      "higher": {
+        "scope": "teachers_elementary",
+        "mean": 33.77
+      }
+    },
+    "Teachers < Core": {
+      "passed": true,
+      "lower": {
+        "scope": "teachers_only",
+        "mean": 26.68
+      },
+      "higher": {
+        "scope": "teachers_core",
+        "mean": 27.99
+      }
+    },
+    "Core < Instructional": {
+      "passed": true,
+      "lower": {
+        "scope": "teachers_core",
+        "mean": 27.99
+      },
+      "higher": {
+        "scope": "instructional",
+        "mean": 37.16
+      }
+    },
+    "Instructional < Support": {
+      "passed": true,
+      "lower": {
+        "scope": "instructional",
+        "mean": 37.16
+      },
+      "higher": {
+        "scope": "instructional_plus_support",
+        "mean": 40.78
+      }
+    },
+    "Support < All": {
+      "passed": true,
+      "lower": {
+        "scope": "instructional_plus_support",
+        "mean": 40.78
+      },
+      "higher": {
+        "scope": "all",
+        "mean": 58.21
+      }
+    }
+  },
+  "state_coverage": {
+    "states_with_data": 55,
+    "states": [
+      "AK",
+      "AL",
+      "AR",
+      "AZ",
+      "BI",
+      "CA",
+      "CO",
+      "CT",
+      "DC",
+      "DE",
+      "FL",
+      "GA",
+      "HI",
+      "IA",
+      "ID",
+      "IL",
+      "IN",
+      "KS",
+      "KY",
+      "LA",
+      "MA",
+      "MD",
+      "ME",
+      "MI",
+      "MN",
+      "MO",
+      "MP",
+      "MS",
+      "MT",
+      "NC",
+      "ND",
+      "NE",
+      "NH",
+      "NJ",
+      "NM",
+      "NV",
+      "NY",
+      "OH",
+      "OK",
+      "OR",
+      "PA",
+      "PR",
+      "RI",
+      "SC",
+      "SD",
+      "TN",
+      "TX",
+      "UT",
+      "VA",
+      "VI",
+      "VT",
+      "WA",
+      "WI",
+      "WV",
+      "WY"
+    ]
+  },
+  "outliers": [
+    {
+      "district_id": "200130",
+      "district_name": "Galena City School District",
+      "scope": "teachers_only",
+      "issue": "Very low LCT: 3.7 min",
+      "severity": "warning"
+    },
+    {
+      "district_id": "200540",
+      "district_name": "Nenana City School District",
+      "scope": "teachers_only",
+      "issue": "Very low LCT: 3.7 min",
+      "severity": "warning"
+    },
+    {
+      "district_id": "400345",
+      "district_name": "Cochise Technology District (79403)",
+      "scope": "teachers_only",
+      "issue": "Very low LCT: 1.2 min",
+      "severity": "warning"
+    },
+    {
+      "district_id": "400612",
+      "district_name": "Northeast Arizona Technological Institute of Vocat (81114)",
+      "scope": "teachers_only",
+      "issue": "Very low LCT: 4.4 min",
+      "severity": "warning"
+    },
+    {
+      "district_id": "400720",
+      "district_name": "Antelope Union High School District (4506)",
+      "scope": "teachers_only",
+      "issue": "Very low LCT: 1.2 min",
+      "severity": "warning"
+    },
+    {
+      "district_id": "900003",
+      "district_name": "Unified School District #1",
+      "scope": "teachers_only",
+      "issue": "Very high LCT: 209.6 min",
+      "severity": "info"
+    },
+    {
+      "district_id": "2300050",
+      "district_name": "Arthur R. Gould Sch--LCYDC",
+      "scope": "teachers_only",
+      "issue": "Very high LCT: 272.7 min",
+      "severity": "info"
+    },
+    {
+      "district_id": "2804803",
+      "district_name": "SR1 COLLEGE PREP & STEM ACADEMY",
+      "scope": "teachers_only",
+      "issue": "Very high LCT: 218.2 min",
+      "severity": "info"
+    },
+    {
+      "district_id": "2900589",
+      "district_name": "NORTH SIDE COMMUNITY SCHOOL",
+      "scope": "teachers_only",
+      "issue": "Very high LCT: 255.6 min",
+      "severity": "info"
+    },
+    {
+      "district_id": "2932493",
+      "district_name": "UNIVERSITY OF MO - COLUMBIA",
+      "scope": "teachers_only",
+      "issue": "Very high LCT: 273.1 min",
+      "severity": "info"
+    },
+    {
+      "district_id": "200130",
+      "district_name": "Galena City School District",
+      "scope": "teachers_elementary",
+      "issue": "Very low LCT: 3.4 min",
+      "severity": "warning"
+    },
+    {
+      "district_id": "200540",
+      "district_name": "Nenana City School District",
+      "scope": "teachers_elementary",
+      "issue": "Very low LCT: 1.8 min",
+      "severity": "warning"
+    },
+    {
+      "district_id": "408640",
+      "district_name": "Topock Elementary District (4376)",
+      "scope": "teachers_elementary",
+      "issue": "Very low LCT: 4.8 min",
+      "severity": "warning"
+    },
+    {
+      "district_id": "601740",
+      "district_name": "South Sutter Charter District",
+      "scope": "teachers_elementary",
+      "issue": "Very low LCT: 3.8 min",
+      "severity": "warning"
+    },
+    {
+      "district_id": "601743",
+      "district_name": "Sky Mountain Charter District",
+      "scope": "teachers_elementary",
+      "issue": "Very low LCT: 3.7 min",
+      "severity": "warning"
+    },
+    {
+      "district_id": "500035",
+      "district_name": "ARK. SCHOOL FOR THE BLIND",
+      "scope": "teachers_elementary",
+      "issue": "Very high LCT: 209.9 min",
+      "severity": "info"
+    },
+    {
+      "district_id": "601724",
+      "district_name": "AeroSTEM Academy District",
+      "scope": "teachers_elementary",
+      "issue": "Very high LCT: 204.8 min",
+      "severity": "info"
+    },
+    {
+      "district_id": "602099",
+      "district_name": "Ivy Bound Acad of Math Sci and Tech Charter Mid District",
+      "scope": "teachers_elementary",
+      "issue": "Very high LCT: 224.9 min",
+      "severity": "info"
+    },
+    {
+      "district_id": "602138",
+      "district_name": "ACE Inspire Academy District",
+      "scope": "teachers_elementary",
+      "issue": "Very high LCT: 252.0 min",
+      "severity": "info"
+    },
+    {
+      "district_id": "602166",
+      "district_name": "Sunrise Middle District",
+      "scope": "teachers_elementary",
+      "issue": "Very high LCT: 204.4 min",
+      "severity": "info"
+    }
+  ],
+  "overall_status": "PASS",
+  "calculation_mode": "target_year",
+  "target_year": "2023-24",
+  "data_year_min": "2023-24",
+  "data_year_max": "2025-26"
+}

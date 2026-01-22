@@ -80,6 +80,7 @@ outputs/*
 !outputs/analysis-reports/
 !outputs/datasets/
 !outputs/reports/
+!outputs/current-lct-calculations/
 
 # Generated reports and visualizations (unless in docs)
 *.pdf
