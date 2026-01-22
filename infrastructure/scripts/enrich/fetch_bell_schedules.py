@@ -31,6 +31,8 @@ Examples:
 import argparse
 import logging
 import sys
+import re
+import os
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
@@ -38,9 +40,18 @@ import pandas as pd
 import yaml
 import json
 
+try:
+    import requests
+    REQUESTS_AVAILABLE = True
+except ImportError:
+    REQUESTS_AVAILABLE = False
+
 # Add utilities to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "utilities"))
 from common import DataProcessor, safe_divide, format_number, standardize_state
+
+# Scraper service configuration
+SCRAPER_URL = os.environ.get('SCRAPER_URL', 'http://localhost:3000')
 
 # Configure logging
 logging.basicConfig(
@@ -78,6 +89,175 @@ class HTTPErrorTracker:
             "threshold": self.threshold,
             "flagged": self.should_flag_manual_followup()
         }
+
+
+def scrape_url(url: str, timeout: int = 30) -> Optional[Dict]:
+    """
+    Scrape a URL using the scraper service.
+
+    Args:
+        url: URL to scrape
+        timeout: Timeout in seconds
+
+    Returns:
+        Response dict from scraper service, or None if failed
+    """
+    if not REQUESTS_AVAILABLE:
+        logger.error("requests library not available - cannot use scraper service")
+        return None
+
+    try:
+        response = requests.post(
+            f"{SCRAPER_URL}/scrape",
+            json={"url": url, "timeout": timeout * 1000},
+            timeout=timeout + 10
+        )
+        return response.json()
+    except requests.exceptions.ConnectionError:
+        logger.error(f"Cannot connect to scraper service at {SCRAPER_URL}")
+        logger.info("Start the scraper: cd scraper && npm run dev")
+        return None
+    except requests.RequestException as e:
+        logger.error(f"Request error: {e}")
+        return None
+
+
+def check_scraper_health() -> bool:
+    """Check if the scraper service is running and healthy."""
+    if not REQUESTS_AVAILABLE:
+        return False
+
+    try:
+        response = requests.get(f"{SCRAPER_URL}/health", timeout=5)
+        data = response.json()
+        return data.get('status') == 'healthy'
+    except Exception:
+        return False
+
+
+def extract_bell_schedule_times(html: str, markdown: str) -> Optional[Dict]:
+    """
+    Extract bell schedule times from HTML/markdown content.
+
+    Looks for common patterns like:
+    - "Start Time: 8:00 AM"
+    - "School begins at 7:45"
+    - "Dismissal: 3:15 PM"
+    - Time ranges like "8:00 AM - 3:00 PM"
+
+    Returns:
+        Dict with start_time, end_time, instructional_minutes, or None
+    """
+    # Use markdown for cleaner text extraction
+    text = markdown if markdown else html
+
+    # Time patterns
+    time_pattern = r'(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm|a\.m\.|p\.m\.)?)'
+
+    # Look for start time patterns
+    start_patterns = [
+        r'(?:start|begin|arrival|first\s+bell|morning\s+bell)[:\s]+' + time_pattern,
+        r'(?:school\s+(?:starts|begins))[:\s]+(?:at\s+)?' + time_pattern,
+        r'(\d{1,2}:\d{2}\s*(?:AM|am|a\.m\.))',  # Any morning time as fallback
+    ]
+
+    # Look for end time patterns
+    end_patterns = [
+        r'(?:end|dismissal|release|final\s+bell|afternoon\s+bell)[:\s]+' + time_pattern,
+        r'(?:school\s+(?:ends|dismisses))[:\s]+(?:at\s+)?' + time_pattern,
+        r'(\d{1,2}:\d{2}\s*(?:PM|pm|p\.m\.))',  # Any afternoon time as fallback
+    ]
+
+    start_time = None
+    end_time = None
+
+    # Find start time
+    for pattern in start_patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            start_time = match.group(1).strip()
+            break
+
+    # Find end time
+    for pattern in end_patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            end_time = match.group(1).strip()
+            break
+
+    # Try to find time range (e.g., "8:00 AM - 3:00 PM")
+    range_pattern = r'(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?)\s*[-–—to]+\s*(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?)'
+    range_match = re.search(range_pattern, text, re.IGNORECASE)
+    if range_match:
+        if not start_time:
+            start_time = range_match.group(1).strip()
+        if not end_time:
+            end_time = range_match.group(2).strip()
+
+    if not start_time or not end_time:
+        return None
+
+    # Calculate instructional minutes
+    minutes = calculate_instructional_minutes(start_time, end_time)
+
+    return {
+        'start_time': start_time,
+        'end_time': end_time,
+        'instructional_minutes': minutes,
+    }
+
+
+def calculate_instructional_minutes(start: str, end: str) -> Optional[int]:
+    """
+    Calculate minutes between two times.
+
+    Args:
+        start: Start time string (e.g., "8:00 AM")
+        end: End time string (e.g., "3:00 PM")
+
+    Returns:
+        Number of minutes, or None if parsing fails
+    """
+    def parse_time(t: str) -> Optional[Tuple[int, int]]:
+        # Normalize
+        t = t.upper().replace('.', '').replace(' ', '')
+        # Extract hours and minutes
+        match = re.match(r'(\d{1,2}):(\d{2})(AM|PM)?', t)
+        if not match:
+            return None
+        hours = int(match.group(1))
+        minutes = int(match.group(2))
+        period = match.group(3)
+
+        # Convert to 24-hour
+        if period == 'PM' and hours < 12:
+            hours += 12
+        elif period == 'AM' and hours == 12:
+            hours = 0
+
+        return (hours, minutes)
+
+    start_parsed = parse_time(start)
+    end_parsed = parse_time(end)
+
+    if not start_parsed or not end_parsed:
+        return None
+
+    start_minutes = start_parsed[0] * 60 + start_parsed[1]
+    end_minutes = end_parsed[0] * 60 + end_parsed[1]
+
+    # Handle overnight (shouldn't happen for school schedules but be safe)
+    if end_minutes < start_minutes:
+        end_minutes += 24 * 60
+
+    total_minutes = end_minutes - start_minutes
+
+    # Subtract typical lunch (30 min) if total seems to include it
+    # Most schedules report gross time, we want instructional time
+    if total_minutes > 400:  # More than 6.5 hours
+        total_minutes -= 30  # Deduct assumed lunch
+
+    return total_minutes if 180 <= total_minutes <= 480 else None  # Sanity check
 
 
 def flag_for_manual_followup(district_info: dict, error_summary: dict):
@@ -223,47 +403,308 @@ class BellScheduleFetcher(DataProcessor):
 
         return result
 
-    def _tier1_detailed_search(self, result: Dict) -> Dict:
+    def _tier1_detailed_search(self, result: Dict) -> Optional[Dict]:
         """
         Tier 1: Detailed search with representative school sampling.
 
-        NOT YET IMPLEMENTED - Requires web scraping implementation
-        See docs/ENRICHMENT_SAFEGUARDS.md for requirements
-        """
-        raise NotImplementedError(
-            f"Tier {self.tier} enrichment not yet implemented. "
-            "Tier 1 requires web scraping implementation with: "
-            "1. HTTPErrorTracker for 404 detection, "
-            "2. Security block handling (Cloudflare/WAF), "
-            "3. Return None on failure (not statutory fallback). "
-            "Options: (1) Use Tier 3 (--tier 3) for statutory-only, "
-            "(2) Manually collect bell schedules, or "
-            "(3) Implement web scraping in this method. "
-            "See docs/ENRICHMENT_SAFEGUARDS.md for detailed requirements."
-        )
+        Uses the Crawlee-based scraper service for JavaScript rendering.
+        Implements security block detection and 404 tracking.
 
-    def _tier2_automated_search(self, result: Dict) -> Dict:
+        Returns None on failure to trigger manual follow-up.
         """
-        Tier 2: Automated search (NOT YET IMPLEMENTED)
+        # Check scraper service health
+        if not check_scraper_health():
+            logger.error("Scraper service not available")
+            logger.info("Start the scraper: cd scraper && docker-compose up -d")
+            raise RuntimeError("Scraper service not available at " + SCRAPER_URL)
+
+        error_tracker = HTTPErrorTracker(threshold=4)
+        district_name = result['district_name']
+        state = result['state']
+
+        # Build search URLs to try
+        # Format district name for URL (lowercase, hyphens)
+        url_name = district_name.lower().replace(' ', '-').replace("'", "")
+        url_name = re.sub(r'[^a-z0-9-]', '', url_name)
+
+        # Common URL patterns for bell schedules
+        base_urls = [
+            f"https://www.{url_name}.org",
+            f"https://www.{url_name}.k12.{state.lower()}.us",
+            f"https://{url_name}.org",
+        ]
+
+        schedule_paths = [
+            "/bell-schedule",
+            "/bell-schedules",
+            "/schools/bell-schedule",
+            "/parents/bell-schedule",
+            "/calendar/bell-schedule",
+            "/about/bell-schedule",
+            "/students/bell-schedule",
+        ]
+
+        found_schedules = {'elementary': None, 'middle': None, 'high': None}
+        sources = []
+
+        for base_url in base_urls:
+            if error_tracker.should_flag_manual_followup():
+                break
+
+            for path in schedule_paths:
+                if error_tracker.should_flag_manual_followup():
+                    break
+
+                url = base_url + path
+                logger.debug(f"Trying URL: {url}")
+
+                response = scrape_url(url, timeout=30)
+
+                if response is None:
+                    continue
+
+                # Check for security block
+                if response.get('blocked'):
+                    logger.warning(f"Security block detected for {district_name}")
+                    flag_for_manual_followup(
+                        {'district_id': result['district_id'],
+                         'district_name': district_name,
+                         'state': state,
+                         'enrollment': result.get('enrollment')},
+                        {'total_404s': 0, 'security_blocked': True}
+                    )
+                    return None
+
+                # Check for 404
+                if response.get('errorCode') == 'NOT_FOUND':
+                    error_tracker.record_404(url)
+                    continue
+
+                # Check for other errors
+                if not response.get('success'):
+                    continue
+
+                # Try to extract bell schedule times
+                html = response.get('html', '')
+                markdown = response.get('markdown', '')
+
+                times = extract_bell_schedule_times(html, markdown)
+
+                if times:
+                    logger.info(f"Found bell schedule at {url}")
+                    sources.append(url)
+
+                    # Determine school level from URL or content
+                    level = self._detect_school_level(url, markdown)
+
+                    if level and not found_schedules[level]:
+                        found_schedules[level] = {
+                            'instructional_minutes': times['instructional_minutes'],
+                            'start_time': times['start_time'],
+                            'end_time': times['end_time'],
+                            'schools_sampled': [url],
+                            'source_urls': [url],
+                            'confidence': 'high',
+                            'method': 'web_scrape_tier1',
+                        }
+
+        # Check if we hit 404 threshold
+        if error_tracker.should_flag_manual_followup():
+            logger.warning(f"Hit 404 threshold for {district_name}")
+            flag_for_manual_followup(
+                {'district_id': result['district_id'],
+                 'district_name': district_name,
+                 'state': state,
+                 'enrollment': result.get('enrollment')},
+                error_tracker.get_summary()
+            )
+            return None
+
+        # Check if we found any schedules
+        if not any(found_schedules.values()):
+            logger.warning(f"No bell schedules found for {district_name}")
+            flag_for_manual_followup(
+                {'district_id': result['district_id'],
+                 'district_name': district_name,
+                 'state': state,
+                 'enrollment': result.get('enrollment')},
+                {'total_404s': len(error_tracker.errors_404), 'no_schedules_found': True}
+            )
+            return None
+
+        # Apply found schedules to result
+        for level in ['elementary', 'middle', 'high']:
+            if found_schedules[level]:
+                result[level] = found_schedules[level]
+            else:
+                # Use state statutory as fallback for missing levels
+                result = self._apply_state_requirements_for_level(result, level)
+
+        result['sources'] = sources
+        result['enriched'] = True
+        result['data_quality_tier'] = 'tier1_detailed'
+        result['notes'].append(f"Tier 1 detailed search completed - found {len(sources)} sources")
+
+        return result
+
+    def _detect_school_level(self, url: str, content: str) -> Optional[str]:
+        """Detect school level from URL or content."""
+        text = (url + ' ' + content).lower()
+
+        if any(term in text for term in ['elementary', 'primary', 'grade school', 'k-5', 'k-6']):
+            return 'elementary'
+        elif any(term in text for term in ['middle', 'junior high', 'intermediate', '6-8', '7-8']):
+            return 'middle'
+        elif any(term in text for term in ['high school', 'senior high', '9-12', '10-12']):
+            return 'high'
+        return None
+
+    def _apply_state_requirements_for_level(self, result: Dict, level: str) -> Dict:
+        """Apply state statutory requirements for a single grade level."""
+        state = result['state']
+        config_path = Path(__file__).parent.parent.parent.parent / "config" / "state-requirements.yaml"
+
+        minutes = 360  # Default
+        source = 'Default assumption'
+
+        if config_path.exists():
+            with open(config_path, 'r') as f:
+                state_config = yaml.safe_load(f)
+
+            state_key = state.lower()
+            state_data = state_config.get('states', {}).get(state_key, {})
+            level_key = level if level == 'elementary' else f"{level}_school"
+            minutes = state_data.get(level_key, state_data.get('default', 360))
+            source = state_data.get('source', 'State statute')
+
+        result[level] = {
+            'instructional_minutes': minutes,
+            'start_time': None,
+            'end_time': None,
+            'schools_sampled': [],
+            'source_urls': [],
+            'confidence': 'statutory_fallback',
+            'method': 'state_statutory',
+            'source': source,
+        }
+
+        return result
+
+    def _tier2_automated_search(self, result: Dict) -> Optional[Dict]:
+        """
+        Tier 2: Automated search with simpler heuristics.
+
+        Faster than Tier 1 but less thorough. Uses scraper service.
+        Returns None on failure to trigger manual follow-up.
 
         CRITICAL: Per ENRICHMENT_SAFEGUARDS.md Rule 2:
-        Must NOT fall back to statutory requirements
-        Must return None on failure to trigger manual follow-up
-
-        See docs/ENRICHMENT_SAFEGUARDS.md for requirements
+        Must NOT fall back to statutory requirements.
         """
-        raise NotImplementedError(
-            f"Tier {self.tier} enrichment not yet implemented. "
-            "Tier 2 requires automated web scraping with: "
-            "1. HTTPErrorTracker for 404 detection, "
-            "2. Security block handling (Cloudflare/WAF), "
-            "3. Return None on failure (not statutory fallback). "
-            "CRITICAL: Must NOT fall back to statutory data. "
-            "Options: (1) Use Tier 3 (--tier 3) for statutory-only, "
-            "(2) Manually collect bell schedules, or "
-            "(3) Implement web scraping in this method. "
-            "See docs/ENRICHMENT_SAFEGUARDS.md for detailed requirements."
-        )
+        # Check scraper service health
+        if not check_scraper_health():
+            logger.error("Scraper service not available")
+            logger.info("Start the scraper: cd scraper && docker-compose up -d")
+            raise RuntimeError("Scraper service not available at " + SCRAPER_URL)
+
+        error_tracker = HTTPErrorTracker(threshold=4)
+        district_name = result['district_name']
+        state = result['state']
+
+        # Build fewer URLs than tier 1 for faster processing
+        url_name = district_name.lower().replace(' ', '-').replace("'", "")
+        url_name = re.sub(r'[^a-z0-9-]', '', url_name)
+
+        # Try just the most common patterns
+        urls_to_try = [
+            f"https://www.{url_name}.org/bell-schedule",
+            f"https://www.{url_name}.k12.{state.lower()}.us/bell-schedule",
+            f"https://www.{url_name}.org/schools/bell-schedule",
+        ]
+
+        found_schedule = None
+        source_url = None
+
+        for url in urls_to_try:
+            if error_tracker.should_flag_manual_followup():
+                break
+
+            logger.debug(f"Tier 2 trying: {url}")
+            response = scrape_url(url, timeout=20)
+
+            if response is None:
+                continue
+
+            # Security block - flag immediately
+            if response.get('blocked'):
+                logger.warning(f"Security block for {district_name}")
+                flag_for_manual_followup(
+                    {'district_id': result['district_id'],
+                     'district_name': district_name,
+                     'state': state,
+                     'enrollment': result.get('enrollment')},
+                    {'security_blocked': True}
+                )
+                return None
+
+            if response.get('errorCode') == 'NOT_FOUND':
+                error_tracker.record_404(url)
+                continue
+
+            if not response.get('success'):
+                continue
+
+            # Extract times
+            times = extract_bell_schedule_times(
+                response.get('html', ''),
+                response.get('markdown', '')
+            )
+
+            if times:
+                found_schedule = times
+                source_url = url
+                logger.info(f"Tier 2 found schedule at {url}")
+                break
+
+        # Check 404 threshold
+        if error_tracker.should_flag_manual_followup():
+            flag_for_manual_followup(
+                {'district_id': result['district_id'],
+                 'district_name': district_name,
+                 'state': state,
+                 'enrollment': result.get('enrollment')},
+                error_tracker.get_summary()
+            )
+            return None
+
+        # No schedule found
+        if not found_schedule:
+            flag_for_manual_followup(
+                {'district_id': result['district_id'],
+                 'district_name': district_name,
+                 'state': state,
+                 'enrollment': result.get('enrollment')},
+                {'no_schedules_found': True, 'urls_tried': urls_to_try}
+            )
+            return None
+
+        # Apply found schedule to all levels (tier 2 uses district-wide)
+        for level in ['elementary', 'middle', 'high']:
+            result[level] = {
+                'instructional_minutes': found_schedule['instructional_minutes'],
+                'start_time': found_schedule['start_time'],
+                'end_time': found_schedule['end_time'],
+                'schools_sampled': [source_url],
+                'source_urls': [source_url],
+                'confidence': 'medium',
+                'method': 'web_scrape_tier2',
+            }
+
+        result['sources'] = [source_url]
+        result['enriched'] = True
+        result['data_quality_tier'] = 'tier2_automated'
+        result['notes'].append(f"Tier 2 automated search - found schedule at {source_url}")
+
+        return result
 
     def _tier3_statutory_only(self, result: Dict) -> Dict:
         """

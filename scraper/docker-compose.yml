@@ -1,0 +1,23 @@
+# Standalone docker-compose for scraper development/testing
+# Use: docker-compose up -d
+
+services:
+  scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lct_scraper_dev
+    environment:
+      PORT: 3000
+      LOG_LEVEL: debug
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
+    # Playwright needs more shared memory
+    shm_size: '2gb'

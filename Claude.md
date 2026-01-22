@@ -43,7 +43,7 @@ We're implementing Phase 1.5, which enhances basic LCT calculations with actual 
 
 ## Important: Current Date and Data Years
 
-**Current Date:** January 17, 2026
+**Current Date:** January 22, 2026
 **Current School Year:** 2025-26 (Fall 2025 - Spring 2026)
 
 ### Data Year Strategy
@@ -153,6 +153,22 @@ These years do not represent typical instructional time due to pandemic disrupti
 - **Pipeline**: `pipelines/full_pipeline.py` - End-to-end orchestration
 - **Tests**: `infrastructure/quality-assurance/tests/test_utilities.py` - Unit tests
 - **Documentation**: Comprehensive README in scripts directory
+
+### ✅ Bell Schedule Scraper Service (January 2026) ⭐ NEW
+- **Location**: `scraper/` - Node.js/TypeScript microservice
+- **Technology**: Express.js + Playwright for JavaScript rendering
+- **Features**:
+  - Browser pool management (5 concurrent Playwright instances)
+  - Request queue with rate limiting per domain
+  - Security block detection (Cloudflare/WAF/CAPTCHA)
+  - Ethical constraints: respects blocks, no bypass attempts
+- **API Endpoints**:
+  - `POST /scrape` - Scrape URL, returns HTML + markdown
+  - `GET /health` - Health check
+  - `GET /status` - Queue depth, processed count, blocked count
+- **Docker**: `docker-compose up -d scraper` (from project root)
+- **Local dev**: `cd scraper && npm run dev`
+- **Documentation**: `scraper/README.md`
 
 ### ✅ SEA Integration Test Framework (January 2026) ⭐ NEW
 - **Base class**: `tests/test_sea_integration_base.py` - Abstract base with mixin classes
@@ -277,6 +293,16 @@ learning-connection-time/
 │   ├── visualizations/
 │   ├── reports/
 │   └── datasets/
+│
+├── scraper/                       # Bell schedule scraper service ⭐ NEW
+│   ├── src/
+│   │   ├── server.ts             # Express HTTP server
+│   │   ├── scraper.ts            # Playwright scraper
+│   │   ├── pool.ts               # Browser pool management
+│   │   └── types.ts              # TypeScript interfaces
+│   ├── Dockerfile
+│   ├── docker-compose.yml        # Standalone dev compose
+│   └── README.md
 │
 └── src/                           # Core library code
     ├── python/
@@ -908,10 +934,12 @@ cat data/enriched/lct-calculations/lct_qa_report_2023_24_<timestamp>.json
 
 📖 **Full archive**: `docs/chat-history/project_status_archive_2026-01-17.md`
 
-**Current State (January 2026):**
-- **Phase**: Tier 1 SEA Integration ✅ COMPLETE (9 of 9 states)
-- **Bell Schedules**: 182 districts enriched across 52 states/territories
-- **SEA Integrations**: FL, TX, CA, NY, IL, MI, PA, VA, MA complete
+**Current State (January 22, 2026):**
+- **Phase**: Bell Schedule Automation ⭐ IN PROGRESS
+- **Bell Schedules**: 182 districts manually enriched + 16 automated (scraper service)
+- **Scraper Service**: Node.js/Playwright microservice operational (`scraper/`)
+- **Automated Collection Study**: 245 districts attempted, ~6.5% success rate
+- **SEA Integrations**: FL, TX, CA, NY, IL, MI, PA, VA, MA complete (9/9)
 - **Database**: PostgreSQL 16 (Docker), 17,842 districts
 - **Test Suite**: 375 passed (100% - all states)
 
@@ -926,3 +954,4 @@ cat data/enriched/lct-calculations/lct_qa_report_2023_24_<timestamp>.json
 - **COVID exclusion**: 2019-20 through 2022-23 data excluded
 - **Data safeguards**: 7 flags - see `docs/METHODOLOGY.md#data-safeguards`
 - **SPED segmentation**: 3 scopes (core_sped, teachers_gened, instructional_sped)
+- **Scraper service**: `scraper/` - Playwright-based JS rendering, `POST /scrape` API

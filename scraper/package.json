@@ -1,0 +1,29 @@
+{
+  "name": "lct-bell-schedule-scraper",
+  "version": "1.0.0",
+  "description": "Crawlee-based scraper for bell schedule collection with browser pool management",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "scrape": "tsx src/cli.ts"
+  },
+  "dependencies": {
+    "crawlee": "^3.11.0",
+    "playwright": "^1.49.0",
+    "express": "^4.21.0",
+    "p-queue": "^8.0.1",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

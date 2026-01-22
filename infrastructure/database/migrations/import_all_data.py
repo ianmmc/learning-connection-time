@@ -270,6 +270,17 @@ def import_bell_schedules(session, dry_run: bool = False) -> int:
             if not instructional_minutes:
                 continue
 
+            # Normalize method value to database-accepted values
+            # Maps web scraping methods to 'automated_enrichment'
+            raw_method = schedule_data.get("method", "human_provided")
+            method_mapping = {
+                "web_scrape_tier1": "automated_enrichment",
+                "web_scrape_tier2": "automated_enrichment",
+                "web_scraping": "automated_enrichment",
+                "automated": "automated_enrichment",
+            }
+            normalized_method = method_mapping.get(raw_method, raw_method)
+
             # Create bell schedule record
             schedule = BellSchedule(
                 district_id=normalized_id,
@@ -284,7 +295,7 @@ def import_bell_schedules(session, dry_run: bool = False) -> int:
                 schools_sampled=schedule_data.get("schools_sampled", []),
                 source_urls=schedule_data.get("source_urls", []),
                 confidence=schedule_data.get("confidence", "high"),
-                method=schedule_data.get("method", "human_provided"),
+                method=normalized_method,
                 source_description=schedule_data.get("source"),
                 notes=schedule_data.get("notes"),
                 raw_import=schedule_data,  # Preserve original data
