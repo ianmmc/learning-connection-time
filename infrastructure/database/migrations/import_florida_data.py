@@ -3,16 +3,17 @@
 Import Florida Data to Database
 
 This script imports FLDOE data from Excel files into the database:
-1. District identifiers (crosswalk) - now uses state_district_crosswalk table
+1. District identifiers (crosswalk) - uses state_district_crosswalk table
 2. Staff data
 3. Enrollment data
+
+Uses shared utilities from sea_import_utils.py for common operations.
 
 Usage:
     python import_florida_data.py
 """
 
 import sys
-import os
 from pathlib import Path
 
 # Add project root to path
@@ -23,6 +24,13 @@ from infrastructure.database.connection import session_scope
 from sqlalchemy import text
 import pandas as pd
 import logging
+
+# Import shared SEA utilities
+from infrastructure.database.migrations.sea_import_utils import (
+    safe_float, safe_int,
+    load_state_crosswalk, get_district_name,
+    format_state_id, log_import_summary,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -36,27 +44,8 @@ FLORIDA_DATA_DIR = project_root / "data" / "raw" / "state" / "florida"
 STAFF_FILE = FLORIDA_DATA_DIR / "ARInstructionalDistStaff2425.xlsx"
 ENROLLMENT_FILE = FLORIDA_DATA_DIR / "2425MembInFLPublicSchools.xlsx"
 
-
-def get_nces_id_from_crosswalk(session, state: str, state_district_id: str) -> str:
-    """Look up NCES ID from state district ID using crosswalk table.
-
-    Args:
-        session: Database session
-        state: Two-letter state code (e.g., 'FL')
-        state_district_id: State's district ID (e.g., '13' for Miami-Dade)
-
-    Returns:
-        NCES LEAID or None if not found
-    """
-    result = session.execute(text("""
-        SELECT nces_id
-        FROM state_district_crosswalk
-        WHERE state = :state
-          AND state_district_id = :state_id
-          AND id_system = 'st_leaid'
-    """), {"state": state, "state_id": state_district_id})
-    row = result.fetchone()
-    return row[0] if row else None
+# State configuration
+STATE_CODE = 'FL'
 
 
 def load_florida_crosswalk(session, county_districts_only: bool = True) -> dict:
@@ -209,10 +198,10 @@ def import_staff_data(df):
             if not nces_id:
                 continue
 
-            # Extract staff counts from actual column names
-            total_staff = float(row.get('Total Instructional Staff', 0) or 0)
-            total_teachers = float(row.get('Total Teachers', 0) or 0)
-            ese_teachers = float(row.get('Exceptional Education Teachers', 0) or 0)
+            # Extract staff counts using safe conversion
+            total_staff = safe_float(row.get('Total Instructional Staff')) or 0
+            total_teachers = safe_float(row.get('Total Teachers')) or 0
+            ese_teachers = safe_float(row.get('Exceptional Education Teachers')) or 0
 
             # Use individual transaction for each row
             with session_scope() as session:
@@ -269,8 +258,8 @@ def import_enrollment_data(df):
             if not nces_id:
                 continue
 
-            # Extract enrollment from 'Total Enrollment'
-            total_enrollment = int(row.get('Total Enrollment', 0) or 0)
+            # Extract enrollment using safe conversion
+            total_enrollment = safe_int(row.get('Total Enrollment')) or 0
 
             # Use individual transaction for each row
             with session_scope() as session:
