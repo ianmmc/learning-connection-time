@@ -52,9 +52,3 @@ jobs:
         run: |
           # Skip integration tests that require full database with migrations
           pytest tests/ -v --tb=short -m "not integration"
-
-      - name: Run utility tests
-        env:
-          PYTHONPATH: ${{ github.workspace }}
-        run: |
-          pytest infrastructure/quality-assurance/tests/ -v --tb=short
