@@ -403,11 +403,15 @@ class TestResolutionOptions:
         # but doesn't necessarily exclude from calculations
 
 
+@pytest.mark.integration
 class TestDatabaseIntegration:
     """Integration tests requiring database connection.
 
     These tests verify the actual database implementation of temporal
     validation matches the Python helper functions.
+
+    These tests require the full database setup including migrations
+    (specifically migration 008 for temporal validation functions).
     """
 
     @pytest.fixture
