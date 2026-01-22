@@ -48,9 +48,12 @@ jobs:
       - name: Run tests
         env:
           DATABASE_URL: postgresql://lct_user:lct_password@localhost:5432/learning_connection_time
+          PYTHONPATH: ${{ github.workspace }}
         run: |
           pytest tests/ -v --tb=short
 
       - name: Run utility tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
         run: |
           pytest infrastructure/quality-assurance/tests/ -v --tb=short
