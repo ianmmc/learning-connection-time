@@ -15,11 +15,16 @@
     "playwright": "^1.49.0",
     "express": "^4.21.0",
     "p-queue": "^8.0.1",
-    "winston": "^3.17.0"
+    "winston": "^3.17.0",
+    "dompurify": "^3.2.0",
+    "jsdom": "^25.0.0",
+    "turndown": "^7.2.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.0",
+    "@types/dompurify": "^3.0.5",
+    "@types/turndown": "^5.0.5",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0"
   },

@@ -283,6 +283,168 @@ Track across campaign:
    - School handbooks
    - State statutory requirements (fallback)
 
+### SOP 1A: School-Level Discovery ⭐ NEW
+
+**Objective:** Find individual school websites within a district when district-wide searches fail
+
+**Context:** Research shows 80%+ of districts do NOT publish district-wide bell schedules. Schedules are decentralized at the school level. This SOP provides procedures for discovering and sampling individual school sites.
+
+**When to use:**
+- After district-level search (SOP 1) yields no results
+- When district website has no centralized bell schedule page
+- When preliminary search suggests school-level organization
+
+**Steps:**
+
+1. **Identify Target Schools**
+
+   **Method A: Query NCES database**
+   ```python
+   # Get schools in district
+   from infrastructure.database.connection import session_scope
+   from infrastructure.database.models import School
+
+   with session_scope() as session:
+       schools = session.query(School).filter_by(district_id='XXXXXXX').all()
+       for school in schools:
+           print(f"{school.name} - {school.level}")
+   ```
+
+   **Method B: Search for district schools directory**
+   ```
+   WebSearch("{District Name} schools directory")
+   WebFetch("{district-url}/schools")
+   ```
+
+2. **Test Common Subdomain Patterns**
+
+   Districts typically use these URL patterns:
+
+   ```bash
+   # Pattern 1: School name subdomains
+   curl -I https://lincoln-hs.{district.org}  # Returns 200 if exists
+   curl -I https://washington-ms.{district.org}
+
+   # Pattern 2: Common prefixes (elementary/middle/high)
+   curl -I https://hs.{district.org}
+   curl -I https://ms.{district.org}
+   curl -I https://elem.{district.org}
+   curl -I https://elementary.{district.org}
+
+   # Pattern 3: Abbreviated school names
+   curl -I https://lhs.{district.org}  # Lincoln High School
+   curl -I https://wms.{district.org}  # Washington Middle School
+   ```
+
+   **Success indicators:** HTTP 200 or 301/302 redirect (not 404)
+
+3. **Extract School Links from District Site**
+
+   ```bash
+   # Download district site
+   curl -o /tmp/district.html "{district-url}"
+
+   # Extract school links with pup
+   cat /tmp/district.html | pup 'a[href*="school"]@href'
+   cat /tmp/district.html | pup 'nav a@href' | grep -i school
+
+   # Alternative: grep for patterns
+   grep -oE 'https?://[^"]+school[^"]+' /tmp/district.html
+   ```
+
+4. **Search for Individual School Bell Schedules**
+
+   Once school websites identified, search each:
+
+   ```
+   WebSearch("{School Name} bell schedule 2025-26")
+   WebSearch("{School Name} {District Name} daily schedule")
+   WebSearch("site:{school-url} bell schedule")
+   ```
+
+   **Tip:** Use school name + district name to avoid ambiguity
+
+5. **Sample Representative Schools**
+
+   Follow the sampling strategy from BELL_SCHEDULE_SAMPLING_METHODOLOGY.md:
+
+   | Level | Selection Criteria | Rationale |
+   |-------|-------------------|-----------|
+   | **Elementary** | Largest enrollment elementary | Most representative |
+   | **Middle** | Largest enrollment middle | Most representative |
+   | **High** | Largest enrollment high | Most representative |
+
+   **Quality check:** If possible, sample 2-3 schools per level to verify consistency
+
+6. **Common School Site URL Patterns by State**
+
+   Based on empirical data (see DISTRICT_WEBSITE_LANDSCAPE_2026.md):
+
+   | State | Common Pattern | Example |
+   |-------|---------------|---------|
+   | Florida | {school}.{district}.k12.fl.us | lincolnhs.district.k12.fl.us |
+   | Wisconsin | {school}.{district}.k12.wi.us | elementary.district.k12.wi.us |
+   | Oregon | {school}.{district}.k12.or.us | middle.district.k12.or.us |
+   | California | {district}.org/{school} | district.org/lincoln-high |
+   | Texas | {school}.{district}.net | lincolnhs.districtxxx.net |
+   | New York | {district}.org/schools/{school} | district.org/schools/lincoln-hs |
+
+7. **CMS Platform Detection**
+
+   Identify CMS early to apply platform-specific strategies:
+
+   ```bash
+   # Check for Finalsite
+   curl -I "{url}" | grep -i finalsite
+   cat /tmp/page.html | grep -i "/fs/pages"
+
+   # Check for SchoolBlocks
+   curl -I "{url}" | grep -i schoolblocks
+
+   # Check for Blackboard/Edlio
+   cat /tmp/page.html | grep -i "schoolinsites\|schoolwires"
+   ```
+
+   **Adjust timeout based on CMS:**
+   - Finalsite: 60+ seconds (heavy JavaScript)
+   - SchoolBlocks: 45+ seconds (Vue.js SPA)
+   - Legacy/Static: 30 seconds (standard)
+
+**Success Criteria:**
+- Found 1-3 schools per grade level
+- Extracted bell schedules from school sites
+- Documented source URLs per school
+- Confidence level: "medium" (school sample) or "high" (multiple schools)
+
+**Failure Criteria (trigger manual follow-up):**
+- 404 errors on 4+ school sites (indicates hardened security)
+- Cloudflare/WAF blocks on school sites
+- No accessible school websites found
+- All school sites timeout (>60 seconds)
+
+**Example Workflow:**
+
+```bash
+# 1. District-level search failed, moving to school-level
+WebSearch("Springfield Public Schools bell schedule 2025-26")  # No results
+
+# 2. Find schools in district
+WebSearch("Springfield Public Schools elementary middle high schools")
+
+# 3. Test subdomain patterns
+curl -I https://hs.springfield.org  # 200 OK - found!
+curl -I https://ms.springfield.org  # 200 OK - found!
+curl -I https://elem.springfield.org  # 404 - not used
+
+# 4. Search for schedules at discovered schools
+WebSearch("site:hs.springfield.org bell schedule")
+WebFetch("https://hs.springfield.org/about/bell-schedule")
+
+# 5. Extract and validate data
+curl -o /tmp/hs_schedule.html "https://hs.springfield.org/about/bell-schedule"
+cat /tmp/hs_schedule.html | pup 'div.schedule text{}'
+```
+
 ### SOP 2: Document Processing - Images
 
 **Objective:** Extract bell schedule data from PNG, JPG, or other image files

@@ -69,6 +69,7 @@ class District(Base):
     schools_count: Mapped[Optional[int]] = mapped_column(Integer)
     year: Mapped[str] = mapped_column(String(10), nullable=False)
     data_source: Mapped[str] = mapped_column(String(50), default="nces_ccd")
+    website_url: Mapped[Optional[str]] = mapped_column(String(500))
 
     # Classification flags
     is_career_technical_center: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -111,6 +112,14 @@ class District(Base):
     )
     ca_lcff_funding: Mapped[List["CALCFFFunding"]] = relationship(
         back_populates="district", cascade="all, delete-orphan"
+    )
+
+    # Multi-tier enrichment system
+    enrichment_attempts: Mapped[List["EnrichmentAttempt"]] = relationship(
+        back_populates="district", cascade="all, delete-orphan"
+    )
+    enrichment_queue: Mapped[Optional["EnrichmentQueue"]] = relationship(
+        back_populates="district", cascade="all, delete-orphan", uselist=False
     )
 
     def __repr__(self) -> str:
@@ -1553,3 +1562,199 @@ class CALCFFFunding(Base):
 
     def __repr__(self) -> str:
         return f"<CALCFFFunding {self.nces_id}/{self.year}: ${self.total_lcff:,.0f}>"
+
+
+# =============================================================================
+# Multi-Tier Enrichment Queue System
+# =============================================================================
+
+
+class EnrichmentAttempt(Base):
+    """
+    Tracks individual bell schedule enrichment attempts
+
+    Records all attempts to find and extract bell schedule data,
+    including method used, success/failure, and extracted data.
+    """
+
+    __tablename__ = "enrichment_attempts"
+
+    # Primary key
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    # Foreign key
+    district_id: Mapped[str] = mapped_column(
+        String(10), ForeignKey("districts.nces_id", ondelete="CASCADE"), nullable=False
+    )
+
+    # Attempt metadata
+    method: Mapped[str] = mapped_column(String(50), nullable=False)
+    tier: Mapped[Optional[int]] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+
+    # Extracted data (JSONB for flexibility)
+    extracted_data: Mapped[Optional[dict]] = mapped_column(JSONB)
+
+    # Source tracking
+    source_url: Mapped[Optional[str]] = mapped_column(Text)
+    source_type: Mapped[Optional[str]] = mapped_column(String(50))
+
+    # Timestamps
+    attempted_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
+
+    # Error tracking
+    error_message: Mapped[Optional[str]] = mapped_column(Text)
+    error_code: Mapped[Optional[str]] = mapped_column(String(50))
+
+    # Relationships
+    district: Mapped["District"] = relationship(back_populates="enrichment_attempts")
+
+    # Indexes
+    __table_args__ = (
+        Index("idx_ea_district", "district_id"),
+        Index("idx_ea_status", "status"),
+        Index("idx_ea_method", "method"),
+        Index("idx_ea_tier", "tier"),
+        Index("idx_ea_attempted_at", "attempted_at"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<EnrichmentAttempt {self.id}: {self.district_id} via {self.method} - {self.status}>"
+
+
+class EnrichmentQueue(Base):
+    """
+    Multi-tier enrichment queue
+
+    Tracks districts through 5-tier bell schedule enrichment process:
+    - Tier 1: Local Discovery (Playwright)
+    - Tier 2: Local Extraction (HTML parsing)
+    - Tier 3: Local PDF/OCR
+    - Tier 4: Claude Desktop (batched)
+    - Tier 5: Gemini MCP (batched)
+    """
+
+    __tablename__ = "enrichment_queue"
+
+    # Primary key
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    # Foreign key
+    district_id: Mapped[str] = mapped_column(
+        String(10),
+        ForeignKey("districts.nces_id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+    )
+
+    # Current tier (1-5)
+    current_tier: Mapped[int] = mapped_column(Integer, default=1)
+
+    # Results from each tier (JSONB for flexibility)
+    tier_1_result: Mapped[Optional[dict]] = mapped_column(JSONB)
+    tier_2_result: Mapped[Optional[dict]] = mapped_column(JSONB)
+    tier_3_result: Mapped[Optional[dict]] = mapped_column(JSONB)
+    tier_4_result: Mapped[Optional[dict]] = mapped_column(JSONB)
+    tier_5_result: Mapped[Optional[dict]] = mapped_column(JSONB)
+
+    # Batch tracking
+    batch_id: Mapped[Optional[int]] = mapped_column(Integer)
+    batch_type: Mapped[Optional[str]] = mapped_column(String(50))
+
+    # Timestamps
+    queued_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
+    processing_started_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True)
+    )
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+    # Status tracking
+    status: Mapped[str] = mapped_column(String(20), default="pending")
+    escalation_reason: Mapped[Optional[str]] = mapped_column(Text)
+    final_success: Mapped[Optional[bool]] = mapped_column(Boolean)
+
+    # Metadata
+    cms_detected: Mapped[Optional[str]] = mapped_column(String(50))
+    content_type: Mapped[Optional[str]] = mapped_column(String(50))
+    notes: Mapped[Optional[str]] = mapped_column(Text)
+
+    # Cost tracking
+    estimated_cost_cents: Mapped[int] = mapped_column(Integer, default=0)
+    processing_time_seconds: Mapped[Optional[int]] = mapped_column(Integer)
+
+    # Relationships
+    district: Mapped["District"] = relationship(back_populates="enrichment_queue")
+
+    # Indexes
+    __table_args__ = (
+        Index("idx_eq_status", "status"),
+        Index("idx_eq_tier", "current_tier"),
+        Index("idx_eq_batch", "batch_id"),
+        Index("idx_eq_batch_type", "batch_type"),
+        Index("idx_eq_queued_at", "queued_at"),
+        Index("idx_eq_cms", "cms_detected"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<EnrichmentQueue {self.district_id}: Tier {self.current_tier} - {self.status}>"
+
+
+class EnrichmentBatch(Base):
+    """
+    Batch tracking for API-based enrichment tiers
+
+    Records metadata for batched processing in Tier 4 (Claude) and
+    Tier 5 (Gemini), including costs, tokens, and success rates.
+    """
+
+    __tablename__ = "enrichment_batches"
+
+    # Primary key
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    # Batch metadata
+    batch_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    tier: Mapped[int] = mapped_column(Integer, nullable=False)
+    district_count: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    # Composition metadata
+    grouping_strategy: Mapped[Optional[str]] = mapped_column(String(100))
+    shared_context: Mapped[Optional[str]] = mapped_column(Text)
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow
+    )
+    submitted_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+    # Status
+    status: Mapped[str] = mapped_column(String(20), default="pending")
+
+    # Results
+    success_count: Mapped[int] = mapped_column(Integer, default=0)
+    failure_count: Mapped[int] = mapped_column(Integer, default=0)
+
+    # Cost tracking
+    api_cost_cents: Mapped[Optional[int]] = mapped_column(Integer)
+    api_tokens_used: Mapped[Optional[int]] = mapped_column(Integer)
+    processing_time_seconds: Mapped[Optional[int]] = mapped_column(Integer)
+
+    # API details
+    api_provider: Mapped[Optional[str]] = mapped_column(String(50))
+    api_model: Mapped[Optional[str]] = mapped_column(String(50))
+    api_response: Mapped[Optional[dict]] = mapped_column(JSONB)
+
+    # Indexes
+    __table_args__ = (
+        Index("idx_eb_status", "status"),
+        Index("idx_eb_tier", "tier"),
+        Index("idx_eb_type", "batch_type"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<EnrichmentBatch {self.id}: Tier {self.tier} - {self.district_count} districts>"

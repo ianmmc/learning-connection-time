@@ -39,6 +39,11 @@ from infrastructure.database.queries import (
     add_bell_schedule,
     get_enrichment_summary,
 )
+from infrastructure.database.enrichment_tracking import (
+    should_skip_district,
+    mark_district_skip,
+    get_districts_to_skip,
+)
 
 
 def print_header(text: str):
@@ -215,10 +220,17 @@ def run_state_campaign(state: str, year: str = "2025-26", target: int = 3):
         print(f"\nFound {len(candidates)} candidates (ranks 1-9 by enrollment)")
 
         successful = 0
+        skipped_count = 0
         for i, district in enumerate(candidates, 1):
             if current + successful >= target:
                 print(f"\n✓ Target reached: {current + successful}/{target}")
                 break
+
+            # Check if district should be skipped
+            if should_skip_district(session, district.nces_id):
+                print(f"\n⚠ Skipping {district.name} - flagged from previous failures")
+                skipped_count += 1
+                continue
 
             print_district_info(district, rank=i)
             print(f"\n  Search query: {generate_search_query(district, year)}")
@@ -231,7 +243,11 @@ def run_state_campaign(state: str, year: str = "2025-26", target: int = 3):
                 break
 
             if action == 'b':
-                print("  → Marked as blocked (manual follow-up needed)")
+                try:
+                    mark_district_skip(session, district.nces_id, 'manual_user_blocked')
+                    print("  → Marked as blocked and flagged to skip future attempts")
+                except Exception as e:
+                    print(f"  ⚠ Failed to mark as blocked: {e}")
                 continue
 
             if action == 's':
@@ -268,6 +284,15 @@ def run_single_district(district_id: str, year: str = "2025-26"):
         if not district:
             print(f"✗ District {district_id} not found")
             return
+
+        # Check if district should be skipped
+        if should_skip_district(session, district.nces_id):
+            print(f"\n⚠ WARNING: This district is flagged from previous failures")
+            print("  Reason: Security blocks, repeated 404s, or manual flag")
+            proceed = input("\n  Proceed anyway? [y/N]: ").strip().lower()
+            if proceed != 'y':
+                print("  → Skipped")
+                return
 
         print_district_info(district)
         print(f"\nSearch query: {generate_search_query(district, year)}")

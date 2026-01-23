@@ -33,6 +33,8 @@ import logging
 import sys
 import re
 import os
+import time
+import random
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
@@ -46,9 +48,26 @@ try:
 except ImportError:
     REQUESTS_AVAILABLE = False
 
+# API key from environment variable (REQ-028)
+SCRAPER_API_KEY = os.environ.get('SCRAPER_API_KEY')
+
 # Add utilities to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "utilities"))
 from common import DataProcessor, safe_divide, format_number, standardize_state
+
+# Add database modules to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "database"))
+try:
+    from connection import session_scope
+    from enrichment_tracking import (
+        should_skip_district,
+        log_scraper_response,
+        auto_flag_repeat_failures
+    )
+    DATABASE_AVAILABLE = True
+except ImportError:
+    DATABASE_AVAILABLE = False
+    logger.warning("Database tracking unavailable - continuing without skip checking")
 
 # Scraper service configuration
 SCRAPER_URL = os.environ.get('SCRAPER_URL', 'http://localhost:3000')
@@ -91,13 +110,16 @@ class HTTPErrorTracker:
         }
 
 
-def scrape_url(url: str, timeout: int = 30) -> Optional[Dict]:
+def scrape_url_once(url: str, timeout: int = 30, district_id: Optional[str] = None,
+                    enrichment_tier: Optional[str] = None) -> Optional[Dict]:
     """
-    Scrape a URL using the scraper service.
+    Scrape a URL using the scraper service (single attempt).
 
     Args:
         url: URL to scrape
         timeout: Timeout in seconds
+        district_id: Optional NCES district ID for logging
+        enrichment_tier: Optional tier (tier1, tier2, tier3) for logging
 
     Returns:
         Response dict from scraper service, or None if failed
@@ -106,13 +128,40 @@ def scrape_url(url: str, timeout: int = 30) -> Optional[Dict]:
         logger.error("requests library not available - cannot use scraper service")
         return None
 
+    # Build headers with API key if available (REQ-028)
+    headers = {}
+    if SCRAPER_API_KEY:
+        headers['X-API-Key'] = SCRAPER_API_KEY
+
     try:
         response = requests.post(
             f"{SCRAPER_URL}/scrape",
             json={"url": url, "timeout": timeout * 1000},
+            headers=headers,
             timeout=timeout + 10
         )
-        return response.json()
+
+        # Check for auth errors
+        if response.status_code == 401:
+            logger.error("Scraper service authentication failed - check SCRAPER_API_KEY")
+            return None
+
+        result = response.json()
+
+        # Log attempt to database if available
+        if DATABASE_AVAILABLE and district_id:
+            try:
+                with session_scope() as session:
+                    log_scraper_response(
+                        session,
+                        district_id=district_id,
+                        scraper_response=result,
+                        enrichment_tier=enrichment_tier
+                    )
+            except Exception as e:
+                logger.warning(f"Failed to log scraper attempt to database: {e}")
+
+        return result
     except requests.exceptions.ConnectionError:
         logger.error(f"Cannot connect to scraper service at {SCRAPER_URL}")
         logger.info("Start the scraper: cd scraper && npm run dev")
@@ -122,8 +171,66 @@ def scrape_url(url: str, timeout: int = 30) -> Optional[Dict]:
         return None
 
 
+def scrape_url(url: str, timeout: int = 30, district_id: Optional[str] = None,
+               enrichment_tier: Optional[str] = None, max_retries: int = 3) -> Optional[Dict]:
+    """
+    Scrape a URL using the scraper service with retry logic (REQ-030).
+
+    Uses exponential backoff with jitter for transient failures.
+    Does NOT retry security blocks or 404s (let the 404 tracker handle those).
+
+    Args:
+        url: URL to scrape
+        timeout: Timeout in seconds
+        district_id: Optional NCES district ID for logging
+        enrichment_tier: Optional tier (tier1, tier2, tier3) for logging
+        max_retries: Maximum number of retry attempts (default 3)
+
+    Returns:
+        Response dict from scraper service, or None if failed
+    """
+    base_delay = 1.0  # Base delay in seconds
+    max_delay = 8.0   # Maximum delay in seconds
+
+    for attempt in range(max_retries):
+        result = scrape_url_once(url, timeout, district_id, enrichment_tier)
+
+        # If we got a result, check if we should retry
+        if result is not None:
+            # Don't retry security blocks - respect the block
+            if result.get('blocked') or result.get('errorCode') == 'BLOCKED':
+                return result
+
+            # Don't retry 404s - let the 404 tracker handle them
+            if result.get('errorCode') == 'NOT_FOUND':
+                return result
+
+            # Success - return immediately
+            if result.get('success'):
+                return result
+
+            # Transient error codes that might benefit from retry
+            retryable_errors = ['TIMEOUT', 'NETWORK_ERROR', 'QUEUE_FULL']
+            if result.get('errorCode') not in retryable_errors:
+                return result
+
+        # Calculate delay with exponential backoff and jitter
+        if attempt < max_retries - 1:
+            delay = min(base_delay * (2 ** attempt) + random.uniform(0, 1), max_delay)
+            request_id = result.get('requestId', 'unknown') if result else 'unknown'
+            logger.info(f"Retry {attempt + 1}/{max_retries} for {url} in {delay:.1f}s (requestId: {request_id})")
+            time.sleep(delay)
+
+    # All retries exhausted
+    logger.warning(f"All {max_retries} retries exhausted for {url}")
+    return result  # Return last result (might be None or error)
+
+
 def check_scraper_health() -> bool:
-    """Check if the scraper service is running and healthy."""
+    """Check if the scraper service is running and healthy.
+
+    Note: The /health endpoint is public and does not require API key authentication.
+    """
     if not REQUESTS_AVAILABLE:
         return False
 
@@ -133,6 +240,14 @@ def check_scraper_health() -> bool:
         return data.get('status') == 'healthy'
     except Exception:
         return False
+
+
+def check_api_key_configured() -> bool:
+    """Check if SCRAPER_API_KEY environment variable is set (REQ-028)."""
+    if not SCRAPER_API_KEY:
+        logger.warning("SCRAPER_API_KEY not set - scraper service may reject requests")
+        return False
+    return True
 
 
 def extract_bell_schedule_times(html: str, markdown: str) -> Optional[Dict]:
@@ -412,13 +527,15 @@ class BellScheduleFetcher(DataProcessor):
 
         Returns None on failure to trigger manual follow-up.
         """
-        # Check scraper service health
+        # Check scraper service health and API key (REQ-028)
         if not check_scraper_health():
             logger.error("Scraper service not available")
             logger.info("Start the scraper: cd scraper && docker-compose up -d")
             raise RuntimeError("Scraper service not available at " + SCRAPER_URL)
+        check_api_key_configured()
 
         error_tracker = HTTPErrorTracker(threshold=4)
+        district_id = result['district_id']
         district_name = result['district_name']
         state = result['state']
 
@@ -458,7 +575,8 @@ class BellScheduleFetcher(DataProcessor):
                 url = base_url + path
                 logger.debug(f"Trying URL: {url}")
 
-                response = scrape_url(url, timeout=30)
+                response = scrape_url(url, timeout=30, district_id=district_id,
+                                    enrichment_tier=f'tier{self.tier}')
 
                 if response is None:
                     continue
@@ -600,13 +718,15 @@ class BellScheduleFetcher(DataProcessor):
         CRITICAL: Per ENRICHMENT_SAFEGUARDS.md Rule 2:
         Must NOT fall back to statutory requirements.
         """
-        # Check scraper service health
+        # Check scraper service health and API key (REQ-028)
         if not check_scraper_health():
             logger.error("Scraper service not available")
             logger.info("Start the scraper: cd scraper && docker-compose up -d")
             raise RuntimeError("Scraper service not available at " + SCRAPER_URL)
+        check_api_key_configured()
 
         error_tracker = HTTPErrorTracker(threshold=4)
+        district_id = result['district_id']
         district_name = result['district_name']
         state = result['state']
 
@@ -629,7 +749,8 @@ class BellScheduleFetcher(DataProcessor):
                 break
 
             logger.debug(f"Tier 2 trying: {url}")
-            response = scrape_url(url, timeout=20)
+            response = scrape_url(url, timeout=20, district_id=result['district_id'],
+                                enrichment_tier=f'tier{self.tier}')
 
             if response is None:
                 continue
@@ -826,13 +947,27 @@ class BellScheduleFetcher(DataProcessor):
 
         # Process each district - Per ENRICHMENT_SAFEGUARDS.md Rule 5
         results = []
-        stats = {'enriched': 0, 'statutory': 0, 'flagged_for_manual': 0, 'errors': 0}
+        stats = {'enriched': 0, 'statutory': 0, 'flagged_for_manual': 0, 'errors': 0, 'skipped': 0}
 
         for idx, row in df.iterrows():
+            district_id = str(row['district_id'])
+            district_name = row['district_name']
+
+            # Check if district should be skipped due to previous failures
+            if DATABASE_AVAILABLE:
+                try:
+                    with session_scope() as session:
+                        if should_skip_district(session, district_id):
+                            logger.info(f"Skipping {district_name} - flagged from previous failures")
+                            stats['skipped'] += 1
+                            continue
+                except Exception as e:
+                    logger.warning(f"Failed to check skip flag for {district_name}: {e}")
+
             try:
                 result = self.fetch_district_bell_schedules(
-                    district_id=str(row['district_id']),
-                    district_name=row['district_name'],
+                    district_id=district_id,
+                    district_name=district_name,
                     state=row['state'],
                     enrollment=row['enrollment']
                 )
@@ -888,12 +1023,23 @@ class BellScheduleFetcher(DataProcessor):
                 stats['errors'] += 1
                 continue
 
+        # Auto-flag repeat failures
+        if DATABASE_AVAILABLE:
+            try:
+                with session_scope() as session:
+                    flagged_count = auto_flag_repeat_failures(session)
+                    if flagged_count > 0:
+                        logger.info(f"Auto-flagged {flagged_count} districts with repeated failures")
+            except Exception as e:
+                logger.warning(f"Failed to auto-flag repeat failures: {e}")
+
         # Report statistics
         logger.info("\n" + "="*60)
         logger.info("ENRICHMENT STATISTICS")
         logger.info("="*60)
         logger.info(f"Enriched (actual bell schedules): {stats['enriched']}")
         logger.info(f"Statutory fallback: {stats['statutory']}")
+        logger.info(f"Skipped (previous failures): {stats['skipped']}")
         logger.info(f"Flagged for manual follow-up: {stats['flagged_for_manual']}")
         logger.info(f"Errors: {stats['errors']}")
         logger.info("="*60)

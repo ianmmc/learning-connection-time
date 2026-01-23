@@ -20,7 +20,7 @@ COPY src/ ./src/
 RUN npm run build
 
 # Production stage
-FROM mcr.microsoft.com/playwright:v1.49.0-jammy
+FROM mcr.microsoft.com/playwright:v1.57.0-jammy
 
 WORKDIR /app
 

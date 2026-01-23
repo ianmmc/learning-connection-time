@@ -39,14 +39,63 @@ grep -E "[0-9]{1,2}:[0-9]{2}" /tmp/page.html
 
 ---
 
-## Standard Workflow
+## Multi-Phase Discovery Workflow ⭐ NEW (Jan 2026)
 
-1. **Search**: WebSearch for bell schedule
+**Context:** 80%+ of districts do NOT publish district-wide schedules. Use multi-phase approach.
+
+### Phase 1: District-Level Search (~20% success rate)
+
+1. **Search**: WebSearch for district-wide bell schedule
 2. **Evaluate**: Check for security blocks (ONE attempt rule)
-3. **Download**: curl to /tmp/
-4. **Process Locally**: tesseract/pdftotext/pup
-5. **Validate**: Check times, calculate minutes
-6. **Save**: JSON to data/enriched/bell-schedules/
+3. **If found**: Download, process locally, save
+4. **If not found**: → Move to Phase 2
+
+### Phase 2: School-Level Discovery (~60-70% additional success)
+
+1. **Discover Schools**:
+   ```python
+   from infrastructure.utilities.school_discovery import discover_schools
+   schools = discover_schools('https://district.org', 'WI')
+   ```
+
+   OR use scraper service:
+   ```bash
+   curl -X POST http://localhost:3000/discover \
+     -H "Content-Type: application/json" \
+     -d '{"districtUrl":"https://district.org","state":"WI","representativeOnly":true}'
+   ```
+
+2. **Sample Representative Schools** (1 per level):
+   - Elementary: Largest enrollment
+   - Middle: Largest enrollment
+   - High: Largest enrollment
+
+3. **Search Each School**:
+   ```
+   WebSearch("[School Name] bell schedule 2025-26")
+   ```
+
+4. **Process as Phase 1** (download, process, save)
+
+### Phase 3: Manual Follow-up
+
+**Triggers:**
+- 4+ consecutive 404 errors
+- Cloudflare/WAF blocks
+- All schools inaccessible
+
+**Action:** Add to `manual_followup_needed.json` and move to next district
+
+---
+
+## Standard Document Processing
+
+### After Finding Schedule (Both Phases)
+
+1. **Download**: curl to /tmp/
+2. **Process Locally**: tesseract/pdftotext/pup
+3. **Validate**: Check times, calculate minutes
+4. **Save**: JSON to data/enriched/bell-schedules/
 
 ---
 

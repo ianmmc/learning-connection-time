@@ -8,10 +8,12 @@
  */
 
 import express, { Request, Response, NextFunction } from 'express';
+import { randomUUID } from 'crypto';
 import { Scraper } from './scraper.js';
 import { getRequestQueue } from './queue.js';
 import { ScrapeRequest, ServiceStatus, DEFAULT_CONFIG } from './types.js';
 import { logger } from './logger.js';
+import { discoverSchoolSites, getRepresentativeSample } from './discovery.js';
 
 const app = express();
 app.use(express.json());
@@ -21,26 +23,87 @@ const scraper = new Scraper();
 const queue = getRequestQueue();
 const startTime = Date.now();
 
-// Request logging middleware
+// API Key from environment variable (REQ-028)
+const API_KEY = process.env.SCRAPER_API_KEY;
+
+// Extend Request type to include requestId (REQ-031)
+declare global {
+  namespace Express {
+    interface Request {
+      requestId?: string;
+    }
+  }
+}
+
+// Request ID middleware - add UUID to every request (REQ-031)
+app.use((req: Request, res: Response, next: NextFunction) => {
+  req.requestId = randomUUID();
+  res.setHeader('X-Request-ID', req.requestId);
+  next();
+});
+
+// Request logging middleware - includes requestId for correlation
 app.use((req: Request, _res: Response, next: NextFunction) => {
   logger.debug(`${req.method} ${req.path}`, {
+    requestId: req.requestId,
     body: req.method === 'POST' ? req.body : undefined,
   });
   next();
 });
 
 /**
+ * API Key authentication middleware (REQ-028)
+ * Protects /scrape and /discover endpoints
+ * Allows /health, /status, and / to remain public
+ */
+const requireApiKey = (req: Request, res: Response, next: NextFunction) => {
+  // Skip auth if no API key is configured (development mode)
+  if (!API_KEY) {
+    logger.warn('SCRAPER_API_KEY not set - running without authentication', { requestId: req.requestId });
+    return next();
+  }
+
+  const providedKey = req.headers['x-api-key'];
+
+  if (!providedKey) {
+    logger.warn('Unauthorized request - missing API key', { requestId: req.requestId, path: req.path });
+    res.status(401).json({
+      success: false,
+      error: 'Missing X-API-Key header',
+      requestId: req.requestId,
+    });
+    return;
+  }
+
+  if (providedKey !== API_KEY) {
+    logger.warn('Unauthorized request - invalid API key', { requestId: req.requestId, path: req.path });
+    res.status(401).json({
+      success: false,
+      error: 'Invalid API key',
+      requestId: req.requestId,
+    });
+    return;
+  }
+
+  next();
+};
+
+/**
  * POST /scrape
  * Scrape a URL and return the content
+ * Protected by API key authentication (REQ-028)
  */
-app.post('/scrape', async (req: Request, res: Response) => {
+app.post('/scrape', requireApiKey, async (req: Request, res: Response) => {
   const { url, timeout, waitFor } = req.body as ScrapeRequest & { waitFor?: number };
+
+  logger.info('Scrape request received', { requestId: req.requestId, url });
 
   // Validate request
   if (!url || typeof url !== 'string') {
     res.status(400).json({
       success: false,
       error: 'Missing or invalid "url" parameter',
+      requestId: req.requestId,
     });
     return;
   }
@@ -51,6 +114,7 @@ app.post('/scrape', async (req: Request, res: Response) => {
     res.status(400).json({
       success: false,
       error: 'Invalid URL format',
+      requestId: req.requestId,
     });
     return;
   }
@@ -73,7 +137,93 @@ app.post('/scrape', async (req: Request, res: Response) => {
     }
   }
 
-  res.json(response);
+  // Include requestId in response (REQ-031)
+  res.json({ ...response, requestId: req.requestId });
+});
+
+/**
+ * POST /discover
+ * Discover individual school sites within a district
+ * Protected by API key authentication (REQ-028)
+ */
+app.post('/discover', requireApiKey, async (req: Request, res: Response) => {
+  const { districtUrl, state, representativeOnly } = req.body as {
+    districtUrl: string;
+    state?: string;
+    representativeOnly?: boolean;
+  };
+
+  logger.info('Discover request received', { requestId: req.requestId, districtUrl });
+
+  // Validate request
+  if (!districtUrl || typeof districtUrl !== 'string') {
+    res.status(400).json({
+      success: false,
+      error: 'Missing or invalid "districtUrl" parameter',
+      requestId: req.requestId,
+    });
+    return;
+  }
+
+  try {
+    new URL(districtUrl); // Validate URL format
+  } catch {
+    res.status(400).json({
+      success: false,
+      error: 'Invalid URL format',
+      requestId: req.requestId,
+    });
+    return;
+  }
+
+  try {
+    logger.info(`Discovering school sites for: ${districtUrl}`, { requestId: req.requestId });
+
+    // Get a browser from the pool
+    const browser = await scraper.pool.acquire();
+
+    try {
+      // Discover schools
+      const result = await discoverSchoolSites(browser, districtUrl, state, 30000);
+
+      if (!result.success) {
+        res.status(404).json({
+          success: false,
+          error: result.error || 'No school sites found',
+          schools: [],
+          requestId: req.requestId,
+        });
+        return;
+      }
+
+      // Optionally filter to representative sample
+      const schools = representativeOnly
+        ? getRepresentativeSample(result.schools)
+        : result.schools;
+
+      logger.info(`Discovered ${schools.length} school sites for ${districtUrl}`, { requestId: req.requestId });
+
+      res.json({
+        success: true,
+        districtUrl,
+        schools,
+        method: result.method,
+        totalFound: result.schools.length,
+        returned: schools.length,
+        requestId: req.requestId,
+      });
+    } finally {
+      await scraper.pool.release(browser);
+    }
+  } catch (error) {
+    logger.error(`School discovery failed: ${(error as Error).message}`, { requestId: req.requestId });
+    res.status(500).json({
+      success: false,
+      error: 'School discovery failed',
+      details: (error as Error).message,
+      requestId: req.requestId,
+    });
+  }
 });
 
 /**
@@ -121,9 +271,10 @@ app.get('/status', (_req: Request, res: Response) => {
 app.get('/', (_req: Request, res: Response) => {
   res.json({
     name: 'LCT Bell Schedule Scraper',
-    version: '1.0.0',
+    version: '1.1.0',
     endpoints: {
       'POST /scrape': 'Scrape a URL (body: { url: string, timeout?: number, waitFor?: number })',
+      'POST /discover': 'Discover school sites (body: { districtUrl: string, state?: string, representativeOnly?: boolean })',
       'GET /health': 'Health check',
       'GET /status': 'Detailed service status',
     },
@@ -131,12 +282,13 @@ app.get('/', (_req: Request, res: Response) => {
   });
 });
 
-// Error handling middleware
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  logger.error('Unhandled error:', err);
+// Error handling middleware - includes requestId for correlation (REQ-031)
+app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
+  logger.error('Unhandled error:', { error: err.message, stack: err.stack, requestId: req.requestId });
   res.status(500).json({
     success: false,
     error: 'Internal server error',
+    requestId: req.requestId,
   });
 });
 

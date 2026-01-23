@@ -279,36 +279,135 @@ For each level (elementary, middle, high):
 | `method` | How data was obtained | "district_policy", "school_sample", "state_statutory" |
 | `notes` | Any additional context | "K-5 only; K uses different schedule" |
 
+## Multi-Phase Discovery Strategy ⭐ NEW (January 2026)
+
+### Context: Decentralized Bell Schedules
+
+Research (see [DISTRICT_WEBSITE_LANDSCAPE_2026.md](../school-site-spark/docs/DISTRICT_WEBSITE_LANDSCAPE_2026.md)) reveals:
+
+**80%+ of districts do NOT publish district-wide bell schedules.** Instead, schedules are decentralized at individual school sites.
+
+This requires a **multi-phase approach** to maximize success rates:
+
+### Phase 1: District-Level Search
+
+**Objective:** Find district-wide bell schedule policy
+
+**Success Rate:** ~20% of districts
+
+**Method:**
+1. Search for district-wide bell schedule page
+2. Check district policy documents
+3. Verify applicability to all schools
+
+**When successful:**
+- Document as `method: "district_policy"`
+- Assign `confidence: "high"`
+- No need for Phase 2
+
+### Phase 2: School-Level Discovery ⭐ NEW
+
+**Objective:** Find individual school schedules when district-wide search fails
+
+**Success Rate:** ~60-70% additional success (of Phase 1 failures)
+
+**Method:**
+
+1. **Identify representative schools** (1-3 per grade level)
+   - Query NCES database for schools in district
+   - Select largest enrollment school per level
+   - Prioritize schools with typical schedules (exclude magnet/charter if different)
+
+2. **Discover school website URLs**
+   - Test common subdomain patterns: `{school}.{district.org}`
+   - Parse district "Schools" directory page
+   - Search: "[School Name] [District Name]"
+
+3. **Search each school for bell schedules**
+   - Try school-specific searches
+   - Check school homepage, parent pages
+   - Look for student handbooks (PDF)
+
+4. **Sample and verify consistency**
+   - Collect schedules from 1-3 schools per level
+   - Verify schedules are similar (within 15 minutes)
+   - Document variation if significant
+
+**When successful:**
+- Document as `method: "school_sample"`
+- Assign `confidence: "medium"` (1-2 schools) or `"high"` (3+ schools with consistency)
+- Record all schools sampled and source URLs
+
+**See [BELL_SCHEDULE_OPERATIONS_GUIDE.md](BELL_SCHEDULE_OPERATIONS_GUIDE.md) SOP 1A for detailed procedures.**
+
+### Phase 3: Manual Follow-up
+
+**Objective:** Flag districts requiring human intervention
+
+**Triggers:**
+- Cloudflare/WAF security blocks
+- 4+ consecutive 404 errors
+- Timeouts on multiple pages
+- All school sites inaccessible
+
+**Action:**
+- Add to `manual_followup_needed.json`
+- Do NOT create statutory fallback automatically
+- Move to next district
+
 ## Search Strategies
 
 ### Where to Look
 
-#### District Websites
+#### District Websites (Phase 1)
 - `/parents` or `/families` sections
 - `/academics` sections
 - `/calendar` or `/schedules` pages
 - Policy manuals (often PDF)
+- `/bell-schedule` or `/daily-schedule` direct paths
 
-#### School Websites
+#### School Websites (Phase 2) ⭐ NEW
 - Homepage (often has bell schedule link)
+- `/about-us` or `/our-school` sections
 - `/parents` sections
 - Student handbooks (PDF)
+- `/bell-schedule` or `/school-day` direct paths
 
-#### Other Sources
+**Common school subdomain patterns:**
+- `{schoolname}.{district.org}` - Most common
+- `{abbreviation}.{district.org}` - e.g., `lhs.district.org`
+- `{level}.{district.org}` - e.g., `hs.district.org`, `elementary.district.org`
+- `{district.org}/schools/{schoolname}` - Path-based
+
+#### Other Sources (All Phases)
 - State department of education data portals
 - Local news articles about schedule changes
 - School board meeting minutes/agendas
+- District social media announcements
 
 ### Search Queries
 
 Effective search patterns:
+
+**District-level (Phase 1):**
 ```
 "[District Name] bell schedule [year]"
 "[District Name] daily schedule [year]"
 "[District Name] instructional time policy"
-"[School Name] bell schedule [year]"
+"[District Name] school day start end times"
 site:[district-domain] "bell schedule"
 site:[district-domain] filetype:pdf schedule
+```
+
+**School-level (Phase 2):** ⭐ NEW
+```
+"[School Name] bell schedule [year]"
+"[School Name] [District Name] daily schedule"
+"[School Name] dismissal arrival times"
+site:[school-domain] "bell schedule"
+site:[school-domain] "school day"
+"[District Name] elementary school bell schedule"
+"[District Name] high school start time"
 ```
 
 ## Handling Security-Hardened Districts

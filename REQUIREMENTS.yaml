@@ -652,3 +652,85 @@ requirements:
     created: "2026-01-16T06:30:00Z"
     updated: "2026-01-16T06:30:00Z"
     notes: "Migration 007 implements master crosswalk table. Refactored FL, CA, TX scripts to use it."
+
+  - id: REQ-028
+    description: Scraper service requires API key authentication for /scrape endpoint
+    type: non-functional
+    priority: must
+    status: pending
+    acceptance_criteria:
+      - /scrape endpoint requires X-API-Key header
+      - Returns 401 Unauthorized if key missing or invalid
+      - /health and /status endpoints remain public
+      - API key read from SCRAPER_API_KEY environment variable
+      - Python client sends X-API-Key header with requests
+    tests:
+      - tests/test_scraper_security.py::TestAPIKeyAuth::test_scrape_requires_api_key
+      - tests/test_scraper_security.py::TestAPIKeyAuth::test_returns_401_without_key
+      - tests/test_scraper_security.py::TestAPIKeyAuth::test_returns_401_with_invalid_key
+      - tests/test_scraper_security.py::TestAPIKeyAuth::test_health_endpoint_public
+      - tests/test_scraper_security.py::TestAPIKeyAuth::test_status_endpoint_public
+    created: "2026-01-22T07:30:00Z"
+    updated: "2026-01-22T07:30:00Z"
+    notes: "Gemini code review recommendation - prevent unauthorized scraper abuse"
+
+  - id: REQ-029
+    description: HTML to Markdown conversion uses proper sanitization library
+    type: non-functional
+    priority: must
+    status: pending
+    acceptance_criteria:
+      - Uses DOMPurify for HTML sanitization (not regex)
+      - Uses Turndown for HTML to Markdown conversion
+      - Removes script, style, and event handler attributes
+      - Prevents XSS attacks from scraped content
+      - Preserves semantic HTML elements (headings, links, lists)
+    tests:
+      - tests/test_scraper_security.py::TestHTMLSanitization::test_removes_script_tags
+      - tests/test_scraper_security.py::TestHTMLSanitization::test_removes_event_handlers
+      - tests/test_scraper_security.py::TestHTMLSanitization::test_preserves_headings
+      - tests/test_scraper_security.py::TestHTMLSanitization::test_preserves_links
+      - tests/test_scraper_security.py::TestHTMLSanitization::test_prevents_xss_attack
+    created: "2026-01-22T07:30:00Z"
+    updated: "2026-01-22T07:30:00Z"
+    notes: "Gemini code review recommendation - regex sanitization vulnerable to XSS"
+
+  - id: REQ-030
+    description: Scrape requests use retry logic with exponential backoff
+    type: non-functional
+    priority: should
+    status: pending
+    acceptance_criteria:
+      - Retries transient failures (network errors, timeouts) up to 3 times
+      - Uses exponential backoff with jitter (base 1s, max 8s)
+      - Does not retry security blocks (BLOCKED error code)
+      - Does not retry 404 errors (let 404 tracker handle)
+      - Logs retry attempts for debugging
+    tests:
+      - tests/test_scraper_resilience.py::TestRetryLogic::test_retries_network_errors
+      - tests/test_scraper_resilience.py::TestRetryLogic::test_retries_timeouts
+      - tests/test_scraper_resilience.py::TestRetryLogic::test_does_not_retry_blocks
+      - tests/test_scraper_resilience.py::TestRetryLogic::test_does_not_retry_404s
+      - tests/test_scraper_resilience.py::TestRetryLogic::test_exponential_backoff_timing
+      - tests/test_scraper_resilience.py::TestRetryLogic::test_max_3_retries
+    created: "2026-01-22T07:30:00Z"
+    updated: "2026-01-22T07:30:00Z"
+    notes: "Gemini code review recommendation - improve resilience to transient failures"
+
+  - id: REQ-031
+    description: Request ID correlation for scraper requests
+    type: non-functional
+    priority: should
+    status: pending
+    acceptance_criteria:
+      - Each scrape request assigned unique request ID (UUID)
+      - Request ID included in all log messages for request
+      - Request ID returned in response for client correlation
+      - Python client logs request ID when available
+    tests:
+      - tests/test_scraper_resilience.py::TestRequestCorrelation::test_response_includes_request_id
+      - tests/test_scraper_resilience.py::TestRequestCorrelation::test_request_id_is_uuid_format
+      - tests/test_scraper_resilience.py::TestRequestCorrelation::test_logs_include_request_id
+    created: "2026-01-22T07:30:00Z"
+    updated: "2026-01-22T07:30:00Z"
+    notes: "Gemini code review recommendation - improve debugging and tracing"

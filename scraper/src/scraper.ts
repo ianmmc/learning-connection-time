@@ -4,14 +4,29 @@
  * Core scraping functionality with:
  * - JavaScript rendering via Playwright
  * - Security block detection (Cloudflare, WAF, CAPTCHA)
- * - HTML to markdown conversion
+ * - HTML to markdown conversion (REQ-029: DOMPurify + Turndown)
  * - Ethical constraints (no bot evasion)
  */
 
 import { Page, Response } from 'playwright';
+import { JSDOM } from 'jsdom';
+import createDOMPurify from 'dompurify';
+import TurndownService from 'turndown';
 import { BrowserPool, getBrowserPool } from './pool.js';
 import { ScrapeRequest, ScrapeResponse, SecurityBlockIndicators, DEFAULT_CONFIG } from './types.js';
 import { logger } from './logger.js';
+
+// Initialize DOMPurify with jsdom window (REQ-029)
+// Type casting needed because JSDOM's Window doesn't exactly match DOMPurify's expected WindowLike
+const jsdomWindow = new JSDOM('').window;
+const DOMPurify = createDOMPurify(jsdomWindow as unknown as Parameters<typeof createDOMPurify>[0]);
+
+// Initialize Turndown for HTML to Markdown conversion (REQ-029)
+const turndownService = new TurndownService({
+  headingStyle: 'atx',
+  codeBlockStyle: 'fenced',
+  emDelimiter: '*',
+});
 
 /**
  * Detect if response indicates security blocking
@@ -74,39 +89,40 @@ function detectSecurityBlock(
 }
 
 /**
- * Convert HTML to basic markdown
+ * Convert HTML to sanitized markdown (REQ-029)
+ *
+ * Uses DOMPurify for XSS-safe sanitization and Turndown for conversion.
+ * This replaces the previous regex-based approach which was vulnerable to XSS.
  */
 function htmlToMarkdown(html: string): string {
-  return html
-    // Remove scripts and styles
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-    // Convert headings
-    .replace(/<h1[^>]*>([\s\S]*?)<\/h1>/gi, '\n# $1\n')
-    .replace(/<h2[^>]*>([\s\S]*?)<\/h2>/gi, '\n## $1\n')
-    .replace(/<h3[^>]*>([\s\S]*?)<\/h3>/gi, '\n### $1\n')
-    .replace(/<h4[^>]*>([\s\S]*?)<\/h4>/gi, '\n#### $1\n')
-    // Convert paragraphs and breaks
-    .replace(/<p[^>]*>([\s\S]*?)<\/p>/gi, '\n$1\n')
-    .replace(/<br[^>]*>/gi, '\n')
-    // Convert lists
-    .replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, '- $1\n')
-    // Convert links and emphasis
-    .replace(/<a[^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)')
-    .replace(/<(strong|b)[^>]*>([\s\S]*?)<\/\1>/gi, '**$2**')
-    .replace(/<(em|i)[^>]*>([\s\S]*?)<\/\1>/gi, '*$2*')
-    // Remove remaining tags
-    .replace(/<[^>]+>/g, '')
-    // Decode entities
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    // Clean up whitespace
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
+  try {
+    // Sanitize HTML with DOMPurify - removes scripts, event handlers, dangerous elements
+    const sanitized = DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: [
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        'p', 'br', 'hr',
+        'ul', 'ol', 'li',
+        'a', 'strong', 'b', 'em', 'i', 'u',
+        'blockquote', 'pre', 'code',
+        'table', 'thead', 'tbody', 'tr', 'th', 'td',
+        'div', 'span',
+      ],
+      ALLOWED_ATTR: ['href', 'title'],  // Only allow safe attributes
+      FORBID_TAGS: ['script', 'style', 'iframe', 'form', 'input', 'object', 'embed'],
+      FORBID_ATTR: ['onclick', 'onerror', 'onload', 'onmouseover', 'onfocus', 'onblur'],
+    });
+
+    // Convert sanitized HTML to Markdown using Turndown
+    const markdown = turndownService.turndown(sanitized);
+
+    // Clean up excessive whitespace
+    return markdown
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  } catch (error) {
+    logger.warn('HTML to Markdown conversion failed, returning empty string', { error });
+    return '';
+  }
 }
 
 /**
@@ -231,7 +247,7 @@ export async function scrapePage(
  * Scraper service class for managing state
  */
 export class Scraper {
-  private pool: BrowserPool;
+  public pool: BrowserPool; // Made public for school discovery
   private initialized = false;
 
   constructor() {

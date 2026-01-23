@@ -106,6 +106,51 @@ Detailed service status.
 }
 ```
 
+### POST /discover ⭐ NEW
+
+Discover individual school websites within a district.
+
+**Background:** Research shows 80%+ of districts do NOT publish district-wide bell schedules. This endpoint uses multiple strategies to find school-level sites.
+
+**Request:**
+```json
+{
+  "districtUrl": "https://district.org",
+  "state": "WI",
+  "representativeOnly": true
+}
+```
+
+**Response (success):**
+```json
+{
+  "success": true,
+  "districtUrl": "https://district.org",
+  "schools": [
+    {
+      "url": "https://hs.district.org",
+      "name": "high school",
+      "level": "high",
+      "pattern": "subdomain_test"
+    },
+    {
+      "url": "https://ms.district.org",
+      "name": "middle school",
+      "level": "middle",
+      "pattern": "subdomain_test"
+    }
+  ],
+  "method": "multi_strategy",
+  "totalFound": 5,
+  "returned": 2
+}
+```
+
+**Discovery Methods:**
+1. **Subdomain Testing** - Tests common patterns (hs.district.org, elementary.district.org)
+2. **Link Extraction** - Parses district "Schools" directory page
+3. **State-Specific Patterns** - Uses state-specific URL conventions (e.g., .k12.wi.us)
+
 ## Usage from Python
 
 ```python
