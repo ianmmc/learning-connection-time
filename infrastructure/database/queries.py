@@ -750,3 +750,186 @@ def print_enrichment_report(session: Session, year: str = "2024-25"):
     for method, count in sorted(summary["by_method"].items()):
         print(f"  {method}: {count}")
     print("=" * 60)
+
+
+# =============================================================================
+# CAMPAIGN TARGETING QUERIES
+# =============================================================================
+
+
+def get_target_districts(
+    session: Session,
+    state: str,
+    size_range: Tuple[int, int],
+    limit: int = 15,
+    exclude_large: bool = True,
+    year: str = "2024-25",
+) -> List[District]:
+    """
+    Get unenriched districts in a specific size range for campaign targeting.
+
+    This function supports size-stratified enrichment campaigns by filtering
+    districts to specific enrollment ranges, ensuring representation across
+    district sizes (not just the largest districts).
+
+    Args:
+        session: Database session
+        state: Two-letter state code (e.g., 'MI', 'CA')
+        size_range: Tuple of (min_enrollment, max_enrollment)
+        limit: Maximum number of districts to return (default 15)
+        exclude_large: If True, cap enrollment at 50,000 regardless of size_range
+        year: School year for bell schedule check (default "2024-25")
+
+    Returns:
+        List of District objects ordered by enrollment (descending)
+
+    Example:
+        >>> # Get medium-sized districts (1K-50K) in Michigan
+        >>> districts = get_target_districts(session, 'MI', (1000, 50000), limit=4)
+        >>> for d in districts:
+        ...     print(f"{d.name}: {d.enrollment:,} students")
+    """
+    from sqlalchemy import text, exists
+
+    min_enroll, max_enroll = size_range
+
+    # Cap at 50K if exclude_large is True
+    if exclude_large and max_enroll > 50000:
+        max_enroll = 50000
+
+    # Subquery for districts with existing bell schedules
+    enriched_ids = (
+        select(BellSchedule.district_id)
+        .filter(BellSchedule.year == year)
+        .distinct()
+        .scalar_subquery()
+    )
+
+    # Build query with all filters
+    query = (
+        session.query(District)
+        .filter(District.state == state.upper())
+        .filter(District.enrollment.isnot(None))
+        .filter(District.enrollment >= min_enroll)
+        .filter(District.enrollment <= max_enroll)
+        .filter(District.nces_id.not_in(enriched_ids))
+    )
+
+    # Exclude districts flagged to skip from previous failures
+    # Using raw SQL to call the database function
+    skip_subquery = text(
+        "NOT EXISTS (SELECT 1 FROM enrichment_attempts ea "
+        "WHERE ea.district_id = districts.nces_id AND ea.skip_future_attempts = TRUE)"
+    )
+    query = query.filter(skip_subquery)
+
+    # Order by enrollment descending and limit
+    return query.order_by(desc(District.enrollment)).limit(limit).all()
+
+
+def get_campaign_targets_by_state(
+    session: Session,
+    size_range: Tuple[int, int],
+    districts_per_state: int = 4,
+    exclude_single_district_states: bool = True,
+    year: str = "2024-25",
+) -> Dict[str, List[District]]:
+    """
+    Get campaign targets for all states, returning a dict keyed by state.
+
+    Args:
+        session: Database session
+        size_range: Tuple of (min_enrollment, max_enrollment)
+        districts_per_state: Target districts per state (default 4)
+        exclude_single_district_states: Skip HI and PR (single-district states)
+        year: School year for bell schedule check
+
+    Returns:
+        Dict mapping state codes to lists of District objects
+
+    Example:
+        >>> targets = get_campaign_targets_by_state(session, (1000, 50000))
+        >>> for state, districts in targets.items():
+        ...     print(f"{state}: {len(districts)} targets")
+    """
+    # Single-district states at 100% coverage - cannot add more
+    SINGLE_DISTRICT_STATES = {'HI', 'PR'}
+
+    # Get all states with districts
+    all_states = (
+        session.query(District.state)
+        .distinct()
+        .order_by(District.state)
+        .all()
+    )
+
+    results = {}
+
+    for (state,) in all_states:
+        if exclude_single_district_states and state in SINGLE_DISTRICT_STATES:
+            continue
+
+        districts = get_target_districts(
+            session=session,
+            state=state,
+            size_range=size_range,
+            limit=districts_per_state,
+            exclude_large=True,
+            year=year,
+        )
+
+        if districts:
+            results[state] = districts
+
+    return results
+
+
+def get_size_distribution_summary(session: Session, year: str = "2024-25") -> Dict:
+    """
+    Get summary of enrichment coverage by district size category.
+
+    Returns breakdown of large (>50K), medium (1K-50K), and small (<1K) districts.
+
+    Args:
+        session: Database session
+        year: School year for bell schedule check
+
+    Returns:
+        Dict with size categories and their enrichment statistics
+    """
+    from sqlalchemy import case, func as sqlfunc
+
+    # Define size categories
+    size_case = case(
+        (District.enrollment > 50000, 'Large (>50K)'),
+        (District.enrollment >= 1000, 'Medium (1K-50K)'),
+        else_='Small (<1K)'
+    )
+
+    results = (
+        session.query(
+            size_case.label('size_category'),
+            sqlfunc.count(sqlfunc.distinct(District.nces_id)).label('total'),
+            sqlfunc.count(sqlfunc.distinct(BellSchedule.district_id)).label('enriched'),
+        )
+        .outerjoin(
+            BellSchedule,
+            and_(
+                District.nces_id == BellSchedule.district_id,
+                BellSchedule.year == year,
+            ),
+        )
+        .filter(District.enrollment.isnot(None))
+        .group_by(size_case)
+        .order_by(size_case)
+        .all()
+    )
+
+    return {
+        r.size_category: {
+            'total': r.total,
+            'enriched': r.enriched or 0,
+            'coverage_pct': round(100.0 * (r.enriched or 0) / r.total, 2) if r.total > 0 else 0,
+        }
+        for r in results
+    }

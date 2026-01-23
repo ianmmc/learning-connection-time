@@ -657,7 +657,7 @@ requirements:
     description: Scraper service requires API key authentication for /scrape endpoint
     type: non-functional
     priority: must
-    status: pending
+    status: tested
     acceptance_criteria:
       - /scrape endpoint requires X-API-Key header
       - Returns 401 Unauthorized if key missing or invalid
@@ -670,15 +670,16 @@ requirements:
       - tests/test_scraper_security.py::TestAPIKeyAuth::test_returns_401_with_invalid_key
       - tests/test_scraper_security.py::TestAPIKeyAuth::test_health_endpoint_public
       - tests/test_scraper_security.py::TestAPIKeyAuth::test_status_endpoint_public
+      - tests/test_scraper_security.py::TestAPIKeyAuth::test_python_client_sends_api_key_header
     created: "2026-01-22T07:30:00Z"
-    updated: "2026-01-22T07:30:00Z"
-    notes: "Gemini code review recommendation - prevent unauthorized scraper abuse"
+    updated: "2026-01-23T16:45:00Z"
+    notes: "Gemini code review - implemented in server.ts with requireApiKey middleware"
 
   - id: REQ-029
     description: HTML to Markdown conversion uses proper sanitization library
     type: non-functional
     priority: must
-    status: pending
+    status: tested
     acceptance_criteria:
       - Uses DOMPurify for HTML sanitization (not regex)
       - Uses Turndown for HTML to Markdown conversion
@@ -692,8 +693,8 @@ requirements:
       - tests/test_scraper_security.py::TestHTMLSanitization::test_preserves_links
       - tests/test_scraper_security.py::TestHTMLSanitization::test_prevents_xss_attack
     created: "2026-01-22T07:30:00Z"
-    updated: "2026-01-22T07:30:00Z"
-    notes: "Gemini code review recommendation - regex sanitization vulnerable to XSS"
+    updated: "2026-01-23T16:45:00Z"
+    notes: "Gemini code review - implemented in scraper.ts using DOMPurify + Turndown"
 
   - id: REQ-030
     description: Scrape requests use retry logic with exponential backoff
@@ -713,15 +714,16 @@ requirements:
       - tests/test_scraper_resilience.py::TestRetryLogic::test_does_not_retry_404s
       - tests/test_scraper_resilience.py::TestRetryLogic::test_exponential_backoff_timing
       - tests/test_scraper_resilience.py::TestRetryLogic::test_max_3_retries
+      - tests/test_scraper_resilience.py::TestRetryLogic::test_retry_behavior_on_real_service
     created: "2026-01-22T07:30:00Z"
-    updated: "2026-01-22T07:30:00Z"
-    notes: "Gemini code review recommendation - improve resilience to transient failures"
+    updated: "2026-01-23T16:45:00Z"
+    notes: "Gemini code review - tests added as specification, implementation pending in queue.ts"
 
   - id: REQ-031
     description: Request ID correlation for scraper requests
     type: non-functional
     priority: should
-    status: pending
+    status: tested
     acceptance_criteria:
       - Each scrape request assigned unique request ID (UUID)
       - Request ID included in all log messages for request
@@ -730,7 +732,9 @@ requirements:
     tests:
       - tests/test_scraper_resilience.py::TestRequestCorrelation::test_response_includes_request_id
       - tests/test_scraper_resilience.py::TestRequestCorrelation::test_request_id_is_uuid_format
+      - tests/test_scraper_resilience.py::TestRequestCorrelation::test_unique_request_ids
       - tests/test_scraper_resilience.py::TestRequestCorrelation::test_logs_include_request_id
+      - tests/test_scraper_resilience.py::TestRequestCorrelation::test_python_client_logs_request_id
     created: "2026-01-22T07:30:00Z"
-    updated: "2026-01-22T07:30:00Z"
-    notes: "Gemini code review recommendation - improve debugging and tracing"
+    updated: "2026-01-23T16:45:00Z"
+    notes: "Gemini code review - implemented in server.ts with randomUUID middleware"

@@ -68,6 +68,7 @@ logs/
 config/secrets.yaml
 *.key
 *.pem
+context.xml
 
 # ============================================================================
 # OUTPUT DIRECTORIES

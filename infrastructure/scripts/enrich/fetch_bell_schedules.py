@@ -64,9 +64,11 @@ try:
         log_scraper_response,
         auto_flag_repeat_failures
     )
+    from models import District
     DATABASE_AVAILABLE = True
 except ImportError:
     DATABASE_AVAILABLE = False
+    District = None
     logger.warning("Database tracking unavailable - continuing without skip checking")
 
 # Scraper service configuration
@@ -638,15 +640,27 @@ class BellScheduleFetcher(DataProcessor):
             )
             return None
 
-        # Check if we found any schedules
+        # Check if we found any schedules at district level
         if not any(found_schedules.values()):
-            logger.warning(f"No bell schedules found for {district_name}")
+            logger.info(f"No district-level schedules found for {district_name} - trying school discovery")
+
+            # Fallback: Try school-level discovery
+            schools = self._discover_schools(result)
+            if schools:
+                school_result = self._try_school_schedules(schools, result)
+                if school_result:
+                    logger.info(f"Found schedules via school discovery for {district_name}")
+                    return school_result
+
+            # School discovery also failed - flag for manual followup
+            logger.warning(f"No bell schedules found for {district_name} (district + school search)")
             flag_for_manual_followup(
                 {'district_id': result['district_id'],
                  'district_name': district_name,
                  'state': state,
                  'enrollment': result.get('enrollment')},
-                {'total_404s': len(error_tracker.errors_404), 'no_schedules_found': True}
+                {'total_404s': len(error_tracker.errors_404), 'no_schedules_found': True,
+                 'school_discovery_tried': True, 'schools_found': len(schools)}
             )
             return None
 
@@ -705,6 +719,221 @@ class BellScheduleFetcher(DataProcessor):
             'method': 'state_statutory',
             'source': source,
         }
+
+        return result
+
+    def _get_district_domain(self, result: Dict) -> Optional[str]:
+        """
+        Extract district domain for school discovery.
+
+        First tries to get the actual website URL from the database,
+        then falls back to generating a domain from the district name.
+
+        Returns a domain like 'detroitk12.org' or 'district.k12.mi.us'
+        """
+        district_id = result.get('district_id')
+
+        # Try to get actual website URL from database
+        if DATABASE_AVAILABLE and district_id:
+            try:
+                with session_scope() as session:
+                    district = session.query(District).filter(
+                        District.nces_id == district_id
+                    ).first()
+                    if district and district.website_url:
+                        # Extract domain from full URL
+                        url = district.website_url
+                        # Handle URLs without protocol
+                        if not url.startswith('http'):
+                            url = f'https://{url}'
+                        from urllib.parse import urlparse
+                        parsed = urlparse(url)
+                        domain = parsed.netloc
+                        # Remove www. prefix if present
+                        if domain.startswith('www.'):
+                            domain = domain[4:]
+                        logger.debug(f"Found website URL for {result['district_name']}: {domain}")
+                        return domain
+            except Exception as e:
+                logger.warning(f"Error looking up district website: {e}")
+
+        # Fallback: Generate domain from district name
+        district_name = result['district_name']
+        state = result['state'].lower()
+
+        # Build domain-friendly name
+        url_name = district_name.lower().replace(' ', '-').replace("'", "")
+        url_name = re.sub(r'[^a-z0-9-]', '', url_name)
+
+        # Try common patterns
+        return f"{url_name}.k12.{state}.us"
+
+    def _discover_schools(self, result: Dict) -> List[Dict]:
+        """
+        Call /discover endpoint to find school sites within a district.
+
+        Uses the scraper service's school discovery functionality which:
+        - Tests common subdomain patterns (elementary.district.org, etc.)
+        - Extracts school links from district homepage
+        - Returns representative sample (1 per level)
+
+        Returns:
+            List of school dicts with url, name, level, pattern
+        """
+        if not REQUESTS_AVAILABLE:
+            logger.warning("requests library not available - cannot discover schools")
+            return []
+
+        district_domain = self._get_district_domain(result)
+        if not district_domain:
+            return []
+
+        # Build headers with API key if available (REQ-028)
+        headers = {}
+        if SCRAPER_API_KEY:
+            headers['X-API-Key'] = SCRAPER_API_KEY
+
+        try:
+            response = requests.post(
+                f"{SCRAPER_URL}/discover",
+                json={
+                    "districtUrl": f"https://www.{district_domain}",
+                    "state": result['state'],
+                    "representativeOnly": True  # Get 1 per level (elementary, middle, high)
+                },
+                headers=headers,
+                timeout=60
+            )
+
+            # Check for auth errors
+            if response.status_code == 401:
+                logger.error("Scraper service authentication failed for /discover")
+                return []
+
+            if response.status_code == 200:
+                data = response.json()
+                schools = data.get('schools', [])
+                logger.info(f"Discovered {len(schools)} schools for {result['district_name']}")
+                return schools
+
+            logger.warning(f"School discovery returned status {response.status_code}")
+            return []
+
+        except requests.exceptions.ConnectionError:
+            logger.error(f"Cannot connect to scraper service at {SCRAPER_URL}/discover")
+            return []
+        except requests.RequestException as e:
+            logger.error(f"School discovery request error: {e}")
+            return []
+
+    def _try_school_schedules(self, schools: List[Dict], result: Dict) -> Optional[Dict]:
+        """
+        Try scraping bell schedules from discovered school sites.
+
+        For each discovered school, tries common bell schedule paths.
+        Returns updated result dict on first success, None if all fail.
+
+        Args:
+            schools: List of school dicts from _discover_schools()
+            result: Current result dict to update
+
+        Returns:
+            Updated result dict with bell schedule data, or None
+        """
+        if not schools:
+            return None
+
+        district_id = result['district_id']
+        found_schedules = {'elementary': None, 'middle': None, 'high': None}
+        sources = []
+
+        # Common paths where schools publish bell schedules
+        schedule_paths = [
+            '/bell-schedule',
+            '/daily-schedule',
+            '/our-school/bell-schedule',
+            '/about/bell-schedule',
+            '/students/bell-schedule',
+            '/parents/daily-schedule',
+            '/school-information/bell-schedule',
+            '',  # Try homepage too - sometimes schedule is there
+        ]
+
+        for school in schools:
+            school_url = school.get('url', '').rstrip('/')
+            school_level = school.get('level')  # 'elementary', 'middle', 'high', or None
+            school_name = school.get('name', 'Unknown')
+
+            logger.info(f"Trying school: {school_name} ({school_level or 'unknown level'}) at {school_url}")
+
+            for path in schedule_paths:
+                url = f"{school_url}{path}" if path else school_url
+
+                scrape_result = scrape_url(
+                    url,
+                    timeout=30,
+                    district_id=district_id,
+                    enrichment_tier=f'tier{self.tier}_school'
+                )
+
+                if not scrape_result or not scrape_result.get('success'):
+                    continue
+
+                # Extract times from page content
+                times = extract_bell_schedule_times(
+                    scrape_result.get('html', ''),
+                    scrape_result.get('markdown', '')
+                )
+
+                if times:
+                    logger.info(f"Found bell schedule at {url} - {times['instructional_minutes']} minutes")
+                    sources.append(url)
+
+                    # Determine which level this schedule belongs to
+                    level = school_level
+                    if not level:
+                        # Try to detect from URL or content
+                        level = self._detect_school_level(url, scrape_result.get('markdown', ''))
+
+                    if level and not found_schedules.get(level):
+                        found_schedules[level] = {
+                            'instructional_minutes': times['instructional_minutes'],
+                            'start_time': times['start_time'],
+                            'end_time': times['end_time'],
+                            'schools_sampled': [school_name],
+                            'source_urls': [url],
+                            'confidence': 'high',
+                            'method': f'web_scrape_tier{self.tier}_school',
+                            'school_level': level,
+                        }
+                    elif not level and not any(found_schedules.values()):
+                        # Unknown level, but no schedules found yet - use for all levels
+                        for lvl in ['elementary', 'middle', 'high']:
+                            found_schedules[lvl] = {
+                                'instructional_minutes': times['instructional_minutes'],
+                                'start_time': times['start_time'],
+                                'end_time': times['end_time'],
+                                'schools_sampled': [school_name],
+                                'source_urls': [url],
+                                'confidence': 'medium',
+                                'method': f'web_scrape_tier{self.tier}_school',
+                                'note': 'Applied across all levels from single school'
+                            }
+                    break  # Found schedule for this school, move to next
+
+        # Check if we found anything
+        if not any(found_schedules.values()):
+            return None
+
+        # Apply found schedules to result
+        for level in ['elementary', 'middle', 'high']:
+            if found_schedules[level]:
+                result[level] = found_schedules[level]
+
+        result['sources'] = sources
+        result['enriched'] = True
+        result['data_quality_tier'] = f'tier{self.tier}_school_discovery'
+        result['notes'].append(f"Found via school discovery - {len(sources)} school(s) with schedules")
 
         return result
 
@@ -797,14 +1026,26 @@ class BellScheduleFetcher(DataProcessor):
             )
             return None
 
-        # No schedule found
+        # No schedule found at district level - try school discovery
         if not found_schedule:
+            logger.info(f"No district-level schedules found for {district_name} - trying school discovery")
+
+            # Fallback: Try school-level discovery
+            schools = self._discover_schools(result)
+            if schools:
+                school_result = self._try_school_schedules(schools, result)
+                if school_result:
+                    logger.info(f"Found schedules via school discovery for {district_name}")
+                    return school_result
+
+            # School discovery also failed - flag for manual followup
             flag_for_manual_followup(
                 {'district_id': result['district_id'],
                  'district_name': district_name,
                  'state': state,
                  'enrollment': result.get('enrollment')},
-                {'no_schedules_found': True, 'urls_tried': urls_to_try}
+                {'no_schedules_found': True, 'urls_tried': urls_to_try,
+                 'school_discovery_tried': True, 'schools_found': len(schools) if schools else 0}
             )
             return None
 
