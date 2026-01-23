@@ -100,7 +100,7 @@ pytest tests/test_*_integration.py -v
 
 ## Load Additional Context When Needed
 
-This is the core briefing (~115 lines). For detailed information, load these appendices:
+This is the core briefing. For detailed information, load these appendices:
 
 | Context Needed | Load File |
 |----------------|-----------|
@@ -108,7 +108,7 @@ This is the core briefing (~115 lines). For detailed information, load these app
 | Development workflow, testing, common commands | `docs/claude-instructions/CLAUDE_WORKFLOWS.md` |
 | Data architecture, SEA integrations, crosswalks | `docs/claude-instructions/CLAUDE_DATA.md` |
 
-**Token Efficiency:** Only load appendices relevant to the current task. This modular structure reduces context consumption by ~80% compared to the previous monolithic file.
+**Token Efficiency:** Only load appendices relevant to the current task.
 
 ---
 
@@ -123,9 +123,8 @@ This is the core briefing (~115 lines). For detailed information, load these app
 
 ## Technical Reference
 
-- **Crosswalk table**: `state_district_crosswalk` - single source of truth for all state mappings
+- **Crosswalk table**: `state_district_crosswalk` - single source of truth
 - **SPED baseline**: 2017-18 IDEA 618/CRDC exempt from temporal rule
 - **Scraper API**: `POST /scrape`, `GET /health`, `GET /status`
-- **Multi-tier enrichment**: Playwright → HTML → PDF/OCR → Claude → Gemini
 
-For detailed reference, load the appropriate appendix above.
+For detailed reference, see appendices.
