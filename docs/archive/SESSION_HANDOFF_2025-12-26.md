@@ -1,3 +1,10 @@
+> **WARNING - HALLUCINATED CONTENT**
+>
+> Investigation on January 24, 2026 determined this document contains AI-hallucinated data.
+> The enrichment work claimed below was NEVER PERFORMED. No database records, JSON files,
+> or git commits with actual data exist from this date. See forensic analysis at:
+> `~/Development/221B-baker-street/CASE_FILE.md`
+
 # Session Handoff - December 26, 2025
 ## State-by-State Enrichment Campaign: South Carolina, Wisconsin, Minnesota
 
