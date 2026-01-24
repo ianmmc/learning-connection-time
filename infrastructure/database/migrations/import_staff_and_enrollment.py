@@ -333,6 +333,22 @@ def import_enrollment_data(enrollment_df: pd.DataFrame, session) -> int:
                 enrollment_total=int(row["enrollment_total"]) if pd.notna(row.get("enrollment_total")) else None,
                 enrollment_k12=int(row["enrollment_k12"]) if pd.notna(row.get("enrollment_k12")) else None,
             )
+
+            # Calculate aggregate columns from individual grades
+            # Elementary = K-5
+            elem_grades = ['enrollment_kindergarten', 'enrollment_grade_1', 'enrollment_grade_2',
+                          'enrollment_grade_3', 'enrollment_grade_4', 'enrollment_grade_5']
+            enrollment.enrollment_elementary = sum(
+                int(row.get(g, 0)) if pd.notna(row.get(g)) else 0 for g in elem_grades
+            )
+
+            # Secondary = 6-12
+            sec_grades = ['enrollment_grade_6', 'enrollment_grade_7', 'enrollment_grade_8',
+                         'enrollment_grade_9', 'enrollment_grade_10', 'enrollment_grade_11', 'enrollment_grade_12']
+            enrollment.enrollment_secondary = sum(
+                int(row.get(g, 0)) if pd.notna(row.get(g)) else 0 for g in sec_grades
+            )
+
             session.merge(enrollment)
             imported += 1
 

@@ -14,6 +14,7 @@ from typing import Tuple, Optional, Dict, List
 from sqlalchemy.orm import Session
 
 from infrastructure.database.models import EnrichmentQueue, BellSchedule
+from infrastructure.database.verification import validate_schedule_plausibility
 
 
 def map_schedule_type_to_grade_level(schedule_type: str, schools_sampled: List[Dict] = None) -> str:
@@ -140,6 +141,21 @@ def copy_enrichment_to_bell_schedules(
 
     # Ensure source_url is a list
     source_urls = [source_url] if isinstance(source_url, str) else source_url
+
+    # REQ-038: Validate schedule plausibility before database insertion
+    validation_result = validate_schedule_plausibility({
+        'start_time': start_time,
+        'end_time': end_time,
+        'grade_level': grade_level,
+        'instructional_minutes': total_minutes
+    })
+
+    if not validation_result['valid']:
+        return False, f"Schedule validation failed: {'; '.join(validation_result['errors'])}"
+
+    # Log warnings but don't block
+    if validation_result['warnings']:
+        notes = f"WARNINGS: {'; '.join(validation_result['warnings'])}. {notes}"
 
     # Check if already exists
     existing = session.query(BellSchedule).filter_by(

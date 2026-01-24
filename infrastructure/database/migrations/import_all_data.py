@@ -1,17 +1,23 @@
 #!/usr/bin/env python3
 """
-Data Migration Script: Import all data into PostgreSQL database.
+Data Migration Script: Import all core data into PostgreSQL database.
 
-Imports:
+Imports (in order, with dependencies):
 1. State requirements from YAML config
 2. Districts from NCES CCD CSV
-3. Bell schedules from enriched JSON files
+3. ST_LEAID population from raw NCES CCD (depends on districts)
+4. State crosswalk table (depends on st_leaid)
+5. Bell schedules from enriched JSON files (optional)
+
+The st_leaid and crosswalk steps are critical for SEA state data imports.
+Without them, state-specific imports will fail to match districts.
 
 Usage:
-    python import_all_data.py [--dry-run] [--skip-districts] [--skip-schedules]
+    python import_all_data.py [--dry-run] [--skip-districts] [--skip-schedules] [--skip-crosswalk]
 
 Author: Claude (AI Assistant)
 Date: December 25, 2025
+Updated: January 24, 2026 - Added st_leaid and crosswalk steps
 """
 
 import argparse
@@ -23,6 +29,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+import pandas as pd
 import yaml
 
 # Add project root to path for imports
@@ -36,6 +43,7 @@ from infrastructure.database.models import (
     BellSchedule,
     DataLineage,
 )
+from sqlalchemy import text
 
 # Configure logging
 logging.basicConfig(
@@ -51,9 +59,14 @@ logger = logging.getLogger(__name__)
 # File paths
 CONFIG_DIR = PROJECT_ROOT / "config"
 DATA_DIR = PROJECT_ROOT / "data"
+MIGRATIONS_DIR = Path(__file__).parent
 STATE_REQUIREMENTS_FILE = CONFIG_DIR / "state-requirements.yaml"
 DISTRICTS_FILE = DATA_DIR / "processed" / "normalized" / "districts_2023_24_nces.csv"
 BELL_SCHEDULES_FILE = DATA_DIR / "enriched" / "bell-schedules" / "bell_schedules_manual_collection_2024_25.json"
+
+# Raw NCES CCD file for ST_LEAID population
+NCES_RAW_DIR = DATA_DIR / "raw" / "federal" / "nces-ccd" / "2023_24"
+CROSSWALK_MIGRATION_FILE = MIGRATIONS_DIR / "007_add_state_crosswalk.sql"
 
 
 def ensure_log_directory():
@@ -209,6 +222,123 @@ def import_districts(session, dry_run: bool = False) -> int:
     return count
 
 
+def populate_st_leaid(session, dry_run: bool = False) -> int:
+    """
+    Populate st_leaid column from raw NCES CCD directory file.
+
+    The ST_LEAID field contains state-assigned LEA IDs (e.g., 'CA-6275796')
+    which are needed for the crosswalk table and SEA imports.
+
+    Args:
+        session: SQLAlchemy session
+        dry_run: If True, don't commit changes
+
+    Returns:
+        Number of districts updated
+    """
+    logger.info("Populating st_leaid from raw NCES CCD data...")
+
+    # Find the raw NCES directory file
+    directory_files = list(NCES_RAW_DIR.glob("ccd_lea_029_*.csv"))
+
+    if not directory_files:
+        logger.error(f"No NCES directory file found in {NCES_RAW_DIR}")
+        return 0
+
+    directory_file = directory_files[0]
+    logger.info(f"  Reading: {directory_file.name}")
+
+    # Read ST_LEAID from directory file
+    df = pd.read_csv(directory_file, usecols=['LEAID', 'ST_LEAID'], dtype=str)
+    logger.info(f"  Found {len(df)} records in NCES file")
+
+    if dry_run:
+        logger.info("  DRY RUN - would update st_leaid for districts")
+        return len(df)
+
+    # Update database
+    updated_count = 0
+
+    for _, row in df.iterrows():
+        leaid = row['LEAID']
+        st_leaid = row['ST_LEAID'] if pd.notna(row['ST_LEAID']) else None
+
+        if st_leaid:
+            # Try both with and without leading zeros
+            district = session.query(District).filter(District.nces_id == leaid).first()
+            if not district and leaid.startswith('0'):
+                # Try without leading zero
+                leaid_no_zero = leaid.lstrip('0')
+                district = session.query(District).filter(District.nces_id == leaid_no_zero).first()
+
+            if district:
+                district.st_leaid = st_leaid
+                updated_count += 1
+
+        if updated_count % 5000 == 0 and updated_count > 0:
+            logger.info(f"  Updated {updated_count} districts...")
+            session.flush()
+
+    session.flush()
+    logger.info(f"Populated st_leaid for {updated_count} districts")
+    return updated_count
+
+
+def build_crosswalk(session, dry_run: bool = False) -> int:
+    """
+    Build the state_district_crosswalk table from st_leaid.
+
+    Creates the crosswalk table (if needed) and populates it by parsing
+    the ST_LEAID format ({STATE}-{STATE_ID}).
+
+    Args:
+        session: SQLAlchemy session
+        dry_run: If True, don't commit changes
+
+    Returns:
+        Number of crosswalk entries created
+    """
+    logger.info("Building state district crosswalk table...")
+
+    if not CROSSWALK_MIGRATION_FILE.exists():
+        logger.error(f"Crosswalk migration file not found: {CROSSWALK_MIGRATION_FILE}")
+        return 0
+
+    if dry_run:
+        logger.info("  DRY RUN - would create crosswalk table and populate")
+        return 0
+
+    # Read and execute the migration SQL
+    with open(CROSSWALK_MIGRATION_FILE, 'r') as f:
+        migration_sql = f.read()
+
+    engine = get_engine()
+    with engine.connect() as conn:
+        conn.execute(text(migration_sql))
+        conn.commit()
+
+    # Count entries created
+    result = session.execute(text("SELECT COUNT(*) FROM state_district_crosswalk"))
+    count = result.scalar()
+
+    logger.info(f"Built crosswalk table with {count} entries")
+
+    # Log state distribution
+    result = session.execute(text("""
+        SELECT state, COUNT(*) as count
+        FROM state_district_crosswalk
+        GROUP BY state
+        ORDER BY count DESC
+        LIMIT 5
+    """))
+    rows = result.fetchall()
+    logger.info("  Top 5 states by crosswalk entries:")
+    for row in rows:
+        logger.info(f"    {row[0]}: {row[1]} districts")
+
+    return count
+
+
 def import_bell_schedules(session, dry_run: bool = False) -> int:
     """
     Import bell schedules from consolidated JSON file.
@@ -344,6 +474,18 @@ def verify_data(session) -> dict:
         "lineage_records": session.query(func.count(DataLineage.id)).scalar(),
     }
 
+    # Count districts with st_leaid
+    results["districts_with_st_leaid"] = session.query(
+        func.count(District.nces_id)
+    ).filter(District.st_leaid.isnot(None)).scalar()
+
+    # Count crosswalk entries
+    try:
+        result = session.execute(text("SELECT COUNT(*) FROM state_district_crosswalk"))
+        results["crosswalk_entries"] = result.scalar()
+    except Exception:
+        results["crosswalk_entries"] = 0
+
     # Count unique districts with bell schedules
     results["districts_with_schedules"] = session.query(
         func.count(func.distinct(BellSchedule.district_id))
@@ -353,7 +495,7 @@ def verify_data(session) -> dict:
     results["valid"] = (
         results["districts"] >= 17000  # Expected ~17,842 in normalized CSV
         and results["state_requirements"] >= 50  # Expected 50 states
-        and results["districts_with_schedules"] >= 70  # Expected ~76 (one has incorrect ID)
+        and results["crosswalk_entries"] >= 17000  # Crosswalk should match districts
     )
 
     return results
@@ -364,6 +506,7 @@ def main():
     parser = argparse.ArgumentParser(description="Import data into PostgreSQL database")
     parser.add_argument("--dry-run", action="store_true", help="Preview without committing")
     parser.add_argument("--skip-districts", action="store_true", help="Skip district import")
+    parser.add_argument("--skip-crosswalk", action="store_true", help="Skip st_leaid and crosswalk steps")
     parser.add_argument("--skip-schedules", action="store_true", help="Skip bell schedule import")
     parser.add_argument("--skip-states", action="store_true", help="Skip state requirements import")
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
@@ -388,17 +531,13 @@ def main():
         logger.info("Database connection established")
 
         with session_scope() as session:
-            # Import state requirements
+            # 1. Import state requirements (no dependencies)
             if not args.skip_states:
                 import_state_requirements(session, dry_run=args.dry_run)
 
-            # Import districts
+            # 2. Import districts
             if not args.skip_districts:
                 import_districts(session, dry_run=args.dry_run)
-
-            # Import bell schedules
-            if not args.skip_schedules:
-                import_bell_schedules(session, dry_run=args.dry_run)
 
             if args.dry_run:
                 logger.info("DRY RUN - Rolling back all changes")
@@ -407,6 +546,22 @@ def main():
                 # Commit is handled by session_scope context manager
                 pass
 
+        # 3. Populate st_leaid (depends on districts, uses raw NCES file)
+        # 4. Build crosswalk (depends on st_leaid)
+        # These run outside the main session to ensure districts are committed first
+        if not args.skip_crosswalk and not args.skip_districts and not args.dry_run:
+            with session_scope() as session:
+                populate_st_leaid(session, dry_run=args.dry_run)
+
+            # Build crosswalk (runs its own SQL transaction)
+            with session_scope() as session:
+                build_crosswalk(session, dry_run=args.dry_run)
+
+        # 5. Import bell schedules (optional, depends on districts)
+        if not args.skip_schedules and not args.dry_run:
+            with session_scope() as session:
+                import_bell_schedules(session, dry_run=args.dry_run)
+
         # Verify results (new session for accurate counts)
         if not args.dry_run:
             with session_scope() as session:
@@ -414,6 +569,8 @@ def main():
                 logger.info("=" * 60)
                 logger.info("Migration Complete - Verification Results:")
                 logger.info(f"  Districts: {results['districts']:,}")
+                logger.info(f"  Districts with st_leaid: {results['districts_with_st_leaid']:,}")
+                logger.info(f"  Crosswalk entries: {results['crosswalk_entries']:,}")
                 logger.info(f"  State requirements: {results['state_requirements']}")
                 logger.info(f"  Bell schedules: {results['bell_schedules']}")
                 logger.info(f"  Districts with schedules: {results['districts_with_schedules']}")

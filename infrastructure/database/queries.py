@@ -14,6 +14,7 @@ from sqlalchemy import and_, desc, func, or_, select
 from sqlalchemy.orm import Session
 
 from .models import BellSchedule, DataLineage, District, LCTCalculation, StateRequirement
+from .verification import validate_schedule_plausibility
 
 
 # =============================================================================
@@ -205,6 +206,18 @@ def add_bell_schedule(
     district = get_district_by_id(session, normalized_id)
     if not district:
         raise ValueError(f"District {district_id} not found in database")
+
+    # REQ-038: Validate schedule plausibility before database insertion
+    if start_time and end_time:  # Only validate if times are provided
+        validation = validate_schedule_plausibility({
+            'start_time': start_time,
+            'end_time': end_time,
+            'grade_level': grade_level,
+            'instructional_minutes': instructional_minutes
+        })
+        if not validation['valid']:
+            raise ValueError(f"Schedule validation failed: {'; '.join(validation['errors'])}")
+        # Note: warnings are logged but don't block insertion
 
     # Check for existing record
     existing = (
