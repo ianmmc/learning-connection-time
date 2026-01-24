@@ -72,7 +72,7 @@ LCT = 18 minutes per student per day
 **Phase**: Bell Schedule Automation with Multi-Tier Enrichment Pipeline
 **Coverage**: 17,842 U.S. school districts in PostgreSQL database
 **SEA Integrations**: 9/9 complete (FL, TX, CA, NY, IL, MI, PA, VA, MA) ✅
-**Scraper Service**: Playwright-based service in `scraper/` directory, operational
+**Scraper Service**: Playwright-based service in `infrastructure/scraper/` directory, operational
 **Test Suite**: 789 tests passing
 **Data Sources**: Federal (NCES, CRDC, IDEA 618) + Bell schedules + State agencies
 

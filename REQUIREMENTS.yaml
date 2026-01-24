@@ -837,3 +837,125 @@ requirements:
     created: "2026-01-23T21:30:00Z"
     updated: "2026-01-23T21:30:00Z"
     notes: "Firecrawl integration testing per multi-tier enrichment architecture"
+
+  - id: REQ-035
+    description: Enrichment count verification against database before documentation
+    type: non-functional
+    priority: must
+    status: draft
+    acceptance_criteria:
+      - get_verified_enrichment_count() queries database for actual enriched district count
+      - Verified count matches SELECT COUNT(DISTINCT district_id) FROM bell_schedules
+      - Documentation claims (CLAUDE.md, handoff files) must use verified counts only
+      - Discrepancy detection compares documented vs actual counts
+      - Alert triggered when documented count differs from database by >5%
+      - Automated pre-commit hook validates enrichment claims against database
+      - Verification query includes timestamp for audit trail
+    tests:
+      - tests/test_enrichment_verification.py::TestEnrichmentCountVerification::test_get_verified_count_matches_database
+      - tests/test_enrichment_verification.py::TestEnrichmentCountVerification::test_verified_count_uses_distinct_district_id
+      - tests/test_enrichment_verification.py::TestEnrichmentCountVerification::test_discrepancy_detection_alerts_on_mismatch
+      - tests/test_enrichment_verification.py::TestEnrichmentCountVerification::test_accepts_counts_within_5_percent
+      - tests/test_enrichment_verification.py::TestEnrichmentCountVerification::test_verification_includes_timestamp
+      - tests/test_enrichment_verification.py::TestEnrichmentCountVerification::test_pre_commit_hook_validates_claims
+    created: "2026-01-24T09:00:00Z"
+    updated: "2026-01-24T09:00:00Z"
+    notes: "Added after 'The Case of the Missing Bell Schedules' investigation revealed AI hallucination of enrichment counts"
+
+  - id: REQ-036
+    description: Session handoff documentation must reference verifiable database state
+    type: constraint
+    priority: must
+    status: draft
+    acceptance_criteria:
+      - Handoff documents must include database snapshot timestamp
+      - Claimed district additions must have corresponding bell_schedules records
+      - Claimed record counts verified against DataLineage audit table
+      - generate_handoff_report() pulls counts from database, not from AI memory
+      - Each claimed district must have verifiable created_at timestamp
+      - Handoff validation script compares claims against database reality
+      - WARNING banner added to handoffs that fail validation
+    tests:
+      - tests/test_enrichment_verification.py::TestHandoffValidation::test_handoff_includes_database_timestamp
+      - tests/test_enrichment_verification.py::TestHandoffValidation::test_claimed_districts_have_bell_schedules
+      - tests/test_enrichment_verification.py::TestHandoffValidation::test_claimed_counts_match_data_lineage
+      - tests/test_enrichment_verification.py::TestHandoffValidation::test_generate_handoff_uses_database_counts
+      - tests/test_enrichment_verification.py::TestHandoffValidation::test_claimed_districts_have_created_at_timestamp
+      - tests/test_enrichment_verification.py::TestHandoffValidation::test_validation_script_detects_mismatches
+      - tests/test_enrichment_verification.py::TestHandoffValidation::test_warning_banner_added_on_failure
+    created: "2026-01-24T09:00:00Z"
+    updated: "2026-01-24T09:00:00Z"
+    notes: "Prevents AI from documenting work that was never committed to database"
+
+  - id: REQ-037
+    description: DataLineage audit trail completeness for enrichment claims
+    type: non-functional
+    priority: must
+    status: draft
+    acceptance_criteria:
+      - Every bell_schedule INSERT creates corresponding DataLineage entry
+      - DataLineage.created_at must match bell_schedule.created_at within 1 second
+      - verify_audit_completeness() checks all bell_schedules have lineage entries
+      - Gap detection finds bell_schedules without corresponding lineage
+      - Date range validation ensures no date gaps in claimed enrichment periods
+      - Audit report shows date distribution of bell_schedule records
+      - Missing audit entries flagged as data integrity violation
+    tests:
+      - tests/test_enrichment_verification.py::TestAuditTrailCompleteness::test_bell_schedule_insert_creates_lineage
+      - tests/test_enrichment_verification.py::TestAuditTrailCompleteness::test_lineage_timestamp_matches_bell_schedule
+      - tests/test_enrichment_verification.py::TestAuditTrailCompleteness::test_verify_audit_completeness_finds_all
+      - tests/test_enrichment_verification.py::TestAuditTrailCompleteness::test_gap_detection_finds_missing_lineage
+      - tests/test_enrichment_verification.py::TestAuditTrailCompleteness::test_date_range_validation_no_gaps
+      - tests/test_enrichment_verification.py::TestAuditTrailCompleteness::test_audit_report_shows_date_distribution
+      - tests/test_enrichment_verification.py::TestAuditTrailCompleteness::test_missing_entries_flagged_as_violation
+    created: "2026-01-24T09:00:00Z"
+    updated: "2026-01-24T09:00:00Z"
+    notes: "Ensures audit trail cannot be bypassed - every enrichment must leave forensic evidence"
+
+  - id: REQ-038
+    description: Bell schedule content plausibility validation
+    type: non-functional
+    priority: must
+    status: draft
+    acceptance_criteria:
+      - Start time must be before end time (temporal order validation)
+      - Instructional minutes must be within plausible range (300-480 minutes)
+      - Grade level must be one of [elementary, middle, high, k-8, k-12, 6-12]
+      - Time format must match HH:MM AM/PM pattern
+      - Start times must be plausible (6:00 AM - 10:30 AM typical range)
+      - End times must be plausible (2:00 PM - 5:30 PM typical range)
+      - Instructional minutes excludes lunch and passing time (documented assumption)
+      - Validation runs before database insertion (input sanitization)
+      - Invalid schedules rejected with descriptive error messages
+    tests:
+      - tests/test_enrichment_verification.py::TestContentValidation::test_start_before_end
+      - tests/test_enrichment_verification.py::TestContentValidation::test_instructional_minutes_range
+      - tests/test_enrichment_verification.py::TestContentValidation::test_valid_grade_levels
+      - tests/test_enrichment_verification.py::TestContentValidation::test_time_format_validation
+      - tests/test_enrichment_verification.py::TestContentValidation::test_plausible_start_times
+      - tests/test_enrichment_verification.py::TestContentValidation::test_plausible_end_times
+      - tests/test_enrichment_verification.py::TestContentValidation::test_rejects_invalid_with_message
+    created: "2026-01-24T10:00:00Z"
+    updated: "2026-01-24T10:00:00Z"
+    notes: "Added per Watson's recommendation - prevents hallucinated schedule CONTENT, not just counts"
+
+  - id: REQ-039
+    description: Manual verification override audit trail
+    type: constraint
+    priority: should
+    status: draft
+    acceptance_criteria:
+      - Any manual override of verification warnings must be logged
+      - Override log includes timestamp, user context, reason provided
+      - Override audit entries stored in DataLineage with type 'verification_override'
+      - Dashboard/report shows override frequency by time period
+      - Excessive overrides (>5 per verification run) trigger alert
+      - Session defined as single invocation of verification CLI or pipeline run
+    tests:
+      - tests/test_enrichment_verification.py::TestOverrideAudit::test_override_creates_lineage_entry
+      - tests/test_enrichment_verification.py::TestOverrideAudit::test_override_includes_timestamp
+      - tests/test_enrichment_verification.py::TestOverrideAudit::test_override_includes_reason
+      - tests/test_enrichment_verification.py::TestOverrideAudit::test_excessive_overrides_alert
+    created: "2026-01-24T10:00:00Z"
+    updated: "2026-01-24T10:00:00Z"
+    notes: "Added per Watson's recommendation - prevents silent bypass of verification safeguards"

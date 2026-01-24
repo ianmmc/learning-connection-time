@@ -38,7 +38,7 @@ This enhancement changes our approach from single-phase (district-only) to **mul
 
 ### 2. Scraper Service Enhancements
 
-**New Module:** [scraper/src/discovery.ts](../../scraper/src/discovery.ts)
+**New Module:** [infrastructure/scraper/src/discovery.ts](../../infrastructure/scraper/src/discovery.ts)
 
 **Capabilities:**
 - `generateSubdomainTests()` - Creates test URLs based on common patterns
@@ -213,7 +213,7 @@ curl -X POST http://localhost:3000/discover \
 
 ```bash
 # 1. Start scraper service
-cd scraper && docker-compose up -d
+cd infrastructure/scraper && docker-compose up -d
 
 # 2. Discover schools for a district
 python3 -c "
@@ -315,10 +315,10 @@ All existing functionality preserved:
 - ✅ `docs/SCHOOL_LEVEL_DISCOVERY_ENHANCEMENT.md` - This document
 
 ### Code
-- ✅ `scraper/src/discovery.ts` - NEW module for school discovery
-- ✅ `scraper/src/server.ts` - Added POST /discover endpoint
-- ✅ `scraper/src/scraper.ts` - Made pool public for discovery
-- ✅ `scraper/README.md` - Documented new endpoint
+- ✅ `infrastructure/scraper/src/discovery.ts` - NEW module for school discovery
+- ✅ `infrastructure/scraper/src/server.ts` - Added POST /discover endpoint
+- ✅ `infrastructure/scraper/src/scraper.ts` - Made pool public for discovery
+- ✅ `infrastructure/scraper/README.md` - Documented new endpoint
 - ✅ `infrastructure/utilities/school_discovery.py` - NEW Python utilities
 
 ### No Breaking Changes
@@ -331,7 +331,7 @@ All existing functionality preserved:
 ## Testing Checklist
 
 ### Scraper Service
-- [ ] Start service: `cd scraper && docker-compose up -d`
+- [ ] Start service: `cd infrastructure/scraper && docker-compose up -d`
 - [ ] Test health: `curl http://localhost:3000/health`
 - [ ] Test discovery: `curl -X POST http://localhost:3000/discover -H "Content-Type: application/json" -d '{"districtUrl":"https://milwaukee.k12.wi.us","state":"WI"}'`
 

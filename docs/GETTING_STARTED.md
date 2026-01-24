@@ -86,11 +86,11 @@ learning-connection-time/
 │   └── archive/                 # Historical documentation
 ├── infrastructure/
 │   ├── database/                # SQLAlchemy models, queries
-│   └── scripts/
-│       ├── analyze/             # LCT calculations
-│       ├── enrich/              # Bell schedule enrichment
-│       └── transform/           # Data normalization
-├── scraper/                     # Playwright scraper service (TypeScript)
+│   ├── scripts/
+│   │   ├── analyze/             # LCT calculations
+│   │   ├── enrich/              # Bell schedule enrichment
+│   │   └── transform/           # Data normalization
+│   └── scraper/                 # Playwright scraper service (TypeScript)
 └── tests/                       # pytest test suite
 ```
 
