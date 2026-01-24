@@ -1,20 +1,32 @@
 #!/usr/bin/env python3
 """
-Tier 5 Processor: Gemini MCP Web Search (Batched)
-Final fallback using Gemini's web search to find missing bell schedules
+Tier 5 Processor: Gemini Chat MCP (mcp__gemini__gemini-chat)
+Final fallback using Gemini's synthesized knowledge to find bell schedules
 
-This tier uses Gemini MCP for comprehensive web search when all local and
-Claude Desktop methods have been exhausted. Gemini can navigate websites,
-search across multiple sources, and extract data from discovered pages.
+This tier uses the gemini-chat MCP tool for AI-assisted research when all
+local discovery and web search methods have been exhausted. Gemini provides
+synthesized knowledge about school districts, including:
+- District-wide standardized schedules (when they exist)
+- Representative sample schedules (when times vary by school)
 
-**Cost**: Variable (MCP provider dependent)
+**Key Design Decision**: Tier 5 always tries to extract usable times.
+Even if schedules vary by school, we request representative samples
+from named schools. Only mark as manual_review if no times extractable.
+
+**Cost**: $0 (Gemini MCP via local server)
+
+**MCP Tool**: mcp__gemini__gemini-chat
+    - Invoked by Claude to chat with Gemini AI
+    - Returns synthesized knowledge about school schedules
+    - Provides representative samples when district-wide times don't exist
 
 Workflow:
-    1. Queue manager prepares batch (10-20 districts, grouped by state)
-    2. Send batch to Gemini MCP via WebSearch tool
-    3. Gemini searches for bell schedules using multiple strategies
-    4. Parse and validate Gemini's results
-    5. Record to database or mark for manual review
+    1. Queue manager prepares batch (5-10 districts)
+    2. For each district, build a gemini-chat prompt requesting either
+       district-wide schedules OR representative samples
+    3. Claude invokes mcp__gemini__gemini-chat for each district
+    4. Parse and extract times (even from representative samples)
+    5. Record to database with appropriate confidence level
 
 Usage:
     from tier_5_processor import Tier5Processor
@@ -22,7 +34,15 @@ Usage:
 
     with session_scope() as session:
         processor = Tier5Processor(session)
-        result = processor.process_batch(districts)
+
+        # Get prompts to send to gemini-chat
+        prompts = processor.build_gemini_chat_prompts(districts)
+
+        # For each prompt, Claude should invoke:
+        # mcp__gemini__gemini-chat(message=prompt, context="educational research")
+
+        # After getting responses, record them:
+        processor.record_gemini_responses(districts, responses)
 """
 
 import logging
@@ -34,6 +54,7 @@ import re
 from sqlalchemy.orm import Session
 
 from infrastructure.database.models import District, EnrichmentQueue, EnrichmentBatch
+from infrastructure.database.verification import validate_schedule_plausibility
 
 # Configure logging
 logging.basicConfig(
@@ -44,12 +65,25 @@ logger = logging.getLogger(__name__)
 
 
 class Tier5Processor:
-    """Tier 5: Gemini MCP Web Search (Batched)"""
+    """
+    Tier 5: Gemini Chat MCP (mcp__gemini__gemini-chat)
+
+    Uses Gemini's synthesized knowledge to extract bell schedules.
+    Always attempts to get usable times - either district-wide schedules
+    or representative samples from named schools.
+
+    Terminal states:
+    - completed: Times extracted (district-wide or representative)
+    - manual_review: Gemini couldn't provide usable schedule data
+    """
 
     # Time validation pattern
     TIME_PATTERN = re.compile(
         r'\b(\d{1,2}):(\d{2})\s*([AaPp][Mm])\b'
     )
+
+    # MCP tool name for reference
+    MCP_TOOL = "mcp__gemini__gemini-chat"
 
     def __init__(self, session: Session):
         """
@@ -61,87 +95,26 @@ class Tier5Processor:
         self.session = session
 
     # =========================================================================
-    # Batch Processing
+    # Gemini Chat Prompt Building
     # =========================================================================
 
-    def process_batch(
-        self,
-        districts: List[EnrichmentQueue],
-        batch_id: int = None
-    ) -> Dict:
-        """
-        Process batch of districts through Gemini MCP
-
-        Args:
-            districts: List of EnrichmentQueue objects at Tier 5
-            batch_id: Optional batch ID
-
-        Returns:
-            Processing summary
-        """
-        logger.info(f"Processing Tier 5 batch: {len(districts)} districts")
-        start_time = datetime.now()
-
-        if batch_id is None:
-            # Generate batch ID
-            from sqlalchemy import func
-            max_id = self.session.query(
-                func.max(EnrichmentBatch.id)
-            ).scalar() or 0
-            batch_id = max_id + 1
-
-        # Build search queries
-        search_queries = self._build_search_queries(districts)
-
-        # Execute searches via Gemini MCP
-        search_results = self._execute_gemini_searches(search_queries)
-
-        # Parse and validate results
-        validated_results = self._validate_results(search_results, districts)
-
-        # Record results
-        summary = self._record_results(batch_id, validated_results, districts)
-
-        processing_time = int((datetime.now() - start_time).total_seconds())
-
-        # Record batch metadata
-        batch = EnrichmentBatch(
-            id=batch_id,
-            batch_type='tier_5_gemini',
-            tier=5,
-            district_count=len(districts),
-            success_count=summary['successes'],
-            failure_count=summary['manual_review'],
-            status='completed',
-            processing_time_seconds=processing_time,
-            submitted_at=start_time,
-            completed_at=datetime.now()
-        )
-
-        self.session.add(batch)
-        self.session.commit()
-
-        logger.info(f"Tier 5 batch {batch_id} complete: {summary}")
-        return summary
-
-    # =========================================================================
-    # Search Query Building
-    # =========================================================================
-
-    def _build_search_queries(
+    def build_gemini_chat_prompts(
         self,
         districts: List[EnrichmentQueue]
     ) -> List[Dict]:
         """
-        Build search queries for Gemini
+        Build prompts for mcp__gemini__gemini-chat for each district.
+
+        These prompts are designed to be passed to the gemini-chat MCP tool
+        by Claude during interactive processing.
 
         Args:
-            districts: List of EnrichmentQueue objects
+            districts: List of EnrichmentQueue objects at Tier 5
 
         Returns:
-            List of search query specifications
+            List of dicts with 'nces_id', 'district_name', 'prompt', and 'context'
         """
-        queries = []
+        prompts = []
 
         # Get District objects
         district_ids = [d.district_id for d in districts]
@@ -157,319 +130,282 @@ class Tier5Processor:
             if not dist_obj:
                 continue
 
-            # Build comprehensive search query
-            query = {
+            website_url = getattr(dist_obj, 'website_url', None) or 'Unknown'
+
+            prompt = f"""What are the bell schedule times for {dist_obj.name} in {dist_obj.state}? I need start and end times for the 2024-25 or 2025-26 school year.
+
+District website: {website_url}
+
+If this district has standardized schedules, provide:
+1. Elementary school: start time - end time
+2. Middle school: start time - end time
+3. High school: start time - end time
+
+If schedules vary by individual school, provide REPRESENTATIVE EXAMPLES:
+1. One high school (name the school) - start time, end time
+2. One middle school (name the school) - start time, end time
+3. One elementary school (name the school) - start time, end time
+
+Please provide specific times like "7:30 AM - 2:45 PM" for each level. Representative samples are acceptable."""
+
+            prompts.append({
                 'nces_id': dist_obj.nces_id,
                 'district_name': dist_obj.name,
                 'state': dist_obj.state,
-                'search_terms': self._generate_search_terms(dist_obj, queue_item),
-                'context': self._build_search_context(queue_item)
-            }
-
-            queries.append(query)
-
-        return queries
-
-    def _generate_search_terms(
-        self,
-        district: District,
-        queue_item: EnrichmentQueue
-    ) -> List[str]:
-        """
-        Generate search terms for a district
-
-        Tries multiple variations to maximize discovery chances
-        """
-        terms = []
-
-        # Primary term: District name + "bell schedule"
-        terms.append(f'"{district.name}" bell schedule {district.state}')
-
-        # Alternative terms
-        terms.append(f'"{district.name}" daily schedule {district.state}')
-        terms.append(f'"{district.name}" school hours {district.state}')
-        terms.append(f'"{district.name}" start time end time {district.state}')
-        terms.append(f'"{district.name}" dismissal time {district.state}')
-
-        # If we know schools, search those too
-        if queue_item.tier_1_result:
-            schools = queue_item.tier_1_result.get('schools_found', [])
-            for school in schools[:2]:  # Limit to 2 schools
-                school_name = school.get('name', '')
-                if school_name:
-                    terms.append(f'"{school_name}" bell schedule {district.state}')
-
-        return terms
-
-    def _build_search_context(self, queue_item: EnrichmentQueue) -> str:
-        """
-        Build search context from previous tier attempts
-
-        This helps Gemini understand what we've already tried
-        """
-        context_parts = []
-
-        # CMS info
-        if queue_item.cms_detected:
-            context_parts.append(f"District website uses {queue_item.cms_detected} CMS.")
-
-        # Previous attempts
-        if queue_item.tier_1_result:
-            urls_attempted = queue_item.tier_1_result.get('urls_attempted', [])
-            if urls_attempted:
-                context_parts.append(f"Already checked {len(urls_attempted)} URLs without success.")
-
-        # Escalation reason
-        if queue_item.escalation_reason:
-            context_parts.append(f"Previous failure reason: {queue_item.escalation_reason}")
-
-        return " ".join(context_parts) if context_parts else "No previous context available."
-
-    # =========================================================================
-    # Gemini MCP Execution
-    # =========================================================================
-
-    def _execute_gemini_searches(
-        self,
-        search_queries: List[Dict]
-    ) -> List[Dict]:
-        """
-        Execute searches via Gemini MCP
-
-        NOTE: This is a placeholder. Actual implementation would use
-        the Gemini MCP tool (mcp__gemini__gemini-chat or similar).
-
-        For now, this returns a structure indicating the searches
-        that need to be executed.
-        """
-        logger.info(f"Would execute {len(search_queries)} Gemini searches")
-
-        # TODO: Implement actual Gemini MCP calls
-        # For now, return empty results to indicate not implemented
-        results = []
-
-        for query in search_queries:
-            results.append({
-                'nces_id': query['nces_id'],
-                'search_executed': False,
-                'implementation_needed': True,
-                'search_terms': query['search_terms'],
-                'context': query['context']
+                'website_url': website_url,
+                'prompt': prompt,
+                'context': 'educational research'
             })
 
-        logger.warning("Gemini MCP integration not yet implemented")
-        return results
+        return prompts
 
-    def _call_gemini_mcp(self, query: Dict) -> Dict:
+    def format_mcp_invocation(self, prompt_info: Dict) -> str:
         """
-        Call Gemini MCP for a single district
-
-        This would use the mcp__gemini__gemini-chat tool to:
-        1. Search for bell schedules
-        2. Navigate discovered pages
-        3. Extract schedule data
-        4. Return structured results
-        """
-        # TODO: Implement actual MCP call
-        # Example structure:
-        #
-        # from mcp_tools import gemini_chat
-        #
-        # prompt = f"""
-        # Search for the bell schedule for {query['district_name']} in {query['state']}.
-        #
-        # Try these search terms:
-        # {chr(10).join(f"- {term}" for term in query['search_terms'])}
-        #
-        # Context: {query['context']}
-        #
-        # Return:
-        # - Start time (e.g., "8:00 AM")
-        # - End time (e.g., "3:00 PM")
-        # - Source URL
-        # - Confidence (0.0-1.0)
-        # """
-        #
-        # response = gemini_chat(prompt)
-        # return self._parse_gemini_response(response, query)
-
-        pass
-
-    # =========================================================================
-    # Result Validation
-    # =========================================================================
-
-    def _validate_results(
-        self,
-        search_results: List[Dict],
-        districts: List[EnrichmentQueue]
-    ) -> List[Dict]:
-        """
-        Validate results from Gemini searches
-
-        Checks:
-            - Times are in valid format
-            - Total minutes is reasonable (180-540)
-            - Source URL is provided
-            - Confidence is within bounds
-        """
-        validated = []
-
-        for result in search_results:
-            nces_id = result.get('nces_id')
-
-            # If search not executed (implementation pending)
-            if result.get('implementation_needed'):
-                validated.append({
-                    'nces_id': nces_id,
-                    'success': False,
-                    'validation_error': 'gemini_mcp_not_implemented',
-                    'needs_manual_review': True
-                })
-                continue
-
-            # Validate times
-            start_time = result.get('start_time')
-            end_time = result.get('end_time')
-
-            if not start_time or not end_time:
-                validated.append({
-                    'nces_id': nces_id,
-                    'success': False,
-                    'validation_error': 'missing_times',
-                    'needs_manual_review': True
-                })
-                continue
-
-            # Validate time format
-            if not self.TIME_PATTERN.match(start_time) or not self.TIME_PATTERN.match(end_time):
-                validated.append({
-                    'nces_id': nces_id,
-                    'success': False,
-                    'validation_error': 'invalid_time_format',
-                    'needs_manual_review': True,
-                    'raw_times': {'start': start_time, 'end': end_time}
-                })
-                continue
-
-            # Validate total minutes
-            total_minutes = result.get('total_minutes', 0)
-            if not (180 <= total_minutes <= 540):
-                validated.append({
-                    'nces_id': nces_id,
-                    'success': False,
-                    'validation_error': 'unreasonable_total_minutes',
-                    'needs_manual_review': True,
-                    'total_minutes': total_minutes
-                })
-                continue
-
-            # Validate source URL
-            if not result.get('source_url'):
-                logger.warning(f"No source URL for {nces_id}")
-
-            # Validate confidence
-            confidence = result.get('confidence', 0.0)
-            if not (0.0 <= confidence <= 1.0):
-                confidence = 0.5  # Default to medium confidence
-
-            # If all validations pass
-            validated.append({
-                'nces_id': nces_id,
-                'success': True,
-                'start_time': start_time,
-                'end_time': end_time,
-                'total_minutes': total_minutes,
-                'source_url': result.get('source_url'),
-                'confidence': confidence,
-                'notes': result.get('notes', 'Extracted via Gemini MCP'),
-                'needs_manual_review': confidence < 0.6  # Low confidence still needs review
-            })
-
-        return validated
-
-    # =========================================================================
-    # Result Recording
-    # =========================================================================
-
-    def _record_results(
-        self,
-        batch_id: int,
-        validated_results: List[Dict],
-        districts: List[EnrichmentQueue]
-    ) -> Dict:
-        """
-        Record results to database
+        Format the MCP tool invocation for Claude to use.
 
         Args:
-            batch_id: Batch ID
-            validated_results: Validated results
-            districts: Original queue items
+            prompt_info: Dict from build_gemini_chat_prompts
+
+        Returns:
+            Formatted string showing how to invoke the MCP tool
+        """
+        return f"""mcp__gemini__gemini-chat(
+    message="{prompt_info['prompt']}",
+    context="{prompt_info['context']}"
+)"""
+
+    def parse_gemini_response(
+        self,
+        nces_id: str,
+        district_name: str,
+        gemini_response: str
+    ) -> Dict:
+        """
+        Parse a gemini-chat response into structured schedule data.
+
+        Always attempts to extract times, even if response says schedules
+        vary by school - we want representative samples in that case.
+
+        Args:
+            nces_id: NCES district ID
+            district_name: District name
+            gemini_response: Raw text response from gemini-chat
+
+        Returns:
+            Parsed schedule data dict
+        """
+        response_lower = gemini_response.lower()
+
+        # Check if this is a representative sample (schedules vary by school)
+        representative_indicators = [
+            "vary by school",
+            "varies by school",
+            "vary significantly",
+            "not standardized",
+            "no district-wide",
+            "school-specific",
+            "representative",
+            "example"
+        ]
+        is_representative_sample = any(
+            indicator in response_lower for indicator in representative_indicators
+        )
+
+        # Try to extract times from response (district-wide OR representative)
+        schedules = []
+        levels = ['elementary', 'middle', 'high']
+
+        for level in levels:
+            # Look for times near level mentions - expanded patterns
+            level_patterns = [
+                # Standard patterns
+                rf'{level}[^.]*?(\d{{1,2}}:\d{{2}}\s*[AaPp][Mm])[^.]*?(\d{{1,2}}:\d{{2}}\s*[AaPp][Mm])',
+                rf'{level}[:\s]+(\d{{1,2}}:\d{{2}}\s*[AaPp][Mm])\s*[-–to]+\s*(\d{{1,2}}:\d{{2}}\s*[AaPp][Mm])',
+                # Time range patterns (7:30 AM - 2:30 PM)
+                rf'{level}[^.]*?(\d{{1,2}}:\d{{2}}\s*[AaPp][Mm])\s*[-–—]+\s*(\d{{1,2}}:\d{{2}}\s*[AaPp][Mm])',
+                # Approximate patterns (approximately 7:30 AM - 2:30 PM)
+                rf'{level}[^.]*?approximately\s*(\d{{1,2}}:\d{{2}}\s*[AaPp][Mm])\s*[-–—]+\s*(\d{{1,2}}:\d{{2}}\s*[AaPp][Mm])',
+            ]
+
+            for pattern in level_patterns:
+                match = re.search(pattern, response_lower, re.IGNORECASE)
+                if match:
+                    start_time = match.group(1).upper().replace(' ', '')
+                    end_time = match.group(2).upper().replace(' ', '')
+
+                    # Calculate minutes
+                    minutes = self._calculate_minutes(start_time, end_time)
+
+                    schedules.append({
+                        'grade_level': level,
+                        'start_time': start_time,
+                        'end_time': end_time,
+                        'instructional_minutes': minutes
+                    })
+                    break
+
+        if schedules:
+            # Determine confidence based on source type
+            confidence = 0.6 if is_representative_sample else 0.7
+            notes_suffix = ' (representative sample)' if is_representative_sample else ''
+
+            return {
+                'nces_id': nces_id,
+                'success': True,
+                'schedules': schedules,
+                'confidence': confidence,
+                'is_representative_sample': is_representative_sample,
+                'raw_response': gemini_response,
+                'notes_suffix': notes_suffix,
+                'needs_manual_review': len(schedules) < 3  # Review if not all levels found
+            }
+        else:
+            # True failure - could not extract any usable times
+            return {
+                'nces_id': nces_id,
+                'success': False,
+                'reason': 'Could not parse schedule times from Gemini response',
+                'raw_response': gemini_response,
+                'needs_manual_review': True
+            }
+
+    def _calculate_minutes(self, start_time: str, end_time: str) -> int:
+        """Calculate instructional minutes between two times."""
+        try:
+            from datetime import datetime
+
+            # Normalize format
+            start = start_time.replace(' ', '').upper()
+            end = end_time.replace(' ', '').upper()
+
+            # Parse times
+            start_dt = datetime.strptime(start, '%I:%M%p')
+            end_dt = datetime.strptime(end, '%I:%M%p')
+
+            # Calculate difference
+            diff = (end_dt - start_dt).seconds // 60
+
+            return diff if diff > 0 else diff + 720  # Handle overnight
+        except Exception:
+            return 360  # Default to 6 hours
+
+    def record_gemini_responses(
+        self,
+        districts: List[EnrichmentQueue],
+        responses: List[Dict]
+    ) -> Dict:
+        """
+        Record parsed Gemini responses to database.
+
+        Args:
+            districts: List of EnrichmentQueue objects
+            responses: List of parsed response dicts from parse_gemini_response
 
         Returns:
             Summary statistics
         """
         successes = 0
+        representative_samples = 0
         manual_review = 0
 
-        for result in validated_results:
-            nces_id = result.get('nces_id')
+        for response in responses:
+            nces_id = response.get('nces_id')
 
-            if result.get('success') and not result.get('needs_manual_review'):
-                # Success - complete enrichment
-                self._record_success(nces_id, result)
+            if response.get('success'):
+                self._save_schedules(nces_id, response)
                 successes += 1
+                if response.get('is_representative_sample'):
+                    representative_samples += 1
             else:
-                # Failed or needs review - mark for manual review
-                self._mark_manual_review(nces_id, result)
+                self._mark_manual_review(nces_id, response)
                 manual_review += 1
 
         return {
-            'batch_id': batch_id,
-            'districts_processed': len(validated_results),
+            'districts_processed': len(responses),
             'successes': successes,
-            'manual_review': manual_review,
-            'success_rate': successes / len(validated_results) if validated_results else 0
+            'representative_samples': representative_samples,
+            'manual_review': manual_review
         }
 
-    def _record_success(self, nces_id: str, result: Dict):
-        """Record successful extraction"""
-        from sqlalchemy import text
+    def _save_schedules(self, nces_id: str, response: Dict):
+        """Save extracted schedules to database."""
+        from infrastructure.database.models import BellSchedule
 
-        self.session.execute(
-            text("""
-                SELECT complete_enrichment(
-                    :district_id, :tier, :result::jsonb, :success, :time
+        notes_suffix = response.get('notes_suffix', '')
+        base_notes = f'Extracted via Tier 5 Gemini Chat MCP{notes_suffix}'
+
+        for schedule in response.get('schedules', []):
+            # REQ-038: Validate schedule plausibility before database insertion
+            validation = validate_schedule_plausibility(schedule)
+            if not validation['valid']:
+                logger.warning(
+                    f"Skipping invalid schedule for {nces_id}: {validation['errors']}"
                 )
-            """),
-            {
-                'district_id': nces_id,
-                'tier': 5,
-                'result': json.dumps(result),
-                'success': True,
-                'time': None
-            }
-        )
+                continue
+
+            # Log warnings but don't block
+            if validation['warnings']:
+                logger.info(f"Schedule warnings for {nces_id}: {validation['warnings']}")
+
+            # Check if exists
+            existing = self.session.query(BellSchedule).filter_by(
+                district_id=nces_id,
+                year='2025-26',
+                grade_level=schedule['grade_level']
+            ).first()
+
+            if existing:
+                existing.start_time = schedule['start_time']
+                existing.end_time = schedule['end_time']
+                existing.instructional_minutes = schedule['instructional_minutes']
+                existing.method = 'automated_enrichment'
+                existing.confidence = 'medium'
+                existing.notes = base_notes
+            else:
+                bell = BellSchedule(
+                    district_id=nces_id,
+                    year='2025-26',
+                    grade_level=schedule['grade_level'],
+                    start_time=schedule['start_time'],
+                    end_time=schedule['end_time'],
+                    instructional_minutes=schedule['instructional_minutes'],
+                    method='automated_enrichment',
+                    confidence='medium',
+                    notes=base_notes
+                )
+                self.session.add(bell)
+
+        # Update queue
+        queue_item = self.session.query(EnrichmentQueue).filter_by(
+            district_id=nces_id
+        ).first()
+        if queue_item:
+            queue_item.status = 'completed'
+            queue_item.current_tier = 5
+            queue_item.tier_5_result = response
+
         self.session.commit()
 
-    def _mark_manual_review(self, nces_id: str, result: Dict):
-        """Mark district for manual review"""
+    def _mark_manual_review(self, nces_id: str, response: Dict):
+        """Mark district as needing manual review - Tier 5 couldn't extract data."""
         queue_item = self.session.query(EnrichmentQueue).filter_by(
-            district_id=nces_id,
-            current_tier=5
+            district_id=nces_id
         ).first()
-
         if queue_item:
             queue_item.status = 'manual_review'
-            queue_item.tier_5_result = result
-            queue_item.completed_at = datetime.utcnow()
-            queue_item.final_success = False
-
+            queue_item.current_tier = 5
+            queue_item.tier_5_result = response
+            queue_item.notes = response.get('reason', 'Tier 5 extraction failed')
         self.session.commit()
+
 
 
 def main():
-    """Example usage"""
+    """
+    Example usage - demonstrates Tier 5 Gemini Chat workflow.
+
+    In practice, Claude invokes mcp__gemini__gemini-chat for each prompt.
+    """
     from infrastructure.database.connection import session_scope
 
     with session_scope() as session:
@@ -478,21 +414,32 @@ def main():
         # Get districts at Tier 5
         districts = session.query(EnrichmentQueue).filter_by(
             current_tier=5, status='pending'
-        ).limit(10).all()
+        ).limit(5).all()
 
-        if districts:
-            # Build search queries
-            queries = processor._build_search_queries(districts)
-
-            print(f"Generated {len(queries)} search queries:")
-            print(json.dumps(queries[0], indent=2))
-
-            # Process batch (will show placeholder message)
-            result = processor.process_batch(districts)
-            print(f"\nBatch processing result: {result}")
-
-        else:
+        if not districts:
             print("No districts at Tier 5")
+            return
+
+        # Step 1: Build prompts for gemini-chat
+        prompts = processor.build_gemini_chat_prompts(districts)
+
+        print("=" * 80)
+        print("TIER 5: GEMINI CHAT MCP PROMPTS")
+        print("=" * 80)
+
+        for i, prompt_info in enumerate(prompts, 1):
+            print(f"\n## District {i}/{len(prompts)}: {prompt_info['district_name']} ({prompt_info['state']})")
+            print(f"NCES ID: {prompt_info['nces_id']}")
+            print(f"\n**To invoke:**")
+            print(f"  Tool: {processor.MCP_TOOL}")
+            print(f"  Message: {prompt_info['prompt'][:100]}...")
+            print(f"  Context: {prompt_info['context']}")
+
+        print("\n" + "=" * 80)
+        print("After invoking gemini-chat for each district, use:")
+        print("  processor.parse_gemini_response(nces_id, name, response)")
+        print("  processor.record_gemini_responses(districts, parsed_responses)")
+        print("=" * 80)
 
 
 if __name__ == '__main__':

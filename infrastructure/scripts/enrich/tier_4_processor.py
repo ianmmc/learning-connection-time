@@ -270,15 +270,24 @@ class Tier4Processor:
         Returns:
             Formatted text to present to Claude
         """
+        instructions = batch.get('instructions') or batch.get('shared_context') or """
+Please search each district's website to find bell schedule information.
+Extract:
+- Start and end times for each grade level (Elementary, Middle, High)
+- Total instructional minutes per day
+- Source URL where the information was found
+
+If unable to find bell schedule, note the reason.
+"""
         lines = [
             "=" * 80,
             f"TIER 4 BATCH PROCESSING REQUEST",
             f"Batch ID: {batch['batch_id']}",
             f"Districts: {batch['district_count']}",
-            f"Created: {batch['created_at']}",
+            f"Batch Type: {batch.get('batch_type', 'mixed')}",
             "=" * 80,
             "",
-            batch['instructions'],
+            instructions.strip(),
             "",
             "=" * 80,
             "DISTRICTS TO PROCESS",
@@ -287,25 +296,27 @@ class Tier4Processor:
         ]
 
         for i, district in enumerate(batch['districts'], 1):
+            website_url = district.get('website_url') or district.get('url') or 'Unknown'
             lines.extend([
                 f"## District {i}/{batch['district_count']}",
                 "",
                 f"**NCES ID:** {district['nces_id']}",
                 f"**Name:** {district['name']}",
                 f"**State:** {district['state']}",
-                f"**Enrollment:** {district['enrollment']:,}",
-                f"**Website:** {district['website_url']}",
+                f"**Enrollment:** {district.get('enrollment', 0):,}",
+                f"**Website:** {website_url}",
                 "",
                 f"**Previous Attempts:**",
-                f"- CMS: {district['cms_detected'] or 'Unknown'}",
-                f"- Content Type: {district['content_type'] or 'Unknown'}",
-                f"- Escalation Reason: {district['escalation_reason']}",
+                f"- CMS: {district.get('cms_detected') or 'Unknown'}",
+                f"- Content Type: {district.get('content_type') or 'Unknown'}",
+                f"- Escalation Reason: {district.get('escalation_reason', 'Unknown')}",
                 "",
             ])
 
-            if district['attempted_urls']:
+            attempted_urls = district.get('attempted_urls', [])
+            if attempted_urls:
                 lines.append("**URLs Attempted:**")
-                for url in district['attempted_urls'][:5]:  # Limit to 5
+                for url in attempted_urls[:5]:  # Limit to 5
                     lines.append(f"- {url}")
                 lines.append("")
 

@@ -56,14 +56,20 @@ class Tier2Processor:
         'first bell', 'last bell', 'instructional time'
     ]
 
-    def __init__(self, session: Session):
+    # Scraper service configuration
+    SCRAPER_BASE_URL = "http://localhost:3000"
+    SCRAPER_TIMEOUT = 60
+
+    def __init__(self, session: Session, scraper_url: str = None):
         """
         Initialize Tier 2 processor
 
         Args:
             session: SQLAlchemy database session
+            scraper_url: URL of scraper service (default: http://localhost:3000)
         """
         self.session = session
+        self.scraper_url = scraper_url or self.SCRAPER_BASE_URL
 
     # =========================================================================
     # Main Processing
@@ -218,10 +224,26 @@ class Tier2Processor:
             4. PDF/image link detection
         """
         try:
-            response = requests.get(url, timeout=20)
-            response.raise_for_status()
+            # Use scraper service to fetch HTML (avoids 403/CAPTCHA)
+            scrape_response = requests.post(
+                f"{self.scraper_url}/scrape",
+                json={'url': url, 'timeout': self.SCRAPER_TIMEOUT * 1000},
+                timeout=self.SCRAPER_TIMEOUT
+            )
+            scrape_response.raise_for_status()
+            scrape_data = scrape_response.json()
 
-            soup = BeautifulSoup(response.text, 'html.parser')
+            if not scrape_data.get('success'):
+                error_msg = scrape_data.get('error', 'Unknown error')
+                logger.error(f"Scraper failed for {url}: {error_msg}")
+                return {
+                    'url': url,
+                    'success': False,
+                    'error': f'scraper_failed: {error_msg}'
+                }
+
+            html_content = scrape_data.get('content', '')
+            soup = BeautifulSoup(html_content, 'html.parser')
 
             # Strategy 1: Try HTML table extraction
             table_result = self._extract_from_tables(soup, url)

@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 """
-Tier 1 Processor: Local Discovery (Playwright)
-Discovers district websites, school subsites, and potential bell schedule URLs
+Tier 1 Processor: Firecrawl Discovery + Playwright Fallback
+Discovers bell schedule pages using Firecrawl's intelligent map endpoint
 
 Tasks:
-    - Fetch district homepage
-    - Discover individual school subsites (subdomain/path patterns)
-    - Test common URL patterns for bell schedules
-    - Identify CMS platform (Finalsite, SchoolBlocks, Blackboard, etc.)
-    - Detect security blocks (Cloudflare, WAF, CAPTCHA)
+    - Use Firecrawl /v1/map to discover actual bell schedule URLs
+    - Fall back to Playwright scraper if Firecrawl unavailable
+    - Extract bell schedules using ContentParser
+    - Identify CMS platform and security blocks
 
-Cost: $0 (local compute only)
+Cost: $0 (local compute only - self-hosted Firecrawl)
 
 Usage:
     from tier_1_processor import Tier1Processor
@@ -24,13 +23,18 @@ Usage:
 import logging
 import requests
 import time
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Tuple
 from datetime import datetime
 from urllib.parse import urljoin, urlparse
 
 from sqlalchemy.orm import Session
 
 from infrastructure.database.models import District, EnrichmentQueue
+from infrastructure.scripts.enrich.firecrawl_discovery import (
+    FirecrawlDiscovery,
+    extract_bell_schedules_all,
+    get_expected_grade_levels,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -45,7 +49,7 @@ SCRAPER_TIMEOUT = 120  # seconds
 
 
 class Tier1Processor:
-    """Tier 1: Local Discovery using Playwright scraper"""
+    """Tier 1: Firecrawl Discovery with Playwright fallback"""
 
     def __init__(self, session: Session, scraper_url: str = SCRAPER_BASE_URL):
         """
@@ -57,6 +61,15 @@ class Tier1Processor:
         """
         self.session = session
         self.scraper_url = scraper_url
+
+        # Initialize Firecrawl discovery
+        self.firecrawl = FirecrawlDiscovery()
+        self.firecrawl_available = self.firecrawl.is_available()
+        if self.firecrawl_available:
+            logger.info("Firecrawl service is available - using intelligent discovery")
+        else:
+            logger.warning("Firecrawl not available - falling back to pattern matching")
+
         self._check_scraper_health()
 
     def _check_scraper_health(self):
@@ -67,6 +80,126 @@ class Tier1Processor:
             logger.info("Scraper service is healthy")
         except Exception as e:
             logger.warning(f"Scraper service may not be available: {e}")
+
+    # =========================================================================
+    # Firecrawl-Based Discovery
+    # =========================================================================
+
+    def _process_with_firecrawl(
+        self,
+        district_id: str,
+        district_name: str,
+        district_url: str,
+        expected_levels: List[str],
+        start_time: float
+    ) -> Dict:
+        """
+        Process district using Firecrawl's intelligent map discovery.
+
+        Args:
+            district_id: NCES district ID
+            district_name: District name
+            district_url: District website URL
+            expected_levels: Expected grade levels (elementary, middle, high)
+            start_time: Processing start time
+
+        Returns:
+            Result dictionary with discovery findings
+        """
+        logger.info(f"Using Firecrawl discovery for {district_name}")
+
+        try:
+            # Step 1: Discover bell schedule URLs using Firecrawl map
+            discovered_urls = self.firecrawl.discover_bell_schedule_urls(district_url)
+            logger.info(f"Firecrawl discovered {len(discovered_urls)} potential URLs")
+
+            if not discovered_urls:
+                # Try school-level discovery
+                logger.info("No district-level URLs, trying school-level discovery")
+                school_sites = self.firecrawl.discover_school_sites(district_url)
+                logger.info(f"Found {len(school_sites)} school sites")
+
+                for school_url in school_sites[:5]:
+                    school_urls = self.firecrawl.discover_bell_schedule_urls(school_url)
+                    discovered_urls.extend(school_urls[:3])
+
+            # Step 2: Extract bell schedules from discovered URLs
+            schedules_extracted = []
+            urls_with_content = []
+
+            if discovered_urls:
+                schedules = extract_bell_schedules_all(
+                    district_url,
+                    max_urls=min(10, len(discovered_urls)),
+                    expected_levels=expected_levels
+                )
+
+                for schedule_data, source_url in schedules:
+                    schedules_extracted.append({
+                        'grade_level': schedule_data.get('grade_level'),
+                        'start_time': schedule_data.get('start_time'),
+                        'end_time': schedule_data.get('end_time'),
+                        'instructional_minutes': schedule_data.get('instructional_minutes'),
+                        'confidence': schedule_data.get('confidence', 0.8),
+                        'source_url': source_url,
+                        'method': schedule_data.get('source_method', 'firecrawl')
+                    })
+                    urls_with_content.append({
+                        'url': source_url,
+                        'found': True,
+                        'has_schedule_content': True,
+                        'level': 'district'
+                    })
+
+            processing_time = int(time.time() - start_time)
+
+            result = {
+                'success': True,
+                'district_id': district_id,
+                'district_name': district_name,
+                'district_url': district_url,
+                'discovery_method': 'firecrawl_map',
+                'urls_discovered': len(discovered_urls),
+                'urls_attempted': urls_with_content + [
+                    {'url': u, 'found': False, 'has_schedule_content': False}
+                    for u in discovered_urls[:10] if u not in [x['url'] for x in urls_with_content]
+                ],
+                'bell_schedule_found': len(schedules_extracted) > 0,
+                'schedules_extracted': schedules_extracted,
+                'schools_found': [],
+                'school_count': 0,
+                'cms_detected': None,
+                'content_type': 'html',
+                'security_blocked': False,
+                'security_details': {'blocked': False},
+                'processing_time_seconds': processing_time,
+                'timestamp': datetime.utcnow().isoformat()
+            }
+
+            # Determine escalation
+            if schedules_extracted:
+                result['escalation_needed'] = False
+                result['escalation_reason'] = None
+            else:
+                result['escalation_needed'] = True
+                result['escalation_reason'] = 'firecrawl_no_schedules_extracted'
+
+            logger.info(f"Firecrawl completed for {district_id}: "
+                       f"urls_discovered={len(discovered_urls)}, "
+                       f"schedules_extracted={len(schedules_extracted)}")
+
+            return result
+
+        except Exception as e:
+            logger.error(f"Firecrawl processing failed for {district_id}: {e}", exc_info=True)
+            return {
+                'success': False,
+                'error': f'firecrawl_error: {str(e)}',
+                'district_id': district_id,
+                'discovery_method': 'firecrawl_failed',
+                'escalation_needed': True,
+                'escalation_reason': 'firecrawl_error'
+            }
 
     # =========================================================================
     # Main Processing
@@ -98,31 +231,55 @@ class Tier1Processor:
                 'district_id': district_id
             }
 
-        # Check if district has website URL
+        # Check if district has website URL, search if missing
         district_url = getattr(district, 'website_url', None)
         if not district_url:
-            logger.warning(f"District {district_id} has no website URL")
-            return {
-                'success': False,
-                'error': 'no_website_url',
-                'district_id': district_id,
-                'district_name': district.name
-            }
+            logger.info(f"District {district_id} has no website URL, searching...")
+            district_url = self._search_for_district_url(district.name, district.state)
+            if district_url:
+                # Save the discovered URL to the database
+                district.website_url = district_url
+                self.session.commit()
+                logger.info(f"Found and saved URL for {district.name}: {district_url}")
+            else:
+                logger.warning(f"Could not find website URL for {district.name}")
+                return {
+                    'success': False,
+                    'error': 'no_website_url_found',
+                    'district_id': district_id,
+                    'district_name': district.name,
+                    'escalation_needed': True,
+                    'escalation_reason': 'no_website_url'
+                }
 
         try:
-            # Step 1: Discover school sites
+            # Get expected grade levels from district
+            gslo = getattr(district, 'grade_span_low', None)
+            gshi = getattr(district, 'grade_span_high', None)
+            expected_levels = get_expected_grade_levels(gslo, gshi)
+
+            # Try Firecrawl-based discovery first
+            if self.firecrawl_available:
+                result = self._process_with_firecrawl(
+                    district_id, district.name, district_url, expected_levels, start_time
+                )
+                if result.get('bell_schedule_found') and result.get('schedules_extracted'):
+                    return result
+                logger.info(f"Firecrawl discovery didn't find schedules, trying fallback")
+
+            # Fallback to scraper-based discovery
             discovery_result = self._discover_schools(district_url, district.state)
 
-            # Step 2: Test common bell schedule URLs
+            # Test common bell schedule URLs (fallback)
             schedule_urls = self._test_common_schedule_urls(
                 district_url,
                 discovery_result.get('schools', [])
             )
 
-            # Step 3: Detect CMS platform
+            # Detect CMS platform
             cms_detected = self._detect_cms(district_url, discovery_result)
 
-            # Step 4: Check for security blocks
+            # Check for security blocks
             security_status = self._check_security_blocks(discovery_result)
 
             # Compile results
@@ -133,10 +290,15 @@ class Tier1Processor:
                 'district_id': district_id,
                 'district_name': district.name,
                 'district_url': district_url,
+                'discovery_method': 'fallback_pattern_matching',
                 'schools_found': discovery_result.get('schools', []),
                 'school_count': len(discovery_result.get('schools', [])),
                 'urls_attempted': schedule_urls,
-                'bell_schedule_found': any(url.get('found') for url in schedule_urls),
+                'bell_schedule_found': any(
+                    url.get('found') and url.get('has_schedule_content')
+                    for url in schedule_urls
+                ),
+                'schedules_extracted': [],
                 'cms_detected': cms_detected,
                 'content_type': self._determine_content_type(discovery_result, schedule_urls),
                 'security_blocked': security_status.get('blocked', False),
@@ -168,6 +330,62 @@ class Tier1Processor:
     # =========================================================================
     # Discovery Methods
     # =========================================================================
+
+    def _search_for_district_url(self, district_name: str, state: str) -> Optional[str]:
+        """
+        Search for district website URL using web search when not in database.
+
+        Args:
+            district_name: Name of the school district
+            state: Two-letter state code
+
+        Returns:
+            District website URL if found, None otherwise
+        """
+        import subprocess
+        import json as json_module
+
+        # Build search query
+        query = f"{district_name} {state} school district official website"
+        logger.info(f"Searching for district URL: {query}")
+
+        try:
+            # Use curl to call Claude's WebSearch-like functionality
+            # In practice, this would be called by Claude during interactive processing
+            # For automated runs, we'll use a simple heuristic approach
+
+            # Try common URL patterns first
+            name_slug = district_name.lower()
+            # Remove common suffixes
+            for suffix in [' school district', ' schools', ' unified', ' independent', ' public', ' city', ' county']:
+                name_slug = name_slug.replace(suffix, '')
+            name_slug = name_slug.strip().replace(' ', '')
+
+            # Common URL patterns to try
+            patterns = [
+                f"https://www.{name_slug}.k12.{state.lower()}.us",
+                f"https://{name_slug}.k12.{state.lower()}.us",
+                f"https://www.{name_slug}schools.org",
+                f"https://www.{name_slug}isd.org",
+                f"https://www.{name_slug}usd.org",
+            ]
+
+            for url in patterns:
+                try:
+                    response = requests.head(url, timeout=5, allow_redirects=True)
+                    if response.status_code == 200:
+                        logger.info(f"Found district URL via pattern: {url}")
+                        return response.url  # Return final URL after redirects
+                except Exception:
+                    continue
+
+            # If patterns don't work, log that manual search is needed
+            logger.warning(f"Could not find URL for {district_name}, {state} - needs WebSearch")
+            return None
+
+        except Exception as e:
+            logger.error(f"URL search failed for {district_name}: {e}")
+            return None
 
     def _discover_schools(self, district_url: str, state: str) -> Dict:
         """

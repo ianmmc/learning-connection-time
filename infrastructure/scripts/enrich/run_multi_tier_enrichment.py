@@ -37,6 +37,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from infrastructure.database.connection import session_scope
 from infrastructure.database.enrichment_queue_manager import EnrichmentQueueManager
 from infrastructure.database.batch_composer import BatchComposer
+from infrastructure.database.verification import (
+    generate_handoff_report,
+    check_audit_integrity,
+    detect_count_discrepancy
+)
 from infrastructure.scripts.enrich.tier_1_processor import Tier1Processor
 from infrastructure.scripts.enrich.tier_2_processor import Tier2Processor
 from infrastructure.scripts.enrich.tier_3_processor import Tier3Processor
@@ -319,9 +324,53 @@ class MultiTierOrchestrator:
         logger.info(f"  Current: ${status.get('current_cost', 0):.2f}")
         logger.info(f"  Budget: ${status.get('budget_limit') or 'Unlimited'}")
 
+        # Run verification checks (REQ-035, REQ-036, REQ-037)
+        self._run_verification(queue_manager.session)
+
         logger.info("\n" + "=" * 80)
         logger.info("ENRICHMENT COMPLETE")
         logger.info("=" * 80)
+
+    def _run_verification(self, session):
+        """
+        Run post-enrichment verification checks (REQ-035, REQ-036, REQ-037).
+
+        This safeguard was added after 'The Case of the Missing Bell Schedules'
+        investigation (Jan 24, 2026) to prevent AI hallucination of enrichment counts.
+        """
+        logger.info("\n" + "=" * 80)
+        logger.info("VERIFICATION CHECKS (Post-Enrichment)")
+        logger.info("=" * 80)
+
+        try:
+            # Generate verified report from database
+            report = generate_handoff_report(session)
+
+            logger.info(f"\nVerified Database State:")
+            logger.info(f"  Enriched districts: {report['enriched_districts']}")
+            logger.info(f"  States with data: {report['states_with_enrichment']}")
+            logger.info(f"  Database snapshot: {report['verified_at']}")
+
+            # Check audit trail integrity
+            integrity = check_audit_integrity(session)
+
+            logger.info(f"\nAudit Trail Integrity: {integrity['integrity_status'].upper()}")
+            logger.info(f"  Completeness: {integrity['completeness_percent']:.1f}%")
+
+            if integrity['violations']:
+                logger.warning("  Violations detected:")
+                for v in integrity['violations']:
+                    logger.warning(f"    - {v['type']}: {v['message']}")
+
+            # Log date distribution for verification
+            if report.get('date_distribution'):
+                logger.info(f"\nRecords by date:")
+                for date, count in sorted(report['date_distribution'].items())[-5:]:
+                    logger.info(f"    {date}: {count} records")
+
+        except Exception as e:
+            logger.error(f"Verification failed: {e}")
+            logger.warning("Proceeding without verification - CHECK DATABASE MANUALLY")
 
 
 def main():
