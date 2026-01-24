@@ -6,30 +6,45 @@ Load this appendix when doing development work, running tests, or executing comm
 
 ## Development Workflow
 
-### 1. Start with Sample Data
+### 1. Full Database Rebuild (From Raw Sources)
+
 ```bash
-python infrastructure/scripts/download/fetch_nces_ccd.py --year 2023-24 --sample
-python pipelines/full_pipeline.py --year 2023-24 --sample
+# Complete rebuild from scratch - runs all phases
+python infrastructure/scripts/rebuild_database.py
+
+# With dry-run to preview
+python infrastructure/scripts/rebuild_database.py --dry-run
+
+# Start from specific phase (skip reset)
+python infrastructure/scripts/rebuild_database.py --phase 3 --skip-reset
 ```
 
-### 2. Process Real Data Incrementally
+### 2. Individual Pipeline Steps
+
 ```bash
-# Download
-python infrastructure/scripts/download/fetch_nces_ccd.py --year 2023-24
+# Reset database (preserves schema)
+python infrastructure/scripts/reset_database.py --force
 
-# Extract multi-part files if present
-python infrastructure/scripts/extract/split_large_files.py data/raw/federal/nces-ccd/2023_24/
+# Load foundation data (districts, state requirements)
+python infrastructure/database/migrations/import_all_data.py
 
-# Normalize
-python infrastructure/scripts/transform/normalize_districts.py input.csv --source nces --year 2023-24
+# Load staff and enrollment
+python infrastructure/database/migrations/import_staff_and_enrollment.py --year 2023-24
 
-# Calculate LCT
-python infrastructure/scripts/analyze/calculate_lct.py input.csv --summary --filter-invalid
+# Load SPED baseline
+python infrastructure/database/migrations/import_sped_baseline.py
+
+# Run bell schedule enrichment
+python infrastructure/scripts/enrich/run_multi_tier_enrichment.py --districts 10
+
+# Calculate LCT (DB-first, then exports)
+python infrastructure/scripts/analyze/calculate_lct_variants.py
 ```
 
 ### 3. Development Principles
 - **Never modify raw data**: Work with copies in processed/
-- **Document lineage**: Scripts create `_lineage.yaml` automatically
+- **Database is source of truth**: CSVs are exports from database
+- **Verify enrichment claims**: Run `verify_enrichment.py` after any enrichment
 - **Test incrementally**: Validate at each pipeline stage
 - **Log everything**: Use Python's logging module
 

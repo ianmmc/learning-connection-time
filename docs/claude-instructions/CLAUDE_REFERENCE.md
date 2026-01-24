@@ -14,13 +14,14 @@ Load this appendix when you need historical context, directory structure, or tec
 ### Core Processing Scripts
 | Stage | Script | Purpose |
 |-------|--------|---------|
-| Download | `fetch_nces_ccd.py` | Fetches NCES Common Core of Data |
-| Enrich | `fetch_bell_schedules.py` | Bell schedules from district websites |
-| Extract | `split_large_files.py` | Handles multi-part files |
-| Extract | `extract_grade_level_enrollment.py` | K-12 enrollment by grade |
-| Extract | `extract_grade_level_staffing.py` | Teacher counts with Option C allocation |
-| Transform | `normalize_districts.py` | Standard schema normalization |
-| Analyze | `calculate_lct.py` | LCT calculation with grade-level support |
+| Orchestrate | `rebuild_database.py` | Master orchestrator for full rebuild |
+| Reset | `reset_database.py` | Database reset (preserves schema) |
+| Import | `import_all_data.py` | Load districts, state requirements |
+| Import | `import_staff_and_enrollment.py` | Load NCES staff/enrollment |
+| Import | `import_sped_baseline.py` | Load SPED baseline (2017-18) |
+| Enrich | `run_multi_tier_enrichment.py` | 5-tier bell schedule enrichment |
+| Analyze | `calculate_lct_variants.py` | LCT calculation (10 scope variants) |
+| Verify | `verify_enrichment.py` | Post-enrichment verification |
 
 ### Data Optimization (Dec 2024)
 - **Slim NCES Files**: 88% reduction (683 MB → 83 MB) in `data/processed/slim/`
@@ -31,7 +32,8 @@ Load this appendix when you need historical context, directory structure, or tec
 - Tables: districts (17,842), state_requirements (50), bell_schedules (214), lct_calculations, data_lineage
 
 ### Bell Schedule Scraper Service (Jan 2026)
-- Location: `scraper/`
+
+- Location: `infrastructure/scraper/`
 - Technology: Express.js + Playwright
 - Features: Browser pool (5 concurrent), rate limiting, security block detection
 - Ethical: respects blocks, no bypass attempts
@@ -81,13 +83,13 @@ learning-connection-time/
 │   │   ├── extract/               # Parsing
 │   │   ├── transform/             # Normalization
 │   │   └── analyze/               # Metric calculations
-│   └── utilities/                 # Helper functions
-├── scraper/                       # Bell schedule scraper service
-│   ├── src/
-│   │   ├── server.ts             # Express HTTP server
-│   │   ├── scraper.ts            # Playwright scraper
-│   │   └── pool.ts               # Browser pool
-│   └── Dockerfile
+│   ├── utilities/                 # Helper functions
+│   └── scraper/                   # Bell schedule scraper service
+│       ├── src/
+│       │   ├── server.ts         # Express HTTP server
+│       │   ├── scraper.ts        # Playwright scraper
+│       │   └── pool.ts           # Browser pool
+│       └── Dockerfile
 ├── tests/                         # Test suite
 └── pipelines/                     # Automated workflows
 ```

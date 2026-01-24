@@ -40,14 +40,16 @@ Part of "Reducing the Ratio" educational equity initiative. Currently implementi
 
 ---
 
-## Project Status (January 23, 2026)
+## Project Status (January 24, 2026)
 
 - **Phase**: Bell Schedule Automation
-- **Bell Schedules**: 192 districts enriched
-- **Scraper Service**: `scraper/` - Playwright-based, operational
+- **Bell Schedules**: ~103 districts enriched (verified from database)
+- **Scraper Service**: `infrastructure/scraper/` - Playwright-based, operational
 - **SEA Integrations**: 9/9 complete (FL, TX, CA, NY, IL, MI, PA, VA, MA)
 - **Database**: PostgreSQL 16, 17,842 districts
 - **Test Suite**: 375 passed
+
+> **Note**: Prior documentation claimed 192 districts. Investigation on Jan 24, 2026 revealed this was hallucinated. See `docs/archive/RECONCILIATION_REPORT_20260124.md` for details.
 
 ---
 
