@@ -76,45 +76,85 @@ class ContentParser:
 
     def parse(self, markdown: str, html: str = "") -> Optional[BellScheduleData]:
         """
-        Parse content to extract bell schedule data.
+        Parse content to extract bell schedule data (single result, backward compatible).
 
         Args:
             markdown: Markdown content from Firecrawl
             html: Raw HTML content (fallback)
 
         Returns:
-            BellScheduleData if extraction successful, None otherwise
+            BellScheduleData if extraction successful, None otherwise (prioritizes high school)
+        """
+        results = self.parse_all(markdown, html)
+        if not results:
+            return None
+
+        # Prioritize high > middle > elementary for backward compatibility
+        for level in ['high', 'middle', 'elementary']:
+            for result in results:
+                if result.grade_level == level:
+                    return result
+
+        return results[0] if results else None
+
+    def parse_all(self, markdown: str, html: str = "", expected_levels: List[str] = None) -> List[BellScheduleData]:
+        """
+        Parse content to extract ALL bell schedule data for each grade level.
+
+        Args:
+            markdown: Markdown content from Firecrawl
+            html: Raw HTML content (fallback)
+            expected_levels: List of grade levels to extract (e.g., ['elementary', 'middle', 'high'])
+                           If None, extracts all found levels
+
+        Returns:
+            List of BellScheduleData, one per grade level found
         """
         text = markdown if markdown else html
         if not text:
-            return None
+            return []
 
-        # Step 1: Try markdown table parsing
-        result = self._parse_markdown_tables(markdown)
-        if result:
-            result.source_method = 'table'
-            result.confidence = 0.9
-            return result
+        results = []
 
-        # Step 2: Try regex patterns
-        result = self._regex_extraction(text)
-        if result:
-            result.source_method = 'regex'
-            result.confidence = 0.7
-            return result
+        # Step 1: Try markdown table parsing (can return multiple levels)
+        table_results = self._parse_markdown_tables_all(markdown)
+        if table_results:
+            for result in table_results:
+                result.source_method = 'table'
+                result.confidence = 0.9
+            results.extend(table_results)
 
-        # Step 3: Try LLM extraction (if enabled)
+        # Step 2: Try regex patterns for any levels not yet found
+        found_levels = {r.grade_level for r in results}
+        missing_levels = (set(expected_levels) if expected_levels else {'elementary', 'middle', 'high'}) - found_levels
+
+        if missing_levels:
+            regex_result = self._regex_extraction(text)
+            if regex_result and regex_result.grade_level in missing_levels:
+                regex_result.source_method = 'regex'
+                regex_result.confidence = 0.7
+                results.append(regex_result)
+
+        # Step 3: Try LLM extraction for remaining levels (if enabled)
         if self.use_llm:
-            result = self._llm_extraction(text)
-            if result:
-                result.source_method = 'llm'
-                return result
+            found_levels = {r.grade_level for r in results}
+            missing_levels = (set(expected_levels) if expected_levels else set()) - found_levels
 
-        return None
+            for level in missing_levels:
+                llm_result = self._llm_extraction(text, target_level=level)
+                if llm_result:
+                    llm_result.source_method = 'llm'
+                    results.append(llm_result)
+
+        # Filter to expected levels if specified
+        if expected_levels:
+            results = [r for r in results if r.grade_level in expected_levels]
+
+        return results
 
     def _parse_markdown_tables(self, markdown: str) -> Optional[BellScheduleData]:
         """
-        Parse markdown tables to extract bell schedule data.
+        Parse markdown tables to extract bell schedule data (single result).
 
         Handles formats like:
         | School | Bell Times |
@@ -122,67 +162,96 @@ class ContentParser:
         | Elementary | 7:25-2:05 |
         | High School | 7:30-2:20 |
         """
-        if not markdown:
+        results = self._parse_markdown_tables_all(markdown)
+        if not results:
             return None
 
-        # Find markdown tables (rows with |)
-        table_lines = []
+        # Prioritize high > middle > elementary
+        for level in ['high', 'middle', 'elementary']:
+            for result in results:
+                if result.grade_level == level:
+                    return result
+
+        return results[0] if results else None
+
+    def _parse_markdown_tables_all(self, markdown: str) -> List[BellScheduleData]:
+        """
+        Parse markdown tables to extract ALL bell schedule data for each grade level.
+
+        Returns:
+            List of BellScheduleData, one per grade level found
+        """
+        if not markdown:
+            return []
+
+        # Find ALL markdown tables (rows with |)
+        all_tables = []
+        current_table = []
         in_table = False
 
         for line in markdown.split('\n'):
-            line = line.strip()
-            if '|' in line:
+            line_stripped = line.strip()
+            if '|' in line_stripped:
                 in_table = True
-                table_lines.append(line)
-            elif in_table and not line:
-                break  # End of table
+                current_table.append(line_stripped)
+            elif in_table:
+                if current_table:
+                    all_tables.append(current_table)
+                current_table = []
+                in_table = False
 
-        if len(table_lines) < 3:  # Need header, separator, and at least one data row
-            return None
+        # Don't forget last table
+        if current_table:
+            all_tables.append(current_table)
 
-        # Extract time ranges from table
+        # Extract time ranges from all tables
         times_by_level = {'elementary': [], 'middle': [], 'high': []}
 
-        for line in table_lines[2:]:  # Skip header and separator
-            cells = [c.strip() for c in line.split('|') if c.strip()]
+        for table_lines in all_tables:
+            if len(table_lines) < 3:  # Need header, separator, and at least one data row
+                continue
 
-            # Look for time patterns in each cell
-            for cell in cells:
-                # Try time range pattern (e.g., "7:25-2:05" or "7:25 AM - 2:05 PM")
-                match = re.search(self.TIME_RANGE_PATTERN, cell, re.IGNORECASE)
-                if match:
-                    start, end = match.groups()
+            for line in table_lines[2:]:  # Skip header and separator
+                cells = [c.strip() for c in line.split('|') if c.strip()]
 
-                    # Determine grade level from the row
-                    row_text = line.lower()
-                    level = self._detect_grade_level(row_text)
+                # Look for time patterns in each cell
+                for cell in cells:
+                    # Try time range pattern (e.g., "7:25-2:05" or "7:25 AM - 2:05 PM")
+                    match = re.search(self.TIME_RANGE_PATTERN, cell, re.IGNORECASE)
+                    if match:
+                        start, end = match.groups()
 
-                    times_by_level[level].append({
-                        'start': self._normalize_time(start),
-                        'end': self._normalize_time(end),
-                        'raw': cell
-                    })
+                        # Determine grade level from the row
+                        row_text = line.lower()
+                        level = self._detect_grade_level(row_text)
 
-        # Find the most common schedule (or prioritize high school)
-        for level in ['high', 'middle', 'elementary']:
+                        times_by_level[level].append({
+                            'start': self._normalize_time(start),
+                            'end': self._normalize_time(end),
+                            'raw': cell
+                        })
+
+        # Build results for each grade level with data
+        results = []
+        for level in ['elementary', 'middle', 'high']:
             if times_by_level[level]:
                 times = times_by_level[level]
-                # Use the first valid time found
+                # Use the first valid time found for this level
                 start = times[0]['start']
                 end = times[0]['end']
                 minutes = self._calculate_minutes(start, end)
 
                 if minutes and 240 <= minutes <= 540:  # 4-9 hours reasonable
-                    return BellScheduleData(
+                    results.append(BellScheduleData(
                         start_time=start,
                         end_time=end,
                         instructional_minutes=minutes,
                         grade_level=level,
                         schools_sampled=[t['raw'] for t in times[:5]],
-                        raw_data={'times_by_level': times_by_level}
-                    )
+                        raw_data={'times_by_level': {level: times_by_level[level]}}
+                    ))
 
-        return None
+        return results
 
     def _regex_extraction(self, text: str) -> Optional[BellScheduleData]:
         """
@@ -235,12 +304,18 @@ class ContentParser:
             grade_level=grade_level,
         )
 
-    def _llm_extraction(self, text: str) -> Optional[BellScheduleData]:
+    def _llm_extraction(self, text: str, target_level: str = None) -> Optional[BellScheduleData]:
         """
         Use LLM to extract bell schedule times.
 
         Tries Claude first (via API), then Gemini (via MCP).
-        This is a placeholder - implementation depends on API availability.
+
+        Args:
+            text: Content to parse
+            target_level: Optional specific grade level to extract ('elementary', 'middle', 'high')
+
+        Returns:
+            BellScheduleData or None
         """
         # TODO: Implement LLM extraction
         # For now, return None to indicate this step is not yet implemented
@@ -364,13 +439,13 @@ class ContentParser:
 
 def parse_firecrawl_result(firecrawl_data: Dict) -> Optional[BellScheduleData]:
     """
-    Parse a Firecrawl scrape result to extract bell schedule data.
+    Parse a Firecrawl scrape result to extract bell schedule data (single result).
 
     Args:
         firecrawl_data: Response from Firecrawl /v1/scrape endpoint
 
     Returns:
-        BellScheduleData if extraction successful, None otherwise
+        BellScheduleData if extraction successful, None otherwise (prioritizes high school)
     """
     markdown = firecrawl_data.get('markdown', '')
     html = firecrawl_data.get('html', '')
@@ -379,9 +454,31 @@ def parse_firecrawl_result(firecrawl_data: Dict) -> Optional[BellScheduleData]:
     return parser.parse(markdown, html)
 
 
+def parse_firecrawl_result_all(
+    firecrawl_data: Dict,
+    expected_levels: List[str] = None
+) -> List[BellScheduleData]:
+    """
+    Parse a Firecrawl scrape result to extract ALL bell schedule data.
+
+    Args:
+        firecrawl_data: Response from Firecrawl /v1/scrape endpoint
+        expected_levels: List of grade levels to extract (e.g., ['elementary', 'middle', 'high'])
+                        If None, extracts all found levels
+
+    Returns:
+        List of BellScheduleData, one per grade level found
+    """
+    markdown = firecrawl_data.get('markdown', '')
+    html = firecrawl_data.get('html', '')
+
+    parser = ContentParser()
+    return parser.parse_all(markdown, html, expected_levels)
+
+
 # For testing
 if __name__ == "__main__":
-    # Test with sample data
+    # Test with sample data containing all three levels
     sample_markdown = """
     # Bell Schedules
 
@@ -393,13 +490,26 @@ if __name__ == "__main__":
     """
 
     parser = ContentParser()
-    result = parser.parse(sample_markdown, "")
 
+    print("=== Single Result (backward compatible) ===")
+    result = parser.parse(sample_markdown, "")
     if result:
-        print(f"Extracted: {result.start_time} - {result.end_time}")
-        print(f"Minutes: {result.instructional_minutes}")
-        print(f"Grade Level: {result.grade_level}")
-        print(f"Confidence: {result.confidence}")
-        print(f"Method: {result.source_method}")
+        print(f"  {result.grade_level}: {result.start_time} - {result.end_time} ({result.instructional_minutes} min)")
     else:
-        print("No bell schedule found")
+        print("  No bell schedule found")
+
+    print("\n=== All Results (multi-level) ===")
+    results = parser.parse_all(sample_markdown, "")
+    if results:
+        for result in results:
+            print(f"  {result.grade_level}: {result.start_time} - {result.end_time} ({result.instructional_minutes} min)")
+    else:
+        print("  No bell schedules found")
+
+    print("\n=== Filtered Results (K-8 district) ===")
+    results = parser.parse_all(sample_markdown, "", expected_levels=['elementary', 'middle'])
+    if results:
+        for result in results:
+            print(f"  {result.grade_level}: {result.start_time} - {result.end_time} ({result.instructional_minutes} min)")
+    else:
+        print("  No bell schedules found")

@@ -400,12 +400,57 @@ def discover_and_scrape_bell_schedules(
     return results
 
 
+def get_expected_grade_levels(gslo: str, gshi: str) -> List[str]:
+    """
+    Determine expected grade levels based on NCES grade span codes.
+
+    Args:
+        gslo: Grade span low (PK, KG, 01-12)
+        gshi: Grade span high (PK, KG, 01-12)
+
+    Returns:
+        List of grade levels: subset of ['elementary', 'middle', 'high']
+    """
+    if not gslo or not gshi:
+        return ['elementary', 'middle', 'high']  # Default to all
+
+    # Convert to numeric
+    def to_num(grade):
+        if grade in ('PK', 'pk'):
+            return -1
+        if grade in ('KG', 'kg'):
+            return 0
+        try:
+            return int(grade)
+        except:
+            return 0
+
+    low = to_num(gslo)
+    high = to_num(gshi)
+
+    levels = []
+
+    # Elementary: serves any of PK-5
+    if low <= 5 and high >= 0:
+        levels.append('elementary')
+
+    # Middle: serves any of 6-8
+    if low <= 8 and high >= 6:
+        levels.append('middle')
+
+    # High: serves any of 9-12
+    if high >= 9:
+        levels.append('high')
+
+    return levels if levels else ['high']  # Default to high if nothing detected
+
+
 def extract_bell_schedule(
     district_url: str,
     max_urls: int = 5
 ) -> Optional[Tuple[Dict, str]]:
     """
-    End-to-end bell schedule extraction using Firecrawl and ContentParser.
+    End-to-end bell schedule extraction using Firecrawl and ContentParser (single result).
 
     Args:
         district_url: Base URL of the school district
@@ -414,6 +459,35 @@ def extract_bell_schedule(
     Returns:
         Tuple of (BellScheduleData dict, source_url) or None if not found
     """
+    results = extract_bell_schedules_all(district_url, max_urls)
+    if not results:
+        return None
+
+    # Prioritize high > middle > elementary
+    for level in ['high', 'middle', 'elementary']:
+        for schedule_data, source_url in results:
+            if schedule_data.get('grade_level') == level:
+                return (schedule_data, source_url)
+
+    return results[0] if results else None
+
+
+def extract_bell_schedules_all(
+    district_url: str,
+    max_urls: int = 5,
+    expected_levels: List[str] = None
+) -> List[Tuple[Dict, str]]:
+    """
+    End-to-end bell schedule extraction for ALL grade levels.
+
+    Args:
+        district_url: Base URL of the school district
+        max_urls: Maximum number of URLs to try
+        expected_levels: List of grade levels to extract (e.g., ['elementary', 'middle', 'high'])
+
+    Returns:
+        List of (BellScheduleData dict, source_url) tuples, one per grade level found
+    """
     from .content_parser import ContentParser
 
     discovery = FirecrawlDiscovery()
@@ -421,29 +495,43 @@ def extract_bell_schedule(
 
     if not discovery.is_available():
         logger.warning("Firecrawl not available")
-        return None
+        return []
 
     # Discover and scrape
     results = discover_and_scrape_bell_schedules(district_url, max_urls)
 
-    # Try to parse each result
-    for result in results:
-        schedule = parser.parse(result.get('markdown', ''), result.get('html', ''))
-        if schedule:
-            return (
-                {
-                    'start_time': schedule.start_time,
-                    'end_time': schedule.end_time,
-                    'instructional_minutes': schedule.instructional_minutes,
-                    'grade_level': schedule.grade_level,
-                    'confidence': schedule.confidence,
-                    'source_method': f"firecrawl_{schedule.source_method}",
-                    'schools_sampled': schedule.schools_sampled,
-                },
-                result['url']
-            )
+    # Collect all schedules from all pages
+    all_schedules = []
+    found_levels = set()
 
-    return None
+    for result in results:
+        schedules = parser.parse_all(
+            result.get('markdown', ''),
+            result.get('html', ''),
+            expected_levels=expected_levels
+        )
+
+        for schedule in schedules:
+            if schedule.grade_level not in found_levels:
+                found_levels.add(schedule.grade_level)
+                all_schedules.append((
+                    {
+                        'start_time': schedule.start_time,
+                        'end_time': schedule.end_time,
+                        'instructional_minutes': schedule.instructional_minutes,
+                        'grade_level': schedule.grade_level,
+                        'confidence': schedule.confidence,
+                        'source_method': f"firecrawl_{schedule.source_method}",
+                        'schools_sampled': schedule.schools_sampled,
+                    },
+                    result['url']
+                ))
+
+        # Stop if we have all expected levels
+        if expected_levels and found_levels >= set(expected_levels):
+            break
+
+    return all_schedules
 
 
 def save_firecrawl_result_to_database(
@@ -454,12 +542,7 @@ def save_firecrawl_result_to_database(
     tier: int = 1
 ) -> Tuple[bool, str]:
     """
-    Save Firecrawl extraction results to the enrichment queue and bell_schedules table.
-
-    This function:
-    1. Creates/updates an EnrichmentQueue record with Firecrawl results
-    2. Marks it as completed
-    3. Copies it to the bell_schedules table
+    Save single Firecrawl extraction result to the enrichment queue and bell_schedules table.
 
     Args:
         session: SQLAlchemy database session
@@ -471,9 +554,41 @@ def save_firecrawl_result_to_database(
     Returns:
         Tuple of (success: bool, message: str)
     """
+    # Wrap single schedule in list and call multi-save
+    results = save_firecrawl_results_to_database(
+        session, district_id, [(schedule_data, source_url)], tier
+    )
+    return results
+
+
+def save_firecrawl_results_to_database(
+    session,
+    district_id: str,
+    schedule_results: List[Tuple[Dict, str]],
+    tier: int = 1
+) -> Tuple[bool, str]:
+    """
+    Save multiple Firecrawl extraction results (all grade levels) to the database.
+
+    This function:
+    1. Creates/updates an EnrichmentQueue record with combined Firecrawl results
+    2. Marks it as completed
+    3. Directly inserts into bell_schedules table for each grade level
+
+    Args:
+        session: SQLAlchemy database session
+        district_id: NCES district ID
+        schedule_results: List of (schedule_data dict, source_url) tuples
+        tier: Which tier to record this as (default 1 for Firecrawl)
+
+    Returns:
+        Tuple of (success: bool, message: str)
+    """
     from sqlalchemy import text
     from infrastructure.database.models import EnrichmentQueue
-    from infrastructure.database.enrichment_utils import copy_enrichment_to_bell_schedules
+
+    if not schedule_results:
+        return False, "No schedules to save"
 
     # Verify district exists using raw SQL (avoids ORM schema mismatch issues)
     result = session.execute(
@@ -483,22 +598,90 @@ def save_firecrawl_result_to_database(
     if not result.fetchone():
         return False, f"District {district_id} not found in database"
 
-    # Build tier result in expected format
+    # Build combined tier result with all grade levels
     tier_result = {
-        'start_time': schedule_data.get('start_time'),
-        'end_time': schedule_data.get('end_time'),
-        'instructional_minutes': schedule_data.get('instructional_minutes'),
-        'total_minutes': schedule_data.get('instructional_minutes'),  # Alias
-        'schedule_type': schedule_data.get('grade_level', 'high'),
-        'confidence': schedule_data.get('confidence', 0.8),
-        'source_url': source_url,
-        'extraction_method': schedule_data.get('source_method', 'firecrawl'),
-        'schools_sampled': schedule_data.get('schools_sampled', []),
-        'year': '2025-26',  # Current school year
-        'notes': f"Extracted via Firecrawl from {source_url}"
+        'schedules': [],
+        'year': '2025-26',
+        'extraction_method': 'firecrawl',
     }
 
-    # Get or create enrichment queue entry
+    saved_levels = []
+
+    for schedule_data, source_url in schedule_results:
+        grade_level = schedule_data.get('grade_level', 'high')
+
+        tier_result['schedules'].append({
+            'start_time': schedule_data.get('start_time'),
+            'end_time': schedule_data.get('end_time'),
+            'instructional_minutes': schedule_data.get('instructional_minutes'),
+            'schedule_type': grade_level,
+            'confidence': schedule_data.get('confidence', 0.8),
+            'source_url': source_url,
+            'extraction_method': schedule_data.get('source_method', 'firecrawl'),
+            'schools_sampled': schedule_data.get('schools_sampled', []),
+        })
+
+        # Insert directly into bell_schedules table
+        try:
+            # Check if record exists
+            existing = session.execute(
+                text("""
+                    SELECT id FROM bell_schedules
+                    WHERE district_id = :district_id AND year = '2025-26' AND grade_level = :grade_level
+                """),
+                {"district_id": district_id, "grade_level": grade_level}
+            ).fetchone()
+
+            if existing:
+                # Update existing
+                session.execute(
+                    text("""
+                        UPDATE bell_schedules SET
+                            start_time = :start_time,
+                            end_time = :end_time,
+                            instructional_minutes = :instructional_minutes,
+                            source_urls = :source_urls,
+                            confidence = :confidence,
+                            method = 'automated_enrichment',
+                            updated_at = NOW()
+                        WHERE id = :id
+                    """),
+                    {
+                        "id": existing[0],
+                        "start_time": schedule_data.get('start_time'),
+                        "end_time": schedule_data.get('end_time'),
+                        "instructional_minutes": schedule_data.get('instructional_minutes'),
+                        "source_urls": f'["{source_url}"]',
+                        "confidence": 'high' if schedule_data.get('confidence', 0.8) >= 0.8 else 'medium',
+                    }
+                )
+            else:
+                # Insert new
+                session.execute(
+                    text("""
+                        INSERT INTO bell_schedules
+                        (district_id, year, grade_level, start_time, end_time, instructional_minutes,
+                         source_urls, confidence, method)
+                        VALUES (:district_id, '2025-26', :grade_level, :start_time, :end_time,
+                                :instructional_minutes, :source_urls, :confidence, 'automated_enrichment')
+                    """),
+                    {
+                        "district_id": district_id,
+                        "grade_level": grade_level,
+                        "start_time": schedule_data.get('start_time'),
+                        "end_time": schedule_data.get('end_time'),
+                        "instructional_minutes": schedule_data.get('instructional_minutes'),
+                        "source_urls": f'["{source_url}"]',
+                        "confidence": 'high' if schedule_data.get('confidence', 0.8) >= 0.8 else 'medium',
+                    }
+                )
+
+            saved_levels.append(grade_level)
+
+        except Exception as e:
+            logger.error(f"Error saving {grade_level} schedule for {district_id}: {e}")
+
+    # Update enrichment queue
     enrichment = session.query(EnrichmentQueue).filter_by(district_id=district_id).first()
 
     if not enrichment:
@@ -526,41 +709,44 @@ def save_firecrawl_result_to_database(
 
     session.commit()
 
-    # Now copy to bell_schedules table
-    success, message = copy_enrichment_to_bell_schedules(session, district_id, force=True)
-
-    if success:
-        return True, f"Saved to enrichment queue and bell_schedules: {message}"
+    if saved_levels:
+        return True, f"Saved {len(saved_levels)} grade levels: {', '.join(saved_levels)}"
     else:
-        return True, f"Saved to enrichment queue but failed to copy to bell_schedules: {message}"
+        return False, "No schedules saved successfully"
 
 
 def enrich_district_with_firecrawl(
     session,
     district_id: str,
-    max_urls: int = 5
+    max_urls: int = 5,
+    extract_all_levels: bool = True
 ) -> Tuple[bool, str]:
     """
     Complete Firecrawl enrichment workflow for a single district.
 
     This is the main entry point for Firecrawl-based enrichment:
-    1. Gets district URL from database
-    2. Uses Firecrawl to discover and extract bell schedule
-    3. Saves results to enrichment_queue and bell_schedules tables
+    1. Gets district URL and grade span from database
+    2. Determines which grade levels to extract based on GSLO/GSHI
+    3. Uses Firecrawl to discover and extract bell schedules for each level
+    4. Saves results to enrichment_queue and bell_schedules tables
 
     Args:
         session: SQLAlchemy database session
         district_id: NCES district ID
         max_urls: Maximum URLs to try
+        extract_all_levels: If True, extract all grade levels; if False, just high school
 
     Returns:
         Tuple of (success: bool, message: str)
     """
     from sqlalchemy import text
 
-    # Get district using raw SQL (avoids ORM schema mismatch issues)
+    # Get district with grade span using raw SQL (avoids ORM schema mismatch issues)
     result = session.execute(
-        text("SELECT nces_id, name, website_url FROM districts WHERE nces_id = :id"),
+        text("""
+            SELECT nces_id, name, website_url, grade_span_low, grade_span_high
+            FROM districts WHERE nces_id = :id
+        """),
         {"id": district_id}
     )
     row = result.fetchone()
@@ -570,22 +756,41 @@ def enrich_district_with_firecrawl(
 
     district_name = row[1]
     website_url = row[2]
+    gslo = row[3]
+    gshi = row[4]
 
     if not website_url:
         return False, f"District {district_id} has no website URL"
 
-    # Extract bell schedule
-    extraction_result = extract_bell_schedule(website_url, max_urls)
+    # Determine expected grade levels from grade span
+    if extract_all_levels:
+        expected_levels = get_expected_grade_levels(gslo, gshi)
+        logger.info(f"District {district_id} ({district_name}): expecting levels {expected_levels} (span: {gslo}-{gshi})")
+    else:
+        expected_levels = None  # Will prioritize high school
 
-    if not extraction_result:
-        return False, f"No bell schedule found for {district_name}"
+    # Extract bell schedules for all expected levels
+    if extract_all_levels and expected_levels:
+        extraction_results = extract_bell_schedules_all(website_url, max_urls, expected_levels)
 
-    schedule_data, source_url = extraction_result
+        if not extraction_results:
+            return False, f"No bell schedules found for {district_name}"
 
-    # Save to database
-    return save_firecrawl_result_to_database(
-        session, district_id, schedule_data, source_url
-    )
+        # Save all results
+        return save_firecrawl_results_to_database(
+            session, district_id, extraction_results
+        )
+    else:
+        # Backward compatible single extraction
+        extraction_result = extract_bell_schedule(website_url, max_urls)
+
+        if not extraction_result:
+            return False, f"No bell schedule found for {district_name}"
+
+        schedule_data, source_url = extraction_result
+        return save_firecrawl_result_to_database(
+            session, district_id, schedule_data, source_url
+        )
 
 
 # Test if running directly
