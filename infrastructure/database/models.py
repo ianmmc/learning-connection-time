@@ -300,6 +300,18 @@ class LCTCalculation(Base):
 
     This represents the theoretical average time each student could
     receive individual attention from a teacher per day.
+
+    Staff Scopes (January 2026):
+    - teachers_only: K-12 teachers (elem + sec + kinder, NO ungraded, NO prek)
+    - teachers_core: K-12 teachers + ungraded (NO prek)
+    - teachers_elementary: Elementary + kindergarten teachers
+    - teachers_secondary: Secondary teachers
+    - instructional: core + coordinators + paraprofessionals
+    - instructional_plus_support: above + counselors + psychologists + support
+    - all: All staff except Pre-K teachers
+    - core_sped: SPED teachers / SPED students (for audit)
+    - teachers_gened: GenEd teachers / GenEd students
+    - instructional_sped: (SPED teachers + paras) / SPED students
     """
     __tablename__ = "lct_calculations"
 
@@ -317,11 +329,18 @@ class LCTCalculation(Base):
     # Calculation context
     year: Mapped[str] = mapped_column(String(10), nullable=False)
     grade_level: Mapped[Optional[str]] = mapped_column(String(20))
+    staff_scope: Mapped[str] = mapped_column(String(50), default="teachers_only")
+    run_id: Mapped[Optional[str]] = mapped_column(String(50))
 
     # Input values (denormalized for query performance)
     instructional_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
+    instructional_minutes_source: Mapped[Optional[str]] = mapped_column(String(100))
+    instructional_minutes_year: Mapped[Optional[str]] = mapped_column(String(10))
     enrollment: Mapped[int] = mapped_column(Integer, nullable=False)
+    enrollment_type: Mapped[str] = mapped_column(String(50), default="k12")
     instructional_staff: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+    staff_source: Mapped[Optional[str]] = mapped_column(String(100))
+    staff_year: Mapped[Optional[str]] = mapped_column(String(10))
 
     # Calculated metric
     lct_value: Mapped[float] = mapped_column(Numeric(10, 4), nullable=False)
@@ -343,7 +362,7 @@ class LCTCalculation(Base):
 
     # Constraints
     __table_args__ = (
-        UniqueConstraint("district_id", "year", "grade_level", name="uq_lct_calculation"),
+        UniqueConstraint("district_id", "year", "grade_level", "staff_scope", name="uq_lct_calculation_v2"),
         CheckConstraint("data_tier IN (1, 2, 3)", name="chk_data_tier"),
         CheckConstraint("lct_value > 0", name="chk_lct_positive"),
         CheckConstraint("enrollment > 0", name="chk_enrollment_positive"),
@@ -381,12 +400,19 @@ class LCTCalculation(Base):
             "district_id": self.district_id,
             "year": self.year,
             "grade_level": self.grade_level,
+            "staff_scope": self.staff_scope,
             "instructional_minutes": self.instructional_minutes,
+            "instructional_minutes_source": self.instructional_minutes_source,
+            "instructional_minutes_year": self.instructional_minutes_year,
             "enrollment": self.enrollment,
+            "enrollment_type": self.enrollment_type,
             "instructional_staff": float(self.instructional_staff),
+            "staff_source": self.staff_source,
+            "staff_year": self.staff_year,
             "lct_value": float(self.lct_value),
             "data_tier": self.data_tier,
             "notes": self.notes,
+            "run_id": self.run_id,
             "calculated_at": self.calculated_at.isoformat() if self.calculated_at else None,
         }
 
@@ -408,7 +434,11 @@ class CalculationRun(Base):
 
     # Run metadata
     calculation_mode: Mapped[CalculationMode] = mapped_column(
-        SQLAlchemyEnum(CalculationMode, name='calculation_mode_enum'),
+        SQLAlchemyEnum(
+            CalculationMode,
+            name='calculation_mode_enum',
+            values_callable=lambda obj: [e.value for e in obj]  # Use enum values, not names
+        ),
         nullable=False,
         default=CalculationMode.BLENDED
     )

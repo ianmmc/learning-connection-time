@@ -90,7 +90,7 @@ def compute_input_hash(session) -> str:
     return hashlib.md5(hash_input.encode()).hexdigest()[:16]
 
 
-from infrastructure.database.connection import session_scope
+from infrastructure.database.connection import session_scope, get_engine
 from infrastructure.database.models import (
     District,
     BellSchedule,
@@ -101,6 +101,7 @@ from infrastructure.database.models import (
     CalculationMode,
     SpedEstimate,
     CASpedDistrictEnvironments,
+    LCTCalculation,
 )
 
 
@@ -1049,6 +1050,173 @@ def save_parquet(df: pd.DataFrame, filepath: Path) -> bool:
         return False
 
 
+def clear_lct_calculations(session, run_id: Optional[str] = None) -> int:
+    """
+    Clear existing LCT calculations.
+
+    Args:
+        session: Database session
+        run_id: If provided, only clear calculations for this run.
+                If None, clear ALL calculations.
+
+    Returns:
+        Number of records deleted
+    """
+    if run_id:
+        deleted = session.query(LCTCalculation).filter(
+            LCTCalculation.run_id == run_id
+        ).delete()
+    else:
+        deleted = session.query(LCTCalculation).delete()
+
+    return deleted
+
+
+def write_calculations_to_db(
+    session,
+    results: List[Dict[str, Any]],
+    run_id: str,
+    year: str,
+) -> int:
+    """
+    Write LCT calculation results to the database.
+
+    Args:
+        session: Database session
+        results: List of calculation result dicts from calculate_all_variants
+        run_id: The calculation run ID
+        year: The target year (or 'blended')
+
+    Returns:
+        Number of records inserted
+    """
+    print(f"\nWriting {len(results):,} calculations to database...")
+
+    # Determine data tier based on minutes source
+    def get_data_tier(minutes_source: str) -> int:
+        if minutes_source == "bell_schedule":
+            return 1
+        elif minutes_source.startswith("bell_schedule_"):
+            return 2
+        else:
+            return 3
+
+    inserted = 0
+    batch_size = 1000
+
+    for i in range(0, len(results), batch_size):
+        batch = results[i:i + batch_size]
+
+        for result in batch:
+            calc = LCTCalculation(
+                district_id=result['district_id'],
+                year=year if year != 'blended' else result.get('staff_year', '2023-24'),
+                grade_level=None,  # Scope-based calculations don't have traditional grade levels
+                staff_scope=result['staff_scope'],
+                run_id=run_id,
+                instructional_minutes=result['instructional_minutes'],
+                instructional_minutes_source=result['instructional_minutes_source'],
+                instructional_minutes_year=result['instructional_minutes_year'],
+                enrollment=result['enrollment'],
+                enrollment_type=result['enrollment_type'],
+                instructional_staff=result['staff_count'],
+                staff_source=result['staff_source'],
+                staff_year=result['staff_year'],
+                lct_value=result['lct_value'],
+                data_tier=get_data_tier(result['instructional_minutes_source']),
+                notes=result.get('level_lct_notes', ''),
+            )
+            session.add(calc)
+            inserted += 1
+
+        # Flush batch
+        session.flush()
+        if (i + batch_size) % 5000 == 0:
+            print(f"  Inserted {i + batch_size:,} / {len(results):,}")
+
+    print(f"  Inserted {inserted:,} LCT calculations")
+    return inserted
+
+
+def export_lct_from_db(
+    session,
+    run_id: str,
+    output_dir: Path,
+    timestamp: str,
+    year_str: str = "",
+) -> tuple[pd.DataFrame, List[str]]:
+    """
+    Export LCT calculations from database to CSV files.
+
+    Args:
+        session: Database session
+        run_id: The calculation run ID to export
+        output_dir: Directory for output files
+        timestamp: Timestamp string for filenames
+        year_str: Year prefix for filenames (empty for blended mode)
+
+    Returns:
+        Tuple of (DataFrame with all calculations, list of output file paths)
+    """
+    print(f"\nExporting LCT calculations from database (run_id: {run_id})...")
+
+    # Query all calculations for this run, joining with districts for names
+    calculations = session.query(
+        LCTCalculation,
+        District.name.label('district_name'),
+        District.state
+    ).join(
+        District,
+        LCTCalculation.district_id == District.nces_id
+    ).filter(
+        LCTCalculation.run_id == run_id
+    ).all()
+
+    print(f"  Found {len(calculations):,} calculations in database")
+
+    # Convert to DataFrame
+    records = []
+    for calc, district_name, state in calculations:
+        records.append({
+            "district_id": calc.district_id,
+            "district_name": district_name,
+            "state": state,
+            "staff_scope": calc.staff_scope,
+            "lct_value": float(calc.lct_value),
+            "instructional_minutes": calc.instructional_minutes,
+            "instructional_minutes_source": calc.instructional_minutes_source,
+            "instructional_minutes_year": calc.instructional_minutes_year,
+            "staff_count": float(calc.instructional_staff),
+            "staff_source": calc.staff_source,
+            "staff_year": calc.staff_year,
+            "enrollment": calc.enrollment,
+            "enrollment_type": calc.enrollment_type,
+            "level_lct_notes": calc.notes or "",
+        })
+
+    df = pd.DataFrame(records)
+    output_files = []
+
+    if len(df) == 0:
+        print("  No data to export")
+        return df, output_files
+
+    # Save detailed results
+    detail_file = output_dir / f"lct_all_variants_{year_str}{timestamp}.csv"
+    df.to_csv(detail_file, index=False)
+    print(f"  Saved detailed results to {detail_file}")
+    output_files.append(str(detail_file))
+
+    # Filter for valid LCT (0 < LCT <= 360)
+    valid_df = df[(df['lct_value'] > 0) & (df['lct_value'] <= 360)]
+    valid_file = output_dir / f"lct_all_variants_{year_str}valid_{timestamp}.csv"
+    valid_df.to_csv(valid_file, index=False)
+    print(f"  Saved valid results to {valid_file}")
+    output_files.append(str(valid_file))
+
+    return df, output_files
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Calculate LCT variants",
@@ -1123,6 +1291,24 @@ Examples:
     print()
 
     with session_scope() as session:
+        # Start calculation run tracking (do this early to get run_id)
+        run = None
+        if not args.no_track:
+            try:
+                run = CalculationRun.start_run(
+                    session,
+                    calculation_mode=calculation_mode,
+                    target_year=args.target_year,
+                    run_type="full",
+                )
+                session.flush()
+                print(f"Started calculation run: {run.run_id}")
+            except Exception as e:
+                print(f"Warning: Could not start run tracking: {e}")
+                run = None
+
+        run_id = run.run_id if run else timestamp
+
         # Calculate all variants
         df, data_year_min, data_year_max = calculate_all_variants(
             session,
@@ -1132,22 +1318,39 @@ Examples:
 
         if len(df) == 0:
             print("No LCT values calculated. Check data availability.")
+            if run:
+                run.fail("No LCT values calculated")
+                session.commit()
             sys.exit(1)
 
         # Apply data safeguards (January 2026)
         df, safeguard_counts = apply_data_safeguards(df)
 
-        # Save detailed results (includes safeguard flags)
-        detail_file = output_dir / f"lct_all_variants_{year_str}{timestamp}.csv"
-        df.to_csv(detail_file, index=False)
-        print(f"\nSaved detailed results to {detail_file}")
+        # === DB-FIRST APPROACH (January 2026) ===
+        # Write calculations to database first, then export CSVs from DB
+
+        # Convert DataFrame to list of dicts for database insertion
+        results_list = df.to_dict('records')
+
+        # Write to database
+        year_for_db = args.target_year if args.target_year else 'blended'
+        inserted_count = write_calculations_to_db(
+            session, results_list, run_id, year_for_db
+        )
+
+        # Export CSVs from database
+        df_from_db, output_files = export_lct_from_db(
+            session, run_id, output_dir, timestamp, year_str
+        )
+
+        # Use the database export as our source of truth
+        df = df_from_db
 
         # Filter for valid LCT (0 < LCT <= 360 for all scopes)
         # SPED scopes that would exceed 360 are capped with WARN_SPED_RATIO_CAP flag
         valid_df = df[(df['lct_value'] > 0) & (df['lct_value'] <= 360)]
         valid_file = output_dir / f"lct_all_variants_{year_str}valid_{timestamp}.csv"
-        valid_df.to_csv(valid_file, index=False)
-        print(f"Saved valid results to {valid_file}")
+        # Note: valid_file is already created by export_lct_from_db
 
         # Generate and save summary statistics
         summary = generate_summary_statistics(valid_df)
@@ -1252,14 +1455,12 @@ Examples:
         if len(qa_df) > 0:
             print(f"\nDistricts with level LCT QA notes: {qa_df['district_id'].nunique()}")
 
-        # Track output files
-        output_files = [
-            str(detail_file),
-            str(valid_file),
+        # Add summary files to output_files (detail and valid already added by export_lct_from_db)
+        output_files.extend([
             str(summary_file),
             str(state_file),
             str(report_file),
-        ]
+        ])
 
         # Generate and save QA report (JSON)
         # Pass data range info instead of single year
@@ -1303,26 +1504,23 @@ Examples:
         if args.parquet:
             print("\nSaving Parquet files...")
             if PARQUET_AVAILABLE:
-                if save_parquet(df, detail_file):
-                    parquet_file = detail_file.with_suffix('.parquet')
+                # Get file paths from output_files list
+                detail_file_path = Path(output_files[0]) if output_files else None
+                valid_file_path = Path(output_files[1]) if len(output_files) > 1 else None
+                if detail_file_path and save_parquet(df, detail_file_path):
+                    parquet_file = detail_file_path.with_suffix('.parquet')
                     print(f"  Saved {parquet_file}")
                     output_files.append(str(parquet_file))
-                if save_parquet(valid_df, valid_file):
-                    parquet_file = valid_file.with_suffix('.parquet')
+                if valid_file_path and save_parquet(valid_df, valid_file_path):
+                    parquet_file = valid_file_path.with_suffix('.parquet')
                     print(f"  Saved {parquet_file}")
                     output_files.append(str(parquet_file))
             else:
                 print("  Parquet not available. Install pyarrow: pip install pyarrow")
 
-        # Track calculation run in database
-        if not args.no_track:
+        # Complete calculation run tracking
+        if run:
             try:
-                run = CalculationRun.start_run(
-                    session,
-                    calculation_mode=calculation_mode,
-                    target_year=args.target_year,
-                    run_type="full",
-                )
                 run.complete(
                     districts_processed=df['district_id'].nunique(),
                     calculations_created=len(df),
@@ -1332,9 +1530,10 @@ Examples:
                     data_year_max=data_year_max,
                 )
                 session.commit()
-                print(f"\nCalculation run tracked: {run.run_id}")
+                print(f"\nCalculation run completed: {run.run_id}")
+                print(f"  Calculations in database: {inserted_count:,}")
             except Exception as e:
-                print(f"\nWarning: Could not track run: {e}")
+                print(f"\nWarning: Could not complete run tracking: {e}")
 
         print("\n" + "=" * 60)
         print("CALCULATION COMPLETE")
