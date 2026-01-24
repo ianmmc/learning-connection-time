@@ -46,10 +46,13 @@ DESE_FILES_PRESENT = DESE_DATA_DIR.exists() and (
     (DESE_DATA_DIR / "MA 2024-25 teacherdata.xlsx").exists()
 )
 
-pytestmark = pytest.mark.skipif(
-    not DESE_FILES_PRESENT,
-    reason="DESE data files not present in data/raw/state/massachusetts/"
-)
+pytestmark = [
+    pytest.mark.integration,
+    pytest.mark.skipif(
+        not DESE_FILES_PRESENT,
+        reason="DESE data files not present in data/raw/state/massachusetts/"
+    ),
+]
 
 
 class MassachusettsSEAConfig(SEAIntegrationTestBase):

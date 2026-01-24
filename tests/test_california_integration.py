@@ -45,10 +45,13 @@ NCES_SLIM_DIR = Path("data/processed/slim")
 CDE_FILES_PRESENT = CDE_DATA_DIR.exists() and any(CDE_DATA_DIR.glob("*.*"))
 NCES_FILES_PRESENT = NCES_SLIM_DIR.exists() and any(NCES_SLIM_DIR.glob("*.csv"))
 
-pytestmark = pytest.mark.skipif(
-    not (CDE_FILES_PRESENT and NCES_FILES_PRESENT),
-    reason="CDE or NCES data files not present"
-)
+pytestmark = [
+    pytest.mark.integration,
+    pytest.mark.skipif(
+        not (CDE_FILES_PRESENT and NCES_FILES_PRESENT),
+        reason="CDE or NCES data files not present"
+    ),
+]
 
 
 class CaliforniaSEAConfig(SEAIntegrationTestBase):

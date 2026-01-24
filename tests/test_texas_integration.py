@@ -47,10 +47,13 @@ TEA_FILES_PRESENT = (
 )
 NCES_FILES_PRESENT = NCES_SLIM_DIR.exists() and any(NCES_SLIM_DIR.glob("*.csv"))
 
-pytestmark = pytest.mark.skipif(
-    not (TEA_FILES_PRESENT and NCES_FILES_PRESENT),
-    reason="TEA or NCES data files not present"
-)
+pytestmark = [
+    pytest.mark.integration,
+    pytest.mark.skipif(
+        not (TEA_FILES_PRESENT and NCES_FILES_PRESENT),
+        reason="TEA or NCES data files not present"
+    ),
+]
 
 
 class TexasSEAConfig(SEAIntegrationTestBase):

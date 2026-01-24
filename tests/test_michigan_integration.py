@@ -39,10 +39,13 @@ from test_sea_integration_base import (
 MDE_DATA_DIR = Path("data/raw/state/michigan")
 MDE_FILES_PRESENT = MDE_DATA_DIR.exists() and any(MDE_DATA_DIR.glob("*.xlsx"))
 
-pytestmark = pytest.mark.skipif(
-    not MDE_FILES_PRESENT,
-    reason="MDE data files not present in data/raw/state/michigan/"
-)
+pytestmark = [
+    pytest.mark.integration,
+    pytest.mark.skipif(
+        not MDE_FILES_PRESENT,
+        reason="MDE data files not present in data/raw/state/michigan/"
+    ),
+]
 
 
 class MichiganSEAConfig(SEAIntegrationTestBase):

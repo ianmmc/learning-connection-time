@@ -11,6 +11,47 @@ import PQueue from 'p-queue';
 import { QueueConfig, ScrapeRequest, ScrapeResponse, DEFAULT_CONFIG } from './types.js';
 import { logger } from './logger.js';
 
+// REQ-030: Retry configuration constants
+const RETRY_CONFIG = {
+  maxRetries: 3,           // Maximum number of retry attempts
+  baseDelayMs: 1000,       // Base delay for exponential backoff (1 second)
+  maxDelayMs: 8000,        // Maximum delay cap (8 seconds)
+  jitterFactor: 0.2,       // Add up to 20% jitter to prevent thundering herd
+};
+
+// Error codes that should NOT be retried
+const NON_RETRYABLE_ERRORS = new Set([
+  'BLOCKED',      // Security blocks - retrying wastes resources and may get IP blacklisted
+  'NOT_FOUND',    // 404 errors - page doesn't exist, retrying won't help
+  'QUEUE_FULL',   // Queue at capacity - client should retry later
+]);
+
+/**
+ * Calculate exponential backoff delay with jitter
+ * @param attempt - Retry attempt number (1-based)
+ * @returns Delay in milliseconds
+ */
+function calculateBackoffDelay(attempt: number): number {
+  // Exponential backoff: base * 2^(attempt-1), capped at max
+  const exponentialDelay = Math.min(
+    RETRY_CONFIG.baseDelayMs * Math.pow(2, attempt - 1),
+    RETRY_CONFIG.maxDelayMs
+  );
+
+  // Add jitter to prevent thundering herd
+  const jitter = exponentialDelay * RETRY_CONFIG.jitterFactor * Math.random();
+
+  return Math.floor(exponentialDelay + jitter);
+}
+
+/**
+ * Check if an error code should trigger a retry
+ */
+function isRetryableError(errorCode: string | undefined): boolean {
+  if (!errorCode) return true; // Unknown errors are retryable by default
+  return !NON_RETRYABLE_ERRORS.has(errorCode);
+}
+
 interface QueueStats {
   pending: number;
   processed: number;
@@ -70,6 +111,11 @@ export class RequestQueue {
 
   /**
    * Add a scrape request to the queue
+   *
+   * REQ-030: Implements retry logic with exponential backoff
+   * - Retries transient failures (TIMEOUT, NETWORK_ERROR) up to 3 times
+   * - Uses exponential backoff with jitter (base 1s, max 8s)
+   * - Does NOT retry security blocks (BLOCKED) or 404s (NOT_FOUND)
    */
   async add(
     request: ScrapeRequest,
@@ -91,47 +137,110 @@ export class RequestQueue {
     const domain = this.extractDomain(request.url);
     const startTime = Date.now();
 
-    try {
-      const response = await this.queue.add(async () => {
-        // Rate limit per domain
-        await this.waitForRateLimit(domain);
+    let lastError: Error | null = null;
+    let lastResponse: ScrapeResponse | null = null;
 
-        logger.debug(`Processing request for ${request.url}`);
-        return handler(request);
-      });
+    // REQ-030: Retry loop with exponential backoff
+    for (let attempt = 1; attempt <= RETRY_CONFIG.maxRetries + 1; attempt++) {
+      try {
+        const response = await this.queue.add(async () => {
+          // Rate limit per domain
+          await this.waitForRateLimit(domain);
 
-      if (!response) {
-        throw new Error('Handler returned undefined');
+          logger.debug(`Processing request for ${request.url} (attempt ${attempt})`);
+          return handler(request);
+        });
+
+        if (!response) {
+          throw new Error('Handler returned undefined');
+        }
+
+        // Check if response indicates a retryable failure
+        if (!response.success && response.errorCode) {
+          if (!isRetryableError(response.errorCode)) {
+            // Non-retryable error - return immediately
+            logger.debug(
+              `Non-retryable error ${response.errorCode} for ${request.url}, not retrying`
+            );
+            this.stats.pending--;
+            this.stats.processed++;
+            if (response.blocked) this.stats.blocked++;
+            this.stats.failed++;
+            return response;
+          }
+
+          // Retryable error - check if we should retry
+          lastResponse = response;
+          if (attempt <= RETRY_CONFIG.maxRetries) {
+            const delay = calculateBackoffDelay(attempt);
+            logger.info(
+              `Retryable error ${response.errorCode} for ${request.url}, ` +
+              `retry ${attempt}/${RETRY_CONFIG.maxRetries} after ${delay}ms`
+            );
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue; // Retry
+          }
+        }
+
+        // Success or final attempt
+        this.stats.pending--;
+        this.stats.processed++;
+
+        if (response.blocked) {
+          this.stats.blocked++;
+        }
+        if (!response.success) {
+          this.stats.failed++;
+        }
+
+        return response;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error('Unknown error');
+        const errorMessage = lastError.message;
+        const isTimeout = errorMessage.includes('timeout') || errorMessage.includes('Timeout');
+        const errorCode = isTimeout ? 'TIMEOUT' : 'NETWORK_ERROR';
+
+        // Check if we should retry this exception
+        if (isRetryableError(errorCode) && attempt <= RETRY_CONFIG.maxRetries) {
+          const delay = calculateBackoffDelay(attempt);
+          logger.info(
+            `Exception (${errorCode}) for ${request.url}: ${errorMessage}, ` +
+            `retry ${attempt}/${RETRY_CONFIG.maxRetries} after ${delay}ms`
+          );
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue; // Retry
+        }
+
+        // Final attempt failed or non-retryable
+        logger.error(
+          `Request failed for ${request.url} after ${attempt} attempt(s): ${errorMessage}`
+        );
       }
-
-      this.stats.pending--;
-      this.stats.processed++;
-
-      if (response.blocked) {
-        this.stats.blocked++;
-      }
-      if (!response.success) {
-        this.stats.failed++;
-      }
-
-      return response;
-    } catch (error) {
-      this.stats.pending--;
-      this.stats.failed++;
-
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      const isTimeout = errorMessage.includes('timeout') || errorMessage.includes('Timeout');
-
-      logger.error(`Request failed for ${request.url}: ${errorMessage}`);
-
-      return {
-        success: false,
-        url: request.url,
-        error: errorMessage,
-        errorCode: isTimeout ? 'TIMEOUT' : 'NETWORK_ERROR',
-        timing: Date.now() - startTime,
-      };
     }
+
+    // All retries exhausted
+    this.stats.pending--;
+    this.stats.failed++;
+
+    // Return the last response if we have one, otherwise construct error response
+    if (lastResponse) {
+      logger.error(
+        `All ${RETRY_CONFIG.maxRetries} retries exhausted for ${request.url}, ` +
+        `last error: ${lastResponse.errorCode}`
+      );
+      return lastResponse;
+    }
+
+    const errorMessage = lastError?.message || 'Unknown error';
+    const isTimeout = errorMessage.includes('timeout') || errorMessage.includes('Timeout');
+
+    return {
+      success: false,
+      url: request.url,
+      error: `Failed after ${RETRY_CONFIG.maxRetries + 1} attempts: ${errorMessage}`,
+      errorCode: isTimeout ? 'TIMEOUT' : 'NETWORK_ERROR',
+      timing: Date.now() - startTime,
+    };
   }
 
   /**

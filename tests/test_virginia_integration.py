@@ -39,10 +39,13 @@ from test_sea_integration_base import (
 VDOE_DATA_DIR = Path("data/raw/state/virginia")
 VDOE_FILES_PRESENT = VDOE_DATA_DIR.exists() and any(VDOE_DATA_DIR.glob("*.csv"))
 
-pytestmark = pytest.mark.skipif(
-    not VDOE_FILES_PRESENT,
-    reason="VDOE data files not present in data/raw/state/virginia/"
-)
+pytestmark = [
+    pytest.mark.integration,
+    pytest.mark.skipif(
+        not VDOE_FILES_PRESENT,
+        reason="VDOE data files not present in data/raw/state/virginia/"
+    ),
+]
 
 
 class VirginiaSEAConfig(SEAIntegrationTestBase):

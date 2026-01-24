@@ -43,10 +43,13 @@ from test_sea_integration_base import (
 ISBE_DATA_DIR = Path("data/raw/state/illinois")
 ISBE_FILES_PRESENT = ISBE_DATA_DIR.exists() and any(ISBE_DATA_DIR.glob("*.xlsx"))
 
-pytestmark = pytest.mark.skipif(
-    not ISBE_FILES_PRESENT,
-    reason="ISBE data files not present in data/raw/state/illinois/"
-)
+pytestmark = [
+    pytest.mark.integration,
+    pytest.mark.skipif(
+        not ISBE_FILES_PRESENT,
+        reason="ISBE data files not present in data/raw/state/illinois/"
+    ),
+]
 
 
 class IllinoisSEAConfig(SEAIntegrationTestBase):

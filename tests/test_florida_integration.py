@@ -35,10 +35,13 @@ from test_sea_integration_base import (
 FLDOE_DATA_DIR = Path("data/raw/state/florida")
 FLDOE_FILES_PRESENT = FLDOE_DATA_DIR.exists() and any(FLDOE_DATA_DIR.glob("*.xlsx"))
 
-pytestmark = pytest.mark.skipif(
-    not FLDOE_FILES_PRESENT,
-    reason="FLDOE data files not present in data/raw/state/florida/"
-)
+pytestmark = [
+    pytest.mark.integration,
+    pytest.mark.skipif(
+        not FLDOE_FILES_PRESENT,
+        reason="FLDOE data files not present in data/raw/state/florida/"
+    ),
+]
 
 
 class FloridaSEAConfig(SEAIntegrationTestBase):

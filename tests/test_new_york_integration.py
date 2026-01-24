@@ -38,10 +38,13 @@ from test_sea_integration_base import (
 NYSED_DATA_DIR = Path("data/raw/state/new-york")
 NYSED_FILES_PRESENT = NYSED_DATA_DIR.exists() and any(NYSED_DATA_DIR.glob("*.xlsx"))
 
-pytestmark = pytest.mark.skipif(
-    not NYSED_FILES_PRESENT,
-    reason="NYSED data files not present in data/raw/state/new-york/"
-)
+pytestmark = [
+    pytest.mark.integration,
+    pytest.mark.skipif(
+        not NYSED_FILES_PRESENT,
+        reason="NYSED data files not present in data/raw/state/new-york/"
+    ),
+]
 
 
 class NewYorkSEAConfig(SEAIntegrationTestBase):

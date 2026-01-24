@@ -39,10 +39,13 @@ from test_sea_integration_base import (
 PDE_DATA_DIR = Path("data/raw/state/pennsylvania")
 PDE_FILES_PRESENT = PDE_DATA_DIR.exists() and any(PDE_DATA_DIR.glob("*.xlsx"))
 
-pytestmark = pytest.mark.skipif(
-    not PDE_FILES_PRESENT,
-    reason="PDE data files not present in data/raw/state/pennsylvania/"
-)
+pytestmark = [
+    pytest.mark.integration,
+    pytest.mark.skipif(
+        not PDE_FILES_PRESENT,
+        reason="PDE data files not present in data/raw/state/pennsylvania/"
+    ),
+]
 
 
 class PennsylvaniaSEAConfig(SEAIntegrationTestBase):

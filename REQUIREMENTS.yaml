@@ -1,6 +1,6 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-01-16T06:30:00Z"
+last_updated: "2026-01-23T21:00:00Z"
 
 requirements:
   - id: REQ-001
@@ -56,6 +56,7 @@ requirements:
     acceptance_criteria:
       - Fetches bell schedules from district websites
       - Parses start/end times to calculate instructional minutes
+      - Extracts schedules for multiple grade levels when available (elementary, middle, high)
       - Stores enrichment data with source attribution
       - Tracks confidence level of extracted data
       - Leaves NCES data intact and available for reference and fallback
@@ -74,7 +75,8 @@ requirements:
       - tests/test_bell_schedule_enrichment.py::TestDataPreservation::test_sea_data_unchanged_after_enrichment
       - tests/test_bell_schedule_enrichment.py::TestDataPreservation::test_nces_data_available_for_fallback
     created: "2025-01-10T22:00:00Z"
-    updated: "2026-01-16T00:00:00Z"
+    updated: "2026-01-23T21:00:00Z"
+    notes: "Enhanced with multi-grade level support via REQ-032"
 
   - id: REQ-004
     description: Calculate SPED-segmented LCT variants
@@ -383,8 +385,9 @@ requirements:
     status: tested
     acceptance_criteria:
       - BellSchedule table stores grade_level (elementary, middle, high)
+      - Multiple bell_schedules rows per district allowed (unique on district_id, year, grade_level)
       - Confidence levels - high, medium, low, assumed
-      - Method tracking - web_scraping, pdf_extraction, manual_entry, state_requirement
+      - Method tracking - web_scraping, pdf_extraction, manual_entry, state_requirement, automated_enrichment
       - Source URLs stored in JSONB array for transparency
       - Schools sampled list stored for verification
       - get_instructional_minutes() prioritizes - bell schedule (enriched) > state requirement > default 360
@@ -398,8 +401,8 @@ requirements:
       - tests/test_infrastructure.py::TestBellScheduleEnrichment::test_bell_schedule_enrichment_optional_step
       - tests/test_infrastructure.py::TestBellScheduleEnrichment::test_enrichment_tracks_data_quality
     created: "2026-01-12T03:30:00Z"
-    updated: "2026-01-12T03:30:00Z"
-    notes: "From BELL_SCHEDULE_SAMPLING_METHODOLOGY.md"
+    updated: "2026-01-23T21:00:00Z"
+    notes: "From BELL_SCHEDULE_SAMPLING_METHODOLOGY.md. Enhanced with multi-grade support via REQ-032."
 
   - id: REQ-018
     description: SPED segmentation uses 2017-18 baseline ratios
@@ -700,7 +703,7 @@ requirements:
     description: Scrape requests use retry logic with exponential backoff
     type: non-functional
     priority: should
-    status: pending
+    status: tested
     acceptance_criteria:
       - Retries transient failures (network errors, timeouts) up to 3 times
       - Uses exponential backoff with jitter (base 1s, max 8s)
@@ -716,8 +719,8 @@ requirements:
       - tests/test_scraper_resilience.py::TestRetryLogic::test_max_3_retries
       - tests/test_scraper_resilience.py::TestRetryLogic::test_retry_behavior_on_real_service
     created: "2026-01-22T07:30:00Z"
-    updated: "2026-01-23T16:45:00Z"
-    notes: "Gemini code review - tests added as specification, implementation pending in queue.ts"
+    updated: "2026-01-23T21:45:00Z"
+    notes: "Implemented in scraper/src/queue.ts with RETRY_CONFIG constants. Non-retryable: BLOCKED, NOT_FOUND. Retryable: TIMEOUT, NETWORK_ERROR."
 
   - id: REQ-031
     description: Request ID correlation for scraper requests
@@ -738,3 +741,99 @@ requirements:
     created: "2026-01-22T07:30:00Z"
     updated: "2026-01-23T16:45:00Z"
     notes: "Gemini code review - implemented in server.ts with randomUUID middleware"
+
+  - id: REQ-032
+    description: Extract bell schedules for all grade levels based on district grade span
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Import NCES grade span (GSLO/GSHI) for each district
+      - Determine expected grade levels from grade span (PK-5=elementary, 6-8=middle, 9-12=high)
+      - ContentParser.parse_all() extracts schedules for all grade levels from markdown tables
+      - Extract different bell times for elementary, middle, and high schools when available
+      - Save separate bell_schedules rows per grade level (unique on district_id, year, grade_level)
+      - Handle K-8 districts (no high school data expected)
+      - Handle 9-12 districts (no elementary/middle data expected)
+      - Backward compatible parse() method still returns single result (prioritizing high school)
+    tests:
+      - tests/test_content_parser.py::TestMultiGradeExtraction::test_parse_all_three_levels
+      - tests/test_content_parser.py::TestMultiGradeExtraction::test_parse_all_with_filter
+      - tests/test_content_parser.py::TestMultiGradeExtraction::test_parse_all_single_level
+      - tests/test_content_parser.py::TestMultiGradeExtraction::test_parse_all_empty
+      - tests/test_content_parser.py::TestMultiGradeExtraction::test_backward_compatible_parse
+      - tests/test_content_parser.py::TestGradeSpanHelper::test_full_k12
+      - tests/test_content_parser.py::TestGradeSpanHelper::test_k8_district
+      - tests/test_content_parser.py::TestGradeSpanHelper::test_high_school_only
+      - tests/test_content_parser.py::TestGradeSpanHelper::test_6_12_district
+      - tests/test_content_parser.py::TestGradeSpanHelper::test_elementary_only
+      - tests/test_content_parser.py::TestGradeSpanHelper::test_none_values
+    created: "2026-01-23T21:00:00Z"
+    updated: "2026-01-23T21:00:00Z"
+    notes: "Implemented in content_parser.py, firecrawl_discovery.py, import_district_urls.py. 14,789 districts updated with grade spans."
+
+  - id: REQ-033
+    description: End-to-end pipeline orchestration testing with cross-stage data contracts
+    type: non-functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Test data contracts between scraper output and parser input
+      - Test data contracts between parser output and database input
+      - Test data contracts between database output and LCT calculation input
+      - Test data contracts between LCT calculation output and export format
+      - Verify partial failure recovery (some stages fail, others continue)
+      - Verify batch processing handles mixed success/failure results
+      - Test complete E2E flow from URL to LCT calculation
+    tests:
+      - tests/test_pipeline_orchestration.py::TestScraperToParserContract::test_scraper_response_has_required_fields
+      - tests/test_pipeline_orchestration.py::TestScraperToParserContract::test_scraper_response_has_timing
+      - tests/test_pipeline_orchestration.py::TestScraperToParserContract::test_parser_accepts_scraper_response
+      - tests/test_pipeline_orchestration.py::TestParserToDatabaseContract::test_parser_output_matches_bell_schedule_data
+      - tests/test_pipeline_orchestration.py::TestParserToDatabaseContract::test_bell_schedule_data_has_required_fields
+      - tests/test_pipeline_orchestration.py::TestParserToDatabaseContract::test_confidence_level_valid
+      - tests/test_pipeline_orchestration.py::TestDatabaseToLCTContract::test_database_provides_instructional_minutes
+      - tests/test_pipeline_orchestration.py::TestDatabaseToLCTContract::test_database_provides_enrollment
+      - tests/test_pipeline_orchestration.py::TestDatabaseToLCTContract::test_database_provides_staff_counts
+      - tests/test_pipeline_orchestration.py::TestLCTToExportContract::test_lct_output_has_required_fields
+      - tests/test_pipeline_orchestration.py::TestLCTToExportContract::test_lct_values_are_valid
+      - tests/test_pipeline_orchestration.py::TestPartialFailureRecovery::test_scraper_failure_doesnt_break_other_stages
+      - tests/test_pipeline_orchestration.py::TestPartialFailureRecovery::test_parser_failure_doesnt_break_database
+      - tests/test_pipeline_orchestration.py::TestBatchProcessing::test_batch_handles_mixed_results
+      - tests/test_pipeline_orchestration.py::TestBatchProcessing::test_batch_continues_after_individual_failure
+      - tests/test_pipeline_orchestration.py::TestEndToEndFlow::test_url_to_lct_calculation
+    created: "2026-01-23T21:30:00Z"
+    updated: "2026-01-23T21:30:00Z"
+    notes: "E2E pipeline testing ensures data contracts maintained across all stages"
+
+  - id: REQ-034
+    description: Firecrawl URL discovery and content extraction testing
+    type: non-functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Test Firecrawl /v1/map endpoint for URL discovery with bell schedule keywords
+      - Test Firecrawl /v1/scrape endpoint for content extraction
+      - Verify integration between Firecrawl results and ContentParser
+      - Test parse_firecrawl_result_all() extracts multiple grade levels
+      - Test error handling when Firecrawl unavailable
+      - Test Playwright fallback when Firecrawl fails
+      - Verify Firecrawl response contains expected fields (markdown, html, title)
+    tests:
+      - tests/test_firecrawl_discovery.py::TestFirecrawlMapEndpoint::test_map_request_format
+      - tests/test_firecrawl_discovery.py::TestFirecrawlMapEndpoint::test_map_response_has_urls
+      - tests/test_firecrawl_discovery.py::TestFirecrawlMapEndpoint::test_map_filters_by_keywords
+      - tests/test_firecrawl_discovery.py::TestFirecrawlScrapeEndpoint::test_scrape_request_format
+      - tests/test_firecrawl_discovery.py::TestFirecrawlScrapeEndpoint::test_scrape_response_has_markdown
+      - tests/test_firecrawl_discovery.py::TestFirecrawlScrapeEndpoint::test_scrape_response_has_html
+      - tests/test_firecrawl_discovery.py::TestFirecrawlWithContentParser::test_parse_firecrawl_result
+      - tests/test_firecrawl_discovery.py::TestFirecrawlWithContentParser::test_parse_firecrawl_result_all
+      - tests/test_firecrawl_discovery.py::TestFirecrawlWithContentParser::test_parse_firecrawl_result_empty
+      - tests/test_firecrawl_discovery.py::TestFirecrawlErrorHandling::test_handles_network_error
+      - tests/test_firecrawl_discovery.py::TestFirecrawlErrorHandling::test_handles_rate_limit
+      - tests/test_firecrawl_discovery.py::TestFirecrawlErrorHandling::test_handles_invalid_url
+      - tests/test_firecrawl_discovery.py::TestPlaywrightFallback::test_fallback_when_firecrawl_fails
+      - tests/test_firecrawl_discovery.py::TestPlaywrightFallback::test_fallback_uses_scraper_service
+    created: "2026-01-23T21:30:00Z"
+    updated: "2026-01-23T21:30:00Z"
+    notes: "Firecrawl integration testing per multi-tier enrichment architecture"
