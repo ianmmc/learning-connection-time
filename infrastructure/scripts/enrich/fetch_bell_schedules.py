@@ -74,6 +74,20 @@ except ImportError:
 # Scraper service configuration
 SCRAPER_URL = os.environ.get('SCRAPER_URL', 'http://localhost:3000')
 
+# Firecrawl discovery (optional, for intelligent URL discovery)
+try:
+    # Add this script's directory to path for local imports
+    _script_dir = Path(__file__).parent
+    if str(_script_dir) not in sys.path:
+        sys.path.insert(0, str(_script_dir))
+    from firecrawl_discovery import FirecrawlDiscovery
+    FIRECRAWL_AVAILABLE = True
+except ImportError as e:
+    FIRECRAWL_AVAILABLE = False
+    FirecrawlDiscovery = None
+    logger = logging.getLogger(__name__)
+    logger.debug(f"Firecrawl discovery not available: {e}")
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -541,18 +555,91 @@ class BellScheduleFetcher(DataProcessor):
         district_name = result['district_name']
         state = result['state']
 
-        # Build search URLs to try
-        # Format district name for URL (lowercase, hyphens)
-        url_name = district_name.lower().replace(' ', '-').replace("'", "")
-        url_name = re.sub(r'[^a-z0-9-]', '', url_name)
+        # Get actual website URL from database - do NOT guess from district name
+        district_domain = self._get_district_domain(result)
+        if not district_domain:
+            logger.warning(f"No website URL for {district_name} - skipping enrichment")
+            result['notes'].append("Skipped: No website URL in database")
+            return None
 
-        # Common URL patterns for bell schedules
+        # Build base URLs from actual district domain
         base_urls = [
-            f"https://www.{url_name}.org",
-            f"https://www.{url_name}.k12.{state.lower()}.us",
-            f"https://{url_name}.org",
+            f"https://www.{district_domain}",
+            f"https://{district_domain}",
         ]
 
+        found_schedules = {'elementary': None, 'middle': None, 'high': None}
+        sources = []
+
+        # Try Firecrawl discovery first (intelligent URL discovery)
+        discovered_urls = []
+        if FIRECRAWL_AVAILABLE:
+            try:
+                firecrawl = FirecrawlDiscovery()
+                if firecrawl.is_available():
+                    logger.info(f"Using Firecrawl to discover bell schedule URLs for {district_name}")
+                    discovered_urls = firecrawl.discover_bell_schedule_urls(base_urls[0])
+                    if discovered_urls:
+                        logger.info(f"Firecrawl discovered {len(discovered_urls)} potential URLs")
+            except Exception as e:
+                logger.warning(f"Firecrawl discovery failed: {e}")
+
+        # If Firecrawl found URLs, try those first
+        if discovered_urls:
+            for url in discovered_urls[:10]:  # Limit to top 10
+                logger.debug(f"Trying discovered URL: {url}")
+
+                response = scrape_url(url, timeout=30, district_id=district_id,
+                                    enrichment_tier=f'tier{self.tier}')
+
+                if response is None or not response.get('success'):
+                    continue
+
+                # Check for security block
+                if response.get('blocked'):
+                    logger.warning(f"Security block detected for {district_name}")
+                    flag_for_manual_followup(
+                        {'district_id': result['district_id'],
+                         'district_name': district_name,
+                         'state': state,
+                         'enrollment': result.get('enrollment')},
+                        {'total_404s': 0, 'security_blocked': True}
+                    )
+                    return None
+
+                # Try to extract bell schedule times
+                html = response.get('html', '')
+                markdown = response.get('markdown', '')
+
+                times = extract_bell_schedule_times(html, markdown)
+
+                if times:
+                    logger.info(f"Found bell schedule at discovered URL: {url}")
+                    sources.append(url)
+                    result['notes'].append(f"Found via Firecrawl discovery: {url}")
+
+                    level = self._detect_school_level(url, markdown)
+
+                    if level and not found_schedules[level]:
+                        found_schedules[level] = {
+                            'instructional_minutes': times['instructional_minutes'],
+                            'start_time': times['start_time'],
+                            'end_time': times['end_time'],
+                            'schools_sampled': [url],
+                            'source_urls': [url],
+                            'confidence': 'high',
+                            'method': 'firecrawl_discovery',
+                        }
+
+            # If we found schedules via Firecrawl, return early
+            if any(found_schedules.values()):
+                result['elementary'] = found_schedules['elementary']
+                result['middle'] = found_schedules['middle']
+                result['high'] = found_schedules['high']
+                result['sources'] = sources
+                return result
+
+        # Fallback: Try predictable URL patterns
         schedule_paths = [
             "/bell-schedule",
             "/bell-schedules",
@@ -562,9 +649,6 @@ class BellScheduleFetcher(DataProcessor):
             "/about/bell-schedule",
             "/students/bell-schedule",
         ]
-
-        found_schedules = {'elementary': None, 'middle': None, 'high': None}
-        sources = []
 
         for base_url in base_urls:
             if error_tracker.should_flag_manual_followup():
@@ -757,16 +841,10 @@ class BellScheduleFetcher(DataProcessor):
             except Exception as e:
                 logger.warning(f"Error looking up district website: {e}")
 
-        # Fallback: Generate domain from district name
-        district_name = result['district_name']
-        state = result['state'].lower()
-
-        # Build domain-friendly name
-        url_name = district_name.lower().replace(' ', '-').replace("'", "")
-        url_name = re.sub(r'[^a-z0-9-]', '', url_name)
-
-        # Try common patterns
-        return f"{url_name}.k12.{state}.us"
+        # No fallback - do NOT guess URLs from district names
+        # Districts without website_url should be skipped or have URLs populated first
+        logger.warning(f"No website URL found for district {result['district_name']} ({result.get('district_id')})")
+        return None
 
     def _discover_schools(self, result: Dict) -> List[Dict]:
         """
@@ -959,15 +1037,18 @@ class BellScheduleFetcher(DataProcessor):
         district_name = result['district_name']
         state = result['state']
 
-        # Build fewer URLs than tier 1 for faster processing
-        url_name = district_name.lower().replace(' ', '-').replace("'", "")
-        url_name = re.sub(r'[^a-z0-9-]', '', url_name)
+        # Get actual website URL from database - do NOT guess from district name
+        district_domain = self._get_district_domain(result)
+        if not district_domain:
+            logger.warning(f"No website URL for {district_name} - skipping tier 2")
+            result['notes'].append("Skipped tier 2: No website URL in database")
+            return None
 
-        # Try just the most common patterns
+        # Try common paths on actual district domain
         urls_to_try = [
-            f"https://www.{url_name}.org/bell-schedule",
-            f"https://www.{url_name}.k12.{state.lower()}.us/bell-schedule",
-            f"https://www.{url_name}.org/schools/bell-schedule",
+            f"https://www.{district_domain}/bell-schedule",
+            f"https://{district_domain}/bell-schedule",
+            f"https://www.{district_domain}/schools/bell-schedule",
         ]
 
         found_schedule = None
