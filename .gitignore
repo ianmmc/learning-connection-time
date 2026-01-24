@@ -120,3 +120,21 @@ tmp/
 *.tmp
 context.xml
 data/cache/
+
+# Database backups
+backup_*.sql
+data/backups/
+
+# Archived/suspect data
+data/archive/
+
+# Test data files (not fixtures)
+data/test_cohort*.csv
+
+# Batch processing temp files
+tier_*_batch_*.txt
+
+# Local CLAUDE.md config files (per-directory overrides)
+# Exclude subdirectory CLAUDE.md files but keep root Claude.md
+config/CLAUDE.md
+infrastructure/**/CLAUDE.md
