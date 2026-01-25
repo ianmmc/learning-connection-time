@@ -157,7 +157,7 @@ class FirecrawlDiscovery:
             response = self.session.post(
                 f"{self.base_url}/v1/map",
                 json={"url": url, "search": search},
-                timeout=60
+                timeout=120
             )
 
             if response.status_code != 200:
@@ -317,7 +317,7 @@ class FirecrawlDiscovery:
                     "url": url,
                     "formats": ["markdown", "html"]
                 },
-                timeout=60
+                timeout=120
             )
 
             if response.status_code != 200:

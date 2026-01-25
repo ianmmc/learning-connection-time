@@ -4,12 +4,14 @@
 
 This directory contains Docker configuration and utilities for running PostgreSQL in a container.
 
+**Status (January 2026):** Docker is the **only supported** PostgreSQL setup. Local Homebrew PostgreSQL has been deprecated and should be stopped.
+
 **Benefits of Docker:**
 - Consistent environment across development/production
-- Easy setup and teardown
-- Isolated from system PostgreSQL
+- Easy setup and teardown for new developers
 - Version controlled infrastructure
 - Matches production (Supabase) more closely
+- Portable across macOS, Linux, and Windows
 
 ---
 
@@ -174,24 +176,18 @@ docker-compose logs postgres
 
 ### Port already in use
 
-If Homebrew PostgreSQL is still running on port 5432:
+If Homebrew PostgreSQL is still running on port 5432, stop it:
 
-**Option 1: Stop Homebrew PostgreSQL**
 ```bash
+# Stop local PostgreSQL (required - Docker is now the only supported setup)
 brew services stop postgresql@16
+
+# Verify it's stopped
+brew services list | grep postgres
+# Should show: postgresql@16 none
 ```
 
-**Option 2: Use different port for Docker**
-Edit `docker-compose.yml`:
-```yaml
-ports:
-  - "5433:5432"  # External:Internal
-```
-
-Then update `.env`:
-```bash
-POSTGRES_PORT=5433
-```
+Docker will then use port 5432 via port forwarding.
 
 ### Permission errors
 
@@ -206,32 +202,35 @@ docker-compose up -d
 
 ## Data Migration Strategy
 
-### From Homebrew to Docker
+### From Homebrew to Docker (COMPLETED January 2026)
 
-1. **Export current data** (already done):
-   ```bash
-   python3 infrastructure/database/docker/export_database.py
-   ```
+Migration from Homebrew PostgreSQL to Docker has been completed. All data now lives in the Docker container `lct_postgres`.
 
-2. **Start Docker container**:
-   ```bash
-   docker-compose up -d
-   ```
+**To verify the current setup:**
 
-3. **Import data**:
-   ```bash
-   python3 infrastructure/database/docker/import_to_docker.py
-   ```
+```bash
+# Check Docker is running
+docker ps | grep lct_postgres
 
-4. **Verify**:
-   ```bash
-   python3 infrastructure/database/test_infrastructure.py
-   ```
+# Verify Python connects to Docker
+python3 -c "
+from infrastructure.database.connection import session_scope
+from sqlalchemy import text
+with session_scope() as s:
+    user = s.execute(text('SELECT current_user')).scalar()
+    print(f'Connected as: {user}')  # Should be lct_user
+"
 
-5. **Stop Homebrew PostgreSQL** (optional):
-   ```bash
-   brew services stop postgresql@16
-   ```
+# Ensure Homebrew PostgreSQL is stopped
+brew services list | grep postgres
+# Should show: postgresql@16 none
+```
+
+**If you need to re-migrate:**
+
+1. Stop local PostgreSQL: `brew services stop postgresql@16`
+2. Start Docker: `docker-compose up -d`
+3. Run rebuild: `python infrastructure/scripts/rebuild_database.py`
 
 ### Fresh Start (No Existing Data)
 

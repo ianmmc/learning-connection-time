@@ -47,6 +47,7 @@ from sqlalchemy import text
 SCRIPTS = {
     "reset": "infrastructure/scripts/reset_database.py",
     "import_all": "infrastructure/database/migrations/import_all_data.py",
+    "import_district_urls": "infrastructure/scripts/import_district_urls.py",
     "import_staff_enrollment": "infrastructure/database/migrations/import_staff_and_enrollment.py",
     "import_sped_baseline": "infrastructure/database/migrations/import_sped_baseline.py",
     "apply_sped_estimates": "infrastructure/database/migrations/apply_sped_estimates.py",
@@ -139,7 +140,15 @@ def phase_2_foundation(dry_run: bool = False) -> bool:
     if dry_run:
         args.append("--dry-run")
 
-    return run_script(SCRIPTS["import_all"], args, dry_run=False)  # Script handles dry-run internally
+    if not run_script(SCRIPTS["import_all"], args, dry_run=False):  # Script handles dry-run internally
+        return False
+
+    # Import district website URLs and grade spans from NCES CCD
+    print("\nImporting district URLs and grade spans...")
+    url_args = []
+    if dry_run:
+        url_args.append("--dry-run")
+    return run_script(SCRIPTS["import_district_urls"], url_args, dry_run=dry_run)
 
 
 def phase_3_staff_enrollment(dry_run: bool = False, year: str = "2023-24") -> bool:

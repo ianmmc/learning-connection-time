@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
 Enrichment Queue Manager
-Orchestrates multi-tier bell schedule enrichment with batched API processing
+Orchestrates multi-tier bell schedule enrichment
 
 Architecture:
     Tier 1: Local Discovery (Playwright) - Find district/school sites
     Tier 2: Local Extraction (Patterns) - Parse HTML for schedules
     Tier 3: Local PDF/OCR - Extract from documents
-    Tier 4: Claude Desktop (Batched) - Complex extraction via user's Claude subscription
-    Tier 5: Gemini MCP (Batched) - Web search fallback
+    Claude Review: Interactive processing in Claude Code session
+    Manual Review: Human review for remaining districts
 
 Usage:
     from enrichment_queue_manager import EnrichmentQueueManager
@@ -20,14 +20,14 @@ Usage:
         # Add districts to queue
         added = qm.add_districts(['0622710', '3623370'])
 
-        # Process tiers
+        # Process automated tiers (1-3)
         qm.process_tier_1_batch(batch_size=50)
         qm.process_tier_2_batch(batch_size=50)
         qm.process_tier_3_batch(batch_size=20)
 
-        # Prepare batches for Claude Desktop
-        tier_4_batches = qm.prepare_tier_4_batches()
-        # Present batches to Claude for processing
+        # Prepare batches for Claude Review (interactive)
+        claude_review_batches = qm.prepare_claude_review_batches()
+        # Present batches to Claude Code session for processing
 
         # Get status
         status = qm.get_status()
@@ -46,6 +46,36 @@ from infrastructure.database.models import (
     District, EnrichmentQueue, EnrichmentBatch,
     BellSchedule, EnrichmentAttempt
 )
+
+def _normalize_confidence(value) -> str:
+    """
+    Convert confidence value to database-compatible string.
+
+    Args:
+        value: Can be numeric (0-1), string ('high', 'medium', 'low'), or None
+
+    Returns:
+        One of 'high', 'medium', 'low'
+    """
+    if value is None:
+        return 'medium'
+
+    # If already a valid string, return it
+    if isinstance(value, str) and value.lower() in ('high', 'medium', 'low'):
+        return value.lower()
+
+    # Convert numeric to string category
+    try:
+        num_val = float(value)
+        if num_val >= 0.8:
+            return 'high'
+        elif num_val >= 0.5:
+            return 'medium'
+        else:
+            return 'low'
+    except (TypeError, ValueError):
+        return 'medium'
+
 
 # Configure logging
 logging.basicConfig(
@@ -255,6 +285,23 @@ class EnrichmentQueueManager:
                 # Process district
                 result = processor.process_district(queue_item.district_id)
 
+                # Check for security blocks first (Cloudflare, WAF, 403, etc.)
+                security_details = result.get('security_details', {})
+                # Get district name for output
+                district_name = queue_item.district.name if queue_item.district else "Unknown"
+
+                if security_details.get('blocked') or result.get('security_blocked'):
+                    block_type = security_details.get('block_type', 'unknown')
+                    self.mark_permanently_blocked(
+                        queue_item.district_id,
+                        current_tier=1,
+                        result=result,
+                        block_reason=block_type
+                    )
+                    failed += 1
+                    print(f"  [{queue_item.district_id}] {district_name}: Tier 1 -> BLOCKED ({block_type})")
+                    continue
+
                 if result.get('success'):
                     # Check if bell schedule found
                     if result.get('bell_schedule_found'):
@@ -266,6 +313,8 @@ class EnrichmentQueueManager:
                             processing_time_seconds=result.get('processing_time_seconds')
                         )
                         successful += 1
+                        schedules = result.get('schedules_count', 1)
+                        print(f"  [{queue_item.district_id}] {district_name}: Tier 1 -> SUCCESS ({schedules} schedule(s))")
                     else:
                         # No schedule found - escalate to Tier 2
                         self.record_tier_escalation(
@@ -277,6 +326,8 @@ class EnrichmentQueueManager:
                             content_type=result.get('content_type')
                         )
                         escalated += 1
+                        reason = result.get('escalation_reason', 'no schedule found')
+                        print(f"  [{queue_item.district_id}] {district_name}: Tier 1 -> Tier 2 ({reason})")
                 else:
                     # Failed - escalate anyway
                     self.record_tier_escalation(
@@ -286,10 +337,8 @@ class EnrichmentQueueManager:
                         escalation_reason=result.get('error', 'processing_failed')
                     )
                     failed += 1
-
-                logger.info(f"Processed {queue_item.district_id}: "
-                           f"success={result.get('success')}, "
-                           f"schedule_found={result.get('bell_schedule_found')}")
+                    error = result.get('error', 'failed')
+                    print(f"  [{queue_item.district_id}] {district_name}: Tier 1 -> Tier 2 ({error})")
 
             except Exception as e:
                 logger.error(f"Error processing {queue_item.district_id}: {e}")
@@ -350,12 +399,29 @@ class EnrichmentQueueManager:
 
         for queue_item in districts:
             try:
+                # Get district name for output
+                district_name = queue_item.district.name if queue_item.district else "Unknown"
+
                 # Process district with Tier 1 results
                 tier_1_result = queue_item.tier_1_result or {}
                 result = processor.process_district(
                     district_id=queue_item.district_id,
                     tier_1_result=tier_1_result
                 )
+
+                # Check for security blocks (403, etc.)
+                security_details = result.get('security_details', {})
+                if security_details.get('blocked') or result.get('security_blocked'):
+                    block_type = security_details.get('block_type', 'http_403')
+                    self.mark_permanently_blocked(
+                        queue_item.district_id,
+                        current_tier=2,
+                        result=result,
+                        block_reason=block_type
+                    )
+                    failed += 1
+                    print(f"  [{queue_item.district_id}] {district_name}: Tier 2 -> BLOCKED ({block_type})")
+                    continue
 
                 if result.get('success'):
                     if result.get('schedule_extracted'):
@@ -367,6 +433,8 @@ class EnrichmentQueueManager:
                             processing_time_seconds=result.get('processing_time_seconds')
                         )
                         successful += 1
+                        schedules = result.get('schedules_count', 1)
+                        print(f"  [{queue_item.district_id}] {district_name}: Tier 2 -> SUCCESS ({schedules} schedule(s))")
                     else:
                         # HTML parsed but no schedule extracted - escalate to Tier 3
                         self.record_tier_escalation(
@@ -378,6 +446,8 @@ class EnrichmentQueueManager:
                             content_type=result.get('content_type')
                         )
                         escalated += 1
+                        reason = result.get('escalation_reason', 'no schedule extracted')
+                        print(f"  [{queue_item.district_id}] {district_name}: Tier 2 -> Tier 3 ({reason})")
                 else:
                     # Failed - escalate to Tier 3
                     self.record_tier_escalation(
@@ -387,17 +457,14 @@ class EnrichmentQueueManager:
                         escalation_reason=result.get('error', 'processing_failed')
                     )
                     failed += 1
-
-                logger.info(f"Processed {queue_item.district_id}: "
-                           f"success={result.get('success')}, "
-                           f"extracted={result.get('schedule_extracted')}")
+                    error = result.get('error', 'failed')
+                    print(f"  [{queue_item.district_id}] {district_name}: Tier 2 -> Tier 3 ({error})")
 
             except Exception as e:
                 logger.error(f"Error processing {queue_item.district_id}: {e}")
                 failed += 1
 
-        logger.info(f"Tier 2 batch complete: {successful} successful, "
-                   f"{escalated} escalated, {failed} failed")
+        print(f"Tier 2 complete: {successful} successful, {escalated} escalated, {failed} failed")
 
         return {
             'processed': len(districts),
@@ -452,12 +519,29 @@ class EnrichmentQueueManager:
 
         for queue_item in districts:
             try:
+                # Get district name for output
+                district_name = queue_item.district.name if queue_item.district else "Unknown"
+
                 # Process district with Tier 2 results
                 tier_2_result = queue_item.tier_2_result or {}
                 result = processor.process_district(
                     district_id=queue_item.district_id,
                     tier_2_result=tier_2_result
                 )
+
+                # Check for security blocks (403 on PDF download, etc.)
+                security_details = result.get('security_details', {})
+                if security_details.get('blocked') or result.get('security_blocked'):
+                    block_type = security_details.get('block_type', 'http_403')
+                    self.mark_permanently_blocked(
+                        queue_item.district_id,
+                        current_tier=3,
+                        result=result,
+                        block_reason=block_type
+                    )
+                    failed += 1
+                    print(f"  [{queue_item.district_id}] {district_name}: Tier 3 -> BLOCKED ({block_type})")
+                    continue
 
                 if result.get('success'):
                     if result.get('schedule_found'):
@@ -469,6 +553,8 @@ class EnrichmentQueueManager:
                             processing_time_seconds=result.get('processing_time_seconds')
                         )
                         successful += 1
+                        schedules = result.get('schedules_count', 1)
+                        print(f"  [{queue_item.district_id}] {district_name}: Tier 3 -> SUCCESS ({schedules} schedule(s))")
                     else:
                         # PDF processed but no schedule extracted - escalate to Tier 4
                         self.record_tier_escalation(
@@ -480,6 +566,8 @@ class EnrichmentQueueManager:
                             content_type=result.get('content_type')
                         )
                         escalated += 1
+                        reason = result.get('escalation_reason', 'no schedule extracted')
+                        print(f"  [{queue_item.district_id}] {district_name}: Tier 3 -> Tier 4 ({reason})")
                 else:
                     # Failed - escalate to Tier 4
                     self.record_tier_escalation(
@@ -489,17 +577,14 @@ class EnrichmentQueueManager:
                         escalation_reason=result.get('error', 'processing_failed')
                     )
                     failed += 1
-
-                logger.info(f"Processed {queue_item.district_id}: "
-                           f"success={result.get('success')}, "
-                           f"extracted={result.get('schedule_extracted')}")
+                    error = result.get('error', 'failed')
+                    print(f"  [{queue_item.district_id}] {district_name}: Tier 3 -> Tier 4 ({error})")
 
             except Exception as e:
                 logger.error(f"Error processing {queue_item.district_id}: {e}")
                 failed += 1
 
-        logger.info(f"Tier 3 batch complete: {successful} successful, "
-                   f"{escalated} escalated, {failed} failed")
+        print(f"Tier 3 complete: {successful} successful, {escalated} escalated, {failed} failed")
 
         return {
             'processed': len(districts),
@@ -509,12 +594,12 @@ class EnrichmentQueueManager:
         }
 
     # =========================================================================
-    # Tier 4 & 5: Batched API Processing
+    # Claude Review: Interactive Processing
     # =========================================================================
 
-    def prepare_tier_4_batches(self, batch_size: int = 15) -> List[Dict]:
+    def prepare_claude_review_batches(self, batch_size: int = 15) -> List[Dict]:
         """
-        Prepare batches for Tier 4: Claude Desktop Processing
+        Prepare batches for Claude Review (interactive processing in Claude Code)
 
         Groups districts by:
             1. CMS platform (Finalsite, SchoolBlocks, etc.)
@@ -525,51 +610,21 @@ class EnrichmentQueueManager:
             batch_size: Districts per batch (10-20 recommended)
 
         Returns:
-            List of batch specifications ready for Claude processing
+            List of batch specifications ready for Claude Review
         """
-        logger.info(f"Preparing Tier 4 batches (size={batch_size})")
+        logger.info(f"Preparing Claude Review batches (size={batch_size})")
 
-        # Get all districts ready for Tier 4
+        # Get all districts ready for Claude Review (tier 4)
         districts = self.get_districts_for_processing(tier=4, batch_size=1000)
 
         if not districts:
-            logger.info("No districts ready for Tier 4 batching")
+            logger.info("No districts ready for Claude Review")
             return []
 
         # Group by batch characteristics
         batches = self._compose_claude_batches(districts, batch_size)
 
-        logger.info(f"Prepared {len(batches)} Tier 4 batches covering {len(districts)} districts")
-        return batches
-
-    def prepare_tier_5_batches(self, batch_size: int = 15) -> List[Dict]:
-        """
-        Prepare batches for Tier 5: Gemini MCP Web Search
-
-        Groups districts by:
-            1. State (geographic context)
-            2. District size
-            3. Previous failure patterns
-
-        Args:
-            batch_size: Districts per batch (10-20 recommended)
-
-        Returns:
-            List of batch specifications ready for Gemini processing
-        """
-        logger.info(f"Preparing Tier 5 batches (size={batch_size})")
-
-        # Get all districts ready for Tier 5
-        districts = self.get_districts_for_processing(tier=5, batch_size=1000)
-
-        if not districts:
-            logger.info("No districts ready for Tier 5 batching")
-            return []
-
-        # Group by state and characteristics
-        batches = self._compose_gemini_batches(districts, batch_size)
-
-        logger.info(f"Prepared {len(batches)} Tier 5 batches covering {len(districts)} districts")
+        logger.info(f"Prepared {len(batches)} Claude Review batches covering {len(districts)} districts")
         return batches
 
     def _compose_claude_batches(
@@ -644,70 +699,6 @@ class EnrichmentQueueManager:
 
         return batches
 
-    def _compose_gemini_batches(
-        self,
-        districts: List[EnrichmentQueue],
-        batch_size: int
-    ) -> List[Dict]:
-        """
-        Compose Gemini MCP batches with state-based grouping
-
-        Strategy: Group by state for geographic context
-        """
-        # Group by state
-        by_state = {}
-        for district in districts:
-            # Get District object for state
-            dist_obj = self.session.query(District).filter_by(
-                nces_id=district.district_id
-            ).first()
-
-            if not dist_obj:
-                continue
-
-            state = dist_obj.state
-            if state not in by_state:
-                by_state[state] = []
-            by_state[state].append((district, dist_obj))
-
-        # Create batches
-        batches = []
-        batch_id = 1
-
-        for state, state_districts in by_state.items():
-            # Split into batches
-            for i in range(0, len(state_districts), batch_size):
-                batch_pairs = state_districts[i:i + batch_size]
-
-                batch = {
-                    'batch_id': batch_id,
-                    'batch_type': f"state_{state}",
-                    'tier': 5,
-                    'district_count': len(batch_pairs),
-                    'districts': [
-                        {
-                            'nces_id': d.nces_id,
-                            'name': d.name,
-                            'state': d.state,
-                            'enrollment': d.enrollment,
-                            'district_url': getattr(d, 'website_url', None),
-                            'tier_1_attempted_urls': eq.tier_1_result.get('urls_attempted', []) if eq.tier_1_result else [],
-                            'schools': eq.tier_1_result.get('schools_found', []) if eq.tier_1_result else []
-                        }
-                        for eq, d in batch_pairs
-                    ],
-                    'search_instructions': (
-                        "For each district/school, search for bell schedules using terms: "
-                        "'bell schedule', 'daily schedule', 'school hours', 'start time', 'dismissal time'. "
-                        "Return the URL and extracted schedule data."
-                    )
-                }
-
-                batches.append(batch)
-                batch_id += 1
-
-        return batches
-
     def _get_shared_context_claude(self, group_key: str) -> str:
         """Generate shared context for Claude batch based on group type"""
         contexts = {
@@ -737,6 +728,85 @@ class EnrichmentQueueManager:
     # Result Recording
     # =========================================================================
 
+    def _save_bell_schedules(self, district_id: str, schedules: List[Dict], tier: int) -> int:
+        """
+        Save extracted bell schedules to the bell_schedules table.
+
+        Args:
+            district_id: NCES district ID
+            schedules: List of schedule dictionaries with keys:
+                - grade_level: elementary, middle, high
+                - instructional_minutes: int
+                - start_time: str (e.g., "8:00 AM")
+                - end_time: str (e.g., "3:00 PM")
+                - confidence: float (0-1)
+                - source_url: str
+                - method: str (e.g., "firecrawl", "pattern_matching")
+            tier: Which tier extracted the data
+
+        Returns:
+            Number of schedules saved
+        """
+        if not schedules:
+            return 0
+
+        saved = 0
+        for schedule in schedules:
+            try:
+                # Check if we already have this grade level for this district
+                existing = self.session.execute(
+                    text("""
+                        SELECT id FROM bell_schedules
+                        WHERE district_id = :district_id
+                        AND grade_level = :grade_level
+                        AND year = :year
+                    """),
+                    {
+                        'district_id': district_id,
+                        'grade_level': schedule.get('grade_level'),
+                        'year': '2025-26'  # Current school year
+                    }
+                ).fetchone()
+
+                if existing:
+                    logger.debug(f"Schedule already exists for {district_id} {schedule.get('grade_level')}")
+                    continue
+
+                # Insert new bell schedule
+                self.session.execute(
+                    text("""
+                        INSERT INTO bell_schedules (
+                            district_id, year, grade_level, instructional_minutes,
+                            start_time, end_time, confidence, method,
+                            source_description, source_urls
+                        ) VALUES (
+                            :district_id, :year, :grade_level, :minutes,
+                            :start_time, :end_time, :confidence, :method,
+                            :source_desc, CAST(:source_urls AS jsonb)
+                        )
+                    """),
+                    {
+                        'district_id': district_id,
+                        'year': '2025-26',
+                        'grade_level': schedule.get('grade_level'),
+                        'minutes': schedule.get('instructional_minutes'),
+                        'start_time': schedule.get('start_time'),
+                        'end_time': schedule.get('end_time'),
+                        'confidence': _normalize_confidence(schedule.get('confidence')),
+                        'method': f"tier_{tier}_{schedule.get('method', 'auto')}",
+                        'source_desc': f"Extracted at Tier {tier} from {schedule.get('source_url', 'unknown')}",
+                        'source_urls': json.dumps([schedule.get('source_url')]) if schedule.get('source_url') else '[]'
+                    }
+                )
+                saved += 1
+
+            except Exception as e:
+                logger.error(f"Failed to save schedule for {district_id}: {e}")
+                continue
+
+        logger.info(f"Saved {saved} bell schedules for district {district_id}")
+        return saved
+
     def record_tier_success(
         self,
         district_id: str,
@@ -757,6 +827,13 @@ class EnrichmentQueueManager:
             True if recorded successfully
         """
         try:
+            # First, save any extracted bell schedules to bell_schedules table
+            schedules = result.get('schedules_extracted', [])
+            if schedules:
+                saved_count = self._save_bell_schedules(district_id, schedules, tier)
+                logger.info(f"Saved {saved_count} bell schedules for {district_id}")
+
+            # Then update the enrichment queue status
             self.session.execute(
                 text("""
                     SELECT complete_enrichment(
@@ -823,12 +900,171 @@ class EnrichmentQueueManager:
                 }
             )
             self.session.commit()
-            logger.info(f"Escalated {district_id} from tier {current_tier} to {current_tier + 1}: {escalation_reason}")
+            # After tier 3, escalation goes to Claude Review (tier 4)
+            # After tier 4 (Claude Review), escalation goes to manual_review
+            next_tier = current_tier + 1 if current_tier < 4 else 'manual_review'
+            logger.info(f"Escalated {district_id} from tier {current_tier} to {next_tier}: {escalation_reason}")
             return True
         except Exception as e:
             logger.error(f"Failed to record escalation for {district_id}: {e}")
             self.session.rollback()
             return False
+
+    def mark_permanently_blocked(
+        self,
+        district_id: str,
+        current_tier: int,
+        result: Dict,
+        block_reason: str
+    ) -> bool:
+        """
+        Mark district as permanently blocked due to security protection.
+
+        This should be called when Cloudflare, WAF, CAPTCHA, or 403 responses
+        are detected. The district will be sent directly to manual_review and
+        excluded from all future automated scraping attempts.
+
+        Args:
+            district_id: NCES district ID
+            current_tier: Tier where block was detected
+            result: Tier result data (JSONB)
+            block_reason: Type of block (cloudflare, waf, captcha, 403, rate_limit)
+
+        Returns:
+            True if recorded successfully
+        """
+        try:
+            self.session.execute(
+                text("""
+                    SELECT mark_security_blocked(
+                        :district_id, :tier, :result, :reason
+                    )
+                """),
+                {
+                    'district_id': district_id,
+                    'tier': current_tier,
+                    'result': json.dumps(result),
+                    'reason': block_reason
+                }
+            )
+            self.session.commit()
+            logger.warning(f"BLOCKED {district_id}: {block_reason} detected at tier {current_tier} -> manual_review (permanent)")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to mark {district_id} as blocked: {e}")
+            self.session.rollback()
+            return False
+
+    def record_manual_review(
+        self,
+        district_id: str,
+        result: Dict,
+        reason: str
+    ) -> bool:
+        """
+        Record that a district needs manual review (final state after Claude Review).
+
+        This is the terminal state for districts that couldn't be processed
+        automatically or through Claude Review.
+
+        Args:
+            district_id: NCES district ID
+            result: Final result data (JSONB)
+            reason: Why manual review is needed
+
+        Returns:
+            True if recorded successfully
+        """
+        try:
+            self.session.execute(
+                text("""
+                    UPDATE enrichment_queue
+                    SET status = 'manual_review',
+                        tier_4_result = :result,
+                        escalation_reason = :reason,
+                        updated_at = NOW()
+                    WHERE district_id = :district_id
+                """),
+                {
+                    'district_id': district_id,
+                    'result': json.dumps(result),
+                    'reason': reason
+                }
+            )
+            self.session.commit()
+            logger.info(f"Marked {district_id} for manual review: {reason}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to mark {district_id} for manual review: {e}")
+            self.session.rollback()
+            return False
+
+    def is_queue_complete(self) -> bool:
+        """
+        Check if all queued items have reached a terminal state.
+
+        Terminal states are: completed, manual_review
+
+        Returns:
+            True if no items are pending/processing
+        """
+        result = self.session.execute(text("""
+            SELECT COUNT(*) FROM enrichment_queue
+            WHERE status IN ('pending', 'processing')
+        """)).scalar()
+        return result == 0
+
+    def get_pending_count_for_tier(self, tier: int) -> int:
+        """
+        Get count of districts pending at a specific tier.
+
+        Args:
+            tier: Tier number (1-5)
+
+        Returns:
+            Count of pending districts at that tier
+        """
+        result = self.session.execute(text("""
+            SELECT COUNT(*) FROM enrichment_queue
+            WHERE status = 'pending' AND current_tier = :tier
+        """), {'tier': tier}).scalar()
+        return result or 0
+
+    def get_queue_summary(self) -> Dict:
+        """
+        Get a summary of queue status for debug output.
+
+        Returns:
+            Dict with counts by status and tier
+        """
+        result = self.session.execute(text("""
+            SELECT
+                status,
+                current_tier,
+                COUNT(*) as count
+            FROM enrichment_queue
+            GROUP BY status, current_tier
+            ORDER BY status, current_tier
+        """)).fetchall()
+
+        summary = {
+            'total': 0,
+            'pending': 0,
+            'processing': 0,
+            'completed': 0,
+            'manual_review': 0,
+            'by_tier': {}
+        }
+
+        for status, tier, count in result:
+            summary['total'] += count
+            summary[status] = summary.get(status, 0) + count
+            tier_key = f'tier_{tier}'
+            if tier_key not in summary['by_tier']:
+                summary['by_tier'][tier_key] = {}
+            summary['by_tier'][tier_key][status] = count
+
+        return summary
 
 
 def main():

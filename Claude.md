@@ -23,9 +23,8 @@ Part of "Reducing the Ratio" educational equity initiative. Currently implementi
 
 ---
 
-## Current Date and Data Years
+## Current Data Years
 
-**Current Date:** January 24, 2026
 **Current School Year:** 2025-26
 
 ### Data Year Strategy
@@ -38,26 +37,19 @@ Part of "Reducing the Ratio" educational equity initiative. Currently implementi
 
 **Search Order:** 2025-26 → 2024-25 → 2023-24 (all post-COVID, interchangeable)
 
----
-
-## Project Status (January 24, 2026)
-
-- **Phase**: Bell Schedule Automation
-- **Bell Schedules**: ~103 districts enriched (verified from database)
-- **Scraper Service**: `infrastructure/scraper/` - Playwright-based, operational
-- **SEA Integrations**: 9/9 complete (FL, TX, CA, NY, IL, MI, PA, VA, MA)
-- **Database**: PostgreSQL 16, 17,842 districts
-- **Test Suite**: 375 passed
-
-> **Note**: Prior documentation claimed 192 districts. Investigation on Jan 24, 2026 revealed Dec 26-27 enrichment was hallucinated by AI. See `~/Development/221B-baker-street/CASE_FILE.md` for forensic analysis.
 
 ---
 
 ## Database Quick Reference
 
 ```bash
-# Check database
-psql -d learning_connection_time -c "SELECT COUNT(*) FROM districts;"
+# Bell schedule count (source of truth)
+python3 -c "
+from infrastructure.database.connection import session_scope
+from sqlalchemy import text
+with session_scope() as s:
+    print(s.execute(text('SELECT COUNT(DISTINCT district_id) FROM bell_schedules')).scalar())
+"
 
 # Query enrichment status
 python -c "
@@ -76,18 +68,16 @@ with session_scope() as session:
 
 ```bash
 # Calculate LCT (recommended)
-python infrastructure/scripts/analyze/calculate_lct_variants.py
+python3 infrastructure/scripts/analyze/calculate_lct_variants.py
 
 # Interactive enrichment
-python infrastructure/scripts/enrich/interactive_enrichment.py --state WI
+python3 infrastructure/scripts/enrich/interactive_enrichment.py --state WI
 
 # Run SEA integration tests
 pytest tests/test_*_integration.py -v
 
-# VERIFICATION (REQ-035/036/037) - Run after enrichment!
-python infrastructure/scripts/verify_enrichment.py --quick
-python infrastructure/scripts/verify_enrichment.py --validate-claim 103
-python infrastructure/scripts/verify_enrichment.py --date-range 2025-12-25 2025-12-27
+# VERIFICATION - Run after enrichment!
+python3 infrastructure/scripts/verify_enrichment.py --quick
 ```
 
 ---

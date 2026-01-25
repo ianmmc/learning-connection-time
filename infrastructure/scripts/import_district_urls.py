@@ -53,6 +53,14 @@ def normalize_url(url: str) -> str:
     return url
 
 
+def normalize_nces_id(nces_id: str) -> str:
+    """Normalize NCES ID to 7-digit format with leading zeros (NCES standard)."""
+    if not nces_id:
+        return None
+    # Pad to 7 digits with leading zeros (NCES standard format)
+    return nces_id.strip().zfill(7)
+
+
 def load_urls_from_csv() -> dict:
     """Load NCES ID -> Website URL mapping from CSV."""
     urls = {}
@@ -63,7 +71,7 @@ def load_urls_from_csv() -> dict:
 
         for row in reader:
             if len(row) > max(LEAID_COL, WEBSITE_COL):
-                leaid = row[LEAID_COL].strip()
+                leaid = normalize_nces_id(row[LEAID_COL].strip())
                 website = normalize_url(row[WEBSITE_COL])
 
                 if leaid and website:
@@ -93,7 +101,7 @@ def load_grade_spans_from_csv() -> dict:
 
         for row in reader:
             if len(row) > max(LEAID_COL, GSLO_COL, GSHI_COL):
-                leaid = row[LEAID_COL].strip()
+                leaid = normalize_nces_id(row[LEAID_COL].strip())
                 gslo = normalize_grade(row[GSLO_COL])
                 gshi = normalize_grade(row[GSHI_COL])
 

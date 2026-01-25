@@ -58,7 +58,7 @@ class Tier2Processor:
 
     # Scraper service configuration
     SCRAPER_BASE_URL = "http://localhost:3000"
-    SCRAPER_TIMEOUT = 60
+    SCRAPER_TIMEOUT = 180  # Increased for large district sites
 
     def __init__(self, session: Session, scraper_url: str = None):
         """

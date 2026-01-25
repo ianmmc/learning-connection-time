@@ -1,36 +1,48 @@
 #!/usr/bin/env python3
 """
-Tier 4 Processor: Claude Desktop Processing (Batched)
-Processes complex bell schedule extractions through Claude Desktop conversation
+Claude Review Processor (formerly Tier 4)
 
-This tier presents batches of districts to Claude for processing using full tool access.
-Claude can use browser automation, HTML parsing, PDF reading, and reasoning to extract
-schedules that simpler methods couldn't handle.
+This processor handles interactive bell schedule extraction in Claude Code sessions.
+After automated Tiers 1-3 fail, districts escalate here for interactive processing
+with full tool access. If Claude Review cannot extract the schedule, districts
+move to Manual Review (terminal state).
+
+Pipeline Flow:
+    Tier 1 (Firecrawl) → Tier 2 (HTML) → Tier 3 (PDF/OCR) → Claude Review → Manual Review
 
 **Cost**: $0 (included in Claude Max subscription)
 
-Workflow:
-    1. Queue manager prepares batch (10-20 districts)
-    2. Batch presented to Claude in conversation
-    3. Claude processes using available tools
-    4. Claude returns structured results
-    5. Results recorded to database
+**Integration Model**: Interactive with human oversight
+    - Script generates batch requests with district context
+    - User runs script and presents batch to Claude Code session
+    - Claude Code uses WebFetch, Read, Bash, etc. to find schedules
+    - Claude Code calls record_schedule_from_session() to persist results
+    - Failed districts go to Manual Review
 
-Usage:
-    from tier_4_processor import Tier4Processor
-    from connection import session_scope
+Workflow:
+    1. Run: python run_multi_tier_enrichment.py --claude-review
+    2. Script outputs batch request for pending Claude Review districts
+    3. In Claude Code session, process each district using available tools
+    4. Use record_schedule_from_session() to save found data
+
+Usage in Claude Code Session:
+    # After finding bell schedule for a district:
+    from infrastructure.scripts.enrich.tier_4_processor import Tier4Processor
+    from infrastructure.database.connection import session_scope
 
     with session_scope() as session:
         processor = Tier4Processor(session)
-
-        # Prepare batch for Claude
-        batch = processor.prepare_batch_for_claude(districts)
-
-        # Present to Claude (manual step in conversation)
-        print(processor.format_batch_request(batch))
-
-        # After Claude provides results, record them
-        processor.record_batch_results(batch_id, claude_results)
+        result = processor.record_schedule_from_session(
+            district_id='0100005',
+            schedules=[
+                {'grade_level': 'elementary', 'start_time': '8:00 AM', 'end_time': '2:30 PM'},
+                {'grade_level': 'middle', 'start_time': '8:30 AM', 'end_time': '3:30 PM'},
+                {'grade_level': 'high', 'start_time': '7:30 AM', 'end_time': '2:30 PM'}
+            ],
+            source_url='https://district.org/schedules',
+            notes='Found on district calendar page'
+        )
+        print(result)
 """
 
 import logging
@@ -39,6 +51,7 @@ from typing import Dict, List, Optional
 from datetime import datetime
 
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from infrastructure.database.models import District, EnrichmentQueue, EnrichmentBatch
 
@@ -465,6 +478,285 @@ If unable to find bell schedule, note the reason.
                 'reason': escalation_reason
             }
         )
+
+    # =========================================================================
+    # Individual District Processing (for automatic mode)
+    # =========================================================================
+
+    def process_district(
+        self,
+        district_id: str,
+        previous_results: Dict = None
+    ) -> Dict:
+        """
+        Process a single district through Tier 4.
+
+        This method attempts automated extraction using web fetching and
+        enhanced pattern matching. For complex cases, it may escalate to Tier 5.
+
+        Args:
+            district_id: NCES district ID
+            previous_results: Results from previous tiers
+
+        Returns:
+            Result dictionary with success, schedule_extracted, etc.
+        """
+        import re
+        import requests
+        from datetime import datetime
+
+        start_time = datetime.utcnow()
+        previous_results = previous_results or {}
+
+        # Get district info
+        district = self.session.query(District).filter_by(nces_id=district_id).first()
+        if not district:
+            return {
+                'success': False,
+                'error': 'district_not_found',
+                'schedule_extracted': False
+            }
+
+        # Get URLs to try from previous tier results
+        urls_to_try = []
+        for tier_key in ['tier_1', 'tier_2', 'tier_3']:
+            tier_result = previous_results.get(tier_key) or {}
+            if isinstance(tier_result, dict):
+                urls_to_try.extend(tier_result.get('schedule_urls', []))
+                urls_to_try.extend(tier_result.get('urls_attempted', []))
+
+        # Also try district website
+        if hasattr(district, 'website_url') and district.website_url:
+            urls_to_try.insert(0, district.website_url)
+
+        if not urls_to_try:
+            return {
+                'success': False,
+                'error': 'no_urls_to_try',
+                'schedule_extracted': False
+            }
+
+        # Try to fetch and extract from each URL
+        time_pattern = re.compile(r'(\d{1,2}):(\d{2})\s*([AaPp]\.?[Mm]\.?)')
+
+        for url in urls_to_try[:5]:  # Limit attempts
+            try:
+                response = requests.get(url, timeout=30, headers={
+                    'User-Agent': 'Mozilla/5.0 (compatible; LCT-Bot/1.0)'
+                })
+
+                if response.status_code == 200:
+                    content = response.text
+
+                    # Look for time patterns
+                    times = time_pattern.findall(content)
+
+                    if len(times) >= 2:
+                        # Found potential schedule times
+                        # Try to extract start/end times
+                        schedules = []
+                        for i in range(0, len(times) - 1, 2):
+                            start = f"{times[i][0]}:{times[i][1]} {times[i][2]}"
+                            end = f"{times[i+1][0]}:{times[i+1][1]} {times[i+1][2]}"
+
+                            # Calculate minutes
+                            try:
+                                start_h = int(times[i][0])
+                                start_m = int(times[i][1])
+                                end_h = int(times[i+1][0])
+                                end_m = int(times[i+1][1])
+
+                                if 'p' in times[i][2].lower() and start_h != 12:
+                                    start_h += 12
+                                if 'p' in times[i+1][2].lower() and end_h != 12:
+                                    end_h += 12
+
+                                minutes = (end_h * 60 + end_m) - (start_h * 60 + start_m)
+
+                                if 180 <= minutes <= 540:  # Sanity check
+                                    schedules.append({
+                                        'grade_level': 'elementary',  # Default
+                                        'start_time': start,
+                                        'end_time': end,
+                                        'instructional_minutes': minutes,
+                                        'confidence': 0.6,
+                                        'source_url': url,
+                                        'method': 'tier4_pattern'
+                                    })
+                            except (ValueError, IndexError):
+                                continue
+
+                        if schedules:
+                            processing_time = (datetime.utcnow() - start_time).total_seconds()
+                            return {
+                                'success': True,
+                                'schedule_extracted': True,
+                                'schedules_extracted': schedules,
+                                'source_url': url,
+                                'confidence': 0.6,
+                                'processing_time_seconds': int(processing_time)
+                            }
+
+            except requests.RequestException as e:
+                logger.debug(f"Request failed for {url}: {e}")
+                continue
+
+        # No schedule found
+        processing_time = (datetime.utcnow() - start_time).total_seconds()
+        return {
+            'success': False,
+            'error': 'no_schedule_extracted',
+            'schedule_extracted': False,
+            'urls_attempted': urls_to_try[:5],
+            'processing_time_seconds': int(processing_time)
+        }
+
+    # =========================================================================
+    # Claude Code Session Integration
+    # =========================================================================
+
+    def record_schedule_from_session(
+        self,
+        district_id: str,
+        schedules: List[Dict],
+        source_url: str = None,
+        notes: str = None
+    ) -> Dict:
+        """
+        Record bell schedule data found during a Claude Code session.
+
+        This method is designed for use when Claude Code is processing Tier 4
+        districts interactively. After finding bell schedule information,
+        call this method to persist to the database.
+
+        Args:
+            district_id: NCES district ID
+            schedules: List of schedule dicts, each with:
+                - grade_level: 'elementary', 'middle', or 'high'
+                - start_time: e.g., '8:00 AM'
+                - end_time: e.g., '3:00 PM'
+                - instructional_minutes: int (optional, will be calculated)
+            source_url: URL where schedule was found
+            notes: Optional notes about the extraction
+
+        Returns:
+            Dict with success status and details
+
+        Example:
+            processor.record_schedule_from_session(
+                district_id='0100005',
+                schedules=[
+                    {'grade_level': 'elementary', 'start_time': '8:00 AM', 'end_time': '2:30 PM'},
+                    {'grade_level': 'middle', 'start_time': '8:30 AM', 'end_time': '3:30 PM'},
+                    {'grade_level': 'high', 'start_time': '7:30 AM', 'end_time': '2:30 PM'}
+                ],
+                source_url='https://district.org/schedules',
+                notes='Found on district calendar page'
+            )
+        """
+        from infrastructure.database.models import BellSchedule
+        from datetime import datetime
+        import re
+
+        # Validate district exists
+        district = self.session.query(District).filter_by(nces_id=district_id).first()
+        if not district:
+            return {'success': False, 'error': f'District {district_id} not found'}
+
+        recorded = []
+        errors = []
+
+        for schedule in schedules:
+            try:
+                grade_level = schedule.get('grade_level', 'elementary')
+                start_time = schedule.get('start_time')
+                end_time = schedule.get('end_time')
+
+                if not start_time or not end_time:
+                    errors.append(f"Missing start/end time for {grade_level}")
+                    continue
+
+                # Calculate instructional minutes if not provided
+                minutes = schedule.get('instructional_minutes')
+                if not minutes:
+                    minutes = self._calculate_minutes(start_time, end_time)
+
+                # Create bell schedule record
+                bell_schedule = BellSchedule(
+                    district_id=district_id,
+                    grade_level=grade_level,
+                    start_time=start_time,
+                    end_time=end_time,
+                    instructional_minutes=minutes,
+                    source_url=source_url,
+                    method='tier_4_claude_session',
+                    confidence=0.85,
+                    notes=notes,
+                    school_year='2024-25',
+                    created_at=datetime.utcnow()
+                )
+
+                self.session.add(bell_schedule)
+                recorded.append({
+                    'grade_level': grade_level,
+                    'start_time': start_time,
+                    'end_time': end_time,
+                    'minutes': minutes
+                })
+
+            except Exception as e:
+                errors.append(f"Error recording {schedule}: {e}")
+
+        if recorded:
+            # Update enrichment queue status
+            queue_item = self.session.query(EnrichmentQueue).filter_by(
+                district_id=district_id
+            ).first()
+
+            if queue_item:
+                queue_item.status = 'completed'
+                queue_item.tier_4_result = {
+                    'success': True,
+                    'schedules': recorded,
+                    'source_url': source_url,
+                    'method': 'claude_session'
+                }
+                queue_item.completed_at = datetime.utcnow()
+
+            self.session.commit()
+
+        return {
+            'success': len(recorded) > 0,
+            'district_id': district_id,
+            'district_name': district.name,
+            'schedules_recorded': recorded,
+            'errors': errors if errors else None
+        }
+
+    def _calculate_minutes(self, start_time: str, end_time: str) -> int:
+        """Calculate instructional minutes from start/end times"""
+        import re
+
+        def parse_time(t: str) -> int:
+            """Convert time string to minutes since midnight"""
+            match = re.match(r'(\d{1,2}):(\d{2})\s*([AaPp])', t)
+            if not match:
+                return 0
+            hours = int(match.group(1))
+            minutes = int(match.group(2))
+            is_pm = match.group(3).lower() == 'p'
+
+            if is_pm and hours != 12:
+                hours += 12
+            elif not is_pm and hours == 12:
+                hours = 0
+
+            return hours * 60 + minutes
+
+        start_mins = parse_time(start_time)
+        end_mins = parse_time(end_time)
+
+        return end_mins - start_mins
 
 
 def main():

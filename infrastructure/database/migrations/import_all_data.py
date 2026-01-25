@@ -158,6 +158,16 @@ def import_districts(session, dry_run: bool = False) -> int:
     count = 0
     batch_size = 1000
 
+    # Pre-load existing website_urls to preserve them during merge
+    # This prevents session.merge() from overwriting URLs with None
+    existing_urls = {}
+    result = session.execute(
+        text("SELECT nces_id, website_url FROM districts WHERE website_url IS NOT NULL")
+    )
+    for nces_id, url in result:
+        existing_urls[nces_id] = url
+    logger.info(f"Preserving {len(existing_urls)} existing website URLs during import")
+
     with open(DISTRICTS_FILE, "r", newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
 
@@ -178,14 +188,17 @@ def import_districts(session, dry_run: bool = False) -> int:
                 except (ValueError, TypeError):
                     pass
 
+            nces_id = str(row["district_id"]).strip()
             district = District(
-                nces_id=str(row["district_id"]).strip(),
+                nces_id=nces_id,
                 name=row["district_name"].strip(),
                 state=row["state"].strip(),
                 enrollment=enrollment,
                 instructional_staff=instructional_staff,
                 year=row.get("year", "2023-24"),
                 data_source=row.get("data_source", "nces_ccd"),
+                # Preserve existing website_url if present
+                website_url=existing_urls.get(nces_id),
             )
 
             batch.append(district)

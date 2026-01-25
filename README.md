@@ -2,10 +2,6 @@
 
 > Transforming student-teacher ratios into tangible equity metrics
 
-[![Status](https://img.shields.io/badge/status-active_development-green.svg)]()
-[![Phase](https://img.shields.io/badge/phase-1.5_bell_schedule_enrichment-blue.svg)]()
-[![Data Quality](https://img.shields.io/badge/data_quality-validated-brightgreen.svg)]()
-
 ---
 
 ## 🎯 Project Mission
@@ -46,9 +42,7 @@ This reframes "20:1 student-teacher ratio" into a more visceral equity metric.
 - **[Infrastructure Scripts README](infrastructure/scripts/README.md)** - Script documentation
 
 ### Bell Schedule Enrichment
-- **[Operations Guide](docs/BELL_SCHEDULE_OPERATIONS_GUIDE.md)** - Detailed procedures
-- **[Quick Reference](docs/QUICK_REFERENCE_BELL_SCHEDULES.md)** - One-page cheat sheet
-- **[Sampling Methodology](docs/BELL_SCHEDULE_SAMPLING_METHODOLOGY.md)** - Collection approach
+- **[Multi-Tier Architecture](docs/MULTI_TIER_ENRICHMENT_ARCHITECTURE.md)** - Automated 5-tier enrichment pipeline
 
 ### Where to Find Results
 - **Current LCT values:** `data/enriched/lct-calculations/lct_all_variants_*.csv`
@@ -82,51 +76,6 @@ python infrastructure/scripts/enrich/enrichment_progress.py --campaign
 # State-specific progress
 python infrastructure/scripts/enrich/enrichment_progress.py --state WY
 ```
-
----
-
-## 📊 Current Status (January 2026)
-
-### Phase 1.5: Bell Schedule Enrichment Campaign
-
-📖 **Terminology Guide:** See `docs/TERMINOLOGY.md` for standardized vocabulary
-- **Automated enrichment** = Claude-collected via web scraping/PDF extraction
-- **Human-provided** = User manually collected and placed in `manual_import_files/`
-- **Actual bell schedules** = Real data from schools (counts as enriched ✓)
-- **Statutory fallback** = State minimums only (does NOT count as enriched ✗)
-
-**Current Dataset:**
-- **Data Store:** PostgreSQL database (learning_connection_time)
-- **Campaign Progress:** See [CLAUDE.md](CLAUDE.md#project-status) for current enrichment counts and milestones
-- **State Campaigns:** Following Option A protocol (ranks 1-9, stop at 3 successful)
-
-**Infrastructure Enhancements:**
-- ✅ PostgreSQL database migration (Dec 2025)
-- ✅ Docker containerization complete
-- ✅ Layer 2 state integrations: California (Migration 003), Texas (Migration 005)
-- ✅ SPED segmentation implemented (v3 self-contained focus)
-- ✅ Data safeguards implemented (7 flags for quality validation)
-- ✅ QA dashboard automation (auto-generated validation reports)
-- ✅ Materialized views for fast queries (14K+ cached rows)
-- ✅ Interactive enrichment tool (state campaign CLI)
-- ✅ Data optimization complete (88% size reduction via slim files)
-- ✅ Terminology standardized (docs/TERMINOLOGY.md)
-
-**Recent Milestones:**
-- ✅ Texas Layer 2 integration (Jan 2026)
-  - NCES ↔ TEA crosswalk for 1,207 districts
-  - ST_LEAID discovery (applies to all 50 states)
-  - Infrastructure ready for PEIMS enhancement
-  - See `TEXAS_INTEGRATION_COMPLETE.md` for details
-- ✅ Self-contained SPED segmentation (Jan 2026)
-  - Three LCT scopes: core_sped, teachers_gened, instructional_sped
-  - See [SPED_SEGMENTATION_IMPLEMENTATION.md](docs/SPED_SEGMENTATION_IMPLEMENTATION.md) for methodology
-  - Results in `data/enriched/lct-calculations/`
-- ✅ Data quality safeguards (Jan 2026)
-  - 7 validation flags for quality transparency
-  - See [METHODOLOGY.md](docs/METHODOLOGY.md#data-safeguards) for details
-- ✅ Efficiency Enhancement Suite (Dec 2025)
-  - Interactive enrichment, Parquet export, incremental calculations
 
 ---
 
@@ -197,7 +146,7 @@ with session_scope() as session:
 psql -d learning_connection_time -c "SELECT refresh_all_materialized_views();"
 ```
 
-### Optimization Tools (Dec 2024-Jan 2026)
+### Enrichment & Analysis Tools
 
 **Interactive Bell Schedule Enrichment**
 ```bash
@@ -325,16 +274,11 @@ Automatically detects and concatenates split files:
 - **IDEA 618 Personnel & Environments** - State-level SPED teachers, paras, and educational environments (2017-18 baseline)
 
 ### State Sources (Layer 2 Integration)
-1. ✅ **California** - DataQuest API, SPED environments, FRPM, LCFF funding (Migration 003)
-2. ✅ **Texas** - NCES ↔ TEA crosswalk, ready for PEIMS enhancement (Migration 005)
-3. 🔄 **Florida** - Next priority state
-4. 🔄 **New York** - Next priority state
+State-specific data integrations provide enhanced detail beyond federal sources. See [CLAUDE.md](CLAUDE.md) for current integration status.
 
-### Actual Bell Schedules (Campaign)
-- Web scraping from district/school websites
-- 182 districts enriched with actual data
-- Campaign COMPLETE (50 U.S. states with ≥3 districts each)
-- 546 bell schedule records (182 districts × 3 grade levels)
+### Bell Schedules
+
+Actual instructional time data collected via web scraping from district websites. See [BELL_SCHEDULE_OPERATIONS_GUIDE.md](docs/BELL_SCHEDULE_OPERATIONS_GUIDE.md) for methodology.
 
 ---
 
@@ -437,16 +381,4 @@ Document in session handoff or create detailed notes in `docs/chat-history/`
 
 ## 🎯 Roadmap
 
-### Current: Phase 1.5 (Bell Schedule Enrichment & SPED Segmentation)
-- ✅ Infrastructure complete (database, optimizations, QA dashboard)
-- ✅ State-by-state enrichment campaign COMPLETE (50 states with ≥3 districts)
-- 🔄 SPED analysis and equity insights
-
-### Future Phases
-See [PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md#evolution-strategy) for complete evolution roadmap (Phases 2-6)
-
----
-
-**Last Updated:** January 23, 2026
-**Current Focus:** Bell schedule automation with multi-tier enrichment pipeline
-**Project Status:** Active development with PostgreSQL database (17,842 districts), 9/9 SEA integrations complete (FL, TX, CA, NY, IL, MI, PA, VA, MA), Playwright scraper service operational, 789 tests passing
+See [PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md#evolution-strategy) for the evolution roadmap and [CLAUDE.md](CLAUDE.md) for current project status.
