@@ -34,8 +34,8 @@ python infrastructure/database/migrations/import_staff_and_enrollment.py --year 
 # Load SPED baseline
 python infrastructure/database/migrations/import_sped_baseline.py
 
-# Run bell schedule enrichment
-python infrastructure/scripts/enrich/run_multi_tier_enrichment.py --districts 10
+# Start acquisition services
+docker-compose up -d
 
 # Calculate LCT (DB-first, then exports)
 python infrastructure/scripts/analyze/calculate_lct_variants.py
@@ -100,7 +100,6 @@ pip install -r requirements.txt
 ### Full Pipeline
 ```bash
 python pipelines/full_pipeline.py --year 2023-24 --sample
-python pipelines/full_pipeline.py --year 2023-24 --enrich-bell-schedules --tier 1
 ```
 
 ### Database Operations
@@ -136,15 +135,23 @@ python infrastructure/scripts/analyze/calculate_lct_variants.py --parquet
 python infrastructure/scripts/analyze/calculate_lct_variants.py --incremental
 ```
 
-### Bell Schedule Enrichment
+### Bell Schedule Acquisition
 ```bash
-# Interactive enrichment
-python infrastructure/scripts/enrich/interactive_enrichment.py --state WI
-python infrastructure/scripts/enrich/interactive_enrichment.py --district 5560580
-python infrastructure/scripts/enrich/interactive_enrichment.py --status
+# Start services (FastAPI + Crawlee)
+docker-compose up -d
 
-# Automated (with scraper service)
-python infrastructure/scripts/enrich/fetch_bell_schedules.py districts.csv --tier 1 --year 2023-24
+# Acquire a district
+curl -X POST http://localhost:8000/acquire/district/1200390 \
+  -H "Content-Type: application/json" \
+  -d '{"district_id": "1200390", "district_name": "Pasco County", "state": "FL", "website_url": "https://www.pasco.k12.fl.us"}'
+
+# Check status
+curl http://localhost:8000/acquire/status/1200390
+
+# Submit feedback for learning loop
+curl -X POST http://localhost:8000/patterns/feedback \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://example.com/bell-schedule", "is_bell_schedule": true, "district_id": "1200390"}'
 ```
 
 ### Scraper Service

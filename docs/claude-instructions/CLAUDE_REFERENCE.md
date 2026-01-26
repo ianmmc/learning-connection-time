@@ -19,7 +19,7 @@ Load this appendix when you need historical context, directory structure, or tec
 | Import | `import_all_data.py` | Load districts, state requirements |
 | Import | `import_staff_and_enrollment.py` | Load NCES staff/enrollment |
 | Import | `import_sped_baseline.py` | Load SPED baseline (2017-18) |
-| Enrich | `run_multi_tier_enrichment.py` | 5-tier bell schedule enrichment |
+| Acquire | FastAPI + Crawlee services | Bell schedule acquisition pipeline |
 | Analyze | `calculate_lct_variants.py` | LCT calculation (10 scope variants) |
 | Verify | `verify_enrichment.py` | Post-enrichment verification |
 
@@ -27,7 +27,7 @@ Load this appendix when you need historical context, directory structure, or tec
 - **Slim NCES Files**: 88% reduction (683 MB → 83 MB) in `data/processed/slim/`
 
 ### PostgreSQL Database (Dec 2025)
-- PostgreSQL 16 via Homebrew
+- PostgreSQL 16 via Docker (not Homebrew - see `.env` for credentials)
 - SQLAlchemy ORM with declarative models
 - Tables: districts (17,842), state_requirements (50), bell_schedules (214), lct_calculations, data_lineage
 
