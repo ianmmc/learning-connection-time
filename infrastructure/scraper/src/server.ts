@@ -11,9 +11,11 @@ import express, { Request, Response, NextFunction } from 'express';
 import { randomUUID } from 'crypto';
 import { Scraper } from './scraper.js';
 import { getRequestQueue } from './queue.js';
-import { ScrapeRequest, ServiceStatus, DEFAULT_CONFIG } from './types.js';
+import { ScrapeRequest, ServiceStatus, DEFAULT_CONFIG, PdfCaptureOptions } from './types.js';
 import { logger } from './logger.js';
 import { discoverSchoolSites, getRepresentativeSample } from './discovery.js';
+import { mapWebsite, MapRequest } from './mapper.js';
+import { capturePages, CaptureRequest } from './capturer.js';
 
 const app = express();
 app.use(express.json());
@@ -92,11 +94,26 @@ const requireApiKey = (req: Request, res: Response, next: NextFunction) => {
  * POST /scrape
  * Scrape a URL and return the content
  * Protected by API key authentication (REQ-028)
+ *
+ * Body parameters:
+ *   url: string (required) - URL to scrape
+ *   timeout?: number - Navigation timeout in ms (default: 30000)
+ *   waitFor?: number - Additional wait after networkidle in ms
+ *   capturePdf?: boolean - Capture page as PDF (default: false)
+ *   pdfOptions?: PdfCaptureOptions - PDF capture settings
  */
 app.post('/scrape', requireApiKey, async (req: Request, res: Response) => {
-  const { url, timeout, waitFor } = req.body as ScrapeRequest & { waitFor?: number };
+  const { url, timeout, waitFor, capturePdf, pdfOptions } = req.body as ScrapeRequest & {
+    waitFor?: number;
+    capturePdf?: boolean;
+    pdfOptions?: PdfCaptureOptions;
+  };
 
-  logger.info('Scrape request received', { requestId: req.requestId, url });
+  logger.info('Scrape request received', {
+    requestId: req.requestId,
+    url,
+    capturePdf: capturePdf ?? false,
+  });
 
   // Validate request
   if (!url || typeof url !== 'string') {
@@ -119,10 +136,13 @@ app.post('/scrape', requireApiKey, async (req: Request, res: Response) => {
     return;
   }
 
-  // Add to queue
-  const response = await queue.add({ url, timeout, waitFor }, async (request) => {
-    return scraper.scrape(request);
-  });
+  // Add to queue with PDF options
+  const response = await queue.add(
+    { url, timeout, waitFor, capturePdf, pdfOptions },
+    async (request) => {
+      return scraper.scrape(request);
+    }
+  );
 
   // Set appropriate status code
   if (!response.success) {
@@ -227,6 +247,129 @@ app.post('/discover', requireApiKey, async (req: Request, res: Response) => {
 });
 
 /**
+ * POST /map
+ * Map a district website using Crawlee to collect rich page metadata
+ * Protected by API key authentication
+ *
+ * Body parameters:
+ *   url: string (required) - District website URL to map
+ *   maxRequests?: number - Maximum pages to crawl (default: 100)
+ *   maxDepth?: number - Maximum crawl depth (default: 4)
+ *   patterns?: { includeGlobs?: string[], excludeGlobs?: string[] }
+ */
+app.post('/map', requireApiKey, async (req: Request, res: Response) => {
+  const { url, maxRequests, maxDepth, patterns } = req.body as MapRequest;
+
+  logger.info('Map request received', {
+    requestId: req.requestId,
+    url,
+    maxRequests,
+    maxDepth,
+  });
+
+  // Validate request
+  if (!url || typeof url !== 'string') {
+    res.status(400).json({
+      success: false,
+      error: 'Missing or invalid "url" parameter',
+      requestId: req.requestId,
+    });
+    return;
+  }
+
+  try {
+    new URL(url); // Validate URL format
+  } catch {
+    res.status(400).json({
+      success: false,
+      error: 'Invalid URL format',
+      requestId: req.requestId,
+    });
+    return;
+  }
+
+  try {
+    const result = await mapWebsite({ url, maxRequests, maxDepth, patterns });
+    res.json({ ...result, requestId: req.requestId });
+  } catch (error) {
+    logger.error(`Map request failed: ${(error as Error).message}`, { requestId: req.requestId });
+    res.status(500).json({
+      success: false,
+      error: 'Website mapping failed',
+      details: (error as Error).message,
+      requestId: req.requestId,
+    });
+  }
+});
+
+/**
+ * POST /capture
+ * Capture multiple URLs as PDFs
+ * Protected by API key authentication
+ *
+ * Body parameters:
+ *   urls: string[] (required) - URLs to capture as PDFs
+ *   outputDir: string (required) - Directory to save PDFs
+ *   timeout?: number - Navigation timeout in ms (default: 30000)
+ *   pdfOptions?: { format?, scale?, margin? }
+ */
+app.post('/capture', requireApiKey, async (req: Request, res: Response) => {
+  const { urls, outputDir, timeout, pdfOptions } = req.body as CaptureRequest;
+
+  logger.info('Capture request received', {
+    requestId: req.requestId,
+    urlCount: urls?.length,
+    outputDir,
+  });
+
+  // Validate request
+  if (!urls || !Array.isArray(urls) || urls.length === 0) {
+    res.status(400).json({
+      success: false,
+      error: 'Missing or invalid "urls" parameter (must be non-empty array)',
+      requestId: req.requestId,
+    });
+    return;
+  }
+
+  if (!outputDir || typeof outputDir !== 'string') {
+    res.status(400).json({
+      success: false,
+      error: 'Missing or invalid "outputDir" parameter',
+      requestId: req.requestId,
+    });
+    return;
+  }
+
+  // Validate all URLs
+  for (const url of urls) {
+    try {
+      new URL(url);
+    } catch {
+      res.status(400).json({
+        success: false,
+        error: `Invalid URL format: ${url}`,
+        requestId: req.requestId,
+      });
+      return;
+    }
+  }
+
+  try {
+    const result = await capturePages({ urls, outputDir, timeout, pdfOptions });
+    res.json({ ...result, requestId: req.requestId });
+  } catch (error) {
+    logger.error(`Capture request failed: ${(error as Error).message}`, { requestId: req.requestId });
+    res.status(500).json({
+      success: false,
+      error: 'PDF capture failed',
+      details: (error as Error).message,
+      requestId: req.requestId,
+    });
+  }
+});
+
+/**
  * GET /health
  * Simple health check
  */
@@ -271,12 +414,22 @@ app.get('/status', (_req: Request, res: Response) => {
 app.get('/', (_req: Request, res: Response) => {
   res.json({
     name: 'LCT Bell Schedule Scraper',
-    version: '1.1.0',
+    version: '2.0.0',
     endpoints: {
-      'POST /scrape': 'Scrape a URL (body: { url: string, timeout?: number, waitFor?: number })',
-      'POST /discover': 'Discover school sites (body: { districtUrl: string, state?: string, representativeOnly?: boolean })',
+      'POST /scrape': 'Scrape a URL (body: { url, timeout?, waitFor?, capturePdf?, pdfOptions? })',
+      'POST /discover': 'Discover school sites (body: { districtUrl, state?, representativeOnly? })',
+      'POST /map': 'Map a district website with Crawlee (body: { url, maxRequests?, maxDepth?, patterns? })',
+      'POST /capture': 'Capture multiple URLs as PDFs (body: { urls, outputDir, timeout?, pdfOptions? })',
       'GET /health': 'Health check',
       'GET /status': 'Detailed service status',
+    },
+    mapEndpoint: {
+      description: 'Crawls a district website and returns rich page metadata for URL ranking',
+      returns: 'Array of pages with: url, title, h1, metaDescription, breadcrumb, timePatternCount, hasSchedulePdfLink, keywordMatchCount',
+    },
+    captureEndpoint: {
+      description: 'Captures multiple URLs as PDFs to a specified directory',
+      returns: 'Array of capture results with: url, success, filename, filepath, sizeBytes',
     },
     documentation: 'https://github.com/ianmmc/learning-connection-time',
   });

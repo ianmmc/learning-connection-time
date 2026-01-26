@@ -21,7 +21,7 @@ services:
 
   scraper:
     build:
-      context: ./scraper
+      context: ./infrastructure/scraper
       dockerfile: Dockerfile
     container_name: lct_scraper
     environment:

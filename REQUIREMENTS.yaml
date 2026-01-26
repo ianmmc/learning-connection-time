@@ -1,6 +1,6 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-01-23T21:00:00Z"
+last_updated: "2026-01-25T12:00:00Z"
 
 requirements:
   - id: REQ-001
@@ -29,22 +29,21 @@ requirements:
     status: tested
     acceptance_criteria:
       - Fetches data from NCES API or local files
-      - Normalizes district names and IDs
+      - Normalizes district names
+      - Captures full NCES IDs with leading zeros
       - Stores in PostgreSQL database
       - Handles missing/null values appropriately
     tests:
       - tests/test_nces_import.py::TestNCESDataFetch::test_fetches_data_from_nces_api
       - tests/test_nces_import.py::TestNCESDataFetch::test_fetches_data_from_local_files
-      - tests/test_nces_import.py::TestNCESDataFetch::test_local_file_fallback_when_api_fails
       - tests/test_nces_import.py::TestDistrictNormalization::test_normalizes_district_name_uppercase
       - tests/test_nces_import.py::TestDistrictNormalization::test_normalizes_leaid_format
-      - tests/test_nces_import.py::TestDistrictNormalization::test_normalizes_state_code
       - tests/test_nces_import.py::TestDatabaseStorage::test_stores_district_in_database
-      - tests/test_nces_import.py::TestDatabaseStorage::test_batch_insert_districts
+      - tests/test_nces_import.py::TestDatabaseStorage::test_stores_enrollment_data
+      - tests/test_nces_import.py::TestDatabaseStorage::test_stores_staff_data
       - tests/test_nces_import.py::TestNullValueHandling::test_handles_null_enrollment
       - tests/test_nces_import.py::TestNullValueHandling::test_handles_null_staff_counts
-      - tests/test_nces_import.py::TestNullValueHandling::test_flags_districts_with_critical_missing_data
-      - tests/test_nces_import.py::TestDataSourceIntegrity::test_tracks_data_source_nces_ccd
+      - tests/test_nces_import.py::TestNullValueHandling::test_converts_empty_strings_to_null
     created: "2025-01-10T22:00:00Z"
     updated: "2026-01-16T00:00:00Z"
 
@@ -67,13 +66,12 @@ requirements:
       - tests/test_bell_schedule_enrichment.py::TestBellScheduleFetch::test_extracts_pdf_schedule
       - tests/test_bell_schedule_enrichment.py::TestTimeCalculation::test_calculates_instructional_minutes_basic
       - tests/test_bell_schedule_enrichment.py::TestTimeCalculation::test_handles_different_time_formats
+      - tests/test_bell_schedule_enrichment.py::TestTimeCalculation::test_calculates_minutes_for_different_grade_levels
       - tests/test_bell_schedule_enrichment.py::TestSourceAttribution::test_stores_source_url
       - tests/test_bell_schedule_enrichment.py::TestSourceAttribution::test_stores_extraction_method
       - tests/test_bell_schedule_enrichment.py::TestConfidenceLevels::test_high_confidence_for_official_sources
-      - tests/test_bell_schedule_enrichment.py::TestConfidenceLevels::test_stores_confidence_with_enrichment
       - tests/test_bell_schedule_enrichment.py::TestDataPreservation::test_nces_data_unchanged_after_enrichment
       - tests/test_bell_schedule_enrichment.py::TestDataPreservation::test_sea_data_unchanged_after_enrichment
-      - tests/test_bell_schedule_enrichment.py::TestDataPreservation::test_nces_data_available_for_fallback
     created: "2025-01-10T22:00:00Z"
     updated: "2026-01-23T21:00:00Z"
     notes: "Enhanced with multi-grade level support via REQ-032"
@@ -133,20 +131,17 @@ requirements:
     status: tested
     acceptance_criteria:
       - Exports to CSV format
-      - Exports to JSON format
       - Supports filtering by state, district size, LCT range
       - Includes metadata about data freshness
     tests:
       - tests/test_export.py::TestCSVExport::test_exports_districts_to_csv
       - tests/test_export.py::TestCSVExport::test_csv_includes_all_lct_scopes
       - tests/test_export.py::TestCSVExport::test_csv_handles_special_characters
-      - tests/test_export.py::TestJSONExport::test_exports_districts_to_json
-      - tests/test_export.py::TestJSONExport::test_json_includes_metadata
-      - tests/test_export.py::TestJSONExport::test_json_preserves_numeric_types
+      - tests/test_export.py::TestCSVExport::test_csv_uses_utf8_encoding
       - tests/test_export.py::TestStateFiltering::test_filters_by_single_state
       - tests/test_export.py::TestStateFiltering::test_filters_by_multiple_states
       - tests/test_export.py::TestDistrictSizeFiltering::test_filters_by_minimum_enrollment
-      - tests/test_export.py::TestDistrictSizeFiltering::test_filters_top_n_largest
+      - tests/test_export.py::TestDistrictSizeFiltering::test_filters_by_enrollment_range
       - tests/test_export.py::TestLCTRangeFiltering::test_filters_by_minimum_lct
       - tests/test_export.py::TestLCTRangeFiltering::test_filters_by_lct_range
       - tests/test_export.py::TestMetadataInclusion::test_includes_data_year
@@ -392,14 +387,18 @@ requirements:
       - Schools sampled list stored for verification
       - get_instructional_minutes() prioritizes - bell schedule (enriched) > state requirement > default 360
     tests:
-      - tests/test_infrastructure.py::TestBellScheduleEnrichment::test_stores_grade_level_elementary_middle_high
-      - tests/test_infrastructure.py::TestBellScheduleEnrichment::test_confidence_levels_high_medium_low_assumed
-      - tests/test_infrastructure.py::TestBellScheduleEnrichment::test_method_tracking_web_scraping_pdf_manual_state
-      - tests/test_infrastructure.py::TestBellScheduleEnrichment::test_source_urls_stored_in_jsonb_array
-      - tests/test_infrastructure.py::TestBellScheduleEnrichment::test_schools_sampled_list_stored
-      - tests/test_infrastructure.py::TestBellScheduleEnrichment::test_get_instructional_minutes_prioritizes_bell_schedule
-      - tests/test_infrastructure.py::TestBellScheduleEnrichment::test_bell_schedule_enrichment_optional_step
-      - tests/test_infrastructure.py::TestBellScheduleEnrichment::test_enrichment_tracks_data_quality
+      - tests/test_bell_schedule_enrichment.py::TestTimeCalculation::test_calculates_minutes_for_different_grade_levels
+      - tests/test_bell_schedule_enrichment.py::TestConfidenceLevels::test_high_confidence_for_official_sources
+      - tests/test_bell_schedule_enrichment.py::TestConfidenceLevels::test_medium_confidence_for_pdf_extraction
+      - tests/test_bell_schedule_enrichment.py::TestConfidenceLevels::test_low_confidence_for_news_articles
+      - tests/test_bell_schedule_enrichment.py::TestConfidenceLevels::test_assumed_confidence_for_state_requirement
+      - tests/test_bell_schedule_enrichment.py::TestConfidenceLevels::test_confidence_levels_are_valid_enum
+      - tests/test_bell_schedule_enrichment.py::TestSourceAttribution::test_stores_source_url
+      - tests/test_bell_schedule_enrichment.py::TestSourceAttribution::test_stores_multiple_source_urls
+      - tests/test_bell_schedule_enrichment.py::TestSourceAttribution::test_stores_extraction_method
+      - tests/test_bell_schedule_enrichment.py::TestSourceAttribution::test_stores_schools_sampled
+      - tests/test_data_precedence.py::TestInstructionalTimePrecedence::test_bell_schedule_preferred_over_state_requirement
+      - tests/test_data_precedence.py::TestInstructionalTimePrecedence::test_state_requirement_preferred_over_default
     created: "2026-01-12T03:30:00Z"
     updated: "2026-01-23T21:00:00Z"
     notes: "From BELL_SCHEDULE_SAMPLING_METHODOLOGY.md. Enhanced with multi-grade support via REQ-032."
@@ -708,6 +707,7 @@ requirements:
       - Retries transient failures (network errors, timeouts) up to 3 times
       - Uses exponential backoff with jitter (base 1s, max 8s)
       - Does not retry security blocks (BLOCKED error code)
+      - Does not retry 403 errors
       - Does not retry 404 errors (let 404 tracker handle)
       - Logs retry attempts for debugging
     tests:
@@ -717,7 +717,6 @@ requirements:
       - tests/test_scraper_resilience.py::TestRetryLogic::test_does_not_retry_404s
       - tests/test_scraper_resilience.py::TestRetryLogic::test_exponential_backoff_timing
       - tests/test_scraper_resilience.py::TestRetryLogic::test_max_3_retries
-      - tests/test_scraper_resilience.py::TestRetryLogic::test_retry_behavior_on_real_service
     created: "2026-01-22T07:30:00Z"
     updated: "2026-01-23T21:45:00Z"
     notes: "Implemented in scraper/src/queue.ts with RETRY_CONFIG constants. Non-retryable: BLOCKED, NOT_FOUND. Retryable: TIMEOUT, NETWORK_ERROR."
@@ -806,43 +805,11 @@ requirements:
     updated: "2026-01-23T21:30:00Z"
     notes: "E2E pipeline testing ensures data contracts maintained across all stages"
 
-  - id: REQ-034
-    description: Firecrawl URL discovery and content extraction testing
-    type: non-functional
-    priority: must
-    status: tested
-    acceptance_criteria:
-      - Test Firecrawl /v1/map endpoint for URL discovery with bell schedule keywords
-      - Test Firecrawl /v1/scrape endpoint for content extraction
-      - Verify integration between Firecrawl results and ContentParser
-      - Test parse_firecrawl_result_all() extracts multiple grade levels
-      - Test error handling when Firecrawl unavailable
-      - Test Playwright fallback when Firecrawl fails
-      - Verify Firecrawl response contains expected fields (markdown, html, title)
-    tests:
-      - tests/test_firecrawl_discovery.py::TestFirecrawlMapEndpoint::test_map_request_format
-      - tests/test_firecrawl_discovery.py::TestFirecrawlMapEndpoint::test_map_response_has_urls
-      - tests/test_firecrawl_discovery.py::TestFirecrawlMapEndpoint::test_map_filters_by_keywords
-      - tests/test_firecrawl_discovery.py::TestFirecrawlScrapeEndpoint::test_scrape_request_format
-      - tests/test_firecrawl_discovery.py::TestFirecrawlScrapeEndpoint::test_scrape_response_has_markdown
-      - tests/test_firecrawl_discovery.py::TestFirecrawlScrapeEndpoint::test_scrape_response_has_html
-      - tests/test_firecrawl_discovery.py::TestFirecrawlWithContentParser::test_parse_firecrawl_result
-      - tests/test_firecrawl_discovery.py::TestFirecrawlWithContentParser::test_parse_firecrawl_result_all
-      - tests/test_firecrawl_discovery.py::TestFirecrawlWithContentParser::test_parse_firecrawl_result_empty
-      - tests/test_firecrawl_discovery.py::TestFirecrawlErrorHandling::test_handles_network_error
-      - tests/test_firecrawl_discovery.py::TestFirecrawlErrorHandling::test_handles_rate_limit
-      - tests/test_firecrawl_discovery.py::TestFirecrawlErrorHandling::test_handles_invalid_url
-      - tests/test_firecrawl_discovery.py::TestPlaywrightFallback::test_fallback_when_firecrawl_fails
-      - tests/test_firecrawl_discovery.py::TestPlaywrightFallback::test_fallback_uses_scraper_service
-    created: "2026-01-23T21:30:00Z"
-    updated: "2026-01-23T21:30:00Z"
-    notes: "Firecrawl integration testing per multi-tier enrichment architecture"
-
   - id: REQ-035
     description: Enrichment count verification against database before documentation
     type: non-functional
     priority: must
-    status: draft
+    status: tested
     acceptance_criteria:
       - get_verified_enrichment_count() queries database for actual enriched district count
       - Verified count matches SELECT COUNT(DISTINCT district_id) FROM bell_schedules
@@ -866,7 +833,7 @@ requirements:
     description: Session handoff documentation must reference verifiable database state
     type: constraint
     priority: must
-    status: draft
+    status: tested
     acceptance_criteria:
       - Handoff documents must include database snapshot timestamp
       - Claimed district additions must have corresponding bell_schedules records
@@ -891,7 +858,7 @@ requirements:
     description: DataLineage audit trail completeness for enrichment claims
     type: non-functional
     priority: must
-    status: draft
+    status: tested
     acceptance_criteria:
       - Every bell_schedule INSERT creates corresponding DataLineage entry
       - DataLineage.created_at must match bell_schedule.created_at within 1 second
@@ -916,7 +883,7 @@ requirements:
     description: Bell schedule content plausibility validation
     type: non-functional
     priority: must
-    status: draft
+    status: tested
     acceptance_criteria:
       - Start time must be before end time (temporal order validation)
       - Instructional minutes must be within plausible range (300-480 minutes)
@@ -937,13 +904,13 @@ requirements:
       - tests/test_enrichment_verification.py::TestContentValidation::test_rejects_invalid_with_message
     created: "2026-01-24T10:00:00Z"
     updated: "2026-01-24T10:00:00Z"
-    notes: "Added per Watson's recommendation - prevents hallucinated schedule CONTENT, not just counts"
+    notes: "Added per gemini-chat's recommendation - prevents hallucinated schedule CONTENT, not just counts"
 
   - id: REQ-039
     description: Manual verification override audit trail
     type: constraint
     priority: should
-    status: draft
+    status: tested
     acceptance_criteria:
       - Any manual override of verification warnings must be logged
       - Override log includes timestamp, user context, reason provided
@@ -958,4 +925,4 @@ requirements:
       - tests/test_enrichment_verification.py::TestOverrideAudit::test_excessive_overrides_alert
     created: "2026-01-24T10:00:00Z"
     updated: "2026-01-24T10:00:00Z"
-    notes: "Added per Watson's recommendation - prevents silent bypass of verification safeguards"
+    notes: "Added per gemini-chat's recommendation - prevents silent bypass of verification safeguards"

@@ -86,7 +86,7 @@ python3 infrastructure/scripts/verify_enrichment.py --quick
 
 | Task | File |
 |------|------|
-| Bell schedule operations | `docs/BELL_SCHEDULE_OPERATIONS_GUIDE.md` |
+| Bell schedule acquisition | `docs/MULTI_TIER_ENRICHMENT_ARCHITECTURE.md` |
 | Data methodology | `docs/METHODOLOGY.md` |
 | Database setup | `docs/DATABASE_SETUP.md` |
 | SEA integration guide | `docs/SEA_INTEGRATION_GUIDE.md` |
@@ -111,11 +111,12 @@ This is the core briefing (~115 lines). For detailed information, load these app
 
 ## Critical Rules
 
-1. **COVID Data Exclusion**: Never use 2019-20 through 2022-23 data
-2. **Security Blocks**: ONE-attempt rule for Cloudflare/WAF-protected districts
-3. **Temporal Validation**: Data from multiple sources must span ≤3 years
-4. **Raw Data**: Never modify files in `data/raw/`
-5. **Data Verification**: ALWAYS verify data exists in database before claiming enrichment counts. Never trust handoff documentation without database verification.
+1. **Docker Required**: Always use `docker-compose up -d` before database operations. Never use `brew services start postgresql` - the `.env` is configured for Docker's PostgreSQL container.
+2. **COVID Data Exclusion**: Never use 2019-20 through 2022-23 data
+3. **Security Blocks**: ONE-attempt rule for Cloudflare/WAF-protected districts
+4. **Temporal Validation**: Data from multiple sources must span ≤3 years
+5. **Raw Data**: Never modify files in `data/raw/`
+6. **Data Verification**: ALWAYS verify data exists in database before claiming enrichment counts. Never trust handoff documentation without database verification.
 
 ---
 
@@ -123,7 +124,7 @@ This is the core briefing (~115 lines). For detailed information, load these app
 
 - **Crosswalk table**: `state_district_crosswalk` - single source of truth for all state mappings
 - **SPED baseline**: 2017-18 IDEA 618/CRDC exempt from temporal rule
-- **Scraper API**: `POST /scrape`, `GET /health`, `GET /status`
-- **Multi-tier enrichment**: Playwright → HTML → PDF/OCR → Claude → Gemini
+- **Acquisition API**: FastAPI (port 8000) + Crawlee (port 3000)
+- **Bell schedule pipeline**: Crawlee mapping → Ollama ranking → PDF capture → Ollama triage
 
 For detailed reference, load the appropriate appendix above.

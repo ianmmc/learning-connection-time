@@ -3,10 +3,14 @@
 Database connection management for Learning Connection Time project.
 
 Provides connection pooling, session management, and initialization utilities.
-Supports both local development (PostgreSQL via Homebrew or Docker) and future cloud deployment.
+Uses Docker PostgreSQL (not Homebrew) - see .env for credentials.
+
+IMPORTANT: Run `docker-compose up -d` before database operations.
 """
 
 import os
+import subprocess
+import sys
 from contextlib import contextmanager
 from typing import Generator, Optional
 
@@ -21,6 +25,62 @@ try:
 except ImportError:
     # dotenv not installed, will use system environment variables only
     pass
+
+
+def _check_docker_postgres() -> None:
+    """
+    Check if Docker PostgreSQL container is running.
+    Warns if Docker is not running or if Homebrew PostgreSQL might be in use.
+    """
+    # Check if we're using Docker credentials
+    postgres_user = os.getenv("POSTGRES_USER", "")
+    is_docker_config = postgres_user in ("lct_user", "postgres") and os.getenv("POSTGRES_PASSWORD")
+
+    if not is_docker_config:
+        return  # Not using Docker config, skip check
+
+    try:
+        # Check if Docker is running
+        result = subprocess.run(
+            ["docker", "ps", "--filter", "name=lct_postgres", "--format", "{{.Names}}"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+
+        if result.returncode != 0:
+            print(
+                "\n⚠️  WARNING: Docker does not appear to be running.\n"
+                "   The .env file is configured for Docker PostgreSQL (lct_user).\n"
+                "   Run: docker-compose up -d\n",
+                file=sys.stderr
+            )
+            return
+
+        if "lct_postgres" not in result.stdout:
+            print(
+                "\n⚠️  WARNING: Docker PostgreSQL container (lct_postgres) is not running.\n"
+                "   The .env file expects Docker PostgreSQL, not Homebrew.\n"
+                "   Run: docker-compose up -d\n",
+                file=sys.stderr
+            )
+
+    except FileNotFoundError:
+        # Docker CLI not installed
+        print(
+            "\n⚠️  WARNING: Docker CLI not found.\n"
+            "   The .env file is configured for Docker PostgreSQL.\n"
+            "   Install Docker Desktop and run: docker-compose up -d\n",
+            file=sys.stderr
+        )
+    except subprocess.TimeoutExpired:
+        pass  # Docker command timed out, skip check
+    except Exception:
+        pass  # Don't fail on check errors
+
+
+# Run Docker check on module import (only once)
+_docker_check_done = False
 
 # Default connection parameters
 DEFAULT_HOST = "localhost"
@@ -84,7 +144,12 @@ def get_engine(database_url: Optional[str] = None, echo: bool = False) -> Engine
     Returns:
         SQLAlchemy Engine instance
     """
-    global _engine
+    global _engine, _docker_check_done
+
+    # Check Docker on first connection attempt
+    if not _docker_check_done:
+        _docker_check_done = True
+        _check_docker_postgres()
 
     if _engine is None or database_url is not None:
         url = database_url or get_database_url()

@@ -200,6 +200,35 @@ export async function scrapePage(
 
     logger.debug(`Successfully scraped ${request.url} (${html.length} bytes)`);
 
+    // Capture PDF if requested
+    let pdfBase64: string | undefined;
+    let pdfSize: number | undefined;
+
+    if (request.capturePdf && page) {
+      try {
+        const pdfOptions = request.pdfOptions ?? {};
+        const pdfBuffer = await page.pdf({
+          format: pdfOptions.format ?? 'Letter',
+          scale: pdfOptions.scale ?? 0.9,
+          margin: pdfOptions.margin ?? {
+            top: '0.5in',
+            bottom: '0.5in',
+            left: '0.5in',
+            right: '0.5in',
+          },
+          displayHeaderFooter: false,
+          printBackground: true,
+        });
+
+        pdfBase64 = pdfBuffer.toString('base64');
+        pdfSize = pdfBuffer.length;
+        logger.debug(`PDF captured for ${request.url} (${pdfSize} bytes)`);
+      } catch (pdfError) {
+        logger.warn(`PDF capture failed for ${request.url}: ${pdfError}`);
+        // Don't fail the request, just skip PDF
+      }
+    }
+
     return {
       success: true,
       url: request.url,
@@ -207,6 +236,8 @@ export async function scrapePage(
       markdown,
       title,
       timing: Date.now() - startTime,
+      pdfBase64,
+      pdfSize,
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';

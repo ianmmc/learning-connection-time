@@ -12,7 +12,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from infrastructure.scripts.enrich.content_parser import ContentParser, BellScheduleData
-from infrastructure.scripts.enrich.firecrawl_discovery import get_expected_grade_levels
+from infrastructure.scripts.enrich.grade_level_utils import get_expected_grade_levels
 
 
 class TestContentParser:

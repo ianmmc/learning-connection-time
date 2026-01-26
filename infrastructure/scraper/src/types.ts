@@ -7,6 +7,20 @@ export interface ScrapeRequest {
   url: string;
   timeout?: number;  // milliseconds, default 30000
   waitFor?: number;  // additional wait after networkidle, milliseconds
+  capturePdf?: boolean;  // capture page as PDF
+  pdfOptions?: PdfCaptureOptions;  // PDF capture settings
+}
+
+// PDF capture options
+export interface PdfCaptureOptions {
+  format?: 'Letter' | 'A4';  // paper size, default 'Letter'
+  scale?: number;  // zoom level, default 0.9
+  margin?: {
+    top?: string;
+    bottom?: string;
+    left?: string;
+    right?: string;
+  };
 }
 
 export interface ScrapeResponse {
@@ -19,6 +33,8 @@ export interface ScrapeResponse {
   errorCode?: string;  // 'TIMEOUT' | 'BLOCKED' | 'NOT_FOUND' | 'NETWORK_ERROR'
   timing: number;  // milliseconds
   blocked?: boolean;  // true if security block detected
+  pdfBase64?: string;  // PDF content as base64 string (if capturePdf was true)
+  pdfSize?: number;  // PDF size in bytes
 }
 
 // Status types
