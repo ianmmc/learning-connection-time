@@ -1,0 +1,395 @@
+{
+  "version": "2.0",
+  "url_include_globs": [
+    "**/bell*schedule*",
+    "**/school*hours*",
+    "**/daily*schedule*",
+    "**/start*time*"
+  ],
+  "url_exclude_globs": [
+    "**/news/**",
+    "**/calendar/**",
+    "**/athletics/**",
+    "**/sports/**",
+    "**/lunch*menu*",
+    "**/bus*schedule*",
+    "**/testing*schedule*"
+  ],
+  "learned_positive": [
+    {
+      "pattern": "**/*bell*schedule*",
+      "keywords": [
+        "bell",
+        "schedule",
+        "schedules"
+      ],
+      "districts_seen": [
+        "1200390"
+      ],
+      "matches": 1,
+      "confirmed": 1,
+      "rejected": 0,
+      "pending": 0,
+      "success_rate": 1.0,
+      "first_seen": "2026-01-26T04:50:41.003666+00:00",
+      "last_seen": "2026-01-26T04:50:41.003666+00:00",
+      "status": "learning"
+    }
+  ],
+  "learned_negative": [
+    {
+      "pattern": "**/*calendar*",
+      "keywords": [
+        "calendar"
+      ],
+      "districts_seen": [
+        "1200390"
+      ],
+      "matches": 1,
+      "confirmed": 0,
+      "rejected": 0,
+      "pending": 1,
+      "success_rate": 0.0,
+      "first_seen": "2026-01-26T04:50:41.005753+00:00",
+      "last_seen": "2026-01-26T04:50:41.005753+00:00",
+      "status": "learning"
+    },
+    {
+      "pattern": "**/*news*",
+      "keywords": [
+        "news"
+      ],
+      "districts_seen": [
+        "1200390",
+        "1200180",
+        "4703180"
+      ],
+      "matches": 4,
+      "confirmed": 0,
+      "rejected": 0,
+      "pending": 1,
+      "success_rate": 0.0,
+      "first_seen": "2026-01-26T04:50:41.006075+00:00",
+      "last_seen": "2026-01-26T06:18:27.759603+00:00",
+      "status": "review"
+    },
+    {
+      "pattern": "**/*modified*schedule*",
+      "keywords": [
+        "modified",
+        "schedule",
+        "schedules"
+      ],
+      "districts_seen": [
+        "1200390"
+      ],
+      "matches": 4,
+      "confirmed": 0,
+      "rejected": 0,
+      "pending": 1,
+      "success_rate": 0.0,
+      "first_seen": "2026-01-26T04:50:41.006362+00:00",
+      "last_seen": "2026-01-26T04:50:41.007478+00:00",
+      "status": "learning"
+    },
+    {
+      "pattern": "**/*employment*",
+      "keywords": [
+        "employment"
+      ],
+      "districts_seen": [
+        "1200390"
+      ],
+      "matches": 1,
+      "confirmed": 0,
+      "rejected": 0,
+      "pending": 1,
+      "success_rate": 0.0,
+      "first_seen": "2026-01-26T04:50:41.006574+00:00",
+      "last_seen": "2026-01-26T04:50:41.006574+00:00",
+      "status": "learning"
+    },
+    {
+      "pattern": "**/*end*",
+      "keywords": [
+        "end"
+      ],
+      "districts_seen": [
+        "1200390",
+        "4703180"
+      ],
+      "matches": 5,
+      "confirmed": 0,
+      "rejected": 0,
+      "pending": 1,
+      "success_rate": 0.0,
+      "first_seen": "2026-01-26T04:50:41.006767+00:00",
+      "last_seen": "2026-01-26T06:18:27.745573+00:00",
+      "status": "learning"
+    },
+    {
+      "pattern": "**/*bus*buses*",
+      "keywords": [
+        "bus",
+        "buses",
+        "career",
+        "news"
+      ],
+      "districts_seen": [
+        "1200180",
+        "4703180"
+      ],
+      "matches": 5,
+      "confirmed": 0,
+      "rejected": 0,
+      "pending": 1,
+      "success_rate": 0.0,
+      "first_seen": "2026-01-26T04:52:47.650545+00:00",
+      "last_seen": "2026-01-26T06:18:27.738979+00:00",
+      "status": "learning"
+    },
+    {
+      "pattern": "**/*staff*",
+      "keywords": [
+        "staff"
+      ],
+      "districts_seen": [
+        "1200180"
+      ],
+      "matches": 3,
+      "confirmed": 0,
+      "rejected": 0,
+      "pending": 1,
+      "success_rate": 0.0,
+      "first_seen": "2026-01-26T04:52:47.661428+00:00",
+      "last_seen": "2026-01-26T04:52:47.666067+00:00",
+      "status": "learning"
+    },
+    {
+      "pattern": "**/*announcement*assessment*",
+      "keywords": [
+        "announcement",
+        "assessment",
+        "athletic",
+        "athletics",
+        "breakfast",
+        "cafeteria",
+        "calendar",
+        "career",
+        "exam",
+        "exams",
+        "game",
+        "games",
+        "sports",
+        "staff",
+        "transportation"
+      ],
+      "districts_seen": [
+        "1200180",
+        "4703180"
+      ],
+      "matches": 3,
+      "confirmed": 0,
+      "rejected": 0,
+      "pending": 1,
+      "success_rate": 0.0,
+      "first_seen": "2026-01-26T04:52:47.662193+00:00",
+      "last_seen": "2026-01-26T06:18:27.737262+00:00",
+      "status": "learning"
+    },
+    {
+      "pattern": "**/*career*event*",
+      "keywords": [
+        "career",
+        "event"
+      ],
+      "districts_seen": [
+        "1200180"
+      ],
+      "matches": 1,
+      "confirmed": 0,
+      "rejected": 0,
+      "pending": 1,
+      "success_rate": 0.0,
+      "first_seen": "2026-01-26T04:52:47.662639+00:00",
+      "last_seen": "2026-01-26T04:52:47.662639+00:00",
+      "status": "learning"
+    },
+    {
+      "pattern": "**/*career*",
+      "keywords": [
+        "career"
+      ],
+      "districts_seen": [
+        "1200180",
+        "4703180"
+      ],
+      "matches": 33,
+      "confirmed": 0,
+      "rejected": 0,
+      "pending": 1,
+      "success_rate": 0.0,
+      "first_seen": "2026-01-26T04:52:47.663016+00:00",
+      "last_seen": "2026-01-26T06:18:27.798966+00:00",
+      "status": "learning"
+    },
+    {
+      "pattern": "**/*menu*nutrition*",
+      "keywords": [
+        "menu",
+        "nutrition"
+      ],
+      "districts_seen": [
+        "1200180"
+      ],
+      "matches": 1,
+      "confirmed": 0,
+      "rejected": 0,
+      "pending": 1,
+      "success_rate": 0.0,
+      "first_seen": "2026-01-26T04:52:47.663390+00:00",
+      "last_seen": "2026-01-26T04:52:47.663390+00:00",
+      "status": "learning"
+    },
+    {
+      "pattern": "**/*nutrition*",
+      "keywords": [
+        "nutrition"
+      ],
+      "districts_seen": [
+        "1200180",
+        "4703180"
+      ],
+      "matches": 3,
+      "confirmed": 0,
+      "rejected": 0,
+      "pending": 1,
+      "success_rate": 0.0,
+      "first_seen": "2026-01-26T04:52:47.665132+00:00",
+      "last_seen": "2026-01-26T06:18:27.749494+00:00",
+      "status": "learning"
+    },
+    {
+      "pattern": "**/*start*",
+      "keywords": [
+        "start"
+      ],
+      "districts_seen": [
+        "1200180"
+      ],
+      "matches": 1,
+      "confirmed": 0,
+      "rejected": 0,
+      "pending": 1,
+      "success_rate": 0.0,
+      "first_seen": "2026-01-26T04:52:47.665591+00:00",
+      "last_seen": "2026-01-26T04:52:47.665591+00:00",
+      "status": "learning"
+    },
+    {
+      "pattern": "**/*breakfast*",
+      "keywords": [
+        "breakfast"
+      ],
+      "districts_seen": [
+        "4703180"
+      ],
+      "matches": 4,
+      "confirmed": 0,
+      "rejected": 0,
+      "pending": 1,
+      "success_rate": 0.0,
+      "first_seen": "2026-01-26T06:04:17.145913+00:00",
+      "last_seen": "2026-01-26T06:18:27.814752+00:00",
+      "status": "learning"
+    },
+    {
+      "pattern": "**/*hours*",
+      "keywords": [
+        "hours"
+      ],
+      "districts_seen": [
+        "4703180"
+      ],
+      "matches": 2,
+      "confirmed": 0,
+      "rejected": 0,
+      "pending": 1,
+      "success_rate": 0.0,
+      "first_seen": "2026-01-26T06:04:17.147515+00:00",
+      "last_seen": "2026-01-26T06:18:27.731946+00:00",
+      "status": "learning"
+    },
+    {
+      "pattern": "**/*athletic*athletics*",
+      "keywords": [
+        "athletic",
+        "athletics"
+      ],
+      "districts_seen": [
+        "4703180"
+      ],
+      "matches": 2,
+      "confirmed": 0,
+      "rejected": 0,
+      "pending": 1,
+      "success_rate": 0.0,
+      "first_seen": "2026-01-26T06:04:17.165884+00:00",
+      "last_seen": "2026-01-26T06:18:27.741831+00:00",
+      "status": "learning"
+    },
+    {
+      "pattern": "**/*assessment*",
+      "keywords": [
+        "assessment"
+      ],
+      "districts_seen": [
+        "4703180"
+      ],
+      "matches": 2,
+      "confirmed": 0,
+      "rejected": 0,
+      "pending": 1,
+      "success_rate": 0.0,
+      "first_seen": "2026-01-26T06:04:17.170719+00:00",
+      "last_seen": "2026-01-26T06:18:27.753404+00:00",
+      "status": "learning"
+    },
+    {
+      "pattern": "**/*transportation*",
+      "keywords": [
+        "transportation"
+      ],
+      "districts_seen": [
+        "4703180"
+      ],
+      "matches": 2,
+      "confirmed": 0,
+      "rejected": 0,
+      "pending": 1,
+      "success_rate": 0.0,
+      "first_seen": "2026-01-26T06:04:17.172030+00:00",
+      "last_seen": "2026-01-26T06:18:27.756773+00:00",
+      "status": "learning"
+    },
+    {
+      "pattern": "**/*announcement*transportation*",
+      "keywords": [
+        "announcement",
+        "transportation"
+      ],
+      "districts_seen": [
+        "4703180"
+      ],
+      "matches": 4,
+      "confirmed": 0,
+      "rejected": 0,
+      "pending": 1,
+      "success_rate": 0.0,
+      "first_seen": "2026-01-26T06:04:17.190678+00:00",
+      "last_seen": "2026-01-26T06:18:27.810680+00:00",
+      "status": "learning"
+    }
+  ],
+  "updated_at": "2026-01-26T06:18:27.814788+00:00"
+}

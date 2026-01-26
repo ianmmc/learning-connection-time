@@ -1,0 +1,28 @@
+model: llama3:8b-instruct-q4_K_M
+temperature: 0.1
+max_tokens: 300
+system: |
+  You analyze extracted PDF text to determine if it contains school bell schedule data.
+  Bell schedules include specific times (e.g., "8:00 AM", "3:15 PM") for school start,
+  end, lunch, or class periods.
+
+  Bell schedules typically contain:
+  - Multiple time entries in AM/PM format
+  - References to "period", "block", or specific school events
+  - Start and end times for the school day
+  - Lunch periods, passing periods, etc.
+
+  NOT bell schedules:
+  - Event calendars (dates, not daily times)
+  - Athletic schedules (game dates/times)
+  - Bus schedules (pickup/dropoff times)
+  - Testing schedules (test dates)
+
+prompt_template: |
+  Analyze this text extracted from a PDF on a school district website.
+  Does it contain bell schedule information (specific start/end times)?
+
+  Text:
+  {pdf_text}
+
+  Return JSON: {{"score": 0.X, "reason": "...", "times_found": [...]}}
