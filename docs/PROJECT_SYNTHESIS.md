@@ -4,6 +4,8 @@
 >
 > **Method:** Synthesized from five parallel read-only specialist investigations (acquisition pipeline, enrichment scripts, database + LCT core, documentation corpus, tests + data state). No code was run and the database was **not** queried — so every count or "what happened" claim here is **UNVERIFIED against the live DB** and flagged as such. Per project rule #6, verify in the DB before trusting any number.
 
+> **Cleanup pass — 2026-06-05 (after this synthesis):** A directory cleanup was run on top of restore-point commit `59603c3` (commits `3d4c7a9` + `8f71c6e`). It **resolved** several Section 8 flags: #1 (`Claude.md`→`CLAUDE.md` rename), #3 (`MULTI_TIER_ENRICHMENT_ARCHITECTURE.md`→`ACQUISITION_PIPELINE.md`), #2/#4 (stale Firecrawl/Gemini/Playwright + acquisition-tier prose rewritten across README/PROJECT_CONTEXT/CLAUDE_CORE/REFERENCE/GETTING_STARTED/TERMINOLOGY/METHODOLOGY), #22 (deleted broken `full_pipeline.py`), #23 (corrected — `google_drive_handler.py` is live-imported, NOT orphaned; `content_parser.py` is test-covered; both kept), plus `.DS_Store` litter, a 66 MB `context.xml`, the `src/` scaffold, and `setup_structure.py`. Also: the pre-commit hook **DB-verified 65 districts have bell schedules** (resolves the count uncertainty in §7). The remaining flags — data-quality / unfinished benchmark (B), pipeline seams (C), DB/migrations (D), missing tests (F) — were **not** touched and still stand.
+
 ---
 
 ## 0. TL;DR — Where Things Stand
