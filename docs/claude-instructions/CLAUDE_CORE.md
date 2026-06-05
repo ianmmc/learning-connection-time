@@ -43,8 +43,8 @@ Part of "Reducing the Ratio" educational equity initiative. Currently implementi
 ## Project Status (January 24, 2026)
 
 - **Phase**: Bell Schedule Automation
-- **Bell Schedules**: ~103 districts enriched (verified from database)
-- **Scraper Service**: `infrastructure/scraper/` - Playwright-based, operational
+- **Bell Schedules**: ~65 districts enriched (always verify against the live DB — see Critical Rules)
+- **Scraper Service**: `infrastructure/scraper/` - Crawlee-based (Playwright browsers), operational
 - **SEA Integrations**: 9/9 complete (FL, TX, CA, NY, IL, MI, PA, VA, MA)
 - **Database**: PostgreSQL 16, 17,842 districts
 - **Test Suite**: 375 passed
@@ -91,7 +91,7 @@ pytest tests/test_*_integration.py -v
 
 | Task | File |
 |------|------|
-| Bell schedule operations | `docs/BELL_SCHEDULE_OPERATIONS_GUIDE.md` |
+| Bell schedule acquisition | `docs/ACQUISITION_PIPELINE.md` |
 | Data methodology | `docs/METHODOLOGY.md` |
 | Database setup | `docs/DATABASE_SETUP.md` |
 | SEA integration guide | `docs/SEA_INTEGRATION_GUIDE.md` |
@@ -127,6 +127,6 @@ This is the core briefing. For detailed information, load these appendices:
 
 - **Crosswalk table**: `state_district_crosswalk` - single source of truth
 - **SPED baseline**: 2017-18 IDEA 618/CRDC exempt from temporal rule
-- **Scraper API**: `POST /scrape`, `GET /health`, `GET /status`
+- **Scraper API**: `POST /map`, `POST /discover`, `POST /capture`, `GET /health`, `GET /status`
 
 For detailed reference, see appendices.

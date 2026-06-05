@@ -65,9 +65,9 @@ This document standardizes vocabulary used throughout the Learning Connection Ti
 - Official bell schedule PDFs/tables
 - District-provided documentation
 
-**Tier classification:**
-- **Tier 1:** Manual-assisted detailed search of top districts
-- **Tier 2:** Automated search with validation
+**Acquisition method:**
+- **Automated:** local-first Crawlee + Ollama pipeline (capture from district/school sites)
+- **Manual:** human-collected schedules where the pipeline can't reach
 
 **Confidence levels:**
 - High: Detailed schedule with specific times from official source
@@ -86,11 +86,11 @@ This document standardizes vocabulary used throughout the Learning Connection Ti
 - No specific school/district times
 - Generic minutes (often 360, 420, etc.)
 
-**Tier classification:**
-- **Tier 3:** Statutory requirements only
+**Minutes source:**
+- State statutory requirement (fallback when no actual schedule is found)
 
 **Storage:**
-- Located in `data/enriched/bell-schedules/tier3_statutory_fallback/`
+- Stored in the `bell_schedules` table with `method = statutory_fallback`
 - NOT counted in enrichment campaign progress
 
 ---
@@ -236,7 +236,7 @@ Districts identified for enrichment campaign (mixed years: 2023-24, 2024-25, 202
 ## Common Phrases - Standardized Usage
 
 ### "We enriched this district"
-**Means:** Obtained actual bell schedule data (Tier 1 or 2)
+**Means:** Obtained actual bell schedule data (automated or manual collection)
 **Does NOT mean:** Applied statutory fallback
 
 ### "Manual collection"
@@ -244,12 +244,12 @@ Districts identified for enrichment campaign (mixed years: 2023-24, 2024-25, 202
 **Context matters:** Check if referring to human-provided vs manual intervention
 
 ### "Scraped the data"
-**Means:** Automated web scraping by Claude
+**Means:** Automated web scraping via the local-first Crawlee + Ollama pipeline
 **Does NOT mean:** Human collected
 
 ### "Statutory fallback"
 **Means:** Using state minimum requirements (NOT enriched)
-**Alternative terms:** Tier 3, state statutory, assumed data
+**Alternative terms:** state statutory, assumed data
 
 ---
 
@@ -275,7 +275,7 @@ Districts identified for enrichment campaign (mixed years: 2023-24, 2024-25, 202
 5. **Where is it stored?**
    - Individual JSON → 2023-24 campaign
    - Collection file → 2024-25 legacy
-   - tier3_statutory_fallback/ → NOT enriched
+   - Statutory fallback (method=statutory_fallback) → NOT enriched
 
 ---
 

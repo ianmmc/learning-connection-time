@@ -1,5 +1,7 @@
 # Bell Schedule Tracking Template
 
+> **⚠️ Deprecated workflow (Jan 2026).** The CSV spreadsheet-tracking flow below (and the `fetch_bell_schedules.py` / `import_tracking_spreadsheet.py` commands it references) predates the current local-first acquisition pipeline and the scripts no longer exist. For the current approach see **`docs/ACQUISITION_PIPELINE.md`**. This file is retained only as a historical template.
+
 ## Purpose
 
 This template is used to track the progress and results of bell schedule data collection across school districts.

@@ -90,7 +90,7 @@ learning-connection-time/
 │   │   ├── analyze/             # LCT calculations
 │   │   ├── enrich/              # Bell schedule enrichment
 │   │   └── transform/           # Data normalization
-│   └── scraper/                 # Playwright scraper service (TypeScript)
+│   └── scraper/                 # Crawlee scraper service (TypeScript)
 └── tests/                       # pytest test suite
 ```
 
@@ -164,7 +164,7 @@ git commit -m "feat: Add new bell schedule parser"
 
 - **Database:** 17,842 U.S. school districts
 - **SEA Integrations:** 9/9 complete (FL, TX, CA, NY, IL, MI, PA, VA, MA)
-- **Scraper Service:** Playwright-based, operational
+- **Scraper Service:** Crawlee-based (Playwright browsers), operational
 - **Test Suite:** 789 tests passing
 - **Phase:** Bell schedule acquisition with Crawlee + Ollama pipeline
 

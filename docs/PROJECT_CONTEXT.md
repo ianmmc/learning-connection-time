@@ -67,14 +67,15 @@ LCT = 18 minutes per student per day
 - Temporal trends (year-over-year changes)
 - Relationship to outcomes (with appropriate caveats)
 
-## Current Status (January 23, 2026)
+## Current Status (January 2026)
 
-**Phase**: Bell Schedule Automation with Multi-Tier Enrichment Pipeline
+**Phase**: Bell Schedule Acquisition — local-first Crawlee + Ollama pipeline
 **Coverage**: 17,842 U.S. school districts in PostgreSQL database
 **SEA Integrations**: 9/9 complete (FL, TX, CA, NY, IL, MI, PA, VA, MA) ✅
-**Scraper Service**: Playwright-based service in `infrastructure/scraper/` directory, operational
-**Test Suite**: 789 tests passing
+**Acquisition Stack**: FastAPI orchestrator (:8000) + Crawlee scraper (:3000, Playwright browsers) + local Ollama LLM (:11434)
 **Data Sources**: Federal (NCES, CRDC, IDEA 618) + Bell schedules + State agencies
+
+> **Note:** The earlier multi-tier Firecrawl/Gemini/Claude-API acquisition design was removed in Jan 2026 and replaced by the local-first Crawlee + Ollama pipeline below, so the project can scale without per-token API cost. See `docs/ACQUISITION_PIPELINE.md` (canonical) and `docs/PROJECT_SYNTHESIS.md` (architecture map).
 
 ### What We Have ✅
 - Comprehensive project structure
@@ -82,25 +83,23 @@ LCT = 18 minutes per student per day
 - Multi-part file handling capability
 - SPED segmentation (v3 self-contained focus)
 - Data safeguards (7 validation flags)
-- Playwright scraper service with retry logic
-- Multi-tier enrichment architecture (Playwright → HTML → PDF/OCR → Claude → Gemini)
-- Content parser for bell schedule extraction
-- Firecrawl integration for URL discovery
+- Crawlee scraper service (Playwright browsers) with async crawl jobs, school discovery + grade-band sampling
+- Local-first acquisition pipeline: Crawlee mapping → Ollama URL ranking → PDF capture → Ollama triage
+- Local LLM time-extraction stage (Ollama) with deterministic minutes calculation
+- Ground-truth + benchmark harness for measuring local extraction accuracy
 - LCT calculation engine with variants
 - QA dashboard and validation framework
 - Interactive enrichment tools
 - Grade-level analysis (elementary, middle, high)
 - Token-optimized infrastructure (88% size reduction)
 
-### Recent Achievements (Jan 2026)
+### Recent Work (Jan 2026)
 
 - **9/9 SEA integrations complete** with crosswalk tables
-- Playwright scraper service with request queue
-- Retry logic with exponential backoff (REQ-030)
-- Content parser module for markdown/HTML extraction
-- Firecrawl URL discovery integration
-- End-to-end pipeline orchestration tests
-- Multi-tier enrichment architecture documentation
+- Pivot from cloud multi-tier (Firecrawl/Gemini) to local-first Crawlee + Ollama acquisition
+- Async crawl jobs, serial acquisition queue, school discovery + grade-band sampling
+- Local Ollama time-extraction stage + deterministic minutes calculation
+- Ground-truth labeling + benchmark harness (in progress) to validate extraction accuracy
 
 ## Evolution Strategy
 
@@ -269,6 +268,6 @@ Outputs & Visualizations
 
 ---
 
-**Document Version**: 2.2
-**Last Updated**: January 23, 2026
-**Status**: Bell Schedule Automation - Multi-tier enrichment pipeline with 9/9 SEA integrations complete
+**Document Version**: 2.3
+**Last Updated**: January 2026
+**Status**: Bell Schedule Acquisition - local-first Crawlee + Ollama pipeline with 9/9 SEA integrations complete

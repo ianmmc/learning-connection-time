@@ -155,7 +155,7 @@ interface CrawleePageData {
 
 | Scenario | Detection | Action | Implementation |
 |----------|-----------|--------|----------------|
-| **Google Drive URL** | `drive.google.com` or `docs.google.com` | 1. Direct download<br>2. Playwright preview<br>3. Gemini API | `acquire.py` → `GoogleDriveHandler` |
+| **Google Drive URL** | `drive.google.com` or `docs.google.com` | 1. Direct download<br>2. Playwright preview<br>3. manual fallback (LLM branch stubbed, not implemented) | `acquire.py` → `GoogleDriveHandler` |
 | **Direct PDF link** | URL ends in `.pdf` | 1. HTTP download<br>2. Fall back to Crawlee | `acquire.py` → `_download_direct_pdf()` |
 | **Auth/login wall** | Login form or 401/403 | Mark `blocked: true`, flag for manual | `scraper.ts` → security indicators |
 | **Cloudflare/WAF** | Challenge page detected | Mark `blocked: true`, flag for manual | `scraper.ts` → cloudflare patterns |

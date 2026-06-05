@@ -97,9 +97,9 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Full Pipeline
+### Calculate LCT (DB-first)
 ```bash
-python pipelines/full_pipeline.py --year 2023-24 --sample
+python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2023-24
 ```
 
 ### Database Operations

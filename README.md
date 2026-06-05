@@ -61,11 +61,11 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
-# 2. Test with sample data
-python pipelines/full_pipeline.py --year 2023-24 --sample
+# 2. Start the database (Docker)
+docker-compose up -d
 
-# 3. View results
-cat data/processed/normalized/districts_2023_24_nces_with_lct_summary.txt
+# 3. Calculate LCT metrics from the database
+python3 infrastructure/scripts/analyze/calculate_lct_variants.py --year 2023-24
 ```
 
 ### Check Current Campaign Progress
@@ -88,10 +88,10 @@ python infrastructure/scripts/enrich/enrichment_progress.py --state WY
 python infrastructure/scripts/download/fetch_nces_ccd.py --year 2023-24
 ```
 
-**2. Enrich** - Gather actual bell schedules (optional)
+**2. Enrich** - Acquire actual bell schedules (optional)
 ```bash
-# Manual enrichment via operations guide
-# See: docs/BELL_SCHEDULE_OPERATIONS_GUIDE.md
+# Automated local-first acquisition: Crawlee scraper + FastAPI + Ollama
+# See: docs/ACQUISITION_PIPELINE.md
 ```
 
 **3. Extract** - Handle multi-part files
@@ -104,9 +104,9 @@ python infrastructure/scripts/extract/split_large_files.py data/raw/federal/nces
 python infrastructure/scripts/transform/normalize_districts.py input.csv --source nces --year 2023-24
 ```
 
-**5. Analyze** - Calculate LCT metrics
+**5. Analyze** - Calculate LCT metrics (DB-first)
 ```bash
-python infrastructure/scripts/analyze/calculate_lct.py input.csv --summary --filter-invalid
+python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2023-24
 ```
 
 **6. Track Progress** - Monitor enrichment campaign
@@ -195,10 +195,10 @@ learning-connection-time/
 │   └── exports/           # Final outputs
 │
 ├── docs/                  # Documentation
-│   ├── BELL_SCHEDULE_OPERATIONS_GUIDE.md  # Operational procedures ⭐
-│   ├── QUICK_REFERENCE_BELL_SCHEDULES.md  # One-page cheat sheet
+│   ├── ACQUISITION_PIPELINE.md            # Crawlee + Ollama acquisition ⭐
 │   ├── METHODOLOGY.md                     # LCT calculation details
-│   ├── OPTIMIZATION_IMPLEMENTATION_SUMMARY.md  # Recent improvements
+│   ├── PROJECT_SYNTHESIS.md               # Architecture map & known issues
+│   ├── state-integrations/               # Per-state data integration plans
 │   └── archive/          # Historical documentation
 │
 ├── infrastructure/        # Data processing scripts
@@ -225,10 +225,10 @@ Automatically detects and concatenates split files:
 - `filename_1.csv` + `filename_2.csv` → `filename_combined.csv`
 
 ### ✅ Actual vs. Statutory Instructional Time
-**Three-tier methodology:**
-- **Tier 1:** Detailed manual-assisted search (top districts)
-- **Tier 2:** Automated search with fallback (districts 26-100)
-- **Tier 3:** State statutory requirements (remaining districts)
+**Minutes-source priority (highest to lowest):**
+- **Actual bell schedule** — acquired from district/school websites via the local-first Crawlee + Ollama pipeline
+- **State statutory requirement** — fallback when no schedule is found
+- **Default (360 min)** — last-resort fallback
 
 **Quality tracking:**
 - Confidence levels: high, medium, low, assumed
@@ -278,7 +278,7 @@ State-specific data integrations provide enhanced detail beyond federal sources.
 
 ### Bell Schedules
 
-Actual instructional time data collected via web scraping from district websites. See [BELL_SCHEDULE_OPERATIONS_GUIDE.md](docs/BELL_SCHEDULE_OPERATIONS_GUIDE.md) for methodology.
+Actual instructional time data collected via local-first web scraping from district websites. See [ACQUISITION_PIPELINE.md](docs/ACQUISITION_PIPELINE.md) for methodology.
 
 ---
 
@@ -307,10 +307,12 @@ for level in ['elementary', 'middle', 'high']:
 
 ## 🔍 Usage Examples
 
-### Full Pipeline
+### Bell Schedule Acquisition (local-first)
 ```bash
-# Complete pipeline with bell schedule enrichment
-python pipelines/full_pipeline.py --year 2023-24 --enrich-bell-schedules --tier 2
+# Start the acquisition services (FastAPI :8000 + Crawlee :3000), then queue
+# districts. Crawlee maps the site, Ollama ranks/triages, results are captured
+# locally — no per-token API cost. Full workflow and endpoints:
+#   docs/ACQUISITION_PIPELINE.md
 ```
 
 ### Campaign Progress Tracking
@@ -359,7 +361,7 @@ This project follows systematic development with comprehensive documentation:
 ### Getting Help
 - **Script documentation:** All scripts have `--help` flags
 - **Session history:** See `docs/chat-history/` for development logs
-- **Operations guide:** Complete procedures in `docs/BELL_SCHEDULE_OPERATIONS_GUIDE.md`
+- **Acquisition guide:** Complete procedures in `docs/ACQUISITION_PIPELINE.md`
 
 ### Report Issues
 Document in session handoff or create detailed notes in `docs/chat-history/`

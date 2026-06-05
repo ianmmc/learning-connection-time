@@ -91,26 +91,23 @@ See `docs/STAFFING_DATA_ENHANCEMENT_PLAN.md` for detailed scope definitions and 
 - Grade-level differences in many states
 - District-specific policies may vary
 
-**Implementation Tiers**:
+**Minutes-source priority** (see `docs/ACQUISITION_PIPELINE.md` for the current pipeline):
 
-**Tier 1 - Actual Bell Schedules (Preferred)**:
-- Web search for district-wide bell schedule policies
-- Sample 2-3 schools per level (elementary, middle, high)
-- Extract actual instructional minutes from schedules
-- Document sources and confidence levels
-- Used for top 25-100 largest districts
+> The earlier district-ranking tier system (manual top-districts / Firecrawl / Gemini) was retired in Jan 2026 and replaced by a single local-first pipeline plus a statutory fallback. Minutes now come from a priority cascade, not a per-district tier assignment.
 
-**Tier 2 - Automated Search with Fallback**:
-- Automated web search for bell schedules
-- Quick extraction if found
-- Fall back to state requirements if not found
-- Used for districts 26-100
+**1. Actual bell schedule (preferred)**:
+- Acquired automatically by the local-first Crawlee + Ollama pipeline: site mapping → Ollama URL ranking → PDF capture → Ollama triage → local time extraction
+- Or human-collected where the pipeline can't reach the schedule
+- Confidence levels track source quality (high / medium / low)
 
-**Tier 3 - State Statutory Requirements Only**:
-- Use state statutory minimums from `config/state-requirements.yaml`
+**2. State statutory requirement (fallback)**:
+- State statutory minimums from `config/state-requirements.yaml`
 - Applied based on district state and grade levels
 - Grade-weighted averages for districts with multiple levels
-- Used for districts 101+ or when schedules unavailable
+- Used whenever an actual schedule is unavailable
+
+**3. Default (360 min)**:
+- Last-resort fallback when neither an actual schedule nor a state requirement is available
 
 **Example Values (Statutory)**:
 ```
@@ -1038,22 +1035,12 @@ Collect actual instructional time data from the top 3 largest districts in each 
 - Skip districts with inaccessible data, move to next-largest
 - Process states in ascending population order (smallest states first)
 
-**Data Collection Tiers**:
+**Collection approach**:
 
-**Tier 1 - Detailed Manual Enrichment** (Target: Top 25-50 districts nationally):
-- Comprehensive web search for district policies
-- Sample 2-3 representative schools per grade level
-- Extract specific start/end times, lunch duration, passing periods
-- Calculate net instructional minutes
-- Document all sources with URLs
-- Confidence: `high` or `medium`
+The current approach is local-first automated acquisition (Crawlee + Ollama pipeline; see `docs/ACQUISITION_PIPELINE.md`), with human collection only for districts the pipeline can't reach. The earlier manual-vs-automated district-count tiering was retired in Jan 2026.
 
-**Tier 2 - Automated Search with Estimation** (Target: Districts 51-153):
-- Automated web search for bell schedules
-- Use district-wide policies when available
-- Apply reasonable estimates for lunch/passing periods based on state norms
-- Fall back to state statutory requirements if unavailable
-- Confidence: `medium` or `low`
+- **Automated:** Crawlee maps district/school sites, Ollama ranks candidate pages, PDFs are captured and triaged, and start/end times are extracted locally. Net instructional minutes are computed deterministically. Confidence tracks source quality (`high` / `medium` / `low`).
+- **Manual follow-up:** districts blocked (Cloudflare/WAF) or not covered by the pipeline are queued for offline research.
 
 **Security & Ethics Protocol**:
 - ONE search attempt + ONE fetch attempt per district

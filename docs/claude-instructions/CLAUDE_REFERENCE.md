@@ -29,13 +29,13 @@ Load this appendix when you need historical context, directory structure, or tec
 ### PostgreSQL Database (Dec 2025)
 - PostgreSQL 16 via Docker (not Homebrew - see `.env` for credentials)
 - SQLAlchemy ORM with declarative models
-- Tables: districts (17,842), state_requirements (50), bell_schedules (214), lct_calculations, data_lineage
+- Tables: districts (17,842), state_requirements (50), bell_schedules (counts vary — verify against live DB), lct_calculations, data_lineage
 
 ### Bell Schedule Scraper Service (Jan 2026)
 
 - Location: `infrastructure/scraper/`
-- Technology: Express.js + Playwright
-- Features: Browser pool (5 concurrent), rate limiting, security block detection
+- Technology: Express.js + Crawlee (Playwright browsers)
+- Features: site mapping, async crawl jobs, school discovery + grade-band sampling, PDF capture, browser pool, security block detection
 - Ethical: respects blocks, no bypass attempts
 
 ### SEA Integration Test Framework (Jan 2026)
@@ -86,12 +86,14 @@ learning-connection-time/
 │   ├── utilities/                 # Helper functions
 │   └── scraper/                   # Bell schedule scraper service
 │       ├── src/
-│       │   ├── server.ts         # Express HTTP server
-│       │   ├── scraper.ts        # Playwright scraper
-│       │   └── pool.ts           # Browser pool
+│       │   ├── server.ts         # Express HTTP server (map/discover/capture)
+│       │   ├── mapper.ts         # Crawlee crawl + page signal extraction
+│       │   ├── discovery.ts      # school-site discovery + grade-band sampling
+│       │   ├── capturer.ts       # PDF capture
+│       │   ├── jobManager.ts     # disk-backed async crawl jobs
+│       │   └── pool.ts           # Playwright browser pool
 │       └── Dockerfile
-├── tests/                         # Test suite
-└── pipelines/                     # Automated workflows
+└── tests/                         # Test suite
 ```
 
 ---
@@ -112,8 +114,9 @@ learning-connection-time/
 ### Scraper Stack
 - **Node.js/TypeScript**: Runtime
 - **Express.js**: HTTP server
+- **Crawlee**: Crawling framework (orchestrates Playwright)
 - **Playwright**: Browser automation
-- **p-queue**: Rate limiting
+- **Ollama**: local LLM for URL ranking, PDF triage, time extraction (no per-token cost)
 
 ---
 
