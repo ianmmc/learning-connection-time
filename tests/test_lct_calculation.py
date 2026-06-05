@@ -32,7 +32,7 @@ class TestLCTCalculation:
 
     def test_lct_basic_calculation(self):
         """Standard calculation matches expected result"""
-        # From Claude.md example: 360 min × 250 staff / 5000 students = 18
+        # From CLAUDE.md example: 360 min × 250 staff / 5000 students = 18
         result = calculate_lct(
             instructional_minutes=360,
             staff_count=250,

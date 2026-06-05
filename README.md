@@ -42,7 +42,7 @@ This reframes "20:1 student-teacher ratio" into a more visceral equity metric.
 - **[Infrastructure Scripts README](infrastructure/scripts/README.md)** - Script documentation
 
 ### Bell Schedule Enrichment
-- **[Multi-Tier Architecture](docs/MULTI_TIER_ENRICHMENT_ARCHITECTURE.md)** - Automated 5-tier enrichment pipeline
+- **[Acquisition Pipeline](docs/ACQUISITION_PIPELINE.md)** - Crawlee + Ollama bell schedule acquisition (local-first, no per-token cost)
 
 ### Where to Find Results
 - **Current LCT values:** `data/enriched/lct-calculations/lct_all_variants_*.csv`
@@ -340,7 +340,7 @@ python infrastructure/scripts/enrich/filter_enrichment_candidates.py --export ca
 
 This project follows systematic development with comprehensive documentation:
 
-1. **Read** `Claude.md` for complete project context
+1. **Read** `CLAUDE.md` for complete project context
 2. **Follow** the operations guide for bell schedule enrichment
 3. **Test** changes with sample data first
 4. **Document** new features and decisions

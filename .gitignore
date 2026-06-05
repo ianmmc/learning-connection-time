@@ -135,6 +135,6 @@ data/test_cohort*.csv
 tier_*_batch_*.txt
 
 # Local CLAUDE.md config files (per-directory overrides)
-# Exclude subdirectory CLAUDE.md files but keep root Claude.md
+# Exclude subdirectory CLAUDE.md files but keep root CLAUDE.md
 config/CLAUDE.md
 infrastructure/**/CLAUDE.md

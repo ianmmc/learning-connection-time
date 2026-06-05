@@ -86,7 +86,7 @@ python3 infrastructure/scripts/verify_enrichment.py --quick
 
 | Task | File |
 |------|------|
-| Bell schedule acquisition | `docs/MULTI_TIER_ENRICHMENT_ARCHITECTURE.md` |
+| Bell schedule acquisition | `docs/ACQUISITION_PIPELINE.md` |
 | Data methodology | `docs/METHODOLOGY.md` |
 | Database setup | `docs/DATABASE_SETUP.md` |
 | SEA integration guide | `docs/SEA_INTEGRATION_GUIDE.md` |
