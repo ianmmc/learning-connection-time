@@ -1,0 +1,121 @@
+# Project History — Key Decisions & Lessons
+
+> **What this is:** A distilled, decision-oriented record of *why the project is the way it is* — the architectural/methodological choices and the hard-won lessons behind them. It replaces ~55 superseded session-handoff, status-snapshot, and test-result files that previously lived in `docs/archive/` and `docs/chat-history/`.
+>
+> **Why it exists:** The raw files are preserved in git history (they were removed from the working tree in the cleanup following restore-point commit `59603c3`), but git history is rarely grepped in practice. This doc keeps the *signal* — decisions and lessons — discoverable in the working tree while the noise stays in git.
+>
+> **How to read it:** This is not a chronological narrative. It's an ADR-style ledger. Dates and source files are cited so the originals can be recovered from git if needed. **Per project Rule #6, treat any count/rate below as a historical finding — verify against the live DB or current code before relying on it.**
+
+---
+
+## Part 1 — Key Decisions & Rationale
+
+### Acquisition strategy: cloud AI-extraction → local-first (Crawlee + Ollama)
+The project tried, and abandoned, AI-API extraction of bell schedules. Gemini-class extractors showed a **~28–56% error rate and hallucinated plausible-but-fake schedules** that were costly to verify; automated success rates ran ~0.2–0.4%, and the token/maintenance economics did not work at ~17,000-district scale. Human-assisted search alone produced **52% of all successes** — more than every automated method combined. This drove the pivot to a **local-first pipeline (Crawlee mapping + local Ollama LLMs for ranking/triage/extraction)**: no per-token cost, so the binding constraint becomes compute time, not money. *(Source: `BELL_SCHEDULE_COLLECTION_STRATEGY.md`, Jan 2026.)*
+
+### The interim 5-tier system (and why it too was dropped)
+Before the current pipeline there was a cost-bounded 5-tier escalation: Tiers 1–3 free/local (Playwright discovery, HTML parsing, pdftotext/tesseract OCR) handling the easy ~51% at $0, Tier 4 interactive Claude (included in subscription, $0), Tier 5 Gemini API (only ever a placeholder). Projected cost ~$8.80/245 districts. This was removed in Jan 2026 in favor of the simpler local-first design — the tiering added complexity without solving the core accuracy problem. *(Source: `MULTI_TIER_SYSTEM_READY.md`, `QUEUE_SYSTEM_IMPLEMENTATION_STATUS.md`.)*
+
+### PostgreSQL as the DB-first source of truth
+Chose PostgreSQL (Docker) over SQLite to avoid a later migration, get real constraints/FKs, use JSONB for nested raw-import data, and keep local/prod on the same engine. Motivated heavily by **token efficiency** — querying specific rows beats loading 41K-token JSON files — and by integrity guardrails. LCT outputs are now written to the DB first and exported to CSV/JSON *from* the DB, not the reverse. *(Source: `DATABASE_MIGRATION_NOTES.md`, Dec 2025.)*
+
+### Five staffing-scope LCT variants
+A single "instructional staff" field is ambiguous and tells an incomplete story, so LCT is computed over nested scopes: `teachers_only ⊂ teachers_core ⊂ instructional ⊂ instructional_plus_support ⊂ all`, with **`instructional` as the recommended primary metric**. Different scopes give rhetorical flexibility for different audiences ("time with classroom teachers" vs. "all student-facing adults"). NCES CCD (24 staff categories, ~all 18K districts) is the foundational/fallback source; state/CRDC layer on top via precedence. *(Source: `STAFFING_DATA_ENHANCEMENT_PLAN.md`, Dec 2025.)*
+
+### SPED/GenEd segmentation on CRDC 2017-18
+NCES CCD has **no** SPED-teacher categories and IDEA 618 personnel data is state-level only — **CRDC is the only federal source with district-level SPED teacher counts.** Segmentation was triggered by observed **LCT inflation** (median ~25 min vs. expected ~18): SPED teachers serve smaller caseloads, so counting them inflates apparent connection time. **2017-18** was chosen as the most recent pre-COVID clean biennial (2020-21/2021-22 COVID-tainted; 2023-24 not yet released). The method computes ratios (`sped_teachers/total_teachers`) and applies them proportionally to current CCD, so the ~5-year gap is acceptable because the *ratios* are stable; validated against IDEA 618 Child Count with a **correlation threshold ≥0.70**. Caveat: CRDC includes Section 504 students, IDEA 618 is IDEA-only — a definitional mismatch to keep in mind. *(Source: `SPED_SEGMENTATION_HANDOFF_*`, Jan 2026. The current `docs/SPED_SEGMENTATION_IMPLEMENTATION.md` documents the method; the "why 0.70 / why 2017-18 / inflation trigger" rationale is here.)*
+
+### Temporal 3-year blending window (REQ-026)
+Post-COVID years (2023-24 / 2024-25 / 2025-26) are interchangeable, so data is blended to maximize coverage, with two modes: **BLENDED** (default; most-recent data per table) and **TARGET_YEAR** (enrollment anchored to a year). The original `year_span` formula was **off-by-one** (`|y1-y2|+1`), flagging adjacent years as gaps; corrected to `|y1-y2|` (0–1 = ok, 2–3 = WARN, >3 = ERR), which **cut false-positive warnings ~85% (3,567 → 527)**. Output filenames encode the mode (year present = anchored, absent = blended). *(Source: `CHANGELOG_2026-01-20_temporal_blending.md`.)*
+
+### NCES-first SEA integration via the `ST_LEAID` crosswalk
+A key discovery: **NCES CCD LEA Universe files already contain state-assigned LEA IDs (`ST_LEAID`) for all 50 states**, which eliminated the need to build custom per-state crosswalk utilities and cut state onboarding from weeks to ~1–2 days. California established the "Layer 2" precedence pattern (state-actual data overrides federal estimates); Texas proved it generalizes. The `state_district_crosswalk` table is the single source of truth for ID mappings. *(Source: `TEXAS_INTEGRATION_COMPLETE.md`, `CA_PHASE2_IMPLEMENTATION_SUMMARY.md`.)*
+
+### Enrichment campaign sequencing — "Option A"
+Process states in **ascending enrollment order** (smallest first, to minimize context-switching), enriching ranks 1–9 and stopping at 3 successes per state. Measured rates: ranks 1–3 ≈ 44% success, expanding to 4–9 ≈ 83%, combined ≈ 90% single-pass state completion. *(Source: `project_status_archive_2026-01-17.md`.)*
+
+### Test the contract, not the file layout
+Early SEA tests asserted on specific dict-key names and **6 of 8 states skipped**. Adopted principle: **"when most states fail/skip a test, fix the test, not the states."** Tests were rewritten to call the real loader functions and assert on returned data, with meaningful failure modes (`NotImplementedError`→skip, `FileNotFoundError`→fail, empty→fail). This is *why* the SEA test framework is state-agnostic and scales without modification. *(Source: `test_framework_refactor_2026-01-19.md`.)*
+
+### Local tools first; decision trees over retry loops
+Standing operating principle, born from a real stall (see Lessons): prefer local CLI tools (tesseract/pdftotext) over API/Read-tool for document processing (~87% token reduction claimed), and use **bounded decision trees with max-attempt limits instead of retry loops**. The "ONE attempt" rule for security/CDN blocks originates here. *(Source: `session_2024-12-21_operational_documentation.md`.)*
+
+---
+
+## Part 2 — Hard-Won Lessons (cautionary tales)
+
+### The phantom-districts hallucination — origin of Rule #6 and the DB-verify hook
+This happened **twice**, which is why the safeguard is non-negotiable:
+- **Dec 2024:** a reported "137 districts enriched" was found to be inflated — 135 were statutory fallback, only ~4 had real schedules. *(Source: `terminology_standardization_session_20241221.md`.)*
+- **Jan 2026:** LCT CSVs falsely labeled 101 districts as having `bell_schedule` data when the true source was statutory fallback; the CSV claimed 183 while the DB had ~82–103. **The database was correct; the CSVs were contaminated.** Exact mechanism stayed inconclusive (traced to mislabeled statutory-fallback JSON). Fix: deleted all contaminated outputs and added count-vs-DB verification, content-plausibility checks, and an override audit trail (REQ-035–039). *(Source: `RECONCILIATION_REPORT_20260124.md`; the fabricated artifacts `SESSION_HANDOFF_2025-12-26.md` / `-27.md` now carry "HALLUCINATED CONTENT" banners in git.)*
+
+**Lesson, now CLAUDE.md Rule #6:** *always verify data exists in the database before claiming enrichment counts; never trust handoff documentation.* Handoff docs propagated false numbers across sessions unchecked — that is the failure mode the rule exists to stop. The pre-commit hook that DB-verifies enrichment claims is the automated enforcement.
+
+### "Enriched" ≠ "statutory"
+Statutory state-minimum data must **never** be counted as enriched. Enforced by separate storage (`method = statutory_fallback`), required metadata, and the rule that enrichment functions **return `None` on failure rather than silently fabricating a statutory entry**. The check must be on `method`, **not** confidence level (statutory data can carry "medium" confidence). *(Source: `ENRICHMENT_SAFEGUARDS.md`.)*
+
+### Silent failure is the recurring enemy — fail loud
+A full audit found enrichment scripts shipping **template/placeholder code in production paths that "succeeded" without doing anything**, confidence-not-method enrichment flags, and a pipeline that ran enrichment *before* normalization (so it silently skipped). Recurring lesson: silent fallbacks/defaults and stub code in prod paths are the dominant failure mode — prefer fail-loud, return `None`, and validate outputs *between* pipeline steps. *(Source: `MEGATHINK_ANALYSIS_REPORT.md` + `FIX_PLAN.md`.)*
+
+### The image-processing stall — why "local tools first" exists
+The Read tool failed with "Could not process image" on a downloaded PNG bell schedule, and the session **repeatedly retried the same failing API call** instead of pivoting to already-installed tesseract — burning tokens and stalling Wyoming enrichment. Root cause: tool knowledge lived only in context, with no documented fallback. Also a smaller lesson: the assistant declared "schedules are stored as PNG images" as a *blocker* when it was merely an *observation* (images are OCR-readable) — distinguish observation from obstacle. *(Source: `stalled_session_transcript_202512211027PST.md`.)*
+
+### Scraping ethics & the 404 heuristic — the Memphis-Shelby near-miss
+Automation once hit 4+ 404s and was about to **silently fall back to statutory data and call it "enriched"**; the user caught it. This is the origin of two rules: **(1)** ≥4 404s in one district auto-flags for manual follow-up (multiple 404s usually mean WAF/Cloudflare hardening, not absent content); **(2)** on detected Cloudflare/WAF, **one search + one fetch attempt, then flag and move on** — never attempt bypass workarounds (districts block scrapers for reasons; bypass services are ethically questionable). Codified in the `enrichment_attempts` table so known-blocked districts aren't re-attempted. *(Source: `ENRICHMENT_SAFEGUARDS.md`, `ENRICHMENT_TRACKING.md`.)*
+
+### Automated scraping has a low ceiling — design for it
+A 733-attempt / 245-district Playwright run yielded only ~6.5% success. Durable realities of district websites: **80%+ publish no district-wide schedule** (data lives on individual *school* subsites → subdomain discovery is essential); 75%+ require JS rendering; a 30s timeout is too short for Finalsite/React SPAs; CMS mix ~25–30% Finalsite, 15–20% SchoolBlocks. CDN blocking is systemic, not occasional (MI = Cloudflare, VA = Akamai both block automated clients; PA/MA download cleanly). These numbers set realistic expectations for the acquisition pipeline. *(Source: `bell_schedule_automation_2026-01-22.md`, MI/VA integration logs.)*
+
+---
+
+## Part 3 — Live Roadmap & Carry-Forward Ideas (recorded, largely unexecuted)
+
+### Strategy: shift from "automate everything" to "AI-assisted human efficiency"
+Given automation's low ceiling, the highest-ROI play is making *human* search ~10× faster (AI generates search *queries*, not extracted *data*; batch by state; quick-entry form ~30s/district; target ~10 districts/hr). Concrete untapped leads recorded at the time:
+- **State SEAs that already collect instructional hours in bulk** — e.g., **Colorado's Periodic Data Collection** covers ~180 districts in one export. Identify other centralized-SIS states + FOIA.
+- **80/20 on the ~200 largest districts** (~13.6M students; was only ~26% covered) — a named top-30-missing list (Puerto Rico DOE ~240K, Pasco FL, Davidson Co TN, Fort Worth ISD, Milwaukee, …) was estimated at ~3 hrs of human work for +1.1M students.
+- **Untested external APIs** — SchoolDigger (free 2K calls) and GreatSchools (14-day trial); unknown whether they carry bell schedules — worth a ~10-call probe before investing.
+- **Crowdsourcing** via PTO networks with screenshot proof.
+
+*(Source: `BELL_SCHEDULE_COLLECTION_STRATEGY.md`. Treat as a live, mostly-unexecuted backlog.)*
+
+### Token-efficiency architecture (still the working model)
+A lightweight `enrichment_reference.csv` (3 cols vs. 36) replaces loading the 9.24MB full file (~90% token reduction per lookup); batch enrichment with checkpoint/resume; pre-filter candidates (>1,000 enrollment, must span multiple grade levels — small/rural districts rarely publish schedules). This is the "why" behind the slim-file/reference-file patterns still in the codebase. *(Source: `INFRASTRUCTURE_EFFICIENCY_ANALYSIS.md`.)*
+
+---
+
+## Part 4 — Distilled Technical Recommendations (from external research the user gathered)
+
+### Crawlee pop-up / consent-modal handling (fold into `docs/ACQUISITION_PIPELINE.md` when relevant)
+Strategy hierarchy, best → most brittle, centralized in a reusable `dismissPopups(page)` helper called at request-handler start and after every navigation/scroll:
+1. **Prevent pop-ups before they render** — `preNavigationHooks` + network-block known consent vendors (onetrust, quantcast, cookiebot, trustarc).
+2. **Inject CSS once** to `display:none` overlays (`[role=dialog]`, `.modal`, `.overlay`, `.consent`) and force `body{overflow:auto}`.
+3. **`page.on('dialog', d => d.dismiss())`** for native JS dialogs.
+4. Prefer **semantic / `aria-label` selectors** over brittle text matching.
+5. DOM removal as the nuclear option.
+
+**Key insight:** if clicking dismiss buttons is your *primary* strategy, you're already on the fragile path — frequent pop-ups often signal you're scraping at the wrong abstraction layer (a structured API/sitemap probably exists). *(Source: `ChatGPT_and_Perplexity_advice_on_modals.md`.)*
+
+### LCT validation safeguards — flag, don't delete (verify which landed in the pipeline)
+Run against the real 14,428-district dataset; recommends flagging via `level_lct_notes` codes so the dataset stays defensible rather than silently shrinking. Empirical counts (the load-bearing, hard-to-reconstruct part — **confirm against current code**):
+- `ERR_VOLATILE`: enrollment < 50 → **502 districts** (one staff change swings LCT 30–40 min).
+- `ERR_FLAT_STAFF`: all 5 scopes identical → **53 districts** (only teachers reported, rest zero-filled).
+- `ERR_IMPOSSIBLE_SSR`: staff/enrollment > 0.5 → **328 districts** (some physically impossible, e.g. 320:1 — data-dump errors / specialized units).
+- `ERR_RATIO_OUTLIER`: teachers <20% of all staff → **192 districts**; teachers =100% → **34 districts**.
+- LCT-Teachers "reasonableness zone" 5–120 min → **170 districts** outside.
+- **Strict monotonicity** `teachers_only ≤ core ≤ instructional ≤ +support ≤ all` as a blocking error; check `teachers_core > teachers_only` deltas aren't Pre-K leakage (Pre-K is excluded); confirm `enrollment_k12 ≈ elementary + secondary`.
+
+*(Source: `Proposed LCT Validation Safeguards from Gemini.md`. The current pipeline already implements several ERR_/WARN_ safeguards — see `calculate_lct_variants.py`; reconcile this list against it.)*
+
+---
+
+## Recovering the originals
+
+All source files were removed from the working tree but remain in git history. To browse what existed:
+
+```bash
+git log --oneline --diff-filter=D -- 'docs/archive/*' 'docs/chat-history/*'
+git show <commit>:docs/archive/<filename>   # view a specific archived file
+```
+
+The cleanup happened immediately after restore-point commit `59603c3`; the archived files were last present in that commit's tree.

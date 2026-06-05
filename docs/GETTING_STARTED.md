@@ -175,7 +175,7 @@ git commit -m "feat: Add new bell schedule parser"
 1. **Read TERMINOLOGY.md first** - Establishes shared vocabulary
 2. **Check existing tests** - Examples of how modules work
 3. **Review CLAUDE.md** - Current project context
-4. **Look at docs/archive/** - Historical decisions and rationale
+4. **Look at docs/PROJECT_HISTORY.md** - Key decisions and rationale
 
 ---
 

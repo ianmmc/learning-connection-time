@@ -360,11 +360,11 @@ This project follows systematic development with comprehensive documentation:
 
 ### Getting Help
 - **Script documentation:** All scripts have `--help` flags
-- **Session history:** See `docs/chat-history/` for development logs
+- **Project history:** See `docs/PROJECT_HISTORY.md` for key decisions & lessons
 - **Acquisition guide:** Complete procedures in `docs/ACQUISITION_PIPELINE.md`
 
 ### Report Issues
-Document in session handoff or create detailed notes in `docs/chat-history/`
+Document issues in the relevant doc or as a new entry in `docs/PROJECT_HISTORY.md`
 
 ---
 

@@ -49,7 +49,7 @@ Part of "Reducing the Ratio" educational equity initiative. Currently implementi
 - **Database**: PostgreSQL 16, 17,842 districts
 - **Test Suite**: 375 passed
 
-> **Note**: Prior documentation claimed 192 districts. Investigation on Jan 24, 2026 revealed this was hallucinated. See `docs/archive/RECONCILIATION_REPORT_20260124.md` for details.
+> **Note**: Prior documentation claimed 192 districts. Investigation on Jan 24, 2026 revealed this was hallucinated. See `docs/PROJECT_HISTORY.md` (Part 2) for details — this episode is the origin of Rule #6 and the pre-commit DB-verify hook.
 
 ---
 

@@ -206,4 +206,4 @@ python infrastructure/scripts/make_executable.py
 1. **Script documentation**: All scripts have `--help` flags
 2. **Script README**: `infrastructure/scripts/README.md`
 3. **Test files**: Tests show expected usage patterns
-4. **Chat history**: `docs/chat-history/`
+4. **Project history**: `docs/PROJECT_HISTORY.md`
