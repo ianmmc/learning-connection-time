@@ -1,0 +1,16 @@
+{
+  "jobId": "895337e1-9d0a-45e3-8bcc-b1269eb9e00c",
+  "phase": "completed",
+  "url": "https://pves.pasco.k12.fl.us/",
+  "startedAt": "2026-01-26T17:03:05.248Z",
+  "updatedAt": "2026-01-26T17:03:33.351Z",
+  "pagesVisited": 10,
+  "pagesQueued": 0,
+  "pagesWithTimePatterns": 8,
+  "pagesWithBellKeywords": 9,
+  "config": {
+    "maxRequests": 10,
+    "maxDepth": 2
+  },
+  "completedAt": "2026-01-26T17:03:33.350Z"
+}

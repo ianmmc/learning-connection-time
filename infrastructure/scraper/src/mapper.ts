@@ -8,6 +8,7 @@
 import { PlaywrightCrawler, RequestQueue, Configuration } from 'crawlee';
 import { Page } from 'playwright';
 import { logger } from './logger.js';
+import * as jobManager from './jobManager.js';
 
 // Bell schedule related keywords
 const BELL_KEYWORDS = ['bell', 'schedule', 'times', 'hours', 'start', 'end', 'dismissal', 'period'];
@@ -270,5 +271,148 @@ export async function mapWebsite(mapRequest: MapRequest): Promise<MapResponse> {
       },
       error: (error as Error).message,
     };
+  }
+}
+
+/**
+ * Map a website asynchronously, streaming results to disk
+ * Returns immediately with a job ID; results are written to data/jobs/{jobId}/
+ */
+export async function mapWebsiteAsync(mapRequest: MapRequest): Promise<string> {
+  const maxRequests = mapRequest.maxRequests || 100;
+  const maxDepth = mapRequest.maxDepth || 4;
+
+  // Create job
+  const jobId = await jobManager.createJob(mapRequest.url, { maxRequests, maxDepth });
+
+  // Start crawl in background (don't await)
+  runAsyncCrawl(jobId, mapRequest).catch(error => {
+    logger.error(`Async crawl failed for job ${jobId}: ${(error as Error).message}`);
+    jobManager.failJob(jobId, (error as Error).message);
+  });
+
+  return jobId;
+}
+
+/**
+ * Internal: Run the actual crawl for an async job
+ */
+async function runAsyncCrawl(jobId: string, mapRequest: MapRequest): Promise<void> {
+  const maxRequests = mapRequest.maxRequests || 100;
+  const maxDepth = mapRequest.maxDepth || 4;
+  const patterns = mapRequest.patterns;
+
+  let pagesVisited = 0;
+  let pagesWithTimePatterns = 0;
+  let pagesWithBellKeywords = 0;
+
+  logger.info(`Starting async crawl for job ${jobId}: ${mapRequest.url}`);
+
+  // Update status to crawling
+  await jobManager.updateJobStatus(jobId, { phase: 'crawling' });
+
+  // Configure Crawlee to use in-memory storage
+  const config = new Configuration({
+    persistStorage: false,
+    purgeOnStart: true,
+  });
+
+  try {
+    const requestQueue = await RequestQueue.open(undefined, { config });
+
+    await requestQueue.addRequest({
+      url: mapRequest.url,
+      userData: { depth: 0, linkText: '' },
+    });
+
+    const crawler = new PlaywrightCrawler(
+      {
+        requestQueue,
+        maxRequestsPerCrawl: maxRequests,
+        maxConcurrency: 3,
+        requestHandlerTimeoutSecs: 60,
+        navigationTimeoutSecs: 30,
+
+        launchContext: {
+          launchOptions: {
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          },
+        },
+
+        async requestHandler({ request, page, enqueueLinks, log }) {
+          const depth = (request.userData.depth as number) || 0;
+          const linkText = (request.userData.linkText as string) || '';
+
+          if (depth > maxDepth) {
+            return;
+          }
+
+          try {
+            await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+
+            const pageData = await extractPageData(page, request.url, depth, linkText);
+
+            // Stream page to disk immediately
+            await jobManager.appendPage(jobId, pageData);
+            pagesVisited++;
+
+            // Update stats
+            if (pageData.timePatternCount > 0) pagesWithTimePatterns++;
+            if (pageData.keywordMatchCount > 0) pagesWithBellKeywords++;
+
+            // Update job status periodically (every 5 pages)
+            if (pagesVisited % 5 === 0) {
+              const queueInfo = await requestQueue.getInfo();
+              await jobManager.updateJobStatus(jobId, {
+                pagesVisited,
+                pagesQueued: queueInfo?.pendingRequestCount || 0,
+                pagesWithTimePatterns,
+                pagesWithBellKeywords,
+              });
+            }
+
+            log.info(
+              `[Job ${jobId}] Mapped: ${request.url} (depth: ${depth}, total: ${pagesVisited})`
+            );
+
+            await enqueueLinks({
+              strategy: 'same-domain',
+              globs: patterns?.includeGlobs,
+              exclude: patterns?.excludeGlobs,
+              transformRequestFunction: (req) => {
+                const newLinkText = req.userData?.linkText || '';
+                req.userData = {
+                  depth: depth + 1,
+                  linkText: newLinkText,
+                };
+                return req;
+              },
+            });
+          } catch (error) {
+            log.warning(`Failed to extract data from ${request.url}: ${(error as Error).message}`);
+          }
+        },
+
+        async failedRequestHandler({ request, log }) {
+          log.error(`Failed to crawl: ${request.url}`);
+        },
+      },
+      config
+    );
+
+    await crawler.run();
+
+    // Mark job as complete
+    await jobManager.completeJob(jobId, {
+      pagesVisited,
+      pagesWithTimePatterns,
+      pagesWithBellKeywords,
+    });
+
+    logger.info(`Async crawl complete for job ${jobId}: ${pagesVisited} pages`);
+  } catch (error) {
+    await jobManager.failJob(jobId, (error as Error).message);
+    throw error;
   }
 }

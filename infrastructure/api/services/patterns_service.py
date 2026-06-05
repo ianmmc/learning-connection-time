@@ -529,6 +529,56 @@ def learn_from_ollama_scores(url_scores: List[Dict[str, Any]],
                           district_id=district_id, confidence=1.0 - score)
 
 
+def learn_from_triage_results(
+    triage_results: List[Dict[str, Any]],
+    district_id: Optional[str] = None,
+    active_threshold: float = 0.7,
+    reject_threshold: float = 0.3,
+):
+    """
+    Learn patterns from PDF triage results.
+
+    Automatically feeds back triage decisions to the learning loop:
+    - Active (score >= 0.7): Confirmed as bell schedule
+    - Rejected (score < 0.3): Confirmed as NOT bell schedule
+    - Quarantine: Pending human review
+
+    Args:
+        triage_results: List of {url, score, status, ...} from triage
+        district_id: District being processed
+        active_threshold: Score above which to confirm as positive
+        reject_threshold: Score below which to confirm as negative
+    """
+    confirmed_count = 0
+    rejected_count = 0
+
+    for result in triage_results:
+        url = result.get("url", "")
+        score = result.get("score", 0.5)
+        status = result.get("status", "")
+
+        if not url:
+            continue
+
+        # Active = confirmed bell schedule
+        if status == "active" or score >= active_threshold:
+            record_feedback(url, is_bell_schedule=True, district_id=district_id)
+            confirmed_count += 1
+
+        # Rejected = confirmed NOT bell schedule
+        elif status == "rejected" or score < reject_threshold:
+            record_feedback(url, is_bell_schedule=False, district_id=district_id)
+            rejected_count += 1
+
+        # Quarantine pages are left pending for human review
+
+    if confirmed_count or rejected_count:
+        logger.info(
+            f"Learning loop updated from triage: {confirmed_count} confirmed, "
+            f"{rejected_count} rejected for district {district_id}"
+        )
+
+
 def get_patterns_summary() -> Dict[str, Any]:
     """Get a summary of current patterns state."""
     patterns = load_patterns()

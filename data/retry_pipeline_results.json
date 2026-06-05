@@ -1,0 +1,105 @@
+{
+  "timestamp": "2026-01-26T18:50:46.564840",
+  "districts_retried": 5,
+  "successful": 1,
+  "results": [
+    {
+      "nces_id": "4659820",
+      "name": "Rapid City Area School District 51-4",
+      "state": "SD",
+      "success": true,
+      "extraction": {
+        "success": true,
+        "district_id": "4659820",
+        "schedules_extracted": 3,
+        "output_file": "raw/bell_schedule_pdfs/SD/4659820_Rapid_City_Area_School_District_51-4/extraction_result.json",
+        "error": null
+      },
+      "minutes_calculated": true,
+      "records_deleted": 1,
+      "import_result": {
+        "success": true,
+        "output": ""
+      },
+      "directory": "/Users/ianmmc/Development/learning-connection-time/data/raw/bell_schedule_pdfs/SD/4659820_Rapid_City_Area_School_District_51-4"
+    },
+    {
+      "nces_id": "0803360",
+      "name": "Denver Public Schools",
+      "state": "CO",
+      "success": false,
+      "extraction": {
+        "success": true,
+        "district_id": "0803360",
+        "schedules_extracted": 8,
+        "output_file": "raw/bell_schedule_pdfs/CO/0803360_School_District_No_1_in_the_county_of_Denver_and_State_of_C/extraction_result.json",
+        "error": null
+      },
+      "minutes_calculated": true,
+      "records_deleted": 3,
+      "import_result": {
+        "success": false,
+        "error": "2026-01-26 18:41:07,777 - INFO - Reading: /Users/ianmmc/Development/learning-connection-time/data/raw/bell_schedule_pdfs/CO/0803360_School_District_No_1_in_the_county_of_Denver_and_State_of_C/enrichment_ready.json\n2026-01-26 18:41:14,892 - INFO - Processing import (dry_run=False)\n/Users/ianmmc/Development/learning-connection-time/infrastructure/scripts/enrich/pipeline_import_bell_schedules.py:300: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n  'import_date': datetime.utcnow().isoformat(),\n2026-01-26 18:41:14,925 - INFO - Processed: 8 schedules\n2026-01-26 18:41:14,925 - INFO - Created: 0\n2026-01-26 18:41:14,925 - INFO - Skipped: 0\n2026-01-26 18:41:14,925 - INFO - Errors: 8\n2026-01-26 18:41:14,925 - WARNING -   unknown: validation_error - [\"Invalid grade_level: unknown (must be one of ['elementary', 'middle', 'high'])\"]\n2026-01-26 18:41:14,925 - WARNING -   unknown: validation_error - [\"Invalid grade_level: unknown (must be one of ['elementary', 'middle', 'high'])\"]\n2026-01-26 18:41:14,925 - WARNING -   unknown: validation_error - [\"Invalid grade_level: unknown (must be one of ['elementary', 'middle', 'high'])\"]\n2026-01-26 18:41:14,925 - WARNING -   unknown: validation_error - [\"Invalid grade_level: unknown (must be one of ['elementary', 'middle', 'high'])\"]\n2026-01-26 18:41:14,925 - WARNING -   unknown: validation_error - [\"Invalid grade_level: unknown (must be one of ['elementary', 'middle', 'high'])\"]\n2026-01-26 18:41:14,925 - WARNING -   unknown: validation_error - [\"Invalid grade_level: unknown (must be one of ['elementary', 'middle', 'high'])\"]\n2026-01-26 18:41:14,925 - WARNING -   unknown: validation_error - [\"Invalid grade_level: unknown (must be one of ['elementary', 'middle', 'high'])\"]\n2026-01-26 18:41:14,925 - WARNING -   unknown: validation_error - [\"Invalid grade_level: unknown (must be one of ['elementary', 'middle', 'high'])\"]\n2026-01-26 18:41:14,930 - INFO - Writing: /Users/ianmmc/Development/learning-connection-time/data/raw/bell_schedule_pdfs/CO/0803360_School_District_No_1_in_the_county_of_Denver_and_State_of_C/import_result.json\n2026-01-26 18:41:14,933 - WARNING - Import completed with errors\n"
+      },
+      "directory": "/Users/ianmmc/Development/learning-connection-time/data/raw/bell_schedule_pdfs/CO/0803360_School_District_No_1_in_the_county_of_Denver_and_State_of_C",
+      "error": "Import failed"
+    },
+    {
+      "nces_id": "0626910",
+      "name": "New Haven Unified",
+      "state": "CA",
+      "success": false,
+      "extraction": {
+        "success": false,
+        "district_id": "0626910",
+        "schedules_extracted": 0,
+        "output_file": "raw/bell_schedule_pdfs/CA/0626910_New_Haven_Unified/extraction_result.json",
+        "error": "Could not parse JSON response"
+      },
+      "minutes_calculated": false,
+      "records_deleted": 0,
+      "import_result": null,
+      "directory": "/Users/ianmmc/Development/learning-connection-time/data/raw/bell_schedule_pdfs/CA/0626910_New_Haven_Unified",
+      "error": "Extraction failed"
+    },
+    {
+      "nces_id": "0614550",
+      "name": "Fresno Unified",
+      "state": "CA",
+      "success": false,
+      "extraction": {
+        "success": true,
+        "district_id": "0614550",
+        "schedules_extracted": 6,
+        "output_file": "raw/bell_schedule_pdfs/CA/0614550_Fresno_Unified/extraction_result.json",
+        "error": null
+      },
+      "minutes_calculated": true,
+      "records_deleted": 1,
+      "import_result": {
+        "success": false,
+        "error": "2026-01-26 18:46:45,052 - INFO - Reading: /Users/ianmmc/Development/learning-connection-time/data/raw/bell_schedule_pdfs/CA/0614550_Fresno_Unified/enrichment_ready.json\n2026-01-26 18:46:50,301 - INFO - Processing import (dry_run=False)\n/Users/ianmmc/Development/learning-connection-time/infrastructure/scripts/enrich/pipeline_import_bell_schedules.py:300: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n  'import_date': datetime.utcnow().isoformat(),\n2026-01-26 18:48:08,957 - ERROR - Commit failed: (psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint \"uq_bell_schedule\"\nDETAIL:  Key (district_id, year, grade_level)=(0614550, 2025-26, elementary) already exists.\n\n[SQL: INSERT INTO bell_schedules (district_id, year, grade_level, instructional_minutes, start_time, end_time, lunch_duration, passing_periods, recess_duration, schools_sampled, source_urls, confidence, method, source_description, notes, created_at, update ... 1450 characters truncated ...  p15, p16, sen_counter) ORDER BY sen_counter RETURNING bell_schedules.id, bell_schedules.id AS id__1]\n[parameters: {'start_time__0': '08:00', 'lunch_duration__0': None, 'updated_at__0': datetime.datetime(2026, 1, 27, 2, 48, 8, 520814), 'end_time__0': '14:05', 'passing_periods__0': None, 'source_urls__0': '[]', 'recess_duration__0': None, 'schools_sampled__0': '[\"Figarden Elementary School\"]', 'confidence__0': 'high', 'instructional_minutes__0': 335, 'method__0': 'automated_enrichment', 'year__0': '2025-26', 'source_description__0': 'Phase 8 pipeline import from enrichment_ready.json', 'created_at__0': datetime.datetime(2026, 1, 27, 2, 48, 8, 520796), 'notes__0': 'Times explicitly stated for morning pre-school', 'grade_level__0': 'elementary', 'district_id__0': '0614550', 'start_time__1': '08:00', 'lunch_duration__1': None, 'updated_at__1': datetime.datetime(2026, 1, 27, 2, 48, 8, 520817), 'end_time__1': '14:05', 'passing_periods__1': None, 'source_urls__1': '[]', 'recess_duration__1': None, 'schools_sampled__1': '[\"Figarden Elementary School\"]', 'confidence__1': 'high', 'instructional_minutes__1': 335, 'method__1': 'automated_enrichment', 'year__1': '2025-26', 'source_description__1': 'Phase 8 pipeline import from enrichment_ready.json', 'created_at__1': datetime.datetime(2026, 1, 27, 2, 48, 8, 520816), 'notes__1': 'Times explicitly stated for transitional kindergarten/kindergarten', 'grade_level__1': 'elementary', 'district_id__1': '0614550', 'start_time__2': '08:00', 'lunch_duration__2': None, 'updated_at__2': datetime.datetime(2026, 1, 27, 2, 48, 8, 520819), 'end_time__2': '14:05', 'passing_periods__2': None, 'source_urls__2': '[]', 'recess_duration__2': None, 'schools_sampled__2': '[\"Figarden Elementary School\"]', 'confidence__2': 'high', 'instructional_minutes__2': 335, 'method__2': 'automated_enrichment', 'year__2': '2025-26', 'source_description__2': 'Phase 8 pipeline import from enrichment_ready.json', 'created_at__2': datetime.datetime(2026, 1, 27, 2, 48, 8, 520818), 'notes__2': 'Times explicitly stated for grades 1-6', 'grade_level__2': 'elementary', 'district_id__2': '0614550'}]\n(Background on this error at: https://sqlalche.me/e/20/gkpj)\n2026-01-26 18:48:09,021 - INFO - Processed: 6 schedules\n2026-01-26 18:48:09,021 - INFO - Created: 3\n2026-01-26 18:48:09,021 - INFO - Skipped: 0\n2026-01-26 18:48:09,021 - INFO - Errors: 3\n2026-01-26 18:48:09,021 - ERROR - Commit error: (psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint \"uq_bell_schedule\"\nDETAIL:  Key (district_id, year, grade_level)=(0614550, 2025-26, elementary) already exists.\n\n[SQL: INSERT INTO bell_schedules (district_id, year, grade_level, instructional_minutes, start_time, end_time, lunch_duration, passing_periods, recess_duration, schools_sampled, source_urls, confidence, method, source_description, notes, created_at, update ... 1450 characters truncated ...  p15, p16, sen_counter) ORDER BY sen_counter RETURNING bell_schedules.id, bell_schedules.id AS id__1]\n[parameters: {'start_time__0': '08:00', 'lunch_duration__0': None, 'updated_at__0': datetime.datetime(2026, 1, 27, 2, 48, 8, 520814), 'end_time__0': '14:05', 'passing_periods__0': None, 'source_urls__0': '[]', 'recess_duration__0': None, 'schools_sampled__0': '[\"Figarden Elementary School\"]', 'confidence__0': 'high', 'instructional_minutes__0': 335, 'method__0': 'automated_enrichment', 'year__0': '2025-26', 'source_description__0': 'Phase 8 pipeline import from enrichment_ready.json', 'created_at__0': datetime.datetime(2026, 1, 27, 2, 48, 8, 520796), 'notes__0': 'Times explicitly stated for morning pre-school', 'grade_level__0': 'elementary', 'district_id__0': '0614550', 'start_time__1': '08:00', 'lunch_duration__1': None, 'updated_at__1': datetime.datetime(2026, 1, 27, 2, 48, 8, 520817), 'end_time__1': '14:05', 'passing_periods__1': None, 'source_urls__1': '[]', 'recess_duration__1': None, 'schools_sampled__1': '[\"Figarden Elementary School\"]', 'confidence__1': 'high', 'instructional_minutes__1': 335, 'method__1': 'automated_enrichment', 'year__1': '2025-26', 'source_description__1': 'Phase 8 pipeline import from enrichment_ready.json', 'created_at__1': datetime.datetime(2026, 1, 27, 2, 48, 8, 520816), 'notes__1': 'Times explicitly stated for transitional kindergarten/kindergarten', 'grade_level__1': 'elementary', 'district_id__1': '0614550', 'start_time__2': '08:00', 'lunch_duration__2': None, 'updated_at__2': datetime.datetime(2026, 1, 27, 2, 48, 8, 520819), 'end_time__2': '14:05', 'passing_periods__2': None, 'source_urls__2': '[]', 'recess_duration__2': None, 'schools_sampled__2': '[\"Figarden Elementary School\"]', 'confidence__2': 'high', 'instructional_minutes__2': 335, 'method__2': 'automated_enrichment', 'year__2': '2025-26', 'source_description__2': 'Phase 8 pipeline import from enrichment_ready.json', 'created_at__2': datetime.datetime(2026, 1, 27, 2, 48, 8, 520818), 'notes__2': 'Times explicitly stated for grades 1-6', 'grade_level__2': 'elementary', 'district_id__2': '0614550'}]\n(Background on this error at: https://sqlalche.me/e/20/gkpj)\n2026-01-26 18:48:09,021 - INFO -   elementary: created (335 min)\n2026-01-26 18:48:09,021 - INFO -   elementary: created (335 min)\n2026-01-26 18:48:09,021 - INFO -   elementary: created (335 min)\n2026-01-26 18:48:09,021 - WARNING -   unknown: validation_error - [\"Invalid grade_level: unknown (must be one of ['elementary', 'middle', 'high'])\"]\n2026-01-26 18:48:09,021 - WARNING -   unknown: validation_error - ['instructional_minutes (42) outside valid range (100-600)', \"Invalid grade_level: unknown (must be one of ['elementary', 'middle', 'high'])\"]\n2026-01-26 18:48:09,021 - WARNING -   unknown: validation_error - ['instructional_minutes (57) outside valid range (100-600)', \"Invalid grade_level: unknown (must be one of ['elementary', 'middle', 'high'])\"]\n2026-01-26 18:48:09,037 - INFO - Writing: /Users/ianmmc/Development/learning-connection-time/data/raw/bell_schedule_pdfs/CA/0614550_Fresno_Unified/import_result.json\n2026-01-26 18:48:09,065 - WARNING - Import completed with errors\n"
+      },
+      "directory": "/Users/ianmmc/Development/learning-connection-time/data/raw/bell_schedule_pdfs/CA/0614550_Fresno_Unified",
+      "error": "Import failed"
+    },
+    {
+      "nces_id": "0634410",
+      "name": "San Francisco Unified",
+      "state": "CA",
+      "success": false,
+      "extraction": {
+        "success": false,
+        "district_id": "0634410",
+        "schedules_extracted": 0,
+        "output_file": "raw/bell_schedule_pdfs/CA/0634410_San_Francisco_Unified/extraction_result.json",
+        "error": "No bell schedule times found in text"
+      },
+      "minutes_calculated": false,
+      "records_deleted": 0,
+      "import_result": null,
+      "directory": "/Users/ianmmc/Development/learning-connection-time/data/raw/bell_schedule_pdfs/CA/0634410_San_Francisco_Unified",
+      "error": "Extraction failed"
+    }
+  ]
+}

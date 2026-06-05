@@ -22,6 +22,8 @@ except ImportError:
     OLLAMA_AVAILABLE = False
     ollama = None
 
+from infrastructure.api.services.ollama_launcher import ensure_ollama_running
+
 logger = logging.getLogger(__name__)
 
 # Default prompt templates directory
@@ -151,17 +153,24 @@ Return JSON: {{"score": 0.X, "reason": "...", "times_found": [...]}}"""
 
     def _extract_json_from_response(self, text: str) -> Any:
         """Extract JSON from Ollama response, handling markdown code blocks."""
-        # Try to find JSON in code blocks
-        code_block_match = re.search(r'```(?:json)?\s*([\s\S]*?)```', text)
-        if code_block_match:
-            text = code_block_match.group(1)
+        # Strip leading/trailing whitespace
+        text = text.strip()
+
+        # Remove markdown code block wrappers
+        if text.startswith('```'):
+            # Remove opening ```json or ```
+            text = re.sub(r'^```(?:json)?\s*', '', text)
+            # Remove closing ```
+            text = re.sub(r'```\s*$', '', text)
+            text = text.strip()
 
         # Try to find JSON array or object
         json_match = re.search(r'(\[[\s\S]*\]|\{[\s\S]*\})', text)
         if json_match:
             try:
                 return json.loads(json_match.group(1))
-            except json.JSONDecodeError:
+            except json.JSONDecodeError as e:
+                logger.warning(f"JSON parse error: {e}")
                 pass
 
         # Try parsing the whole text
@@ -175,6 +184,7 @@ Return JSON: {{"score": 0.X, "reason": "...", "times_found": [...]}}"""
         self,
         pages: List[Dict[str, Any]],
         district_name: str,
+        max_retries: int = 2,
     ) -> List[URLScore]:
         """
         Rank URLs by likelihood of containing bell schedule content.
@@ -182,12 +192,18 @@ Return JSON: {{"score": 0.X, "reason": "...", "times_found": [...]}}"""
         Args:
             pages: List of page data from Crawlee
             district_name: Name of the district
+            max_retries: Number of retries on JSON parse failure
 
         Returns:
             List of URLScore objects sorted by score descending
         """
         if not OLLAMA_AVAILABLE:
             logger.error("Ollama not available, returning heuristic scores")
+            return self._heuristic_url_ranking(pages)
+
+        # Ensure Ollama is running (starts it at low priority if needed)
+        if not ensure_ollama_running():
+            logger.error("Could not start Ollama, returning heuristic scores")
             return self._heuristic_url_ranking(pages)
 
         prompt_config = self._load_prompt("url_ranking")
@@ -200,41 +216,98 @@ Return JSON: {{"score": 0.X, "reason": "...", "times_found": [...]}}"""
 
         logger.info(f"Ranking {len(pages)} URLs for {district_name}")
 
-        try:
-            response = ollama.chat(
-                model=prompt_config.get("model", self.url_ranking_model),
-                messages=[
-                    {"role": "system", "content": prompt_config.get("system", "")},
-                    {"role": "user", "content": prompt},
-                ],
-                options={
-                    "temperature": prompt_config.get("temperature", 0.1),
-                    "num_predict": prompt_config.get("max_tokens", 500),
-                },
-            )
+        for attempt in range(max_retries + 1):
+            try:
+                response = ollama.chat(
+                    model=prompt_config.get("model", self.url_ranking_model),
+                    messages=[
+                        {"role": "system", "content": prompt_config.get("system", "")},
+                        {"role": "user", "content": prompt},
+                    ],
+                    options={
+                        "temperature": prompt_config.get("temperature", 0.1),
+                        "num_predict": prompt_config.get("max_tokens", 500),
+                    },
+                )
 
-            content = response.get("message", {}).get("content", "")
-            scores_data = self._extract_json_from_response(content)
+                content = response.get("message", {}).get("content", "")
+                scores_data = self._extract_json_from_response(content)
 
-            if not scores_data or not isinstance(scores_data, list):
-                logger.warning("Invalid response format, using heuristic scores")
+                if not scores_data or not isinstance(scores_data, list):
+                    if attempt < max_retries:
+                        logger.warning(f"Invalid JSON response (attempt {attempt + 1}/{max_retries + 1}), retrying...")
+                        continue
+                    logger.warning("Invalid response format after retries, using heuristic scores")
+                    return self._heuristic_url_ranking(pages)
+
+                scores = []
+                for item in scores_data:
+                    scores.append(URLScore(
+                        url=item.get("url", ""),
+                        score=float(item.get("score", 0)),
+                        reason=item.get("reason", ""),
+                    ))
+
+                # Sort by score descending
+                scores.sort(key=lambda x: x.score, reverse=True)
+                return scores
+
+            except json.JSONDecodeError as e:
+                if attempt < max_retries:
+                    logger.warning(f"JSON decode error (attempt {attempt + 1}/{max_retries + 1}): {e}, retrying...")
+                    continue
+                logger.error(f"Ollama URL ranking JSON error after retries: {e}")
                 return self._heuristic_url_ranking(pages)
 
-            scores = []
-            for item in scores_data:
-                scores.append(URLScore(
-                    url=item.get("url", ""),
-                    score=float(item.get("score", 0)),
-                    reason=item.get("reason", ""),
-                ))
+            except Exception as e:
+                logger.error(f"Ollama URL ranking failed: {e}")
+                return self._heuristic_url_ranking(pages)
 
-            # Sort by score descending
-            scores.sort(key=lambda x: x.score, reverse=True)
-            return scores
+        return self._heuristic_url_ranking(pages)
 
-        except Exception as e:
-            logger.error(f"Ollama URL ranking failed: {e}")
-            return self._heuristic_url_ranking(pages)
+    def _is_school_subdomain_homepage(self, url: str) -> bool:
+        """
+        Detect if URL is likely a school subdomain homepage.
+
+        School districts often have subdomains like:
+        - bce.dcsdk12.org (Buffalo Creek Elementary)
+        - lhs.district.org (Lincoln High School)
+
+        These often have high time pattern counts from event calendars
+        but don't contain bell schedules.
+        """
+        try:
+            from urllib.parse import urlparse
+            parsed = urlparse(url)
+
+            # Check if path is root or index page
+            path = parsed.path.rstrip('/')
+            if path not in ['', '/index', '/index.html', '/home']:
+                return False
+
+            # Check subdomain pattern
+            netloc = parsed.netloc.lower()
+            parts = netloc.split('.')
+
+            # Needs at least subdomain.domain.tld
+            if len(parts) < 3:
+                return False
+
+            subdomain = parts[0]
+
+            # Skip if subdomain is 'www'
+            if subdomain == 'www':
+                return False
+
+            # School abbreviations are typically 2-5 characters
+            # or end with common school suffixes
+            school_suffixes = ['es', 'ms', 'hs', 'elem', 'mid', 'high', 'ps', 'js']
+            if len(subdomain) <= 5 or any(subdomain.endswith(s) for s in school_suffixes):
+                return True
+
+            return False
+        except Exception:
+            return False
 
     def _heuristic_url_ranking(self, pages: List[Dict[str, Any]]) -> List[URLScore]:
         """Fallback heuristic-based URL ranking when Ollama is unavailable."""
@@ -242,6 +315,8 @@ Return JSON: {{"score": 0.X, "reason": "...", "times_found": [...]}}"""
         for page in pages:
             score = 0.0
             reasons = []
+            url = page.get("url", "")
+            is_subdomain_homepage = self._is_school_subdomain_homepage(url)
 
             # Time patterns are strong signal
             time_count = page.get("time_pattern_count", 0)
@@ -255,21 +330,33 @@ Return JSON: {{"score": 0.X, "reason": "...", "times_found": [...]}}"""
                 score += 0.15
                 reasons.append(f"{time_count} time patterns")
 
-            # Keywords in URL
-            url_lower = page.get("url", "").lower()
+            # Keywords in URL - strong positive signal
+            url_lower = url.lower()
             if "bell" in url_lower and "schedule" in url_lower:
-                score += 0.3
+                score += 0.4
                 reasons.append("URL contains 'bell schedule'")
-            elif "schedule" in url_lower:
-                score += 0.15
-                reasons.append("URL contains 'schedule'")
+            elif "bell" in url_lower:
+                score += 0.25
+                reasons.append("URL contains 'bell'")
+            elif "schedule" in url_lower and "school" in url_lower:
+                score += 0.2
+                reasons.append("URL contains 'school schedule'")
+            elif "school-hours" in url_lower or "school_hours" in url_lower:
+                score += 0.3
+                reasons.append("URL contains 'school hours'")
+            elif "start-time" in url_lower or "start_time" in url_lower:
+                score += 0.25
+                reasons.append("URL contains 'start time'")
 
-            # H1 or title
+            # H1 or title - strong signal
             h1 = (page.get("h1") or "").lower()
             title = (page.get("title") or "").lower()
             if "bell schedule" in h1 or "bell schedule" in title:
-                score += 0.2
+                score += 0.3
                 reasons.append("Title/H1 contains 'bell schedule'")
+            elif "school hours" in h1 or "school hours" in title:
+                score += 0.25
+                reasons.append("Title/H1 contains 'school hours'")
 
             # Keyword match count
             kw_count = page.get("keyword_match_count", 0)
@@ -277,19 +364,30 @@ Return JSON: {{"score": 0.X, "reason": "...", "times_found": [...]}}"""
                 score += 0.1
                 reasons.append(f"{kw_count} keywords")
 
-            # Has schedule PDF link
+            # Has schedule PDF link - positive signal
             if page.get("has_schedule_pdf_link"):
-                score += 0.1
+                score += 0.15
                 reasons.append("Has schedule PDF link")
 
             # Negative signals
-            if any(x in url_lower for x in ["athletic", "sports", "bus", "lunch", "news"]):
+            if any(x in url_lower for x in ["athletic", "sports", "bus-schedule", "lunch", "news", "calendar"]):
                 score -= 0.2
                 reasons.append("Negative URL pattern")
 
+            # CONDITIONAL PENALTY: School subdomain homepages with high time patterns
+            # but no bell schedule keywords in URL/title are often event calendars
+            if is_subdomain_homepage:
+                has_bell_keywords = any(kw in url_lower or kw in h1 or kw in title
+                                        for kw in ["bell", "schedule", "hours", "start", "dismissal"])
+                if not has_bell_keywords and time_count > 10:
+                    # High time patterns on subdomain homepage without bell keywords
+                    # is likely a school calendar page, not bell schedule
+                    score -= 0.15
+                    reasons.append("Subdomain homepage with calendar-like patterns")
+
             score = max(0.0, min(1.0, score))
             scores.append(URLScore(
-                url=page.get("url", ""),
+                url=url,
                 score=score,
                 reason="; ".join(reasons) if reasons else "No strong signals",
             ))
@@ -309,6 +407,11 @@ Return JSON: {{"score": 0.X, "reason": "...", "times_found": [...]}}"""
         """
         if not OLLAMA_AVAILABLE:
             logger.error("Ollama not available, returning heuristic triage")
+            return self._heuristic_pdf_triage(pdf_text)
+
+        # Ensure Ollama is running (starts it at low priority if needed)
+        if not ensure_ollama_running():
+            logger.error("Could not start Ollama, returning heuristic triage")
             return self._heuristic_pdf_triage(pdf_text)
 
         prompt_config = self._load_prompt("pdf_triage")

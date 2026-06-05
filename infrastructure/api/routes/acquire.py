@@ -2,10 +2,13 @@
 Acquisition Routes
 
 Endpoints for acquiring bell schedule PDFs from district websites.
+Includes queue management for serial processing.
 """
 
+import asyncio
 import json
 import logging
+import os
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -21,8 +24,10 @@ from infrastructure.api.services.ollama_service import OllamaService
 from infrastructure.api.services.patterns_service import (
     get_effective_patterns,
     learn_from_ollama_scores,
+    learn_from_triage_results,
     get_patterns_summary,
 )
+from infrastructure.api.services.queue_service import acquisition_queue
 from infrastructure.scripts.enrich.google_drive_handler import GoogleDriveHandler
 
 logger = logging.getLogger(__name__)
@@ -35,6 +40,11 @@ PDF_BASE_DIR = Path(__file__).parent.parent.parent.parent / "data" / "raw" / "be
 # Acquisition status storage (in-memory for now)
 _acquisition_status: Dict[str, Dict[str, Any]] = {}
 
+# Queue processing state
+_current_task: Optional[asyncio.Task] = None
+_stop_requested = False
+_processing_active = False
+
 
 class AcquireRequest(BaseModel):
     """Request body for acquisition."""
@@ -42,9 +52,16 @@ class AcquireRequest(BaseModel):
     district_name: str
     state: str
     website_url: str
-    max_requests: int = 100
+    max_requests: int = 30  # Reduced from 100 for faster response
     max_depth: int = 4
     top_urls_to_capture: int = 5
+    use_school_discovery: bool = True  # Enable school-level mapping by default
+    schools_per_band: int = 4  # Schools to sample per grade band
+
+
+class QueueRequest(BaseModel):
+    """Request body for adding to queue."""
+    districts: List[AcquireRequest]
 
 
 class AcquireResponse(BaseModel):
@@ -259,25 +276,101 @@ async def _run_acquisition(request: AcquireRequest):
                    f"(learned: +{effective_patterns.learned_positive_count}, "
                    f"-{effective_patterns.learned_negative_count})")
 
-        # Step 2: Map website - crawl broadly, only exclude obvious non-targets
-        _acquisition_status[district_id]["step"] = "mapping_website"
-        map_result = await crawlee.map_website(
-            url=request.website_url,
-            max_requests=request.max_requests,
-            max_depth=request.max_depth,
-            # Don't pass include_globs - we want broad crawling, not filtered
-            exclude_globs=effective_patterns.exclude_globs,
-        )
+        # Step 2: Map website(s)
+        # If school discovery is enabled, first discover schools then map each
+        all_pages = []
+        schools_mapped = []
 
-        if not map_result.success:
-            raise Exception(f"Website mapping failed: {map_result.error}")
+        if request.use_school_discovery:
+            # Step 2a: Discover schools
+            _acquisition_status[district_id]["step"] = "discovering_schools"
+            logger.info(f"Discovering schools for {district_id} ({request.website_url})")
 
-        _acquisition_status[district_id]["pages_mapped"] = map_result.pages_visited
-        logger.info(f"Mapped {map_result.pages_visited} pages for {district_id}")
+            discovery_result = await crawlee.discover_schools(
+                district_url=request.website_url,
+                state=request.state,
+                per_band=request.schools_per_band,
+            )
+
+            if not discovery_result.success or not discovery_result.sample:
+                logger.warning(f"School discovery failed or found no schools, falling back to district mapping")
+                # Fall back to district-level mapping
+                request.use_school_discovery = False
+            else:
+                _acquisition_status[district_id]["schools_discovered"] = len(discovery_result.schools)
+                _acquisition_status[district_id]["schools_sampled"] = len(discovery_result.sample)
+
+                # Log discovery results
+                levels = {"elementary": 0, "middle": 0, "high": 0, "unknown": 0}
+                for s in discovery_result.sample:
+                    levels[s.level or "unknown"] += 1
+                logger.info(f"Discovered {len(discovery_result.schools)} schools, "
+                           f"sampling {len(discovery_result.sample)}: "
+                           f"elem={levels['elementary']}, middle={levels['middle']}, "
+                           f"high={levels['high']}, unknown={levels['unknown']}")
+
+                # Step 2b: Map each sampled school using async jobs
+                _acquisition_status[district_id]["step"] = "mapping_schools"
+
+                # Start all jobs in parallel
+                job_ids = []
+                for school in discovery_result.sample:
+                    job_id = await crawlee.start_map_job(
+                        url=school.url,
+                        max_requests=request.max_requests,
+                        max_depth=request.max_depth,
+                        exclude_globs=effective_patterns.exclude_globs,
+                    )
+                    if job_id:
+                        job_ids.append((school, job_id))
+                        logger.info(f"Started mapping job {job_id} for {school.name} ({school.url})")
+
+                # Wait for all jobs to complete
+                for school, job_id in job_ids:
+                    _acquisition_status[district_id]["step"] = f"mapping_{school.level or 'school'}_{len(schools_mapped)+1}"
+
+                    result = await crawlee.wait_for_job(job_id, timeout=180.0)
+
+                    if result.success:
+                        all_pages.extend(result.pages)
+                        schools_mapped.append({
+                            "name": school.name,
+                            "url": school.url,
+                            "level": school.level,
+                            "pages_mapped": result.pages_visited,
+                            "pages_with_time_patterns": result.pages_with_time_patterns,
+                        })
+                        logger.info(f"Mapped {result.pages_visited} pages from {school.name}")
+                    else:
+                        logger.warning(f"Failed to map {school.name}: {result.error}")
+
+                _acquisition_status[district_id]["schools_mapped_details"] = schools_mapped
+
+        # Fall back to district-level mapping if school discovery not used or failed
+        if not request.use_school_discovery or not all_pages:
+            _acquisition_status[district_id]["step"] = "mapping_website"
+            map_result = await crawlee.map_website(
+                url=request.website_url,
+                max_requests=request.max_requests,
+                max_depth=request.max_depth,
+                exclude_globs=effective_patterns.exclude_globs,
+            )
+
+            if not map_result.success:
+                error_msg = map_result.error or "Unknown error"
+                raise Exception(f"Website mapping failed: {error_msg}")
+
+            all_pages = map_result.pages
+            _acquisition_status[district_id]["mapping_mode"] = "district"
+        else:
+            _acquisition_status[district_id]["mapping_mode"] = "school_level"
+
+        _acquisition_status[district_id]["pages_mapped"] = len(all_pages)
+        logger.info(f"Mapped {len(all_pages)} total pages for {district_id}")
 
         # Step 3: Rank URLs with Ollama
         _acquisition_status[district_id]["step"] = "ranking_urls"
-        pages_for_ranking = [_page_data_to_dict(p) for p in map_result.pages]
+        pages_for_ranking = [_page_data_to_dict(p) for p in all_pages]
         url_scores = await ollama_svc.rank_urls(pages_for_ranking, request.district_name)
 
         _acquisition_status[district_id]["urls_scored"] = len(url_scores)
@@ -386,6 +479,10 @@ async def _run_acquisition(request: AcquireRequest):
                 "status": "active" if triage.score >= 0.7 else "quarantine" if triage.score >= 0.3 else "rejected",
             })
 
+        # Step 5.5: Feed triage results to learning loop
+        # This automatically updates patterns for future acquisitions
+        learn_from_triage_results(triage_results, district_id=district_id)
+
         # Step 6: Save metadata
         _acquisition_status[district_id]["step"] = "saving_metadata"
 
@@ -397,7 +494,8 @@ async def _run_acquisition(request: AcquireRequest):
             "acquisition_started": _acquisition_status[district_id]["started_at"],
             "acquisition_completed": datetime.now(timezone.utc).isoformat(),
             "status": "triaged",
-            "pages_mapped": map_result.pages_visited,
+            "mapping_mode": _acquisition_status[district_id].get("mapping_mode", "district"),
+            "pages_mapped": len(all_pages),
             "urls_scored": len(url_scores),
             "pdfs_captured": successful_captures,
             "capture_methods": {
@@ -421,6 +519,12 @@ async def _run_acquisition(request: AcquireRequest):
             "triage_details": triage_results,
         }
 
+        # Add school-level mapping details if used
+        if schools_mapped:
+            metadata["schools_mapped"] = schools_mapped
+            metadata["schools_discovered"] = _acquisition_status[district_id].get("schools_discovered", 0)
+            metadata["schools_sampled"] = _acquisition_status[district_id].get("schools_sampled", 0)
+
         metadata_path = output_dir / "metadata.json"
         with open(metadata_path, "w") as f:
             json.dump(metadata, f, indent=2)
@@ -431,12 +535,15 @@ async def _run_acquisition(request: AcquireRequest):
             "started_at": _acquisition_status[district_id]["started_at"],
             "completed_at": datetime.now(timezone.utc).isoformat(),
             "output_dir": str(output_dir),
-            "pages_mapped": map_result.pages_visited,
+            "mapping_mode": metadata["mapping_mode"],
+            "pages_mapped": len(all_pages),
             "urls_scored": len(url_scores),
             "pdfs_captured": successful_captures,
             "capture_methods": metadata["capture_methods"],
             "triage_results": metadata["triage_results"],
         }
+        if schools_mapped:
+            _acquisition_status[district_id]["schools_mapped"] = len(schools_mapped)
 
         logger.info(f"Acquisition complete for {district_id}")
 
@@ -504,3 +611,187 @@ async def get_acquisition_status(district_id: str):
         )
 
     return _acquisition_status[district_id]
+
+
+# ============================================================================
+# Queue Management Endpoints
+# ============================================================================
+
+@router.get("/queue")
+async def get_queue():
+    """
+    Get current queue status.
+
+    Returns pending districts, currently running district, and counts.
+    """
+    status = acquisition_queue.get_status()
+    status["processing_active"] = _processing_active
+    return status
+
+
+@router.post("/queue")
+async def add_to_queue(request: AcquireRequest):
+    """
+    Add a single district to the acquisition queue.
+
+    Use POST /acquire/start to begin processing the queue.
+    """
+    position = acquisition_queue.add(request.model_dump())
+    return {
+        "status": "queued",
+        "district_id": request.district_id,
+        "position": position,
+    }
+
+
+@router.post("/queue/batch")
+async def add_batch_to_queue(request: QueueRequest):
+    """
+    Add multiple districts to the acquisition queue.
+
+    Use POST /acquire/start to begin processing the queue.
+    """
+    districts = [d.model_dump() for d in request.districts]
+    new_length = acquisition_queue.add_batch(districts)
+    return {
+        "status": "queued",
+        "districts_added": len(districts),
+        "queue_length": new_length,
+    }
+
+
+@router.delete("/queue/{district_id}")
+async def remove_from_queue(district_id: str):
+    """
+    Remove a district from the pending queue.
+
+    Does not affect currently running acquisition.
+    Use POST /acquire/cancel/{district_id} to cancel a running acquisition.
+    """
+    if acquisition_queue.remove(district_id):
+        return {"status": "removed", "district_id": district_id}
+    raise HTTPException(404, f"District {district_id} not in queue")
+
+
+@router.post("/cancel/{district_id}")
+async def cancel_acquisition(district_id: str):
+    """
+    Cancel a running acquisition.
+
+    If the district is currently processing, cancels it.
+    If pending in queue, removes it from queue.
+    """
+    global _current_task
+
+    # Check if it's the current running acquisition
+    current = acquisition_queue.get_current()
+    if current and current.get("district_id") == district_id:
+        if _current_task and not _current_task.done():
+            _current_task.cancel()
+            return {"status": "cancellation_requested", "district_id": district_id}
+        return {"status": "already_completed", "district_id": district_id}
+
+    # Check if it's in the pending queue
+    if acquisition_queue.remove(district_id):
+        return {"status": "removed_from_queue", "district_id": district_id}
+
+    raise HTTPException(404, f"District {district_id} not found in queue or running")
+
+
+@router.post("/start")
+async def start_processing(background_tasks: BackgroundTasks):
+    """
+    Start processing the queue serially.
+
+    Districts are processed one at a time in FIFO order.
+    Use GET /acquire/queue to check progress.
+    Use POST /acquire/stop to stop after current completes.
+    """
+    global _stop_requested, _processing_active
+
+    if _processing_active:
+        return {"status": "already_running"}
+
+    _stop_requested = False
+    background_tasks.add_task(_process_queue)
+
+    return {"status": "started"}
+
+
+@router.post("/stop")
+async def stop_processing():
+    """
+    Stop queue processing after current acquisition completes.
+
+    Does not cancel the current acquisition - it will finish.
+    Pending items remain in queue for next start.
+    """
+    global _stop_requested
+    _stop_requested = True
+    return {"status": "stop_requested"}
+
+
+@router.get("/queue/history")
+async def get_queue_history(limit: int = 10):
+    """Get recent acquisition history."""
+    return {"history": acquisition_queue.get_history(limit)}
+
+
+async def _process_queue():
+    """
+    Process queue items serially (one at a time).
+
+    This runs as a background task and processes districts
+    from the queue until it's empty or stop is requested.
+    """
+    global _current_task, _stop_requested, _processing_active
+
+    _processing_active = True
+    logger.info("Queue processing started")
+
+    try:
+        while not _stop_requested:
+            # Get next district from queue
+            district = acquisition_queue.get_next()
+            if not district:
+                logger.info("Queue empty, stopping")
+                break
+
+            district_id = district.get("district_id")
+            logger.info(f"Processing district from queue: {district_id}")
+
+            # Mark as current
+            acquisition_queue.set_current(district, os.getpid())
+
+            # Create request object
+            request = AcquireRequest(**district)
+
+            try:
+                # Run acquisition as cancellable task
+                _current_task = asyncio.create_task(_run_acquisition(request))
+                await _current_task
+
+                # Move to history with success
+                acquisition_queue.move_to_history(
+                    district_id,
+                    status=_acquisition_status.get(district_id, {}).get("status", "completed"),
+                )
+
+            except asyncio.CancelledError:
+                logger.info(f"Acquisition cancelled: {district_id}")
+                acquisition_queue.move_to_history(district_id, status="cancelled")
+                # Continue processing next item unless stop was requested
+                if _stop_requested:
+                    break
+
+            except Exception as e:
+                logger.error(f"Acquisition failed: {district_id} - {e}")
+                acquisition_queue.move_to_history(district_id, status="failed", error=str(e))
+
+            finally:
+                acquisition_queue.clear_current()
+                _current_task = None
+
+    finally:
+        _processing_active = False
+        logger.info("Queue processing stopped")

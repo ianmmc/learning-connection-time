@@ -1,0 +1,104 @@
+{
+  "version": "1.0",
+  "updated_at": "2026-01-26T00:00:00Z",
+  "description": "Extraction rules learned from pipeline accuracy testing (Phase 9)",
+
+  "negative_time_patterns": {
+    "description": "Text patterns that indicate NON-school hours. Skip times near these labels.",
+    "patterns": [
+      {"label": "Office Hours", "regex": "office\\s+hours?", "action": "skip"},
+      {"label": "Library Hours", "regex": "library\\s+hours?", "action": "skip"},
+      {"label": "Before Care", "regex": "before\\s+(school\\s+)?care", "action": "skip"},
+      {"label": "After Care", "regex": "after\\s+(school\\s+)?care", "action": "skip"},
+      {"label": "Extended Day", "regex": "extended\\s+day", "action": "skip"},
+      {"label": "Breakfast Program", "regex": "breakfast\\s+(starts?|begins?|served)", "action": "skip"},
+      {"label": "Campus Closes", "regex": "campus\\s+closes?", "action": "skip"},
+      {"label": "Building Hours", "regex": "building\\s+hours?", "action": "skip"}
+    ]
+  },
+
+  "positive_time_patterns": {
+    "description": "Text patterns that strongly indicate actual school hours. Prioritize these.",
+    "patterns": [
+      {"label": "School Hours", "regex": "school\\s+hours?", "weight": 1.0},
+      {"label": "School Begins", "regex": "school\\s+begins?", "weight": 1.0},
+      {"label": "Dismissal", "regex": "dismissal", "weight": 1.0},
+      {"label": "School Starts", "regex": "school\\s+starts?", "weight": 1.0},
+      {"label": "First Bell", "regex": "first\\s+bell", "weight": 0.9},
+      {"label": "Tardy Bell", "regex": "tardy\\s+bell", "weight": 0.8},
+      {"label": "Start Day", "regex": "start\\s+day", "weight": 0.9},
+      {"label": "End of Day", "regex": "end\\s+of\\s+day", "weight": 0.9}
+    ]
+  },
+
+  "grade_level_inference": {
+    "description": "Patterns to infer grade level from school name when Ollama returns 'unknown'.",
+    "elementary": [
+      "elementary",
+      "primary",
+      "\\bES\\b",
+      "\\bElem\\b",
+      "grade school",
+      "\\bK-5\\b",
+      "\\bK-6\\b",
+      "\\bK-8\\b",
+      "\\bECE\\b",
+      "early childhood"
+    ],
+    "middle": [
+      "middle",
+      "junior high",
+      "\\bMS\\b",
+      "\\bJH\\b",
+      "\\bJHS\\b",
+      "\\b6-8\\b",
+      "\\b7-8\\b",
+      "intermediate",
+      "\\b6th.*8th\\b"
+    ],
+    "high": [
+      "high school",
+      "\\bHS\\b",
+      "senior high",
+      "\\b9-12\\b",
+      "secondary",
+      "preparatory",
+      "\\bprep\\b",
+      "\\b9th.*12th\\b"
+    ]
+  },
+
+  "validation_rules": {
+    "description": "Rules to flag suspicious extractions for review.",
+    "max_school_day_minutes": 480,
+    "min_school_day_minutes": 300,
+    "earliest_reasonable_start": "07:00",
+    "latest_reasonable_start": "10:00",
+    "earliest_reasonable_end": "13:00",
+    "latest_reasonable_end": "17:00"
+  },
+
+  "learned_corrections": {
+    "description": "Specific corrections learned from validation failures.",
+    "entries": [
+      {
+        "district_id": "0804800",
+        "issue": "Extracted office hours instead of school hours",
+        "correction": "Look for 'School Hours' label, ignore 'Office Hours'",
+        "date": "2026-01-26"
+      },
+      {
+        "district_id": "0803360",
+        "issue": "All grade levels returned as 'unknown'",
+        "correction": "Infer from school name patterns and document section headers",
+        "date": "2026-01-26"
+      },
+      {
+        "district_id": "4659820",
+        "issue": "End time extracted from middle period instead of last period",
+        "correction": "Use LAST period end time for period schedules",
+        "date": "2026-01-26"
+      }
+    ]
+  }
+}

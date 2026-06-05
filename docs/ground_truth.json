@@ -1,0 +1,26 @@
+{
+    "district_id": "0200180",
+    "district_name": "Anchorage",
+    "state": "AK",
+    "ground_truth_date": "2026-01-27",
+    "transcribed_by": "human",
+    "schedules": [
+        {
+            "grade_level": "elementary",
+            "start_time": "08:30",
+            "end_time": "15:00",
+            "school_name": "Optional School Name",
+            "source_file": "which_pdf.pdf",
+            "notes": "any context"
+        }
+    ],
+    "expected_grade_levels": [
+        "elementary",
+        "middle",
+        "high"
+    ],
+    "missing_grade_levels_ok": [],
+    "false_positive_traps": [
+        "Office hours 7:30-4:00 on page 2"
+    ]
+}

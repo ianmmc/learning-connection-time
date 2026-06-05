@@ -1,0 +1,16 @@
+{
+  "jobId": "71d3c4a2-4423-4144-bf2f-20e7e559e495",
+  "phase": "completed",
+  "url": "https://fhs.pasco.k12.fl.us/",
+  "startedAt": "2026-01-26T17:03:05.393Z",
+  "updatedAt": "2026-01-26T17:03:28.816Z",
+  "pagesVisited": 8,
+  "pagesQueued": 0,
+  "pagesWithTimePatterns": 7,
+  "pagesWithBellKeywords": 8,
+  "config": {
+    "maxRequests": 10,
+    "maxDepth": 2
+  },
+  "completedAt": "2026-01-26T17:03:28.815Z"
+}

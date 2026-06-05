@@ -13,8 +13,9 @@ import { Scraper } from './scraper.js';
 import { getRequestQueue } from './queue.js';
 import { ScrapeRequest, ServiceStatus, DEFAULT_CONFIG, PdfCaptureOptions } from './types.js';
 import { logger } from './logger.js';
-import { discoverSchoolSites, getRepresentativeSample } from './discovery.js';
-import { mapWebsite, MapRequest } from './mapper.js';
+import { discoverSchoolSites, getRepresentativeSample, discoverSchoolsWithSampling } from './discovery.js';
+import { mapWebsite, mapWebsiteAsync, MapRequest } from './mapper.js';
+import * as jobManager from './jobManager.js';
 import { capturePages, CaptureRequest } from './capturer.js';
 
 const app = express();
@@ -247,6 +248,108 @@ app.post('/discover', requireApiKey, async (req: Request, res: Response) => {
 });
 
 /**
+ * POST /discover/sample
+ * Enhanced school discovery with grade band sampling (3-4 per band)
+ * Protected by API key authentication
+ *
+ * Body parameters:
+ *   districtUrl: string (required) - District homepage URL
+ *   state?: string - State code for pattern matching
+ *   perBand?: number - Schools per grade band (default: 4)
+ */
+app.post('/discover/sample', requireApiKey, async (req: Request, res: Response) => {
+  const { districtUrl, state, perBand } = req.body as {
+    districtUrl: string;
+    state?: string;
+    perBand?: number;
+  };
+
+  logger.info('Enhanced discover request received', { requestId: req.requestId, districtUrl, perBand });
+
+  // Validate request
+  if (!districtUrl || typeof districtUrl !== 'string') {
+    res.status(400).json({
+      success: false,
+      error: 'Missing or invalid "districtUrl" parameter',
+      requestId: req.requestId,
+    });
+    return;
+  }
+
+  try {
+    new URL(districtUrl);
+  } catch {
+    res.status(400).json({
+      success: false,
+      error: 'Invalid URL format',
+      requestId: req.requestId,
+    });
+    return;
+  }
+
+  try {
+    logger.info(`Discovering schools with sampling for: ${districtUrl}`, { requestId: req.requestId });
+
+    // Get a browser from the pool
+    const browser = await scraper.pool.acquire();
+
+    try {
+      const result = await discoverSchoolsWithSampling(browser, districtUrl, state, {
+        perBand: perBand || 4,
+        timeout: 30000,
+      });
+
+      if (!result.success) {
+        res.status(404).json({
+          success: false,
+          error: result.error || 'No school sites found',
+          allSchools: [],
+          sample: [],
+          requestId: req.requestId,
+        });
+        return;
+      }
+
+      // Summary stats
+      const levelCounts = {
+        elementary: result.schools.filter(s => s.level === 'elementary').length,
+        middle: result.schools.filter(s => s.level === 'middle').length,
+        high: result.schools.filter(s => s.level === 'high').length,
+        unknown: result.schools.filter(s => !s.level).length,
+      };
+
+      logger.info(`Enhanced discovery found ${result.schools.length} schools, sampled ${result.sample.length}`, {
+        requestId: req.requestId,
+      });
+
+      res.json({
+        success: true,
+        districtUrl,
+        allSchools: result.schools,
+        sample: result.sample,
+        method: result.method,
+        stats: {
+          totalFound: result.schools.length,
+          sampleSize: result.sample.length,
+          byLevel: levelCounts,
+        },
+        requestId: req.requestId,
+      });
+    } finally {
+      await scraper.pool.release(browser);
+    }
+  } catch (error) {
+    logger.error(`Enhanced school discovery failed: ${(error as Error).message}`, { requestId: req.requestId });
+    res.status(500).json({
+      success: false,
+      error: 'Enhanced school discovery failed',
+      details: (error as Error).message,
+      requestId: req.requestId,
+    });
+  }
+});
+
+/**
  * POST /map
  * Map a district website using Crawlee to collect rich page metadata
  * Protected by API key authentication
@@ -296,6 +399,190 @@ app.post('/map', requireApiKey, async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       error: 'Website mapping failed',
+      details: (error as Error).message,
+      requestId: req.requestId,
+    });
+  }
+});
+
+/**
+ * POST /map/start
+ * Start an async mapping job - returns immediately with job ID
+ * Protected by API key authentication
+ *
+ * Body parameters:
+ *   url: string (required) - Website URL to map
+ *   maxRequests?: number - Maximum pages to crawl (default: 100)
+ *   maxDepth?: number - Maximum crawl depth (default: 4)
+ *   patterns?: { includeGlobs?: string[], excludeGlobs?: string[] }
+ */
+app.post('/map/start', requireApiKey, async (req: Request, res: Response) => {
+  const { url, maxRequests, maxDepth, patterns } = req.body as MapRequest;
+
+  logger.info('Async map request received', {
+    requestId: req.requestId,
+    url,
+    maxRequests,
+    maxDepth,
+  });
+
+  // Validate request
+  if (!url || typeof url !== 'string') {
+    res.status(400).json({
+      success: false,
+      error: 'Missing or invalid "url" parameter',
+      requestId: req.requestId,
+    });
+    return;
+  }
+
+  try {
+    new URL(url);
+  } catch {
+    res.status(400).json({
+      success: false,
+      error: 'Invalid URL format',
+      requestId: req.requestId,
+    });
+    return;
+  }
+
+  try {
+    // Start async job - returns immediately
+    const jobId = await mapWebsiteAsync({ url, maxRequests, maxDepth, patterns });
+
+    logger.info(`Started async map job ${jobId} for ${url}`, { requestId: req.requestId });
+
+    res.status(202).json({
+      success: true,
+      jobId,
+      url,
+      statusUrl: `/map/status/${jobId}`,
+      message: 'Mapping job started. Poll status URL for progress.',
+      requestId: req.requestId,
+    });
+  } catch (error) {
+    logger.error(`Failed to start async map job: ${(error as Error).message}`, { requestId: req.requestId });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to start mapping job',
+      details: (error as Error).message,
+      requestId: req.requestId,
+    });
+  }
+});
+
+/**
+ * GET /map/status/:jobId
+ * Get status and results of an async mapping job
+ *
+ * Returns:
+ *   - While running: { phase: 'crawling', pagesVisited, pagesQueued, ... }
+ *   - When complete: { phase: 'completed', pages: [...], stats: {...} }
+ *   - On failure: { phase: 'failed', error: '...' }
+ */
+app.get('/map/status/:jobId', requireApiKey, async (req: Request, res: Response) => {
+  const jobId = req.params.jobId as string;
+
+  logger.debug(`Status request for job ${jobId}`, { requestId: req.requestId });
+
+  try {
+    const result = await jobManager.getJobResult(jobId);
+
+    if (!result) {
+      res.status(404).json({
+        success: false,
+        error: 'Job not found',
+        jobId,
+        requestId: req.requestId,
+      });
+      return;
+    }
+
+    const { status, pages, isComplete } = result;
+
+    // Return appropriate response based on job state
+    if (status.phase === 'failed') {
+      res.status(500).json({
+        success: false,
+        jobId,
+        phase: status.phase,
+        error: status.error,
+        url: status.url,
+        startedAt: status.startedAt,
+        completedAt: status.completedAt,
+        requestId: req.requestId,
+      });
+      return;
+    }
+
+    if (isComplete) {
+      // Return full results
+      res.json({
+        success: true,
+        jobId,
+        phase: status.phase,
+        url: status.url,
+        pages,
+        stats: {
+          pagesVisited: status.pagesVisited,
+          pagesWithTimePatterns: status.pagesWithTimePatterns,
+          pagesWithBellKeywords: status.pagesWithBellKeywords,
+          durationMs: status.completedAt
+            ? new Date(status.completedAt).getTime() - new Date(status.startedAt).getTime()
+            : undefined,
+        },
+        startedAt: status.startedAt,
+        completedAt: status.completedAt,
+        requestId: req.requestId,
+      });
+    } else {
+      // Return progress update
+      res.json({
+        success: true,
+        jobId,
+        phase: status.phase,
+        url: status.url,
+        progress: {
+          pagesVisited: status.pagesVisited,
+          pagesQueued: status.pagesQueued,
+          pagesWithTimePatterns: status.pagesWithTimePatterns,
+          pagesWithBellKeywords: status.pagesWithBellKeywords,
+        },
+        startedAt: status.startedAt,
+        updatedAt: status.updatedAt,
+        requestId: req.requestId,
+      });
+    }
+  } catch (error) {
+    logger.error(`Failed to get job status: ${(error as Error).message}`, { requestId: req.requestId });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get job status',
+      details: (error as Error).message,
+      requestId: req.requestId,
+    });
+  }
+});
+
+/**
+ * GET /map/jobs
+ * List all mapping jobs (for debugging/admin)
+ */
+app.get('/map/jobs', requireApiKey, async (req: Request, res: Response) => {
+  try {
+    const jobs = await jobManager.listJobs();
+    res.json({
+      success: true,
+      jobs,
+      count: jobs.length,
+      requestId: req.requestId,
+    });
+  } catch (error) {
+    logger.error(`Failed to list jobs: ${(error as Error).message}`, { requestId: req.requestId });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to list jobs',
       details: (error as Error).message,
       requestId: req.requestId,
     });
@@ -414,14 +701,22 @@ app.get('/status', (_req: Request, res: Response) => {
 app.get('/', (_req: Request, res: Response) => {
   res.json({
     name: 'LCT Bell Schedule Scraper',
-    version: '2.0.0',
+    version: '2.2.0',
     endpoints: {
       'POST /scrape': 'Scrape a URL (body: { url, timeout?, waitFor?, capturePdf?, pdfOptions? })',
       'POST /discover': 'Discover school sites (body: { districtUrl, state?, representativeOnly? })',
-      'POST /map': 'Map a district website with Crawlee (body: { url, maxRequests?, maxDepth?, patterns? })',
+      'POST /discover/sample': 'Enhanced discovery with grade band sampling (body: { districtUrl, state?, perBand? })',
+      'POST /map': 'Map a district website synchronously (body: { url, maxRequests?, maxDepth?, patterns? })',
+      'POST /map/start': 'Start async mapping job (body: { url, maxRequests?, maxDepth?, patterns? })',
+      'GET /map/status/:jobId': 'Get async job status and results',
+      'GET /map/jobs': 'List all mapping jobs',
       'POST /capture': 'Capture multiple URLs as PDFs (body: { urls, outputDir, timeout?, pdfOptions? })',
       'GET /health': 'Health check',
       'GET /status': 'Detailed service status',
+    },
+    asyncMapping: {
+      description: 'For long-running crawls, use /map/start to get a job ID, then poll /map/status/:jobId',
+      workflow: '1. POST /map/start → {jobId} | 2. GET /map/status/:jobId → progress or results',
     },
     mapEndpoint: {
       description: 'Crawls a district website and returns rich page metadata for URL ranking',

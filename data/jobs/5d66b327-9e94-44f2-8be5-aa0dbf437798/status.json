@@ -1,0 +1,16 @@
+{
+  "jobId": "5d66b327-9e94-44f2-8be5-aa0dbf437798",
+  "phase": "completed",
+  "url": "https://gses.pasco.k12.fl.us/",
+  "startedAt": "2026-01-26T16:40:59.754Z",
+  "updatedAt": "2026-01-26T16:41:16.218Z",
+  "pagesVisited": 10,
+  "pagesQueued": 0,
+  "pagesWithTimePatterns": 10,
+  "pagesWithBellKeywords": 10,
+  "config": {
+    "maxRequests": 10,
+    "maxDepth": 2
+  },
+  "completedAt": "2026-01-26T16:41:16.218Z"
+}

@@ -1,0 +1,16 @@
+{
+  "jobId": "3cabf33f-24f4-45e3-846b-7dfe49587e40",
+  "phase": "completed",
+  "url": "https://gms.pasco.k12.fl.us/",
+  "startedAt": "2026-01-26T17:03:05.264Z",
+  "updatedAt": "2026-01-26T17:03:34.086Z",
+  "pagesVisited": 7,
+  "pagesQueued": 0,
+  "pagesWithTimePatterns": 7,
+  "pagesWithBellKeywords": 7,
+  "config": {
+    "maxRequests": 10,
+    "maxDepth": 2
+  },
+  "completedAt": "2026-01-26T17:03:34.085Z"
+}

@@ -26,13 +26,13 @@
       "districts_seen": [
         "1200390"
       ],
-      "matches": 1,
+      "matches": 2,
       "confirmed": 1,
       "rejected": 0,
       "pending": 0,
       "success_rate": 1.0,
       "first_seen": "2026-01-26T04:50:41.003666+00:00",
-      "last_seen": "2026-01-26T04:50:41.003666+00:00",
+      "last_seen": "2026-01-26T17:05:09.306329+00:00",
       "status": "learning"
     }
   ],
@@ -64,13 +64,13 @@
         "1200180",
         "4703180"
       ],
-      "matches": 4,
+      "matches": 6,
       "confirmed": 0,
       "rejected": 0,
       "pending": 1,
       "success_rate": 0.0,
       "first_seen": "2026-01-26T04:50:41.006075+00:00",
-      "last_seen": "2026-01-26T06:18:27.759603+00:00",
+      "last_seen": "2026-01-26T17:05:09.327741+00:00",
       "status": "review"
     },
     {
@@ -118,13 +118,13 @@
         "1200390",
         "4703180"
       ],
-      "matches": 5,
+      "matches": 6,
       "confirmed": 0,
       "rejected": 0,
       "pending": 1,
       "success_rate": 0.0,
       "first_seen": "2026-01-26T04:50:41.006767+00:00",
-      "last_seen": "2026-01-26T06:18:27.745573+00:00",
+      "last_seen": "2026-01-26T17:05:09.327309+00:00",
       "status": "learning"
     },
     {
@@ -186,16 +186,17 @@
       ],
       "districts_seen": [
         "1200180",
-        "4703180"
+        "4703180",
+        "1200390"
       ],
-      "matches": 3,
+      "matches": 4,
       "confirmed": 0,
       "rejected": 0,
       "pending": 1,
       "success_rate": 0.0,
       "first_seen": "2026-01-26T04:52:47.662193+00:00",
-      "last_seen": "2026-01-26T06:18:27.737262+00:00",
-      "status": "learning"
+      "last_seen": "2026-01-26T17:05:09.320885+00:00",
+      "status": "review"
     },
     {
       "pattern": "**/*career*event*",
@@ -309,15 +310,16 @@
         "hours"
       ],
       "districts_seen": [
-        "4703180"
+        "4703180",
+        "0803450"
       ],
-      "matches": 2,
+      "matches": 7,
       "confirmed": 0,
       "rejected": 0,
       "pending": 1,
       "success_rate": 0.0,
       "first_seen": "2026-01-26T06:04:17.147515+00:00",
-      "last_seen": "2026-01-26T06:18:27.731946+00:00",
+      "last_seen": "2026-01-26T09:11:04.097551+00:00",
       "status": "learning"
     },
     {
@@ -391,5 +393,5 @@
       "status": "learning"
     }
   ],
-  "updated_at": "2026-01-26T06:18:27.814788+00:00"
+  "updated_at": "2026-01-26T17:05:09.327754+00:00"
 }

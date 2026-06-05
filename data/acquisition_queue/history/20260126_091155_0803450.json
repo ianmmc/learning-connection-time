@@ -1,0 +1,14 @@
+{
+  "district_id": "0803450",
+  "district_name": "Douglas County",
+  "state": "CO",
+  "website_url": "http://www.dcsdk12.org",
+  "max_requests": 30,
+  "max_depth": 4,
+  "top_urls_to_capture": 5,
+  "pid": 71600,
+  "started_at": "2026-01-26T09:09:10.191948",
+  "step": "starting",
+  "completed_at": "2026-01-26T09:11:55.078973",
+  "final_status": "completed"
+}
