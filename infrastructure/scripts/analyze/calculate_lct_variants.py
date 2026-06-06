@@ -1332,6 +1332,15 @@ Examples:
         # Convert DataFrame to list of dicts for database insertion
         results_list = df.to_dict('records')
 
+        # Clear existing calculations before writing (full DB-first recalculation).
+        # write_calculations_to_db appends, and the uq_lct_calculation_v2 unique
+        # constraint (district_id, year, grade_level, staff_scope) makes a second run
+        # fail unless the table is cleared first. Clearing here makes a full run
+        # idempotent and safely repeatable.
+        cleared_count = clear_lct_calculations(session)
+        if cleared_count:
+            print(f"Cleared {cleared_count:,} existing calculations before recalculation")
+
         # Write to database
         year_for_db = args.target_year if args.target_year else 'blended'
         inserted_count = write_calculations_to_db(

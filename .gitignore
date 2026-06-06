@@ -124,6 +124,7 @@ data/cache/
 # Database backups
 backup_*.sql
 data/backups/
+infrastructure/database/docker/backup/*.sql
 
 # Archived/suspect data
 data/archive/
