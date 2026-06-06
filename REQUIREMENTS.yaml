@@ -976,3 +976,30 @@ requirements:
     updated: "2026-06-06T00:00:00Z"
     notes: "Regression: write_calculations_to_db appended without clearing, so a full re-run failed
       on the unique constraint / id-sequence collision. Fixed 2026-06-06."
+
+  - id: REQ-042
+    description: District grade-band instructional minutes use the MODE of sampled schools, with distribution captured
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Daily instructional minutes computed as (end - start) - lunch - passing (compute_instructional_minutes)
+      - District grade-band value is the MODE (most common) of sampled schools' instructional minutes; ties resolve to the smallest
+      - Distribution (min, mode, max) and school count stored for transparency ("averaging deception" principle)
+      - No per-school enrollment required (mode chosen over weighted mean to avoid that dependency/complexity)
+      - Per-school observations stored in school_schedules; aggregate stored on bell_schedules (migration 016)
+      - A reasonable SAMPLE of schools suffices (all schools only for very small districts); not a census
+    tests:
+      - tests/test_schedule_aggregation.py::TestComputeInstructionalMinutes::test_gross_day
+      - tests/test_schedule_aggregation.py::TestComputeInstructionalMinutes::test_lunch_deducted
+      - tests/test_schedule_aggregation.py::TestAggregateGradeBand::test_mode_is_the_value
+      - tests/test_schedule_aggregation.py::TestAggregateGradeBand::test_single_school
+      - tests/test_schedule_aggregation.py::TestAggregateGradeBand::test_staggered_starts_same_length
+      - tests/test_schedule_aggregation.py::TestAggregateGradeBand::test_mode_tiebreak_smallest
+      - tests/test_schedule_aggregation.py::TestAggregateDistrict::test_groups_by_grade_band
+    created: "2026-06-06T00:00:00Z"
+    updated: "2026-06-06T00:00:00Z"
+    notes: "Mode-of-sampled-schools (decided 2026-06-06) avoids needing per-school enrollment (no NCES
+      school-membership import). Distribution (min,mode,max) exposed for transparency. Schema: migration
+      016 (school_schedules + bell_schedules distribution columns; the minutes_weighted_mean/enrollment_in_sample
+      columns from 016 are unused under this policy and left nullable)."
