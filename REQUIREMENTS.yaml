@@ -1,6 +1,6 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-01-25T12:00:00Z"
+last_updated: "2026-06-06T00:00:00Z"
 
 requirements:
   - id: REQ-001
@@ -9,18 +9,23 @@ requirements:
     priority: must
     status: tested
     acceptance_criteria:
-      - Returns decimal value representing minutes per student per day
-      - Handles zero enrollment gracefully (returns None or raises)
-      - Accepts instructional_minutes, staff_count, enrollment as inputs
+      - Returns raw (unrounded) float minutes per student per day; rounding happens at export
+      - Returns None when enrollment <= 0 (no division error)
+      - Returns None when staff_count <= 0 (LCT undefined with no instructional staff)
+      - Accepts instructional_minutes, staff_count (float FTE), enrollment as inputs
       - Result is mathematically correct per formula
     tests:
       - tests/test_lct_calculation.py::TestLCTCalculation::test_lct_basic_calculation
       - tests/test_lct_calculation.py::TestLCTCalculation::test_lct_returns_float
-      - tests/test_lct_calculation.py::TestLCTCalculation::test_lct_rounds_to_two_decimals
+      - tests/test_lct_calculation.py::TestLCTCalculation::test_lct_unrounded_precise_value
       - tests/test_lct_calculation.py::TestLCTCalculation::test_lct_zero_enrollment_returns_none
+      - tests/test_lct_calculation.py::TestLCTCalculation::test_lct_zero_staff_returns_none
+      - tests/test_lct_calculation.py::TestLCTCalculation::test_lct_handles_float_staff
       - tests/test_lct_calculation.py::TestLCTCalculation::test_lct_result_in_reasonable_range
+      - tests/test_lct_calculation.py::TestLCTEdgeCases::test_edge_cases
     created: "2025-01-10T22:00:00Z"
-    updated: "2025-01-10T22:00:00Z"
+    updated: "2026-06-06T00:00:00Z"
+    notes: "Tests exercise the REAL production calculate_lct (was a placeholder reimplementation until 2026-06-06)."
 
   - id: REQ-002
     description: Import and normalize NCES CCD district data
@@ -642,18 +647,19 @@ requirements:
       - Foreign key to districts table ensures referential integrity
       - State-specific metadata tables (tx_district_identifiers, etc.) remain for extra data
     tests:
-      - tests/test_crosswalk.py::TestCrosswalkTable::test_crosswalk_table_exists
-      - tests/test_crosswalk.py::TestCrosswalkTable::test_crosswalk_populated_from_st_leaid
-      - tests/test_crosswalk.py::TestCrosswalkTable::test_crosswalk_has_17842_plus_entries
-      - tests/test_crosswalk.py::TestCrosswalkTable::test_all_states_represented
-      - tests/test_crosswalk.py::TestCrosswalkLookup::test_florida_lookup_uses_crosswalk
-      - tests/test_crosswalk.py::TestCrosswalkLookup::test_california_lookup_uses_crosswalk
-      - tests/test_crosswalk.py::TestCrosswalkLookup::test_texas_lookup_uses_crosswalk
-      - tests/test_crosswalk.py::TestCrosswalkValidation::test_validates_against_existing_mappings
-      - tests/test_crosswalk.py::TestCrosswalkValidation::test_logs_discrepancies
+      # Crosswalk coverage lives in the SEA integration framework (SEACrosswalkTests
+      # mixin in test_sea_integration_base.py, run via each state's TestDistrictCrosswalk).
+      - tests/test_california_integration.py::TestDistrictCrosswalk::test_crosswalk_has_entries
+      - tests/test_california_integration.py::TestDistrictCrosswalk::test_nces_to_cde_crosswalk
+      - tests/test_florida_integration.py::TestDistrictCrosswalk::test_nces_to_fldoe_crosswalk
+      - tests/test_florida_integration.py::TestDistrictCrosswalk::test_all_large_districts_have_crosswalk
+      - tests/test_texas_integration.py::TestDistrictCrosswalk::test_nces_to_tea_crosswalk
+      - tests/test_state_integration.py
     created: "2026-01-16T06:30:00Z"
-    updated: "2026-01-16T06:30:00Z"
-    notes: "Migration 007 implements master crosswalk table. Refactored FL, CA, TX scripts to use it."
+    updated: "2026-06-06T00:00:00Z"
+    notes: "Migration 007 implements master crosswalk table. Crosswalk is verified via the
+      per-state SEA integration tests (SEACrosswalkTests mixin); the previously-referenced
+      tests/test_crosswalk.py was never created (stale reference fixed 2026-06-06)."
 
   - id: REQ-028
     description: Scraper service requires API key authentication for /scrape endpoint
@@ -926,3 +932,47 @@ requirements:
     created: "2026-01-24T10:00:00Z"
     updated: "2026-01-24T10:00:00Z"
     notes: "Added per gemini-chat's recommendation - prevents silent bypass of verification safeguards"
+
+  - id: REQ-040
+    description: Migration ledger tracks applied migrations to prevent half-applied schema
+    type: non-functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - schema_migrations table records every applied NNN_*.sql migration (version, checksum, applied_at, applied_by)
+      - migrate.py applies each pending migration atomically WITH its ledger record (a failure rolls back both)
+      - migrate.py status reports applied vs pending and flags checksum DRIFT
+      - backfill records already-applied migrations without re-executing them
+      - Both 014_* files (numbering collision) are tracked as distinct entries
+    tests:
+      - tests/test_migrations.py::TestMigrationDiscovery::test_discovers_numbered_migrations
+      - tests/test_migrations.py::TestMigrationDiscovery::test_excludes_unnumbered_legacy_scripts
+      - tests/test_migrations.py::TestMigrationDiscovery::test_numbered_regex
+      - tests/test_migrations.py::TestMigrationDiscovery::test_file_checksum_is_stable_sha256
+      - tests/test_migrations.py::TestMigrationLedger::test_ensure_ledger_idempotent
+      - tests/test_migrations.py::TestMigrationLedger::test_known_migrations_recorded_as_applied
+      - tests/test_migrations.py::TestMigrationLedger::test_record_and_readback_then_cleanup
+      - tests/test_migrations.py::TestMigrationLedger::test_status_clean_when_all_applied
+    created: "2026-06-06T00:00:00Z"
+    updated: "2026-06-06T00:00:00Z"
+    notes: "Built after migration 014_add_staff_scope_to_lct.sql was found half-applied, which
+      silently broke LCT re-runs. See infrastructure/database/migrations/README.md and PROJECT_HISTORY.md."
+
+  - id: REQ-041
+    description: Full LCT recalculation is idempotent (clears prior results before writing)
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - calculate_lct_variants.py clears existing lct_calculations before writing a new full run
+      - Re-running with unchanged inputs reproduces the same total and per-scope counts
+      - No unique-constraint (uq_lct_calculation_v2) or id-sequence collision on re-run
+      - calculation_runs retains one audit row per run
+    tests:
+      - tests/test_lct_calculation.py::TestLCTWriteIdempotency::test_main_clears_before_writing
+      - tests/test_lct_calculation.py::TestLCTWriteIdempotency::test_clear_all_deletes_every_calculation
+      - tests/test_lct_calculation.py::TestLCTWriteIdempotency::test_clear_by_run_id_filters
+    created: "2026-06-06T00:00:00Z"
+    updated: "2026-06-06T00:00:00Z"
+    notes: "Regression: write_calculations_to_db appended without clearing, so a full re-run failed
+      on the unique constraint / id-sequence collision. Fixed 2026-06-06."

@@ -358,67 +358,68 @@ class TestEnrollmentLevelCalculations:
         assert enrollment.enrollment_secondary == 233  # 6-8, None treated as 0
 
 
+@pytest.fixture
+def engine_or_skip():
+    """Return a live engine, or skip if the database is not reachable."""
+    try:
+        from infrastructure.database.connection import get_engine
+        eng = get_engine()
+        with eng.connect():
+            pass
+        return eng
+    except Exception as e:  # noqa: BLE001
+        pytest.skip(f"database not reachable: {e}")
+
+
 class TestRegressionPrevention:
-    """Tests to prevent specific regressions - REQ-008"""
+    """Real DB-backed regression tests for REQ-008/REQ-009.
 
-    def test_staff_import_does_not_zero_teacher_categories(self):
+    These replaced earlier tautological placeholders (which asserted hardcoded
+    constants). They now assert against the live database, so they actually catch
+    the regressions their docstrings describe. Skip cleanly when no DB is reachable.
+    """
+
+    def test_staff_import_does_not_zero_teacher_categories(self, engine_or_skip):
         """
-        REQ-008, REQ-009: Regression test for 2026-01-10 issue.
-
-        Staff import must preserve elementary, kindergarten, and secondary
-        teacher counts from NCES CCD, not zero them out.
-
-        This is a database integration test placeholder - actual test would
-        verify pivot operation preserves all teacher categories.
+        REQ-008/REQ-009: Regression guard for the 2026-01-10 issue where a staff
+        re-import zeroed teachers_elementary_k5. Most K-12 districts must have
+        non-zero, non-null teacher-level columns in staff_counts_effective.
         """
-        # This test documents the regression that occurred
-        # Actual implementation would test the import script's pivot logic
+        from sqlalchemy import text
+        with engine_or_skip.connect() as conn:
+            total = conn.execute(text("SELECT COUNT(*) FROM staff_counts_effective")).scalar()
+            with_elem = conn.execute(text(
+                "SELECT COUNT(*) FROM staff_counts_effective "
+                "WHERE teachers_elementary_k5 IS NOT NULL AND teachers_elementary_k5 > 0"
+            )).scalar()
+            with_k12 = conn.execute(text(
+                "SELECT COUNT(*) FROM staff_counts_effective "
+                "WHERE teachers_k12 IS NOT NULL AND teachers_k12 > 0"
+            )).scalar()
+        assert total > 10000, "expected staff_counts_effective populated"
+        # The regression zeroed these; guard that the vast majority are preserved.
+        assert with_elem > 10000, f"teachers_elementary_k5 zeroed for too many ({with_elem}/{total})"
+        assert with_k12 > 15000, f"teachers_k12 zeroed for too many ({with_k12}/{total})"
 
-        # The issue: after staff re-import, teachers_elementary_k5 was 0
-        # Root cause: pivot operation or missing calculate_scopes() call
-
-        # Prevention: Verify pivot creates correct columns
-        # Expected columns from NCES staff file:
-        expected_columns = [
-            "teachers_elementary",
-            "teachers_kindergarten",
-            "teachers_secondary",
-            "teachers_prek",
-            "teachers_ungraded",
-        ]
-
-        # Mock test: verify these columns would exist after pivot
-        # (Actual test would run import on sample data and verify)
-        assert len(expected_columns) == 5
-        assert "teachers_elementary" in expected_columns
-        assert "teachers_secondary" in expected_columns
-
-    def test_scope_counts_match_expected_district_availability(self):
+    def test_scope_counts_match_expected_district_availability(self, engine_or_skip):
         """
-        REQ-008: Verify scope district counts match NCES data availability.
-
-        Based on 2023-24 NCES CCD data:
-        - teachers_elementary should have 15,000+ districts
-        - teachers_secondary should have 14,000+ districts
-
-        This is a data quality test - would run against actual calculation results.
+        REQ-008: Scope district counts in lct_calculations match NCES data
+        availability (run calculate_lct_variants.py first). Elementary has more
+        districts than secondary; core scopes cover nearly all districts.
         """
-        # This documents expected data availability
-        # Actual test would query lct_calculations table
-
-        expected_counts = {
-            "teachers_only": 17000,  # Nearly all districts
-            "teachers_elementary": 15000,  # Most have elementary
-            "teachers_secondary": 14000,  # Fewer have secondary
-            "teachers_core": 17000,
-            "instructional": 17000,
-            "instructional_plus_support": 17000,
-            "all": 17000,
-        }
-
-        # Mock assertion
-        assert expected_counts["teachers_elementary"] >= 15000
-        assert expected_counts["teachers_secondary"] >= 14000
+        from sqlalchemy import text
+        with engine_or_skip.connect() as conn:
+            rows = conn.execute(text(
+                "SELECT staff_scope, COUNT(*) FROM lct_calculations GROUP BY staff_scope"
+            )).fetchall()
+        counts = {r[0]: r[1] for r in rows}
+        if not counts:
+            pytest.skip("lct_calculations empty — run calculate_lct_variants.py first")
+        assert counts.get("teachers_only", 0) >= 15000
+        assert counts.get("teachers_elementary", 0) >= 14000
+        assert counts.get("teachers_secondary", 0) >= 13000
+        # Elementary is available for more districts than secondary
+        assert counts.get("teachers_elementary", 0) >= counts.get("teachers_secondary", 0)
 
 
 # --- Fixtures ---
