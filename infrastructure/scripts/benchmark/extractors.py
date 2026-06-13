@@ -19,7 +19,9 @@ Vision: pass image paths to `extract(..., images=[...])`; providers that support
 from __future__ import annotations
 
 import base64
+import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -31,6 +33,47 @@ from infrastructure.api.services.extraction_service import (
 )
 
 MAX_TEXT_LEN = 12000  # raised from production's 6000 (schedules can be spread across files)
+MAX_OUTPUT_TOKENS = 2048  # enough for many schools; salvage recovers any truncation
+
+# Lean prompt for the benchmark: keeps the production extraction RULES but drops the verbose
+# raw_text_snippet/notes from the output (irrelevant to scoring, ~3x fewer tokens to generate
+# -> feasible local inference). Scoring uses grade_level/start_time/end_time/school_name.
+LEAN_SYSTEM_PROMPT = """You extract school bell-schedule START and END times from the document text or images.
+
+Extract the daily school start and end time, broken down by grade level (elementary, middle, high) when distinguished. If multiple schools are listed, extract EACH school's times.
+
+SKIP non-instructional times: Office Hours, Library Hours, Before/After Care, Breakfast, Building/Campus Hours, Extended Day.
+Use the NORMAL / regular full-day end time. IGNORE early-dismissal, early-release, early-out, half-day, and weekday-variation (e.g. "M-Th" vs Friday) columns — those are shorter days, not the regular schedule.
+If times are per-period, use Period 1 start and the LAST period's end.
+Convert all times to 24-hour HH:MM ("8:30 AM"->"08:30", "3:15 PM"->"15:15").
+Infer grade level from school name: elementary/primary/ES/K-5 -> "elementary"; middle/junior/MS/6-8 -> "middle"; high/HS/9-12 -> "high". If the document covers elementary, middle, AND high, extract at least one of EACH.
+
+Output ONLY compact JSON. No commentary, no markdown fences, no raw_text_snippet:
+{"schedules":[{"grade_level":"high","start_time":"08:10","end_time":"14:35","school_name":"Fivay High","confidence":"high"}]}
+If none found: {"schedules":[]}"""
+
+LEAN_USER_TEMPLATE = """District: {district_name} ({state})
+
+DOCUMENT:
+{pdf_text}
+
+Return ONLY the compact JSON described above."""
+
+
+def _salvage_schedules(text: str) -> list[dict]:
+    """Recover complete schedule objects from truncated/malformed JSON.
+
+    Schedule objects are flat (no nesting), so match each {...} block containing a
+    start_time and parse it independently. A truncated final object (no closing brace)
+    simply won't match and is dropped.
+    """
+    out = []
+    for blk in re.findall(r'\{[^{}]*?"start_time"[^{}]*?\}', text, re.DOTALL):
+        try:
+            out.append(json.loads(blk))
+        except json.JSONDecodeError:
+            continue
+    return out
 
 
 class BaseExtractor:
@@ -56,14 +99,18 @@ class BaseExtractor:
         )
         if text and len(text) > MAX_TEXT_LEN:
             text = text[: int(MAX_TEXT_LEN * 0.7)] + "\n...[truncated]...\n" + text[-int(MAX_TEXT_LEN * 0.3):]
-        user = svc.USER_PROMPT_TEMPLATE.format(
+        user = LEAN_USER_TEMPLATE.format(
             district_name=district_name, state=state, pdf_text=text or "(see attached images)")
         try:
-            content = self._complete(svc.SYSTEM_PROMPT, user, images=images)
+            content = self._complete(LEAN_SYSTEM_PROMPT, user, images=images)
             result.raw_response = content
             data = svc._extract_json_from_response(content)
             if not data:
-                result.success = False; result.error = "Could not parse JSON response"; return result.to_dict()
+                salvaged = _salvage_schedules(content)  # recover complete objects from truncated JSON
+                if salvaged:
+                    data = {"schedules": salvaged}
+                else:
+                    result.success = False; result.error = "Could not parse JSON response"; return result.to_dict()
             if data.get("error"):
                 result.success = False; result.error = data["error"]; return result.to_dict()
             for item in data.get("schedules", []):
@@ -104,12 +151,14 @@ class OllamaExtractor(BaseExtractor):
         from infrastructure.api.services.ollama_launcher import ensure_ollama_running
         ensure_ollama_running()
         user_msg = {"role": "user", "content": user}
+        opts = {"temperature": 0.1, "num_predict": MAX_OUTPUT_TOKENS}
         if images:
             user_msg["images"] = images  # Ollama accepts file paths for VLMs
+            opts["num_ctx"] = 16384      # images are token-heavy; default 4096 is too small
         resp = ollama.chat(
             model=self.model,
             messages=[{"role": "system", "content": system}, user_msg],
-            options={"temperature": 0.1, "num_predict": 1200},
+            options=opts,
         )
         return resp.get("message", {}).get("content", "")
 
@@ -126,7 +175,7 @@ class AnthropicExtractor(BaseExtractor):
             data, media = _img_b64(img)
             content.append({"type": "image", "source": {"type": "base64", "media_type": media, "data": data}})
         msg = client.messages.create(
-            model=self.model, max_tokens=1500, system=system,
+            model=self.model, max_tokens=MAX_OUTPUT_TOKENS, system=system,
             messages=[{"role": "user", "content": content}],
         )
         return "".join(b.text for b in msg.content if getattr(b, "type", "") == "text")
@@ -161,7 +210,7 @@ class OpenAIExtractor(BaseExtractor):
             content.append({"type": "image_url",
                             "image_url": {"url": f"data:{media};base64,{data}"}})
         resp = client.chat.completions.create(
-            model=self.model, temperature=0.1, max_tokens=1500,
+            model=self.model, temperature=0.1, max_tokens=MAX_OUTPUT_TOKENS,
             messages=[{"role": "system", "content": system},
                       {"role": "user", "content": content}],
         )

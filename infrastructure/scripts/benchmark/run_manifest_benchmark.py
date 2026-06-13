@@ -29,7 +29,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from infrastructure.scripts.benchmark.extractors import make_extractor
-from infrastructure.scripts.benchmark.reading import read_text, read_images
+from infrastructure.scripts.benchmark.reading import read_text, read_images, read_tables
 from infrastructure.scripts.benchmark.score_extraction import score_district
 from infrastructure.scripts.benchmark.run_benchmark import (
     generate_report_md, generate_report_json, sanitize_model_name,
@@ -45,7 +45,7 @@ DEFAULT_OUTPUT = PROJECT_ROOT / "data" / "benchmark_results"
 def main():
     ap = argparse.ArgumentParser(description="Provider-agnostic bell-schedule extraction benchmark")
     ap.add_argument("--model", required=True, help="provider:model (e.g. ollama:qwen2.5vl:7b, anthropic:claude-haiku-4-5)")
-    ap.add_argument("--mode", choices=["text", "vision", "both"], default="text")
+    ap.add_argument("--mode", choices=["text", "vision", "both", "tables"], default="text")
     ap.add_argument("--manifest", default=str(MANIFEST))
     ap.add_argument("--output-dir", default=str(DEFAULT_OUTPUT))
     ap.add_argument("--districts", default=None, help="comma-separated district IDs to test")
@@ -81,6 +81,8 @@ def main():
         text, images = "", None
         if args.mode in ("text", "both"):
             text, tsrc = read_text(src)
+        if args.mode == "tables":
+            text, tsrc = read_tables(src)
         if args.mode in ("vision", "both"):
             images, isrc = read_images(src)
         if not text and not images:
