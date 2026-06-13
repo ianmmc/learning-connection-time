@@ -23,6 +23,23 @@ Part of "Reducing the Ratio" educational equity initiative. Currently implementi
 
 ---
 
+## Current Status (2026-06-12)
+
+Bell-schedule **extraction quality** — the open problem for Phase 1.5 — has been benchmarked. Full results: `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.
+
+**Conclusion: no silver bullet — extraction plateaus ~35–53%** on the grade-band modal-minutes metric:
+- **Plain text on a 7B model (mistral/qwen2.5) is the best *local* approach (~42%)**; vision (qwen2.5-VL) and table-aware (pdfplumber) did NOT beat it on aggregate (table-aware is more *precise* when it hits; vision locks onto early-release columns).
+- A capable cloud model (**Claude Haiku ~53%**) edges the locals — modest, not production-ready.
+- Much of the gap is **input/ground-truth quality** (corrupt source PDFs, HTML schedules not in parseable tables, transposed tables, single-band GT) — *not* the model.
+
+**Direction:** format-aware reading (table-aware for digital PDFs, OCR/vision for images, targeted HTML) + **dual-path consensus with human review of disagreements** + better multi-band ground truth. Benchmark harness lives in `infrastructure/scripts/benchmark/`.
+
+**Notes:** Local Ollama models were **deleted** after the benchmark (all re-pullable; none met the bar). A headless Ubuntu AI server (the old 2017 MBP) is planned to host heavy/unattended work — briefing at `/Users/ianmmc/Development/ai-server-setup/SETUP_BRIEFING.md` (separate project). Ollama gotchas: use the official binary (Homebrew build was missing `llama-server`); bake `num_ctx` into a Modelfile for VLMs; throttle local inference with `taskpolicy -b` + run in `tmux`.
+
+> **SEA central-data harvest is a dead end for daily minutes** (verified) — states publish only statutory minimums / day-counts, not actual daily minutes. Web-scraping district bell schedules remains the primary acquisition path. See `docs/INSTRUCTIONAL_TIME_HARVEST.md`.
+
+---
+
 ## Current Data Years
 
 **Current School Year:** 2025-26
@@ -86,11 +103,16 @@ python3 infrastructure/scripts/verify_enrichment.py --quick
 
 | Task | File |
 |------|------|
+| **Extraction benchmark findings** | `docs/EXTRACTION_BENCHMARK_FINDINGS.md` |
+| **Benchmark harness** | `infrastructure/scripts/benchmark/` |
+| Decisions & lessons (history) | `docs/PROJECT_HISTORY.md` |
+| Architecture map & flagged issues | `docs/PROJECT_SYNTHESIS.md` |
 | Bell schedule acquisition | `docs/ACQUISITION_PIPELINE.md` |
 | Data methodology | `docs/METHODOLOGY.md` |
 | Database setup | `docs/DATABASE_SETUP.md` |
 | SEA integration guide | `docs/SEA_INTEGRATION_GUIDE.md` |
 | LCT calculation | `infrastructure/scripts/analyze/calculate_lct_variants.py` |
+| Database migrations + ledger | `infrastructure/database/migrations/` (`migrate.py status`) |
 | Database queries | `infrastructure/database/queries.py` |
 
 ---

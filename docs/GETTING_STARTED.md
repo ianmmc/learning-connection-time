@@ -160,13 +160,13 @@ git commit -m "feat: Add new bell schedule parser"
 
 ---
 
-## Current Status (January 2026)
+## Current Status (2026-06-12)
 
-- **Database:** 17,842 U.S. school districts
-- **SEA Integrations:** 9/9 complete (FL, TX, CA, NY, IL, MI, PA, VA, MA)
-- **Scraper Service:** Crawlee-based (Playwright browsers), operational
-- **Test Suite:** 789 tests passing
-- **Phase:** Bell schedule acquisition with Crawlee + Ollama pipeline
+- **Database:** 17,842 U.S. school districts; 9/9 SEA integrations (FL, TX, CA, NY, IL, MI, PA, VA, MA)
+- **Phase:** Bell-schedule **extraction-quality evaluation — benchmarked.** See `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.
+- **Finding:** local extraction plateaus ~35–53% (plain-text 7B best local ~42%; Claude Haiku ~53%); **input/ground-truth quality is the main limiter, not the model.**
+- **Direction:** format-aware reading + dual-path consensus (human review of disagreements) + better ground truth.
+- **Acquisition:** Crawlee scraper + FastAPI; extractor TBD. Local Ollama models deleted post-benchmark (re-pullable). Headless Ubuntu server planned (`/Users/ianmmc/Development/ai-server-setup/`).
 
 ---
 

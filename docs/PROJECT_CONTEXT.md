@@ -67,12 +67,14 @@ LCT = 18 minutes per student per day
 - Temporal trends (year-over-year changes)
 - Relationship to outcomes (with appropriate caveats)
 
-## Current Status (January 2026)
+## Current Status (2026-06-12)
 
-**Phase**: Bell Schedule Acquisition — local-first Crawlee + Ollama pipeline
+**Phase**: Bell-schedule **extraction-quality evaluation — benchmarked** (see `docs/EXTRACTION_BENCHMARK_FINDINGS.md`)
+**Finding**: extraction plateaus ~35–53% (plain-text 7B best local ~42%; Claude Haiku ~53%); input/ground-truth quality is the main limiter, not the model
+**Direction**: format-aware reading + dual-path consensus (human review of disagreements) + better ground truth
 **Coverage**: 17,842 U.S. school districts in PostgreSQL database
 **SEA Integrations**: 9/9 complete (FL, TX, CA, NY, IL, MI, PA, VA, MA) ✅
-**Acquisition Stack**: FastAPI orchestrator (:8000) + Crawlee scraper (:3000, Playwright browsers) + local Ollama LLM (:11434)
+**Acquisition Stack**: FastAPI orchestrator (:8000) + Crawlee scraper (:3000) + extractor TBD (local Ollama models deleted post-benchmark; re-pullable)
 **Data Sources**: Federal (NCES, CRDC, IDEA 618) + Bell schedules + State agencies
 
 > **Note:** The earlier multi-tier Firecrawl/Gemini/Claude-API acquisition design was removed in Jan 2026 and replaced by the local-first Crawlee + Ollama pipeline below, so the project can scale without per-token API cost. See `docs/ACQUISITION_PIPELINE.md` (canonical) and `docs/PROJECT_SYNTHESIS.md` (architecture map).

@@ -42,6 +42,11 @@ Standing operating principle, born from a real stall (see Lessons): prefer local
 
 ---
 
+### Extraction quality benchmarked — no silver bullet (2026-06)
+A provider-agnostic benchmark (`infrastructure/scripts/benchmark/`) compared reading methods — plain text/OCR, **table-aware** (pdfplumber), and **vision** (qwen2.5-VL) — × models, scored on grade-band *modal instructional minutes* (±15 min) vs the DB's `human_provided` ground truth. **All approaches plateau ~35–53%.** Plain text on a 7B model (mistral/qwen2.5) is the best *local* approach (~42%); table-aware and vision did **not** beat it on aggregate (table-aware is more *precise* when it hits; vision fixates on early-release columns). **Claude Haiku (cloud) edged the locals (~53%)** — a modest model lift, not a fix. **Lesson: the dominant limiter is input + ground-truth quality** (corrupt source PDFs, HTML schedules not in parseable tables, transposed tables, single-band GT) — *not* the model or reading method. *Direction set:* format-aware reading + **dual-path consensus with human review of disagreements** + better multi-band ground truth. This answers the "is local extraction good enough?" question that paused the project (no — ~42% local, ~50% even with a capable model) and reframes the work from model-selection to input/GT quality + QC. Full record: `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.
+
+---
+
 ## Part 2 — Hard-Won Lessons (cautionary tales)
 
 ### The phantom-districts hallucination — origin of Rule #6 and the DB-verify hook
