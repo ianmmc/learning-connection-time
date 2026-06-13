@@ -1,0 +1,11 @@
+{
+  "district_id": "5400600",
+  "district_name": "KANAWHA COUNTY SCHOOLS",
+  "state": "WV",
+  "extraction_date": "2026-06-12T04:26:38.790888",
+  "extractor": "ollama:qwen2.5:7b",
+  "schedules": [],
+  "success": false,
+  "error": "No valid schedules extracted",
+  "raw_response": "```json\n{\n    \"school_name\": \"Point Harmony Elementary\",\n    \"schedule\": {\n        \"start_time\": \"7:00 AM\",\n        \"doors_open\": \"7:15 AM\",\n        \"instruction_start\": \"7:45 AM\",\n        \"tardy_bell\": \"2:12 PM\",\n        \"afternoon_announcements\": \"2:12 PM\",\n        \"dismissal_time\": \"3:00 PM\"\n    },\n    \"attendance_policy\": {\n        \"importance_of_attendance\": \"Regular attendance is important for student achievement.\",\n        \"absence_guidelines\": [\n            \"Fever of 100 degrees F or more, must be fever-free for 24 hours without medication\",\n            \"Signs of respiratory illness such as thick nasal discharge, frequent cough, severe sore throat, earache, or drainage from the eyes\",\n            \"Vomited within the previous 24 hours, has diarrhea, or severe abdominal pain\",\n            \"Unidentified rash or any 'open' skin lesions\"\n        ]\n    }\n}\n```"
+}

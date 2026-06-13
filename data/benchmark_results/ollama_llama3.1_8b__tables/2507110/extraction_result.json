@@ -1,0 +1,112 @@
+{
+  "district_id": "2507110",
+  "district_name": "Lynn",
+  "state": "MA",
+  "extraction_date": "2026-06-13T01:56:26.060025",
+  "extractor": "ollama:llama3.1:8b",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "Callahan",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "Aborn",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:15",
+      "school_name": "Breed Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "14:05",
+      "school_name": "Harold Durgin Success Academy",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "City Arts & Sciences Academy (CASA)",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Discovery Academy",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Frederick Douglass Collegiate Academy",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Thurgood Marshall Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Lynn Classical High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Lynn English High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"Callahan\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"Aborn\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:30\",\"end_time\":\"14:15\",\"school_name\":\"Breed Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"14:05\",\"school_name\":\"Harold Durgin Success Academy\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"City Arts & Sciences Academy (CASA)\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"Discovery Academy\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"Frederick Douglass Collegiate Academy\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"Thurgood Marshall Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"Lynn Classical High School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"Lynn English High School\",\"confidence\":\"high\"}]}"
+}

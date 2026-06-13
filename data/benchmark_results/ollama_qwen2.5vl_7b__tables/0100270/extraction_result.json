@@ -1,0 +1,11 @@
+{
+  "district_id": "0100270",
+  "district_name": "Baldwin County",
+  "state": "AL",
+  "extraction_date": "2026-06-12T23:26:24.143396",
+  "extractor": "ollama:qwen2.5vl:7b",
+  "schedules": [],
+  "success": false,
+  "error": "Could not parse JSON response",
+  "raw_response": "```"
+}

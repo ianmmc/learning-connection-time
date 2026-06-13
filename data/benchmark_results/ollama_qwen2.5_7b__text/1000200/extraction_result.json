@@ -1,0 +1,22 @@
+{
+  "district_id": "1000200",
+  "district_name": "Christina School District",
+  "state": "DE",
+  "extraction_date": "2026-06-12T04:03:20.437555",
+  "extractor": "ollama:qwen2.5:7b",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:00",
+      "end_time": "14:41",
+      "school_name": null,
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'middle', 'high'}. Document may have more data.",
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"07:00\",\"end_time\":\"14:41\"}]}"
+}

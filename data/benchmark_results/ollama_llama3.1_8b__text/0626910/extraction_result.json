@@ -1,0 +1,52 @@
+{
+  "district_id": "0626910",
+  "district_name": "New Haven Unified",
+  "state": "CA",
+  "extraction_date": "2026-06-12T02:15:19.737165",
+  "extractor": "ollama:llama3.1:8b",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "12:05",
+      "school_name": "Alvarado Elementary School",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 245min below min 300min]"
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "12:05",
+      "school_name": "Searles Elementary School",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 245min below min 300min]"
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:15",
+      "end_time": "14:44",
+      "school_name": "C\u00e9sar Ch\u00e1vez Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "14:35",
+      "school_name": "Conley-Caraballo High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\n  \"schedules\": [\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:00\",\n      \"end_time\": \"12:05\",\n      \"school_name\": \"Alvarado Elementary School\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:00\",\n      \"end_time\": \"12:05\",\n      \"school_name\": \"Searles Elementary School\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"middle\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"14:44\",\n      \"school_name\": \"C\u00e9sar Ch\u00e1vez Middle School\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"high\",\n      \"start_time\": \"08:00\",\n      \"end_time\": \"14:35\",\n      \"school_name\": \"Conley-Caraballo High School\",\n      \"confidence\": \"high\"\n    }\n  ]\n}"
+}

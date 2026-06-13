@@ -1,0 +1,22 @@
+{
+  "district_id": "1001300",
+  "district_name": "Red Clay Consolidated School District",
+  "state": "DE",
+  "extraction_date": "2026-06-12T04:03:49.384634",
+  "extractor": "ollama:qwen2.5:7b",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "07:25",
+      "end_time": "14:35",
+      "school_name": "McKean High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'middle', 'elementary'}. Document may have more data.",
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"high\",\"start_time\":\"07:25\",\"end_time\":\"14:35\",\"school_name\":\"McKean High\",\"confidence\":\"high\"}]}"
+}

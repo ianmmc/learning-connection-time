@@ -1,0 +1,11 @@
+{
+  "district_id": "0408800",
+  "district_name": "Tucson Unified District (4403)",
+  "state": "AZ",
+  "extraction_date": "2026-06-12T02:11:18.069006",
+  "extractor": "ollama:llama3.1:8b",
+  "schedules": [],
+  "success": false,
+  "error": "No valid schedules extracted",
+  "raw_response": "{\n  \"schedules\": [\n    {\n      \"grade_level\": \"elementary\",\n      \"school_name\": \"John F. Kennedy Elementary School\",\n      \"hours\": \"7:30 a.m. - 3:30 p.m.\"\n    },\n    {\n      \"grade_level\": \"middle school\",\n      \"school_name\": \"Canyon del Oro Middle School\",\n      \"hours\": \"8:00 a.m. - 2:45 p.m.\"\n    },\n    {\n      \"grade_level\": \"high school\",\n      \"school_name\": \"Pusch Ridge Christian Academy\",\n      \"hours\": \"7:30 a.m. - 3:15 p.m.\"\n    }\n  ]\n}"
+}

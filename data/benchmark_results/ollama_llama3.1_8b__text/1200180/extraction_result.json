@@ -1,0 +1,52 @@
+{
+  "district_id": "1200180",
+  "district_name": "BROWARD",
+  "state": "FL",
+  "extraction_date": "2026-06-12T02:42:50.373317",
+  "extractor": "ollama:llama3.1:8b",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "07:40",
+      "end_time": "14:40",
+      "school_name": "Stranahan High",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:40",
+      "end_time": "14:40",
+      "school_name": "Taravella, J.P. High",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:40",
+      "end_time": "14:40",
+      "school_name": "West Broward High",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:40",
+      "end_time": "14:40",
+      "school_name": "Western High",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'elementary', 'middle'}. Document may have more data.",
+  "raw_response": "{\n  \"schedules\": [\n    {\n      \"grade_level\": \"high\",\n      \"start_time\": \"07:40\",\n      \"end_time\": \"14:40\",\n      \"school_name\": \"Stranahan High\"\n    },\n    {\n      \"grade_level\": \"high\",\n      \"start_time\": \"07:40\",\n      \"end_time\": \"14:40\",\n      \"school_name\": \"Taravella, J.P. High\"\n    },\n    {\n      \"grade_level\": \"high\",\n      \"start_time\": \"07:40\",\n      \"end_time\": \"14:40\",\n      \"school_name\": \"West Broward High\"\n    },\n    {\n      \"grade_level\": \"high\",\n      \"start_time\": \"07:40\",\n      \"end_time\": \"14:40\",\n      \"school_name\": \"Western High\"\n    }\n  ]\n}"
+}

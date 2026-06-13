@@ -1,0 +1,11 @@
+{
+  "district_id": "0200510",
+  "district_name": "Matanuska-Susitna Borough School District",
+  "state": "AK",
+  "extraction_date": "2026-06-12T22:57:48.481316",
+  "extractor": "ollama:qwen2.5:7b",
+  "schedules": [],
+  "success": false,
+  "error": "No valid schedules extracted",
+  "raw_response": "```json\n{\n    \"schools\": [\n        {\n            \"name\": \"Machetanz Elementary School\",\n            \"address\": \"4961 E Nelson Road, MZE, AK 99654\",\n            \"contact\": {\n                \"phone\": \"907.864.2300\",\n                \"fax\": \"907.864.2380\",\n                \"email\": \"MZE@matsuk12.us\"\n            },\n            \"principal\": \"Christine Howell\",\n            \"administrativeAssistant\": \"Shauna Homan\"\n        },\n        {\n            \"name\": \"Shaw Elementary School\",\n            \"address\": \"Not provided in the data\",\n            \"contact\": {\n                \"phone\": \"907-352-7500\",\n                \"fax\": \"907-352-7585\",\n                \"email\": \"shaw@matsuk12.us\"\n            },\n            \"principal\": \"David Russell Daughtersetty\",\n            \"administrativeAssistant\": \"Caroline Daughtersetty\"\n        },\n        {\n            \"name\": \"Teeland Middle School\",\n            \"address\": \"2788 N Seward Meridian Prkwy, Wasilla, AK 99654\",\n            \"contact\": {\n                \"phone\": \"907-352-7500\",\n                \"fax\": \"907-352-7585\",\n                \"email\": \"tms@matsuk12.us\"\n            },\n            \"principal\": \"Brandt Pridgen Nicoll\",\n            \"administrativeAssistant\": \"Felica Amanda Bowen\"\n        }\n    ]\n}\n```"
+}

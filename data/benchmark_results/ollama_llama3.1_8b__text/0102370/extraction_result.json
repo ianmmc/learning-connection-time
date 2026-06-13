@@ -1,0 +1,62 @@
+{
+  "district_id": "0102370",
+  "district_name": "Mobile County",
+  "state": "AL",
+  "extraction_date": "2026-06-12T02:03:39.291914",
+  "extractor": "ollama:llama3.1:8b",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "07:15",
+      "end_time": "14:35",
+      "school_name": "Mary G Montgomery High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "15:00",
+      "school_name": "Tanner Williams Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "06:50",
+      "end_time": "14:20",
+      "school_name": "Pillans Middle School",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Start time 06:50 before 7:00]"
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "15:00",
+      "school_name": "Holloway Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "06:30",
+      "end_time": "14:35",
+      "school_name": "Allentown Elementary School",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 485min exceeds max 480min; Start time 06:30 before 7:00]"
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\n  \"schedules\": [\n    {\n      \"grade_level\": \"high\",\n      \"start_time\": \"07:15\",\n      \"end_time\": \"14:35\",\n      \"school_name\": \"Mary G Montgomery High School\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:10\",\n      \"end_time\": \"15:00\",\n      \"school_name\": \"Tanner Williams Elementary School\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"middle\",\n      \"start_time\": \"06:50\",\n      \"end_time\": \"14:20\",\n      \"school_name\": \"Pillans Middle School\",\n      \"confidence\": \"medium\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"07:45\",\n      \"end_time\": \"15:00\",\n      \"school_name\": \"Holloway Elementary School\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"06:30\",\n      \"end_time\": \"14:35\",\n      \"school_name\": \"Allentown Elementary School\",\n      \"confidence\": \"medium\"\n    }\n  ]\n}"
+}

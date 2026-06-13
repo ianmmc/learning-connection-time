@@ -1,0 +1,42 @@
+{
+  "district_id": "0102430",
+  "district_name": "Montgomery County",
+  "state": "AL",
+  "extraction_date": "2026-06-12T03:54:18.394975",
+  "extractor": "ollama:qwen2.5:7b",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:25",
+      "end_time": "14:35",
+      "school_name": "Morningview Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:10",
+      "end_time": "15:15",
+      "school_name": "Johnnie R. Carr Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:25",
+      "end_time": "14:35",
+      "school_name": "G.W. Carver High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"07:25\",\"end_time\":\"14:35\",\"school_name\":\"Morningview Elementary School\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"08:10\",\"end_time\":\"15:15\",\"school_name\":\"Johnnie R. Carr Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:25\",\"end_time\":\"14:35\",\"school_name\":\"G.W. Carver High School\",\"confidence\":\"high\"}]}"
+}

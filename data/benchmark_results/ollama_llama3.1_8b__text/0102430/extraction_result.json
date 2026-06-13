@@ -1,0 +1,102 @@
+{
+  "district_id": "0102430",
+  "district_name": "Montgomery County",
+  "state": "AL",
+  "extraction_date": "2026-06-12T02:05:54.482261",
+  "extractor": "ollama:llama3.1:8b",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "14:35",
+      "school_name": "Brew Tech",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:40",
+      "end_time": "15:00",
+      "school_name": "Floyd Middle School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:25",
+      "end_time": "14:35",
+      "school_name": "Lanier High School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:30",
+      "end_time": "14:30",
+      "school_name": "Morningview Elementary School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:10",
+      "end_time": "15:00",
+      "school_name": "McKee Middle School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:35",
+      "school_name": "G.W. Carver High School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "15:00",
+      "school_name": "Vaughn Road Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "14:35",
+      "school_name": "Park Crossing Highschool",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:40",
+      "end_time": "15:00",
+      "school_name": "Southlawn Middle",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"high\",\"start_time\":\"07:30\",\"end_time\":\"14:35\",\"school_name\":\"Brew Tech\",\"confidence\":\"medium\"},{\"grade_level\":\"middle\",\"start_time\":\"08:40\",\"end_time\":\"15:00\",\"school_name\":\"Floyd Middle School\",\"confidence\":\"medium\"},{\"grade_level\":\"high\",\"start_time\":\"07:25\",\"end_time\":\"14:35\",\"school_name\":\"Lanier High School\",\"confidence\":\"medium\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:30\",\"end_time\":\"14:30\",\"school_name\":\"Morningview Elementary School\",\"confidence\":\"medium\"},{\"grade_level\":\"middle\",\"start_time\":\"08:10\",\"end_time\":\"15:00\",\"school_name\":\"McKee Middle School\",\"confidence\":\"medium\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:35\",\"school_name\":\"G.W. Carver High School\",\"confidence\":\"medium\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"15:00\",\"school_name\":\"Vaughn Road Elementary\",\"confidence\":\"medium\"},{\"grade_level\":\"high\",\"start_time\":\"07:30\",\"end_time\":\"14:35\",\"school_name\":\"Park Crossing Highschool\",\"confidence\":\"medium\"},{\"grade_level\":\"middle\",\"start_time\":\"08:40\",\"end_time\":\"15:00\",\"school_name\":\"Southlawn Middle\",\"confidence\":\"medium\"}]}"
+}

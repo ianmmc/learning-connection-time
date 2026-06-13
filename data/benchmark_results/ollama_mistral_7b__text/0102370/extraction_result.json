@@ -1,0 +1,22 @@
+{
+  "district_id": "0102370",
+  "district_name": "Mobile County",
+  "state": "AL",
+  "extraction_date": "2026-06-12T04:35:54.843247",
+  "extractor": "ollama:mistral:7b",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:15",
+      "school_name": "Tanner Williams Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'middle', 'high'}. Document may have more data.",
+  "raw_response": "\n\n{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"15:15\",\"school_name\":\"Tanner Williams Elementary School\",\"confidence\":\"high\"}]}"
+}

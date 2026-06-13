@@ -1,0 +1,452 @@
+{
+  "district_id": "3904378",
+  "district_name": "Cleveland Municipal",
+  "state": "OH",
+  "extraction_date": "2026-06-12T22:46:40.985356",
+  "extractor": "ollama:mistral:7b",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:35",
+      "end_time": "14:05",
+      "school_name": "Adlai E. Stevenson",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "15:05",
+      "school_name": "Franklin D. Roosevelt",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:35",
+      "end_time": "14:05",
+      "school_name": "Oliver H. Perry",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "15:05",
+      "school_name": "Albert B. Hart",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:35",
+      "end_time": "14:05",
+      "school_name": "Garfield",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 270min below min 300min]"
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "15:05",
+      "school_name": "Orchard",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:35",
+      "end_time": "14:05",
+      "school_name": "Alfred A. Benesch",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:35",
+      "end_time": "14:05",
+      "school_name": "George W. Carver",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 270min below min 300min]"
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:35",
+      "end_time": "14:05",
+      "school_name": "Paul L. Dunbar",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 270min below min 300min]"
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "15:05",
+      "school_name": "Almira",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:35",
+      "end_time": "14:05",
+      "school_name": "Halle",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 270min below min 300min]"
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:35",
+      "end_time": "14:05",
+      "school_name": "Riverside",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 270min below min 300min]"
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:35",
+      "end_time": "14:05",
+      "school_name": "Andrew J. Rickoff",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:35",
+      "end_time": "14:05",
+      "school_name": "Hannah Gibbons",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 270min below min 300min]"
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:35",
+      "end_time": "14:05",
+      "school_name": "Robert H. Jamison",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 270min below min 300min]"
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:35",
+      "end_time": "14:05",
+      "school_name": "Anton Grdina",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:35",
+      "end_time": "14:05",
+      "school_name": "Harvey Rice",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "15:05",
+      "school_name": "Robinson G. Jones",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:35",
+      "end_time": "14:05",
+      "school_name": "Artemus Ward",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 270min below min 300min]"
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "15:05",
+      "school_name": "Joseph M. Gallagher",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:35",
+      "end_time": "14:05",
+      "school_name": "Scranton",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:35",
+      "end_time": "14:05",
+      "school_name": "Leadership Academy Stonebrook-White",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 270min below min 300min]"
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:35",
+      "end_time": "16:05",
+      "school_name": "Campus International KB",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:40",
+      "end_time": "15:10",
+      "school_name": "Luis Mufioz Marin",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:35",
+      "end_time": "14:05",
+      "school_name": "Sunbeam",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "15:05",
+      "school_name": "Marion C. Seltzer",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:35",
+      "end_time": "16:05",
+      "school_name": "Tremont Montessori",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:35",
+      "end_time": "16:05",
+      "school_name": "Charles Dickens",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "15:05",
+      "school_name": "Marion-Sterling",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:35",
+      "end_time": "16:05",
+      "school_name": "Valley View Boys\u2019",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:35",
+      "end_time": "14:05",
+      "school_name": "Clara E. Westropp",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:35",
+      "end_time": "14:05",
+      "school_name": "Mary B. Martin",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "15:05",
+      "school_name": "Leadership Academy",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:35",
+      "end_time": "16:05",
+      "school_name": "Clark",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:35",
+      "end_time": "14:05",
+      "school_name": "Mary Church Terrell",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:35",
+      "end_time": "16:05",
+      "school_name": "Wade Park",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:30",
+      "school_name": "Cleveland Metro Remote School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:35",
+      "end_time": "14:05",
+      "school_name": "Mary M. Bethune",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:05",
+      "end_time": "14:35",
+      "school_name": "Warner Girls",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "09:35",
+      "end_time": "16:05",
+      "school_name": "Daniel E. Morgan",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:35",
+      "end_time": "14:05",
+      "school_name": "Memorial",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:35",
+      "end_time": "15:05",
+      "school_name": "John F. Kennedy",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "09:35",
+      "end_time": "16:05",
+      "school_name": "Carl B. Stokes",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:35",
+      "end_time": "15:05",
+      "school_name": "John Adams",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'high'}. Document may have more data.",
+  "raw_response": " {\"schedules\": [\n{\"grade_level\": \"elementary\", \"start_time\": \"07:35\", \"end_time\": \"14:05\", \"school_name\": \"Adlai E. Stevenson\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"08:35\", \"end_time\": \"15:05\", \"school_name\": \"Franklin D. Roosevelt\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"07:35\", \"end_time\": \"14:05\", \"school_name\": \"Oliver H. Perry\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"08:35\", \"end_time\": \"15:05\", \"school_name\": \"Albert B. Hart\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"09:35\", \"end_time\": \"14:05\", \"school_name\": \"Garfield\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"08:35\", \"end_time\": \"15:05\", \"school_name\": \"Orchard\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"07:35\", \"end_time\": \"14:05\", \"school_name\": \"Alfred A. Benesch\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"09:35\", \"end_time\": \"14:05\", \"school_name\": \"George W. Carver\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"09:35\", \"end_time\": \"14:05\", \"school_name\": \"Paul L. Dunbar\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"08:35\", \"end_time\": \"15:05\", \"school_name\": \"Almira\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"09:35\", \"end_time\": \"14:05\", \"school_name\": \"Halle\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"09:35\", \"end_time\": \"14:05\", \"school_name\": \"Riverside\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"07:35\", \"end_time\": \"14:05\", \"school_name\": \"Andrew J. Rickoff\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"09:35\", \"end_time\": \"14:05\", \"school_name\": \"Hannah Gibbons\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"09:35\", \"end_time\": \"14:05\", \"school_name\": \"Robert H. Jamison\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"07:35\", \"end_time\": \"14:05\", \"school_name\": \"Anton Grdina\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"07:35\", \"end_time\": \"14:05\", \"school_name\": \"Harvey Rice\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"08:35\", \"end_time\": \"15:05\", \"school_name\": \"Robinson G. Jones\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"09:35\", \"end_time\": \"14:05\", \"school_name\": \"Artemus Ward\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"08:35\", \"end_time\": \"15:05\", \"school_name\": \"Joseph M. Gallagher\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"07:35\", \"end_time\": \"14:05\", \"school_name\": \"Scranton\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"09:35\", \"end_time\": \"14:05\", \"school_name\": \"Leadership Academy Stonebrook-White\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"09:35 am\", \"end_time\": \"4:05 pm\", \"school_name\": \"Campus International KB\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"08:40am\", \"end_time\": \"3:10pm\", \"school_name\": \"Luis Mufioz Marin\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"07:35 am\", \"end_time\": \"2:05 pm\", \"school_name\": \"Sunbeam\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"08:35 am\", \"end_time\": \"3:05 pm\", \"school_name\": \"Marion C. Seltzer\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"09:35 am\", \"end_time\": \"4:05 pm\", \"school_name\": \"Tremont Montessori\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"09:35am\", \"end_time\": \"4:05 pm\", \"school_name\": \"Charles Dickens\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"08:35am\", \"end_time\": \"3:05pm\", \"school_name\": \"Marion-Sterling\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"09:35 am\", \"end_time\": \"4:05 pm\", \"school_name\": \"Valley View Boys\u2019\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"07:35am\", \"end_time\": \"2:05 pm\", \"school_name\": \"Clara E. Westropp\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"07:35 am\", \"end_time\": \"2:05 pm\", \"school_name\": \"Mary B. Martin\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"08:35am\", \"end_time\": \"3:05pm\", \"school_name\": \"Leadership Academy\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"09:35 am\", \"end_time\": \"4:05 pm\", \"school_name\": \"Clark\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"07:35 am\", \"end_time\": \"2:05 pm\", \"school_name\": \"Mary Church Terrell\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"09:35am\", \"end_time\": \"4:05 pm\", \"school_name\": \"Wade Park\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"08:00 am\", \"end_time\": \"2:30 pm\", \"school_name\": \"Cleveland Metro Remote School\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"07:35am\", \"end_time\": \"2:05 pm\", \"school_name\": \"Mary M. Bethune\"},\n{\"grade_level\": \"elementary\", \"start_time\": \"08:05am\", \"end_time\": \"2:35 pm\", \"school_name\": \"Warner Girls\"},\n{\"grade_level\": \"middle\", \"start_time\": \"09:35am\", \"end_time\": \"4:05 pm\", \"school_name\": \"Daniel E. Morgan\"},\n{\"grade_level\": \"middle\", \"start_time\": \"07:35am\", \"end_time\": \"2:05 pm\", \"school_name\": \"Memorial\"},\n{\"grade_level\": \"middle\", \"start_time\": \"08:35am\", \"end_time\": \"3:05pm\", \"school_name\": \"John F. Kennedy\"},\n{\"grade_level\": \"middle\", \"start_time\": \"09:35am\", \"end_time\": \"4:05 pm\", \"school_name\": \"Carl B. Stokes\"},\n{\"grade_level\": \"middle\", \"start_time\": \"08:35am\", \"end_time\": \"3:05pm\", \"school_name\": \"John Adams\"},\n{\"grade_level\": \"middle\", \"start"
+}

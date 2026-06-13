@@ -1,0 +1,42 @@
+{
+  "district_id": "5002820",
+  "district_name": "Burlington School District",
+  "state": "VT",
+  "extraction_date": "2026-06-12T04:16:56.895895",
+  "extractor": "ollama:qwen2.5:7b",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "Edmunds Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:00",
+      "end_time": "15:00",
+      "school_name": "Edmunds Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:10",
+      "end_time": "14:35",
+      "school_name": "Burlington High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"Edmunds Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"08:00\",\"end_time\":\"15:00\",\"school_name\":\"Edmunds Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:10\",\"end_time\":\"14:35\",\"school_name\":\"Burlington High School\",\"confidence\":\"high\"}]}"
+}

@@ -1,0 +1,11 @@
+{
+  "district_id": "2307320",
+  "district_name": "Lewiston Public Schools",
+  "state": "ME",
+  "extraction_date": "2026-06-12T23:31:42.034952",
+  "extractor": "ollama:qwen2.5vl:7b",
+  "schedules": [],
+  "success": false,
+  "error": "No valid schedules extracted",
+  "raw_response": "{\"schedules\":[]}"
+}

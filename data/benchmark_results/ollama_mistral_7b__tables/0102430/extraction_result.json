@@ -1,0 +1,492 @@
+{
+  "district_id": "0102430",
+  "district_name": "Montgomery County",
+  "state": "AL",
+  "extraction_date": "2026-06-12T22:32:15.723335",
+  "extractor": "ollama:mistral:7b",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:30",
+      "end_time": "14:30",
+      "school_name": "Baldwin Arts and Academic Magnet",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Bellingrath",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "Blount Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Booker T. Washington (BTW) Magnet High School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:30",
+      "end_time": "14:30",
+      "school_name": "Brew Tech",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Brewbaker Intermediate School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "Brewbaker Middle School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "primary",
+      "start_time": "07:30",
+      "end_time": "14:30",
+      "school_name": "Brewbaker Primary School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "Capitol Heights",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Carver Elementary Arts Magnet",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "Catoma Elementary School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:30",
+      "end_time": "14:30",
+      "school_name": "Chisholm Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "Dalraida",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:40",
+      "end_time": "14:30",
+      "school_name": "Dannelly Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "Dozier Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Dunbar Ramer",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:30",
+      "end_time": "14:30",
+      "school_name": "E.D.Nixon Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:30",
+      "end_time": "14:30",
+      "school_name": "Fitzpatrick Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "Flowers Elementary School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "Floyd Middle School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:30",
+      "end_time": "14:30",
+      "school_name": "Forest Avenue Academic Magnet",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "G.W. Carver High School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:30",
+      "school_name": "Goodwyn Middle School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "Halcyon Elementary School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:30",
+      "end_time": "14:30",
+      "school_name": "Highland Avenue Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "Highland Gardens ES",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:10",
+      "end_time": "14:35",
+      "school_name": "Jag High School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:30",
+      "school_name": "Johnnie R. Carr Middle School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "LAMP",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:10",
+      "end_time": "14:35",
+      "school_name": "Lanier High School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:55",
+      "end_time": "14:30",
+      "school_name": "MacMillan International Academy",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "McKee Middle School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "pre-k",
+      "start_time": "07:50",
+      "end_time": "14:30",
+      "school_name": "McKee Pre-K Center",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "MLK",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:30",
+      "end_time": "14:30",
+      "school_name": "Morningview Elementary School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "Morris Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:55",
+      "end_time": "14:30",
+      "school_name": "MPACT",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "14:30",
+      "school_name": "Park Crossing Highschool",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:25",
+      "end_time": "14:30",
+      "school_name": "Percy Julian",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "Peter Crump Elem.",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:50",
+      "end_time": "14:30",
+      "school_name": "Pintlala Elementary School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "Seth Johnson Elementary School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:30",
+      "end_time": "14:30",
+      "school_name": "Southlawn Elementary School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "Southlawn Middle",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:30",
+      "end_time": "14:30",
+      "school_name": "Vaughn Road Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "Wares Ferry Rd. Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:30",
+      "end_time": "14:30",
+      "school_name": "William Silas Garrett Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "14:30",
+      "school_name": "Wilson",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": " {\"schedules\":[\n{\"grade_level\":\"elementary\",\"start_time\":\"07:30\",\"end_time\":\"14:30\",\"school_name\":\"Baldwin Arts and Academic Magnet\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"Bellingrath\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"Blount Elementary\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"Booker T. Washington (BTW) Magnet High School\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:30\",\"end_time\":\"14:30\",\"school_name\":\"Brew Tech\"},\n{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"Brewbaker Intermediate School\"},\n{\"grade_level\":\"middle\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"Brewbaker Middle School\"},\n{\"grade_level\":\"primary\",\"start_time\":\"07:30\",\"end_time\":\"14:30\",\"school_name\":\"Brewbaker Primary School\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"Capitol Heights\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"Carver Elementary Arts Magnet\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"Catoma Elementary School\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:30\",\"end_time\":\"14:30\",\"school_name\":\"Chisholm Elementary\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"Dalraida\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:40\",\"end_time\":\"14:30\",\"school_name\":\"Dannelly Elementary\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"Dozier Elementary\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"Dunbar Ramer\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:30\",\"end_time\":\"14:30\",\"school_name\":\"E.D.Nixon Elementary\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:30\",\"end_time\":\"14:30\",\"school_name\":\"Fitzpatrick Elementary\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"Flowers Elementary School\"},\n{\"grade_level\":\"middle\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"Floyd Middle School\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:30\",\"end_time\":\"14:30\",\"school_name\":\"Forest Avenue Academic Magnet\"},\n{\"grade_level\":\"high\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"G.W. Carver High School\"},\n{\"grade_level\":\"middle\",\"start_time\":\"07:30\",\"end_time\":\"14:30\",\"school_name\":\"Goodwyn Middle School\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"Halcyon Elementary School\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:30\",\"end_time\":\"14:30\",\"school_name\":\"Highland Avenue Elementary\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"Highland Gardens ES\"},\n{\"grade_level\":\"high\",\"start_time\":\"08:10\",\"end_time\":\"14:35\",\"school_name\":\"Jag High School\"},\n{\"grade_level\":\"middle\",\"start_time\":\"07:30\",\"end_time\":\"14:30\",\"school_name\":\"Johnnie R. Carr Middle School\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"LAMP\"},\n{\"grade_level\":\"high\",\"start_time\":\"08:10\",\"end_time\":\"14:35\",\"school_name\":\"Lanier High School\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:55\",\"end_time\":\"14:30\",\"school_name\":\"MacMillan International Academy\"},\n{\"grade_level\":\"middle\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"McKee Middle School\"},\n{\"grade_level\":\"pre-k\",\"start_time\":\"07:50\",\"end_time\":\"14:30\",\"school_name\":\"McKee Pre-K Center\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"MLK\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:30\",\"end_time\":\"14:30\",\"school_name\":\"Morningview Elementary School\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"Morris Elementary\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:55\",\"end_time\":\"14:30\",\"school_name\":\"MPACT\"},\n{\"grade_level\":\"high\",\"start_time\":\"08:00\",\"end_time\":\"14:30\",\"school_name\":\"Park Crossing Highschool\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:25\",\"end_time\":\"14:30\",\"school_name\":\"Percy Julian\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"Peter Crump Elem.\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:50\",\"end_time\":\"14:30\",\"school_name\":\"Pintlala Elementary School\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"Seth Johnson Elementary School\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:30\",\"end_time\":\"14:30\",\"school_name\":\"Southlawn Elementary School\"},\n{\"grade_level\":\"middle\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"Southlawn Middle\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:30\",\"end_time\":\"14:30\",\"school_name\":\"Vaughn Road Elementary\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"Wares Ferry Rd. Elementary\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:30\",\"end_time\":\"14:30\",\"school_name\":\"William Silas Garrett Elementary\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"14:30\",\"school_name\":\"Wilson\"}\n]}"
+}

@@ -1,0 +1,72 @@
+{
+  "district_id": "1000080",
+  "district_name": "Appoquinimink School District",
+  "state": "DE",
+  "extraction_date": "2026-06-12T04:02:53.251712",
+  "extractor": "ollama:qwen2.5:7b",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "08:20",
+      "end_time": "15:00",
+      "school_name": "Appoquinimink HS",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:10",
+      "school_name": "Everett Meredith MS",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:10",
+      "school_name": "Louis L. Redding MS",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:10",
+      "school_name": "Alfred G. Waters MS",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:10",
+      "school_name": "Cantwell\u2019s Bridge MS",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:10",
+      "end_time": "15:50",
+      "school_name": "Brick Mill ES/ECC",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"high\",\"start_time\":\"08:20\",\"end_time\":\"15:00\",\"school_name\":\"Appoquinimink HS\"},{\"grade_level\":\"middle\",\"start_time\":\"07:30\",\"end_time\":\"14:10\",\"school_name\":\"Everett Meredith MS\"},{\"grade_level\":\"middle\",\"start_time\":\"07:30\",\"end_time\":\"14:10\",\"school_name\":\"Louis L. Redding MS\"},{\"grade_level\":\"middle\",\"start_time\":\"07:30\",\"end_time\":\"14:10\",\"school_name\":\"Alfred G. Waters MS\"},{\"grade_level\":\"middle\",\"start_time\":\"07:30\",\"end_time\":\"14:10\",\"school_name\":\"Cantwell\u2019s Bridge MS\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:10\",\"end_time\":\"15:50\",\"school_name\":\"Brick Mill ES/ECC\"}]}"
+}

@@ -1,0 +1,11 @@
+{
+  "district_id": "2801320",
+  "district_name": "DESOTO CO SCHOOL DIST",
+  "state": "MS",
+  "extraction_date": "2026-06-12T04:10:51.218668",
+  "extractor": "ollama:qwen2.5:7b",
+  "schedules": [],
+  "success": false,
+  "error": "No valid schedules extracted",
+  "raw_response": "```json\n{\n    \"district_name\": \"DeSoto County Schools\",\n    \"address\": \"5 East South Street, Hernando, MS 38632\",\n    \"phone\": \"(662) 429-5271\",\n    \"fax\": \"(662) 429-4198\",\n    \"website\": \"http://www.desotocountyschools.org\",\n    \"apps\": {\n        \"iOS\": \"[Download_our_iOS_App]\",\n        \"Android\": \"[Download_our_Android_App]\"\n    },\n    \"social_media\": {\n        \"Facebook\": \"[Visit_us_on_Facebook]\",\n        \"X\": \"[Visit_us_on_X,_formerly_Twitter]\",\n        \"YouTube\": \"[Visit_us_on_Youtube]\",\n        \"Instagram\": \"[Visit_us_on_Instagram]\"\n    },\n    \"employment_policy\": \"The DeSoto County Schools does not discriminate on the basis of race, color, national origin, sex, disability, or age in its programs and activities and provides equal access to the Boy Scouts and other designated youth groups. DCS is committed to providing a work environment that is free of discrimination. It is the policy of DCS that all applicants and employees are entitled to equal employment opportunity regardless of race, color, religion or creed, gender (includes pregnancy or related medical conditions), national origin, age, disability, veteran status or other protected characteristics as required by local, state and federal law.\",\n    \"copyright\": \"Copyright \u00a9 2025 DeSoto County Schools. All rights reserved.\"\n}\n```"
+}

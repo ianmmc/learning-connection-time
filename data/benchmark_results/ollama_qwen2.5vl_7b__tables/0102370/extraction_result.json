@@ -1,0 +1,11 @@
+{
+  "district_id": "0102370",
+  "district_name": "Mobile County",
+  "state": "AL",
+  "extraction_date": "2026-06-12T23:26:59.733442",
+  "extractor": "ollama:qwen2.5vl:7b",
+  "schedules": [],
+  "success": false,
+  "error": "Could not parse JSON response",
+  "raw_response": "```"
+}

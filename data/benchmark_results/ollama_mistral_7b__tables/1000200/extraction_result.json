@@ -1,0 +1,11 @@
+{
+  "district_id": "1000200",
+  "district_name": "Christina School District",
+  "state": "DE",
+  "extraction_date": "2026-06-12T22:38:38.997919",
+  "extractor": "ollama:mistral:7b",
+  "schedules": [],
+  "success": false,
+  "error": "No valid schedules extracted",
+  "raw_response": " {\"school\": \"Brader Elementary School\", \"grade_level\": \"Elementary (6-8)\", \"mascot\": \"Tigers\", \"colors\": [\"Blue\", \"White\"], \"dress_code\": \"Uniform Dress Code\", \"hours\": \"7:05 am - 2:05 pm\"}"
+}

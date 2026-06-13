@@ -1,0 +1,11 @@
+{
+  "district_id": "5400600",
+  "district_name": "KANAWHA COUNTY SCHOOLS",
+  "state": "WV",
+  "extraction_date": "2026-06-13T02:39:52.946388",
+  "extractor": "ollama:llama3.1:8b",
+  "schedules": [],
+  "success": false,
+  "error": "Could not parse JSON response",
+  "raw_response": "{\n    \"schedule\": {\n        \"Monday\": {\n            \"1st Period\": \"9:30 - 10:00\",\n            \"2nd Period\": \"10:00 - 10:30\",\n            \"3rd Period\": \"10:30 - 11:00\",\n            \"Lunch\": \"11:00 - 11:45\",\n            \"4th Period\": \"11:45 - 12:15\",\n            \"5th Period\": \"12:15 - 1:15\"\n        },\n        \"Tuesday\": {\n            \"6th Period\": \"9:30 - 10:00\",\n            \"7th Period\": \"10:00 - 10:30\",\n            \"8th Period\": \"10:30 - 11:00\",\n            \"Lunch\": \"11:00 - 11:45\",\n            \"9th Period\": \"11:45 - 12:15\"\n        },\n        \"Wednesday\": {\n            \"1st Period\": \"9:30 - 10:00\",\n            \"2nd Period\": \"10:00 - 10:30\",\n            \"3rd Period\": \"10:30 - 11:00\",\n            \"Lunch\": \"11:00 - 11:45\",\n            \"4th Period\": \"11:45 - 12:15\"\n        },\n        \"Thursday\": {\n            \"6th Period\": \"9:30 - 10:00\",\n            \"7th Period\": \"10:00 - 10:30\",\n            \"8th Period\": \"10:30 - 11:00\",\n            \"Lunch\": \"11:00 - 11:45\",\n            \"9th Period\": \"11:45 - 12:15\"\n        },\n        \"Friday\": {\n            \"1st Period\": \"9:30 - 10:00\",\n            \"2nd Period\": \"10:00 - 10:30\",\n            \"3rd Period\": \"10:30 - 11:00\",\n            \"Lunch\": \"11:00 - 11:45\",\n            \"4th Period\": \"11:45 - 12:15\"\n        }\n    },\n    \"bus_groups\": {\n        \"1st Bus Group\": \"Bus 1, Bus 2, Bus 3\",\n        \"2nd Bus Group\": \"Bus 4, Bus 5, Bus 6\"\n    },\n    \"dismissal\": {\n        \"2:45 - All students report to Bus Groups. All teachers report to Bus Group coverage or hallway duty for dismissal.\"\n    }\n}"
+}

@@ -1,0 +1,52 @@
+{
+  "district_id": "2507110",
+  "district_name": "Lynn",
+  "state": "MA",
+  "extraction_date": "2026-06-12T17:06:36.680142",
+  "extractor": "ollama:qwen2.5vl-bench",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "Callahan, Drewicz, Early Childhood Center, Fallon, Ford, Harrington, Ingalls, Sisson, Virginia Barton Center at Briarcliff (Teams), Washington",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:15",
+      "school_name": "Breed Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "14:05",
+      "school_name": "Harold Durgin Success Academy",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "City Arts & Sciences Academy (CASA), Discovery Academy, Frederick Douglass Collegiate Academy, Lynn Classical High School, Lynn English High School, Lynn Vocational Technical Institute, Pickering Middle School, Virginia Barton Center at Briarcliff (Secondary Teams), Thurgood Marshall Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'high'}. Document may have more data.",
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"Callahan, Drewicz, Early Childhood Center, Fallon, Ford, Harrington, Ingalls, Sisson, Virginia Barton Center at Briarcliff (Teams), Washington\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:30\",\"end_time\":\"14:15\",\"school_name\":\"Breed Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"14:05\",\"school_name\":\"Harold Durgin Success Academy\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"City Arts & Sciences Academy (CASA), Discovery Academy, Frederick Douglass Collegiate Academy, Lynn Classical High School, Lynn English High School, Lynn Vocational Technical Institute, Pickering Middle School, Virginia Barton Center at Briarcliff (Secondary Teams), Thurgood Marshall Middle School\",\"confidence\":\"high\"}]}"
+}

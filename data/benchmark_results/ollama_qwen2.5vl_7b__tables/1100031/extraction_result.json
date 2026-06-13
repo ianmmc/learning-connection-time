@@ -1,0 +1,11 @@
+{
+  "district_id": "1100031",
+  "district_name": "KIPP DC PCS",
+  "state": "DC",
+  "extraction_date": "2026-06-12T23:28:38.872150",
+  "extractor": "ollama:qwen2.5vl:7b",
+  "schedules": [],
+  "success": false,
+  "error": "AttributeError: 'list' object has no attribute 'get'",
+  "raw_response": "```json\n[\n    {\n        \"grade_level\": \"elementary\",\n        \"start_time\": \"08:00\",\n        \"end_time\": \"15:30\",\n        \"school_name\": \"KIPP DC PCS\"\n    },\n    {\n        \"grade_level\": \"middle\",\n        \"start_time\": \"08:15\",\n        \"end_time\": \"15:15\",\n        \"school_name\": \"KIPP DC PCS\"\n    },\n    {\n        \"grade_level\": \"high\",\n        \"start_time\": \"08:15\",\n        \"end_time\": \"15:15\",\n        \"school_name\": \"KIPP DC PCS\"\n    }\n]\n```"
+}

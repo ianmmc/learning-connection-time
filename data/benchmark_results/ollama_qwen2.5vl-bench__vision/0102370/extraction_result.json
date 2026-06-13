@@ -1,0 +1,42 @@
+{
+  "district_id": "0102370",
+  "district_name": "Mobile County",
+  "state": "AL",
+  "extraction_date": "2026-06-12T16:14:01.392559",
+  "extractor": "ollama:qwen2.5vl-bench",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "16:35",
+      "school_name": "Holloway Elementary School",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 530min exceeds max 480min]"
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:05",
+      "end_time": "16:35",
+      "school_name": "MGM",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 510min exceeds max 480min]"
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "16:35",
+      "school_name": "Allentown Elementary School",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 530min exceeds max 480min]"
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'high'}. Document may have more data.",
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"16:35\",\"school_name\":\"Holloway Elementary School\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"08:05\",\"end_time\":\"16:35\",\"school_name\":\"MGM\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"16:35\",\"school_name\":\"Allentown Elementary School\",\"confidence\":\"high\"}]}"
+}

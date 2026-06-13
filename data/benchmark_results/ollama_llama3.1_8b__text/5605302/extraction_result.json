@@ -1,0 +1,62 @@
+{
+  "district_id": "5605302",
+  "district_name": "Sweetwater County School District #1",
+  "state": "WY",
+  "extraction_date": "2026-06-12T03:48:13.999340",
+  "extractor": "ollama:llama3.1:8b",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:50",
+      "end_time": "15:05",
+      "school_name": "Rock Springs Elementary Schools",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "16:05",
+      "school_name": "Wamsutter K-8",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 500min exceeds max 480min]"
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "15:00",
+      "school_name": "Farson-Eden Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "16:05",
+      "school_name": "Farson-Eden Middle School",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 500min exceeds max 480min]"
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "16:05",
+      "school_name": "Rock Springs High Schools",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 500min exceeds max 480min]"
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"07:50\",\"end_time\":\"15:05\",\"school_name\":\"Rock Springs Elementary Schools\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"16:05\",\"school_name\":\"Wamsutter K-8\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"15:00\",\"school_name\":\"Farson-Eden Elementary School\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"16:05\",\"school_name\":\"Farson-Eden Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"16:05\",\"school_name\":\"Rock Springs High Schools\",\"confidence\":\"high\"}]}"
+}

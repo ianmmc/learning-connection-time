@@ -1,0 +1,22 @@
+{
+  "district_id": "0404970",
+  "district_name": "Mesa Unified District (4235)",
+  "state": "AZ",
+  "extraction_date": "2026-06-12T03:55:35.727990",
+  "extractor": "ollama:qwen2.5:7b",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "08:15",
+      "end_time": "14:37",
+      "school_name": "Red Mountain High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'middle', 'elementary'}. Document may have more data.",
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"high\",\"start_time\":\"08:15\",\"end_time\":\"14:37\",\"school_name\":\"Red Mountain High\",\"confidence\":\"high\"}]}"
+}

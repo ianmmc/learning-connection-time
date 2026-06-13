@@ -1,0 +1,11 @@
+{
+  "district_id": "0200510",
+  "district_name": "Matanuska-Susitna Borough School District",
+  "state": "AK",
+  "extraction_date": "2026-06-12T22:23:36.191047",
+  "extractor": "ollama:mistral:7b",
+  "schedules": [],
+  "success": false,
+  "error": "AttributeError: 'list' object has no attribute 'get'",
+  "raw_response": " [\n  {\n    \"school_name\": \"Machetanz Elementary School\",\n    \"principal\": \"CHRISTINE SHAUNA HOMAN HOWELL\",\n    \"address\": \"4961 E Nelson Road MZE@matsuk12.us Wasilla, AK 99654\"\n  },\n  {\n    \"school_name\": \"Palmer High School\",\n    \"principal\": \"MATTHEW LINDSAY VANESSA CLARK JACK BECKER\",\n    \"address\": \"12801 W Hawk Lane hhs@matsuk12.us Houston, AK 99694\"\n  },\n  {\n    \"school_name\": \"Palmer Jr Middle School\",\n    \"principal\": \"RYAN CHRISTOPHE CHERYL GEAGEL R MILLER NICHOLS\",\n    \"address\": \"\"\n  },\n  {\n    \"school_name\": \"Shaw Elementary School\",\n    \"principal\": \"DAVID CAROLINE RUSSELL DAUGHERTY\",\n    \"address\": \"\"\n  },\n  {\n    \"school_name\": \"Teeland Middle School\",\n    \"principal\": \"BRANDT FELICA AMANDA BOWEN PRIDGEN NICOLL\",\n    \"address\": \"2788 N Seward Meridian Prkwy Wasilla, AK 99654\"\n  }\n]"
+}

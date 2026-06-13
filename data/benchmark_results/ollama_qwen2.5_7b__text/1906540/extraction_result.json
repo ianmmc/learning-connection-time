@@ -1,0 +1,32 @@
+{
+  "district_id": "1906540",
+  "district_name": "Cedar Rapids Comm School District",
+  "state": "IA",
+  "extraction_date": "2026-06-12T04:07:04.169408",
+  "extractor": "ollama:qwen2.5:7b",
+  "schedules": [
+    {
+      "grade_level": "unknown",
+      "start_time": "08:50",
+      "end_time": "03:50",
+      "school_name": null,
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration -300min below min 300min]"
+    },
+    {
+      "grade_level": "unknown",
+      "start_time": "07:50",
+      "end_time": "02:20",
+      "school_name": null,
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration -330min below min 300min]"
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'middle', 'elementary', 'high'}. Document may have more data.",
+  "raw_response": "{\"schedules\":[{\"school\":\"Wright Elementary\",\"type\":\"Regular Day\",\"start_time\":\"8:50 a.m.\",\"end_time\":\"3:50 p.m.\"},{\"school\":\"Metro High School\",\"type\":\"Regular Day\",\"start_time\":\"7:50 a.m.\",\"end_time\":\"2:20 p.m.\"}]}}"
+}

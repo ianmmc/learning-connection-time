@@ -1,0 +1,11 @@
+{
+  "district_id": "1001300",
+  "district_name": "Red Clay Consolidated School District",
+  "state": "DE",
+  "extraction_date": "2026-06-12T04:53:47.476112",
+  "extractor": "ollama:mistral:7b",
+  "schedules": [],
+  "success": false,
+  "error": "No valid schedules extracted",
+  "raw_response": " {\"District\": \"Red Clay Consolidated School District\", \"School\": \"Alexis I du Pont High School\"}"
+}

@@ -1,0 +1,42 @@
+{
+  "district_id": "0100270",
+  "district_name": "Baldwin County",
+  "state": "AL",
+  "extraction_date": "2026-06-12T04:34:51.889809",
+  "extractor": "ollama:mistral:7b",
+  "schedules": [
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "15:05",
+      "school_name": "Spanish Fort Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "15:35",
+      "school_name": "Elberta Middle School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:50",
+      "end_time": "15:05",
+      "school_name": "Fairhope High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'elementary'}. Document may have more data.",
+  "raw_response": "\n\n{\"schedules\":[\n    {\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"15:05\",\"school_name\":\"Spanish Fort Middle School\",\"confidence\":\"high\"},\n    {\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"15:35\",\"school_name\":\"Elberta Middle School\",\"confidence\":\"medium\"},\n    {\"grade_level\":\"high\",\"start_time\":\"07:50\",\"end_time\":\"15:05\",\"school_name\":\"Fairhope High School\",\"confidence\":\"high\"}\n]}"
+}

@@ -1,0 +1,32 @@
+{
+  "district_id": "0100270",
+  "district_name": "Baldwin County",
+  "state": "AL",
+  "extraction_date": "2026-06-12T16:02:32.194463",
+  "extractor": "ollama:qwen2.5vl-bench",
+  "schedules": [
+    {
+      "grade_level": "middle",
+      "start_time": "07:15",
+      "end_time": "15:05",
+      "school_name": "Daphne Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:40",
+      "end_time": "23:10",
+      "school_name": "DHS",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 930min exceeds max 480min]"
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'elementary'}. Document may have more data.",
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"middle\",\"start_time\":\"07:15\",\"end_time\":\"15:05\",\"school_name\":\"Daphne Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:40\",\"end_time\":\"23:10\",\"school_name\":\"DHS\",\"confidence\":\"medium\"}]}"
+}

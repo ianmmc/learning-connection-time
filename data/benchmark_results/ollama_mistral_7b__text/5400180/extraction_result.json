@@ -1,0 +1,11 @@
+{
+  "district_id": "5400180",
+  "district_name": "CABELL COUNTY SCHOOLS",
+  "state": "WV",
+  "extraction_date": "2026-06-12T05:24:19.922258",
+  "extractor": "ollama:mistral:7b",
+  "schedules": [],
+  "success": false,
+  "error": "No valid schedules extracted",
+  "raw_response": " {\n  \"school_name\": \"School Name\",\n  \"start_time\": \"7:30 AM\",\n  \"end_time\": \"3:00 PM\",\n  \"days_of_week\": [\"Monday\", \"Tuesday\", \"Wednesday\", \"Thursday\", \"Friday\"],\n  \"lunch_break\": {\n    \"start_time\": \"12:00 PM\",\n    \"end_time\": \"1:00 PM\"\n  },\n  \"holidays\": [\"New Year's Day\", \"Martin Luther King Jr.'s Birthday\", \"President's Day\", \"Memorial Day\", \"Independence Day\", \"Labor Day\", \"Columbus Day\", \"Veterans Day\", \"Thanksgiving Day\", \"Christmas Day\"]\n}"
+}

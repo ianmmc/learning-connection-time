@@ -1,0 +1,22 @@
+{
+  "district_id": "0404970",
+  "district_name": "Mesa Unified District (4235)",
+  "state": "AZ",
+  "extraction_date": "2026-06-12T04:39:52.879439",
+  "extractor": "ollama:mistral:7b",
+  "schedules": [
+    {
+      "grade_level": "junior",
+      "start_time": "07:30",
+      "end_time": "14:15",
+      "school_name": "Benjamin Franklin Junior High School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'middle', 'high', 'elementary'}. Document may have more data.",
+  "raw_response": " {\"schedules\":[{\"grade_level\":\"junior\",\"start_time\":\"07:30\",\"end_time\":\"14:15\",\"school_name\":\"Benjamin Franklin Junior High School\"}]}"
+}

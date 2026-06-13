@@ -1,0 +1,42 @@
+{
+  "district_id": "2302820",
+  "district_name": "Bangor Public Schools",
+  "state": "ME",
+  "extraction_date": "2026-06-12T04:09:27.773260",
+  "extractor": "ollama:qwen2.5:7b",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "15:00",
+      "school_name": "Bangor Elementary Schools (Grades 4-5)",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "16:30",
+      "school_name": "Bangor Middle School (Grades 6-8)",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 540min exceeds max 480min]"
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:35",
+      "school_name": "Bangor High School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"15:00\",\"school_name\":\"Bangor Elementary Schools (Grades 4-5)\"},{\"grade_level\":\"middle\",\"start_time\":\"07:30\",\"end_time\":\"16:30\",\"school_name\":\"Bangor Middle School (Grades 6-8)\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:35\",\"school_name\":\"Bangor High School\"}]}"
+}

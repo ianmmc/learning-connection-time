@@ -1,0 +1,11 @@
+{
+  "district_id": "0622710",
+  "district_name": "Los Angeles Unified",
+  "state": "CA",
+  "extraction_date": "2026-06-12T03:57:53.554363",
+  "extractor": "ollama:qwen2.5:7b",
+  "schedules": [],
+  "success": false,
+  "error": "No valid schedules extracted",
+  "raw_response": "{\"schedules\":[]}"
+}

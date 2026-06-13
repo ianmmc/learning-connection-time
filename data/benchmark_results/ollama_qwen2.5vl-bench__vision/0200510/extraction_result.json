@@ -1,0 +1,42 @@
+{
+  "district_id": "0200510",
+  "district_name": "Matanuska-Susitna Borough School District",
+  "state": "AK",
+  "extraction_date": "2026-06-12T15:41:48.065164",
+  "extractor": "ollama:qwen2.5vl-bench",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "08:45",
+      "end_time": "12:30",
+      "school_name": "Big Lake Elementary",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 225min below min 300min]"
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:45",
+      "end_time": "12:30",
+      "school_name": "Colony Middle School",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 225min below min 300min]"
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:10",
+      "end_time": "14:35",
+      "school_name": "Fivay High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"08:45\",\"end_time\":\"12:30\",\"school_name\":\"Big Lake Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"08:45\",\"end_time\":\"12:30\",\"school_name\":\"Colony Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:10\",\"end_time\":\"14:35\",\"school_name\":\"Fivay High\",\"confidence\":\"high\"}]}"
+}

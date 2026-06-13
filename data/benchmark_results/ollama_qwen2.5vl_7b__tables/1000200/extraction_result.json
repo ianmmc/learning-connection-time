@@ -1,0 +1,11 @@
+{
+  "district_id": "1000200",
+  "district_name": "Christina School District",
+  "state": "DE",
+  "extraction_date": "2026-06-12T23:29:01.804069",
+  "extractor": "ollama:qwen2.5vl:7b",
+  "schedules": [],
+  "success": false,
+  "error": "AttributeError: 'list' object has no attribute 'get'",
+  "raw_response": "```json\n[\n    {\n        \"grade_level\": \"middle\",\n        \"start_time\": \"07:05\",\n        \"end_time\": \"14:05\",\n        \"school_name\": \"Shue-Medill Middle School\",\n        \"confidence\": \"high\"\n    },\n    {\n        \"grade_level\": \"high\",\n        \"start_time\": \"08:30\",\n        \"end_time\": \"16:00\",\n        \"school_name\": \"Newark High School\",\n        \"confidence\": \"high\"\n    }\n]\n```"
+}

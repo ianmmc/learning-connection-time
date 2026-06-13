@@ -1,0 +1,42 @@
+{
+  "district_id": "2307320",
+  "district_name": "Lewiston Public Schools",
+  "state": "ME",
+  "extraction_date": "2026-06-12T17:32:37.174816",
+  "extractor": "ollama:qwen2.5vl-bench",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:15",
+      "end_time": "12:30",
+      "school_name": "LMS",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "02:00",
+      "school_name": "LHS",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration -345min below min 300min]"
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:10",
+      "end_time": "14:35",
+      "school_name": "Fivay High",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "```json\n{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"07:15\",\"end_time\":\"12:30\",\"school_name\":\"LMS\"},{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"02:00\",\"school_name\":\"LHS\"},{\"grade_level\":\"high\",\"start_time\":\"08:10\",\"end_time\":\"14:35\",\"school_name\":\"Fivay High\"}]}\n```"
+}

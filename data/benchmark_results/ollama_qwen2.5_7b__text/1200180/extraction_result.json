@@ -1,0 +1,332 @@
+{
+  "district_id": "1200180",
+  "district_name": "BROWARD",
+  "state": "FL",
+  "extraction_date": "2026-06-12T04:04:21.753160",
+  "extractor": "ollama:qwen2.5:7b",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Heron Heights Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:50",
+      "end_time": "13:50",
+      "school_name": "Banyan Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Beachside Montessori Village",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Bennett Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:45",
+      "end_time": "15:15",
+      "school_name": "Bethune, Mary M. Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Boulevard Heights Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Broadview Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Challenger Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Coconut Creek K-8 Academy of Excellence",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Coconut Palm Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "Colbert Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Collins Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Cooper City Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:50",
+      "end_time": "13:50",
+      "school_name": "Cypress Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:50",
+      "end_time": "13:50",
+      "school_name": "Dania Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Davie Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Deerfield Beach Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:30",
+      "end_time": "15:00",
+      "school_name": "Deerfield Park Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Dillard Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Discovery Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:50",
+      "end_time": "13:50",
+      "school_name": "Driftwood Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Eagle Point Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Eagle Ridge Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Endeavor Primary Learning Center",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Everglades Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:50",
+      "end_time": "13:50",
+      "school_name": "Fairway Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "Floranada Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:50",
+      "end_time": "13:50",
+      "school_name": "Forest Hills Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:40",
+      "end_time": "14:40",
+      "school_name": "Stranahan High",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:40",
+      "end_time": "14:40",
+      "school_name": "Taravella, J.P. High",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:40",
+      "end_time": "14:40",
+      "school_name": "West Broward High",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:40",
+      "end_time": "14:40",
+      "school_name": "Western High",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'middle'}. Document may have more data.",
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Heron Heights Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:50\",\"end_time\":\"13:50\",\"school_name\":\"Banyan Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Beachside Montessori Village\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Bennett Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:45\",\"end_time\":\"15:15\",\"school_name\":\"Bethune, Mary M. Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Boulevard Heights Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Broadview Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Challenger Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Coconut Creek K-8 Academy of Excellence\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Coconut Palm Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"Colbert Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Collins Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Cooper City Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:50\",\"end_time\":\"13:50\",\"school_name\":\"Cypress Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:50\",\"end_time\":\"13:50\",\"school_name\":\"Dania Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Davie Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Deerfield Beach Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:30\",\"end_time\":\"15:00\",\"school_name\":\"Deerfield Park Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Dillard Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Discovery Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:50\",\"end_time\":\"13:50\",\"school_name\":\"Driftwood Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Eagle Point Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Eagle Ridge Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Endeavor Primary Learning Center\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Everglades Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:50\",\"end_time\":\"13:50\",\"school_name\":\"Fairway Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"Floranada Elementary\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:50\",\"end_time\":\"13:50\",\"school_name\":\"Forest Hills Elementary\"},{\"grade_level\":\"high\",\"start_time\":\"07:40\",\"end_time\":\"14:40\",\"school_name\":\"Stranahan High\"},{\"grade_level\":\"high\",\"start_time\":\"07:40\",\"end_time\":\"14:40\",\"school_name\":\"Taravella, J.P. High\"},{\"grade_level\":\"high\",\"start_time\":\"07:40\",\"end_time\":\"14:40\",\"school_name\":\"West Broward High\"},{\"grade_level\":\"high\",\"start_time\":\"07:40\",\"end_time\":\"14:40\",\"school_name\":\"Western High\"}]}"
+}

@@ -1,0 +1,52 @@
+{
+  "district_id": "5605302",
+  "district_name": "Sweetwater County School District #1",
+  "state": "WY",
+  "extraction_date": "2026-06-12T05:30:13.649796",
+  "extractor": "ollama:mistral:7b",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "15:00",
+      "school_name": "Rock Springs Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "15:00",
+      "school_name": "Wamsutter K-8 School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "16:05",
+      "school_name": "Farson-Eden Middle School",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 500min exceeds max 480min]"
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "14:35",
+      "school_name": "Rock Springs High School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": " {\"schedules\":[\n{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"15:00\",\"school_name\":\"Rock Springs Elementary\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"15:00\",\"school_name\":\"Wamsutter K-8 School\"},\n{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"16:05\",\"school_name\":\"Farson-Eden Middle School\"},\n{\"grade_level\":\"high\",\"start_time\":\"08:00\",\"end_time\":\"14:35\",\"school_name\":\"Rock Springs High School\"}\n]}"
+}
