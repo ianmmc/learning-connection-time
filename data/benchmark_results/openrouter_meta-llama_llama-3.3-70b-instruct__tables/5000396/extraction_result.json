@@ -1,0 +1,52 @@
+{
+  "district_id": "5000396",
+  "district_name": "Champlain Valley Unified Union School District #56",
+  "state": "VT",
+  "extraction_date": "2026-06-14T00:00:34.539451",
+  "extractor": "openrouter:meta-llama/llama-3.3-70b-instruct",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:45",
+      "school_name": "Charlotte Central School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:45",
+      "school_name": "Shelburne Community School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:50",
+      "end_time": "14:35",
+      "school_name": "Allen Brook School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:55",
+      "end_time": "14:45",
+      "school_name": "Williston Central School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'high', 'middle'}. Document may have more data.",
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"14:45\",\"school_name\":\"Charlotte Central School\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"14:45\",\"school_name\":\"Shelburne Community School\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:50\",\"end_time\":\"14:35\",\"school_name\":\"Allen Brook School\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:55\",\"end_time\":\"14:45\",\"school_name\":\"Williston Central School\",\"confidence\":\"high\"}]}"
+}

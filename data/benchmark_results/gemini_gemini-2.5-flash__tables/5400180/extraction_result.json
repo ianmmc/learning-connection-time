@@ -1,0 +1,42 @@
+{
+  "district_id": "5400180",
+  "district_name": "CABELL COUNTY SCHOOLS",
+  "state": "WV",
+  "extraction_date": "2026-06-13T21:43:06.941175",
+  "extractor": "gemini:gemini-2.5-flash",
+  "schedules": [
+    {
+      "grade_level": "middle",
+      "start_time": "07:48",
+      "end_time": "15:00",
+      "school_name": "Bourbonville Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "15:17",
+      "school_name": "Huntington High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:49",
+      "end_time": "14:47",
+      "school_name": "Huntington Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'elementary'}. Document may have more data.",
+  "raw_response": "```json\n{\"schedules\":[{\"grade_level\":\"middle\",\"start_time\":\"07:48\",\"end_time\":\"15:00\",\"school_name\":\"Bourbonville Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"15:17\",\"school_name\":\"Huntington High School\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:49\",\"end_time\":\"14:47\",\"school_name\":\"Huntington Middle School\",\"confidence\":\"high\"}]}\n```"
+}

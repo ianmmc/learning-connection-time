@@ -1,0 +1,252 @@
+{
+  "district_id": "0200600",
+  "district_name": "Fairbanks North Star Borough School District",
+  "state": "AK",
+  "extraction_date": "2026-06-14T02:48:46.378552",
+  "extractor": "openrouter:google/gemini-2.5-flash-lite",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:40",
+      "end_time": "14:10",
+      "school_name": "ANDERSON-CRAWFORD ELEMENTARY",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:45",
+      "school_name": "ANNE WIEN ELEMENTARY",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:30",
+      "school_name": "ARCTIC LIGHT ELEMENTARY",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:45",
+      "school_name": "BARNETTE MAGNET",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:45",
+      "end_time": "15:15",
+      "school_name": "BOREAL SUN CHARTER",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:45",
+      "school_name": "CHINOOK MONTESSORI CHARTER",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:45",
+      "school_name": "DENALI ELEMENTARY",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:30",
+      "school_name": "HUNTER ELEMENTARY",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "HUTCHISON HIGH",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:45",
+      "school_name": "LADD ELEMENTARY",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "LATHROP HIGH",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:30",
+      "school_name": "NORTH POLE ELEMENTARY",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "NORTH POLE HIGH",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:50",
+      "end_time": "14:20",
+      "school_name": "NORTH POLE MIDDLE",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:50",
+      "end_time": "14:20",
+      "school_name": "RANDY SMITH MIDDLE",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:50",
+      "end_time": "14:20",
+      "school_name": "RYAN MIDDLE",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:45",
+      "school_name": "SALCHA ELEMENTARY",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:55",
+      "end_time": "14:25",
+      "school_name": "TANANA MIDDLE",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:30",
+      "school_name": "TICASUK BROWN ELEMENTARY",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:45",
+      "school_name": "UNIVERSITY PARK ELEMENTARY",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:30",
+      "end_time": "15:00",
+      "school_name": "WATERSHED CHARTER",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:45",
+      "school_name": "WELLER ELEMENTARY",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "W E S T V A L L E Y H I G H",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:45",
+      "school_name": "WOODRIVER ELEMENTARY",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"07:40\",\"end_time\":\"14:10\",\"school_name\":\"ANDERSON-CRAWFORD ELEMENTARY\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:45\",\"school_name\":\"ANNE WIEN ELEMENTARY\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:30\",\"school_name\":\"ARCTIC LIGHT ELEMENTARY\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:45\",\"school_name\":\"BARNETTE MAGNET\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:45\",\"end_time\":\"15:15\",\"school_name\":\"BOREAL SUN CHARTER\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:45\",\"school_name\":\"CHINOOK MONTESSORI CHARTER\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:45\",\"school_name\":\"DENALI ELEMENTARY\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:30\",\"school_name\":\"HUNTER ELEMENTARY\"},{\"grade_level\":\"high\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"school_name\":\"HUTCHISON HIGH\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:45\",\"school_name\":\"LADD ELEMENTARY\"},{\"grade_level\":\"high\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"school_name\":\"LATHROP HIGH\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:00\",\"end_time\":\"15:30\",\"school_name\":\"NORTH POLE ELEMENTARY\"},{\"grade_level\":\"high\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"school_name\":\"NORTH POLE HIGH\"},{\"grade_level\":\"middle\",\"start_time\":\"07:50\",\"end_time\":\"14:20\",\"school_name\":\"NORTH POLE MIDDLE\"},{\"grade_level\":\"middle\",\"start_time\":\"07:50\",\"end_time\":\"14:20\",\"school_name\":\"RANDY SMITH MIDDLE\"},{\"grade_level\":\"middle\",\"start_time\":\"07:50\",\"end_time\":\"14:20\",\"school_name\":\"RYAN MIDDLE\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:45\",\"school_name\":\"SALCHA ELEMENTARY\"},{\"grade_level\":\"middle\",\"start_time\":\"07:55\",\"end_time\":\"14:25\",\"school_name\":\"TANANA MIDDLE\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:00\",\"end_time\":\"15:30\",\"school_name\":\"TICASUK BROWN ELEMENTARY\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:45\",\"school_name\":\"UNIVERSITY PARK ELEMENTARY\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:30\",\"end_time\":\"15:00\",\"school_name\":\"WATERSHED CHARTER\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:45\",\"school_name\":\"WELLER ELEMENTARY\"},{\"grade_level\":\"high\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"school_name\":\"W E S T V A L L E Y H I G H\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:45\",\"school_name\":\"WOODRIVER ELEMENTARY\"}]}"
+}

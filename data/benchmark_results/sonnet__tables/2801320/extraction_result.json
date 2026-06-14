@@ -1,0 +1,12 @@
+{"district_id":"2801320","extractor":"anthropic:sonnet","success":true,"schedules":[
+{"grade_level":"high","start_time":"08:00","end_time":"15:05","school_name":"Lincoln High","confidence":"high"},
+{"grade_level":"high","start_time":"08:00","end_time":"15:00","school_name":"North Star High","confidence":"high"},
+{"grade_level":"high","start_time":"08:00","end_time":"15:00","school_name":"East High","confidence":"high"},
+{"grade_level":"high","start_time":"08:00","end_time":"15:00","school_name":"Northwest High","confidence":"high"},
+{"grade_level":"high","start_time":"08:00","end_time":"15:01","school_name":"Standing Bear High","confidence":"high"},
+{"grade_level":"middle","start_time":"08:00","end_time":"15:00","school_name":"Culler Middle School","confidence":"high"},
+{"grade_level":"middle","start_time":"08:00","end_time":"15:00","school_name":"Pound Middle School","confidence":"high"},
+{"grade_level":"middle","start_time":"08:00","end_time":"15:00","school_name":"Lux Middle School","confidence":"high"},
+{"grade_level":"elementary","start_time":"08:15","end_time":"14:53","school_name":"Adams Elementary","confidence":"high"},
+{"grade_level":"elementary","start_time":"09:00","end_time":"15:38","school_name":"Arnold Elementary","confidence":"high"}
+]}

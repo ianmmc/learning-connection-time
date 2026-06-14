@@ -1,0 +1,39 @@
+{
+  "model": "openrouter:meta-llama/llama-3.3-70b-instruct:free",
+  "run_date": "2026-06-13T22:15:36.647676",
+  "config": {
+    "temperature": 0.1,
+    "num_predict": 1000,
+    "max_text_len": 6000
+  },
+  "summary": {
+    "districts_tested": 1,
+    "overall_accuracy_pct": 0.0,
+    "json_success_rate": 100.0,
+    "false_positive_rate": 0.0,
+    "total_time_seconds": 64.0,
+    "mean_time_seconds": 64.0
+  },
+  "districts": [
+    {
+      "district_id": "1100031",
+      "district_name": "KIPP DC PCS",
+      "state": "DC",
+      "score": 0,
+      "max_score": 30,
+      "pct": 0.0,
+      "extraction_time_seconds": 63.6,
+      "json_parse_failed": false,
+      "false_positive_count": 0,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "extraction_error",
+          "points": -5,
+          "detail": "RateLimitError: Error code: 429 - {'error': {'message': 'Provider returned error', 'code': 429, 'metadata': {'raw': 'meta-llama/llama-3.3-70b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations', 'provider_name': 'Venice', 'is_byok': False, 'retry_after_seconds': 30, 'retry_after_seconds_raw': 29.423, 'headers': {'Retry-After': '30'}}}, 'user_id': 'user_3F6G2u57EqCPewKcTHYL5cGYfne'}"
+        }
+      ],
+      "entry_scores": []
+    }
+  ]
+}

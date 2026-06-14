@@ -1,0 +1,92 @@
+{
+  "district_id": "0102370",
+  "district_name": "Mobile County",
+  "state": "AL",
+  "extraction_date": "2026-06-14T00:21:03.448192",
+  "extractor": "openrouter:ibm-granite/granite-4.1-8b",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "15:15",
+      "school_name": "Ariel W. Holloway Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:40",
+      "end_time": "15:10",
+      "school_name": "Dodge Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "15:15",
+      "school_name": "Collier Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "15:25",
+      "school_name": "Tanner Williams Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "06:50",
+      "end_time": "14:20",
+      "school_name": "Causey Middle School",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Start time 06:50 before 7:00]"
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "06:50",
+      "end_time": "14:20",
+      "school_name": "Pillans Middle School",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Start time 06:50 before 7:00]"
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:05",
+      "end_time": "14:25",
+      "school_name": "Mary G. Montgomery High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:05",
+      "end_time": "14:25",
+      "school_name": "Mattie T. Blount High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"15:15\",\"school_name\":\"Ariel W. Holloway Elementary School\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:40\",\"end_time\":\"15:10\",\"school_name\":\"Dodge Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"15:15\",\"school_name\":\"Collier Elementary School\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"15:25\",\"school_name\":\"Tanner Williams Elementary School\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"06:50\",\"end_time\":\"14:20\",\"school_name\":\"Causey Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"06:50\",\"end_time\":\"14:20\",\"school_name\":\"Pillans Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:05\",\"end_time\":\"14:25\",\"school_name\":\"Mary G. Montgomery High School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:05\",\"end_time\":\"14:25\",\"school_name\":\"Mattie T. Blount High School\",\"confidence\":\"high\"}]}"
+}

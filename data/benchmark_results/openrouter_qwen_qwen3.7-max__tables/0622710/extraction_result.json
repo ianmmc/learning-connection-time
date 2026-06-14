@@ -1,0 +1,11 @@
+{
+  "district_id": "0622710",
+  "district_name": "Los Angeles Unified",
+  "state": "CA",
+  "extraction_date": "2026-06-14T00:52:33.512444",
+  "extractor": "openrouter:qwen/qwen3.7-max",
+  "schedules": [],
+  "success": false,
+  "error": "No valid schedules extracted",
+  "raw_response": "{\"schedules\":[]}"
+}

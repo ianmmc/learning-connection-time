@@ -1,0 +1,11 @@
+{
+  "district_id": "0102430",
+  "district_name": "Montgomery County",
+  "state": "AL",
+  "extraction_date": "2026-06-14T00:28:55.676548",
+  "extractor": "openrouter:x-ai/grok-4.3",
+  "schedules": [],
+  "success": false,
+  "error": "No valid schedules extracted",
+  "raw_response": "{\"schedules\":[]}"
+}

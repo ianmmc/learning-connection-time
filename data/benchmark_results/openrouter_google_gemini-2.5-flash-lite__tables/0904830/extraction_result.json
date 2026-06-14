@@ -1,0 +1,462 @@
+{
+  "district_id": "0904830",
+  "district_name": "Waterbury School District",
+  "state": "CT",
+  "extraction_date": "2026-06-14T02:48:59.126696",
+  "extractor": "openrouter:google/gemini-2.5-flash-lite",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "07:20",
+      "end_time": "13:50",
+      "school_name": "Crosby",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:20",
+      "end_time": "13:50",
+      "school_name": "Kennedy",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:20",
+      "end_time": "13:50",
+      "school_name": "Wtby Arts Magnet",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:20",
+      "end_time": "13:50",
+      "school_name": "Wtby Career Academy",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:20",
+      "end_time": "13:50",
+      "school_name": "Wilby",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:50",
+      "end_time": "14:20",
+      "school_name": "North End",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:50",
+      "end_time": "14:20",
+      "school_name": "Wallace",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:20",
+      "end_time": "13:50",
+      "school_name": "Wtby Arts Magnet",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:50",
+      "end_time": "14:20",
+      "school_name": "West Side",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "Bucks Hill",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "Bunker Hill",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "Carrington",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "Chase",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "Cross, Wendell",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:05",
+      "end_time": "14:20",
+      "school_name": "Driggs",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:05",
+      "end_time": "14:20",
+      "school_name": "Duggan",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "Generali",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "Gilmartin",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "Hopeville",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "Kingsbury",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "Maloney",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "Reed",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "Regan",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:05",
+      "end_time": "15:20",
+      "school_name": "Roberto Clemente",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:05",
+      "end_time": "15:20",
+      "school_name": "Rotella",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:05",
+      "end_time": "14:20",
+      "school_name": "Sprague",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:05",
+      "end_time": "14:20",
+      "school_name": "Tinker",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "Walsh",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:05",
+      "end_time": "14:20",
+      "school_name": "Washington",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "Wilson",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:50",
+      "end_time": "14:20",
+      "school_name": "Academic Academy (at Wallace)",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:21",
+      "school_name": "Bucks Hill Pre-K",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:20",
+      "end_time": "13:00",
+      "school_name": "Enlightenment",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "13:35",
+      "school_name": "State Street",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:50",
+      "school_name": "ACES at Chase",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "15:00",
+      "school_name": "Alpha & Omega Academy",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "09:05",
+      "end_time": "15:20",
+      "school_name": "Catholic Academy of Waterbury",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "15:45",
+      "school_name": "Brass City Charter",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 495min exceeds max 480min]"
+    },
+    {
+      "grade_level": "high",
+      "start_time": "09:05",
+      "end_time": "15:20",
+      "school_name": "Children's Community",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "13:45",
+      "school_name": "Holy Cross High School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:25",
+      "end_time": "14:20",
+      "school_name": "Kaynor Technical",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "09:05",
+      "end_time": "15:20",
+      "school_name": "Our Lady of Mount Carmel",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "09:00",
+      "end_time": "16:00",
+      "school_name": "Yeshiva Bais Yaakov (Girls HS)",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "09:00",
+      "end_time": "16:00",
+      "school_name": "Yeshiva Gedolah (Boys HS)",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "16:00",
+      "school_name": "Yeshiva K'Tana (Elementary)",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "```json\n{\"schedules\": [\n  {\"grade_level\": \"high\", \"start_time\": \"07:20\", \"end_time\": \"13:50\", \"school_name\": \"Crosby\"},\n  {\"grade_level\": \"high\", \"start_time\": \"07:20\", \"end_time\": \"13:50\", \"school_name\": \"Kennedy\"},\n  {\"grade_level\": \"high\", \"start_time\": \"07:20\", \"end_time\": \"13:50\", \"school_name\": \"Wtby Arts Magnet\"},\n  {\"grade_level\": \"high\", \"start_time\": \"07:20\", \"end_time\": \"13:50\", \"school_name\": \"Wtby Career Academy\"},\n  {\"grade_level\": \"high\", \"start_time\": \"07:20\", \"end_time\": \"13:50\", \"school_name\": \"Wilby\"},\n  {\"grade_level\": \"middle\", \"start_time\": \"07:50\", \"end_time\": \"14:20\", \"school_name\": \"North End\"},\n  {\"grade_level\": \"middle\", \"start_time\": \"07:50\", \"end_time\": \"14:20\", \"school_name\": \"Wallace\"},\n  {\"grade_level\": \"middle\", \"start_time\": \"07:20\", \"end_time\": \"13:50\", \"school_name\": \"Wtby Arts Magnet\"},\n  {\"grade_level\": \"middle\", \"start_time\": \"07:50\", \"end_time\": \"14:20\", \"school_name\": \"West Side\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"08:35\", \"end_time\": \"14:50\", \"school_name\": \"Bucks Hill\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"08:35\", \"end_time\": \"14:50\", \"school_name\": \"Bunker Hill\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"08:35\", \"end_time\": \"14:50\", \"school_name\": \"Carrington\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"08:35\", \"end_time\": \"14:50\", \"school_name\": \"Chase\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"08:35\", \"end_time\": \"14:50\", \"school_name\": \"Cross, Wendell\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"08:05\", \"end_time\": \"14:20\", \"school_name\": \"Driggs\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"08:05\", \"end_time\": \"14:20\", \"school_name\": \"Duggan\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"08:35\", \"end_time\": \"14:50\", \"school_name\": \"Generali\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"08:35\", \"end_time\": \"14:50\", \"school_name\": \"Gilmartin\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"08:35\", \"end_time\": \"14:50\", \"school_name\": \"Hopeville\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"08:35\", \"end_time\": \"14:50\", \"school_name\": \"Kingsbury\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"08:35\", \"end_time\": \"14:50\", \"school_name\": \"Maloney\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"08:35\", \"end_time\": \"14:50\", \"school_name\": \"Reed\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"08:35\", \"end_time\": \"14:50\", \"school_name\": \"Regan\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"09:05\", \"end_time\": \"15:20\", \"school_name\": \"Roberto Clemente\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"09:05\", \"end_time\": \"15:20\", \"school_name\": \"Rotella\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"08:05\", \"end_time\": \"14:20\", \"school_name\": \"Sprague\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"08:05\", \"end_time\": \"14:20\", \"school_name\": \"Tinker\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"08:35\", \"end_time\": \"14:50\", \"school_name\": \"Walsh\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"08:05\", \"end_time\": \"14:20\", \"school_name\": \"Washington\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"08:35\", \"end_time\": \"14:50\", \"school_name\": \"Wilson\"},\n  {\"grade_level\": \"middle\", \"start_time\": \"07:50\", \"end_time\": \"14:20\", \"school_name\": \"Academic Academy (at Wallace)\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"09:00\", \"end_time\": \"15:21\", \"school_name\": \"Bucks Hill Pre-K\"},\n  {\"grade_level\": \"high\", \"start_time\": \"07:20\", \"end_time\": \"13:00\", \"school_name\": \"Enlightenment\"},\n  {\"grade_level\": \"high\", \"start_time\": \"07:30\", \"end_time\": \"13:35\", \"school_name\": \"State Street\"},\n  {\"grade_level\": \"high\", \"start_time\": \"07:45\", \"end_time\": \"14:50\", \"school_name\": \"ACES at Chase\"},\n  {\"grade_level\": \"high\", \"start_time\": \"08:00\", \"end_time\": \"15:00\", \"school_name\": \"Alpha & Omega Academy\"},\n  {\"grade_level\": \"high\", \"start_time\": \"09:05\", \"end_time\": \"15:20\", \"school_name\": \"Catholic Academy of Waterbury\"},\n  {\"grade_level\": \"high\", \"start_time\": \"07:30\", \"end_time\": \"15:45\", \"school_name\": \"Brass City Charter\"},\n  {\"grade_level\": \"high\", \"start_time\": \"09:05\", \"end_time\": \"15:20\", \"school_name\": \"Children's Community\"},\n  {\"grade_level\": \"high\", \"start_time\": \"07:30\", \"end_time\": \"13:45\", \"school_name\": \"Holy Cross High School\"},\n  {\"grade_level\": \"high\", \"start_time\": \"07:25\", \"end_time\": \"14:20\", \"school_name\": \"Kaynor Technical\"},\n  {\"grade_level\": \"high\", \"start_time\": \"09:05\", \"end_time\": \"15:20\", \"school_name\": \"Our Lady of Mount Carmel\"},\n  {\"grade_level\": \"high\", \"start_time\": \"09:00\", \"end_time\": \"16:00\", \"school_name\": \"Yeshiva Bais Yaakov (Girls HS)\"},\n  {\"grade_level\": \"high\", \"start_time\": \"09:00\", \"end_time\": \"16:00\", \"school_name\": \"Yeshiva Gedolah (Boys HS)\"},\n  {\"grade_level\": \"elementary\", \"start_time\": \"09:00\", \"end_time\": \"16:00\", \"school_name\": \"Yeshiva K'Tana (Elementary)\"}\n]}\n```"
+}

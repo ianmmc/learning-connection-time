@@ -1,0 +1,382 @@
+{
+  "district_id": "2801320",
+  "district_name": "DESOTO CO SCHOOL DIST",
+  "state": "MS",
+  "extraction_date": "2026-06-14T00:34:43.539328",
+  "extractor": "openrouter:qwen/qwen3-235b-a22b-2507",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "08:30",
+      "end_time": "15:25",
+      "school_name": "Center Hill Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:30",
+      "end_time": "15:25",
+      "school_name": "Overpark Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:00",
+      "end_time": "15:40",
+      "school_name": "Center Hill Middle",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:25",
+      "end_time": "15:45",
+      "school_name": "Center Hill High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:25",
+      "end_time": "15:20",
+      "school_name": "DeSoto Central Primary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:30",
+      "end_time": "15:25",
+      "school_name": "DeSoto Central Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:00",
+      "end_time": "15:40",
+      "school_name": "DeSoto Central Middle",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:25",
+      "end_time": "15:45",
+      "school_name": "DeSoto Central High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:30",
+      "end_time": "15:25",
+      "school_name": "Pleasant Hill Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:40",
+      "end_time": "14:35",
+      "school_name": "Hernando Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:35",
+      "end_time": "14:30",
+      "school_name": "Oak Grove Central Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:40",
+      "school_name": "Hernando Hills Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:35",
+      "end_time": "14:30",
+      "school_name": "Hernando Intermediate School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:15",
+      "end_time": "14:50",
+      "school_name": "Hernando Middle",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "14:55",
+      "school_name": "Hernando High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:40",
+      "school_name": "Horn Lake Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:40",
+      "school_name": "Shadow Oaks Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:40",
+      "end_time": "14:20",
+      "school_name": "Horn Lake Intermediate",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:10",
+      "end_time": "14:50",
+      "school_name": "Horn Lake Middle",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:35",
+      "end_time": "14:55",
+      "school_name": "Horn Lake High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:30",
+      "end_time": "15:25",
+      "school_name": "Lake Cormorant Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:30",
+      "end_time": "15:25",
+      "school_name": "Walls Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:00",
+      "end_time": "15:40",
+      "school_name": "Lake Cormorant Middle",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:25",
+      "end_time": "15:45",
+      "school_name": "Lake Cormorant High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:40",
+      "end_time": "14:40",
+      "school_name": "Lewisburg Primary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:40",
+      "end_time": "14:40",
+      "school_name": "Lewisburg Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:35",
+      "end_time": "14:30",
+      "school_name": "Lewisburg Intermediate",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:00",
+      "end_time": "15:40",
+      "school_name": "Lewisburg Middle",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:25",
+      "end_time": "15:45",
+      "school_name": "Lewisburg High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:30",
+      "end_time": "15:25",
+      "school_name": "Oak Hills Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:30",
+      "end_time": "15:25",
+      "school_name": "Salem Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:30",
+      "end_time": "15:25",
+      "school_name": "Southaven Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:30",
+      "end_time": "15:25",
+      "school_name": "Hope Sullivan Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:30",
+      "end_time": "15:25",
+      "school_name": "Greenbrook Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:25",
+      "end_time": "15:20",
+      "school_name": "Southaven Intermediate",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:00",
+      "end_time": "15:40",
+      "school_name": "Southaven Middle",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:25",
+      "end_time": "15:45",
+      "school_name": "Southaven High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"08:30\",\"end_time\":\"15:25\",\"school_name\":\"Center Hill Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:30\",\"end_time\":\"15:25\",\"school_name\":\"Overpark Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"08:00\",\"end_time\":\"15:40\",\"school_name\":\"Center Hill Middle\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:25\",\"end_time\":\"15:45\",\"school_name\":\"Center Hill High\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:25\",\"end_time\":\"15:20\",\"school_name\":\"DeSoto Central Primary\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:30\",\"end_time\":\"15:25\",\"school_name\":\"DeSoto Central Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"08:00\",\"end_time\":\"15:40\",\"school_name\":\"DeSoto Central Middle\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:25\",\"end_time\":\"15:45\",\"school_name\":\"DeSoto Central High\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:30\",\"end_time\":\"15:25\",\"school_name\":\"Pleasant Hill Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:40\",\"end_time\":\"14:35\",\"school_name\":\"Hernando Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:35\",\"end_time\":\"14:30\",\"school_name\":\"Oak Grove Central Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"14:40\",\"school_name\":\"Hernando Hills Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:35\",\"end_time\":\"14:30\",\"school_name\":\"Hernando Intermediate School\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:15\",\"end_time\":\"14:50\",\"school_name\":\"Hernando Middle\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:30\",\"end_time\":\"14:55\",\"school_name\":\"Hernando High\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"14:40\",\"school_name\":\"Horn Lake Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"14:40\",\"school_name\":\"Shadow Oaks Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:40\",\"end_time\":\"14:20\",\"school_name\":\"Horn Lake Intermediate\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:10\",\"end_time\":\"14:50\",\"school_name\":\"Horn Lake Middle\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:35\",\"end_time\":\"14:55\",\"school_name\":\"Horn Lake High\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:30\",\"end_time\":\"15:25\",\"school_name\":\"Lake Cormorant Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:30\",\"end_time\":\"15:25\",\"school_name\":\"Walls Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"08:00\",\"end_time\":\"15:40\",\"school_name\":\"Lake Cormorant Middle\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:25\",\"end_time\":\"15:45\",\"school_name\":\"Lake Cormorant High\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:40\",\"end_time\":\"14:40\",\"school_name\":\"Lewisburg Primary\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:40\",\"end_time\":\"14:40\",\"school_name\":\"Lewisburg Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:35\",\"end_time\":\"14:30\",\"school_name\":\"Lewisburg Intermediate\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"08:00\",\"end_time\":\"15:40\",\"school_name\":\"Lewisburg Middle\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:25\",\"end_time\":\"15:45\",\"school_name\":\"Lewisburg High\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:30\",\"end_time\":\"15:25\",\"school_name\":\"Oak Hills Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:30\",\"end_time\":\"15:25\",\"school_name\":\"Salem Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:30\",\"end_time\":\"15:25\",\"school_name\":\"Southaven Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:30\",\"end_time\":\"15:25\",\"school_name\":\"Hope Sullivan Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:30\",\"end_time\":\"15:25\",\"school_name\":\"Greenbrook Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:25\",\"end_time\":\"15:20\",\"school_name\":\"Southaven Intermediate\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"08:00\",\"end_time\":\"15:40\",\"school_name\":\"Southaven Middle\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:25\",\"end_time\":\"15:45\",\"school_name\":\"Southaven High\",\"confidence\":\"high\"}]}"
+}

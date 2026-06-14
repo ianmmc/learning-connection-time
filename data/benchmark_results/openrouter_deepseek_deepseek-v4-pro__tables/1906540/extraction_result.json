@@ -1,0 +1,52 @@
+{
+  "district_id": "1906540",
+  "district_name": "Cedar Rapids Comm School District",
+  "state": "IA",
+  "extraction_date": "2026-06-14T00:29:06.654980",
+  "extractor": "openrouter:deepseek/deepseek-v4-pro",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "08:50",
+      "end_time": "15:50",
+      "school_name": "Wright Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:50",
+      "end_time": "14:50",
+      "school_name": "Franklin Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:50",
+      "end_time": "14:50",
+      "school_name": "Washington High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:20",
+      "end_time": "15:00",
+      "school_name": "Metro High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"08:50\",\"end_time\":\"15:50\",\"school_name\":\"Wright Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:50\",\"end_time\":\"14:50\",\"school_name\":\"Franklin Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:50\",\"end_time\":\"14:50\",\"school_name\":\"Washington High School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:20\",\"end_time\":\"15:00\",\"school_name\":\"Metro High School\",\"confidence\":\"high\"}]}"
+}

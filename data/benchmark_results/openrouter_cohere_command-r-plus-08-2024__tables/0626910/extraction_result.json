@@ -1,0 +1,62 @@
+{
+  "district_id": "0626910",
+  "district_name": "New Haven Unified",
+  "state": "CA",
+  "extraction_date": "2026-06-14T00:59:46.431436",
+  "extractor": "openrouter:cohere/command-r-plus-08-2024",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:05",
+      "school_name": "Alvarado Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:05",
+      "school_name": "Delaine Eastin Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:05",
+      "school_name": "Searles Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:15",
+      "end_time": "14:47",
+      "school_name": "C\u00e9sar Ch\u00e1vez Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "13:54",
+      "school_name": "Core & Alternative Learning Academy at Conley-Caraballo High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\n    \"schedules\": [\n        {\n            \"grade_level\": \"elementary\",\n            \"start_time\": \"08:00\",\n            \"end_time\": \"14:05\",\n            \"school_name\": \"Alvarado Elementary School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"elementary\",\n            \"start_time\": \"08:00\",\n            \"end_time\": \"14:05\",\n            \"school_name\": \"Delaine Eastin Elementary School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"elementary\",\n            \"start_time\": \"08:00\",\n            \"end_time\": \"14:05\",\n            \"school_name\": \"Searles Elementary School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"middle\",\n            \"start_time\": \"08:15\",\n            \"end_time\": \"14:47\",\n            \"school_name\": \"C\\u00e9sar Ch\\u00e1vez Middle School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"high\",\n            \"start_time\": \"08:00\",\n            \"end_time\": \"13:54\",\n            \"school_name\": \"Core & Alternative Learning Academy at Conley-Caraballo High School\",\n            \"confidence\": \"high\"\n        }\n    ]\n}"
+}

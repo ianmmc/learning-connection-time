@@ -1,0 +1,11 @@
+{
+  "district_id": "0100270",
+  "district_name": "Baldwin County",
+  "state": "AL",
+  "extraction_date": "2026-06-14T00:41:21.699121",
+  "extractor": "openrouter:google/gemini-3.5-flash",
+  "schedules": [],
+  "success": false,
+  "error": "Could not parse JSON response",
+  "raw_response": " 7:45-7:55\"\n    \"Dismissal 3:05\"\n    Start: 07:45, End: 15:05.\n\n4.  **Construct JSON**:\n    ```json\n    {\n      \"schedules\": [\n        {\n          \"grade_level\": \"elementary\",\n          \"start"
+}

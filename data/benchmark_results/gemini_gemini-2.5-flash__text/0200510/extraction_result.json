@@ -1,0 +1,42 @@
+{
+  "district_id": "0200510",
+  "district_name": "Matanuska-Susitna Borough School District",
+  "state": "AK",
+  "extraction_date": "2026-06-13T21:05:32.306393",
+  "extractor": "gemini:gemini-2.5-flash",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:15",
+      "school_name": "Colony High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:45",
+      "school_name": "Big Lake Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "14:15",
+      "school_name": "Teeland Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:15\",\"school_name\":\"Colony High School\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:45\",\"school_name\":\"Big Lake Elementary School\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"14:15\",\"school_name\":\"Teeland Middle School\",\"confidence\":\"high\"}]}"
+}

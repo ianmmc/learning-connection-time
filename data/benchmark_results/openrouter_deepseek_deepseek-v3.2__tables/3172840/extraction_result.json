@@ -1,0 +1,102 @@
+{
+  "district_id": "3172840",
+  "district_name": "LINCOLN PUBLIC SCHOOLS",
+  "state": "NE",
+  "extraction_date": "2026-06-13T23:45:01.362619",
+  "extractor": "openrouter:deepseek/deepseek-v3.2",
+  "schedules": [
+    {
+      "grade_level": "middle",
+      "start_time": "08:00",
+      "end_time": "15:00",
+      "school_name": "Culler Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "15:05",
+      "school_name": "Lincoln High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "15:00",
+      "school_name": "North Star High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "15:00",
+      "school_name": "Northwest High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:00",
+      "end_time": "15:00",
+      "school_name": "Pound Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "15:01",
+      "school_name": "Standing Bear High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:00",
+      "end_time": "15:00",
+      "school_name": "Lux Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:53",
+      "school_name": "Adams Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:38",
+      "school_name": "Arnold Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "```json\n{\n    \"schedules\": [\n        {\n            \"grade_level\": \"middle\",\n            \"start_time\": \"08:00\",\n            \"end_time\": \"15:00\",\n            \"school_name\": \"Culler Middle School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"high\",\n            \"start_time\": \"08:00\",\n            \"end_time\": \"15:05\",\n            \"school_name\": \"Lincoln High School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"high\",\n            \"start_time\": \"08:00\",\n            \"end_time\": \"15:00\",\n            \"school_name\": \"North Star High School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"high\",\n            \"start_time\": \"08:00\",\n            \"end_time\": \"15:00\",\n            \"school_name\": \"Northwest High School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"middle\",\n            \"start_time\": \"08:00\",\n            \"end_time\": \"15:00\",\n            \"school_name\": \"Pound Middle School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"high\",\n            \"start_time\": \"08:00\",\n            \"end_time\": \"15:01\",\n            \"school_name\": \"Standing Bear High School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"middle\",\n            \"start_time\": \"08:00\",\n            \"end_time\": \"15:00\",\n            \"school_name\": \"Lux Middle School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"elementary\",\n            \"start_time\": \"08:15\",\n            \"end_time\": \"14:53\",\n            \"school_name\": \"Adams Elementary\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"elementary\",\n            \"start_time\": \"09:00\",\n            \"end_time\": \"15:38\",\n            \"school_name\": \"Arnold Elementary\",\n            \"confidence\": \"high\"\n        }\n    ]\n}\n```"
+}

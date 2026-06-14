@@ -1,0 +1,196 @@
+[
+  {
+    "url": "https://www.sweetwater1.org/site-pages/calendars-and-times",
+    "tools": [
+      "perplexity",
+      "openrouter",
+      "claude"
+    ],
+    "hash": "52e7a01ca6",
+    "ok": true,
+    "final_url": "https://www.sweetwater1.org/site-pages/calendars-and-times",
+    "file": "52e7a01ca6.pdf",
+    "kind": "html-pdf"
+  },
+  {
+    "url": "https://www.sweetwater1.org/district-calendar",
+    "tools": [
+      "perplexity",
+      "openrouter",
+      "claude"
+    ],
+    "hash": "8e36b173b3",
+    "ok": true,
+    "final_url": "https://www.sweetwater1.org/district-calendar",
+    "file": "8e36b173b3.pdf",
+    "kind": "html-pdf"
+  },
+  {
+    "url": "https://www.sweetwater1.org",
+    "tools": [
+      "perplexity",
+      "claude"
+    ],
+    "hash": "e62a03c91b",
+    "ok": true,
+    "final_url": "https://www.sweetwater1.org/",
+    "file": "e62a03c91b.pdf",
+    "kind": "html-pdf"
+  },
+  {
+    "url": "https://sce.sweetwater1.org/schedules",
+    "tools": [
+      "perplexity",
+      "claude"
+    ],
+    "hash": "61c2dc0ed5",
+    "ok": true,
+    "final_url": "https://sce.sweetwater1.org/schedules",
+    "file": "61c2dc0ed5.pdf",
+    "kind": "html-pdf"
+  },
+  {
+    "url": "https://pbe.sweetwater1.org/bell_schedule",
+    "tools": [
+      "perplexity"
+    ],
+    "hash": "07ff2fd714",
+    "ok": true,
+    "final_url": "https://pbe.sweetwater1.org/bell_schedule",
+    "file": "07ff2fd714.pdf",
+    "kind": "html-pdf"
+  },
+  {
+    "url": "https://rshs.sweetwater1.org/home",
+    "tools": [
+      "perplexity"
+    ],
+    "hash": "f214d3fec0",
+    "ok": true,
+    "final_url": "https://rshs.sweetwater1.org/home",
+    "file": "f214d3fec0.pdf",
+    "kind": "html-pdf"
+  },
+  {
+    "url": "https://rsjh.sweetwater1.org/all-events",
+    "tools": [
+      "perplexity"
+    ],
+    "hash": "f987f7e037",
+    "ok": true,
+    "final_url": "https://rsjh.sweetwater1.org/all-events",
+    "file": "f987f7e037.pdf",
+    "kind": "html-pdf"
+  },
+  {
+    "url": "https://www.sweetwater1.org/site-pages/calendars-and-times/calendar",
+    "tools": [
+      "openrouter",
+      "claude"
+    ],
+    "hash": "b03d722f52",
+    "ok": true,
+    "final_url": "https://www.sweetwater1.org/site-pages/calendars-and-times/calendar",
+    "file": "b03d722f52.pdf",
+    "kind": "html-pdf"
+  },
+  {
+    "url": "https://ovr.sweetwater1.org/fs/resource-manager/view/2331e28e-0310-432b-a6b4-8ef677da5792",
+    "tools": [
+      "openrouter"
+    ],
+    "hash": "6866ad22b4",
+    "ok": true,
+    "final_url": "https://resources.finalsite.net/images/v1760055385/sweetwater1org/lp8y3agh8ihvtym5p8tm/OverlandElementaryHandbook2025-2026.pdf",
+    "kind": "pdf",
+    "file": "6866ad22b4.pdf"
+  },
+  {
+    "url": "https://sce.sweetwater1.org/",
+    "tools": [
+      "openrouter"
+    ],
+    "hash": "e28167fb25",
+    "ok": true,
+    "final_url": "https://sce.sweetwater1.org/",
+    "file": "e28167fb25.pdf",
+    "kind": "html-pdf"
+  },
+  {
+    "url": "https://fes.sweetwater1.org/about-us?utm_source=openai",
+    "tools": [
+      "openrouter"
+    ],
+    "hash": "c1ac5b9b9b",
+    "ok": true,
+    "final_url": "https://fes.sweetwater1.org/about-us?utm_source=openai",
+    "file": "c1ac5b9b9b.pdf",
+    "kind": "html-pdf"
+  },
+  {
+    "url": "https://des.sweetwater1.org/about-us?utm_source=openai",
+    "tools": [
+      "openrouter"
+    ],
+    "hash": "fbf6b5ec94",
+    "ok": true,
+    "final_url": "https://des.sweetwater1.org/about-us?utm_source=openai",
+    "file": "fbf6b5ec94.pdf",
+    "kind": "html-pdf"
+  },
+  {
+    "url": "https://www.sweetwater1.org/department-directory",
+    "tools": [
+      "claude"
+    ],
+    "hash": "70f8bee953",
+    "ok": true,
+    "final_url": "https://www.sweetwater1.org/department-directory",
+    "file": "70f8bee953.pdf",
+    "kind": "html-pdf"
+  },
+  {
+    "url": "https://www.sweetwater1.org/site-pages/schools",
+    "tools": [
+      "claude"
+    ],
+    "hash": "814e85afad",
+    "ok": true,
+    "final_url": "https://www.sweetwater1.org/site-pages/schools",
+    "file": "814e85afad.pdf",
+    "kind": "html-pdf"
+  },
+  {
+    "url": "https://www.sweetwater1.org/directory/school",
+    "tools": [
+      "claude"
+    ],
+    "hash": "63c7307b24",
+    "ok": true,
+    "final_url": "https://www.sweetwater1.org/directory/school",
+    "file": "63c7307b24.pdf",
+    "kind": "html-pdf"
+  },
+  {
+    "url": "https://www.sweetwater1.org/groups/4800/curriculum_instruction_and_assessment/school_calendars",
+    "tools": [
+      "claude"
+    ],
+    "hash": "65f47aa090",
+    "ok": true,
+    "final_url": "https://www.sweetwater1.org/groups/4800/curriculum_instruction_and_assessment/school_calendars",
+    "file": "65f47aa090.pdf",
+    "kind": "html-pdf"
+  },
+  {
+    "url": "https://rshs.sweetwater1.org/rshs-bell-schedule",
+    "tools": [
+      "claude"
+    ],
+    "hash": "2bf124170a",
+    "ok": true,
+    "final_url": "https://rshs.sweetwater1.org/rshs-bell-schedule",
+    "file": "2bf124170a.pdf",
+    "kind": "html-pdf"
+  }
+]

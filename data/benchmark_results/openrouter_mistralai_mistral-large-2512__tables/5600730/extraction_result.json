@@ -1,0 +1,42 @@
+{
+  "district_id": "5600730",
+  "district_name": "Albany County School District #1",
+  "state": "WY",
+  "extraction_date": "2026-06-14T00:56:43.259995",
+  "extractor": "openrouter:mistralai/mistral-large-2512",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "08:02",
+      "end_time": "15:00",
+      "school_name": "Slade Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:00",
+      "end_time": "15:05",
+      "school_name": "Laramie Middle",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "15:45",
+      "school_name": "Whiting High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"08:02\",\"end_time\":\"15:00\",\"school_name\":\"Slade Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"08:00\",\"end_time\":\"15:05\",\"school_name\":\"Laramie Middle\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"15:45\",\"school_name\":\"Whiting High\",\"confidence\":\"high\"}]}"
+}

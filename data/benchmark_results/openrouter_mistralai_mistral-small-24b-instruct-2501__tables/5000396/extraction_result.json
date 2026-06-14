@@ -1,0 +1,52 @@
+{
+  "district_id": "5000396",
+  "district_name": "Champlain Valley Unified Union School District #56",
+  "state": "VT",
+  "extraction_date": "2026-06-14T00:13:14.694932",
+  "extractor": "openrouter:mistralai/mistral-small-24b-instruct-2501",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:45",
+      "school_name": "Charlotte Central School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:45",
+      "school_name": "Shelburne Community School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:35",
+      "end_time": "14:35",
+      "school_name": "Allen Brook School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:45",
+      "school_name": "Williston Central School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'middle', 'high'}. Document may have more data.",
+  "raw_response": "```json\n{\n  \"schedules\": [\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"07:45\",\n      \"end_time\": \"14:45\",\n      \"school_name\": \"Charlotte Central School\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"07:45\",\n      \"end_time\": \"14:45\",\n      \"school_name\": \"Shelburne Community School\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"07:35\",\n      \"end_time\": \"14:35\",\n      \"school_name\": \"Allen Brook School\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"07:45\",\n      \"end_time\": \"14:45\",\n      \"school_name\": \"Williston Central School\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+}

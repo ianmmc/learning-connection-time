@@ -1,0 +1,362 @@
+{
+  "district_id": "0200510",
+  "district_name": "Matanuska-Susitna Borough School District",
+  "state": "AK",
+  "extraction_date": "2026-06-14T00:44:33.956880",
+  "extractor": "openrouter:mistralai/mistral-large-2512",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:15",
+      "school_name": "Colony High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Alpine Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Avondale Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Ayers Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Basehor Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Belvoir Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Berwick Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Brier Creek Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Buckhorn Creek Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Bugg Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Carpenter Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Cedar Fork Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Combs Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Conn Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Davis Drive Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Davis Drive Year-Round Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Farmington Woods Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Forest Pines Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Fox Road Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Green Hope Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Green Year-Round Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Heritage Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Highcroft Drive Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Hortons Creek Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Lacy Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Lacy Year-Round Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Lake Myra Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Lead Mine Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Lincoln Heights Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Lockhart Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Mills Park Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "North Forest Pines Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "North Ridge Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Northwest Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:20",
+      "school_name": "Oakview Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'middle'}. Document may have more data.",
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:15\",\"school_name\":\"Colony High\",\"confidence\":\"high\"}]}\n\n\n+++++ examples/columbus/parsed_school_schedules.md\n```json\n[\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Alpine Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Avondale Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Ayers Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Basehor Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Belvoir Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Berwick Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Brier Creek Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Buckhorn Creek Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Bugg Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Carpenter Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Cedar Fork Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Combs Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Conn Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Davis Drive Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Davis Drive Year-Round Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Farmington Woods Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Forest Pines Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Fox Road Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Green Hope Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Green Year-Round Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Heritage Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Highcroft Drive Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Hortons Creek Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Lacy Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Lacy Year-Round Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Lake Myra Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Lead Mine Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Lincoln Heights Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Lockhart Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Mills Park Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"North Forest Pines Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"North Ridge Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Northwest Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Oakview Elementary School\",\n    \"confidence\": \"high\"\n  },\n  {\n    \"grade_level\": \"elementary\",\n    \"start_time\": \"08:55\",\n    \"end_time\": \"15:20\",\n    \"school_name\": \"Olive Chapel Elementary School\",\n    \"confidence\": \""
+}

@@ -1,0 +1,42 @@
+{
+  "district_id": "3904375",
+  "district_name": "Cincinnati Public Schools",
+  "state": "OH",
+  "extraction_date": "2026-06-14T00:35:36.719495",
+  "extractor": "openrouter:qwen/qwen3-235b-a22b-2507",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "15:00",
+      "school_name": "James N. Gamble Montessori High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:00",
+      "end_time": "15:00",
+      "school_name": "Pleasant Hill Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:10",
+      "end_time": "15:40",
+      "school_name": "James N. Gamble Montessori Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"high\",\"start_time\":\"08:00\",\"end_time\":\"15:00\",\"school_name\":\"James N. Gamble Montessori High School\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"08:00\",\"end_time\":\"15:00\",\"school_name\":\"Pleasant Hill Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:10\",\"end_time\":\"15:40\",\"school_name\":\"James N. Gamble Montessori Elementary School\",\"confidence\":\"high\"}]}"
+}

@@ -1,0 +1,11 @@
+{
+  "district_id": "3904378",
+  "district_name": "Cleveland Municipal",
+  "state": "OH",
+  "extraction_date": "2026-06-13T22:31:25.489960",
+  "extractor": "openrouter:z-ai/glm-4.7-flash",
+  "schedules": [],
+  "success": false,
+  "error": "Could not parse JSON response",
+  "raw_response": ""
+}

@@ -1,0 +1,112 @@
+{
+  "district_id": "3172840",
+  "district_name": "LINCOLN PUBLIC SCHOOLS",
+  "state": "NE",
+  "extraction_date": "2026-06-14T00:23:53.601033",
+  "extractor": "openrouter:ibm-granite/granite-4.1-8b",
+  "schedules": [
+    {
+      "grade_level": "middle",
+      "start_time": "08:00",
+      "end_time": "15:00",
+      "school_name": "Culler Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:00",
+      "end_time": "15:00",
+      "school_name": "Lux Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:00",
+      "end_time": "15:00",
+      "school_name": "Pound Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "15:00",
+      "school_name": "Lincoln High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "15:00",
+      "school_name": "North Star High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "15:00",
+      "school_name": "Northeast High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "15:00",
+      "school_name": "Northwest High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "15:00",
+      "school_name": "Southeast High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "15:00",
+      "school_name": "Southwest High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "15:00",
+      "school_name": "Standing Bear High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'elementary'}. Document may have more data.",
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"middle\",\"start_time\":\"08:00\",\"end_time\":\"15:00\",\"school_name\":\"Culler Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"08:00\",\"end_time\":\"15:00\",\"school_name\":\"Lux Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"08:00\",\"end_time\":\"15:00\",\"school_name\":\"Pound Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:00\",\"end_time\":\"15:00\",\"school_name\":\"Lincoln High\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:00\",\"end_time\":\"15:00\",\"school_name\":\"North Star High\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:00\",\"end_time\":\"15:00\",\"school_name\":\"Northeast High\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:00\",\"end_time\":\"15:00\",\"school_name\":\"Northwest High\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:00\",\"end_time\":\"15:00\",\"school_name\":\"Southeast High\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:00\",\"end_time\":\"15:00\",\"school_name\":\"Southwest High\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:00\",\"end_time\":\"15:00\",\"school_name\":\"Standing Bear High\",\"confidence\":\"high\"}]}"
+}

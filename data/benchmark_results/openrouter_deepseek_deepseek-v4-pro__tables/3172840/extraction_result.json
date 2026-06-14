@@ -1,0 +1,11 @@
+{
+  "district_id": "3172840",
+  "district_name": "LINCOLN PUBLIC SCHOOLS",
+  "state": "NE",
+  "extraction_date": "2026-06-14T00:32:57.693381",
+  "extractor": "openrouter:deepseek/deepseek-v4-pro",
+  "schedules": [],
+  "success": false,
+  "error": "Could not parse JSON response",
+  "raw_response": ""
+}

@@ -1,0 +1,1 @@
+{"district_id":"1000200","extractor":"anthropic:opus","success":true,"schedules":[{"grade_level":"middle","start_time":"07:05","end_time":"14:05","school_name":"Shue-Medill Middle School","confidence":"high"},{"grade_level":"high","start_time":"07:20","end_time":"14:05","school_name":"Newark High School","confidence":"high"}]}

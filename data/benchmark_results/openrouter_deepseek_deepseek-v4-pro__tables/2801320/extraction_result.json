@@ -1,0 +1,11 @@
+{
+  "district_id": "2801320",
+  "district_name": "DESOTO CO SCHOOL DIST",
+  "state": "MS",
+  "extraction_date": "2026-06-14T00:32:16.627615",
+  "extractor": "openrouter:deepseek/deepseek-v4-pro",
+  "schedules": [],
+  "success": false,
+  "error": "Could not parse JSON response",
+  "raw_response": ""
+}

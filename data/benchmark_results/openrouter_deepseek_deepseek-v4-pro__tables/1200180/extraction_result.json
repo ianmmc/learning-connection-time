@@ -1,0 +1,11 @@
+{
+  "district_id": "1200180",
+  "district_name": "BROWARD",
+  "state": "FL",
+  "extraction_date": "2026-06-14T00:27:54.806415",
+  "extractor": "openrouter:deepseek/deepseek-v4-pro",
+  "schedules": [],
+  "success": false,
+  "error": "Could not parse JSON response",
+  "raw_response": ""
+}

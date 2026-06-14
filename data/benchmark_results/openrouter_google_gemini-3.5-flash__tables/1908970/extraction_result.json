@@ -1,0 +1,42 @@
+{
+  "district_id": "1908970",
+  "district_name": "Des Moines Independent Comm School District",
+  "state": "IA",
+  "extraction_date": "2026-06-14T00:44:25.876590",
+  "extractor": "openrouter:google/gemini-3.5-flash",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "08:15",
+      "end_time": "15:15",
+      "school_name": "All High Schools",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:30",
+      "end_time": "15:25",
+      "school_name": "All Middle Schools",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:40",
+      "end_time": "14:35",
+      "school_name": "All Elementary Schools",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"high\",\"start_time\":\"08:15\",\"end_time\":\"15:15\",\"school_name\":\"All High Schools\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"08:30\",\"end_time\":\"15:25\",\"school_name\":\"All Middle Schools\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:40\",\"end_time\":\"14:35\",\"school_name\":\"All Elementary Schools\",\"confidence\":\"high\"}]}"
+}

@@ -1,0 +1,32 @@
+{
+  "district_id": "5400060",
+  "district_name": "BERKELEY COUNTY SCHOOLS",
+  "state": "WV",
+  "extraction_date": "2026-06-14T01:13:35.867212",
+  "extractor": "openrouter:cohere/command-r-plus-08-2024",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "08:20",
+      "end_time": "15:20",
+      "school_name": "Burke Street Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:28",
+      "end_time": "14:38",
+      "school_name": "Spring Mills High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'middle'}. Document may have more data.",
+  "raw_response": "{\n    \"schedules\": [\n        {\n            \"grade_level\": \"elementary\",\n            \"start_time\": \"08:20\",\n            \"end_time\": \"15:20\",\n            \"school_name\": \"Burke Street Elementary\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"high\",\n            \"start_time\": \"07:28\",\n            \"end_time\": \"14:38\",\n            \"school_name\": \"Spring Mills High\",\n            \"confidence\": \"high\"\n        }\n    ]\n}"
+}

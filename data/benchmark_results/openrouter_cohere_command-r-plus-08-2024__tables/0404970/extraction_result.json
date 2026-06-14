@@ -1,0 +1,42 @@
+{
+  "district_id": "0404970",
+  "district_name": "Mesa Unified District (4235)",
+  "state": "AZ",
+  "extraction_date": "2026-06-14T00:59:24.662026",
+  "extractor": "openrouter:cohere/command-r-plus-08-2024",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "07:15",
+      "end_time": "15:15",
+      "school_name": "Red Mtn. High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:45",
+      "school_name": "Field Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:15",
+      "school_name": "Franklin Junior High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\n    \"schedules\": [\n        {\n            \"grade_level\": \"high\",\n            \"start_time\": \"07:15\",\n            \"end_time\": \"15:15\",\n            \"school_name\": \"Red Mtn. High School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"elementary\",\n            \"start_time\": \"08:15\",\n            \"end_time\": \"14:45\",\n            \"school_name\": \"Field Elementary\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"middle\",\n            \"start_time\": \"07:30\",\n            \"end_time\": \"14:15\",\n            \"school_name\": \"Franklin Junior High School\",\n            \"confidence\": \"high\"\n        }\n    ]\n}"
+}

@@ -1,0 +1,22 @@
+{
+  "district_id": "0200510",
+  "district_name": "Matanuska-Susitna Borough School District",
+  "state": "AK",
+  "extraction_date": "2026-06-14T00:43:11.014233",
+  "extractor": "openrouter:qwen/qwen3.7-max",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:15",
+      "school_name": "Colony High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'middle', 'elementary'}. Document may have more data.",
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:15\",\"school_name\":\"Colony High School\",\"confidence\":\"high\"}]}"
+}

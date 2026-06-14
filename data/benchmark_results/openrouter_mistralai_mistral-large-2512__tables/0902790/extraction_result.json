@@ -1,0 +1,362 @@
+{
+  "district_id": "0902790",
+  "district_name": "New Haven School District",
+  "state": "CT",
+  "extraction_date": "2026-06-14T00:46:34.780961",
+  "extractor": "openrouter:mistralai/mistral-large-2512",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "14:15",
+      "school_name": "Cooperative Arts and Humanities Magnet High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "14:15",
+      "school_name": "Metro Business Academy",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:10",
+      "end_time": "14:05",
+      "school_name": "New Haven Academy",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "13:00",
+      "end_time": "16:00",
+      "school_name": "Platt Tech",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 180min below min 300min; Start time 13:00 after 10:00]"
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "14:17",
+      "school_name": "Sound School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "10:00",
+      "end_time": "14:15",
+      "school_name": "Riverside",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 255min below min 300min]"
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:10",
+      "end_time": "14:05",
+      "school_name": "HSC High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "Common Ground",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "15:30",
+      "school_name": "Edmonds Cofield Prep",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:30",
+      "school_name": "John Martinez",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:30",
+      "school_name": "Jepson",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:15",
+      "school_name": "John Daniels",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:55",
+      "end_time": "14:10",
+      "school_name": "King-Robinson",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "Lincoln Bassett",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "Nathan Hale",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:30",
+      "school_name": "Roberto Clemente",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:30",
+      "school_name": "Ross-Woodward",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "Mauro-Sheridan",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "Wexler (WG)",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:55",
+      "end_time": "14:10",
+      "school_name": "Troup",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "Truman",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:15",
+      "school_name": "(Unnamed Elementary)",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "(Unnamed Elementary)",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "15:10",
+      "school_name": "B. T. Washington Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "14:10",
+      "school_name": "B.T. Washington Middle",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:30",
+      "end_time": "15:00",
+      "school_name": "Cold Spring",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "15:00",
+      "school_name": "Foote",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:40",
+      "end_time": "15:30",
+      "school_name": "Hopkins",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:15",
+      "school_name": "All Saints Catholic",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:30",
+      "end_time": "17:15",
+      "school_name": "St. Martin",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 585min exceeds max 480min]"
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:00",
+      "school_name": "St. Thomas",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "Elm City Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "Elm City Middle",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:45",
+      "school_name": "Highville Charter K-8",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "14:05",
+      "school_name": "Highville Charter High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[\n{\"grade_level\":\"high\",\"start_time\":\"07:30\",\"end_time\":\"14:15\",\"school_name\":\"Cooperative Arts and Humanities Magnet High School\",\"confidence\":\"high\"},\n{\"grade_level\":\"high\",\"start_time\":\"07:30\",\"end_time\":\"14:15\",\"school_name\":\"Metro Business Academy\",\"confidence\":\"high\"},\n{\"grade_level\":\"high\",\"start_time\":\"07:10\",\"end_time\":\"14:05\",\"school_name\":\"New Haven Academy\",\"confidence\":\"high\"},\n{\"grade_level\":\"high\",\"start_time\":\"13:00\",\"end_time\":\"16:00\",\"school_name\":\"Platt Tech\",\"confidence\":\"high\"},\n{\"grade_level\":\"high\",\"start_time\":\"07:30\",\"end_time\":\"14:17\",\"school_name\":\"Sound School\",\"confidence\":\"high\"},\n{\"grade_level\":\"high\",\"start_time\":\"10:00\",\"end_time\":\"14:15\",\"school_name\":\"Riverside\",\"confidence\":\"high\"},\n{\"grade_level\":\"high\",\"start_time\":\"07:10\",\"end_time\":\"14:05\",\"school_name\":\"HSC High School\",\"confidence\":\"high\"},\n{\"grade_level\":\"high\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"school_name\":\"Common Ground\",\"confidence\":\"high\"},\n{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"15:30\",\"school_name\":\"Edmonds Cofield Prep\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:30\",\"school_name\":\"John Martinez\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:30\",\"school_name\":\"Jepson\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"14:15\",\"school_name\":\"John Daniels\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:55\",\"end_time\":\"14:10\",\"school_name\":\"King-Robinson\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"Lincoln Bassett\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"Nathan Hale\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:30\",\"school_name\":\"Roberto Clemente\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:30\",\"school_name\":\"Ross-Woodward\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"school_name\":\"Mauro-Sheridan\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"Wexler (WG)\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:55\",\"end_time\":\"14:10\",\"school_name\":\"Troup\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"Truman\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"09:00\",\"end_time\":\"15:15\",\"school_name\":\"(Unnamed Elementary)\",\"confidence\":\"medium\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"(Unnamed Elementary)\",\"confidence\":\"medium\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"15:10\",\"school_name\":\"B. T. Washington Elementary\",\"confidence\":\"high\"},\n{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"14:10\",\"school_name\":\"B.T. Washington Middle\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:30\",\"end_time\":\"15:00\",\"school_name\":\"Cold Spring\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"15:00\",\"school_name\":\"Foote\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:40\",\"end_time\":\"15:30\",\"school_name\":\"Hopkins\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"14:15\",\"school_name\":\"All Saints Catholic\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:30\",\"end_time\":\"17:15\",\"school_name\":\"St. Martin\",\"confidence\":\"low\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"15:00\",\"school_name\":\"St. Thomas\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"Elm City Elementary\",\"confidence\":\"high\"},\n{\"grade_level\":\"middle\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"Elm City Middle\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"09:00\",\"end_time\":\"15:45\",\"school_name\":\"Highville Charter K-8\",\"confidence\":\"high\"},\n{\"grade_level\":\"high\",\"start_time\":\"07:30\",\"end_time\":\"14:05\",\"school_name\":\"Highville Charter High School\",\"confidence\":\"high\"}\n]}"
+}

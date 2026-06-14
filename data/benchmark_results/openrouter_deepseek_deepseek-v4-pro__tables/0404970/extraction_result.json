@@ -1,0 +1,11 @@
+{
+  "district_id": "0404970",
+  "district_name": "Mesa Unified District (4235)",
+  "state": "AZ",
+  "extraction_date": "2026-06-14T00:20:58.833647",
+  "extractor": "openrouter:deepseek/deepseek-v4-pro",
+  "schedules": [],
+  "success": false,
+  "error": "Could not parse JSON response",
+  "raw_response": ""
+}

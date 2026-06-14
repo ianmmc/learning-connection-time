@@ -1,0 +1,52 @@
+{
+  "district_id": "5000395",
+  "district_name": "Essex Westford Educational Community Unified Union SD #51",
+  "state": "VT",
+  "extraction_date": "2026-06-14T01:23:58.311063",
+  "extractor": "openrouter:qwen/qwen3.7-max",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "08:40",
+      "end_time": "15:15",
+      "school_name": "Essex High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:30",
+      "end_time": "14:30",
+      "school_name": "Essex Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:35",
+      "end_time": "15:35",
+      "school_name": "Essex Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:30",
+      "end_time": "14:30",
+      "school_name": "Westford School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"high\",\"start_time\":\"08:40\",\"end_time\":\"15:15\",\"school_name\":\"Essex High School\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:30\",\"end_time\":\"14:30\",\"school_name\":\"Essex Elementary School\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"08:35\",\"end_time\":\"15:35\",\"school_name\":\"Essex Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:30\",\"end_time\":\"14:30\",\"school_name\":\"Westford School\",\"confidence\":\"high\"}]}"
+}

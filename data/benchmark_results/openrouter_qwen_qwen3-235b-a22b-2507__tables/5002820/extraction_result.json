@@ -1,0 +1,11 @@
+{
+  "district_id": "5002820",
+  "district_name": "Burlington School District",
+  "state": "VT",
+  "extraction_date": "2026-06-14T00:35:58.971971",
+  "extractor": "openrouter:qwen/qwen3-235b-a22b-2507",
+  "schedules": [],
+  "success": false,
+  "error": "No valid schedules extracted",
+  "raw_response": "{\"schedules\":[]}"
+}

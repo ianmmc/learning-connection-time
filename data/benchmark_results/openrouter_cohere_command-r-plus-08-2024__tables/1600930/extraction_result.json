@@ -1,0 +1,72 @@
+{
+  "district_id": "1600930",
+  "district_name": "BONNEVILLE JOINT DISTRICT",
+  "state": "ID",
+  "extraction_date": "2026-06-14T01:05:58.858415",
+  "extractor": "openrouter:cohere/command-r-plus-08-2024",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "08:35",
+      "end_time": "15:48",
+      "school_name": "Bonneville High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:40",
+      "end_time": "15:54",
+      "school_name": "Hillcrest High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "14:45",
+      "school_name": "Lincoln High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:40",
+      "end_time": "15:51",
+      "school_name": "Rocky Mountain Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:45",
+      "end_time": "15:50",
+      "school_name": "Sandcreek Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:35",
+      "end_time": "15:48",
+      "school_name": "Thunder Ridge High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'elementary'}. Document may have more data.",
+  "raw_response": "{\n    \"schedules\": [\n        {\n            \"grade_level\": \"high\",\n            \"start_time\": \"08:35\",\n            \"end_time\": \"15:48\",\n            \"school_name\": \"Bonneville High School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"high\",\n            \"start_time\": \"08:40\",\n            \"end_time\": \"15:54\",\n            \"school_name\": \"Hillcrest High School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"high\",\n            \"start_time\": \"07:30\",\n            \"end_time\": \"14:45\",\n            \"school_name\": \"Lincoln High School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"middle\",\n            \"start_time\": \"08:40\",\n            \"end_time\": \"15:51\",\n            \"school_name\": \"Rocky Mountain Middle School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"middle\",\n            \"start_time\": \"08:45\",\n            \"end_time\": \"15:50\",\n            \"school_name\": \"Sandcreek Middle School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"high\",\n            \"start_time\": \"08:35\",\n            \"end_time\": \"15:48\",\n            \"school_name\": \"Thunder Ridge High School\",\n            \"confidence\": \"high\"\n        }\n    ]\n}"
+}

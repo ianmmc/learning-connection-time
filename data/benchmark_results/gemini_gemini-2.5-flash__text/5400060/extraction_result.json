@@ -1,0 +1,22 @@
+{
+  "district_id": "5400060",
+  "district_name": "BERKELEY COUNTY SCHOOLS",
+  "state": "WV",
+  "extraction_date": "2026-06-13T21:22:28.572205",
+  "extractor": "gemini:gemini-2.5-flash",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "07:28",
+      "end_time": "14:38",
+      "school_name": "Spring Mills High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'middle', 'elementary'}. Document may have more data.",
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"high\",\"start_time\":\"07:28\",\"end_time\":\"14:38\",\"school_name\":\"Spring Mills High\",\"confidence\":\"high\"}]}"
+}

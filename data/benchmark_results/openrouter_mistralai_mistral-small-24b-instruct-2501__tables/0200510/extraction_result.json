@@ -1,0 +1,122 @@
+{
+  "district_id": "0200510",
+  "district_name": "Matanuska-Susitna Borough School District",
+  "state": "AK",
+  "extraction_date": "2026-06-14T00:06:31.039053",
+  "extractor": "openrouter:mistralai/mistral-small-24b-instruct-2501",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:15",
+      "school_name": "Colony High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:15",
+      "school_name": "Houston High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:15",
+      "school_name": "Palmer High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:15",
+      "school_name": "Big Lake Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:15",
+      "school_name": "Cottonwood Creek Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:15",
+      "school_name": "Goose Bay Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:15",
+      "school_name": "Machetanz Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:15",
+      "school_name": "Shaw Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "14:15",
+      "school_name": "Colony Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "14:15",
+      "school_name": "Palmer Jr Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "14:15",
+      "school_name": "Teeland Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "```json\n{\n  \"schedules\": [\n    {\n      \"grade_level\": \"high\",\n      \"start_time\": \"07:45\",\n      \"end_time\": \"14:15\",\n      \"school_name\": \"Colony High School\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"high\",\n      \"start_time\": \"07:45\",\n      \"end_time\": \"14:15\",\n      \"school_name\": \"Houston High School\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"high\",\n      \"start_time\": \"07:45\",\n      \"end_time\": \"14:15\",\n      \"school_name\": \"Palmer High School\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"07:45\",\n      \"end_time\": \"14:15\",\n      \"school_name\": \"Big Lake Elementary School\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"07:45\",\n      \"end_time\": \"14:15\",\n      \"school_name\": \"Cottonwood Creek Elementary School\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"07:45\",\n      \"end_time\": \"14:15\",\n      \"school_name\": \"Goose Bay Elementary School\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"07:45\",\n      \"end_time\": \"14:15\",\n      \"school_name\": \"Machetanz Elementary School\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"07:45\",\n      \"end_time\": \"14:15\",\n      \"school_name\": \"Shaw Elementary School\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"middle\",\n      \"start_time\": \"07:45\",\n      \"end_time\": \"14:15\",\n      \"school_name\": \"Colony Middle School\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"middle\",\n      \"start_time\": \"07:45\",\n      \"end_time\": \"14:15\",\n      \"school_name\": \"Palmer Jr Middle School\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"middle\",\n      \"start_time\": \"07:45\",\n      \"end_time\": \"14:15\",\n      \"school_name\": \"Teeland Middle School\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+}

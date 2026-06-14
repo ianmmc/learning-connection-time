@@ -1,0 +1,42 @@
+{
+  "district_id": "5605302",
+  "district_name": "Sweetwater County School District #1",
+  "state": "WY",
+  "extraction_date": "2026-06-14T00:06:25.158975",
+  "extractor": "openrouter:meta-llama/llama-3.3-70b-instruct",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "15:00",
+      "school_name": "Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "16:05",
+      "school_name": "Middle School",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 500min exceeds max 480min]"
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "16:05",
+      "school_name": "High School",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 500min exceeds max 480min]"
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"15:00\",\"school_name\":\"Elementary School\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"16:05\",\"school_name\":\"Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"16:05\",\"school_name\":\"High School\",\"confidence\":\"high\"}]}"
+}

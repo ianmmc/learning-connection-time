@@ -1,0 +1,22 @@
+{
+  "district_id": "0902790",
+  "district_name": "New Haven School District",
+  "state": "CT",
+  "extraction_date": "2026-06-14T00:56:44.253867",
+  "extractor": "openrouter:google/gemini-3.1-pro-preview",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "14:05",
+      "school_name": "Cooperative Arts and Humanities Magnet High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'elementary', 'middle'}. Document may have more data.",
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"high\",\"start_time\":\"07:30\",\"end_time\":\"14:05\",\"school_name\":\"Cooperative Arts and Humanities Magnet High School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:30\",\"end_time\":\"14:15\",\"school_name\":\""
+}

@@ -1,0 +1,632 @@
+{
+  "district_id": "0902790",
+  "district_name": "New Haven School District",
+  "state": "CT",
+  "extraction_date": "2026-06-13T21:29:10.901597",
+  "extractor": "gemini:gemini-2.5-flash",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "14:05",
+      "school_name": "Cooperative Arts and Humanities Magnet High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:10",
+      "end_time": "14:05",
+      "school_name": "CROSS HS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "13:00",
+      "end_time": "16:00",
+      "school_name": "ECA",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 180min below min 300min; Start time 13:00 after 10:00]"
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "14:17",
+      "school_name": "ELI WHITNEY TECH",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:10",
+      "end_time": "14:15",
+      "school_name": "HILL REG. CAREER HS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:10",
+      "end_time": "14:05",
+      "school_name": "HILLHOUSE HS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "ESUMS HS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:00",
+      "end_time": "14:30",
+      "school_name": "METRO BUS. ACADEMY",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:55",
+      "end_time": "14:30",
+      "school_name": "NEW HAVEN ACADEMY",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:00",
+      "end_time": "14:11",
+      "school_name": "PLATT TECH",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "14:30",
+      "school_name": "SOUND SCHOOL",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "14:05",
+      "school_name": "RIVERSIDE",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:30",
+      "end_time": "14:10",
+      "school_name": "HSC HS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "15:10",
+      "school_name": "COMMON GROUND",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:30",
+      "end_time": "16:00",
+      "school_name": "ACHIEVEMENT FIRST HS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "HIGHVILLE CHARTER H S",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:30",
+      "school_name": "BARNARD",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:30",
+      "school_name": "BEECHER",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:15",
+      "school_name": "BETSY ROSS (BRADA)",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "BISHOP WOODS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:55",
+      "end_time": "14:10",
+      "school_name": "CELENTANO",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "CLINTON",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "FAME",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:30",
+      "school_name": "CONTE",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:30",
+      "school_name": "DAVIS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "BARACK H OBAMA",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:55",
+      "end_time": "14:10",
+      "school_name": "EAST ROCK",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "EDGEWOOD",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "FAIR HAVEN",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:15",
+      "school_name": "HILL CENTRAL",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "HOOKER",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "JOHN MARTINEZ",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:30",
+      "school_name": "JEPSON",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "JOHN DANIELS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:30",
+      "school_name": "KING-ROBINSON",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "LINCOLN BASSETT",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:00",
+      "school_name": "NATHAN HALE",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "ROBERTO CLEMENTE",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:30",
+      "school_name": "ROSS-WOODWARD",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:30",
+      "school_name": "MAURO-SHERIDAN",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "WEXLER (WG)",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "TROUP",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:35",
+      "end_time": "14:50",
+      "school_name": "TRUMAN",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "15:30",
+      "school_name": "EDMONDS COFIELD PREP",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:30",
+      "end_time": "16:00",
+      "school_name": "AMISTAD ELEM",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:30",
+      "end_time": "16:00",
+      "school_name": "ELM CITY MONTESSORI",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:30",
+      "end_time": "16:00",
+      "school_name": "ELM CITY ELEM",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:40",
+      "end_time": "15:40",
+      "school_name": "B. T. WASHINGTON ELEM",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:30",
+      "end_time": "16:00",
+      "school_name": "AMISTAD MIDDLE",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:30",
+      "end_time": "16:00",
+      "school_name": "ELM CITY MIDDLE",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:00",
+      "end_time": "15:00",
+      "school_name": "B.T. WASHINGTON MIDDLE",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:40",
+      "end_time": "15:45",
+      "school_name": "HIGHVILLE CHARTER K-8",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 485min exceeds max 480min]"
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:40",
+      "end_time": "15:45",
+      "school_name": "HIGHVILLE CHARTER K-8",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 485min exceeds max 480min]"
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:30",
+      "end_time": "15:00",
+      "school_name": "COLD SPRING",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "15:00",
+      "school_name": "FOOTE",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:40",
+      "end_time": "15:30",
+      "school_name": "HOPKINS",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:15",
+      "school_name": "ALL SAINTS CATHOLIC",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:30",
+      "end_time": "17:15",
+      "school_name": "ST. MARTIN",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 585min exceeds max 480min]"
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:00",
+      "school_name": "ST. THOMAS",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:45",
+      "school_name": "DR. MAYO ECLC SPED",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "DR. MAYO ECLC H1",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:00",
+      "school_name": "DR. MAYO ECLC H2",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"high\",\"start_time\":\"07:30\",\"end_time\":\"14:05\",\"school_name\":\"Cooperative Arts and Humanities Magnet High School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:10\",\"end_time\":\"14:05\",\"school_name\":\"CROSS HS\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"13:00\",\"end_time\":\"16:00\",\"school_name\":\"ECA\",\"confidence\":\"medium\"},{\"grade_level\":\"high\",\"start_time\":\"07:30\",\"end_time\":\"14:17\",\"school_name\":\"ELI WHITNEY TECH\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:10\",\"end_time\":\"14:15\",\"school_name\":\"HILL REG. CAREER HS\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:10\",\"end_time\":\"14:05\",\"school_name\":\"HILLHOUSE HS\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"school_name\":\"ESUMS HS\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:00\",\"end_time\":\"14:30\",\"school_name\":\"METRO BUS. ACADEMY\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:55\",\"end_time\":\"14:30\",\"school_name\":\"NEW HAVEN ACADEMY\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:00\",\"end_time\":\"14:11\",\"school_name\":\"PLATT TECH\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:00\",\"end_time\":\"14:30\",\"school_name\":\"SOUND SCHOOL\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:30\",\"end_time\":\"14:05\",\"school_name\":\"RIVERSIDE\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:30\",\"end_time\":\"14:10\",\"school_name\":\"HSC HS\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"15:10\",\"school_name\":\"COMMON GROUND\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:30\",\"end_time\":\"16:00\",\"school_name\":\"ACHIEVEMENT FIRST HS\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"HIGHVILLE CHARTER H S\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:30\",\"school_name\":\"BARNARD\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:30\",\"school_name\":\"BEECHER\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"14:15\",\"school_name\":\"BETSY ROSS (BRADA)\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"BISHOP WOODS\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:55\",\"end_time\":\"14:10\",\"school_name\":\"CELENTANO\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"CLINTON\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"FAME\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:30\",\"school_name\":\"CONTE\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:30\",\"school_name\":\"DAVIS\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"BARACK H OBAMA\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:55\",\"end_time\":\"14:10\",\"school_name\":\"EAST ROCK\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"EDGEWOOD\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"FAIR HAVEN\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:00\",\"end_time\":\"15:15\",\"school_name\":\"HILL CENTRAL\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"HOOKER\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"JOHN MARTINEZ\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:30\",\"school_name\":\"JEPSON\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"JOHN DANIELS\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:30\",\"school_name\":\"KING-ROBINSON\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"LINCOLN BASSETT\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"14:00\",\"school_name\":\"NATHAN HALE\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"ROBERTO CLEMENTE\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:30\",\"school_name\":\"ROSS-WOODWARD\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:30\",\"school_name\":\"MAURO-SHERIDAN\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"WEXLER (WG)\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"TROUP\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"14:50\",\"school_name\":\"TRUMAN\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"15:30\",\"school_name\":\"EDMONDS COFIELD PREP\",\"confidence\":\"medium\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:30\",\"end_time\":\"16:00\",\"school_name\":\"AMISTAD ELEM\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:30\",\"end_time\":\"16:00\",\"school_name\":\"ELM CITY MONTESSORI\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:30\",\"end_time\":\"16:00\",\"school_name\":\"ELM CITY ELEM\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:40\",\"end_time\":\"15:40\",\"school_name\":\"B. T. WASHINGTON ELEM\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"08:30\",\"end_time\":\"16:00\",\"school_name\":\"AMISTAD MIDDLE\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"08:30\",\"end_time\":\"16:00\",\"school_name\":\"ELM CITY MIDDLE\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"08:00\",\"end_time\":\"15:00\",\"school_name\":\"B.T. WASHINGTON MIDDLE\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:40\",\"end_time\":\"15:45\",\"school_name\":\"HIGHVILLE CHARTER K-8\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:40\",\"end_time\":\"15:45\",\"school_name\":\"HIGHVILLE CHARTER K-8\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:30\",\"end_time\":\"15:00\",\"school_name\":\"COLD SPRING\",\"confidence\":\"medium\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"15:00\",\"school_name\":\"FOOTE\",\"confidence\":\"medium\"},{\"grade_level\":\"high\",\"start_time\":\"07:40\",\"end_time\":\"15:30\",\"school_name\":\"HOPKINS\",\"confidence\":\"medium\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"14:15\",\"school_name\":\"ALL SAINTS CATHOLIC\",\"confidence\":\"medium\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:30\",\"end_time\":\"17:15\",\"school_name\":\"ST. MARTIN\",\"confidence\":\"medium\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"15:00\",\"school_name\":\"ST. THOMAS\",\"confidence\":\"medium\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:45\",\"school_name\":\"DR. MAYO ECLC SPED\",\"confidence\":\"medium\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"DR. MAYO ECLC H1\",\"confidence\":\"medium\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:00\",\"end_time\":\"15:00\",\"school_name\":\"DR. MAYO ECLC H2\",\"confidence\":\"medium\"}]}"
+}

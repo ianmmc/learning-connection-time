@@ -1,0 +1,242 @@
+{
+  "district_id": "1201440",
+  "district_name": "ORANGE",
+  "state": "FL",
+  "extraction_date": "2026-06-14T00:10:12.880993",
+  "extractor": "openrouter:mistralai/mistral-small-24b-instruct-2501",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "07:10",
+      "end_time": "14:10",
+      "school_name": "Winter Park 9th Gr. Ctr.",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Lake Weston",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Lovell",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Catalina",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Mollie Ray",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Eccleston",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Orlo Vista",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Engelwood",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Hiawassee",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Pineloch",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Pinewood",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Ivey Lane",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Ridgewood Park",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Washington Shores",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Rock Lake",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Rolling Hills",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Rosemont",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Wheatley",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Tangelo Park",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:45",
+      "end_time": "15:00",
+      "school_name": "Castleview",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:45",
+      "end_time": "15:00",
+      "school_name": "Deerwood",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:45",
+      "end_time": "15:00",
+      "school_name": "Orange Center",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:45",
+      "end_time": "15:00",
+      "school_name": "Shingle Creek",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "```json\n{\n  \"schedules\": [\n    {\n      \"grade_level\": \"high\",\n      \"start_time\": \"07:10\",\n      \"end_time\": \"14:10\",\n      \"school_name\": \"Winter Park 9th Gr. Ctr.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Lake Weston\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Lovell\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Catalina\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Mollie Ray\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Eccleston\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Orlo Vista\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Engelwood\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Hiawassee\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Pineloch\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Pinewood\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Ivey Lane\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Ridgewood Park\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Washington Shores\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Rock Lake\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Rolling Hills\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Rosemont\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Wheatley\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Tangelo Park\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"middle\",\n      \"start_time\": \"08:45\",\n      \"end_time\": \"15:00\",\n      \"school_name\": \"Castleview\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"middle\",\n      \"start_time\": \"08:45\",\n      \"end_time\": \"15:00\",\n      \"school_name\": \"Deerwood\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"middle\",\n      \"start_time\": \"08:45\",\n      \"end_time\": \"15:00\",\n      \"school_name\": \"Orange Center\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"middle\",\n      \"start_time\": \"08:45\",\n      \"end_time\": \"15:00\",\n      \"school_name\": \"Shingle Creek\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+}

@@ -1,0 +1,5 @@
+{"district_id":"5400180","extractor":"anthropic:sonnet","success":true,"schedules":[
+{"grade_level":"middle","start_time":"07:15","end_time":"15:00","school_name":"Bourbonville Middle School","confidence":"high"},
+{"grade_level":"high","start_time":"07:45","end_time":"15:17","school_name":"Huntington High School","confidence":"medium"},
+{"grade_level":"middle","start_time":"07:49","end_time":"14:55","school_name":"Huntington Middle School","confidence":"medium"}
+]}

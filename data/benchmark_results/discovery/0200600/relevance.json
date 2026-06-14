@@ -1,0 +1,198 @@
+[
+  {
+    "url": "https://www.k12northstar.org/calendar",
+    "tools": [
+      "perplexity",
+      "openrouter",
+      "claude"
+    ],
+    "kind": "html-pdf",
+    "n_times": 0,
+    "has_kw": false,
+    "relevant": false
+  },
+  {
+    "url": "https://www.k12northstar.org",
+    "tools": [
+      "perplexity",
+      "claude"
+    ],
+    "kind": "html-pdf",
+    "n_times": 4,
+    "has_kw": false,
+    "relevant": false
+  },
+  {
+    "url": "https://npm.k12northstar.org",
+    "tools": [
+      "perplexity"
+    ],
+    "kind": "html-pdf",
+    "n_times": 2,
+    "has_kw": false,
+    "relevant": false
+  },
+  {
+    "url": "https://www.k12northstar.org/cms/lib/AK01901510/Centricity/Domain/1500/Policy%2009%20-%20050217.pdf",
+    "tools": [
+      "perplexity"
+    ],
+    "kind": "html-pdf",
+    "n_times": 0,
+    "has_kw": false,
+    "relevant": false
+  },
+  {
+    "url": "https://www.k12northstar.org/families/back-to-school",
+    "tools": [
+      "perplexity",
+      "openrouter"
+    ],
+    "kind": "html-pdf",
+    "n_times": 0,
+    "has_kw": false,
+    "relevant": false
+  },
+  {
+    "url": "https://www.k12northstar.org/news/district-news",
+    "tools": [
+      "perplexity",
+      "openrouter"
+    ],
+    "kind": "html-pdf",
+    "n_times": 0,
+    "has_kw": false,
+    "relevant": false
+  },
+  {
+    "url": "https://www.k12northstar.org/families/attendance-info",
+    "tools": [
+      "perplexity"
+    ],
+    "kind": "html-pdf",
+    "n_times": 0,
+    "has_kw": false,
+    "relevant": false
+  },
+  {
+    "url": "https://www.k12northstar.org/calendar-2",
+    "tools": [
+      "perplexity"
+    ],
+    "kind": "html-pdf",
+    "n_times": 0,
+    "has_kw": false,
+    "relevant": false
+  },
+  {
+    "url": "https://www.k12northstar.org/fs/resource-manager/view/f5bb7326-60e7-4cb2-85cf-d683afe84561",
+    "tools": [
+      "openrouter"
+    ],
+    "kind": "pdf",
+    "n_times": 600,
+    "has_kw": true,
+    "relevant": true
+  },
+  {
+    "url": "https://ekc.k12northstar.org/about-us/school-calendar-start-time",
+    "tools": [
+      "openrouter"
+    ],
+    "kind": "html-pdf",
+    "n_times": 1,
+    "has_kw": true,
+    "relevant": false
+  },
+  {
+    "url": "https://htr.k12northstar.org/about/military-families?utm_source=openai",
+    "tools": [
+      "openrouter"
+    ],
+    "kind": "html-pdf",
+    "n_times": 12,
+    "has_kw": true,
+    "relevant": true
+  },
+  {
+    "url": "https://npm.k12northstar.org/about/5-day-bell-schedule?utm_source=openai",
+    "tools": [
+      "openrouter",
+      "claude"
+    ],
+    "kind": "html-pdf",
+    "n_times": 0,
+    "has_kw": true,
+    "relevant": false
+  },
+  {
+    "url": "https://rsm.k12northstar.org/about/bell-schedule-aug-19-30",
+    "tools": [
+      "claude"
+    ],
+    "kind": "html-pdf",
+    "n_times": 0,
+    "has_kw": true,
+    "relevant": false
+  },
+  {
+    "url": "https://lth.k12northstar.org/about/bell-schedule",
+    "tools": [
+      "claude"
+    ],
+    "kind": "html-pdf",
+    "n_times": 0,
+    "has_kw": true,
+    "relevant": false
+  },
+  {
+    "url": "https://ryn.k12northstar.org/about/families/ryan-bell-schedule",
+    "tools": [
+      "claude"
+    ],
+    "kind": "html-pdf",
+    "n_times": 0,
+    "has_kw": true,
+    "relevant": false
+  },
+  {
+    "url": "https://rsm.k12northstar.org/about/bell-schedule-2023-2024",
+    "tools": [
+      "claude"
+    ],
+    "kind": "html-pdf",
+    "n_times": 0,
+    "has_kw": true,
+    "relevant": false
+  },
+  {
+    "url": "https://bnt.k12northstar.org/calendar",
+    "tools": [
+      "claude"
+    ],
+    "kind": "html-pdf",
+    "n_times": 0,
+    "has_kw": false,
+    "relevant": false
+  },
+  {
+    "url": "https://www.k12northstar.org/site/default.aspx?PageType=3&DomainID=27&ViewID=6446EE88-D30C-497E-9316-3F8874B3E108&RenderLoc=0&FlexDataID=645956&PageID=47",
+    "tools": [
+      "claude"
+    ],
+    "kind": "html-pdf",
+    "n_times": 1,
+    "has_kw": true,
+    "relevant": false
+  },
+  {
+    "url": "https://www.k12northstar.org/site/Default.aspx?PageID=2314",
+    "tools": [
+      "claude"
+    ],
+    "kind": "html-pdf",
+    "n_times": 1,
+    "has_kw": true,
+    "relevant": false
+  }
+]

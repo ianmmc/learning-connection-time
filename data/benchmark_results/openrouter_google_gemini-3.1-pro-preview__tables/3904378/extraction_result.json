@@ -1,0 +1,22 @@
+{
+  "district_id": "3904378",
+  "district_name": "Cleveland Municipal",
+  "state": "OH",
+  "extraction_date": "2026-06-14T01:01:57.235712",
+  "extractor": "openrouter:google/gemini-3.1-pro-preview",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "09:35",
+      "end_time": "16:05",
+      "school_name": "Adlai E. Stevenson",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'high', 'middle'}. Document may have more data.",
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"09:35\",\"end_time\":\"16:05\",\"school_name\":\"Adlai E. Stevenson\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:35\",\"end_time\":\"15:05\",\"school_name\":\"Albert B. Hart\",\"confidence\":\"high"
+}

@@ -1,0 +1,11 @@
+{
+  "district_id": "5400600",
+  "district_name": "KANAWHA COUNTY SCHOOLS",
+  "state": "WV",
+  "extraction_date": "2026-06-14T00:52:48.741973",
+  "extractor": "openrouter:google/gemini-3.5-flash",
+  "schedules": [],
+  "success": false,
+  "error": "Could not parse JSON response",
+  "raw_response": "3:36\" -> 15:36.\n        *   So Nitro High: Start 08:00 (or 08:36 if AM instructional is ignored? Usually AM instructional/homeroom/advisor is part of the day. Let's use 08:00 or 08:36. Let's use"
+}

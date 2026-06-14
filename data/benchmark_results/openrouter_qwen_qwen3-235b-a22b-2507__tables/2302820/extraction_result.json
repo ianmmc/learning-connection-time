@@ -1,0 +1,112 @@
+{
+  "district_id": "2302820",
+  "district_name": "Bangor Public Schools",
+  "state": "ME",
+  "extraction_date": "2026-06-14T00:33:45.218954",
+  "extractor": "openrouter:qwen/qwen3-235b-a22b-2507",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "08:55",
+      "end_time": "15:00",
+      "school_name": "Abraham Lincoln School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:50",
+      "end_time": "14:00",
+      "school_name": "Fourteenth Street School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:50",
+      "end_time": "14:00",
+      "school_name": "Fruit Street School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:50",
+      "end_time": "14:00",
+      "school_name": "Vine Street School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:50",
+      "end_time": "14:00",
+      "school_name": "Fairmount School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:50",
+      "end_time": "14:00",
+      "school_name": "Mary Snow School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:50",
+      "end_time": "14:00",
+      "school_name": "James F. Doughty School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:50",
+      "end_time": "14:00",
+      "school_name": "William S. Cohen School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:55",
+      "end_time": "14:00",
+      "school_name": "Bangor High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:15",
+      "end_time": "14:30",
+      "school_name": "Bangor Regional Program",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"08:55\",\"end_time\":\"15:00\",\"school_name\":\"Abraham Lincoln School\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:50\",\"end_time\":\"14:00\",\"school_name\":\"Fourteenth Street School\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:50\",\"end_time\":\"14:00\",\"school_name\":\"Fruit Street School\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:50\",\"end_time\":\"14:00\",\"school_name\":\"Vine Street School\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:50\",\"end_time\":\"14:00\",\"school_name\":\"Fairmount School\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:50\",\"end_time\":\"14:00\",\"school_name\":\"Mary Snow School\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:50\",\"end_time\":\"14:00\",\"school_name\":\"James F. Doughty School\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:50\",\"end_time\":\"14:00\",\"school_name\":\"William S. Cohen School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:55\",\"end_time\":\"14:00\",\"school_name\":\"Bangor High School\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"08:15\",\"end_time\":\"14:30\",\"school_name\":\"Bangor Regional Program\",\"confidence\":\"high\"}]}"
+}

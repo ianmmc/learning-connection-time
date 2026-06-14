@@ -1,0 +1,42 @@
+{
+  "district_id": "0102430",
+  "district_name": "Montgomery County",
+  "state": "AL",
+  "extraction_date": "2026-06-13T22:05:41.379802",
+  "extractor": "pplx:xai/grok-4.3",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "07:20",
+      "end_time": "14:45",
+      "school_name": "G.W. Carver High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "14:45",
+      "school_name": "Brewbaker Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "15:10",
+      "school_name": "Blount Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"high\",\"start_time\":\"07:20\",\"end_time\":\"14:45\",\"school_name\":\"G.W. Carver High School\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"14:45\",\"school_name\":\"Brewbaker Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"15:10\",\"school_name\":\"Blount Elementary\",\"confidence\":\"high\"}]}"
+}

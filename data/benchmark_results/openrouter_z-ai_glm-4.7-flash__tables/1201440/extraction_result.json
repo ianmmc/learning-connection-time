@@ -1,0 +1,42 @@
+{
+  "district_id": "1201440",
+  "district_name": "ORANGE",
+  "state": "FL",
+  "extraction_date": "2026-06-13T22:30:27.167039",
+  "extractor": "openrouter:z-ai/glm-4.7-flash",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Lake Weston",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:45",
+      "end_time": "15:00",
+      "school_name": "Castleview",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Lovell",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'high', 'middle'}. Document may have more data.",
+  "raw_response": "```json\n{\n  \"schedules\": [\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Lake Weston\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:45\",\n      \"end_time\": \"15:00\",\n      \"school_name\": \"Castleview\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08:15\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Lovell\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"08"
+}

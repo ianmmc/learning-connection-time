@@ -1,0 +1,302 @@
+{
+  "district_id": "2507110",
+  "district_name": "Lynn",
+  "state": "MA",
+  "extraction_date": "2026-06-14T00:48:18.020478",
+  "extractor": "openrouter:mistralai/mistral-large-2512",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "Callahan",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "Drewicz",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "Fallon",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "Ford",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "Harrington",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "Ingalls",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "Sisson",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "Virginia Barton Center at Briarcliff (Elementary Teams)",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "Washington",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "Aborn",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "Brickett",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "Cobbet",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "Connery",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "Hood",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "Lincoln-Thomson",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "Lynn Woods",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "Sewell Anderson",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "Shoemaker",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "Tracy",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:15",
+      "school_name": "Breed Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "City Arts & Sciences Academy (CASA)",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Discovery Academy",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Frederick Douglass Collegiate Academy",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Lynn Classical High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Lynn English High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Lynn Vocational Technical Institute",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Pickering Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Virginia Barton Center at Briarcliff (Secondary Teams)",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Thurgood Marshall Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"Callahan\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"Drewicz\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"Fallon\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"Ford\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"Harrington\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"Ingalls\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"Sisson\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"Virginia Barton Center at Briarcliff (Elementary Teams)\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"Washington\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"Aborn\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"Brickett\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"Cobbet\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"Connery\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"Hood\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"Lincoln-Thomson\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"Lynn Woods\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"Sewell Anderson\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"Shoemaker\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"Tracy\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:30\",\"end_time\":\"14:15\",\"school_name\":\"Breed Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"City Arts & Sciences Academy (CASA)\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"Discovery Academy\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"Frederick Douglass Collegiate Academy\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"Lynn Classical High School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"Lynn English High School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"Lynn Vocational Technical Institute\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"Pickering Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"Virginia Barton Center at Briarcliff (Secondary Teams)\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"Thurgood Marshall Middle School\",\"confidence\":\"high\"}]}"
+}

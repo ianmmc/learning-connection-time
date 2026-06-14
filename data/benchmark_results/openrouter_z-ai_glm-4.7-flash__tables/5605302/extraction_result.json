@@ -1,0 +1,11 @@
+{
+  "district_id": "5605302",
+  "district_name": "Sweetwater County School District #1",
+  "state": "WY",
+  "extraction_date": "2026-06-13T22:32:04.452658",
+  "extractor": "openrouter:z-ai/glm-4.7-flash",
+  "schedules": [],
+  "success": false,
+  "error": "Could not parse JSON response",
+  "raw_response": ""
+}

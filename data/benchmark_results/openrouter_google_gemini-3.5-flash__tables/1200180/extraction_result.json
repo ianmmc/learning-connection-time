@@ -1,0 +1,11 @@
+{
+  "district_id": "1200180",
+  "district_name": "BROWARD",
+  "state": "FL",
+  "extraction_date": "2026-06-14T00:43:55.584615",
+  "extractor": "openrouter:google/gemini-3.5-flash",
+  "schedules": [],
+  "success": false,
+  "error": "Could not parse JSON response",
+  "raw_response": "- 2:00 p.m. -> 08:00, 14:00\n        *   Endeavor Primary Learning Center: 8:15 a.m. - 2:15 p.m. -> 08:15, 14:15 (Elementary)\n        *   Everglades Elementary: "
+}

@@ -1,0 +1,42 @@
+{
+  "district_id": "5605302",
+  "district_name": "Sweetwater County School District #1",
+  "state": "WY",
+  "extraction_date": "2026-06-13T22:18:38.453701",
+  "extractor": "openrouter:qwen/qwen3-next-80b-a3b-instruct",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "15:00",
+      "school_name": "Overland Elementary School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "16:05",
+      "school_name": "Rock Springs Junior High School",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 500min exceeds max 480min]"
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "16:05",
+      "school_name": "High Schools",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": "[VALIDATION: Duration 500min exceeds max 480min]"
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"15:00\",\"school_name\":\"Overland Elementary School\"},{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"16:05\",\"school_name\":\"Rock Springs Junior High School\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"16:05\",\"school_name\":\"High Schools\"}]}"
+}

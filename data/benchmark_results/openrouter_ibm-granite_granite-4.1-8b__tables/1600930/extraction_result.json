@@ -1,0 +1,72 @@
+{
+  "district_id": "1600930",
+  "district_name": "BONNEVILLE JOINT DISTRICT",
+  "state": "ID",
+  "extraction_date": "2026-06-14T00:22:39.506203",
+  "extractor": "openrouter:ibm-granite/granite-4.1-8b",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "08:40",
+      "end_time": "15:48",
+      "school_name": "Bonneville Elementary Schools (multiple elementary schools in district)",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:40",
+      "end_time": "15:48",
+      "school_name": "Rocky Mountain Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:45",
+      "end_time": "15:50",
+      "school_name": "Sandcreek Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:40",
+      "end_time": "15:48",
+      "school_name": "Bonneville High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:40",
+      "end_time": "15:48",
+      "school_name": "Hillcrest High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "14:45",
+      "school_name": "Lincoln High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"08:40\",\"end_time\":\"15:48\",\"school_name\":\"Bonneville Elementary Schools (multiple elementary schools in district)\",\"confidence\":\"medium\"},{\"grade_level\":\"middle\",\"start_time\":\"08:40\",\"end_time\":\"15:48\",\"school_name\":\"Rocky Mountain Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"08:45\",\"end_time\":\"15:50\",\"school_name\":\"Sandcreek Middle School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:40\",\"end_time\":\"15:48\",\"school_name\":\"Bonneville High School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:40\",\"end_time\":\"15:48\",\"school_name\":\"Hillcrest High School\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:00\",\"end_time\":\"14:45\",\"school_name\":\"Lincoln High School\",\"confidence\":\"high\"}]}"
+}

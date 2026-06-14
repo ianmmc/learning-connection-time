@@ -1,0 +1,11 @@
+{
+  "district_id": "0200600",
+  "district_name": "Fairbanks North Star Borough School District",
+  "state": "AK",
+  "extraction_date": "2026-06-13T22:28:35.950374",
+  "extractor": "openrouter:z-ai/glm-4.7-flash",
+  "schedules": [],
+  "success": false,
+  "error": "Could not parse JSON response",
+  "raw_response": ""
+}

@@ -1,0 +1,22 @@
+{
+  "district_id": "1000200",
+  "district_name": "Christina School District",
+  "state": "DE",
+  "extraction_date": "2026-06-13T21:10:55.493110",
+  "extractor": "gemini:gemini-2.5-flash",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:20",
+      "end_time": "14:05",
+      "school_name": "Henry M. Brader Elementary School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'middle', 'high'}. Document may have more data.",
+  "raw_response": "```json\n{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"07:20\",\"end_time\":\"14:05\",\"school_name\":\"Henry M. Brader Elementary School\",\"confidence\":\"high\"}]}\n```"
+}

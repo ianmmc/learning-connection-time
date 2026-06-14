@@ -1,0 +1,135 @@
+{
+  "district_id": "5605302",
+  "name": "Sweetwater County School District #1",
+  "state": "WY",
+  "domain": "sweetwater1.org",
+  "query": "Sweetwater County School District #1 WY school bell schedule start and end times",
+  "candidates": [
+    {
+      "url": "https://www.sweetwater1.org/site-pages/calendars-and-times",
+      "tools": [
+        "perplexity",
+        "openrouter",
+        "claude"
+      ],
+      "gate": "on-domain"
+    },
+    {
+      "url": "https://www.sweetwater1.org/district-calendar",
+      "tools": [
+        "perplexity",
+        "openrouter",
+        "claude"
+      ],
+      "gate": "on-domain"
+    },
+    {
+      "url": "https://www.sweetwater1.org",
+      "tools": [
+        "perplexity",
+        "claude"
+      ],
+      "gate": "on-domain"
+    },
+    {
+      "url": "https://sce.sweetwater1.org/schedules",
+      "tools": [
+        "perplexity",
+        "claude"
+      ],
+      "gate": "on-domain"
+    },
+    {
+      "url": "https://pbe.sweetwater1.org/bell_schedule",
+      "tools": [
+        "perplexity"
+      ],
+      "gate": "on-domain"
+    },
+    {
+      "url": "https://rshs.sweetwater1.org/home",
+      "tools": [
+        "perplexity"
+      ],
+      "gate": "on-domain"
+    },
+    {
+      "url": "https://rsjh.sweetwater1.org/all-events",
+      "tools": [
+        "perplexity"
+      ],
+      "gate": "on-domain"
+    },
+    {
+      "url": "https://www.sweetwater1.org/site-pages/calendars-and-times/calendar",
+      "tools": [
+        "openrouter",
+        "claude"
+      ],
+      "gate": "on-domain"
+    },
+    {
+      "url": "https://ovr.sweetwater1.org/fs/resource-manager/view/2331e28e-0310-432b-a6b4-8ef677da5792",
+      "tools": [
+        "openrouter"
+      ],
+      "gate": "on-domain"
+    },
+    {
+      "url": "https://sce.sweetwater1.org/",
+      "tools": [
+        "openrouter"
+      ],
+      "gate": "on-domain"
+    },
+    {
+      "url": "https://fes.sweetwater1.org/about-us?utm_source=openai",
+      "tools": [
+        "openrouter"
+      ],
+      "gate": "on-domain"
+    },
+    {
+      "url": "https://des.sweetwater1.org/about-us?utm_source=openai",
+      "tools": [
+        "openrouter"
+      ],
+      "gate": "on-domain"
+    },
+    {
+      "url": "https://www.sweetwater1.org/department-directory",
+      "tools": [
+        "claude"
+      ],
+      "gate": "on-domain"
+    },
+    {
+      "url": "https://www.sweetwater1.org/site-pages/schools",
+      "tools": [
+        "claude"
+      ],
+      "gate": "on-domain"
+    },
+    {
+      "url": "https://www.sweetwater1.org/directory/school",
+      "tools": [
+        "claude"
+      ],
+      "gate": "on-domain"
+    },
+    {
+      "url": "https://www.sweetwater1.org/groups/4800/curriculum_instruction_and_assessment/school_calendars",
+      "tools": [
+        "claude"
+      ],
+      "gate": "on-domain"
+    },
+    {
+      "url": "https://rshs.sweetwater1.org/rshs-bell-schedule",
+      "tools": [
+        "claude"
+      ],
+      "gate": "on-domain"
+    }
+  ]
+}

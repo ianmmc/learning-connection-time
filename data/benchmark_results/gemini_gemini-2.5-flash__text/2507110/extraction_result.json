@@ -1,0 +1,322 @@
+{
+  "district_id": "2507110",
+  "district_name": "Lynn",
+  "state": "MA",
+  "extraction_date": "2026-06-13T21:14:02.775916",
+  "extractor": "gemini:gemini-2.5-flash",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "CALLAHAN",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "DREWICZ",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "EARLY CHILDHOOD CENTER",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "FALLON",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "FORD",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "HARRINGTON",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "INGALLS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "SISSON",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "VIRGINIA BARTON CENTER AT BRIARCLIFF (TEAMS)",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "WASHINGTON",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "ABORN",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "BRICKETT",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "COBBET",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "CONNERY",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "HOOD",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "LINCOLN-THOMSON",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "LYNN WOODS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "SEWELL ANDERSON",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "SHOEMAKER",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:15",
+      "school_name": "TRACY",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:15",
+      "school_name": "BREED MIDDLE SCHOOL",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:05",
+      "school_name": "HAROLD DURGIN SUCCESS ACADEMY",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "CITY ARTS & SCIENCES ACADEMY (CASA)",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "DISCOVERY ACADEMY",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "FREDERICK DOUGLASS COLLEGIATE ACADEMY",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "LYNN CLASSICAL HIGH SCHOOL",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "LYNN ENGLISH HIGH SCHOOL",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "LYNN VOCATIONAL TECHNICAL INSTITUTE",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "PICKERING MIDDLE SCHOOL",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "VIRGINIA BARTON CENTER AT BRIARCLIFF (SECONDARY TEAMS)",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "THURGOOD MARSHALL MIDDLE SCHOOL",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"CALLAHAN\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"DREWICZ\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"EARLY CHILDHOOD CENTER\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"FALLON\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"FORD\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"HARRINGTON\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"INGALLS\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"SISSON\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"VIRGINIA BARTON CENTER AT BRIARCLIFF (TEAMS)\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"WASHINGTON\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"ABORN\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"BRICKETT\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"COBBET\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"CONNERY\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"HOOD\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"LINCOLN-THOMSON\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"LYNN WOODS\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"SEWELL ANDERSON\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"SHOEMAKER\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:15\",\"school_name\":\"TRACY\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:30\",\"end_time\":\"14:15\",\"school_name\":\"BREED MIDDLE SCHOOL\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:05\",\"school_name\":\"HAROLD DURGIN SUCCESS ACADEMY\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"CITY ARTS & SCIENCES ACADEMY (CASA)\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"DISCOVERY ACADEMY\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"FREDERICK DOUGLASS COLLEGIATE ACADEMY\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"LYNN CLASSICAL HIGH SCHOOL\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"LYNN ENGLISH HIGH SCHOOL\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"LYNN VOCATIONAL TECHNICAL INSTITUTE\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"PICKERING MIDDLE SCHOOL\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"VIRGINIA BARTON CENTER AT BRIARCLIFF (SECONDARY TEAMS)\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"THURGOOD MARSHALL MIDDLE SCHOOL\",\"confidence\":\"high\"}]}"
+}

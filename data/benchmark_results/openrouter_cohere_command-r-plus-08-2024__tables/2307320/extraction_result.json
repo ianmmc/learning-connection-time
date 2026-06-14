@@ -1,0 +1,92 @@
+{
+  "district_id": "2307320",
+  "district_name": "Lewiston Public Schools",
+  "state": "ME",
+  "extraction_date": "2026-06-14T01:06:31.796323",
+  "extractor": "openrouter:cohere/command-r-plus-08-2024",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "08:25",
+      "end_time": "15:10",
+      "school_name": "Farwell",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Connors",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:25",
+      "end_time": "15:10",
+      "school_name": "McMahon",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Montello",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:25",
+      "end_time": "15:10",
+      "school_name": "Geiger",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:15",
+      "end_time": "14:00",
+      "school_name": "LMS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:15",
+      "end_time": "14:00",
+      "school_name": "LHS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:15",
+      "end_time": "14:00",
+      "school_name": "LRTC",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"08:25\",\"end_time\":\"15:10\",\"school_name\":\"Farwell\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"Connors\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:25\",\"end_time\":\"15:10\",\"school_name\":\"McMahon\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"school_name\":\"Montello\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"08:25\",\"end_time\":\"15:10\",\"school_name\":\"Geiger\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:15\",\"end_time\":\"14:00\",\"school_name\":\"LMS\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:15\",\"end_time\":\"14:00\",\"school_name\":\"LHS\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:15\",\"end_time\":\"14:00\",\"school_name\":\"LRTC\",\"confidence\":\"high\"}]}"
+}

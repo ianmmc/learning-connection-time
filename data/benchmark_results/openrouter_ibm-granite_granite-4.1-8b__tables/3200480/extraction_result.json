@@ -1,0 +1,682 @@
+{
+  "district_id": "3200480",
+  "district_name": "Washoe County",
+  "state": "NV",
+  "extraction_date": "2026-06-14T00:23:58.525023",
+  "extractor": "openrouter:ibm-granite/granite-4.1-8b",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "07:26",
+      "end_time": "14:00",
+      "school_name": "Academy of Arts, Careers & Technology",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "14:30",
+      "school_name": "Damonte Ranch",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:26",
+      "end_time": "14:00",
+      "school_name": "Debbie Smith CTE",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "14:30",
+      "school_name": "Galena",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "15:30",
+      "school_name": "Gerlach K-12",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:34",
+      "school_name": "Hug",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:30",
+      "school_name": "Incline",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:30",
+      "end_time": "14:57",
+      "school_name": "Innovations",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:30",
+      "end_time": "15:00",
+      "school_name": "Inspire Academy (6-12)",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "14:35",
+      "school_name": "McQueen",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "16:00",
+      "school_name": "North Star Online School (K-12)",
+      "source_file": null,
+      "confidence": "low",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "14:35",
+      "school_name": "North Valleys",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "14:35",
+      "school_name": "Reed",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:40",
+      "end_time": "14:30",
+      "school_name": "Reno",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "14:30",
+      "school_name": "Spanish Springs",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "14:35",
+      "school_name": "Sparks",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "14:20",
+      "school_name": "TMCC",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "09:50",
+      "end_time": "16:00",
+      "school_name": "Transitions Academy",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "14:30",
+      "school_name": "Turning Point",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:00",
+      "end_time": "14:30",
+      "school_name": "Wooster",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "Billinghurst",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "Clayton-Pre AP",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "Cold Springs 6-8",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "Depoali",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "Desert Skies",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "Dilworth-STEM",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "Herz",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:50",
+      "end_time": "14:25",
+      "school_name": "Incline",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "Mendive",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "13:54",
+      "school_name": "O' Brien-STEM",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "09:30",
+      "end_time": "15:30",
+      "school_name": "Picollo (PK-12)",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "Pine",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "Shaw",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "Sky Ranch",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "Sparks",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "Swope",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:00",
+      "school_name": "Traner",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:25",
+      "end_time": "14:00",
+      "school_name": "Vaughn",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:30",
+      "end_time": "15:30",
+      "school_name": "Allen",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:00",
+      "school_name": "Anderson",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:15",
+      "school_name": "Beasley",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:00",
+      "school_name": "Beck",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:00",
+      "school_name": "Bennett",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:30",
+      "end_time": "15:30",
+      "school_name": "Bohach",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:00",
+      "school_name": "Booth",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:30",
+      "end_time": "15:30",
+      "school_name": "Brown",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:30",
+      "end_time": "15:30",
+      "school_name": "Cannan",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:00",
+      "school_name": "Caughlin Ranch",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:30",
+      "end_time": "15:30",
+      "school_name": "Corbett",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:30",
+      "end_time": "15:30",
+      "school_name": "Desert Heights",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:45",
+      "end_time": "14:45",
+      "school_name": "Diedrichsen",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:00",
+      "school_name": "Dodson",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:30",
+      "end_time": "15:30",
+      "school_name": "Donner Springs",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:15",
+      "end_time": "15:15",
+      "school_name": "Double Diamond",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:00",
+      "school_name": "Drake",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:00",
+      "school_name": "Duncan-STEM",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:00",
+      "school_name": "Dunn",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:00",
+      "school_name": "Elmcrest",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:00",
+      "school_name": "Gomes",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:30",
+      "end_time": "15:30",
+      "school_name": "Gomm",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:00",
+      "school_name": "Greenbrae",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:00",
+      "school_name": "Hall",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:00",
+      "school_name": "Hidden Valley",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:30",
+      "end_time": "15:30",
+      "school_name": "Huffaker",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:30",
+      "end_time": "15:30",
+      "school_name": "Hunsberger",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:00",
+      "end_time": "15:00",
+      "school_name": "Hunter Lake",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:20",
+      "end_time": "15:20",
+      "school_name": "Incline",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"high\",\"school_name\":\"Academy of Arts, Careers & Technology\",\"start_time\":\"07:26\",\"end_time\":\"14:00\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"school_name\":\"Damonte Ranch\",\"start_time\":\"08:00\",\"end_time\":\"14:30\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"school_name\":\"Debbie Smith CTE\",\"start_time\":\"07:26\",\"end_time\":\"14:00\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"school_name\":\"Galena\",\"start_time\":\"08:00\",\"end_time\":\"14:30\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"school_name\":\"Gerlach K-12\",\"start_time\":\"08:00\",\"end_time\":\"15:30\",\"confidence\":\"medium\"},{\"grade_level\":\"high\",\"school_name\":\"Hug\",\"start_time\":\"07:45\",\"end_time\":\"14:34\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"school_name\":\"Incline\",\"start_time\":\"07:45\",\"end_time\":\"14:30\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"school_name\":\"Innovations\",\"start_time\":\"08:30\",\"end_time\":\"14:57\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"school_name\":\"Inspire Academy (6-12)\",\"start_time\":\"08:30\",\"end_time\":\"15:00\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"school_name\":\"McQueen\",\"start_time\":\"08:00\",\"end_time\":\"14:35\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"school_name\":\"North Star Online School (K-12)\",\"start_time\":\"08:00\",\"end_time\":\"16:00\",\"confidence\":\"low\"},{\"grade_level\":\"high\",\"school_name\":\"North Valleys\",\"start_time\":\"08:00\",\"end_time\":\"14:35\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"school_name\":\"Reed\",\"start_time\":\"08:00\",\"end_time\":\"14:35\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"school_name\":\"Reno\",\"start_time\":\"07:40\",\"end_time\":\"14:30\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"school_name\":\"Spanish Springs\",\"start_time\":\"08:00\",\"end_time\":\"14:30\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"school_name\":\"Sparks\",\"start_time\":\"08:00\",\"end_time\":\"14:35\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"school_name\":\"TMCC\",\"start_time\":\"08:00\",\"end_time\":\"14:20\",\"confidence\":\"medium\"},{\"grade_level\":\"high\",\"school_name\":\"Transitions Academy\",\"start_time\":\"09:50\",\"end_time\":\"16:00\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"school_name\":\"Turning Point\",\"start_time\":\"08:00\",\"end_time\":\"14:30\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"school_name\":\"Wooster\",\"start_time\":\"08:00\",\"end_time\":\"14:30\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"school_name\":\"Billinghurst\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"school_name\":\"Clayton-Pre AP\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"school_name\":\"Cold Springs 6-8\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"school_name\":\"Depoali\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"school_name\":\"Desert Skies\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"school_name\":\"Dilworth-STEM\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"school_name\":\"Herz\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"school_name\":\"Incline\",\"start_time\":\"07:50\",\"end_time\":\"14:25\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"school_name\":\"Mendive\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"school_name\":\"O' Brien-STEM\",\"start_time\":\"07:30\",\"end_time\":\"13:54\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"school_name\":\"Picollo (PK-12)\",\"start_time\":\"09:30\",\"end_time\":\"15:30\",\"confidence\":\"medium\"},{\"grade_level\":\"middle\",\"school_name\":\"Pine\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"school_name\":\"Shaw\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"school_name\":\"Sky Ranch\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"school_name\":\"Sparks\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"school_name\":\"Swope\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"school_name\":\"Traner\",\"start_time\":\"07:30\",\"end_time\":\"14:00\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"school_name\":\"Vaughn\",\"start_time\":\"07:25\",\"end_time\":\"14:00\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Allen\",\"start_time\":\"09:30\",\"end_time\":\"15:30\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Anderson\",\"start_time\":\"09:00\",\"end_time\":\"15:00\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Beasley\",\"start_time\":\"09:15\",\"end_time\":\"15:15\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Beck\",\"start_time\":\"09:00\",\"end_time\":\"15:00\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Bennett\",\"start_time\":\"09:00\",\"end_time\":\"15:00\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Bohach\",\"start_time\":\"09:30\",\"end_time\":\"15:30\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Booth\",\"start_time\":\"09:00\",\"end_time\":\"15:00\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Brown\",\"start_time\":\"09:30\",\"end_time\":\"15:30\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Cannan\",\"start_time\":\"09:30\",\"end_time\":\"15:30\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Caughlin Ranch\",\"start_time\":\"09:00\",\"end_time\":\"15:00\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Corbett\",\"start_time\":\"09:30\",\"end_time\":\"15:30\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Desert Heights\",\"start_time\":\"09:30\",\"end_time\":\"15:30\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Diedrichsen\",\"start_time\":\"08:45\",\"end_time\":\"14:45\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Dodson\",\"start_time\":\"09:00\",\"end_time\":\"15:00\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Donner Springs\",\"start_time\":\"09:30\",\"end_time\":\"15:30\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Double Diamond\",\"start_time\":\"09:15\",\"end_time\":\"15:15\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Drake\",\"start_time\":\"09:00\",\"end_time\":\"15:00\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Duncan-STEM\",\"start_time\":\"09:00\",\"end_time\":\"15:00\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Dunn\",\"start_time\":\"09:00\",\"end_time\":\"15:00\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Elmcrest\",\"start_time\":\"09:00\",\"end_time\":\"15:00\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Gomes\",\"start_time\":\"09:00\",\"end_time\":\"15:00\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Gomm\",\"start_time\":\"09:30\",\"end_time\":\"15:30\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Greenbrae\",\"start_time\":\"09:00\",\"end_time\":\"15:00\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Hall\",\"start_time\":\"09:00\",\"end_time\":\"15:00\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Hidden Valley\",\"start_time\":\"09:00\",\"end_time\":\"15:00\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Huffaker\",\"start_time\":\"09:30\",\"end_time\":\"15:30\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Hunsberger\",\"start_time\":\"09:30\",\"end_time\":\"15:30\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Hunter Lake\",\"start_time\":\"09:00\",\"end_time\":\"15:00\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"school_name\":\"Incline\",\"start_time\":\"09:20\",\"end_time\":\"15:20\",\"confidence\":\"high\"},{\"grade_level\":\"elementary"
+}

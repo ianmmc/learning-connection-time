@@ -1,0 +1,42 @@
+{
+  "district_id": "0102430",
+  "district_name": "Montgomery County",
+  "state": "AL",
+  "extraction_date": "2026-06-14T00:20:27.620647",
+  "extractor": "openrouter:deepseek/deepseek-v4-pro",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "15:10",
+      "school_name": "Blount Elementary",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "14:45",
+      "school_name": "Brewbaker Middle School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "14:45",
+      "school_name": "Booker T. Washington Magnet High School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"15:10\",\"school_name\":\"Blount Elementary\",\"confidence\":\"medium\"},{\"grade_level\":\"middle\",\"start_time\":\"07:45\",\"end_time\":\"14:45\",\"school_name\":\"Brewbaker Middle School\",\"confidence\":\"medium\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:45\",\"school_name\":\"Booker T. Washington Magnet High School\",\"confidence\":\"medium\"}]}"
+}

@@ -1,0 +1,11 @@
+{
+  "district_id": "0622710",
+  "district_name": "Los Angeles Unified",
+  "state": "CA",
+  "extraction_date": "2026-06-13T21:28:27.211878",
+  "extractor": "gemini:gemini-2.5-flash",
+  "schedules": [],
+  "success": false,
+  "error": "No valid schedules extracted",
+  "raw_response": "{\"schedules\":[]}"
+}

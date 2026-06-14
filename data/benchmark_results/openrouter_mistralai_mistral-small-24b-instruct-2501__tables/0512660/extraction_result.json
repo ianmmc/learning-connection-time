@@ -1,0 +1,62 @@
+{
+  "district_id": "0512660",
+  "district_name": "SPRINGDALE SCHOOL DISTRICT",
+  "state": "AR",
+  "extraction_date": "2026-06-14T00:07:40.978837",
+  "extractor": "openrouter:mistralai/mistral-small-24b-instruct-2501",
+  "schedules": [
+    {
+      "grade_level": "middle",
+      "start_time": "08:05",
+      "end_time": "15:30",
+      "school_name": "Central Junior High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "15:15",
+      "school_name": "Elmdale Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "15:15",
+      "school_name": "Harp Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:05",
+      "end_time": "15:30",
+      "school_name": "Helen Tyson Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "08:05",
+      "end_time": "15:30",
+      "school_name": "Sonora Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'high'}. Document may have more data.",
+  "raw_response": "```json\n{\n  \"schedules\": [\n    {\n      \"grade_level\": \"middle\",\n      \"start_time\": \"08:05\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Central Junior High\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"07:45\",\n      \"end_time\": \"15:15\",\n      \"school_name\": \"Elmdale Elementary\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"elementary\",\n      \"start_time\": \"07:45\",\n      \"end_time\": \"15:15\",\n      \"school_name\": \"Harp Elementary\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"middle\",\n      \"start_time\": \"08:05\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Helen Tyson Middle School\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"grade_level\": \"middle\",\n      \"start_time\": \"08:05\",\n      \"end_time\": \"15:30\",\n      \"school_name\": \"Sonora Middle School\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+}

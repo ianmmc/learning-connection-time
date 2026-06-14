@@ -1,0 +1,6 @@
+{"district_id":"5000396","extractor":"anthropic:sonnet","success":true,"schedules":[
+{"grade_level":"elementary","start_time":"07:45","end_time":"14:43","school_name":"Charlotte Central School","confidence":"medium"},
+{"grade_level":"elementary","start_time":"07:45","end_time":"14:45","school_name":"Shelburne Community School","confidence":"high"},
+{"grade_level":"elementary","start_time":"07:35","end_time":"14:35","school_name":"Allen Brook School","confidence":"high"},
+{"grade_level":"elementary","start_time":"07:45","end_time":"14:45","school_name":"Williston Central School","confidence":"high"}
+]}

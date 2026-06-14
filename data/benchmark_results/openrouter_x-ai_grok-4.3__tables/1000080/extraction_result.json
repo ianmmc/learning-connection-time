@@ -1,0 +1,182 @@
+{
+  "district_id": "1000080",
+  "district_name": "Appoquinimink School District",
+  "state": "DE",
+  "extraction_date": "2026-06-14T00:30:19.626664",
+  "extractor": "openrouter:x-ai/grok-4.3",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "08:20",
+      "end_time": "15:00",
+      "school_name": "Appoquinimink HS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:20",
+      "end_time": "15:00",
+      "school_name": "Middletown HS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:20",
+      "end_time": "15:00",
+      "school_name": "Odessa HS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:20",
+      "end_time": "15:00",
+      "school_name": "Special Program MS/HS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:10",
+      "school_name": "Everett Meredith MS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:10",
+      "school_name": "Louis L. Redding MS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:10",
+      "school_name": "Alfred G. Waters MS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:30",
+      "end_time": "14:10",
+      "school_name": "Cantwell\u2019s Bridge MS",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:10",
+      "end_time": "15:50",
+      "school_name": "Brick Mill ES/ECC",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:10",
+      "end_time": "15:50",
+      "school_name": "Bunker Hill ES",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:10",
+      "end_time": "15:50",
+      "school_name": "Cedar Lane ES/ECC",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:10",
+      "end_time": "15:50",
+      "school_name": "Lorewood Grove ES",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:10",
+      "end_time": "15:50",
+      "school_name": "Crystal Run ES",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:10",
+      "end_time": "15:50",
+      "school_name": "Old State ES & Spring Meadow ECC",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:10",
+      "end_time": "15:50",
+      "school_name": "Olive B. Loss ES",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:10",
+      "end_time": "15:50",
+      "school_name": "Silver Lake ES",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "09:10",
+      "end_time": "15:50",
+      "school_name": "Townsend ES/ECC",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"high\",\"start_time\":\"08:20\",\"end_time\":\"15:00\",\"school_name\":\"Appoquinimink HS\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:20\",\"end_time\":\"15:00\",\"school_name\":\"Middletown HS\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:20\",\"end_time\":\"15:00\",\"school_name\":\"Odessa HS\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"08:20\",\"end_time\":\"15:00\",\"school_name\":\"Special Program MS/HS\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:30\",\"end_time\":\"14:10\",\"school_name\":\"Everett Meredith MS\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:30\",\"end_time\":\"14:10\",\"school_name\":\"Louis L. Redding MS\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:30\",\"end_time\":\"14:10\",\"school_name\":\"Alfred G. Waters MS\",\"confidence\":\"high\"},{\"grade_level\":\"middle\",\"start_time\":\"07:30\",\"end_time\":\"14:10\",\"school_name\":\"Cantwell\\u2019s Bridge MS\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:10\",\"end_time\":\"15:50\",\"school_name\":\"Brick Mill ES/ECC\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:10\",\"end_time\":\"15:50\",\"school_name\":\"Bunker Hill ES\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:10\",\"end_time\":\"15:50\",\"school_name\":\"Cedar Lane ES/ECC\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:10\",\"end_time\":\"15:50\",\"school_name\":\"Lorewood Grove ES\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:10\",\"end_time\":\"15:50\",\"school_name\":\"Crystal Run ES\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:10\",\"end_time\":\"15:50\",\"school_name\":\"Old State ES & Spring Meadow ECC\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:10\",\"end_time\":\"15:50\",\"school_name\":\"Olive B. Loss ES\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:10\",\"end_time\":\"15:50\",\"school_name\":\"Silver Lake ES\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:10\",\"end_time\":\"15:50\",\"school_name\":\"Townsend ES/ECC\",\"confidence\":\"high\"}]}"
+}

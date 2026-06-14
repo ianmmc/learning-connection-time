@@ -1,0 +1,13 @@
+{"district_id":"5000395","extractor":"anthropic:sonnet","success":true,"schedules":[
+{"grade_level":"elementary","start_time":"07:40","end_time":"14:10","school_name":"AWL","confidence":"high"},
+{"grade_level":"elementary","start_time":"07:40","end_time":"14:10","school_name":"Rockdale Academy","confidence":"high"},
+{"grade_level":"elementary","start_time":"09:10","end_time":"15:40","school_name":"Roselawn Condon School","confidence":"high"},
+{"grade_level":"elementary","start_time":"07:40","end_time":"14:10","school_name":"CANS (Clifton Area Neighborhood School)","confidence":"high"},
+{"grade_level":"elementary","start_time":"08:00","end_time":"15:00","school_name":"Dr. O'dell Owens Center for Learning","confidence":"high"},
+{"grade_level":"elementary","start_time":"09:10","end_time":"15:40","school_name":"James N. Gamble Montessori Elementary School","confidence":"high"},
+{"grade_level":"elementary","start_time":"09:10","end_time":"15:40","school_name":"North Avondale Montessori School","confidence":"high"},
+{"grade_level":"elementary","start_time":"07:40","end_time":"14:10","school_name":"Roll Hill School","confidence":"high"},
+{"grade_level":"elementary","start_time":"09:10","end_time":"15:40","school_name":"Roberts Academy","confidence":"high"},
+{"grade_level":"high","start_time":"08:00","end_time":"15:00","school_name":"James N. Gamble Montessori High School","confidence":"high"},
+{"grade_level":"middle","start_time":"08:00","end_time":"15:00","school_name":"Pleasant Hill Middle School","confidence":"high"}
+]}

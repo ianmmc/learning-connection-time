@@ -1,0 +1,22 @@
+{
+  "district_id": "0102430",
+  "district_name": "Montgomery County",
+  "state": "AL",
+  "extraction_date": "2026-06-14T00:41:47.073251",
+  "extractor": "openrouter:google/gemini-3.5-flash",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "08:10",
+      "end_time": "15:10",
+      "school_name": "Blount Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'middle', 'high'}. Document may have more data.",
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"08:10\",\"end_time\":\"15:10\",\"school_name\":\"Blount Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"high\",\"start_time\":\"07:45\",\"end_time\":\"14:45\",\"school_name\":\"Booker T. Washington"
+}

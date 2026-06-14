@@ -1,0 +1,82 @@
+{
+  "district_id": "0100270",
+  "district_name": "Baldwin County",
+  "state": "AL",
+  "extraction_date": "2026-06-14T00:57:46.498748",
+  "extractor": "openrouter:cohere/command-r-plus-08-2024",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:40",
+      "end_time": "14:40",
+      "school_name": "Pine Grove Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:42",
+      "end_time": "15:05",
+      "school_name": "Fairhope Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:45",
+      "end_time": "15:03",
+      "school_name": "Elberta Middle School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:15",
+      "end_time": "15:05",
+      "school_name": "Daphne Middle School",
+      "source_file": null,
+      "confidence": "medium",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:50",
+      "end_time": "15:15",
+      "school_name": "Fairhope High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:40",
+      "end_time": "15:10",
+      "school_name": "Daphne High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:45",
+      "end_time": "15:05",
+      "school_name": "Robertsdale High School",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "{\n    \"schedules\": [\n        {\n            \"grade_level\": \"elementary\",\n            \"start_time\": \"07:40\",\n            \"end_time\": \"14:40\",\n            \"school_name\": \"Pine Grove Elementary\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"middle\",\n            \"start_time\": \"07:42\",\n            \"end_time\": \"15:05\",\n            \"school_name\": \"Fairhope Middle School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"middle\",\n            \"start_time\": \"07:45\",\n            \"end_time\": \"15:03\",\n            \"school_name\": \"Elberta Middle School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"middle\",\n            \"start_time\": \"07:15\",\n            \"end_time\": \"15:05\",\n            \"school_name\": \"Daphne Middle School\",\n            \"confidence\": \"medium\"\n        },\n        {\n            \"grade_level\": \"high\",\n            \"start_time\": \"07:50\",\n            \"end_time\": \"15:15\",\n            \"school_name\": \"Fairhope High School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"high\",\n            \"start_time\": \"07:40\",\n            \"end_time\": \"15:10\",\n            \"school_name\": \"Daphne High School\",\n            \"confidence\": \"high\"\n        },\n        {\n            \"grade_level\": \"high\",\n            \"start_time\": \"07:45\",\n            \"end_time\": \"15:05\",\n            \"school_name\": \"Robertsdale High School\",\n            \"confidence\": \"high\"\n        }\n    ]\n}"
+}

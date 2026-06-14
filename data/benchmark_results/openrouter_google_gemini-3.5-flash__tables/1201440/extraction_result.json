@@ -1,0 +1,22 @@
+{
+  "district_id": "1201440",
+  "district_name": "ORANGE",
+  "state": "FL",
+  "extraction_date": "2026-06-14T00:44:06.123897",
+  "extractor": "openrouter:google/gemini-3.5-flash",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:30",
+      "school_name": "Lake Weston",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'middle', 'high'}. Document may have more data.",
+  "raw_response": "{\"schedules\": [{\"grade_level\": \"elementary\", \"start_time\": \"08:15\", \"end_time\": \"15:30\", \"school_name\": \"Lake Weston\", \"confidence\": \"high\"}, {\"grade_level\": \"elementary\", \"start_time\": \"08:45\", \"end_time\": \"15:00"
+}

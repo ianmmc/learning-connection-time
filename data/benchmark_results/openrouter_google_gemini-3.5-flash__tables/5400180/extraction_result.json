@@ -1,0 +1,11 @@
+{
+  "district_id": "5400180",
+  "district_name": "CABELL COUNTY SCHOOLS",
+  "state": "WV",
+  "extraction_date": "2026-06-14T00:51:26.518402",
+  "extractor": "openrouter:google/gemini-3.5-flash",
+  "schedules": [],
+  "success": false,
+  "error": "Could not parse JSON response",
+  "raw_response": "al 3:06\", \"Loop Bus Dismissal 3:08\", \"Track Bus Dismissal to Gym 3:10\". 15:10 is a very safe end time.\n    *   Huntington High School:\n        *   \"Transition 7:35 7:45 | Student will report to 1st mod\" ->"
+}

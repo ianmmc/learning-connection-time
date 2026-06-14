@@ -1,0 +1,102 @@
+{
+  "district_id": "0102370",
+  "district_name": "Mobile County",
+  "state": "AL",
+  "extraction_date": "2026-06-14T00:45:19.285955",
+  "extractor": "openrouter:mistralai/mistral-large-2512",
+  "schedules": [
+    {
+      "grade_level": "high",
+      "start_time": "07:15",
+      "end_time": "14:25",
+      "school_name": "Mary G Montgomery High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "14:45",
+      "school_name": "Holloway Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:20",
+      "end_time": "15:05",
+      "school_name": "Allentown Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "07:15",
+      "end_time": "14:25",
+      "school_name": "Mattie T. Blount High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:29",
+      "end_time": "14:20",
+      "school_name": "Causey Middle",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:15",
+      "end_time": "15:15",
+      "school_name": "Collier Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:55",
+      "end_time": "15:10",
+      "school_name": "Dodge Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:20",
+      "end_time": "14:30",
+      "school_name": "Pillans Middle",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:20",
+      "end_time": "15:15",
+      "school_name": "Tanner Williams Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": null,
+  "raw_response": "```json\n{\"schedules\":[\n{\"grade_level\":\"high\",\"start_time\":\"07:15\",\"end_time\":\"14:25\",\"school_name\":\"Mary G Montgomery High\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"14:45\",\"school_name\":\"Holloway Elementary\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:20\",\"end_time\":\"15:05\",\"school_name\":\"Allentown Elementary\",\"confidence\":\"high\"},\n{\"grade_level\":\"high\",\"start_time\":\"07:15\",\"end_time\":\"14:25\",\"school_name\":\"Mattie T. Blount High\",\"confidence\":\"high\"},\n{\"grade_level\":\"middle\",\"start_time\":\"07:29\",\"end_time\":\"14:20\",\"school_name\":\"Causey Middle\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:15\",\"end_time\":\"15:15\",\"school_name\":\"Collier Elementary\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"07:55\",\"end_time\":\"15:10\",\"school_name\":\"Dodge Elementary\",\"confidence\":\"high\"},\n{\"grade_level\":\"middle\",\"start_time\":\"07:20\",\"end_time\":\"14:30\",\"school_name\":\"Pillans Middle\",\"confidence\":\"high\"},\n{\"grade_level\":\"elementary\",\"start_time\":\"08:20\",\"end_time\":\"15:15\",\"school_name\":\"Tanner Williams Elementary\",\"confidence\":\"high\"}\n]}\n```"
+}

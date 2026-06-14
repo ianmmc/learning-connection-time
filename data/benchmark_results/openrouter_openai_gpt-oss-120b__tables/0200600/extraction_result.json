@@ -1,0 +1,22 @@
+{
+  "district_id": "0200600",
+  "district_name": "Fairbanks North Star Borough School District",
+  "state": "AK",
+  "extraction_date": "2026-06-13T22:18:40.353902",
+  "extractor": "openrouter:openai/gpt-oss-120b",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:40",
+      "end_time": "14:10",
+      "school_name": "Anderson-Crawford Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'high', 'middle'}. Document may have more data.",
+  "raw_response": "{\"schedules\":[{\"grade_level\":\"elementary\",\"start_time\":\"07:40\",\"end_time\":\"14:10\",\"school_name\":\"Anderson-Crawford Elementary\",\"confidence\":\"high\"},{\"grade_level\":\"elementary\",\"start_time\":\"09:15\",\"end_time\":\"15:45\",\"school"
+}

@@ -1,0 +1,4620 @@
+{
+  "model": "openrouter:x-ai/grok-4.3",
+  "run_date": "2026-06-14T00:40:53.151362",
+  "config": {
+    "temperature": 0.1,
+    "num_predict": 1000,
+    "max_text_len": 6000
+  },
+  "summary": {
+    "districts_tested": 40,
+    "overall_accuracy_pct": 22.9,
+    "json_success_rate": 100.0,
+    "false_positive_rate": 10.22,
+    "total_time_seconds": 755.6,
+    "mean_time_seconds": 18.9
+  },
+  "districts": [
+    {
+      "district_id": "0200510",
+      "district_name": "Matanuska-Susitna Borough School District",
+      "state": "AK",
+      "score": 9,
+      "max_score": 10,
+      "pct": 90.0,
+      "extraction_time_seconds": 5.0,
+      "json_parse_failed": false,
+      "false_positive_count": 0,
+      "missing_grade_levels": [],
+      "penalties": [],
+      "entry_scores": [
+        {
+          "ground_truth": "high 07:45-14:15",
+          "extracted": "high 07:45-14:15",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        }
+      ]
+    },
+    {
+      "district_id": "0200600",
+      "district_name": "Fairbanks North Star Borough School District",
+      "state": "AK",
+      "score": 0,
+      "max_score": 10,
+      "pct": 0.0,
+      "extraction_time_seconds": 9.0,
+      "json_parse_failed": false,
+      "false_positive_count": 25,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:15-15:45 (Anne Wien Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:30 (Arctic Light Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-14:45 (Barnette Magnet)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:45-15:15 (Boreal Sun Charter)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-14:45 (Chinook Montessori Charter)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:15-15:45 (Denali Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:30 (Discovery Peak Charter)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:50-15:45 (Effie Kokrine Charter)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:30 (Hunter Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:30-14:00 (Hutchison High)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:15-15:45 (Ladd Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:30-14:00 (Lathrop High)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:30 (North Pole Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:30-14:00 (North Pole High)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:50-14:20 (North Pole Middle)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:50-14:20 (Randy Smith Middle)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:50-14:20 (Ryan Middle)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:15-15:45 (Salcha Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:55-14:25 (Tanana Middle)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:30 (Ticasuk Brown Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:15-15:45 (University Park Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:30-15:00 (Watershed Charter)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:15-15:45 (Weller Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:30-14:00 (West Valley High)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:15-15:45 (Woodriver Elementary)"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:15', '14:45')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:15', '15:45')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:15', '15:45')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '07:30', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '07:30', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '07:50', '14:20')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '07:50', '14:20')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:15', '15:45')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:00', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:15', '15:45')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:15', '15:45')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '07:30', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:15', '15:45')"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 07:40-14:10",
+          "extracted": "elementary 07:40-14:10",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        }
+      ]
+    },
+    {
+      "district_id": "0100270",
+      "district_name": "Baldwin County",
+      "state": "AL",
+      "score": 0,
+      "max_score": 10,
+      "pct": 0.0,
+      "extraction_time_seconds": 7.3,
+      "json_parse_failed": false,
+      "false_positive_count": 6,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:15-15:05 (Daphne Middle School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:50-15:10 (Daphne High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:45-15:03 (Elberta Middle School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:00-15:15 (Fairhope High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:45-15:05 (Fairhope Middle School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:45-15:05 (Robertsdale High School)"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 07:15-14:45",
+          "extracted": "elementary 07:40-14:40",
+          "total": 3,
+          "max": 10,
+          "start_diff_min": 25,
+          "end_diff_min": 5
+        }
+      ]
+    },
+    {
+      "district_id": "0102370",
+      "district_name": "Mobile County",
+      "state": "AL",
+      "score": 0,
+      "max_score": 10,
+      "pct": 0.0,
+      "extraction_time_seconds": 4.4,
+      "json_parse_failed": false,
+      "false_positive_count": 8,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:15-14:25 (Mary G Montgomery High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:20-15:05 (Allentown Elementary School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:15-14:25 (Blount High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:15-14:20 (Causey Middle School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:15 (Collier Elementary School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:10 (Dodge Elementary School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:20-14:30 (Pillans Middle School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:20-15:15 (Tanner Williams Elementary School)"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '07:15', '14:25')"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 08:00-14:25",
+          "extracted": "elementary 08:15-14:45",
+          "total": 2,
+          "max": 10,
+          "start_diff_min": 15,
+          "end_diff_min": 20
+        }
+      ]
+    },
+    {
+      "district_id": "0102430",
+      "district_name": "Montgomery County",
+      "state": "AL",
+      "score": 0,
+      "max_score": 30,
+      "pct": 0.0,
+      "extraction_time_seconds": 2.9,
+      "json_parse_failed": false,
+      "false_positive_count": 0,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "extraction_error",
+          "points": -5,
+          "detail": "No valid schedules extracted"
+        }
+      ],
+      "entry_scores": []
+    },
+    {
+      "district_id": "0509000",
+      "district_name": "LITTLE ROCK SCHOOL DISTRICT",
+      "state": "AR",
+      "score": 27,
+      "max_score": 30,
+      "pct": 90.0,
+      "extraction_time_seconds": 8.3,
+      "json_parse_failed": false,
+      "false_positive_count": 0,
+      "missing_grade_levels": [],
+      "penalties": [],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 07:40-14:55",
+          "extracted": "elementary 07:40-14:55",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "high 08:45-16:00",
+          "extracted": "high 08:45-16:00",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "middle 08:45-16:00",
+          "extracted": "middle 08:45-16:00",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        }
+      ]
+    },
+    {
+      "district_id": "0512660",
+      "district_name": "SPRINGDALE SCHOOL DISTRICT",
+      "state": "AR",
+      "score": 0,
+      "max_score": 30,
+      "pct": 0.0,
+      "extraction_time_seconds": 6.3,
+      "json_parse_failed": false,
+      "false_positive_count": 3,
+      "missing_grade_levels": [
+        "high"
+      ],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:45-15:15 (Harp Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:45-15:15 (Bayyari Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 08:05-15:30 (Sonora Middle School)"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '07:45', '15:15')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '07:45', '15:15')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '08:05', '15:30')"
+        },
+        {
+          "type": "missing_grade_level",
+          "points": -2,
+          "detail": "Missing: high"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "middle 08:05-15:30",
+          "extracted": "middle 08:05-15:30",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "elementary 08:05-15:30",
+          "extracted": "elementary 07:45-15:15",
+          "total": 2,
+          "max": 10,
+          "start_diff_min": 20,
+          "end_diff_min": 15
+        },
+        {
+          "ground_truth": "high 08:40-16:05",
+          "extracted": "MISSED",
+          "total": 0,
+          "max": 10,
+          "start_diff_min": null,
+          "end_diff_min": null
+        }
+      ]
+    },
+    {
+      "district_id": "0404970",
+      "district_name": "Mesa Unified District (4235)",
+      "state": "AZ",
+      "score": 1,
+      "max_score": 20,
+      "pct": 5.0,
+      "extraction_time_seconds": 3.8,
+      "json_parse_failed": false,
+      "false_positive_count": 1,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:15-15:15 (Red Mtn. High School)"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 07:50-13:50",
+          "extracted": "elementary 08:15-14:45",
+          "total": 2,
+          "max": 10,
+          "start_diff_min": 25,
+          "end_diff_min": 55
+        },
+        {
+          "ground_truth": "middle 08:00-14:45",
+          "extracted": "middle 07:30-14:15",
+          "total": 2,
+          "max": 10,
+          "start_diff_min": 30,
+          "end_diff_min": 30
+        }
+      ]
+    },
+    {
+      "district_id": "0408800",
+      "district_name": "Tucson Unified District (4403)",
+      "state": "AZ",
+      "score": 1,
+      "max_score": 20,
+      "pct": 5.0,
+      "extraction_time_seconds": 5.8,
+      "json_parse_failed": false,
+      "false_positive_count": 3,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:20-14:45 (Borton Elementary Magnet School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:00-15:01 (Pueblo High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:50 (Safford K-8)"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "middle 08:50-15:50",
+          "extracted": "middle 08:50-15:50",
+          "total": 8,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "high 08:30-15:15",
+          "extracted": "high 08:05-15:21",
+          "total": 2,
+          "max": 10,
+          "start_diff_min": 25,
+          "end_diff_min": 6
+        }
+      ]
+    },
+    {
+      "district_id": "0622710",
+      "district_name": "Los Angeles Unified",
+      "state": "CA",
+      "score": 0,
+      "max_score": 30,
+      "pct": 0.0,
+      "extraction_time_seconds": 1.3,
+      "json_parse_failed": false,
+      "false_positive_count": 0,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "extraction_error",
+          "points": -5,
+          "detail": "No valid schedules extracted"
+        }
+      ],
+      "entry_scores": []
+    },
+    {
+      "district_id": "0626910",
+      "district_name": "New Haven Unified",
+      "state": "CA",
+      "score": 0,
+      "max_score": 10,
+      "pct": 0.0,
+      "extraction_time_seconds": 7.8,
+      "json_parse_failed": false,
+      "false_positive_count": 4,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 09:00-13:54 (Conley-Caraballo High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 08:15-14:44 (C\u00e9sar Ch\u00e1vez Middle School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:05 (Delaine Eastin Elementary School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:05 (Searles Elementary School)"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:05')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:05')"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 08:30-14:05",
+          "extracted": "elementary 08:00-14:05",
+          "total": 5,
+          "max": 10,
+          "start_diff_min": 30,
+          "end_diff_min": 0
+        }
+      ]
+    },
+    {
+      "district_id": "0900450",
+      "district_name": "Bridgeport School District",
+      "state": "CT",
+      "score": 0,
+      "max_score": 10,
+      "pct": 0.0,
+      "extraction_time_seconds": 8.7,
+      "json_parse_failed": false,
+      "false_positive_count": 37,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:25-14:55 (Blackham)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (Batalla)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (Beardsley)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (Black Rock)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (Bryant)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (Classical Studies)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (Columbus)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (Geraldine Claytor)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:45-15:05 (Curiale)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:50-14:20 (Curiale)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (Discovery)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (Dunbar)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (Edison)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (Geraldine Johnson)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (Hall)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (Hallen)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:55 (High Horizon)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (Jettie Tisdale)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (John Winthrop)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (Marin)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (Madison)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:55 (Multicultural)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:55 (Park City Magnet)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:30-15:00 (Read)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:50-14:20 (Read)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (Roosevelt)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (Thomas Hooker)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (Waltersville)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:50-15:10 (Wilbur Cross)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-14:00 (Bpt. Learning Ctr.)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:15-14:00 (Bpt. Learning Ctr.)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:53-14:30 (Bassick)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:53-14:30 (Central)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:53-14:30 (Harding)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:50-14:05 (Fairchild Wheeler)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:55-14:10 (Bpt. Military Academy)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:00-14:05 (Aquaculture)"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:35', '14:55')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:35', '14:55')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '07:50', '14:20')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:50', '15:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '07:53', '14:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '07:53', '14:30')"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 08:50-15:10",
+          "extracted": "elementary 08:50-15:10",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        }
+      ]
+    },
+    {
+      "district_id": "0902790",
+      "district_name": "New Haven School District",
+      "state": "CT",
+      "score": 0,
+      "max_score": 30,
+      "pct": 0.0,
+      "extraction_time_seconds": 9.1,
+      "json_parse_failed": false,
+      "false_positive_count": 30,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:30-14:05 (Cooperative Arts and Humanities Magnet High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:30-14:15 (Metro Business Academy)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:10-14:05 (New Haven Academy)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 13:00-16:00 (Platt Tech)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:30-14:17 (Sound School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 10:00-14:15 (Riverside)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:10-14:05 (HSC HS)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:15-15:30 (John Martinez)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:15-15:30 (Jepson)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:45-14:15 (John Daniels)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:55-14:10 (King-Robinson)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:50 (Nathan Hale)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:15-15:30 (Roberto Clemente)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:15-15:30 (Ross-Woodward)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:30-14:00 (Mauro-Sheridan)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:50 (Wexler)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:55-14:10 (Troup)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:50 (Truman)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:15 (Barack H Obama)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:50 (East Rock)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:15-15:30 (Edgewood)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:15-15:30 (Fair Haven)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:50 (Hill Central)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:15-15:30 (Hooker)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:30-14:00 (Achievement First HS)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:00-14:11 (Amistad Elem)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:30 (Elm City Montessori)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:30-14:05 (B. T. Washington Elem)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:30-14:10 (B.T. Washington Middle)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:45-15:10 (Edmonds Cofield Prep)"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '07:10', '14:05')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:35', '14:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:35', '14:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '07:55', '14:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:35', '14:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:35', '14:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:35', '14:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '07:30', '14:00')"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "middle 07:50-14:20",
+          "extracted": "middle 07:55-14:30",
+          "total": 3,
+          "max": 10,
+          "start_diff_min": 5,
+          "end_diff_min": 10
+        },
+        {
+          "ground_truth": "elementary 08:45-15:00",
+          "extracted": "elementary 08:35-14:50",
+          "total": 2,
+          "max": 10,
+          "start_diff_min": 10,
+          "end_diff_min": 10
+        },
+        {
+          "ground_truth": "high 07:20-13:50",
+          "extracted": "high 07:30-14:00",
+          "total": 2,
+          "max": 10,
+          "start_diff_min": 10,
+          "end_diff_min": 10
+        }
+      ]
+    },
+    {
+      "district_id": "0904830",
+      "district_name": "Waterbury School District",
+      "state": "CT",
+      "score": 0,
+      "max_score": 30,
+      "pct": 0.0,
+      "extraction_time_seconds": 5.0,
+      "json_parse_failed": false,
+      "false_positive_count": 32,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:20-13:50 (Kennedy)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:20-13:50 (Wtby Arts Magnet)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:20-13:50 (Wtby Career Academy)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:20-13:50 (Wilby)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:50-14:20 (Wallace)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:20-13:50 (Wtby Arts Magnet)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:50-14:20 (West Side)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:50 (Bunker Hill)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:50 (Carrington)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:50 (Chase)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:50 (Cross, Wendell)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:05-14:20 (Driggs)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:05-14:20 (Duggan)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:50 (Generali)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:50 (Gilmartin)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:50 (Hopeville)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:50 (Kingsbury)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:50 (Maloney)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:50 (Reed)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:50 (Regan)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:05-15:20 (Roberto Clemente)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:05-15:20 (Rotella)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:05-14:20 (Sprague)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:05-14:20 (Tinker)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:50 (Walsh)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:05-14:20 (Washington)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:35-14:50 (Wilson)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:30-13:45 (Holy Cross High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:25-14:20 (Kaynor Technical)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 09:00-16:00 (Yeshiva Bais Yaakov (Girls HS))"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 09:00-16:00 (Yeshiva Gedolah (Boys HS))"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-16:00 (Yeshiva K'Tana (Elementary))"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '07:20', '13:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '07:20', '13:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '07:20', '13:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '07:20', '13:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '07:50', '14:20')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '07:50', '14:20')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:35', '14:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:35', '14:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:35', '14:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:35', '14:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:05', '14:20')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:35', '14:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:35', '14:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:35', '14:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:35', '14:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:35', '14:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:35', '14:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:35', '14:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:05', '15:20')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:05', '14:20')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:05', '14:20')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:35', '14:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:05', '14:20')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:35', '14:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '09:00', '16:00')"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 08:35-14:50",
+          "extracted": "elementary 08:35-14:50",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "high 07:20-13:50",
+          "extracted": "high 07:20-13:50",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "middle 07:50-14:20",
+          "extracted": "middle 07:50-14:20",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        }
+      ]
+    },
+    {
+      "district_id": "1100031",
+      "district_name": "KIPP DC PCS",
+      "state": "DC",
+      "score": 27,
+      "max_score": 30,
+      "pct": 90.0,
+      "extraction_time_seconds": 5.7,
+      "json_parse_failed": false,
+      "false_positive_count": 0,
+      "missing_grade_levels": [],
+      "penalties": [],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 08:00-15:30",
+          "extracted": "elementary 08:00-15:30",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "high 08:15-15:15",
+          "extracted": "high 08:15-15:15",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "middle 08:00-15:30",
+          "extracted": "middle 08:00-15:30",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        }
+      ]
+    },
+    {
+      "district_id": "1000080",
+      "district_name": "Appoquinimink School District",
+      "state": "DE",
+      "score": 0,
+      "max_score": 10,
+      "pct": 0.0,
+      "extraction_time_seconds": 19.8,
+      "json_parse_failed": false,
+      "false_positive_count": 16,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:20-15:00 (Middletown HS)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:20-15:00 (Odessa HS)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:20-15:00 (Special Program MS/HS)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:30-14:10 (Everett Meredith MS)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:30-14:10 (Louis L. Redding MS)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:30-14:10 (Alfred G. Waters MS)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:30-14:10 (Cantwell\u2019s Bridge MS)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:10-15:50 (Brick Mill ES/ECC)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:10-15:50 (Bunker Hill ES)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:10-15:50 (Cedar Lane ES/ECC)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:10-15:50 (Lorewood Grove ES)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:10-15:50 (Crystal Run ES)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:10-15:50 (Old State ES & Spring Meadow ECC)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:10-15:50 (Olive B. Loss ES)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:10-15:50 (Silver Lake ES)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:10-15:50 (Townsend ES/ECC)"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '08:20', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '08:20', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '08:20', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '07:30', '14:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '07:30', '14:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '07:30', '14:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:10', '15:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:10', '15:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:10', '15:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:10', '15:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:10', '15:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:10', '15:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:10', '15:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:10', '15:50')"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "high 07:30-14:30",
+          "extracted": "high 08:20-15:00",
+          "total": 2,
+          "max": 10,
+          "start_diff_min": 50,
+          "end_diff_min": 30
+        }
+      ]
+    },
+    {
+      "district_id": "1000200",
+      "district_name": "Christina School District",
+      "state": "DE",
+      "score": 0,
+      "max_score": 10,
+      "pct": 0.0,
+      "extraction_time_seconds": 4.6,
+      "json_parse_failed": false,
+      "false_positive_count": 2,
+      "missing_grade_levels": [
+        "elementary"
+      ],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:05-14:05 (Shue-Medill Middle School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:20-14:05 (Newark High School)"
+        },
+        {
+          "type": "missing_grade_level",
+          "points": -2,
+          "detail": "Missing: elementary"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 08:00-15:00",
+          "extracted": "MISSED",
+          "total": 0,
+          "max": 10,
+          "start_diff_min": null,
+          "end_diff_min": null
+        }
+      ]
+    },
+    {
+      "district_id": "1001300",
+      "district_name": "Red Clay Consolidated School District",
+      "state": "DE",
+      "score": 0,
+      "max_score": 10,
+      "pct": 0.0,
+      "extraction_time_seconds": 3.2,
+      "json_parse_failed": false,
+      "false_positive_count": 3,
+      "missing_grade_levels": [
+        "elementary"
+      ],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:25-14:10 (McKean High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:25-14:10 (Alexis I du Pont High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:25-14:10 (John Dickinson High School)"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '07:25', '14:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '07:25', '14:10')"
+        },
+        {
+          "type": "missing_grade_level",
+          "points": -2,
+          "detail": "Missing: elementary"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 09:05-15:50",
+          "extracted": "MISSED",
+          "total": 0,
+          "max": 10,
+          "start_diff_min": null,
+          "end_diff_min": null
+        }
+      ]
+    },
+    {
+      "district_id": "1200180",
+      "district_name": "BROWARD",
+      "state": "FL",
+      "score": 0,
+      "max_score": 30,
+      "pct": 0.0,
+      "extraction_time_seconds": 14.7,
+      "json_parse_failed": false,
+      "false_positive_count": 63,
+      "missing_grade_levels": [
+        "middle",
+        "high"
+      ],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:50-13:50 (Banyan Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Bayview Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:15-15:45 (Beachside Montessori Village)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Bennett Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:45-15:15 (Bethune, Mary M. Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Boulevard Heights Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Broadview Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Broward Estates Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Castle Hill Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Central Park Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:45-14:45 (Challenger Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Chapel Trail Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:40 (Coconut Creek K-8 Academy of Excellence)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Coconut Palm Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:45-13:45 (Colbert Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Collins Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Cooper City Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:40 (Coral Cove)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Coral Park Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:30-14:30 (Coral Springs Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:10-14:10 (Country Hills Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Country Isles Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:50-13:50 (Cresthaven Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Croissant Park Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Cypress Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:50-13:50 (Dania Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Davie Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Deerfield Beach Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:30-15:00 (Deerfield Park Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Dillard Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Discovery Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Dolphin Bay Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Drew, Charles Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Driftwood Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Eagle Point Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Eagle Ridge Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Embassy Creek Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-14:15 (Endeavor Primary Learning Center)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Everglades Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:10-14:10 (Fairway Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Flamingo Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Floranada Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Forest Hills Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Foster, Stephen Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Fox Trail Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Gator Run Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Griffin Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:40 (Gulfstream Academy of Hallandale Beach)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Harbordale Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Hawkes Bluff Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Heron Heights Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:40 (Hollywood Central Preparatory K-8)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Hollywood Hills Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:10-14:10 (Hollywood Park Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:50-13:50 (Horizon Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Hunt, James S. Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:50-13:50 (Indian Trace Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (King, Martin Luther Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Lake Forest Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Lakeside Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-14:00 (Larkdale Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:45-13:45 (Lauderhill Paul Turner Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:30-14:30 (Liberty Elementary)"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:40')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '07:50', '13:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '07:50', '13:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:10', '14:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:40')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:40')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:10', '14:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '07:50', '13:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '07:50', '13:50')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:00', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '07:45', '13:45')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:30', '14:30')"
+        },
+        {
+          "type": "missing_grade_level",
+          "points": -2,
+          "detail": "Missing: middle"
+        },
+        {
+          "type": "missing_grade_level",
+          "points": -2,
+          "detail": "Missing: high"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 08:00-14:00",
+          "extracted": "elementary 08:00-14:00",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "high 07:40-14:40",
+          "extracted": "MISSED",
+          "total": 0,
+          "max": 10,
+          "start_diff_min": null,
+          "end_diff_min": null
+        },
+        {
+          "ground_truth": "middle 09:30-16:10",
+          "extracted": "MISSED",
+          "total": 0,
+          "max": 10,
+          "start_diff_min": null,
+          "end_diff_min": null
+        }
+      ]
+    },
+    {
+      "district_id": "1201440",
+      "district_name": "ORANGE",
+      "state": "FL",
+      "score": 0,
+      "max_score": 30,
+      "pct": 0.0,
+      "extraction_time_seconds": 12.6,
+      "json_parse_failed": false,
+      "false_positive_count": 22,
+      "missing_grade_levels": [
+        "middle"
+      ],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:30 (Lake Weston)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:30 (Lovell)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:30 (Catalina)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:30 (Mollie Ray)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:45-15:00 (Deerwood)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:45-16:00 (OCPS Academic Center for Excellence K-8)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:30 (Orange Center)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:30 (Eccleston)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:30 (Orlo Vista)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:30 (Engelwood)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:30 (Hiawassee)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:30 (Pineloch)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:30 (Pinewood)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:30 (Ivey Lane)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:30 (Ridgewood Park)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:30 (Washington Shores)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:30 (Rock Lake)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:30 (Rolling Hills)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:30 (Rosemont)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:30 (Shingle Creek)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:30 (Wheatley)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-15:30 (Tangelo Park)"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:45', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:15', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:15', '15:30')"
+        },
+        {
+          "type": "missing_grade_level",
+          "points": -2,
+          "detail": "Missing: middle"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 08:45-15:00",
+          "extracted": "elementary 08:45-15:00",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "high 07:20-14:20",
+          "extracted": "high 07:10-14:10",
+          "total": 2,
+          "max": 10,
+          "start_diff_min": 10,
+          "end_diff_min": 10
+        },
+        {
+          "ground_truth": "middle 09:30-16:04",
+          "extracted": "MISSED",
+          "total": 0,
+          "max": 10,
+          "start_diff_min": null,
+          "end_diff_min": null
+        }
+      ]
+    },
+    {
+      "district_id": "1906540",
+      "district_name": "Cedar Rapids Comm School District",
+      "state": "IA",
+      "score": 7,
+      "max_score": 20,
+      "pct": 35.0,
+      "extraction_time_seconds": 3.3,
+      "json_parse_failed": false,
+      "false_positive_count": 1,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:50-14:50 (Cedar Rapids Comm School District)"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 08:50-14:20",
+          "extracted": "elementary 08:50-15:50",
+          "total": 5,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 90
+        },
+        {
+          "ground_truth": "middle 07:50-13:55",
+          "extracted": "middle 07:50-14:50",
+          "total": 5,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 55
+        }
+      ]
+    },
+    {
+      "district_id": "1908970",
+      "district_name": "Des Moines Independent Comm School District",
+      "state": "IA",
+      "score": 0,
+      "max_score": 10,
+      "pct": 0.0,
+      "extraction_time_seconds": 3.1,
+      "json_parse_failed": false,
+      "false_positive_count": 2,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:15-15:15 (Des Moines Public Schools)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 08:30-15:25 (Des Moines Public Schools)"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 08:15-15:15",
+          "extracted": "elementary 07:40-14:35",
+          "total": 2,
+          "max": 10,
+          "start_diff_min": 35,
+          "end_diff_min": 40
+        }
+      ]
+    },
+    {
+      "district_id": "1600930",
+      "district_name": "BONNEVILLE JOINT DISTRICT",
+      "state": "ID",
+      "score": 0,
+      "max_score": 10,
+      "pct": 0.0,
+      "extraction_time_seconds": 4.9,
+      "json_parse_failed": false,
+      "false_positive_count": 5,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:40-15:54 (Hillcrest High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:00-14:45 (Lincoln High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 09:14-15:45 (Rocky Mountain Middle School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 08:45-15:50 (Sandcreek Middle School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:40-15:48 (Thunder Ridge High School)"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '08:40', '15:48')"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "high 08:40-15:48",
+          "extracted": "high 08:40-15:48",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        }
+      ]
+    },
+    {
+      "district_id": "2507110",
+      "district_name": "Lynn",
+      "state": "MA",
+      "score": 14,
+      "max_score": 30,
+      "pct": 46.7,
+      "extraction_time_seconds": 6.0,
+      "json_parse_failed": false,
+      "false_positive_count": 2,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-14:15 (Aborn)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:45-14:30 (Pickering Middle School)"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "high 07:45-14:30",
+          "extracted": "high 07:45-14:30",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "middle 07:30-14:15",
+          "extracted": "middle 07:30-14:15",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "elementary 08:00-14:00",
+          "extracted": "elementary 07:45-13:45",
+          "total": 2,
+          "max": 10,
+          "start_diff_min": 15,
+          "end_diff_min": 15
+        }
+      ]
+    },
+    {
+      "district_id": "2513230",
+      "district_name": "Worcester",
+      "state": "MA",
+      "score": 0,
+      "max_score": 10,
+      "pct": 0.0,
+      "extraction_time_seconds": 4.2,
+      "json_parse_failed": false,
+      "false_positive_count": 7,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:20-13:43 (Burncoat High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:20-13:43 (North High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:20-13:43 (Worcester Technical High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:15-14:20 (Belmont Street Community School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:55-14:00 (Elm Park Community School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:25-14:30 (Grafton Street School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:25-14:30 (May Street School)"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '07:20', '13:43')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '07:20', '13:43')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:25', '14:30')"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "middle 08:47-14:17",
+          "extracted": "middle 08:47-15:10",
+          "total": 5,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 53
+        }
+      ]
+    },
+    {
+      "district_id": "2302820",
+      "district_name": "Bangor Public Schools",
+      "state": "ME",
+      "score": 25,
+      "max_score": 30,
+      "pct": 83.3,
+      "extraction_time_seconds": 6.6,
+      "json_parse_failed": false,
+      "false_positive_count": 0,
+      "missing_grade_levels": [],
+      "penalties": [],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 08:55-15:00",
+          "extracted": "elementary 08:55-15:00",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "middle 08:15-14:30",
+          "extracted": "middle 08:15-14:30",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "high 08:00-14:00",
+          "extracted": "high 07:55-14:00",
+          "total": 7,
+          "max": 10,
+          "start_diff_min": 5,
+          "end_diff_min": 0
+        }
+      ]
+    },
+    {
+      "district_id": "2307320",
+      "district_name": "Lewiston Public Schools",
+      "state": "ME",
+      "score": 17,
+      "max_score": 30,
+      "pct": 56.7,
+      "extraction_time_seconds": 5.8,
+      "json_parse_failed": false,
+      "false_positive_count": 1,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:40-15:10 (Farwell)"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "high 07:45-14:00",
+          "extracted": "high 07:45-14:00",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "middle 07:35-14:00",
+          "extracted": "middle 07:35-14:00",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "elementary 08:20-14:50",
+          "extracted": "elementary 08:00-14:30",
+          "total": 2,
+          "max": 10,
+          "start_diff_min": 20,
+          "end_diff_min": 20
+        }
+      ]
+    },
+    {
+      "district_id": "2801320",
+      "district_name": "DESOTO CO SCHOOL DIST",
+      "state": "MS",
+      "score": 0,
+      "max_score": 30,
+      "pct": 0.0,
+      "extraction_time_seconds": 9.3,
+      "json_parse_failed": false,
+      "false_positive_count": 30,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:30-15:25 (Overpark Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:25-15:20 (DeSoto Central Primary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:30-15:25 (DeSoto Central Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:30-15:25 (Pleasant Hill Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 08:00-15:40 (DeSoto Central Middle)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:25-15:45 (DeSoto Central High)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:40-14:35 (Hernando Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:35-14:30 (Oak Grove Central Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:45-14:40 (Hernando Hills Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:35-14:30 (Hernando Intermediate School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:15-14:50 (Hernando Middle)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:30-14:55 (Hernando High)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:45-14:40 (Horn Lake Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:45-14:40 (Shadow Oaks Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:40-14:20 (Horn Lake Intermediate)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:10-14:50 (Horn Lake Middle)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:35-14:55 (Horn Lake High)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:30-15:25 (Lake Cormorant Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:30-15:25 (Walls Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 08:00-15:40 (Lake Cormorant Middle)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:25-15:45 (Lake Cormorant High)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:40-14:40 (Lewisburg Primary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:40-14:40 (Lewisburg Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:35-14:30 (Lewisburg Intermediate)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:30-15:25 (Southaven Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:30-15:25 (Hope Sullivan Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:30-15:25 (Greenbrook Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:25-15:20 (Southaven Intermediate)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 08:00-15:40 (Southaven Middle)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:25-15:45 (Southaven High)"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:30', '15:25')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:30', '15:25')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:30', '15:25')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '08:00', '15:40')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '08:25', '15:45')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '07:35', '14:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '07:45', '14:40')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '07:45', '14:40')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:30', '15:25')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:30', '15:25')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '08:00', '15:40')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '08:25', '15:45')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '07:40', '14:40')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '07:35', '14:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:30', '15:25')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:30', '15:25')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:30', '15:25')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '08:25', '15:20')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '08:00', '15:40')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '08:25', '15:45')"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 08:30-15:25",
+          "extracted": "elementary 08:30-15:25",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "high 08:25-15:45",
+          "extracted": "high 08:25-15:45",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "middle 08:00-15:40",
+          "extracted": "middle 08:00-15:40",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        }
+      ]
+    },
+    {
+      "district_id": "3172840",
+      "district_name": "LINCOLN PUBLIC SCHOOLS",
+      "state": "NE",
+      "score": 0,
+      "max_score": 10,
+      "pct": 0.0,
+      "extraction_time_seconds": 3.9,
+      "json_parse_failed": false,
+      "false_positive_count": 6,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 08:00-15:00 (Culler Middle School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:00-15:05 (Lincoln High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:00-15:00 (Northwest High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 08:00-15:00 (Pound Middle School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:00-15:00 (Standing Bear High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 08:00-15:00 (Lux Middle School)"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '08:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '08:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '08:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '08:00', '15:00')"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "high 08:00-15:00",
+          "extracted": "high 08:00-15:00",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        }
+      ]
+    },
+    {
+      "district_id": "3200480",
+      "district_name": "Washoe County",
+      "state": "NV",
+      "score": 0,
+      "max_score": 10,
+      "pct": 0.0,
+      "extraction_time_seconds": 12.4,
+      "json_parse_failed": false,
+      "false_positive_count": 67,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:26-14:00 (Academy of Arts, Careers & Technology)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:00-14:30 (Damonte Ranch)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:26-14:00 (Debbie Smith CTE)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:00-14:30 (Galena)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 08:00-15:30 (Gerlach K-12)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:45-14:34 (Hug)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:45-14:30 (Incline)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:30-14:57 (Innovations)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:30-15:00 (Inspire Academy)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 08:30-15:00 (Inspire Academy)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:00-14:35 (McQueen)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:00-14:35 (North Valleys)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:00-14:35 (Reed)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:40-14:30 (Reno)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:00-14:30 (Spanish Springs)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:00-14:35 (Sparks)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:00-14:20 (TMCC)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 09:50-16:00 (Transitions Academy)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:00-14:30 (Turning Point)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:00-14:30 (Wooster)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:30-14:00 (Billinghurst)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:30-14:00 (Cold Springs)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:30-14:00 (Depoali)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:30-14:00 (Dilworth-STEM)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:50-14:25 (Incline)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:30-13:54 (O'Brien-STEM)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:30-14:00 (Pine)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:30-14:00 (Sky Ranch)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:30-14:00 (Swope)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:25-14:00 (Vaughn)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:30-15:30 (Allen)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:00 (Anderson)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:15-15:15 (Beasley)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:00 (Beck)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:00 (Bennett)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:30-15:30 (Bohach)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:00 (Booth)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:30-15:30 (Brown)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:30-15:30 (Cannan)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:00 (Caughlin Ranch)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:30-15:30 (Corbett)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:30-15:30 (Desert Heights)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:45-14:45 (Diedrichsen)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:00 (Dodson)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:30-15:30 (Donner Springs)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:15-15:15 (Double Diamond)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:00 (Drake)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:00 (Duncan-STEM)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:00 (Dunn)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:00 (Elmcrest)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:00 (Gomes)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:30-15:30 (Gomm)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:00 (Greenbrae)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:00 (Hall)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:00 (Hidden Valley)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:30-15:30 (Huffaker)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:30-15:30 (Hunsberger)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:00 (Hunter Lake)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:20-15:20 (Incline)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:30-15:30 (Inskeep)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:00 (Juniper)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:00 (JWood Raw)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:00 (Lemelson-STEM)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:30-15:30 (Lemmon Valley)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:00 (Lenz)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:30-15:30 (Lincoln Park)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:00-15:00 (Loder)"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '07:26', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '08:00', '14:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '08:00', '14:35')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '08:00', '14:35')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '08:00', '14:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '08:00', '14:35')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '08:00', '14:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('high', '08:00', '14:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '07:30', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '07:30', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '07:30', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '07:30', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '07:30', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '07:30', '14:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:30', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:30', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:30', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:30', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:30', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:30', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:15', '15:15')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:30', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:30', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:30', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:30', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:30', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:00', '15:00')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:30', '15:30')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:00', '15:00')"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 07:26-14:00",
+          "extracted": "elementary 08:00-14:50",
+          "total": 2,
+          "max": 10,
+          "start_diff_min": 34,
+          "end_diff_min": 50
+        }
+      ]
+    },
+    {
+      "district_id": "3904375",
+      "district_name": "Cincinnati Public Schools",
+      "state": "OH",
+      "score": 0,
+      "max_score": 10,
+      "pct": 0.0,
+      "extraction_time_seconds": 4.5,
+      "json_parse_failed": false,
+      "false_positive_count": 10,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:40-14:10 (AWL)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:40-14:10 (Rockdale Academy)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:10-15:40 (Roselawn Condon School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:40-14:10 (CANS)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:10-15:40 (James N. Gamble Montessori Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:10-15:40 (North Avondale Montessori School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:40-14:10 (Roll Hill School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:10-15:40 (Roberts Academy)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:00-15:00 (James N. Gamble Montessori High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 08:00-15:00 (Pleasant Hill Middle School)"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '07:40', '14:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '07:40', '14:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:10', '15:40')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:10', '15:40')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '07:40', '14:10')"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '09:10', '15:40')"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 08:00-14:30",
+          "extracted": "elementary 08:00-15:00",
+          "total": 5,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 30
+        }
+      ]
+    },
+    {
+      "district_id": "3904378",
+      "district_name": "Cleveland Municipal",
+      "state": "OH",
+      "score": 4,
+      "max_score": 30,
+      "pct": 13.3,
+      "extraction_time_seconds": 7.6,
+      "json_parse_failed": false,
+      "false_positive_count": 4,
+      "missing_grade_levels": [
+        "middle"
+      ],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 09:35-16:05 (Adlai E. Stevenson)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:35-14:05 (Oliver H. Perry)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 09:00-15:30 (Bard High School Early College Cleveland)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:25-14:55 (Garrett Morgan School of Engineering and Innovation)"
+        },
+        {
+          "type": "missing_grade_level",
+          "points": -2,
+          "detail": "Missing: middle"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 08:35-15:05",
+          "extracted": "elementary 08:35-15:05",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "high 08:35-15:05",
+          "extracted": "high 08:35-15:05",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "middle 08:35-15:05",
+          "extracted": "MISSED",
+          "total": 0,
+          "max": 10,
+          "start_diff_min": null,
+          "end_diff_min": null
+        }
+      ]
+    },
+    {
+      "district_id": "5000395",
+      "district_name": "Essex Westford Educational Community Unified Union SD #51",
+      "state": "VT",
+      "score": 0,
+      "max_score": 10,
+      "pct": 0.0,
+      "extraction_time_seconds": 4.3,
+      "json_parse_failed": false,
+      "false_positive_count": 3,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:40-15:15 (Essex High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 08:35-15:35 (Essex Middle School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:30-14:30 (Westford School)"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '07:30', '14:30')"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 07:30-14:30",
+          "extracted": "elementary 07:30-14:30",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        }
+      ]
+    },
+    {
+      "district_id": "5000396",
+      "district_name": "Champlain Valley Unified Union School District #56",
+      "state": "VT",
+      "score": 0,
+      "max_score": 10,
+      "pct": 0.0,
+      "extraction_time_seconds": 6.0,
+      "json_parse_failed": false,
+      "false_positive_count": 3,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:45-14:45 (Charlotte Central School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:45-14:45 (Shelburne Community School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:55-14:45 (Williston Central School)"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('elementary', '07:45', '14:45')"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 07:50-13:45",
+          "extracted": "elementary 07:50-14:35",
+          "total": 5,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 50
+        }
+      ]
+    },
+    {
+      "district_id": "5002820",
+      "district_name": "Burlington School District",
+      "state": "VT",
+      "score": 0,
+      "max_score": 10,
+      "pct": 0.0,
+      "extraction_time_seconds": 5.5,
+      "json_parse_failed": false,
+      "false_positive_count": 3,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:10-14:50 (Edmunds Elementary)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 08:00-15:00 (Edmunds Middle School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 08:00-15:00 (Hunt Middle School)"
+        },
+        {
+          "type": "duplicate_extraction",
+          "points": -2,
+          "detail": "Duplicate: ('middle', '08:00', '15:00')"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 08:08-14:50",
+          "extracted": "elementary 08:08-14:50",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        }
+      ]
+    },
+    {
+      "district_id": "5400060",
+      "district_name": "BERKELEY COUNTY SCHOOLS",
+      "state": "WV",
+      "score": 9,
+      "max_score": 30,
+      "pct": 30.0,
+      "extraction_time_seconds": 5.2,
+      "json_parse_failed": false,
+      "false_positive_count": 0,
+      "missing_grade_levels": [
+        "middle"
+      ],
+      "penalties": [
+        {
+          "type": "missing_grade_level",
+          "points": -2,
+          "detail": "Missing: middle"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "high 07:28-14:38",
+          "extracted": "high 07:28-14:38",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "elementary 07:55-15:30",
+          "extracted": "elementary 08:45-15:20",
+          "total": 2,
+          "max": 10,
+          "start_diff_min": 50,
+          "end_diff_min": 10
+        },
+        {
+          "ground_truth": "middle 07:30-14:30",
+          "extracted": "MISSED",
+          "total": 0,
+          "max": 10,
+          "start_diff_min": null,
+          "end_diff_min": null
+        }
+      ]
+    },
+    {
+      "district_id": "5400180",
+      "district_name": "CABELL COUNTY SCHOOLS",
+      "state": "WV",
+      "score": 0,
+      "max_score": 10,
+      "pct": 0.0,
+      "extraction_time_seconds": 6.0,
+      "json_parse_failed": false,
+      "false_positive_count": 2,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:45-15:17 (Huntington High School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:49-14:47 (Huntington Middle School)"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "middle 07:27-15:06",
+          "extracted": "middle 07:48-15:00",
+          "total": 2,
+          "max": 10,
+          "start_diff_min": 21,
+          "end_diff_min": 6
+        }
+      ]
+    },
+    {
+      "district_id": "5400600",
+      "district_name": "KANAWHA COUNTY SCHOOLS",
+      "state": "WV",
+      "score": 0,
+      "max_score": 10,
+      "pct": 0.0,
+      "extraction_time_seconds": 5.5,
+      "json_parse_failed": false,
+      "false_positive_count": 4,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:30-14:38 (Horace Mann Middle)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 08:15-15:10 (Elkview Middle)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 08:36-15:36 (Nitro High)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:45-14:17 (Point Harmony Elementary)"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 07:15-14:15",
+          "extracted": "elementary 07:30-14:00",
+          "total": 2,
+          "max": 10,
+          "start_diff_min": 15,
+          "end_diff_min": 15
+        }
+      ]
+    },
+    {
+      "district_id": "5600730",
+      "district_name": "Albany County School District #1",
+      "state": "WY",
+      "score": 24,
+      "max_score": 30,
+      "pct": 80.0,
+      "extraction_time_seconds": 5.1,
+      "json_parse_failed": false,
+      "false_positive_count": 0,
+      "missing_grade_levels": [],
+      "penalties": [],
+      "entry_scores": [
+        {
+          "ground_truth": "elementary 08:02-15:00",
+          "extracted": "elementary 08:02-15:00",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "middle 08:00-15:05",
+          "extracted": "middle 08:00-15:05",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "high 07:45-15:45",
+          "extracted": "high 07:45-16:45",
+          "total": 6,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 60
+        }
+      ]
+    },
+    {
+      "district_id": "5605302",
+      "district_name": "Sweetwater County School District #1",
+      "state": "WY",
+      "score": 11,
+      "max_score": 30,
+      "pct": 36.7,
+      "extraction_time_seconds": 8.0,
+      "json_parse_failed": false,
+      "false_positive_count": 4,
+      "missing_grade_levels": [],
+      "penalties": [
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 08:00-15:15 (4-6 Elementary Schools)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "elementary 07:45-15:00 (Elementary School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "middle 07:45-16:05 (Middle School)"
+        },
+        {
+          "type": "false_positive",
+          "points": -3,
+          "detail": "high 07:45-16:05 (High School)"
+        }
+      ],
+      "entry_scores": [
+        {
+          "ground_truth": "high 08:00-15:55",
+          "extracted": "high 08:00-15:55",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "middle 08:30-15:50",
+          "extracted": "middle 08:30-15:50",
+          "total": 9,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 0
+        },
+        {
+          "ground_truth": "elementary 07:50-15:15",
+          "extracted": "elementary 07:50-15:05",
+          "total": 5,
+          "max": 10,
+          "start_diff_min": 0,
+          "end_diff_min": 10
+        }
+      ]
+    }
+  ]
+}

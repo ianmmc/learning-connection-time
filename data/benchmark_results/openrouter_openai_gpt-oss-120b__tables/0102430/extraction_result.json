@@ -1,0 +1,11 @@
+{
+  "district_id": "0102430",
+  "district_name": "Montgomery County",
+  "state": "AL",
+  "extraction_date": "2026-06-13T22:19:04.869179",
+  "extractor": "openrouter:openai/gpt-oss-120b",
+  "schedules": [],
+  "success": false,
+  "error": "Could not parse JSON response",
+  "raw_response": ""
+}

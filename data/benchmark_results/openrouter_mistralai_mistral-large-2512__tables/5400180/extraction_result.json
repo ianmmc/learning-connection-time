@@ -1,0 +1,52 @@
+{
+  "district_id": "5400180",
+  "district_name": "CABELL COUNTY SCHOOLS",
+  "state": "WV",
+  "extraction_date": "2026-06-14T00:55:23.107606",
+  "extractor": "openrouter:mistralai/mistral-large-2512",
+  "schedules": [
+    {
+      "grade_level": "middle",
+      "start_time": "07:48",
+      "end_time": "15:00",
+      "school_name": "Bourbonville Middle",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:42",
+      "end_time": "15:17",
+      "school_name": "Huntington High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "middle",
+      "start_time": "07:49",
+      "end_time": "14:55",
+      "school_name": "Huntington Middle",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "high",
+      "start_time": "08:15",
+      "end_time": "14:35",
+      "school_name": "Cabell Midland High",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'elementary'}. Document may have more data.",
+  "raw_response": "```json\n{\"schedules\":[\n    {\"grade_level\":\"middle\",\"start_time\":\"07:48\",\"end_time\":\"15:00\",\"school_name\":\"Bourbonville Middle\",\"confidence\":\"high\"},\n    {\"grade_level\":\"high\",\"start_time\":\"08:42\",\"end_time\":\"15:17\",\"school_name\":\"Huntington High\",\"confidence\":\"high\"},\n    {\"grade_level\":\"middle\",\"start_time\":\"07:49\",\"end_time\":\"14:55\",\"school_name\":\"Huntington Middle\",\"confidence\":\"high\"},\n    {\"grade_level\":\"high\",\"start_time\":\"08:15\",\"end_time\":\"14:35\",\"school_name\":\"Cabell Midland High\",\"confidence\":\"high\"}\n]}\n```"
+}

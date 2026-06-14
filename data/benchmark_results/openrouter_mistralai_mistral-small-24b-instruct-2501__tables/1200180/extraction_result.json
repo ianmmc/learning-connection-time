@@ -1,0 +1,532 @@
+{
+  "district_id": "1200180",
+  "district_name": "BROWARD",
+  "state": "FL",
+  "extraction_date": "2026-06-14T00:09:47.533521",
+  "extractor": "openrouter:mistralai/mistral-small-24b-instruct-2501",
+  "schedules": [
+    {
+      "grade_level": "elementary",
+      "start_time": "07:50",
+      "end_time": "13:50",
+      "school_name": "Banyan Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:50",
+      "end_time": "13:50",
+      "school_name": "Forest Hills Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:50",
+      "end_time": "13:50",
+      "school_name": "Horizon Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:50",
+      "end_time": "13:50",
+      "school_name": "Indian Trace Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:50",
+      "end_time": "13:50",
+      "school_name": "Marshall, Thurgood Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:50",
+      "end_time": "13:50",
+      "school_name": "Morrow Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:50",
+      "end_time": "13:50",
+      "school_name": "Welleby Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "Lauderhill Paul Turner Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "Colbert Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:45",
+      "end_time": "13:45",
+      "school_name": "Park Springs Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:55",
+      "end_time": "13:55",
+      "school_name": "Lloyd Estates Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "07:55",
+      "end_time": "13:55",
+      "school_name": "Miramar Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Atlantic West Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Bayview Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Bennett Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Boulevard Heights Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Broadview Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Broward Estates Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Castle Hill Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Central Park Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Challenger Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Chapel Trail Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Coconut Palm Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Collins Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Cooper City Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Coral Cove",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Coral Park Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Country Isles Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Croissant Park Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Cypress Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Dillard Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Discovery Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Dolphin Bay Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Drew, Charles Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Driftwood Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Eagle Point Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Eagle Ridge Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Embassy Creek Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Everglades Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Fairway Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Flamingo Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Floranada Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Foster, Stephen Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Fox Trail Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Gator Run Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Griffin Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Harbordale Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Hawkes Bluff Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Heron Heights Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Hollywood Hills Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "Hunt, James S. Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    },
+    {
+      "grade_level": "elementary",
+      "start_time": "08:00",
+      "end_time": "14:00",
+      "school_name": "King, Martin Luther Elementary",
+      "source_file": null,
+      "confidence": "high",
+      "raw_text_snippet": "",
+      "notes": ""
+    }
+  ],
+  "success": true,
+  "error": "WARNING: Missing grade levels: {'middle', 'high'}. Document may have more data.",
+  "raw_response": "```json\n{\n  \"schedules\": [\n    {\"grade_level\":\"elementary\",\"start_time\":\"07:50\",\"end_time\":\"13:50\",\"school_name\":\"Banyan Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"07:50\",\"end_time\":\"13:50\",\"school_name\":\"Forest Hills Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"07:50\",\"end_time\":\"13:50\",\"school_name\":\"Horizon Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"07:50\",\"end_time\":\"13:50\",\"school_name\":\"Indian Trace Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"07:50\",\"end_time\":\"13:50\",\"school_name\":\"Marshall, Thurgood Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"07:50\",\"end_time\":\"13:50\",\"school_name\":\"Morrow Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"07:50\",\"end_time\":\"13:50\",\"school_name\":\"Welleby Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"Lauderhill Paul Turner Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"Colbert Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"07:45\",\"end_time\":\"13:45\",\"school_name\":\"Park Springs Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"07:55\",\"end_time\":\"13:55\",\"school_name\":\"Lloyd Estates Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"07:55\",\"end_time\":\"13:55\",\"school_name\":\"Miramar Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Atlantic West Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Bayview Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Bennett Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Boulevard Heights Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Broadview Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Broward Estates Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Castle Hill Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Central Park Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Challenger Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Chapel Trail Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Coconut Palm Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Collins Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Cooper City Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Coral Cove\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Coral Park Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Country Isles Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Croissant Park Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Cypress Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Dillard Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Discovery Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Dolphin Bay Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Drew, Charles Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Driftwood Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Eagle Point Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Eagle Ridge Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Embassy Creek Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Everglades Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Fairway Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Flamingo Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Floranada Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Foster, Stephen Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Fox Trail Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Gator Run Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Griffin Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Harbordale Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Hawkes Bluff Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Heron Heights Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Hollywood Hills Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"Hunt, James S. Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time\":\"08:00\",\"end_time\":\"14:00\",\"school_name\":\"King, Martin Luther Elementary\",\"confidence\":\"high\"},\n    {\"grade_level\":\"elementary\",\"start_time"
+}

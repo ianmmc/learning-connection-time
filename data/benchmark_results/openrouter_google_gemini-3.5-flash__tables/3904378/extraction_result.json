@@ -1,0 +1,11 @@
+{
+  "district_id": "3904378",
+  "district_name": "Cleveland Municipal",
+  "state": "OH",
+  "extraction_date": "2026-06-14T00:46:47.179928",
+  "extractor": "openrouter:google/gemini-3.5-flash",
+  "schedules": [],
+  "success": false,
+  "error": "Could not parse JSON response",
+  "raw_response": "\nValley View Boys' Leadership Academy: 8:05am 2:35pm -> 08:05 to 14:35\nWade Park: 8:35am 3:05pm -> 08:35 to 15:05\nWarner Girls' Leadership Academy: 8:05am 2"
+}
