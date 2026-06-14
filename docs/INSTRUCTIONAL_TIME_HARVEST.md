@@ -1,5 +1,7 @@
 # Instructional-Time Harvest Map (SEA central data)
 
+> ⚠️ **OUTCOME (verified 2026-06-06, reaffirmed 2026-06-13): SEA central harvest is a DEAD END for daily minutes.** States *collect* daily instructional time for funding but *publish* only statutory minimums / day-counts — not the per-district daily minutes LCT needs. So the "harvest first" strategy in the lede below did **not** pan out; the **primary acquisition path is web discovery + extraction** (domain-scoped search → capture → cheap-cloud council; see `docs/INSTRUCTIONAL_MINUTES_ACQUISITION_STRATEGY.md` and `docs/technical-notes/EXTRACTION_AND_DISCOVERY_LEARNINGS_2026-06.md`), with statutory minimums as the *labeled fallback*. The map below is retained as the record of what was checked.
+
 > **Strategy (decided 2026-06-06):** Build a **census** of district instructional time. **Harvest centrally-published SEA data first**, then fall back to the Crawlee+Ollama scraping pipeline only for states/districts where central data isn't obtainable.
 >
 > **Key insight:** Most states already collect *actual* daily instructional minutes/hours per district (or per building/grade) through their **funding/accountability data systems** (Texas PEIMS, California CBEDS/CALPADS, Ohio EMIS, NY State Aid, Colorado data pipeline, PA PIMS, etc.). That data is often **more authoritative than a scraped bell schedule** — it's the LCT numerator (daily instructional minutes) reported by the district itself for funding. So **SEA harvest is the primary acquisition method; web scraping is the fallback.**

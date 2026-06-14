@@ -32,10 +32,13 @@ pip install -r requirements.txt
 
 ### 2. Database Connection
 
-The project uses PostgreSQL. Ensure you have access to the `learning_connection_time` database:
+The project uses PostgreSQL running in Docker. Start the database container **before any database operation**:
 
 ```bash
-# Test connection (requires psql or use Python)
+# Start the PostgreSQL container (required first)
+docker-compose up -d
+
+# Test connection
 python3 -c "
 from infrastructure.database.connection import session_scope
 with session_scope() as session:
@@ -43,10 +46,12 @@ with session_scope() as session:
 "
 ```
 
+> **Critical:** Never use `brew services start postgresql` — the `.env` is configured for Docker's PostgreSQL container.
+
 ### 3. Run Tests
 
 ```bash
-# Run all tests (789 tests)
+# Run all tests (831 tests)
 pytest tests/ -v
 
 # Run quick smoke tests
@@ -118,10 +123,14 @@ with session_scope() as session:
 ### Run Scraper Service
 
 ```bash
-cd scraper
+cd infrastructure/scraper
 npm install
+npm run build   # compile TypeScript to dist/ (required before npm start)
 npm start
 # Service runs on http://localhost:3000
+
+# Or run in watch mode without a build:
+# npm run dev
 ```
 
 ### Check Enrichment Status
@@ -188,4 +197,4 @@ git commit -m "feat: Add new bell schedule parser"
 
 ---
 
-**Last Updated:** January 26, 2026
+**Last Updated:** June 12, 2026

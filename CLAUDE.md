@@ -23,20 +23,21 @@ Part of "Reducing the Ratio" educational equity initiative. Currently implementi
 
 ---
 
-## Current Status (2026-06-12)
+## Current Status (2026-06-13)
 
-Bell-schedule **extraction quality** — the open problem for Phase 1.5 — has been benchmarked. Full results: `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.
+Phase 1.5 pipeline **validated end-to-end** (extraction *and* discovery). Full learnings: `docs/technical-notes/EXTRACTION_AND_DISCOVERY_LEARNINGS_2026-06.md`; leaderboards: `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.
 
-**Conclusion: no silver bullet — extraction plateaus ~35–53%** on the grade-band modal-minutes metric:
-- **Plain text on a 7B model (mistral/qwen2.5) is the best *local* approach (~42%)**; vision (qwen2.5-VL) and table-aware (pdfplumber) did NOT beat it on aggregate (table-aware is more *precise* when it hits; vision locks onto early-release columns).
-- A capable cloud model (**Claude Haiku ~53%**) edges the locals — modest, not production-ready.
-- Much of the gap is **input/ground-truth quality** (corrupt source PDFs, HTML schedules not in parseable tables, transposed tables, single-band GT) — *not* the model.
+**Extraction — a capable cloud model ~doubles the best local; cheap wins.** Full-41 leader **Gemini 2.5 Flash 68.9%** (cheapest *and* best); Mistral Large/Qwen3.7-Max 67.6%; DeepSeek V3.2 66.2%; **Mistral Small 24B 63.5% (~$0.05/1M)**; **Granite 4.1 8B 51.4%** (tiny, self-hostable). Bigger ≠ better (DeepSeek V4-Pro, GPT-5.5, Opus trail cheaper models). The old "~35–53% / no silver bullet" framing was an artifact of testing only Haiku on 5 districts.
 
-**Direction:** format-aware reading (table-aware for digital PDFs, OCR/vision for images, targeted HTML) + **dual-path consensus with human review of disagreements** + better multi-band ground truth. Benchmark harness lives in `infrastructure/scripts/benchmark/`.
+**The ceiling is INPUT quality, not the model.** 20% of districts are solved by zero models, but on *good* inputs (difficulty > 0.70) the top models hit **~95–100%**. Hard inputs failed on **granularity/noise (giant multi-school dumps, single-band GT), NOT OCR** — 22/23 already had the schedule as text. **#1 lever: per-school targeting** (small, focused, current, single-schedule artifacts).
 
-**Notes:** Local Ollama models were **deleted** after the benchmark (all re-pullable; none met the bar). A headless Ubuntu AI server (the old 2017 MBP) is planned to host heavy/unattended work — briefing at `/Users/ianmmc/Development/ai-server-setup/SETUP_BRIEFING.md` (separate project). Ollama gotchas: use the official binary (Homebrew build was missing `llama-server`); bake `num_ctx` into a Modelfile for VLMs; throttle local inference with `taskpolicy -b` + run in `tmux`.
+**Discovery — search-led works.** Domain-scoped search (Perplexity `search_domain_filter` / OpenRouter `gpt-4o-mini-search` `site:` / Claude WebSearch `allowed_domains`) eliminates the wrong-district problem and reaches school subdomains. **Blind Crawlee crawling fails**; Crawlee is re-cast as a **terrain-mapper / one-hop off-site fetcher**. **Google grounding dropped** (no site-restriction). New bottleneck = capture fidelity on JS pages → **tiered capture** (text-layer preferred; screenshot+OCR/vision fallback). Relevance gate = cheap `pdftotext` sniff; pdfplumber/vision is the extraction stage.
 
-> **SEA central-data harvest is a dead end for daily minutes** (verified) — states publish only statutory minimums / day-counts, not actual daily minutes. Web-scraping district bell schedules remains the primary acquisition path. See `docs/INSTRUCTIONAL_TIME_HARVEST.md`.
+**Direction / architecture:** per-school targeting → tiered capture → cheap-cloud **council** consensus (Gemini 2.5 Flash + a cross-family model: DeepSeek V3.2 / Mistral; cheap members Flash-Lite, Mistral Medium 3.1) → fail-loud **statutory fallback**. Multi-model conduits `pplx:` / `openrouter:` wired in `extractors.py`. Requirements: **REQ-043…053**. Keys in gitignored `config/secrets.local.json` + `.env`.
+
+**Notes:** Local Ollama models were **deleted** (re-pullable); paid-cloud extraction is *cheap* (~$0.05–0.30/1M) and far more accurate, so the local-first premise no longer binds. Headless Ubuntu AI server (old 2017 MBP) planned for self-hosted work — **Granite 4.1 8B** is the local-model candidate; briefing at `/Users/ianmmc/Development/ai-server-setup/SETUP_BRIEFING.md` (separate project).
+
+> **SEA central-data harvest is a dead end for daily minutes** (verified) — states publish only statutory minimums / day-counts, not actual daily minutes. Web discovery + extraction is the primary acquisition path. See `docs/INSTRUCTIONAL_TIME_HARVEST.md`.
 
 ---
 

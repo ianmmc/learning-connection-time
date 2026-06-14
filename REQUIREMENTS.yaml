@@ -1,6 +1,6 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-06-06T00:00:00Z"
+last_updated: "2026-06-13T00:00:00Z"
 
 requirements:
   - id: REQ-001
@@ -1003,3 +1003,179 @@ requirements:
       school-membership import). Distribution (min,mode,max) exposed for transparency. Schema: migration
       016 (school_schedules + bell_schedules distribution columns; the minutes_weighted_mean/enrollment_in_sample
       columns from 016 are unused under this policy and left nullable)."
+
+  # ---------------------------------------------------------------------------
+  # Instructional-minutes acquisition program (added 2026-06-13).
+  # Strategy shift: "do it right first, then push cost down." Paid APIs accepted.
+  # Driven by the acquisition probe (infrastructure/scraper/probe_acquisition.mjs,
+  # 2026-06-13) which showed Crawlee glob-crawl discovery does not work, and by
+  # EXTRACTION_BENCHMARK_FINDINGS (no single model/reader is production-ready alone).
+  # ---------------------------------------------------------------------------
+
+  - id: REQ-043
+    description: Discover candidate bell-schedule pages across a district web ecosystem (district site plus individual school subdomains) from an NCES CCD URL
+    type: functional
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - Discovery is search-led (site search, sitemap.xml, a search API, or LLM-guided link selection), NOT blind whole-site crawling
+      - Enumerates individual school sites/subdomains, since 80%+ of districts publish schedules only at the school level
+      - Selects a sample of schools scaled to district size and grade span (small districts near-census; large districts a subset spanning elementary/middle/high)
+      - Emits ranked candidate page URLs together with the signal that selected each
+      - Tolerates HTTP-to-HTTPS certificate mismatches (ignoreHTTPSErrors) and browser-launch errors without aborting the district
+      - Honors the ONE-attempt rule on Cloudflare/WAF/Akamai blocks (Rule 3) and records blocked districts in enrichment_attempts
+      - Bounded by per-district effort caps (REQ-051) and degrades to statutory fallback when nothing is found (REQ-049)
+    created: "2026-06-13T00:00:00Z"
+    updated: "2026-06-13T00:00:00Z"
+    notes: "Replaces the abandoned Crawlee URL-glob crawl. Probe 2026-06-13 found glob targeting
+      matched zero links on 4/4 districts and broad crawl was slow, noisy, and missed every known schedule;
+      federated school-subdomain structure (e.g. Sweetwater, KIPP) multiplies any crawl ~15x."
+
+  - id: REQ-044
+    description: Classify each captured candidate as a current bell schedule before extraction (relevance + recency gate)
+    type: functional
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - Distinguishes a real bell/daily schedule from look-alikes (board-meeting times, bus/athletics schedules, event calendars, lunch menus)
+      - Confirms school-year currency; accepts post-COVID years (2023-24 or later) and rejects/flags COVID-era and clearly stale content
+      - Candidates failing the gate are not sent to extraction and never count as enriched
+      - Records the classification decision and reason for audit
+    created: "2026-06-13T00:00:00Z"
+    updated: "2026-06-13T00:00:00Z"
+    notes: "Probe showed time-pattern signals are dominated by false positives; a relevance gate is
+      required before spending extraction calls."
+
+  - id: REQ-045
+    description: Capture schedule content across all delivery formats and persist the raw artifact for audit and re-verification
+    type: functional
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - Handles static HTML, image files (PNG/JPG/GIF), downloadable PDFs, Google Drive-hosted files, and server-side/JS-rendered pages (via scrape, export, render-to-PDF, or screenshot)
+      - Persists the raw captured bytes (PDF/image/rendered HTML/screenshot), not only the source URL, because URLs rot and sources change
+      - Stores capture method and timestamp alongside the artifact
+      - A capture failure for one candidate is recorded and falls through to the next candidate or to fallback (REQ-049)
+    created: "2026-06-13T00:00:00Z"
+    updated: "2026-06-13T00:00:00Z"
+
+  - id: REQ-046
+    description: Extract net-instructional-minutes fields with format-aware reading and typical-day selection
+    type: functional
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - Extracts start_time, end_time, lunch, passing-period, and recess durations (the deductions REQ-042's formula consumes) plus grade level
+      - Selects the TYPICAL day and excludes early-release, half-day, block/A-B, assembly, and exam-day variants from the canonical value (records that variants existed)
+      - Routes reading by format - table-aware parser for digital PDFs; OCR or vision for image/scanned PDFs and images; targeted DOM extraction for HTML rather than generic table-scrape of nav menus
+      - Validates output against plausible ranges before acceptance (REQ-038) and rejects implausible or corrupt sources
+      - Produces per-school observations that feed REQ-042 aggregation
+    created: "2026-06-13T00:00:00Z"
+    updated: "2026-06-13T00:00:00Z"
+    notes: "EXTRACTION_BENCHMARK_FINDINGS showed plain-text-on-everything caps accuracy and vision locks
+      onto early-release columns; format routing plus typical-day selection address both."
+
+  - id: REQ-047
+    description: Assign each sampled school's schedule to an elementary/middle/high band using NCES grade-span data
+    type: functional
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - Maps a discovered school site/subdomain back to its NCES school record and grade span
+      - Classifies into elementary/middle/high with a documented rule for spanning configs (K-8, 6-12, K-12)
+      - A schedule that cannot be confidently assigned a band is flagged, not silently mis-binned
+      - Band assignment is recorded with the per-school observation
+    created: "2026-06-13T00:00:00Z"
+    updated: "2026-06-13T00:00:00Z"
+
+  - id: REQ-048
+    description: Verify extracted instructional minutes via 2-3 independent pathways and reconcile automatically
+    type: functional
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - Pathways are independent across a real axis (different reader modality and/or different model), not repeated calls to one model
+      - Consensus is evaluated on the final per-band instructional-minutes number within a defined tolerance, not on raw text
+      - Agreement within tolerance auto-accepts with no human involvement
+      - Disagreement triggers a defined tie-break or escalation (majority of three, a premium-model tiebreaker, or a flag to the bounded human-QC queue)
+      - Each pathway's value and the agreement/disagreement outcome are recorded (REQ-050)
+    created: "2026-06-13T00:00:00Z"
+    updated: "2026-06-13T00:00:00Z"
+    notes: "Independence is the point - correlated errors from one model are not caught by re-running it.
+      Direction set by EXTRACTION_BENCHMARK_FINDINGS (dual-path consensus + human review of disagreements)."
+
+  - id: REQ-049
+    description: Fail loud and fall back to statutory minimums when acquisition or extraction fails or is low-confidence; never fabricate
+    type: constraint
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - No real schedule found, blocked, or low-confidence results in returning None and using statutory fallback (method=statutory_fallback) per existing precedence (REQ-024)
+      - Statutory fallback is NEVER counted or labeled as enriched (enriched is not statutory; Rule 6); the check is on method, not confidence
+      - The failure reason (not-found / blocked / low-confidence / corrupt-source) is recorded in enrichment_attempts
+      - Enriched counts remain DB-verifiable (Rule 6 pre-commit hook)
+    created: "2026-06-13T00:00:00Z"
+    updated: "2026-06-13T00:00:00Z"
+    notes: "Codifies the integrity lesson from the twice-repeated phantom-districts hallucination."
+
+  - id: REQ-050
+    description: Every district-band instructional-minutes value carries a complete provenance and confidence record
+    type: non-functional
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - Stores source URL(s), a reference to the persisted raw artifact (REQ-045), the school(s) sampled, the school year, and capture/extraction timestamps
+      - Stores which pathway/model produced each candidate value and the consensus outcome (REQ-048)
+      - Stores a confidence level and the method (automated_enrichment / human_provided / statutory_fallback)
+      - Record is sufficient to reconstruct and re-verify any value months later without re-crawling
+    created: "2026-06-13T00:00:00Z"
+    updated: "2026-06-13T00:00:00Z"
+    notes: "Extends existing bell_schedules/school_schedules provenance fields (source_urls, schools_sampled,
+      confidence, method)."
+
+  - id: REQ-051
+    description: Bound API spend and effort per district and globally, with a resumable batch (budget governor)
+    type: constraint
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - Enforces per-district caps on API spend and/or search+extraction attempts, stopping once enough bands are confidently found
+      - Enforces a global run budget cap; the run halts or degrades to fallback when exceeded
+      - Enforces the ONE-attempt rule on WAF/CDN blocks (Rule 3) at the governor level
+      - Batch is checkpointed, resumable, and idempotent per district (re-running does not duplicate; REQ-041 pattern)
+      - Per-district and per-run cost/usage are recorded
+    created: "2026-06-13T00:00:00Z"
+    updated: "2026-06-13T00:00:00Z"
+    notes: "New requirement introduced by the shift to paid APIs; prevents an agentic search/extract loop
+      from running up cost on hard districts. Cost-minimization itself is deferred (do-it-right-first)."
+
+  - id: REQ-052
+    description: Define the school-sampling policy and document its representativeness limitation
+    type: non-functional
+    priority: should
+    status: accepted
+    acceptance_criteria:
+      - Sample size and selection rule defined as a function of district size and grade span (ties to REQ-043 discovery and REQ-042 aggregation)
+      - District-band value is the MODE of sampled schools (REQ-042) with the distribution captured
+      - Known limitation documented in METHODOLOGY - schedules are obtained only from schools that publish them, which may bias the sample
+    created: "2026-06-13T00:00:00Z"
+    updated: "2026-06-13T00:00:00Z"
+    notes: "Complements REQ-042 (aggregation math) with the sampling/selection policy and the publish-bias caveat."
+
+  - id: REQ-053
+    description: Ground all extraction in captured artifacts and abstract LLM providers behind a multi-model gateway, keeping search separate from LLM querying
+    type: constraint
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - LLMs produce instructional-minutes values ONLY from artifacts captured under REQ-045; they never source facts from model knowledge or from search-fused answers
+      - Discovery/search (finding and fetching real pages) and extraction (reasoning over captured bytes) use separate services and separate calls; no single web-enabled model both finds and answers
+      - Search-grounded tools (e.g. Perplexity Sonar) may propose candidate URLs only; the cited artifact is still captured and extracted independently before any value is accepted
+      - Extraction and verification paths sit behind a provider-abstraction layer (e.g. an OpenRouter gateway and/or the benchmark extractors.py interface) so models can be swapped and compared without code changes
+      - The 2-3 independent verification paths (REQ-048) draw from different model families through that abstraction
+      - A citation or model-asserted value with no captured artifact is treated as not-found (REQ-049), never as enriched
+    created: "2026-06-13T00:00:00Z"
+    updated: "2026-06-13T00:00:00Z"
+    notes: "Codifies the search-is-not-LLM principle - a bare LLM invents plausible schedules (the Rule 6
+      hallucination failure). Native Anthropic stays available alongside the gateway for the Claude
+      production batch (Batch API 50% off, prompt caching, PDF/Files input)."

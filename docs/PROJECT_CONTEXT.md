@@ -67,17 +67,18 @@ LCT = 18 minutes per student per day
 - Temporal trends (year-over-year changes)
 - Relationship to outcomes (with appropriate caveats)
 
-## Current Status (2026-06-12)
+## Current Status (2026-06-13)
 
-**Phase**: Bell-schedule **extraction-quality evaluation — benchmarked** (see `docs/EXTRACTION_BENCHMARK_FINDINGS.md`)
-**Finding**: extraction plateaus ~35–53% (plain-text 7B best local ~42%; Claude Haiku ~53%); input/ground-truth quality is the main limiter, not the model
-**Direction**: format-aware reading + dual-path consensus (human review of disagreements) + better ground truth
+**Phase**: Pipeline design validated end-to-end — extraction *and* discovery proven; building toward a cheap-cloud "council" + per-school targeting
+**Extraction finding**: a capable cloud model ~doubles the best local. Full-41 leader **Gemini 2.5 Flash 68.9%** (cheapest *and* best); on *good* inputs (difficulty > 0.70) top models hit **~95–100%**. **Input quality, not the model, is the ceiling** (20% of districts solved by zero models; hard inputs failed on granularity/noise, not OCR). See `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.
+**Discovery finding**: search-led discovery works; **domain-scoped search** (Perplexity / OpenRouter `gpt-4o-mini-search` / Claude WebSearch) eliminates the wrong-district problem and reaches school subdomains. Blind Crawlee crawling fails. New bottleneck = capture fidelity on JS pages → tiered capture (text-layer preferred; screenshot+OCR/vision fallback).
+**Direction**: per-school targeting → tiered capture → cheap-cloud council consensus (Gemini 2.5 Flash + a cross-family model) → fail-loud statutory fallback. Multi-model conduits wired (`pplx:`, `openrouter:` in `extractors.py`). REQ-043…053.
 **Coverage**: 17,842 U.S. school districts in PostgreSQL database
 **SEA Integrations**: 9/9 complete (FL, TX, CA, NY, IL, MI, PA, VA, MA) ✅
-**Acquisition Stack**: FastAPI orchestrator (:8000) + Crawlee scraper (:3000) + extractor TBD (local Ollama models deleted post-benchmark; re-pullable)
+**Acquisition Stack**: search APIs (Perplexity/OpenRouter/Claude WebSearch) for discovery + Playwright capture; Crawlee re-cast as terrain-mapper/one-hop fetcher; cheap-cloud council for extraction (local Ollama models deleted post-benchmark; Granite 4.1 8B is the self-host candidate)
 **Data Sources**: Federal (NCES, CRDC, IDEA 618) + Bell schedules + State agencies
 
-> **Note:** The earlier multi-tier Firecrawl/Gemini/Claude-API acquisition design was removed in Jan 2026 and replaced by the local-first Crawlee + Ollama pipeline below, so the project can scale without per-token API cost. See `docs/ACQUISITION_PIPELINE.md` (canonical) and `docs/PROJECT_SYNTHESIS.md` (architecture map).
+> **Note:** Strategy evolved twice — the Jan-2026 local-first Crawlee+Ollama pivot (to avoid per-token cost) was itself superseded on 2026-06-13 once benchmarking showed paid-cloud extraction is *cheap* (~$0.05–0.30/1M) and far more accurate. Canonical learnings: `docs/technical-notes/EXTRACTION_AND_DISCOVERY_LEARNINGS_2026-06.md`. Architecture map: `docs/PROJECT_SYNTHESIS.md`.
 
 ### What We Have ✅
 - Comprehensive project structure
@@ -271,5 +272,5 @@ Outputs & Visualizations
 ---
 
 **Document Version**: 2.3
-**Last Updated**: January 2026
+**Last Updated**: June 13, 2026
 **Status**: Bell Schedule Acquisition - local-first Crawlee + Ollama pipeline with 9/9 SEA integrations complete

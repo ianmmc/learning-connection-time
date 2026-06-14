@@ -40,14 +40,16 @@ Part of "Reducing the Ratio" educational equity initiative. Currently implementi
 
 ---
 
-## Project Status (January 24, 2026)
+## Project Status (updated June 13, 2026)
+
+> **Current phase: acquisition pipeline design validated end-to-end** — extraction (cheap-cloud council; Gemini 2.5 Flash leads, input quality is the ceiling) *and* discovery (domain-scoped search) proven. See root `CLAUDE.md` Current Status + `docs/technical-notes/EXTRACTION_AND_DISCOVERY_LEARNINGS_2026-06.md` for the live picture. The list below is the prior baseline.
 
 - **Phase**: Bell Schedule Automation
 - **Bell Schedules**: ~65 districts enriched (always verify against the live DB — see Critical Rules)
-- **Scraper Service**: `infrastructure/scraper/` - Crawlee-based (Playwright browsers), operational
+- **Scraper Service**: `infrastructure/scraper/` - Crawlee-based (Playwright browsers); re-cast as terrain-mapper/one-hop fetcher (blind crawling proven inadequate for finding schedules)
 - **SEA Integrations**: 9/9 complete (FL, TX, CA, NY, IL, MI, PA, VA, MA)
 - **Database**: PostgreSQL 16, 17,842 districts
-- **Test Suite**: 375 passed
+- **Test Suite**: 375+ passed
 
 > **Note**: Prior documentation claimed 192 districts. Investigation on Jan 24, 2026 revealed this was hallucinated. See `docs/PROJECT_HISTORY.md` (Part 2) for details — this episode is the origin of Rule #6 and the pre-commit DB-verify hook.
 
