@@ -66,6 +66,8 @@ logs/
 .env
 .env.local
 config/secrets.yaml
+config/secrets.local.json
+secrets.local.json
 *.key
 *.pem
 context.xml
@@ -139,3 +141,6 @@ tier_*_batch_*.txt
 # Exclude subdirectory CLAUDE.md files but keep root CLAUDE.md
 config/CLAUDE.md
 infrastructure/**/CLAUDE.md
+
+# discovery benchmark page captures (binary, regenerable)
+data/benchmark_results/discovery/*/captures/

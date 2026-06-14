@@ -217,9 +217,56 @@ class OpenAIExtractor(BaseExtractor):
         return resp.choices[0].message.content or ""
 
 
+class PerplexityAgentExtractor(BaseExtractor):
+    """Perplexity Agent API (the SDK's `responses` resource -> POST /v1/agent).
+
+    A multi-model conduit: model id is "provider/model" (e.g. openai/gpt-5.5).
+    `tools` is omitted, so web search is OFF — grounded extraction over the
+    provided document text only (REQ-053). Text-only (no vision here)."""
+
+    provider = "pplx"
+    supports_vision = False
+
+    def _complete(self, system, user, images=None):
+        from perplexity import Perplexity  # lazy; reads PERPLEXITY_API_KEY from env
+        client = Perplexity()
+        r = client.responses.create(
+            model=self.model, instructions=system, input=user,
+        )  # no `tools` => no web search
+        return getattr(r, "output_text", "") or ""
+
+
+class OpenRouterExtractor(BaseExtractor):
+    """OpenRouter — OpenAI-compatible multi-model gateway (one key, ~337 models).
+
+    Model id is "provider/model[:free]" (e.g. deepseek/deepseek-v3.2,
+    meta-llama/llama-3.3-70b-instruct:free). A second conduit independent of the
+    native providers — useful for REQ-048 cross-family consensus."""
+
+    provider = "openrouter"
+    supports_vision = True  # many OR models are multimodal; text models ignore images
+
+    def _complete(self, system, user, images=None):
+        import openai  # lazy; needs OPENROUTER_API_KEY
+        client = openai.OpenAI(base_url="https://openrouter.ai/api/v1",
+                               api_key=os.getenv("OPENROUTER_API_KEY"))
+        content: list[dict] = [{"type": "text", "text": user}]
+        for img in (images or []):
+            data, media = _img_b64(img)
+            content.append({"type": "image_url",
+                            "image_url": {"url": f"data:{media};base64,{data}"}})
+        resp = client.chat.completions.create(
+            model=self.model, temperature=0.1, max_tokens=MAX_OUTPUT_TOKENS,
+            messages=[{"role": "system", "content": system},
+                      {"role": "user", "content": content}],
+        )
+        return (resp.choices[0].message.content or "") if resp.choices else ""
+
+
 _PROVIDERS = {
     "ollama": OllamaExtractor, "anthropic": AnthropicExtractor,
     "gemini": GeminiExtractor, "openai": OpenAIExtractor,
+    "pplx": PerplexityAgentExtractor, "openrouter": OpenRouterExtractor,
 }
 
 
