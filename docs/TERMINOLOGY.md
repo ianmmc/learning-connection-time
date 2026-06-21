@@ -66,13 +66,20 @@ This document standardizes vocabulary used throughout the Learning Connection Ti
 - District-provided documentation
 
 **Acquisition method:**
-- **Automated:** local-first Crawlee + Ollama pipeline (capture from district/school sites)
+- **Automated:** search-led discovery + tiered capture + cheap-cloud council extraction (see `docs/ACQUISITION_PIPELINE.md`)
 - **Manual:** human-collected schedules where the pipeline can't reach
 
 **Confidence levels:**
 - High: Detailed schedule with specific times from official source
 - Medium: School-sampled or estimated from total time
 - Low: Single school sample representing diverse district
+
+### Gross vs. Net Daily Instructional Minutes
+**Gross (bell-to-bell) — the CURRENT target:** last-bell end time − first-bell start time, with **no deductions**. This is what we extract from bell schedules and store today; the existing ground truth is also gross. It **overstates** true instructional time by ~30–60 min/day (lunch + passing + recess), and *inconsistently* across districts, so it is always labeled **gross / bell-to-bell**.
+
+**Net (deferred future enhancement):** gross − lunch − passing periods − recess. More accurate but requires extracting scattered, often-absent deduction fields — a harder extraction problem we are **not** attempting yet. We do **not** apply *assumed* deductions (e.g. a guessed 30-min lunch); assumed net adds fake precision and is explicitly avoided.
+
+**Why gross now (decided June 2026):** it needs only two reliably-published numbers (start, end), which sharply improves extraction accuracy, and it is a transparent, defensible step up from statutory minimums. Records carry `minutes_basis: gross_bell_to_bell`.
 
 ### Statutory Fallback (NOT Enriched)
 **Definition:** State minimum instructional time requirements used as default

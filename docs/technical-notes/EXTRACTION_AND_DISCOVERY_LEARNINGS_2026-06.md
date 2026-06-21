@@ -3,6 +3,18 @@
 > Consolidated learnings from the multi-provider extraction bake-off and the discovery proof-out.
 > Companions: `docs/EXTRACTION_BENCHMARK_FINDINGS.md` (full leaderboard tables), `docs/INSTRUCTIONAL_MINUTES_ACQUISITION_STRATEGY.md` (strategy), `REQUIREMENTS.yaml` (REQ-043…053).
 
+## Per-school build + first test (2026-06-20)
+
+Built the per-school path end-to-end and ran a first isolation test (New Haven Unified CA). Scripts: `discovery/school_sampling.py` (NCES `ccd_sch_029_2425` → per-band school counts + 95/±5 sample size), `discovery/per_school_run.py` (roster → per-school domain-scoped search), `discovery/aggregate.py` (cross-family council accept + modal→mean aggregation + mode-stability early-exit; unit-tested), `discovery/council_extract.py` (Path-1 council per page → aggregate → score).
+
+**Findings:**
+1. **Sampling: 95/±5 is a near-census (96% of 132,803 band-memberships across 18,158 districts); median district = 4 calls.** The finite-population formula only inflates mega-districts (LA n=496) — wrong shape. Decision: **census small districts, cap large at ~8–12/band with mode-stability early-exit** (cap to be set empirically). See `ACQUISITION_PIPELINE.md` sampling section.
+2. **Per-school-page vs district-hub is a spectrum, and it's the key reality.** Top-pick hub-collapse: **Christina 20/21 (hub-dominant), Sweetwater 10/15 (mixed), New Haven 0/13 (per-school-dominant).** Many schools — esp. small/rural — have NO own page; the district publishes a consolidated page. Design consequence: **dedup candidates across schools** (New Haven 39→12 distinct) → capture/extract each page once → fan band values to the schools it covers.
+3. **Pipeline is mechanically correct** — search→dedup→tiered capture→Path-1 council (cross-family accept)→modal aggregation all functioned; council agreed with 0 judge escalations on New Haven.
+4. **A real per-school page is an excellent input** — Itliong-Vera Cruz MS bell page = clean period grid with **explicit labeled LUNCH** (everything net-minutes needs). Where the page exists and renders, extraction is easy.
+5. **Two gates remain (both known):** (a) **capture fidelity** — Searles Elementary's own bell page rendered **0 time-lines** (JS/image the tier missed); (b) **hub ambiguity** — New Haven's elementary band routed to an **unlabeled multi-school hub** (~29 mixed time ranges, no row→school labels); council picked 8:00–2:05=365 vs GT's 8:30–2:05=335 (a different elementary schedule, both plausible). **Not** a net/gross issue — GT is gross (end−start).
+6. **Couldn't isolate the per-school *lift* yet** — New Haven's single checkable GT band (elementary) routed through the hub, not a per-school page. Needs test districts with multi-band GT that route to genuine per-school pages, and/or hand-verified GT.
+
 ## TL;DR
 - **Extraction is essentially solved *on good inputs*** — on tractable districts (difficulty > 0.70) the top models hit **~95–100%**. The full-41 ceiling of ~69% is dragged down almost entirely by **bad/over-stuffed/wrong inputs**, not model capability.
 - **Cheap wins.** **Gemini 2.5 Flash** leads the full-41 (68.9%) and is among the cheapest. Bigger ≠ better (DeepSeek V4-Pro, GPT-5.5, Opus all trail cheaper models).

@@ -42,7 +42,7 @@ This reframes "20:1 student-teacher ratio" into a more visceral equity metric.
 - **[Infrastructure Scripts README](infrastructure/scripts/README.md)** - Script documentation
 
 ### Bell Schedule Enrichment
-- **[Acquisition Pipeline](docs/ACQUISITION_PIPELINE.md)** - Crawlee + Ollama bell schedule acquisition (local-first, no per-token cost)
+- **[Acquisition Pipeline](docs/ACQUISITION_PIPELINE.md)** ⭐ - Search-led discovery (waves) → tiered capture → cheap-cloud council extraction → modal aggregation. Target = **gross bell-to-bell** instructional minutes. (Supersedes the retired Crawlee+Ollama local-first design.)
 
 ### Where to Find Results
 - **Current LCT values:** `data/enriched/lct-calculations/lct_all_variants_*.csv`
@@ -90,8 +90,8 @@ python infrastructure/scripts/download/fetch_nces_ccd.py --year 2023-24
 
 **2. Enrich** - Acquire actual bell schedules (optional)
 ```bash
-# Automated local-first acquisition: Crawlee scraper + FastAPI + Ollama
-# See: docs/ACQUISITION_PIPELINE.md
+# Search-led discovery + tiered capture + cheap-cloud council extraction (gross bell-to-bell)
+# Orchestrated by the per-school-acquire skill. See: docs/ACQUISITION_PIPELINE.md
 ```
 
 **3. Extract** - Handle multi-part files
@@ -195,7 +195,7 @@ learning-connection-time/
 │   └── exports/           # Final outputs
 │
 ├── docs/                  # Documentation
-│   ├── ACQUISITION_PIPELINE.md            # Crawlee + Ollama acquisition ⭐
+│   ├── ACQUISITION_PIPELINE.md            # Search-led discovery + council extraction ⭐
 │   ├── METHODOLOGY.md                     # LCT calculation details
 │   ├── PROJECT_SYNTHESIS.md               # Architecture map & known issues
 │   ├── state-integrations/               # Per-state data integration plans
@@ -226,7 +226,7 @@ Automatically detects and concatenates split files:
 
 ### ✅ Actual vs. Statutory Instructional Time
 **Minutes-source priority (highest to lowest):**
-- **Actual bell schedule** — acquired from district/school websites via the local-first Crawlee + Ollama pipeline
+- **Actual bell schedule** — acquired from district/school websites via search-led discovery + cheap-cloud council extraction (gross bell-to-bell minutes)
 - **State statutory requirement** — fallback when no schedule is found
 - **Default (360 min)** — last-resort fallback
 

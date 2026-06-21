@@ -79,10 +79,10 @@ See `docs/STAFFING_DATA_ENHANCEMENT_PLAN.md` for detailed scope definitions and 
 
 #### 1. Daily Instructional Minutes
 
-**Definition**: The actual or statutory instructional time per day
+**Definition**: The actual or statutory instructional time per day. When sourced from bell schedules, this is **gross / bell-to-bell** minutes (last-bell end − first-bell start), **not** net of lunch/passing/recess — see the Collection approach section and `docs/TERMINOLOGY.md`. Net minutes is a deferred future enhancement.
 
 **Sources**:
-1. **Primary (Phase 1.5+)**: Actual bell schedules from district/school websites
+1. **Primary (Phase 1.5+)**: Actual bell schedules from district/school websites (gross bell-to-bell)
 2. **Fallback (Phase 1)**: State statutory minimum requirements
 
 **Variations**:
@@ -1037,9 +1037,10 @@ Collect actual instructional time data from the top 3 largest districts in each 
 
 **Collection approach**:
 
-The current approach is local-first automated acquisition (Crawlee + Ollama pipeline; see `docs/ACQUISITION_PIPELINE.md`), with human collection only for districts the pipeline can't reach. The earlier manual-vs-automated district-count tiering was retired in Jan 2026.
+The current approach is **search-led discovery + tiered capture + cheap-cloud council extraction** (see `docs/ACQUISITION_PIPELINE.md`), with human collection only for districts the pipeline can't reach. The earlier local-first Crawlee+Ollama design and the manual-vs-automated district-count tiering were both retired (Jan 2026 / June 2026 respectively).
 
-- **Automated:** Crawlee maps district/school sites, Ollama ranks candidate pages, PDFs are captured and triaged, and start/end times are extracted locally. Net instructional minutes are computed deterministically. Confidence tracks source quality (`high` / `medium` / `low`).
+- **Automated:** domain-scoped search finds per-school (or hub) schedule pages, Playwright captures them (text layer → screenshot/OCR fallback), and a council of cheap cloud models extracts **first-bell start and last-bell end** times per band. **The metric is GROSS daily instructional minutes (end − start), bell-to-bell — lunch/passing/recess are NOT subtracted.** Models extract per-school rows; the modal band value is computed deterministically. Confidence tracks source quality (`high` / `medium` / `low`).
+  - **Why gross, not net (decided June 2026):** gross needs only two numbers nearly every schedule states plainly, which sharply improves extraction accuracy; the existing ground truth is itself gross; and assumed deductions add fake precision. Gross **overstates** instructional time by ~30–60 min/day (and inconsistently, since some districts publish lunch and some don't), so it is reported and labeled as **gross / bell-to-bell** — a transparent, defensible step up from statutory minimums. **Net minutes (with real lunch/passing/recess deductions) is a deferred future enhancement.**
 - **Manual follow-up:** districts blocked (Cloudflare/WAF) or not covered by the pipeline are queued for offline research.
 
 **Security & Ethics Protocol**:
@@ -1058,11 +1059,10 @@ Each enrichment record includes:
   "district_name": "Natrona County School District #1",
   "state": "WY",
   "elementary": {
-    "instructional_minutes": 345,
+    "instructional_minutes": 405,
+    "minutes_basis": "gross_bell_to_bell",
     "start_time": "8:45 AM",
     "end_time": "3:30 PM",
-    "lunch_duration": 40,
-    "recess_duration": 20,
     "schools_sampled": ["Lincoln Elementary", "Oregon Trail Elementary"],
     "source_urls": ["https://www.natronaschools.org/..."],
     "confidence": "high",

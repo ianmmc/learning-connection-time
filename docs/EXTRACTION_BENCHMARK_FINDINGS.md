@@ -141,5 +141,39 @@ Ran DeepSeek V3.2 + V4-Pro, Llama-3.3-70B, Mistral Small 24B + Large 2512, Comma
 
 **Practical read for the pipeline:** default extractor = **Gemini 2.5 Flash** (top + cheap); independent cross-family consensus partner = **DeepSeek V3.2** or **Mistral Large/Small** (peer accuracy, decorrelated, cheap); local/self-host path = **Granite 4.1 8B** or a Qwen3. Leaderboard data: `data/benchmark_results/leaderboard_minutes.md`.
 
+## Update 4 (2026-06-20): real per-call cost from OpenRouter activity logs
+
+Replaced chars/4 cost *estimates* with **measured `tokens_prompt`/`tokens_completion`** from the OpenRouter activity export (2026-06-14 extraction runs; web-search rows excluded). Council candidate set narrowed to **6 non-reasoning models** — **Grok 4.3 and Qwen3.7-Max removed** (neither scored 100% on difficulty>0.70, and both are reasoning models whose hidden reasoning tokens make them 4–70× pricier; see below).
+
+**Measured per extraction call** (median tokens; one captured document in):
+
+| Model | in (med) | out (med) | reasoning (med) | **$ / call (measured)** |
+|---|---:|---:|---:|---:|
+| Mistral Small 24B | 2,583 | 345 | 0 | **$0.00022** |
+| Gemini 2.5 Flash-Lite | 1,982 | 434 | 0 | **$0.00050** |
+| Qwen3-235B-2507 | 2,424 | 185 | 0 | **$0.00060** |
+| DeepSeek V3.2 | 2,361 | 318 | 0 | **$0.00102** |
+| Gemini 2.5 Flash † | ~1,982 | ~434 | 0 | **~$0.00168** (est.) |
+| Mistral Large 2512 | 3,424 | 314 | 0 | **$0.00265** |
+| *(removed)* Grok 4.3 | 3,162 | 944 | **742** | $0.00680 |
+| *(removed)* Qwen3.7-Max | 3,344 | 2,582 | **2,322** | $0.01571 |
+
+† Gemini 2.5 Flash was run on the **native Google API** (not in the OpenRouter log); derived from the Flash-Lite token profile at Flash pricing ($0.30/$2.50). Going forward, extraction standardizes on **OpenRouter** (`google/gemini-2.5-flash`).
+
+**Per-district cost = (schools processed) × (per-call) × (council size).** Single non-reasoning model, one call per sampled school:
+
+| District size | Mistral Small | Flash-Lite | Gemini Flash | Mistral Large |
+|---|---:|---:|---:|---:|
+| 10 schools | $0.002 | $0.005 | $0.017 | $0.027 |
+| 50 schools | $0.011 | $0.025 | $0.084 | $0.133 |
+| 100 schools | $0.022 | $0.050 | $0.168 | $0.265 |
+
+A **3-model non-reasoning council** (Gemini Flash + DeepSeek V3.2 + Mistral Small ≈ **$0.0029/call**): a 50-school district ≈ **$0.15**; a 340-school Broward ≈ **$1.0**.
+
+**Cost conclusions:**
+1. **The real cost cliff is reasoning-vs-not, not sticker price.** Qwen3.7-Max burns ~2,322 hidden reasoning tokens/call → **$0.0157/call (~70× Mistral Small)**; Grok 4.3 ~742 → $0.0068. The 6 retained models are all **≤ $0.0027/call**.
+2. **Output (schedules JSON) drives cost for high-out-price models** — a model that over-extracts schools costs more, so concise/targeted per-school inputs are cheaper *and* more accurate.
+3. **Money is not the constraint.** Even the priciest sensible council stays **~$1/district** at the largest districts; the binding limits are input quality and (downstream) human-QC time, not API spend.
+
 ## Caveats
 Small/noisy samples (locals on 17 table / 39 text districts; Haiku on 5 only); modal-minutes ±15-min metric that penalizes thorough multi-school extraction (see Update finding 5); incomplete/single-value GT; vision prompt unoptimized (early-release unsolved). Treat absolutes as directional; relative rankings are the reliable signal.

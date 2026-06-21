@@ -32,8 +32,9 @@ from infrastructure.api.services.extraction_service import (
     ExtractionService, ExtractionResult, ExtractedSchedule,
 )
 
+import os as _os
 MAX_TEXT_LEN = 12000  # raised from production's 6000 (schedules can be spread across files)
-MAX_OUTPUT_TOKENS = 2048  # enough for many schools; salvage recovers any truncation
+MAX_OUTPUT_TOKENS = int(_os.getenv("BENCH_MAX_OUTPUT_TOKENS", "2048"))  # env-overridable; big multi-school dumps need more
 
 # Lean prompt for the benchmark: keeps the production extraction RULES but drops the verbose
 # raw_text_snippet/notes from the output (irrelevant to scoring, ~3x fewer tokens to generate
@@ -58,6 +59,10 @@ DOCUMENT:
 {pdf_text}
 
 Return ONLY the compact JSON described above."""
+
+# NOTE: models EXTRACT per-school rows; deterministic code (aggregate.py / score_minutes) computes
+# the modal band value. Do NOT ask the model to pick the "typical" schedule — that offloads the
+# statistics to the LLM and hides the distribution. (A prior triage prompt did this; removed.)
 
 
 def _salvage_schedules(text: str) -> list[dict]:
