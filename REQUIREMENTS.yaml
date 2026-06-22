@@ -1,6 +1,6 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-06-13T00:00:00Z"
+last_updated: "2026-06-21T00:00:00Z"
 
 requirements:
   - id: REQ-001
@@ -978,10 +978,11 @@ requirements:
       on the unique constraint / id-sequence collision. Fixed 2026-06-06."
 
   - id: REQ-042
-    description: District grade-band instructional minutes use the MODE of sampled schools, with distribution captured
+    description: "[PARTIALLY SUPERSEDED 2026-06-21 by REQ-055 (gross not net) — MODE policy still holds via REQ-056] District grade-band instructional minutes use the MODE of sampled schools, with distribution captured"
     type: functional
     priority: must
-    status: tested
+    status: superseded
+    superseded_by: [REQ-055, REQ-056]
     acceptance_criteria:
       - Daily instructional minutes computed as (end - start) - lunch - passing (compute_instructional_minutes)
       - District grade-band value is the MODE (most common) of sampled schools' instructional minutes; ties resolve to the smallest
@@ -1060,11 +1061,13 @@ requirements:
     updated: "2026-06-13T00:00:00Z"
 
   - id: REQ-046
-    description: Extract net-instructional-minutes fields with format-aware reading and typical-day selection
+    description: "[SUPERSEDED 2026-06-21 by REQ-054/REQ-055 — extractors return only start/end TIMES (gross), not deduction fields] Extract net-instructional-minutes fields with format-aware reading and typical-day selection"
     type: functional
     priority: must
-    status: accepted
+    status: superseded
+    superseded_by: [REQ-054, REQ-055]
     acceptance_criteria:
+      - "SUPERSEDED: extractors now return ONLY start_time/end_time/grade_level/school_name; no lunch/passing/recess (REQ-054); minutes are GROSS (REQ-055)"
       - Extracts start_time, end_time, lunch, passing-period, and recess durations (the deductions REQ-042's formula consumes) plus grade level
       - Selects the TYPICAL day and excludes early-release, half-day, block/A-B, assembly, and exam-day variants from the canonical value (records that variants existed)
       - Routes reading by format - table-aware parser for digital PDFs; OCR or vision for image/scanned PDFs and images; targeted DOM extraction for HTML rather than generic table-scrape of nav menus
@@ -1089,11 +1092,13 @@ requirements:
     updated: "2026-06-13T00:00:00Z"
 
   - id: REQ-048
-    description: Verify extracted instructional minutes via 2-3 independent pathways and reconcile automatically
+    description: "[SUPERSEDED 2026-06-21 by REQ-056 — consensus is on per-school (start,end) TIMES, cross-family, not on the per-band minutes number] Verify extracted instructional minutes via 2-3 independent pathways and reconcile automatically"
     type: functional
     priority: must
-    status: accepted
+    status: superseded
+    superseded_by: [REQ-056]
     acceptance_criteria:
+      - "SUPERSEDED: consensus is now per-school start/end times across CROSS-FAMILY models (REQ-056), not the final per-band number"
       - Pathways are independent across a real axis (different reader modality and/or different model), not repeated calls to one model
       - Consensus is evaluated on the final per-band instructional-minutes number within a defined tolerance, not on raw text
       - Agreement within tolerance auto-accepts with no human involvement
@@ -1179,3 +1184,156 @@ requirements:
     notes: "Codifies the search-is-not-LLM principle - a bare LLM invents plausible schedules (the Rule 6
       hallucination failure). Native Anthropic stays available alongside the gateway for the Claude
       production batch (Batch API 50% off, prompt caching, PDF/Files input)."
+
+  # ---------------------------------------------------------------------------
+  # Per-school consensus + gross-minutes redesign (added 2026-06-21). Supersedes
+  # REQ-042 (net), REQ-046 (deduction fields), REQ-048 (consensus on band number).
+  # ---------------------------------------------------------------------------
+
+  - id: REQ-054
+    description: "INVARIANT — extraction models read TIMES only; deterministic code computes minutes and the mode"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Council/extraction models return ONLY per-school facts read from the artifact - {grade_level, start_time, end_time, school_name}
+      - Models NEVER compute instructional minutes, never subtract lunch/passing/recess, never select a "typical"/modal/representative schedule
+      - All minutes arithmetic (gross = end - start) is performed in Python code, not by a model
+      - All aggregation (the per-band mode/mean over schools) is performed in Python code, not by a model
+      - A prompt that asks a model to return minutes, or to pick the typical/modal schedule, is a violation of this requirement
+    tests:
+      - tests/test_aggregate.py::TestInvariant::test_extractor_prompt_requests_times_not_minutes
+      - tests/test_aggregate.py::TestInvariant::test_no_triage_prompt_asks_model_to_pick_typical
+    created: "2026-06-21T00:00:00Z"
+    updated: "2026-06-21T00:00:00Z"
+    notes: "The principle the user locked down 2026-06-21. A prior design let models return pre-aggregated
+      minutes and a triage prompt asked the model to pick the typical schedule; both removed. See
+      docs/ACQUISITION_PIPELINE.md (council INVARIANT) and docs/TERMINOLOGY.md."
+
+  - id: REQ-055
+    description: "Instructional minutes from bell schedules are GROSS (bell-to-bell), not net"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Daily instructional minutes from a bell schedule = last-bell end - first-bell start (end - start)
+      - No lunch, passing-period, or recess deduction is applied
+      - No ASSUMED deductions are applied (an assumed 30-min lunch is explicitly forbidden - it adds fake precision)
+      - Values are labeled gross / bell_to_bell (e.g. minutes_basis = gross_bell_to_bell) wherever stored
+      - Net minutes (with real deductions) is a deferred future enhancement, not attempted now
+      - Plausibility gate for a gross day is ~240-510 minutes (raised from 480; real full days run to ~8.5h)
+    tests:
+      - tests/test_aggregate.py::TestGross::test_gross_is_end_minus_start
+      - tests/test_aggregate.py::TestGross::test_no_deduction_applied
+      - tests/test_aggregate.py::TestGross::test_plausibility_gate_240_510
+    created: "2026-06-21T00:00:00Z"
+    updated: "2026-06-21T00:00:00Z"
+    notes: "Decided 2026-06-21. Existing GT was already gross; gross needs only two reliably-published
+      numbers (improves extraction accuracy). Documented in METHODOLOGY.md, TERMINOLOGY.md, ACQUISITION_PIPELINE.md."
+
+  - id: REQ-056
+    description: "Council consensus is on per-school (start,end) times, cross-family; band value is the deterministic exact mode"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Consensus is evaluated PER SCHOOL on the (start_time, end_time) pair within +/-15 min, NOT on the computed minutes or the band rollup
+      - Agreement only counts between models of DIFFERENT families (same-family agreement is not consensus); family buckets google/mistral/deepseek/qwen
+      - Schools without cross-family agreement are held out as 'unresolved' (excluded from the band mode), never wrong-counted
+      - A no-consensus school may be resolved by a JUDGE model (distinct family) that re-reads the artifact, subject to the plausibility gate
+      - District band value = EXACT most-common (mode) of consensus schools' gross minutes; a genuine tie between distinct values falls back to arithmetic mean
+      - The mode is the exact most-common value, NOT a tolerance-cluster mean (regression - {380x26,390x2,345x1} must give 380, not 381)
+      - Per-school facts, which models agreed, and unresolved schools are all recorded for audit
+    tests:
+      - tests/test_aggregate.py::TestConsensus::test_cross_family_required
+      - tests/test_aggregate.py::TestConsensus::test_same_family_not_consensus
+      - tests/test_aggregate.py::TestConsensus::test_unresolved_held_out
+      - tests/test_aggregate.py::TestConsensus::test_consensus_on_times_not_minutes
+      - tests/test_aggregate.py::TestMode::test_exact_mode_not_cluster_mean_380_not_381
+      - tests/test_aggregate.py::TestMode::test_mean_tiebreak_on_distinct_tie
+      - tests/test_aggregate.py::TestModeStability::test_stable_run_and_plurality
+      - tests/test_aggregate.py::TestModeStability::test_not_stable_when_scattered_or_bimodal
+    created: "2026-06-21T00:00:00Z"
+    updated: "2026-06-21T00:00:00Z"
+    notes: "aggregate.py consensus_school_facts + district_bands_from_facts + aggregate_band + mode_stable.
+      Cross-family rationale: docs/technical-notes/LLM_COUNCIL_RESEARCH_2026-06.md. The 380-not-381 case
+      was a user-caught cluster-mean bug fixed 2026-06-21."
+
+  - id: REQ-057
+    description: "Classify district web topology (hub / per_school / none) from SEARCH RESULTS only, to route processing"
+    type: functional
+    priority: should
+    status: accepted
+    acceptance_criteria:
+      - The Wave-1 Claude WebSearch subagent classifies each district as hub (schedules on one district URL), per_school (distinct school subdomain/pages), or none (neither found)
+      - Classification uses ONLY what the search results reveal; it does NOT open or read page contents
+      - Whether a hub renders cleanly vs is an expanding/accordion edge case is a CAPTURE-stage determination, not the classifier's
+      - Topology routes the downstream branch (capture-hub-once-and-fan vs extract-each-school-page)
+      - The label is recorded (roster.json / claude_urls.json) and is checkable against hand topology labels
+    tests:
+      - tests/test_acquisition_stages.py::TestTopology::test_topology_label_recorded
+    created: "2026-06-21T00:00:00Z"
+    updated: "2026-06-21T00:00:00Z"
+    notes: "Hand topology labels for ~27 GT districts captured in gt_curation CURATION_RECONCILED.json
+      (topology_truth) for later validating the classifier. Live subagent classification not yet wired -> test is a skip stub."
+
+  - id: REQ-058
+    description: "Per-school discovery via cost-ascending waves (Claude WebSearch -> OpenRouter gpt-4o-mini-search -> manual), stop-when-found"
+    type: functional
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - Discovery runs in waves and stops once a district/school is satisfied; it does NOT run all tools on every school
+      - Wave 1 = Claude WebSearch (Haiku subagent, subscription); Wave 2 = OpenRouter gpt-4o-mini-search on the residual only; then flag for manual
+      - Perplexity is NOT used (dropped 2026-06-21 - lowest full-41 coverage, hub-skewed reach)
+      - Every wave is domain-scoped to the district domain (allowed_domains / site:)
+      - Candidates are deduped across schools so a shared hub page is captured/extracted once and fanned to the schools it covers
+      - Sampling caps per band (census small districts; cap large ~8-12/band with mode-stability early-exit) - not a 95/+-5 near-census
+    tests:
+      - tests/test_acquisition_stages.py::TestWaves::test_wave_order_no_perplexity
+      - tests/test_acquisition_stages.py::TestSampling::test_band_classifier_grade_span
+      - tests/test_acquisition_stages.py::TestSampling::test_sample_size_censuses_small
+    created: "2026-06-21T00:00:00Z"
+    updated: "2026-06-21T00:00:00Z"
+    notes: "Wave 1 needs the agent (spawns WebSearch subagent) -> orchestrated by the per-school-acquire
+      skill, not a bare script (agent-in-the-loop, not lights-out). school_sampling.py is built+testable now;
+      live wave orchestration is a skip stub until wired."
+
+  - id: REQ-059
+    description: "Ground truth is human-verified per-school start/end times; models propose, human confirms"
+    type: process
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - GT districts are hand-curated from viewable source files (PDF/image); if a schedule can't be read by eye from the source, it is not GT
+      - The council PROPOSES per-school start/end times; a human verifies each (confirmed / corrected times / reject / unsure) before it becomes GT
+      - GT stores per-school start/end (the verifiable facts); the band value is re-derived deterministically (REQ-056) from confirmed schools
+      - Automated triage of GT sources (regex band-attribution) is explicitly NOT trusted - it is the extraction problem itself
+      - GT is GROSS (REQ-055) and labeled with provenance (source dir, topology, which models proposed)
+    tests:
+      - tests/test_acquisition_stages.py::TestGTProcess::test_band_rederived_from_confirmed_schools
+    created: "2026-06-21T00:00:00Z"
+    updated: "2026-06-21T00:00:00Z"
+    notes: "Process requirement capturing the 'I draft, you verify' GT method (memory:
+      feedback-human-curates-ground-truth). Workspace: data/benchmark/gt_curation_<ts>/; proposal runner
+      infrastructure/acquisition/gt_propose.py."
+
+  - id: REQ-060
+    description: "Tag charter schools (NCES CHARTER_TEXT), do NOT exclude them — preserves future analysis options"
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - Charter schools are NOT filtered out of sampling, GT, or the acquisition pipeline (no charter exclusion exists or should)
+      - Each per-school record carries is_charter sourced from the NCES CHARTER_TEXT flag - 'Yes' / 'No' / 'unknown' (school not matched in that LEA's NCES roster)
+      - The tag is sourced from NCES, never inferred from OCR text or model output
+      - Consistent with METHODOLOGY Rule 5 (use NCES LEA structure for charter treatment); charters are included as ordinary schools under NCES structure
+      - Tagging enables later with/without-charter analysis slices without re-running extraction
+    tests:
+      - tests/test_acquisition_stages.py::TestCharter::test_charter_lookup_from_nces
+      - tests/test_acquisition_stages.py::TestCharter::test_unmatched_school_is_unknown
+    created: "2026-06-21T00:00:00Z"
+    updated: "2026-06-21T00:00:00Z"
+    notes: "Decided 2026-06-21 (user: tag-not-exclude, for future options). Charters are a small minority
+      within a district's band (e.g. 5 of Fairbanks' 18 elementaries) so they don't move the mode, but
+      tagging keeps the option open. school_sampling.charter_lookup; applied in gt_propose.py."

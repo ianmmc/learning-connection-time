@@ -4,7 +4,7 @@
 >
 > **Question:** which local (and cheap-cloud) model + reading method best recovers **daily instructional minutes per grade band** from captured district documents — the input LCT actually needs?
 >
-> **Method.** 41-district ground-truth manifest from the DB's `human_provided` schedules (grade-band, 24h-normalized). Scored on the **LCT-relevant metric**: per grade band, does the model's *modal* instructional minutes (end−start) match GT within **±15 min**? Three reading methods × several models, plus one cloud model. Harness: `infrastructure/scripts/benchmark/` (`run_manifest_benchmark.py`, `reading.py`, `extractors.py`, `score_minutes.py`).
+> **Method.** 41-district ground-truth manifest from the DB's `human_provided` schedules (grade-band, 24h-normalized). Scored on the **LCT-relevant metric**: per grade band, does the model's *modal* instructional minutes (end−start) match GT within **±15 min**? Three reading methods × several models, plus one cloud model. Harness: `infrastructure/acquisition/` (`run_manifest_benchmark.py`, `reading.py`, `extractors.py`, `score_minutes.py`).
 
 ## Results
 

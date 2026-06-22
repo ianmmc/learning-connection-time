@@ -1,0 +1,351 @@
+{
+  "created": "20260621T060008Z",
+  "source": "data/raw/bell_schedule_pdfs",
+  "kept_ext": [
+    ".gif",
+    ".jpeg",
+    ".jpg",
+    ".pdf",
+    ".png",
+    ".webp"
+  ],
+  "districts": [
+    {
+      "id": "0200180",
+      "dir": "0200180_Anchorage_School_District",
+      "state": "AK",
+      "files": 3
+    },
+    {
+      "id": "0200510",
+      "dir": "0200510_Matanuska-Susitna_Borough_School_District",
+      "state": "AK",
+      "files": 17
+    },
+    {
+      "id": "0200600",
+      "dir": "0200600_Fairbanks_North_Star_Borough_School_District",
+      "state": "AK",
+      "files": 3
+    },
+    {
+      "id": "0100270",
+      "dir": "0100270_Baldwin_County",
+      "state": "AL",
+      "files": 18
+    },
+    {
+      "id": "0102370",
+      "dir": "0102370_Mobile_County",
+      "state": "AL",
+      "files": 16
+    },
+    {
+      "id": "0102430",
+      "dir": "0102430_Montgomery_County",
+      "state": "AL",
+      "files": 5
+    },
+    {
+      "id": "0503060",
+      "dir": "0503060_BENTONVILLE_SCHOOL_DISTRICT",
+      "state": "AR",
+      "files": 1
+    },
+    {
+      "id": "0509000",
+      "dir": "0509000_Little Rock",
+      "state": "AR",
+      "files": 1
+    },
+    {
+      "id": "0512660",
+      "dir": "0512660_SPRINGDALE_SCHOOL_DISTRICT",
+      "state": "AR",
+      "files": 11
+    },
+    {
+      "id": "0401870",
+      "dir": "0401870_Chandler_Unified_District_80_4242",
+      "state": "AZ",
+      "files": 4
+    },
+    {
+      "id": "0404970",
+      "dir": "0404970_Mesa_Unified_District_4235",
+      "state": "AZ",
+      "files": 3
+    },
+    {
+      "id": "0408800",
+      "dir": "0408800_Tucson_Unified_District_4403",
+      "state": "AZ",
+      "files": 86
+    },
+    {
+      "id": "0614550",
+      "dir": "0614550_Fresno_Unified",
+      "state": "CA",
+      "files": 6
+    },
+    {
+      "id": "0622710",
+      "dir": "0622710_Los_Angeles_Unified",
+      "state": "CA",
+      "files": 7
+    },
+    {
+      "id": "0626910",
+      "dir": "0626910_New_Haven_Unified",
+      "state": "CA",
+      "files": 12
+    },
+    {
+      "id": "0634320",
+      "dir": "0634320_San_Diego_Unified",
+      "state": "CA",
+      "files": 7
+    },
+    {
+      "id": "0803360",
+      "dir": "0803360_School_District_No_1_in_the_county_of_Denver_and_State_of_C",
+      "state": "CO",
+      "files": 3
+    },
+    {
+      "id": "0803450",
+      "dir": "0803450_Douglas_County",
+      "state": "CO",
+      "files": 4
+    },
+    {
+      "id": "0804800",
+      "dir": "0804800_Jefferson_County_School_District_No_R-1",
+      "state": "CO",
+      "files": 1
+    },
+    {
+      "id": "0900450",
+      "dir": "0900450_Bridgeport_School_District",
+      "state": "CT",
+      "files": 1
+    },
+    {
+      "id": "0902790",
+      "dir": "0902790_New_Haven_School_District",
+      "state": "CT",
+      "files": 1
+    },
+    {
+      "id": "0904830",
+      "dir": "0904830_Waterbury_School_District",
+      "state": "CT",
+      "files": 1
+    },
+    {
+      "id": "1100008",
+      "dir": "1100008_Friendship_PCS",
+      "state": "DC",
+      "files": 1
+    },
+    {
+      "id": "1000080",
+      "dir": "1000080_Appoquinimink_School_District",
+      "state": "DE",
+      "files": 1
+    },
+    {
+      "id": "1001300",
+      "dir": "1001300_Red_Clay_Consolidated_School_District",
+      "state": "DE",
+      "files": 2
+    },
+    {
+      "id": "1200180",
+      "dir": "1200180_BROWARD",
+      "state": "FL",
+      "files": 1
+    },
+    {
+      "id": "1200390",
+      "dir": "1200390_Pasco_County",
+      "state": "FL",
+      "files": 2
+    },
+    {
+      "id": "1201440",
+      "dir": "1201440_ORANGE",
+      "state": "FL",
+      "files": 1
+    },
+    {
+      "id": "1201530",
+      "dir": "1201530_Pasco",
+      "state": "FL",
+      "files": 2
+    },
+    {
+      "id": "1906540",
+      "dir": "1906540_Cedar_Rapids_Comm_School_District",
+      "state": "IA",
+      "files": 2
+    },
+    {
+      "id": "1600930",
+      "dir": "1600930_BONNEVILLE_JOINT_DISTRICT",
+      "state": "ID",
+      "files": 7
+    },
+    {
+      "id": "1602100",
+      "dir": "1602100_JOINT_SCHOOL_DISTRICT_NO_2",
+      "state": "ID",
+      "files": 1
+    },
+    {
+      "id": "1709930",
+      "dir": "1709930_Chicago_Public_Schools_Dist_299",
+      "state": "IL",
+      "files": 4
+    },
+    {
+      "id": "2507110",
+      "dir": "2507110_Lynn",
+      "state": "MA",
+      "files": 4
+    },
+    {
+      "id": "2513230",
+      "dir": "2513230_Worcester",
+      "state": "MA",
+      "files": 8
+    },
+    {
+      "id": "2302820",
+      "dir": "2302820_Bangor_School_Department",
+      "state": "ME",
+      "files": 1
+    },
+    {
+      "id": "2307320",
+      "dir": "2307320_Lewiston_Public_Schools",
+      "state": "ME",
+      "files": 2
+    },
+    {
+      "id": "2801320",
+      "dir": "2801320_DESOTO_CO_SCHOOL_DIST",
+      "state": "MS",
+      "files": 2
+    },
+    {
+      "id": "3806780",
+      "dir": "3806780_FARGO_1",
+      "state": "ND",
+      "files": 6
+    },
+    {
+      "id": "3172840",
+      "dir": "3172840_LINCOLN_PUBLIC_SCHOOLS",
+      "state": "NE",
+      "files": 1
+    },
+    {
+      "id": "3200480",
+      "dir": "3200480_Washoe_County",
+      "state": "NV",
+      "files": 10
+    },
+    {
+      "id": "3904375",
+      "dir": "3904375_Cincinnati_Public_Schools",
+      "state": "OH",
+      "files": 1
+    },
+    {
+      "id": "3904378",
+      "dir": "3904378_Cleveland_Municipal",
+      "state": "OH",
+      "files": 2
+    },
+    {
+      "id": "4659820",
+      "dir": "4659820_Rapid_City_Area_School_District_51-4",
+      "state": "SD",
+      "files": 3
+    },
+    {
+      "id": "4666270",
+      "dir": "4666270_Sioux_Falls_School_District_49-5",
+      "state": "SD",
+      "files": 17
+    },
+    {
+      "id": "4700148",
+      "dir": "4700148_Memphis-Shelby_County_Schools",
+      "state": "TN",
+      "files": 1
+    },
+    {
+      "id": "4703180",
+      "dir": "4703180_Davidson_County",
+      "state": "TN",
+      "files": 3
+    },
+    {
+      "id": "5000395",
+      "dir": "5000395_Essex_Westford_Educational_Community_Unified_Union_SD_51",
+      "state": "VT",
+      "files": 9
+    },
+    {
+      "id": "5000396",
+      "dir": "5000396_Champlain_Valley_Unified_Union_School_District_56",
+      "state": "VT",
+      "files": 3
+    },
+    {
+      "id": "5002820",
+      "dir": "5002820_Burlington_School_District",
+      "state": "VT",
+      "files": 4
+    },
+    {
+      "id": "5400180",
+      "dir": "5400180_CABELL_COUNTY_SCHOOLS",
+      "state": "WV",
+      "files": 8
+    },
+    {
+      "id": "5400600",
+      "dir": "5400600_KANAWHA_COUNTY_SCHOOLS",
+      "state": "WV",
+      "files": 12
+    },
+    {
+      "id": "5600730",
+      "dir": "5600730_Albany_County_School_District_1",
+      "state": "WY",
+      "files": 3
+    },
+    {
+      "id": "5605302",
+      "dir": "5605302_Sweetwater_County_School_District_1",
+      "state": "WY",
+      "files": 1
+    }
+  ],
+  "dropped_files": 753,
+  "empty_skipped": [
+    "0634410_San_Francisco_Unified",
+    "1100030_District_of_Columbia_Public_Schools",
+    "1100031_KIPP_DC_PCS",
+    "1000200_Christina_School_District",
+    "1302280_Fulton_County",
+    "1908970_Des_Moines_Independent_Comm_School_District",
+    "1914700_Iowa_City_Comm_School_District",
+    "3173740_MILLARD_PUBLIC_SCHOOLS",
+    "3200390_Carson_City",
+    "5400060_BERKELEY_COUNTY_SCHOOLS"
+  ]
+}

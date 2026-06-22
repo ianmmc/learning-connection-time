@@ -1,6 +1,0 @@
-{"district_id":"2302820","extractor":"anthropic:sonnet","success":true,"schedules":[
-{"grade_level":"elementary","start_time":"08:55","end_time":"15:00","school_name":"Pre-Kindergarten - Grade 3","confidence":"medium"},
-{"grade_level":"elementary","start_time":"08:50","end_time":"14:00","school_name":"Grades 4-5","confidence":"medium"},
-{"grade_level":"middle","start_time":"08:15","end_time":"14:30","school_name":"Grades 6-8","confidence":"medium"},
-{"grade_level":"high","start_time":"07:55","end_time":"14:30","school_name":"Bangor High School","confidence":"medium"}
-]}

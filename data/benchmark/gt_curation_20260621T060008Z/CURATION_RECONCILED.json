@@ -1,0 +1,379 @@
+{
+  "source_manifest": "data/benchmark/gt_curation_20260621T060008Z/MANIFEST.json",
+  "buckets": {
+    "hub": [
+      {
+        "dir": "0200600_Fairbanks_North_Star_Borough_School_District",
+        "district_id": "0200600",
+        "files": 2,
+        "exts": {
+          "": 1,
+          ".pdf": 1
+        }
+      },
+      {
+        "dir": "0503060_BENTONVILLE_SCHOOL_DISTRICT",
+        "district_id": "0503060",
+        "files": 2,
+        "exts": {
+          "": 1,
+          ".pdf": 1
+        }
+      },
+      {
+        "dir": "0509000_Little Rock",
+        "district_id": "0509000",
+        "files": 1,
+        "exts": {
+          ".pdf": 1
+        }
+      },
+      {
+        "dir": "0900450_Bridgeport_School_District",
+        "district_id": "0900450",
+        "files": 1,
+        "exts": {
+          ".pdf": 1
+        }
+      },
+      {
+        "dir": "0902790_New_Haven_School_District",
+        "district_id": "0902790",
+        "files": 1,
+        "exts": {
+          ".pdf": 1
+        }
+      },
+      {
+        "dir": "0904830_Waterbury_School_District",
+        "district_id": "0904830",
+        "files": 1,
+        "exts": {
+          ".pdf": 1
+        }
+      },
+      {
+        "dir": "1000080_Appoquinimink_School_District",
+        "district_id": "1000080",
+        "files": 1,
+        "exts": {
+          ".pdf": 1
+        }
+      },
+      {
+        "dir": "1200180_BROWARD",
+        "district_id": "1200180",
+        "files": 1,
+        "exts": {
+          ".pdf": 1
+        }
+      },
+      {
+        "dir": "1201440_ORANGE",
+        "district_id": "1201440",
+        "files": 1,
+        "exts": {
+          ".pdf": 1
+        }
+      },
+      {
+        "dir": "1602100_JOINT_SCHOOL_DISTRICT_NO_2",
+        "district_id": "1602100",
+        "files": 1,
+        "exts": {
+          ".pdf": 1
+        }
+      },
+      {
+        "dir": "1906540_Cedar_Rapids_Comm_School_District",
+        "district_id": "1906540",
+        "files": 2,
+        "exts": {
+          "": 1,
+          ".pdf": 1
+        }
+      },
+      {
+        "dir": "2302820_Bangor_School_Department",
+        "district_id": "2302820",
+        "files": 1,
+        "exts": {
+          ".pdf": 1
+        }
+      },
+      {
+        "dir": "2307320_Lewiston_Public_Schools",
+        "district_id": "2307320",
+        "files": 2,
+        "exts": {
+          "": 1,
+          ".png": 1
+        }
+      },
+      {
+        "dir": "3172840_LINCOLN_PUBLIC_SCHOOLS",
+        "district_id": "3172840",
+        "files": 1,
+        "exts": {
+          ".pdf": 1
+        }
+      },
+      {
+        "dir": "3200480_Washoe_County",
+        "district_id": "3200480",
+        "files": 2,
+        "exts": {
+          "": 1,
+          ".pdf": 1
+        }
+      },
+      {
+        "dir": "3904378_Cleveland_Municipal",
+        "district_id": "3904378",
+        "files": 2,
+        "exts": {
+          "": 1,
+          ".webp": 1
+        }
+      },
+      {
+        "dir": "4700148_Memphis-Shelby_County_Schools",
+        "district_id": "4700148",
+        "files": 1,
+        "exts": {
+          ".pdf": 1
+        }
+      },
+      {
+        "dir": "5605302_Sweetwater_County_School_District_1",
+        "district_id": "5605302",
+        "files": 1,
+        "exts": {
+          ".pdf": 1
+        }
+      }
+    ],
+    "per_school": [
+      {
+        "dir": "0100270_Baldwin_County",
+        "district_id": "0100270",
+        "files": 13,
+        "exts": {
+          ".pdf": 12,
+          "": 1
+        }
+      },
+      {
+        "dir": "0102370_Mobile_County",
+        "district_id": "0102370",
+        "files": 11,
+        "exts": {
+          "": 1,
+          ".pdf": 10
+        }
+      },
+      {
+        "dir": "0200510_Matanuska-Susitna_Borough_School_District",
+        "district_id": "0200510",
+        "files": 12,
+        "exts": {
+          ".pdf": 11,
+          "": 1
+        }
+      },
+      {
+        "dir": "0404970_Mesa_Unified_District_4235",
+        "district_id": "0404970",
+        "files": 3,
+        "exts": {
+          ".pdf": 3
+        }
+      },
+      {
+        "dir": "0512660_SPRINGDALE_SCHOOL_DISTRICT",
+        "district_id": "0512660",
+        "files": 11,
+        "exts": {
+          ".pdf": 10,
+          "": 1
+        }
+      },
+      {
+        "dir": "0626910_New_Haven_Unified",
+        "district_id": "0626910",
+        "files": 12,
+        "exts": {
+          ".pdf": 12
+        }
+      },
+      {
+        "dir": "0634320_San_Diego_Unified",
+        "district_id": "0634320",
+        "files": 7,
+        "exts": {
+          ".pdf": 3,
+          ".png": 2,
+          ".jpg": 2
+        }
+      },
+      {
+        "dir": "2513230_Worcester",
+        "district_id": "2513230",
+        "files": 8,
+        "exts": {
+          ".pdf": 8
+        }
+      },
+      {
+        "dir": "5000395_Essex_Westford_Educational_Community_Unified_Union_SD_51",
+        "district_id": "5000395",
+        "files": 5,
+        "exts": {
+          "": 1,
+          ".jpeg": 1,
+          ".pdf": 3
+        }
+      }
+    ],
+    "excluded": [
+      {
+        "dir": "0102430_Montgomery_County",
+        "district_id": "0102430"
+      },
+      {
+        "dir": "0200180_Anchorage_School_District",
+        "district_id": "0200180"
+      },
+      {
+        "dir": "0401870_Chandler_Unified_District_80_4242",
+        "district_id": "0401870"
+      },
+      {
+        "dir": "0622710_Los_Angeles_Unified",
+        "district_id": "0622710"
+      },
+      {
+        "dir": "1001300_Red_Clay_Consolidated_School_District",
+        "district_id": "1001300"
+      },
+      {
+        "dir": "1100008_Friendship_PCS",
+        "district_id": "1100008"
+      },
+      {
+        "dir": "1200390_Pasco_County",
+        "district_id": "1200390"
+      },
+      {
+        "dir": "1201530_Pasco",
+        "district_id": "1201530"
+      },
+      {
+        "dir": "1600930_BONNEVILLE_JOINT_DISTRICT",
+        "district_id": "1600930"
+      },
+      {
+        "dir": "1709930_Chicago_Public_Schools_Dist_299",
+        "district_id": "1709930"
+      },
+      {
+        "dir": "2507110_Lynn",
+        "district_id": "2507110"
+      },
+      {
+        "dir": "3806780_FARGO_1",
+        "district_id": "3806780"
+      },
+      {
+        "dir": "3904375_Cincinnati_Public_Schools",
+        "district_id": "3904375"
+      },
+      {
+        "dir": "4659820_Rapid_City_Area_School_District_51-4",
+        "district_id": "4659820"
+      },
+      {
+        "dir": "4666270_Sioux_Falls_School_District_49-5",
+        "district_id": "4666270"
+      },
+      {
+        "dir": "5000396_Champlain_Valley_Unified_Union_School_District_56",
+        "district_id": "5000396"
+      },
+      {
+        "dir": "5002820_Burlington_School_District",
+        "district_id": "5002820"
+      },
+      {
+        "dir": "5400180_CABELL_COUNTY_SCHOOLS",
+        "district_id": "5400180"
+      },
+      {
+        "dir": "5400600_KANAWHA_COUNTY_SCHOOLS",
+        "district_id": "5400600"
+      },
+      {
+        "dir": "5600730_Albany_County_School_District_1",
+        "district_id": "5600730"
+      }
+    ]
+  },
+  "deleted_by_user": [
+    "0408800_Tucson_Unified_District_4403",
+    "0614550_Fresno_Unified",
+    "0803360_School_District_No_1_in_the_county_of_Denver_and_State_of_C",
+    "0803450_Douglas_County",
+    "0804800_Jefferson_County_School_District_No_R-1",
+    "2801320_DESOTO_CO_SCHOOL_DIST",
+    "4703180_Davidson_County"
+  ],
+  "topology_truth": {
+    "0200600": "hub",
+    "0503060": "hub",
+    "0509000": "hub",
+    "0900450": "hub",
+    "0902790": "hub",
+    "0904830": "hub",
+    "1000080": "hub",
+    "1200180": "hub",
+    "1201440": "hub",
+    "1602100": "hub",
+    "1906540": "hub",
+    "2302820": "hub",
+    "2307320": "hub",
+    "3172840": "hub",
+    "3200480": "hub",
+    "3904378": "hub",
+    "4700148": "hub",
+    "5605302": "hub",
+    "0100270": "per_school",
+    "0102370": "per_school",
+    "0200510": "per_school",
+    "0404970": "per_school",
+    "0512660": "per_school",
+    "0626910": "per_school",
+    "0634320": "per_school",
+    "2513230": "per_school",
+    "5000395": "per_school",
+    "0102430": "excluded",
+    "0200180": "excluded",
+    "0401870": "excluded",
+    "0622710": "excluded",
+    "1001300": "excluded",
+    "1100008": "excluded",
+    "1200390": "excluded",
+    "1201530": "excluded",
+    "1600930": "excluded",
+    "1709930": "excluded",
+    "2507110": "excluded",
+    "3806780": "excluded",
+    "3904375": "excluded",
+    "4659820": "excluded",
+    "4666270": "excluded",
+    "5000396": "excluded",
+    "5002820": "excluded",
+    "5400180": "excluded",
+    "5400600": "excluded",
+    "5600730": "excluded"
+  }
+}

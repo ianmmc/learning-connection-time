@@ -1,5 +1,0 @@
-{"district_id":"5600730","extractor":"anthropic:sonnet","success":true,"schedules":[
-{"grade_level":"elementary","start_time":"07:59","end_time":"15:00","school_name":"Slade Elementary School","confidence":"high"},
-{"grade_level":"middle","start_time":"08:00","end_time":"15:05","school_name":"Laramie Middle School","confidence":"high"},
-{"grade_level":"high","start_time":"07:45","end_time":"16:45","school_name":"Whiting High School","confidence":"medium"}
-]}

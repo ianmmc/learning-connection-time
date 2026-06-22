@@ -13,6 +13,8 @@
 
 **Our application:** cross-family-only agreement (±15 min) for the cheap accept path; a judge model (re-read page + plausibility gate) to resolve disagreements rather than adding more voters; ~3 diverse voters + 1 judge, not two full trios. Family buckets in our 6-model set: Google (Flash, Flash-Lite), Mistral (Small 24B, Large 2512), DeepSeek (V3.2), Qwen (235B-2507).
 
+**Field-observed refinement (2026-06-21) — shared-bad-INPUT correlation defeats cross-family consensus.** The research frames correlated error as a *model-family* property (same training → same blind spots), mitigated by cross-family selection. New Haven CT (0902790) surfaced a second axis: when the **input is corrupted identically for every model** (a 4-column school|times layout OCR linearizes into scrambled name/time runs), even *cross-family* models make the *same* mis-pairing — false consensus from the shared bad input, not shared training. Cross-family diversity can't rescue this because the corruption is upstream of the models. **Accept-rule implication:** agreement is strong evidence only when the *input* is clean; a known-garbled / multi-column / low-fidelity capture must **down-weight confidence regardless of cross-family agreement** (route to human-QC, don't auto-accept). Argues for a **capture-fidelity signal** feeding confidence, not just a model-agreement signal. (Deferred root-cause fix: layout-aware OCR / vision reading of the rendered page.)
+
 ---
 
 # Ensemble and Council Architectures for Multi-LLM Structured Data Extraction (2024–2026)

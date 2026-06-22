@@ -1,0 +1,818 @@
+[
+  {
+    "district_id": "0200600",
+    "dir": "0200600_Fairbanks_North_Star_Borough_School_District",
+    "topology": "hub",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 390,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 390,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "high": {
+        "gross_minutes": 390,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "0503060",
+    "dir": "0503060_BENTONVILLE_SCHOOL_DISTRICT",
+    "topology": "hub",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 420,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 420,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "high": {
+        "gross_minutes": 420,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "0509000",
+    "dir": "0509000_Little Rock",
+    "topology": "hub",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 435,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 435,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "high": {
+        "gross_minutes": 435,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "0900450",
+    "dir": "0900450_Bridgeport_School_District",
+    "topology": "hub",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 380,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 385,
+        "method": "council_agree",
+        "models": [
+          "qwen3-235b",
+          "gemini-2.5-flash-lite"
+        ]
+      },
+      "high": {
+        "gross_minutes": 397,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "0902790",
+    "dir": "0902790_New_Haven_School_District",
+    "topology": "hub",
+    "proposal": {},
+    "note": "no_readable_times"
+  },
+  {
+    "district_id": "0904830",
+    "dir": "0904830_Waterbury_School_District",
+    "topology": "hub",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 375,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 390,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "high": {
+        "gross_minutes": 390,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "1000080",
+    "dir": "1000080_Appoquinimink_School_District",
+    "topology": "hub",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 400,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 400,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "high": {
+        "gross_minutes": 400,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "1200180",
+    "dir": "1200180_BROWARD",
+    "topology": "hub",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 360,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 400,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "1201440",
+    "dir": "1201440_ORANGE",
+    "topology": "hub",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 375,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 394,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "1602100",
+    "dir": "1602100_JOINT_SCHOOL_DISTRICT_NO_2",
+    "topology": "hub",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 400,
+        "method": "council_agree",
+        "models": [
+          "gemini-2.5-flash-lite",
+          "mistral-small-24b",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 362,
+        "method": "council_agree",
+        "models": [
+          "gemini-2.5-flash-lite",
+          "mistral-small-24b"
+        ]
+      },
+      "high": {
+        "gross_minutes": 360,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "1906540",
+    "dir": "1906540_Cedar_Rapids_Comm_School_District",
+    "topology": "hub",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 420,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 420,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "high": {
+        "gross_minutes": 420,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "2302820",
+    "dir": "2302820_Bangor_School_Department",
+    "topology": "hub",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 372,
+        "method": "council_agree",
+        "models": [
+          "qwen3-235b",
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 380,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "qwen3-235b",
+          "gemini-2.5-flash-lite"
+        ]
+      },
+      "high": {
+        "gross_minutes": 368,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "qwen3-235b",
+          "gemini-2.5-flash-lite"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "2307320",
+    "dir": "2307320_Lewiston_Public_Schools",
+    "topology": "hub",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 400,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 405,
+        "method": "council_agree",
+        "models": [
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "high": {
+        "gross_minutes": 405,
+        "method": "council_agree",
+        "models": [
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "3172840",
+    "dir": "3172840_LINCOLN_PUBLIC_SCHOOLS",
+    "topology": "hub",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 398,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 420,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "high": {
+        "gross_minutes": 420,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "3200480",
+    "dir": "3200480_Washoe_County",
+    "topology": "hub",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 360,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 390,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "high": {
+        "gross_minutes": 390,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "3904378",
+    "dir": "3904378_Cleveland_Municipal",
+    "topology": "hub",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 390,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "high": {
+        "gross_minutes": 390,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "4700148",
+    "dir": "4700148_Memphis-Shelby_County_Schools",
+    "topology": "hub",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 420,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 420,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "high": {
+        "gross_minutes": 420,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "5605302",
+    "dir": "5605302_Sweetwater_County_School_District_1",
+    "topology": "hub",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 435,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 440,
+        "method": "council_agree",
+        "models": [
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "high": {
+        "gross_minutes": 475,
+        "method": "council_agree",
+        "models": [
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "0100270",
+    "dir": "0100270_Baldwin_County",
+    "topology": "per_school",
+    "proposal": {
+      "middle": {
+        "gross_minutes": 438,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "high": {
+        "gross_minutes": 438,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "qwen3-235b",
+          "gemini-2.5-flash-lite"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "0102370",
+    "dir": "0102370_Mobile_County",
+    "topology": "per_school",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 393,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 407,
+        "method": "council_agree",
+        "models": [
+          "gemini-2.5-flash-lite",
+          "qwen3-235b",
+          "mistral-small-24b"
+        ]
+      },
+      "high": {
+        "gross_minutes": 432,
+        "method": "council_agree",
+        "models": [
+          "gemini-2.5-flash-lite",
+          "mistral-small-24b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "0200510",
+    "dir": "0200510_Matanuska-Susitna_Borough_School_District",
+    "topology": "per_school",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 390,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 390,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "0404970",
+    "dir": "0404970_Mesa_Unified_District_4235",
+    "topology": "per_school",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 390,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "high": {
+        "gross_minutes": 420,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "qwen3-235b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "0512660",
+    "dir": "0512660_SPRINGDALE_SCHOOL_DISTRICT",
+    "topology": "per_school",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 450,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 450,
+        "method": "judge",
+        "models": [
+          "judge"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "0626910",
+    "dir": "0626910_New_Haven_Unified",
+    "topology": "per_school",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 365,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 389,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "high": {
+        "gross_minutes": 354,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "0634320",
+    "dir": "0634320_San_Diego_Unified",
+    "topology": "per_school",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 380,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 408,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "high": {
+        "gross_minutes": 399,
+        "method": "council_agree",
+        "models": [
+          "gemini-2.5-flash-lite",
+          "mistral-small-24b",
+          "qwen3-235b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "2513230",
+    "dir": "2513230_Worcester",
+    "topology": "per_school",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 365,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 383,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "high": {
+        "gross_minutes": 383,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      }
+    }
+  },
+  {
+    "district_id": "5000395",
+    "dir": "5000395_Essex_Westford_Educational_Community_Unified_Union_SD_51",
+    "topology": "per_school",
+    "proposal": {
+      "elementary": {
+        "gross_minutes": 420,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "middle": {
+        "gross_minutes": 420,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      },
+      "high": {
+        "gross_minutes": 395,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ]
+      }
+    }
+  }
+]

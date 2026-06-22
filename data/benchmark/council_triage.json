@@ -1,0 +1,92 @@
+[
+  {
+    "state": "AL",
+    "district_id": "0100270",
+    "name": "Baldwin_County",
+    "in_manifest": true,
+    "proposal": {
+      "elementary": {
+        "value": null,
+        "method": "no_extraction",
+        "models": [],
+        "gt": 450,
+        "match": null
+      },
+      "middle": {
+        "value": 426,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ],
+        "gt": null,
+        "match": null
+      },
+      "high": {
+        "value": null,
+        "method": "no_extraction",
+        "models": [],
+        "gt": null,
+        "match": null
+      }
+    },
+    "rows_per_model": {
+      "mistral-small-24b": 1,
+      "gemini-2.5-flash-lite": 1,
+      "qwen3-235b": 1
+    },
+    "truncated_models": []
+  },
+  {
+    "state": "CA",
+    "district_id": "0622710",
+    "name": "Los_Angeles_Unified",
+    "in_manifest": true,
+    "proposal": {},
+    "note": "no_readable_times"
+  },
+  {
+    "state": "FL",
+    "district_id": "1200180",
+    "name": "BROWARD",
+    "in_manifest": true,
+    "proposal": {
+      "elementary": {
+        "value": 360,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ],
+        "gt": 360,
+        "match": true
+      },
+      "middle": {
+        "value": 400,
+        "method": "council_agree",
+        "models": [
+          "mistral-small-24b",
+          "gemini-2.5-flash-lite",
+          "qwen3-235b"
+        ],
+        "gt": 400,
+        "match": true
+      },
+      "high": {
+        "value": null,
+        "method": "no_extraction",
+        "models": [],
+        "gt": 420,
+        "match": null
+      }
+    },
+    "rows_per_model": {
+      "mistral-small-24b": 2,
+      "gemini-2.5-flash-lite": 2,
+      "qwen3-235b": 2
+    },
+    "truncated_models": []
+  }
+]

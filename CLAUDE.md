@@ -105,7 +105,7 @@ python3 infrastructure/scripts/verify_enrichment.py --quick
 | Task | File |
 |------|------|
 | **Extraction benchmark findings** | `docs/EXTRACTION_BENCHMARK_FINDINGS.md` |
-| **Benchmark harness** | `infrastructure/scripts/benchmark/` |
+| **Benchmark harness** | `infrastructure/acquisition/` |
 | Decisions & lessons (history) | `docs/PROJECT_HISTORY.md` |
 | Architecture map & flagged issues | `docs/PROJECT_SYNTHESIS.md` |
 | Bell schedule acquisition | `docs/ACQUISITION_PIPELINE.md` |

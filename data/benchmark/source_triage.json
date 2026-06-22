@@ -1,0 +1,972 @@
+[
+  {
+    "state": "NV",
+    "district_id": "3200480",
+    "name": "Washoe_County",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary"
+    ],
+    "bands_reconstructable": [
+      "elementary",
+      "middle",
+      "high"
+    ],
+    "gt_support": {
+      "elementary": "UNSUPPORTED"
+    },
+    "n_pairs": 106,
+    "bucket": "GOLD"
+  },
+  {
+    "state": "OH",
+    "district_id": "3904375",
+    "name": "Cincinnati_Public_Schools",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary"
+    ],
+    "bands_reconstructable": [
+      "middle",
+      "high"
+    ],
+    "gt_support": {
+      "elementary": "UNSUPPORTED"
+    },
+    "n_pairs": 22,
+    "bucket": "GOLD"
+  },
+  {
+    "state": "SD",
+    "district_id": "4666270",
+    "name": "Sioux_Falls_School_District_49",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [
+      "middle",
+      "high"
+    ],
+    "gt_support": {},
+    "n_pairs": 101,
+    "bucket": "GOLD"
+  },
+  {
+    "state": "CT",
+    "district_id": "0904830",
+    "name": "Waterbury_School_District",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary",
+      "high",
+      "middle"
+    ],
+    "bands_reconstructable": [
+      "high"
+    ],
+    "gt_support": {
+      "elementary": "UNSUPPORTED",
+      "high": "supported",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 134,
+    "bucket": "USABLE"
+  },
+  {
+    "state": "AK",
+    "district_id": "0200600",
+    "name": "Fairbanks_North_Star_Borough_S",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary"
+    ],
+    "bands_reconstructable": [
+      "middle"
+    ],
+    "gt_support": {
+      "elementary": "UNSUPPORTED"
+    },
+    "n_pairs": 26,
+    "bucket": "USABLE"
+  },
+  {
+    "state": "AZ",
+    "district_id": "0404970",
+    "name": "Mesa_Unified_District_4235",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary",
+      "middle"
+    ],
+    "bands_reconstructable": [
+      "high"
+    ],
+    "gt_support": {
+      "elementary": "UNSUPPORTED",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 19,
+    "bucket": "USABLE"
+  },
+  {
+    "state": "CT",
+    "district_id": "0900450",
+    "name": "Bridgeport_School_District",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary"
+    ],
+    "bands_reconstructable": [
+      "elementary"
+    ],
+    "gt_support": {
+      "elementary": "supported"
+    },
+    "n_pairs": 5,
+    "bucket": "USABLE"
+  },
+  {
+    "state": "IA",
+    "district_id": "1908970",
+    "name": "Des_Moines_Independent_Comm_Sc",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary"
+    ],
+    "bands_reconstructable": [
+      "middle"
+    ],
+    "gt_support": {
+      "elementary": "UNSUPPORTED"
+    },
+    "n_pairs": 5,
+    "bucket": "USABLE"
+  },
+  {
+    "state": "DC",
+    "district_id": "1100031",
+    "name": "KIPP_DC_PCS",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary",
+      "high",
+      "middle"
+    ],
+    "bands_reconstructable": [
+      "high"
+    ],
+    "gt_support": {
+      "elementary": "UNSUPPORTED",
+      "high": "UNSUPPORTED",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 3,
+    "bucket": "USABLE"
+  },
+  {
+    "state": "IL",
+    "district_id": "1709930",
+    "name": "Chicago_Public_Schools_Dist_29",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [
+      "high"
+    ],
+    "gt_support": {},
+    "n_pairs": 8,
+    "bucket": "USABLE"
+  },
+  {
+    "state": "AL",
+    "district_id": "0100270",
+    "name": "Baldwin_County",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED"
+    },
+    "n_pairs": 303,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "WV",
+    "district_id": "5400600",
+    "name": "KANAWHA_COUNTY_SCHOOLS",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED"
+    },
+    "n_pairs": 148,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "WY",
+    "district_id": "5600730",
+    "name": "Albany_County_School_District_",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary",
+      "high",
+      "middle"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED",
+      "high": "UNSUPPORTED",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 144,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "CA",
+    "district_id": "0626910",
+    "name": "New_Haven_Unified",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED"
+    },
+    "n_pairs": 101,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "AZ",
+    "district_id": "0408800",
+    "name": "Tucson_Unified_District_4403",
+    "in_manifest": true,
+    "gt_bands": [
+      "high",
+      "middle"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "high": "UNSUPPORTED",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 81,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "AR",
+    "district_id": "0512660",
+    "name": "SPRINGDALE_SCHOOL_DISTRICT",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary",
+      "high",
+      "middle"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED",
+      "high": "UNSUPPORTED",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 52,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "AK",
+    "district_id": "0200510",
+    "name": "Matanuska-Susitna_Borough_Scho",
+    "in_manifest": true,
+    "gt_bands": [
+      "high"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "high": "UNSUPPORTED"
+    },
+    "n_pairs": 50,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "MS",
+    "district_id": "2801320",
+    "name": "DESOTO_CO_SCHOOL_DIST",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary",
+      "high",
+      "middle"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED",
+      "high": "UNSUPPORTED",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 48,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "WV",
+    "district_id": "5400180",
+    "name": "CABELL_COUNTY_SCHOOLS",
+    "in_manifest": true,
+    "gt_bands": [
+      "middle"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 48,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "ID",
+    "district_id": "1600930",
+    "name": "BONNEVILLE_JOINT_DISTRICT",
+    "in_manifest": true,
+    "gt_bands": [
+      "high"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "high": "UNSUPPORTED"
+    },
+    "n_pairs": 46,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "AL",
+    "district_id": "0102370",
+    "name": "Mobile_County",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED"
+    },
+    "n_pairs": 33,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "IA",
+    "district_id": "1906540",
+    "name": "Cedar_Rapids_Comm_School_Distr",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary",
+      "middle"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 24,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "DE",
+    "district_id": "1000200",
+    "name": "Christina_School_District",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED"
+    },
+    "n_pairs": 18,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "MA",
+    "district_id": "2513230",
+    "name": "Worcester",
+    "in_manifest": true,
+    "gt_bands": [
+      "middle"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 9,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "NE",
+    "district_id": "3172840",
+    "name": "LINCOLN_PUBLIC_SCHOOLS",
+    "in_manifest": true,
+    "gt_bands": [
+      "high"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "high": "UNSUPPORTED"
+    },
+    "n_pairs": 9,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "ME",
+    "district_id": "2307320",
+    "name": "Lewiston_Public_Schools",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary",
+      "high",
+      "middle"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED",
+      "high": "UNSUPPORTED",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 7,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "ME",
+    "district_id": "2302820",
+    "name": "Bangor_School_Department",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary",
+      "high",
+      "middle"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED",
+      "high": "UNSUPPORTED",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 5,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "DE",
+    "district_id": "1001300",
+    "name": "Red_Clay_Consolidated_School_D",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED"
+    },
+    "n_pairs": 4,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "VT",
+    "district_id": "5000396",
+    "name": "Champlain_Valley_Unified_Union",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED"
+    },
+    "n_pairs": 4,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "AR",
+    "district_id": "0509000",
+    "name": "Little Rock",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary",
+      "high",
+      "middle"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED",
+      "high": "UNSUPPORTED",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 3,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "MA",
+    "district_id": "2507110",
+    "name": "Lynn",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary",
+      "high",
+      "middle"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED",
+      "high": "UNSUPPORTED",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 3,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "CA",
+    "district_id": "0622710",
+    "name": "Los_Angeles_Unified",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary",
+      "high",
+      "middle"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED",
+      "high": "UNSUPPORTED",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 2,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "VT",
+    "district_id": "5000395",
+    "name": "Essex_Westford_Educational_Com",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED"
+    },
+    "n_pairs": 2,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "VT",
+    "district_id": "5002820",
+    "name": "Burlington_School_District",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED"
+    },
+    "n_pairs": 2,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "AL",
+    "district_id": "0102430",
+    "name": "Montgomery_County",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary",
+      "high",
+      "middle"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED",
+      "high": "UNSUPPORTED",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 0,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "CT",
+    "district_id": "0902790",
+    "name": "New_Haven_School_District",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary",
+      "high",
+      "middle"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED",
+      "high": "UNSUPPORTED",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 0,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "DE",
+    "district_id": "1000080",
+    "name": "Appoquinimink_School_District",
+    "in_manifest": true,
+    "gt_bands": [
+      "high"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "high": "UNSUPPORTED"
+    },
+    "n_pairs": 0,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "FL",
+    "district_id": "1200180",
+    "name": "BROWARD",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary",
+      "high",
+      "middle"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED",
+      "high": "UNSUPPORTED",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 0,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "FL",
+    "district_id": "1201440",
+    "name": "ORANGE",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary",
+      "high",
+      "middle"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED",
+      "high": "UNSUPPORTED",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 0,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "NV",
+    "district_id": "3200390",
+    "name": "Carson_City",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary",
+      "high",
+      "middle"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED",
+      "high": "UNSUPPORTED",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 0,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "OH",
+    "district_id": "3904378",
+    "name": "Cleveland_Municipal",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary",
+      "high",
+      "middle"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED",
+      "high": "UNSUPPORTED",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 0,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "WV",
+    "district_id": "5400060",
+    "name": "BERKELEY_COUNTY_SCHOOLS",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary",
+      "high",
+      "middle"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED",
+      "high": "UNSUPPORTED",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 0,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "WY",
+    "district_id": "5605302",
+    "name": "Sweetwater_County_School_Distr",
+    "in_manifest": true,
+    "gt_bands": [
+      "elementary",
+      "high",
+      "middle"
+    ],
+    "bands_reconstructable": [],
+    "gt_support": {
+      "elementary": "UNSUPPORTED",
+      "high": "UNSUPPORTED",
+      "middle": "UNSUPPORTED"
+    },
+    "n_pairs": 0,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "CA",
+    "district_id": "0614550",
+    "name": "Fresno_Unified",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 132,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "IA",
+    "district_id": "1914700",
+    "name": "Iowa_City_Comm_School_District",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 79,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "CA",
+    "district_id": "0634320",
+    "name": "San_Diego_Unified",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 62,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "FL",
+    "district_id": "1201530",
+    "name": "Pasco",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 52,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "CO",
+    "district_id": "0804800",
+    "name": "Jefferson_County_School_Distri",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 50,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "AZ",
+    "district_id": "0401870",
+    "name": "Chandler_Unified_District_80_4",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 40,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "SD",
+    "district_id": "4659820",
+    "name": "Rapid_City_Area_School_Distric",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 39,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "ND",
+    "district_id": "3806780",
+    "name": "FARGO_1",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 10,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "DC",
+    "district_id": "1100008",
+    "name": "Friendship_PCS",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 8,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "AR",
+    "district_id": "0503060",
+    "name": "BENTONVILLE_SCHOOL_DISTRICT",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 4,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "CO",
+    "district_id": "0803450",
+    "name": "Douglas_County",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 3,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "FL",
+    "district_id": "1200390",
+    "name": "Pasco_County",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 2,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "AK",
+    "district_id": "0200180",
+    "name": "Anchorage_School_District",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 0,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "CA",
+    "district_id": "0634410",
+    "name": "San_Francisco_Unified",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 0,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "CO",
+    "district_id": "0803360",
+    "name": "School_District_No_1_in_the_co",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 0,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "DC",
+    "district_id": "1100030",
+    "name": "District_of_Columbia_Public_Sc",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 0,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "GA",
+    "district_id": "1302280",
+    "name": "Fulton_County",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 0,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "ID",
+    "district_id": "1602100",
+    "name": "JOINT_SCHOOL_DISTRICT_NO_2",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 0,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "NE",
+    "district_id": "3173740",
+    "name": "MILLARD_PUBLIC_SCHOOLS",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 0,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "TN",
+    "district_id": "4700148",
+    "name": "Memphis-Shelby_County_Schools",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 0,
+    "bucket": "DISCARD"
+  },
+  {
+    "state": "TN",
+    "district_id": "4703180",
+    "name": "Davidson_County",
+    "in_manifest": false,
+    "gt_bands": [],
+    "bands_reconstructable": [],
+    "gt_support": {},
+    "n_pairs": 0,
+    "bucket": "DISCARD"
+  }
+]
