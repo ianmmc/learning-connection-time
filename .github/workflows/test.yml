@@ -6,24 +6,13 @@ on:
   pull_request:
     branches: [main]
 
+# Runs the DB-free test suite only. Integration tests (marked `integration`) require a Postgres
+# DB built from migrations and are run locally, not in CI. The previous CI built the DB from the
+# obsolete schema.sql (see docs/PROJECT_HISTORY.md Part 5 — stale) and failed; the non-integration
+# suite needs no DB at all (480 passed / 0 failed with no database, 2026-06-22).
 jobs:
   test:
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: lct_user
-          POSTGRES_PASSWORD: lct_password
-          POSTGRES_DB: learning_connection_time
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
       - uses: actions/checkout@v4
@@ -39,16 +28,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Set up database schema
+      - name: Run DB-free tests
         env:
-          DATABASE_URL: postgresql://lct_user:lct_password@localhost:5432/learning_connection_time
-        run: |
-          psql $DATABASE_URL -f infrastructure/database/schema.sql
-
-      - name: Run tests
-        env:
-          DATABASE_URL: postgresql://lct_user:lct_password@localhost:5432/learning_connection_time
           PYTHONPATH: ${{ github.workspace }}
         run: |
-          # Skip integration tests that require full database with migrations
+          # Integration tests (require a migrations-built Postgres) are excluded; run locally.
           pytest tests/ -v --tb=short -m "not integration"
