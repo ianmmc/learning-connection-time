@@ -197,7 +197,7 @@ learning-connection-time/
 ├── docs/                  # Documentation
 │   ├── ACQUISITION_PIPELINE.md            # Search-led discovery + council extraction ⭐
 │   ├── METHODOLOGY.md                     # LCT calculation details
-│   ├── PROJECT_SYNTHESIS.md               # Architecture map & known issues
+│   ├── PROJECT_HISTORY.md                 # Decisions, lessons, system map & latent issues
 │   ├── state-integrations/               # Per-state data integration plans
 │   └── archive/          # Historical documentation
 │

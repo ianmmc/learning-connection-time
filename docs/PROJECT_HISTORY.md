@@ -131,6 +131,32 @@ Run against the real 14,428-district dataset; recommends flagging via `level_lct
 
 ---
 
+## Part 5 — System map & known latent issues (salvaged from PROJECT_SYNTHESIS, archived 2026-06-22)
+
+`docs/PROJECT_SYNTHESIS.md` was a point-in-time reorientation doc (2026-06-05 resume). Its pipeline description (Crawlee+Ollama) is now retired and its data-state/flags were mostly resolved; it was archived. These two pieces are the durable salvage.
+
+### The 4-layer system map (orientation)
+```
+LAYER 4  ACQUISITION  — search-led discovery → tiered capture → cheap-cloud council → aggregate → DB
+            (the active frontier; code in infrastructure/acquisition/; see ACQUISITION_PIPELINE.md)
+LAYER 3  DATA BACKBONE — PostgreSQL (Docker) + SQLAlchemy models + migrations (ledger: migrate.py)
+            districts · bell_schedules · state_requirements · staff_counts(_effective) ·
+            enrollment_by_grade · sped_estimates · *_crosswalk · lct_calculations
+LAYER 2  LCT ENGINE   — calculate_lct_variants.py (DB-first; 10 scopes; safeguards; minutes-priority
+            chain: band bell → any-band bell → statutory → 360 default)
+LAYER 1  SOURCE DATA  — NCES CCD (2023-24 primary; 2024-25 school file added) · CRDC · IDEA 618 ·
+            9 SEA integrations (FL TX CA NY IL MI PA VA MA)
+```
+Layers 1–3 are stable; Layer 4 is where active work lives. **Authoritative DB schema = `infrastructure/database/models.py`** (NOT `schema.sql` or the data dictionary).
+
+### Known latent issues (still open as of 2026-06-22 — verified present, not yet fixed)
+- **Obsolete `infrastructure/database/schema.sql`** — its `data_tier` comment diverges from the engine's actual tiering; `models.py` is authoritative. (SYNTHESIS flag #20)
+- **Stale data dictionary** `docs/data-dictionaries/database_schema_latest.md` (gen. 2025-12-28) — predates migrations 003–015; missing tables/columns. Use `models.py`. (flag #19)
+- **Two LCT code paths coexist** — legacy `queries.calculate_and_store_lct` (single-scope, per-grade rows) vs the modern `calculate_lct_variants.py` (scope rows, `grade_level=NULL`). Confirm only the modern engine runs in production; the legacy path writes an incompatible row shape under the current unique constraint. (flag #21)
+- **Broken/inert old scraper tests** — `tests/test_scraper_resilience.py` / `test_scraper_security.py` import a deleted module and `pytest.skip` silently (false confidence). Candidates for deletion. (flag #25)
+
+---
+
 ## Recovering the originals
 
 All source files were removed from the working tree but remain in git history. To browse what existed:

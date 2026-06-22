@@ -23,21 +23,32 @@ Part of "Reducing the Ratio" educational equity initiative. Currently implementi
 
 ---
 
-## Current Status (2026-06-13)
+## Current Status (2026-06-22)
 
-Phase 1.5 pipeline **validated end-to-end** (extraction *and* discovery). Full learnings: `docs/technical-notes/EXTRACTION_AND_DISCOVERY_LEARNINGS_2026-06.md`; leaderboards: `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.
+Building the **per-school acquisition pipeline** stage-by-stage with **human-in-the-loop checkpoints**. The GT/benchmark exploration concluded and was archived; the validated design is now the active build. Canonical pipeline doc: **`docs/ACQUISITION_PIPELINE.md`** (9 stages + failure-modes→checkpoints table + reader-routing spec). Live code: **`infrastructure/acquisition/`** (promoted out of the retired `scripts/benchmark/`). Council research: `docs/technical-notes/LLM_COUNCIL_RESEARCH_2026-06.md`. Leaderboard/costs: `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.
 
-**Extraction — a capable cloud model ~doubles the best local; cheap wins.** Full-41 leader **Gemini 2.5 Flash 68.9%** (cheapest *and* best); Mistral Large/Qwen3.7-Max 67.6%; DeepSeek V3.2 66.2%; **Mistral Small 24B 63.5% (~$0.05/1M)**; **Granite 4.1 8B 51.4%** (tiny, self-hostable). Bigger ≠ better (DeepSeek V4-Pro, GPT-5.5, Opus trail cheaper models). The old "~35–53% / no silver bullet" framing was an artifact of testing only Haiku on 5 districts.
+**Metric = GROSS bell-to-bell minutes (end − start), NOT net.** No lunch/passing/recess deduction, no *assumed* deductions. Existing GT is already gross; gross needs only two reliably-published numbers (↑accuracy). Net is a deferred enhancement. Labeled `gross_bell_to_bell`. Plausibility gate 240–510 min. (REQ-055; supersedes net in REQ-042/046.)
 
-**The ceiling is INPUT quality, not the model.** 20% of districts are solved by zero models, but on *good* inputs (difficulty > 0.70) the top models hit **~95–100%**. Hard inputs failed on **granularity/noise (giant multi-school dumps, single-band GT), NOT OCR** — 22/23 already had the schedule as text. **#1 lever: per-school targeting** (small, focused, current, single-schedule artifacts).
+**INVARIANT — extractors read TIMES; deterministic code computes MINUTES + the MODE.** Council models return only per-school `{start_time,end_time,grade_level,school_name}` facts; Python does `gross=end−start` and the per-band exact-mode. Never ask a model to compute minutes or pick a "typical" schedule. (REQ-054.)
 
-**Discovery — search-led works.** Domain-scoped search (Perplexity `search_domain_filter` / OpenRouter `gpt-4o-mini-search` `site:` / Claude WebSearch `allowed_domains`) eliminates the wrong-district problem and reaches school subdomains. **Blind Crawlee crawling fails**; Crawlee is re-cast as a **terrain-mapper / one-hop off-site fetcher**. **Google grounding dropped** (no site-restriction). New bottleneck = capture fidelity on JS pages → **tiered capture** (text-layer preferred; screenshot+OCR/vision fallback). Relevance gate = cheap `pdftotext` sniff; pdfplumber/vision is the extraction stage.
+**Extraction = COUNCIL (correctness); Discovery = WAVES (recall).** Council: **consensus is on the per-school (start,end) pair, cross-family, ±15 min** — same-family agreement is NOT consensus (REQ-056). Candidate set = 6 non-reasoning models (Gemini 2.5 Flash, Mistral Large 2512, DeepSeek V3.2, Mistral Small 24B, Gemini 2.5 Flash-Lite, Qwen3-235B-2507); Grok 4.3 & Qwen3.7-Max **removed** (reasoning-token cost 4–70×). **Open: exact council composition** — Path-1 cheap-trio vs Path-2 accuracy-pair vs Path-1-minus-Mistral, decided by measured escalation rate. Discovery waves: **Claude WebSearch (Haiku subagent) → OpenRouter `gpt-4o-mini-search` → flag manual; Perplexity dropped.** Domain-scoped; ~90% page-find on full-41.
 
-**Direction / architecture:** per-school targeting → tiered capture → cheap-cloud **council** consensus (Gemini 2.5 Flash + a cross-family model: DeepSeek V3.2 / Mistral; cheap members Flash-Lite, Mistral Medium 3.1) → fail-loud **statutory fallback**. Multi-model conduits `pplx:` / `openrouter:` wired in `extractors.py`. Requirements: **REQ-043…053**. Keys in gitignored `config/secrets.local.json` + `.env`.
+**Reader-routing (format-route the reader, outcome-based):** Tier 1 plain text → Tier 2 `page.pdf()`+`pdftotext -layout` (multi-column) → Tier 2.5 OCR a clean image → Tier 3 **vision** (Gemini Flash / Mistral Large read JS/image/scan pages all text paths miss — proven). Trigger is "did the cheap reader recover usable content," not format. (Tier-1→2 structure-loss trigger is the one OPEN gate.)
 
-**Notes:** Local Ollama models were **deleted** (re-pullable); paid-cloud extraction is *cheap* (~$0.05–0.30/1M) and far more accurate, so the local-first premise no longer binds. Headless Ubuntu AI server (old 2017 MBP) planned for self-hosted work — **Granite 4.1 8B** is the local-model candidate; briefing at `/Users/ianmmc/Development/ai-server-setup/SETUP_BRIEFING.md` (separate project).
+**Ground truth re-established by hand (gross, per-school).** `data/benchmark/gt_curation_*/gt_proposals.json` — **940/943 schools human-verified** (per-school start/end). Pending: fold into a new gross GT manifest. Process: council *proposes*, human *verifies* (REQ-059). Failure-mode taxonomy (8 modes → checkpoints) in `ACQUISITION_PIPELINE.md`.
+
+**Human-in-the-loop checkpoints (current mode) = 3:** **CP-A Queue** (right schools/bands targeted), **CP-B Input** (legible capture — the critical gate), **CP-C Output→Write** (per-school times correct + honestly labeled; approval gates the DB write). Loosen later once confident.
+
+**Notes:** Local Ollama deleted; paid-cloud extraction is cheap (~$0.05–0.30/1M). Granite 4.1 8B = self-host candidate (headless Ubuntu server, separate project). Keys in gitignored `config/secrets.local.json` + `.env`. Requirements: **REQ-043…060** (042/046/048 superseded). Restore point for the archived GT/benchmark exercise: git tag `gt-exercise-complete`.
 
 > **SEA central-data harvest is a dead end for daily minutes** (verified) — states publish only statutory minimums / day-counts, not actual daily minutes. Web discovery + extraction is the primary acquisition path. See `docs/INSTRUCTIONAL_TIME_HARVEST.md`.
+
+### Next session (where we paused)
+1. **Fold the 940 verified schools → new gross GT manifest**, repoint live code from `data/benchmark/ground_truth_manifest.json` to it.
+2. **Council composition decision** — the Mistral-Small-pivotal-~8% question + Path-1/Path-2/Path-1-minus-Mistral A/B (by escalation rate).
+3. **Per-school extract→aggregate fix** — `gt_propose`/pipeline must extract **per file, not concat+truncate** (the Orange/Baldwin undercount bug); then isolate the per-school accuracy lift vs the new GT.
+4. **Build the 3 checkpoints** — open sub-questions: is CP-A a full review or just anomaly-flagging, and build checkpoint *tooling* now vs. drive stages manually for the first batch or two. First real run = stratified batch of 12 (`infrastructure/acquisition/discovery/training_batch.py`), stages 1–5 first (no extraction) then 6–9. NOTE: the real Wave-1 (Claude WebSearch subagent) has never actually executed — batch 1 is also its first smoke test.
+5. The existing `.claude/skills/per-school-acquire*` are **premature** (bundle all 9 stages) — kept for reference, but we're walking stages individually and they'll evolve. Don't treat them as the runbook.
 
 ---
 
@@ -104,11 +115,11 @@ python3 infrastructure/scripts/verify_enrichment.py --quick
 
 | Task | File |
 |------|------|
-| **Extraction benchmark findings** | `docs/EXTRACTION_BENCHMARK_FINDINGS.md` |
-| **Benchmark harness** | `infrastructure/acquisition/` |
-| Decisions & lessons (history) | `docs/PROJECT_HISTORY.md` |
-| Architecture map & flagged issues | `docs/PROJECT_SYNTHESIS.md` |
-| Bell schedule acquisition | `docs/ACQUISITION_PIPELINE.md` |
+| **Acquisition pipeline (canonical)** | `docs/ACQUISITION_PIPELINE.md` |
+| **Live pipeline code** | `infrastructure/acquisition/` (discovery/, council, aggregate, extractors) |
+| Extraction leaderboard + costs | `docs/EXTRACTION_BENCHMARK_FINDINGS.md` |
+| Council design research | `docs/technical-notes/LLM_COUNCIL_RESEARCH_2026-06.md` |
+| Decisions, lessons, system map & latent issues | `docs/PROJECT_HISTORY.md` (Part 5 = map + open flags) |
 | Data methodology | `docs/METHODOLOGY.md` |
 | Database setup | `docs/DATABASE_SETUP.md` |
 | SEA integration guide | `docs/SEA_INTEGRATION_GUIDE.md` |

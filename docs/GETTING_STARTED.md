@@ -169,7 +169,9 @@ git commit -m "feat: Add new bell schedule parser"
 
 ---
 
-## Current Status (2026-06-12)
+## Current Status (2026-06-12 — see root `CLAUDE.md` for the live 2026-06-22 picture)
+
+> **Freshness:** snapshot below is 2026-06-12. Current state = building the per-school acquisition pipeline (gross bell-to-bell metric, council extraction, 3 human checkpoints; code at `infrastructure/acquisition/`); see root `CLAUDE.md` *Current Status* + `docs/ACQUISITION_PIPELINE.md`.
 
 - **Database:** 17,842 U.S. school districts; 9/9 SEA integrations (FL, TX, CA, NY, IL, MI, PA, VA, MA)
 - **Phase:** Bell-schedule **extraction-quality evaluation — benchmarked.** See `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.

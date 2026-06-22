@@ -67,7 +67,9 @@ LCT = 18 minutes per student per day
 - Temporal trends (year-over-year changes)
 - Relationship to outcomes (with appropriate caveats)
 
-## Current Status (2026-06-13)
+## Current Status (2026-06-13 — see root `CLAUDE.md` for the live 2026-06-22 picture)
+
+> **Freshness:** This block is the 2026-06-13 snapshot. The current state (per-school pipeline built, **GROSS bell-to-bell** metric, 6-model council with composition TBD, reader-routing, 3 human checkpoints, code at `infrastructure/acquisition/`, GT 940/943 verified) lives in root `CLAUDE.md` → *Current Status* + *Next session*. Below is retained as the design-validation milestone.
 
 **Phase**: Pipeline design validated end-to-end — extraction *and* discovery proven; building toward a cheap-cloud "council" + per-school targeting
 **Extraction finding**: a capable cloud model ~doubles the best local. Full-41 leader **Gemini 2.5 Flash 68.9%** (cheapest *and* best); on *good* inputs (difficulty > 0.70) top models hit **~95–100%**. **Input quality, not the model, is the ceiling** (20% of districts solved by zero models; hard inputs failed on granularity/noise, not OCR). See `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.
@@ -78,7 +80,7 @@ LCT = 18 minutes per student per day
 **Acquisition Stack**: search APIs (Perplexity/OpenRouter/Claude WebSearch) for discovery + Playwright capture; Crawlee re-cast as terrain-mapper/one-hop fetcher; cheap-cloud council for extraction (local Ollama models deleted post-benchmark; Granite 4.1 8B is the self-host candidate)
 **Data Sources**: Federal (NCES, CRDC, IDEA 618) + Bell schedules + State agencies
 
-> **Note:** Strategy evolved twice — the Jan-2026 local-first Crawlee+Ollama pivot (to avoid per-token cost) was itself superseded on 2026-06-13 once benchmarking showed paid-cloud extraction is *cheap* (~$0.05–0.30/1M) and far more accurate. Canonical learnings: `docs/technical-notes/EXTRACTION_AND_DISCOVERY_LEARNINGS_2026-06.md`. Architecture map: `docs/PROJECT_SYNTHESIS.md`.
+> **Note:** Strategy evolved twice — the Jan-2026 local-first Crawlee+Ollama pivot (to avoid per-token cost) was itself superseded on 2026-06-13 once benchmarking showed paid-cloud extraction is *cheap* (~$0.05–0.30/1M) and far more accurate. Canonical learnings: `docs/technical-notes/EXTRACTION_AND_DISCOVERY_LEARNINGS_2026-06.md`. Architecture map: `docs/PROJECT_HISTORY.md` (Part 5; SYNTHESIS archived).
 
 ### What We Have ✅
 - Comprehensive project structure

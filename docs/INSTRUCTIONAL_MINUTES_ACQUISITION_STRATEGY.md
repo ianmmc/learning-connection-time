@@ -67,7 +67,7 @@ This keeps all three constraints intact in spirit: 20K covered, disagreements th
 
 ### Phase 0 — The bake-off (decide the ceiling before building anything) — ~$20–50, days
 The fair test (good models on *format-routed* inputs vs. clean multi-band ground truth) **has never been run**. Do it first; it decides everything downstream.
-- **Reuse the existing provider-agnostic harness** — `infrastructure/scripts/benchmark/run_manifest_benchmark.py` already supports `anthropic:`, `gemini:`, `openai:`, `ollama:` and text/tables/vision modes. Wire real API keys.
+- **Reuse the existing provider-agnostic harness** — `infrastructure/scripts/benchmark/run_manifest_benchmark.py` *(note 2026-06-22: that benchmark harness has since been archived; the live extraction code is at `infrastructure/acquisition/`)* already supports `anthropic:`, `gemini:`, `openai:`, `ollama:` and text/tables/vision modes. Wire real API keys.
 - Run a matrix on the 41-district manifest: {Gemini 2.5 Flash-Lite, Gemini Flash/Pro, GPT-4o-mini, Claude Haiku/Sonnet} × {table-aware (Docling/Marker), vision, plain-text}. Add **AWS Textract/Azure DI reading → cheap-LLM reasoning** as a reading variant (targets transposed-table failures).
 - **First, fix the ground truth:** the benchmark explicitly blames single-band/corrupt GT. Hand-clean + expand GT to multi-band on ~40 districts before trusting any score.
 - **Exit criterion:** identify the cheapest model+reading combo whose accuracy makes the human queue tractable. If nothing clears it, the answer is "enrichment is QC-bound" and we plan statutory-fallback-heavy.

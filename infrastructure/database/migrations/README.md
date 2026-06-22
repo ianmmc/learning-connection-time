@@ -4,7 +4,7 @@ Numbered SQL migrations (`NNN_*.sql`) plus a **migration ledger** (`schema_migra
 table) that records which have been applied. The ledger exists because migration
 `014_add_staff_scope_to_lct.sql` once landed **half-applied** (some `ALTER`s ran,
 others didn't) with no way to detect it — which silently broke LCT re-runs until
-2026-06-06. See `docs/PROJECT_HISTORY.md` and `docs/PROJECT_SYNTHESIS.md`.
+2026-06-06. See `docs/PROJECT_HISTORY.md` (Part 5).
 
 ## Runner: `migrate.py`
 
