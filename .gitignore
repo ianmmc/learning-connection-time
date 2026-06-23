@@ -29,6 +29,11 @@ data/enriched/
 # Exported data
 data/exports/
 
+# Acquisition pipeline working state (regenerated batches + cross-stage status registry) --
+# .example. files ARE tracked (schema reference/documentation, see docs/ACQUISITION_PIPELINE.md)
+data/acquisition/queue/batch_*.json
+data/acquisition/status/district_status.json
+
 # Data file formats (catch-all for any that slip through)
 *.parquet
 *.feather

@@ -1,6 +1,6 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-06-21T00:00:00Z"
+last_updated: "2026-06-22T00:00:00Z"
 
 requirements:
   - id: REQ-001
@@ -1337,3 +1337,192 @@ requirements:
     notes: "Decided 2026-06-21 (user: tag-not-exclude, for future options). Charters are a small minority
       within a district's band (e.g. 5 of Fairbanks' 18 elementaries) so they don't move the mode, but
       tagging keeps the option open. school_sampling.charter_lookup; applied in gt_propose.py."
+
+  - id: REQ-061
+    description: "Exclude CTC / shared-service entities from LCT calculation and the acquisition queue (METHODOLOGY.md Rule 6)"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Districts matching career/technical/vocational/jted/cted name patterns OR NCES LEA_TYPE_TEXT in {Specialized public school district, Service agency, State operated agency} are flagged is_career_technical_center=True and is_shared_service_entity=True
+      - Charter LEAs (LEA_TYPE_TEXT containing "charter") are never flagged, even when their name matches the keyword pattern - tagged per REQ-060 instead, never excluded
+      - The exclusion is enforced in both calculate_lct_variants.py (LCT calculation, via is_shared_service_entity) and queue_batch.py (acquisition queue eligibility)
+      - The backfill is idempotent - re-running after expanding the criteria only adds flags, never reverts one
+    tests:
+      - tests/test_acquisition_stages.py::TestCTCExclusion::test_known_ctc_flagged
+      - tests/test_acquisition_stages.py::TestCTCExclusion::test_charter_with_career_branding_not_flagged
+    created: "2026-06-22T00:00:00Z"
+    updated: "2026-06-22T00:00:00Z"
+    notes: "The schema columns existed since the rule was designed (docs/technical-notes/PA_CTC_DATA_DISCREPANCY.md)
+      but the backfill was never actually run until 2026-06-22 - the exclusion was a silent no-op in every prior
+      LCT calculation. Initial backfill (152 districts, name-pattern only) missed Pima County JTED ('JTED' doesn't
+      spell 'technical') when it surfaced in a real acquisition batch; expanded to the LEA_TYPE_TEXT blanket rule
+      (600 districts). Known accepted trade-off: the blanket LEA_TYPE_TEXT rule also catches some legitimate
+      full-time special-purpose state schools (deaf/blind institutes, fine-arts academies) that aren't really
+      CTCs - deferred, see METHODOLOGY.md Rule 6. infrastructure/database/migrations/apply_ctc_classification.py."
+
+  - id: REQ-062
+    description: "Pre-queue district-level exclusion filters for Stage 1 (Queue) - operating status, CTC, grade-span integrity, already-attempted"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - A district is excluded from the eligible pool if its LEA-level SY_STATUS_TEXT != "Open"
+      - A district is excluded if districts.is_shared_service_entity is True (REQ-061)
+      - A district is excluded AND logged if its LEA-level claimed grade span includes a band with zero school-level coverage (Rule 7, grade-span integrity)
+      - A district is excluded if it already appears in the district_status.json registry, regardless of prior outcome (REQ-067)
+      - All four filters are live/recomputed every run, never a persisted exclusion list - a future policy change lets a district back in for free
+    tests:
+      - tests/test_acquisition_stages.py::TestPreQueueExclusion::test_grade_span_gap_excludes_phantom_lea
+      - tests/test_acquisition_stages.py::TestPreQueueExclusion::test_healthy_district_is_eligible
+    created: "2026-06-22T00:00:00Z"
+    updated: "2026-06-22T00:00:00Z"
+    notes: "infrastructure/acquisition/discovery/queue_batch.py::eligible_pool. Rule 7 (grade-span integrity)
+      excluded ~985 districts on the first full run against the 2024-25 NCES corpus - e.g. Alabama Youth Services
+      claims KG-12 at LEA level but has zero schools listed anywhere in ccd_sch_029, not even closed ones.
+      See docs/ACQUISITION_PIPELINE.md Stage 1, docs/METHODOLOGY.md Rule 7."
+
+  - id: REQ-063
+    description: "Enrollment-quartile stratified district sampling for acquisition batch composition"
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - The eligible pool is split into 4 equal-COUNT enrollment quartiles, not equal-value-range (NCES enrollment is heavily right-skewed)
+      - A batch targets 3 districts per quartile (12 total by default)
+      - Each individual pick prefers a state not yet used in the batch, seeded-shuffled otherwise
+      - If a quartile runs short, the batch tops up from the remaining eligible pool until the target size is reached or the pool is exhausted
+      - The same batch_id always produces the same pick from the same pool (reproducible, logged)
+    tests:
+      - tests/test_acquisition_stages.py::TestStratifiedSampling::test_spans_enrollment_range_no_duplicates
+      - tests/test_acquisition_stages.py::TestStratifiedSampling::test_reproducible_with_same_seed
+      - tests/test_acquisition_stages.py::TestStratifiedSampling::test_tops_up_when_pool_smaller_than_n
+    created: "2026-06-22T00:00:00Z"
+    updated: "2026-06-22T00:00:00Z"
+    notes: "infrastructure/acquisition/discovery/queue_batch.py::stratified_pick. Supersedes training_batch.py's
+      school-count-tier stratification (archived to data/archive/training_batch_py-superseded-20260622/) -
+      enrollment + state chosen over staff-count/school-count as separate axes, which were judged too collinear
+      with enrollment to buy independent coverage."
+
+  - id: REQ-064
+    description: "Per-band school selection with cross-band overlap minimization"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Up to 12 schools per band are targeted per district; a band with <=12 candidates gets a full census
+      - Bands are processed most-constrained-first (ascending by candidate-pool size) within a district
+      - Each band samples from schools not yet claimed by an earlier-processed band before considering reuse
+      - A school already claimed by an earlier-processed band is only reused if the unclaimed pool can't fill the cap
+      - Selection is a seeded random sample, reproducible from (batch_id, district_id, band)
+    tests:
+      - tests/test_acquisition_stages.py::TestPerBandSchoolSelection::test_most_constrained_first_minimizes_overlap
+      - tests/test_acquisition_stages.py::TestPerBandSchoolSelection::test_seeded_sample_is_reproducible
+    created: "2026-06-22T00:00:00Z"
+    updated: "2026-06-22T00:00:00Z"
+    notes: "infrastructure/acquisition/discovery/queue_batch.py::select_schools. Validated against real Fairbanks
+      AK (0200600) data: independent per-band sampling produced 3 overlapping schools between elementary and
+      middle; most-constrained-first reduced this to 1 unavoidable overlap (forced because the high band's full
+      9-school census left middle only 11 unclaimed against its cap of 12)."
+
+  - id: REQ-065
+    description: "School-level eligibility filtering for bell-schedule sampling - regular schools only, no standalone preschools"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Only NCES SCH_TYPE_TEXT="Regular School" is eligible for per-band candidate pools
+      - Alternative School, Career and Technical School, and Special Education School are excluded
+      - Standalone preschool/early-childhood schools (GSHI in ("PK","KG"), no grade-1+) are excluded
+      - A normal K-5 school that also offers PK (GSLO=PK, GSHI=05) is NOT excluded by the preschool rule
+      - Exclusion is based on NCES structural fields (SCH_TYPE_TEXT, GSHI), never school-name pattern matching
+    tests:
+      - tests/test_acquisition_stages.py::TestSchoolEligibilityFiltering::test_alternative_school_excluded
+      - tests/test_acquisition_stages.py::TestSchoolEligibilityFiltering::test_career_technical_school_excluded
+      - tests/test_acquisition_stages.py::TestSchoolEligibilityFiltering::test_standalone_preschool_excluded
+      - tests/test_acquisition_stages.py::TestEarlyChildhoodExclusion::test_pk_kg_only_center_excluded
+      - tests/test_acquisition_stages.py::TestEarlyChildhoodExclusion::test_normal_k5_school_not_excluded
+    created: "2026-06-22T00:00:00Z"
+    updated: "2026-06-22T00:00:00Z"
+    notes: "infrastructure/acquisition/discovery/school_sampling.py::school_index. Found via CP-A human review of
+      a real batch (batch_00001): Olympic Peninsula HomeConnection (Alternative School, a homeschool-umbrella
+      program), Lake Preschool (standalone PK), and Jackson County Vocational Center (Career and Technical
+      School, a school-level CTC invisible to the LEA-level REQ-061 exclusion since the surrounding LEA isn't a
+      CTC) all surfaced as schools that should never have been selected. Special Education School exclusion is
+      an accepted, deferred gap - the project's SPED staffing work already flags this category for dedicated
+      attention later, not a clean fit for this filter's rationale. Extended same day after adding gslo/gshi to
+      the JSON for human inspection surfaced Clinton County Early Childhood Center (GSLO=PK, GSHI=KG) - the
+      GSHI=='PK'-only rule missed it; extended to GSHI in ('PK','KG')."
+
+  - id: REQ-066
+    description: "LEVEL-primary band classification with recursive grade-range grouping for whatever LEVEL leaves unresolved"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - A school whose NCES LEVEL is a clean Elementary/Middle/High is assigned to exactly that one band, regardless of grade-range overlap with an adjacent band
+      - Grade 13 counts as part of the high band (a real, sanctioned NCES code some states use for a continuation/extra-year high school program) rather than vanishing from band classification entirely
+      - For a district whose schools' distinct grade spans form a clean ascending, non-overlapping, contiguous partition, recursive_band_groups() resolves elementary/middle/high by structural position: consecutive leading segments with top grade <=6 collapse into elementary (handles 1-3+ elementary sub-segments, e.g. lower/upper elementary splits); whatever remains is middle alone (top <=8), middle+high merged (top >=9, when there's no separate middle identity at all), or middle alone followed by one-or-more high segments (handles lower/upper-high splits, e.g. a 9th-grade campus + main high school)
+      - An ambiguous-LEVEL school (Other/Secondary/Not reported/Ungraded/blank) may join a band the recursive grouping assigns it to even if that band already has LEVEL-clean coverage from other schools (a 9th-grade campus must join an already-populated high band, not be dropped)
+      - A LEVEL-clean school may ONLY be added to an additional band via recursion if that band was a genuine gap (no LEVEL-clean coverage at all) - it must never be added to a second band that already has separate LEVEL-clean coverage, which would reintroduce the original dilution bug
+      - If a district's spans do NOT form a clean partition (genuinely different/overlapping spans on one side, e.g. multiple elementary buildings with different ranges, one subsuming another), fall back to the original any-overlap rescue, unvalidated for that shape
+      - Multiple schools sharing an IDENTICAL grade span (different buildings, same shape) collapse to one logical segment and are treated identically to a single-building district with the same shape
+    tests:
+      - tests/test_acquisition_stages.py::TestLevelPrimaryBandClassification::test_grade_13_counts_as_high
+      - tests/test_acquisition_stages.py::TestLevelPrimaryBandClassification::test_dilution_fixed_fayette_county
+      - tests/test_acquisition_stages.py::TestLevelPrimaryBandClassification::test_no_middle_level_school_rescues_via_grade_range
+      - tests/test_acquisition_stages.py::TestLevelPrimaryBandClassification::test_misnamed_elementary_with_middle_level_goes_to_middle_only
+      - tests/test_acquisition_stages.py::TestLevelPrimaryBandClassification::test_two_segment_partition_middle_high_merge
+      - tests/test_acquisition_stages.py::TestLevelPrimaryBandClassification::test_redundant_overlapping_spans_keep_any_overlap_fallback
+      - tests/test_acquisition_stages.py::TestLevelPrimaryBandClassification::test_identical_span_multi_building_partition_now_resolved
+      - tests/test_acquisition_stages.py::TestLevelPrimaryBandClassification::test_ambiguous_level_school_spanning_full_range_gets_all_bands
+      - tests/test_acquisition_stages.py::TestLevelPrimaryBandClassification::test_ambiguous_school_joins_already_populated_band
+      - tests/test_acquisition_stages.py::TestLevelPrimaryBandClassification::test_k8_feeder_district_has_no_high_band
+    created: "2026-06-22T00:00:00Z"
+    updated: "2026-06-22T00:00:00Z"
+    notes: "infrastructure/acquisition/discovery/school_sampling.py::primary_bands_for, bands_for,
+      recursive_band_groups, _clean_ascending_partition. Found via CP-A human review of batch_00001: pure
+      grade-range classification diluted Fayette County IN's real middle school (Connersville Middle, 1 school)
+      6-to-1 with 5 unrelated K-6 elementary schools that merely clipped the boundary grade. The grade-13 fix was
+      found while tracing why Jackson County MS's Vocational Center looked like the sole high-band candidate -
+      its three real comprehensive high schools (coded 09-13) were silently invisible to the old classifier;
+      222 open schools nationally use GSHI=13.
+
+      An initial fix (exactly-2-school 'largest overlap wins' tie-break) was scoped narrowly to avoid touching
+      Breathitt County KY/Chama Valley NM/Northern Tioga PA (3+ schools). That scoping turned out to be wrong:
+      profiling the full NCES corpus (17,265 districts) against a user-built reference table of recognized
+      grade-band shapes showed the real dividing line isn't school COUNT, it's whether a district's distinct
+      spans form a clean ascending partition at all. Northern Tioga's 3 elementaries share an IDENTICAL KG-06
+      span and its 2 secondaries share an IDENTICAL 07-12 span - collapsed to distinct spans, that's the exact
+      same 2-segment shape as Jasper Co. MO, and should get the same fix. Breathitt/Chama Valley are genuinely
+      different (redundant/overlapping, non-identical elementary spans, e.g. one span entirely subsuming
+      another) and correctly stay on the conservative fallback.
+
+      Replaced the overlap-counting tie-break entirely with recursive_band_groups() - a general, explicit
+      (no overlap-counting) rule validated against the full corpus: N=1 (6,079 districts) trivial; N=2 (~2,675)
+      threshold at grade 7 (lower segment's top grade >=7 means elem+middle merged, confirmed against every row
+      of the user's reference table); N=3 (~3,193) ordinal position; N=4-6 (~1,250) elementary and/or high
+      sub-splits via the same leading-accumulation rule, validated against real examples (Albertville City AL
+      elem x3 via clean LEVEL alone; Aledo ISD TX high x2, a 9th-grade campus + main campus). ~3,467 districts
+      with genuinely redundant/overlapping spans (not a clean partition) and ~1,250 with 4+ way-too-fragmented
+      shapes remain on the original any-overlap fallback, not yet further validated."
+
+  - id: REQ-067
+    description: "Cross-stage district status registry - track every district's furthest pipeline stage and outcome"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - One registry entry exists per district that has entered the pipeline (passed Stage 1's pre-queue filters), keyed by district_id
+      - The registry is updated at every stage (1-9) a district progresses through, recording furthest_stage, stage_name, outcome, and an appended history[] trail
+      - Pre-queue exclusions (CTC, not-operating, grade-span gap) are never recorded in this registry - they are re-derived live every run via REQ-062, not a frozen list
+      - A district already present in the registry is excluded from future queueing regardless of its recorded outcome (REQ-062) - failures are triaged separately, not silently retried
+    tests:
+      - tests/test_acquisition_stages.py::TestDistrictStatusRegistry::test_record_and_check_attempted
+      - tests/test_acquisition_stages.py::TestDistrictStatusRegistry::test_history_accumulates_across_stages
+    created: "2026-06-22T00:00:00Z"
+    updated: "2026-06-22T00:00:00Z"
+    notes: "infrastructure/acquisition/discovery/district_status.py. Replaces training_batch.py's
+      directory-presence heuristic (archived to data/archive/training_batch_py-superseded-20260622/), which
+      inferred attempt status from which directories happened to exist rather than recording it explicitly.
+      Schema reference: data/acquisition/status/district_status.example.json."

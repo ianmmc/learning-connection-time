@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "last_updated": "2026-06-22T21:50:00Z",
+  "note": "DRAFT — example/scratch file, not real data. One entry per district that has ENTERED the pipeline (made it past Stage 1's pre-queue exclusion filters), keyed by district_id for O(1) lookup at queue-build time. Pre-queue exclusions (CTC/shared-service, not-operating, grade-span gap) are deliberately NOT recorded here -- they're re-derived live from is_shared_service_entity / LEA_TYPE_TEXT / grade-span every time the queue builds, never a frozen list, so a future policy change naturally lets a district back in without any cleanup. furthest_stage/outcome is the CURRENT snapshot, updated at every stage 1-9 as a district progresses; history[] keeps the full trail so a human can see why a district landed where it did without cross-referencing batch files.",
+  "districts": {
+    "0200600": {
+      "name": "Fairbanks North Star Borough School District",
+      "state": "AK",
+      "furthest_stage": 3,
+      "stage_name": "capture",
+      "outcome": "captured",
+      "topology": "hub",
+      "batch_id": "batch_00001",
+      "history": [
+        { "stage": 1, "stage_name": "queue", "outcome": "queued", "at": "2026-06-22T18:00:00Z" },
+        { "stage": 2, "stage_name": "discover", "outcome": "found_hub", "at": "2026-06-22T18:05:00Z" },
+        { "stage": 3, "stage_name": "capture", "outcome": "captured", "at": "2026-06-22T18:12:00Z" }
+      ],
+      "notes": ""
+    },
+    "0512660": {
+      "name": "Springdale School District",
+      "state": "AR",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "not_found",
+      "topology": "none",
+      "batch_id": "batch_00001",
+      "history": [
+        { "stage": 1, "stage_name": "queue", "outcome": "queued", "at": "2026-06-22T18:00:00Z" },
+        { "stage": 2, "stage_name": "discover", "outcome": "not_found", "at": "2026-06-22T18:06:00Z" }
+      ],
+      "notes": "Wave 1 + Wave 2 both came up empty; known discovery miss from the full-41 benchmark too. Permanently parked per the attempted-regardless-of-outcome rule — do not re-queue without a deliberate retry decision."
+    }
+  }
+}

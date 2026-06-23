@@ -1,0 +1,68 @@
+{
+  "batch_id": "batch_00001",
+  "created": "2026-06-22T22:00:00Z",
+  "n": 12,
+  "stratification": {
+    "priority": ["enrollment", "state"],
+    "method": "enrollment quartiles over current eligible pool, 3 districts/quartile, seeded shuffle preferring unused state, top up from adjacent quartile if short"
+  },
+  "school_cap_per_band": 12,
+  "school_selection_when_over_cap": "process bands most-constrained-first (ascending by candidate-pool size) within each district; each band samples from candidates not yet claimed by an earlier-processed band first, only reusing an already-claimed (multi-band) school if the unclaimed pool can't fill the cap — minimizes cross-band overlap, accepts it only where the school roster genuinely forces it (K-8/K-12 districts). Band membership itself is LEVEL-primary (NCES LEVEL maps to exactly one band when it's a clean Elementary/Middle/High; grade-range overlap is only a per-band fallback when LEVEL leaves a band with zero candidates — see ACQUISITION_PIPELINE.md Stage 1). Seed = f'{batch_id}:{district_id}:{band}'. No approval field needed — CP-A review is out-of-band.",
+  "districts": [
+    {
+      "district_id": "0200600",
+      "name": "Fairbanks North Star Borough School District",
+      "state": "AK",
+      "domain": "k12northstar.org",
+      "enrollment_k12": 12877,
+      "lea_claimed_bands": ["elementary", "middle", "high"],
+      "band_processing_order": ["middle", "high", "elementary"],
+      "schools_by_band": {
+        "middle": {
+          "n_candidates": 5,
+          "n_unclaimed_at_selection": 5,
+          "n_selected": 5,
+          "schools": [
+            { "school_id": "020060000275", "name": "Ryan Middle School", "is_charter": "No", "level": "Middle", "gslo": "06", "gshi": "08" },
+            { "school_id": "020060000277", "name": "Tanana Middle School", "is_charter": "No", "level": "Middle", "gslo": "06", "gshi": "08" },
+            { "school_id": "020060000324", "name": "Randy Smith Middle School", "is_charter": "No", "level": "Middle", "gslo": "06", "gshi": "08" },
+            { "school_id": "020060000587", "name": "Fairbanks B.E.S.T.", "is_charter": "No", "level": "Other", "gslo": "PK", "gshi": "12" },
+            { "school_id": "020060000652", "name": "North Pole Middle School", "is_charter": "No", "level": "Middle", "gslo": "06", "gshi": "08" }
+          ]
+        },
+        "high": {
+          "n_candidates": 6,
+          "n_unclaimed_at_selection": 5,
+          "n_selected": 6,
+          "schools": [
+            { "school_id": "020060000270", "name": "Lathrop High School", "is_charter": "No", "level": "High", "gslo": "09", "gshi": "12" },
+            { "school_id": "020060000273", "name": "North Pole High School", "is_charter": "No", "level": "High", "gslo": "09", "gshi": "12" },
+            { "school_id": "020060000281", "name": "West Valley High School", "is_charter": "No", "level": "High", "gslo": "09", "gshi": "12" },
+            { "school_id": "020060000464", "name": "Effie Kokrine Charter School", "is_charter": "Yes", "level": "High", "gslo": "07", "gshi": "12" },
+            { "school_id": "020060010165", "name": "North Star College", "is_charter": "No", "level": "High", "gslo": "11", "gshi": "12" },
+            { "school_id": "020060000587", "name": "Fairbanks B.E.S.T.", "is_charter": "No", "level": "Other", "gslo": "PK", "gshi": "12" }
+          ]
+        },
+        "elementary": {
+          "n_candidates": 21,
+          "n_unclaimed_at_selection": 20,
+          "n_selected": 12,
+          "schools": [
+            { "school_id": "020060000114", "name": "Anne Wien Elementary", "is_charter": "No", "level": "Elementary", "gslo": "PK", "gshi": "05" },
+            { "school_id": "020060000258", "name": "Midnight Sun Elementary School", "is_charter": "No", "level": "Elementary", "gslo": "PK", "gshi": "05" },
+            { "school_id": "020060000742", "name": "Watershed Charter School", "is_charter": "Yes", "level": "Elementary", "gslo": "KG", "gshi": "08" },
+            { "school_id": "020060000651", "name": "North Pole Elementary", "is_charter": "No", "level": "Elementary", "gslo": "PK", "gshi": "05" },
+            { "school_id": "020060000516", "name": "Pearl Creek Elementary", "is_charter": "No", "level": "Elementary", "gslo": "PK", "gshi": "05" },
+            { "school_id": "020060000162", "name": "Chinook Montessori Charter School", "is_charter": "Yes", "level": "Elementary", "gslo": "KG", "gshi": "08" },
+            { "school_id": "020060000238", "name": "Anderson Crawford Elementary", "is_charter": "No", "level": "Elementary", "gslo": "PK", "gshi": "05" },
+            { "school_id": "020060000766", "name": "Discovery Peak Charter School", "is_charter": "Yes", "level": "Elementary", "gslo": "KG", "gshi": "08" },
+            { "school_id": "020060000761", "name": "Boreal Sun Charter School", "is_charter": "Yes", "level": "Elementary", "gslo": "KG", "gshi": "08" },
+            { "school_id": "020060000279", "name": "Two Rivers School", "is_charter": "No", "level": "Elementary", "gslo": "PK", "gshi": "08" },
+            { "school_id": "020060000259", "name": "Barnette Magnet School", "is_charter": "No", "level": "Elementary", "gslo": "PK", "gshi": "08" },
+            { "school_id": "020060000262", "name": "Denali Elementary", "is_charter": "No", "level": "Elementary", "gslo": "PK", "gshi": "05" }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -5,6 +5,8 @@ description: Discovery+capture TRAINING loop (steps 1-5 of the acquisition pipel
 
 # /per-school-acquire-training — Discovery + Capture Training Loop
 
+> **2026-06-22: step 1 below is stale.** `training_batch.py` has been archived (superseded by Stage 1's real implementation, `infrastructure/acquisition/discovery/queue_batch.py` — see `docs/ACQUISITION_PIPELINE.md` Stage 1). Per CLAUDE.md, this whole skill is premature/reference-only and not the active runbook; it hasn't been updated to call the new script. Use `queue_batch.py <N>` directly for now (writes `data/acquisition/queue/batch_<NN>.json`, a different schema than the `batch.json` this skill describes) until this skill is revised.
+
 Runs **only steps 1–5** of `per-school-acquire` (wave discovery → capture; **no extraction, no council, no scoring**). Purpose: isolate and *measure* the upstream gates — **did the waves find a page, did capture render it legibly, did Haiku classify topology correctly** — on genuinely cold NCES districts (no prior manual data). Cheap: Claude WebSearch (subscription) + OpenRouter search + local Playwright only. **No per-token extraction cost.**
 
 **Freeze the config across a run of batches** (waves = Claude→OpenRouter, Perplexity off, tiered capture) so batches are comparable; the version is recorded in each `batch.json`.
