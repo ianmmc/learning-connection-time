@@ -15,6 +15,7 @@ import aggregate as A  # noqa: E402
 import queue_batch as Q  # noqa: E402
 import district_status as DS  # noqa: E402
 import discover_stage2 as D2  # noqa: E402
+import discover as DISC  # noqa: E402
 
 
 # ---------------------------------------------------------------- REQ-058 sampling
@@ -585,6 +586,64 @@ class TestResidualAndWave2Gating:
         roster = [{"school": "A", "wave1_gated": [{"url": "u", "kept": False, "reason": "off-district"}]},
                   {"school": "B", "wave1_gated": []}]
         assert len(D2.residual_schools(roster)) == 2
+
+
+def _api_status_error(status_code):
+    import openai, httpx
+    resp = httpx.Response(status_code, request=httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions"))
+    return openai.APIStatusError(f"HTTP {status_code}", response=resp, body=None)
+
+
+class TestOpenRouterBillingFailure:
+    """A billing/auth/rate-limit failure means the call was never really attempted -- every
+    later Wave 2 call would fail identically, so it must never be silently treated the same
+    as 'the search legitimately found nothing' (found 2026-06-23: any exception, including a
+    402 insufficient-balance error, was being caught generically and degraded to urls=[])."""
+
+    def test_billing_status_code_raises_system_exit(self, monkeypatch):
+        import openai as openai_module
+
+        class FakeCompletions:
+            def create(self, **kwargs):
+                raise _api_status_error(402)
+
+        class FakeClient:
+            def __init__(self, **kwargs):
+                self.chat = type("C", (), {"completions": FakeCompletions()})()
+
+        monkeypatch.setattr(openai_module, "OpenAI", FakeClient)
+        with pytest.raises(SystemExit, match="CONTROL FAILURE"):
+            DISC.openrouter_search("query", "example.org")
+
+    def test_non_billing_status_code_propagates_as_plain_exception(self, monkeypatch):
+        """A 500 (transient server error) is NOT a billing/auth signal -- it must propagate
+        as the original APIStatusError, not SystemExit, so callers can still distinguish
+        'OpenRouter itself errored' from 'CONTROL FAILURE, halt everything' if they choose to."""
+        import openai as openai_module
+
+        class FakeCompletions:
+            def create(self, **kwargs):
+                raise _api_status_error(500)
+
+        class FakeClient:
+            def __init__(self, **kwargs):
+                self.chat = type("C", (), {"completions": FakeCompletions()})()
+
+        monkeypatch.setattr(openai_module, "OpenAI", FakeClient)
+        with pytest.raises(openai_module.APIStatusError):
+            DISC.openrouter_search("query", "example.org")
+
+    def test_run_wave2_does_not_swallow_a_billing_system_exit(self, monkeypatch):
+        """run_wave2's `except Exception` must not catch a billing-failure SystemExit --
+        SystemExit isn't an Exception subclass, so this should hold without any change to
+        run_wave2 itself, but confirm the real call chain actually behaves that way."""
+        def fake_openrouter_search(q, dhost, k=10):
+            raise SystemExit("CONTROL FAILURE: simulated billing failure")
+        monkeypatch.setattr(D2, "openrouter_search", fake_openrouter_search)
+        residual = [{"school": "A", "query": "q", "wave1_gated": [], "wave2_invoked": False,
+                     "wave2_raw_urls": [], "wave2_gated": []}]
+        with pytest.raises(SystemExit, match="CONTROL FAILURE"):
+            D2.run_wave2(residual, "example.org")
 
 
 class TestOutcomeRollup:

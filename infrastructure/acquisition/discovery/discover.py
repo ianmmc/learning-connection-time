@@ -59,12 +59,31 @@ def _openrouter_key():
     except Exception:
         return None
 
+# HTTP statuses that mean "this call was never really attempted" (bad/revoked key, exhausted
+# pre-paid balance, rate-limited) -- every later call would fail identically, so this must
+# never be treated the same as "the search legitimately found nothing" (see
+# BILLING_AUTH_STATUS_CODES usage below).
+BILLING_AUTH_STATUS_CODES = {401, 402, 429}
+
 def openrouter_search(q, dhost, k=10):
     import openai
     c=openai.OpenAI(base_url="https://openrouter.ai/api/v1", api_key=_openrouter_key())
     query=f"{q} site:{dhost}" if dhost else q
-    r=c.chat.completions.create(model="openai/gpt-4o-mini-search-preview",
-        messages=[{"role":"user","content":query}], max_tokens=600, extra_body={"plugins":[{"id":"web"}]})
+    try:
+        r=c.chat.completions.create(model="openai/gpt-4o-mini-search-preview",
+            messages=[{"role":"user","content":query}], max_tokens=600, extra_body={"plugins":[{"id":"web"}]})
+    except openai.APIStatusError as e:
+        if e.status_code in BILLING_AUTH_STATUS_CODES:
+            # SystemExit, not a plain Exception -- callers that do `except Exception` (e.g.
+            # discover_stage2.run_wave2's per-school degradation) must NOT catch this; it has
+            # to propagate and halt the whole run, the same as a reconcile() CONTROL FAILURE.
+            raise SystemExit(
+                f"CONTROL FAILURE: OpenRouter returned HTTP {e.status_code} -- this is a "
+                f"billing/auth/rate-limit failure, not 'no results found'. Every remaining "
+                f"Wave 2 call would fail identically. Stopping the entire run -- check the "
+                f"account balance / API key before re-running. ({str(e)[:200]})"
+            )
+        raise
     ann=getattr(r.choices[0].message,"annotations",None) or []
     out=[]
     for a in ann:

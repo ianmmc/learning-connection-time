@@ -1,8 +1,8 @@
 # Acquisition Pipeline — Working Flow Diagram
 
-> Built incrementally during stage-walkthrough sessions, not transcribed from `ACQUISITION_PIPELINE.md`. Reflects what we've actually decided/confirmed in conversation. May confirm, refine, or diverge from the written doc — if it diverges, that's signal to reconcile the doc afterward, not a mistake here. As of 2026-06-23 the two docs are reconciled: everything below matches `ACQUISITION_PIPELINE.md`'s Stage 1 and Stage 2 sections.
+> Built incrementally during stage-walkthrough sessions, not transcribed from `ACQUISITION_PIPELINE.md`. Reflects what we've actually decided/confirmed in conversation. May confirm, refine, or diverge from the written doc — if it diverges, that's signal to reconcile the doc afterward, not a mistake here. As of 2026-06-23 the two docs are reconciled: everything below matches `ACQUISITION_PIPELINE.md`'s Stage 1, Stage 2, and Stage 3 sections.
 
-**Status:** Stage 1 (Queue) designed, built, tested, and CP-A-approved. Stage 2 (Discover) designed and built — deterministic half unit-tested, orchestration skill written — not yet run against real districts. Stages 3-9 still skeleton boxes — not yet walked.
+**Status:** Stage 1 (Queue) designed, built, tested, and CP-A-approved. Stage 2 (Discover) designed, built, and run live against all 12 `batch_00001` districts (12/12 `found_all`). Stage 3 (Capture) fully designed this session — not yet built. Stages 4-9 still skeleton boxes — not yet walked.
 **Last updated:** 2026-06-23
 
 ```mermaid
@@ -41,7 +41,46 @@ flowchart TD
         D_RECON -->|registry ahead, disk empty| D_HALT
     end
 
-    S3[3. Capture]
+    subgraph STAGE3 ["Stage 3 — Capture (designed 2026-06-23, not yet built)"]
+        direction TB
+        C_RECON["Reconciliation pass (BEFORE any fetching)<br/>per district: does .../captures.json exist?"]
+        C_SKIP["Exists, registry behind -> reconcile UP, skip"]
+        C_HALT{{"Registry says done, disk doesn't have it -><br/>STOP ENTIRE RUN, fail loudly (control failure)"}}
+        C_BRANCH{{"Per candidate URL (incl. emergent):<br/>host is drive.google.com / docs.google.com?"}}
+        C_DRIVE_PATTERN{{"Recognized single file/doc/sheet/slide<br/>pattern (file/d/, document/d/, etc.)?"}}
+        C_DRIVE_T1["Tier 1: unauthenticated export URL<br/>Docs->PDF+Markdown, Slides->PDF,<br/>Sheets->CSV+PDF, generic file->direct download"]
+        C_DRIVE_T1_OK{{"Tier 1 succeeded?"}}
+        C_DRIVE_T2["Tier 2: OAuth Google Drive API<br/>files.list (folder enum, bounded recursion)<br/>files.get/export (content) -- ONLY path for folders<br/>NO Playwright-preview, NO Gemini tier (both dropped)"]
+        C_DRIVE_T2_OK{{"Tier 2 succeeded?"}}
+        C_OAUTH_FLAG["Flag this candidate: err=needs_oauth_reauth<br/>continue to next candidate -- does NOT halt the run<br/>(one stuck Drive item != every call failing, unlike billing)"]
+        C_PDFIMG["Direct fetch (non-Google): content-type pdf/image?<br/>-> byte-for-byte copy, writeFileSync<br/>NEVER page.pdf() on an already-PDF target"]
+        C_HTML["Render as HTML:<br/>goto(networkidle) -> waitForTimeout(2500)<br/>-> dismissModals() [ported from capturer.ts]<br/>-> innerText (all frames) -> .txt<br/>-> screenshot -> .png<br/>-> page.pdf() UNCONDITIONALLY -> .pdf"]
+        C_EMERGENT["Scan rendered DOM for anchor text/href matching<br/>SCHED_KW (same list as discover.py) -><br/>new candidate, source=emergent, found_on=this URL<br/>INTENDED to catch CDN-hosted files too (Finalsite,<br/>BoardDocs, S3, etc. - discover.py's CMS_HOSTS),<br/>not just Drive/Docs links"]
+        C_OUT["Write captures/ (md5(url) hash-named files)<br/>+ captures.json (per-candidate: url, hash, source,<br/>found_on, ok, kind, files, err) -- NEVER mutates candidates.json"]
+        C_REG["Registry write-back: captured_all / captured_partial /<br/>capture_failed_all, notes summarizes any flagged candidates<br/>(registry holds a STATUS, never a live array of open issues --<br/>triage list generated on demand from captures.json)"]
+
+        C_RECON -->|doesn't exist| C_BRANCH
+        C_RECON -->|exists, registry behind| C_SKIP
+        C_RECON -->|registry ahead, disk empty| C_HALT
+
+        C_BRANCH -->|yes - Google| C_DRIVE_PATTERN
+        C_BRANCH -->|no| C_PDFIMG
+        C_DRIVE_PATTERN -->|yes - single file| C_DRIVE_T1
+        C_DRIVE_PATTERN -->|no - folder, or unrecognized| C_DRIVE_T2
+        C_DRIVE_T1 --> C_DRIVE_T1_OK
+        C_DRIVE_T1_OK -->|yes| C_OUT
+        C_DRIVE_T1_OK -->|no| C_DRIVE_T2
+        C_DRIVE_T2 --> C_DRIVE_T2_OK
+        C_DRIVE_T2_OK -->|yes| C_OUT
+        C_DRIVE_T2_OK -->|no| C_OAUTH_FLAG --> C_OUT
+        C_PDFIMG -->|yes| C_OUT
+        C_PDFIMG -->|no, render instead| C_HTML
+        C_HTML --> C_EMERGENT
+        C_EMERGENT -->|one hop only, no recursion| C_BRANCH
+        C_HTML --> C_OUT
+        C_OUT --> C_REG
+    end
+
     S4[4. Local process]
     S5[5. Local filter]
     S6[6. Hand to OpenRouter]
@@ -50,9 +89,11 @@ flowchart TD
     S9[9. Incorporate]
 
     Q_OUT --> CPA --> D_RECON
-    D_REG --> S3
-    D_SKIP --> S3
-    S3 --> S4 --> S5 --> S6 --> S7 --> S8 --> S9
+    D_REG --> C_RECON
+    D_SKIP --> C_RECON
+    C_REG --> S4
+    C_SKIP --> S4
+    S4 --> S5 --> S6 --> S7 --> S8 --> S9
 ```
 
 ## Decision log
@@ -157,3 +198,21 @@ _(running notes on what each diagram change reflects, added as we go)_
 - **Confirmed live: both branches of the wave-conditional design fire correctly on real data.** Wave 1 alone satisfied districts with good per-school site structure (Marion ISD, Stroudsburg, Urbana SD 116 — several with literal `bell-schedule`/`bell_schedules` URLs found directly); Wave 2 correctly picked up the residual when Wave 1 came back empty (Hoboken, Sojourner Truth, DUNSEITH 1, Mt. Abraham — all 5 of Mt. Abraham's schools in one case).
 - **Confirmed live: dedup-by-normalized-URL collapses a real shared hub page.** ROY ELEMENTARY and ROY HIGH both resolved to the identical `royschools.org/classschedule` URL; `candidates.json` correctly collapsed this into one entry listing both schools.
 - **New finding, not previously seen: a Wave-1 subagent can silently under-report on a large roster by applying its own relevance judgment instead of mechanically reporting what WebSearch returned.** Pittsylvania County (18 schools, the largest in the batch) came back with EVERY school's `urls` empty — but the subagent's own prose (output alongside the JSON, itself a violation of "respond with ONLY this JSON") revealed it HAD found pages (calendars, contact pages, homepages) and chose not to report them because it judged they didn't "actually contain published bell schedule information." This inverts the intended failure mode: the brief's "do not guess URLs" was meant to stop invented URLs, not stop *reporting real ones* the model decided weren't good enough — that relevance call belongs to the deterministic gate + downstream capture/extraction, never to Wave 1. **The built-in fallback compensated:** the resulting 18-school residual correctly triggered Wave 2, which independently found strong per-school subdomain candidates (calendars, handbooks) for all 18 via OpenRouter, landing `found_all` anyway. Not yet fixed in the prompt — open watch-item: does this correlate with roster size (18 was the batch's largest by a wide margin), or would it recur on a 5-school district too? One data point isn't enough to tell.
+
+**2026-06-23 — billing/auth failure fix: `discover.openrouter_search()` was silently treating an exhausted OpenRouter pre-paid balance the same as "found nothing."** Raised by the user as a general principle for any metered API call in production ("does Ian's account carry a sufficient pre-pay balance" — the same model as how OpenRouter billing actually works): `run_wave2`'s `except Exception` caught *any* failure, including an HTTP 402, and degraded it to `urls=[]` — indistinguishable from a genuine empty search result, and silently repeatable for every remaining residual school once the balance ran out. **Fix:** `openrouter_search()` now raises `SystemExit` (not a plain `Exception`, so `run_wave2`'s except clause doesn't swallow it) for HTTP 401/402/429 specifically (`discover.BILLING_AUTH_STATUS_CODES`) — a control failure that halts the whole run, same treatment as the reconcile()-stage disk/registry mismatch. Other status-carrying errors (e.g. transient 5xx) still propagate as the original exception, not a halt. 3 new tests; REQ-070 updated in place. 889 tests passing.
+
+**2026-06-23 — Stage 3 (Capture) design conversation: grounded several open questions in what's actually in the codebase rather than the docs' claims about it.** Before any Stage 3 code is written:
+- `capture_discovery.mjs` (the real, active capture script — 73 lines, bare Playwright + `fetch()`, no Crawlee) already implements the `captures/` subdirectory + MD5-hash-of-URL naming pattern independently converged on in conversation, and already writes a separate per-district `captures.json` (url → hash → files) rather than mutating `candidates.json` — which answers "should capture results get logged back to candidates.json" with "there's already a cleaner pattern, no write-once policy exception needed."
+- **Confirmed Crawlee is genuinely dead code, not just superseded in spirit.** `mapper.ts`'s `PlaywrightCrawler` usage is literally the abandoned Jan-2026 blind-site-mapping design (its own docstring: "to enable intelligent URL ranking by Ollama") and isn't imported by anything in the active pipeline.
+- **`google_drive_handler.py` already has a 3-tier Drive fallback (direct download → Playwright preview → Gemini API) anticipating exactly the Gemini question the user raised — but the Gemini tier is an unimplemented stub, and the Drive-folder case (vs. a direct file link) isn't handled at all (`DRIVE_PATTERNS` only matches file-level URLs).** It also depends on a separate Express microservice (`server.ts`, `localhost:3000`) nothing else in the active pipeline runs.
+- **No modal-dismissal logic actually exists in the live capture path**, despite `ACQUISITION_PIPELINE.md` claiming it was "salvaged" from `capturer.ts` — confirmed by reading the real script. A real, previously-undocumented gap, agreed to fix now rather than defer.
+- `page.pdf()` does not exist anywhere in the current capture script — confirmed it's a genuine addition, not a config flip. User decision: run it unconditionally on every HTML page captured (no multi-column-detection trigger), since it's free local compute and removes the need to ever define the "Tier 1→2 escalation trigger" that `ACQUISITION_PIPELINE.md`'s reader-routing spec had left deliberately open and unsolved.
+- **Drive/Docs API research (Gemini MCP + Perplexity, cross-checked against each other):** `files.list` (folder enumeration) always requires OAuth/service account, even for fully public folders — no API-key-only path exists. The unauthenticated export-URL trick still works for "anyone with the link" content. An image-only Doc/Slide exports to an image-in-a-PDF with no text layer — not a dead end, it's the same shape as a scanned PDF and routes into the existing Tier 2.5 OCR path. **One real discrepancy caught between the two sources:** Gemini claimed refresh tokens expire after 6 months of inactivity as documented Google policy; a citation-backed Perplexity follow-up found no such rule in Google's actual OAuth docs — the only documented forced-short-lifetime case is leaving the OAuth consent screen in "Testing" publishing status (7-day tokens), unrelated to inactivity or personal/unverified-app status. Architectural implication: OAuth is only actually needed for folder *enumeration* — individual Docs/Sheets/Slides/Drive-file retrieval already works via the existing unauthenticated path. Not yet written into `ACQUISITION_PIPELINE.md` — still mid-discussion.
+
+**2026-06-23 — Stage 3 (Capture) design closed out and written into `ACQUISITION_PIPELINE.md` + this diagram.** Final three open points resolved before formalizing:
+- **OAuth/Drive failure handling: a per-item flag, not a batch halt.** Unlike the Stage 2 billing CONTROL FAILURE (where one failure means every subsequent call fails identically), one stuck Drive item says nothing about the rest of the batch — so it's recorded (`err: "needs_oauth_reauth"` in that candidate's `captures.json` record) and capture moves on to the next candidate. Explicitly rejected: maintaining a live array of open issues inside the registry itself ("that's a recipe for sync issues" — the user's words) — the registry holds a status rollup only (`captured_partial`, etc.), and a human generates the actual triage array on demand by scanning `captures.json` files when ready to act, not by reading an accumulating structure that has to stay in sync with reality.
+- **Dropped the Gemini-API tier too, not just Playwright-preview.** Reasoning: Gemini would only end up calling the same Drive API that already failed — it buys nothing over what OAuth+Drive-API already attempted. `google_drive_handler.py`'s original 3-tier design (direct download → Playwright preview → Gemini) collapses to 2 tiers (unauthenticated export URL → OAuth Drive API), with the OAuth tier also being the *only* path for folder enumeration — one mechanism doing double duty instead of three separate ones.
+- **Export formats, finalized:** Docs → PDF + Markdown (the Markdown export is a genuine cheap win — already-clean plain text, skips `pdftotext` entirely for born-digital Docs). Slides → PDF only (no markdown equivalent makes sense for slides). Sheets → CSV + PDF (PDF specifically to catch the edge case of an image pasted into a spreadsheet cell, which CSV alone would silently lose — same shape as the image-only-Doc problem already solved via the existing OCR path).
+- The full per-candidate branch logic (Google detection → Tier 1/Tier 2 Drive handling → direct PDF/image fetch → generic HTML render with modal dismissal + unconditional `page.pdf()` + one-hop emergent-candidate link-following) is now in both docs. Nothing built yet — `capture_discovery.mjs` still needs all of this added; `capturer.ts`'s modal-dismissal and PDF-options logic still needs porting in, not run as-is.
+
+**2026-06-23 — clarified scope of the emergent-candidate path: explicitly for CDN-hosted materials too, not just Drive/Docs.** Caught before implementation: the emergent-candidate writeup had been framed almost entirely around the Drive/Docs research that preceded it, risking a narrow mental model (and narrow test coverage) for whoever builds it. The real motivating case is broader — an on-domain page Discovery *did* find can easily link to a bell-schedule PDF hosted off-domain on a CMS/CDN host (Finalsite, BoardDocs, SchoolWires/Blackboard, an S3 bucket — `discover.py`'s existing `CMS_HOSTS` set, not a new list) that Discovery's domain-scoped search would never surface directly. The branch logic already handles this correctly once an emergent candidate is found (it lands on the ordinary direct-PDF/image-fetch branch) — the thing that needed fixing was documentation/intent, so that **when Stage 3's tests get written, a CDN-hosted-PDF emergent candidate is a first-class test case, not an incidental side effect of the Drive/Docs test cases.** `ACQUISITION_PIPELINE.md` and the `C_EMERGENT` node both updated to say this explicitly.

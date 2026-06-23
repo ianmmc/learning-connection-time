@@ -1613,6 +1613,8 @@ requirements:
       - A school is "residual" only if it has zero KEPT candidates after gating Wave 1's raw URLs (reject news/aggregator domains, off-domain misses)
       - Wave 2 (OpenRouter gpt-4o-mini-search) is a deterministic script call, NEVER a subagent, and runs ONLY when at least one residual school exists - if Wave 1 + gating satisfied every school in the district, Wave 2 is skipped entirely (no OpenRouter call is made), not just scoped down
       - A school still unsatisfied after both waves is recorded with outcome="manual_flag" - the assumption is that neither Claude WebSearch nor OpenRouter found anything, not an error condition
+      - A billing/auth/rate-limit failure from OpenRouter (HTTP 401/402/429 - bad or revoked key, exhausted pre-paid balance, rate-limited) is NEVER treated as "no results found" - it means the call was never really attempted, and every later Wave 2 call would fail identically, so it raises SystemExit (a CONTROL FAILURE) and halts the entire run rather than silently degrading to outcome="manual_flag" for every remaining residual school
+      - A non-billing API error (e.g. a transient 5xx) propagates as the original exception, not SystemExit - only the specific billing/auth/rate-limit codes are treated as a halt-worthy control failure
     tests:
       - tests/test_acquisition_stages.py::TestWave1Handoff::test_matching_district_id_and_domain_passes
       - tests/test_acquisition_stages.py::TestWave1Handoff::test_mismatched_district_id_fails_loud
@@ -1620,6 +1622,9 @@ requirements:
       - tests/test_acquisition_stages.py::TestWave1Handoff::test_merge_attaches_urls_by_school_id_missing_school_gets_empty
       - tests/test_acquisition_stages.py::TestResidualAndWave2Gating::test_school_with_kept_wave1_candidate_is_not_residual
       - tests/test_acquisition_stages.py::TestResidualAndWave2Gating::test_school_with_zero_kept_candidates_is_residual
+      - tests/test_acquisition_stages.py::TestOpenRouterBillingFailure::test_billing_status_code_raises_system_exit
+      - tests/test_acquisition_stages.py::TestOpenRouterBillingFailure::test_non_billing_status_code_propagates_as_plain_exception
+      - tests/test_acquisition_stages.py::TestOpenRouterBillingFailure::test_run_wave2_does_not_swallow_a_billing_system_exit
     created: "2026-06-23T00:00:00Z"
     updated: "2026-06-23T00:00:00Z"
     notes: "infrastructure/acquisition/discovery/discover_stage2.py::validate_wave1_result, merge_wave1,
@@ -1628,7 +1633,12 @@ requirements:
       drawn Wave 1 -> Wave 2 -> flatten as an unconditional straight line, silently implying Wave 2 always
       runs - wasting an OpenRouter call whenever Wave 1 already satisfied every school. Topology classification
       (hub/per_school/none) was deliberately dropped from Wave 1's job - not enough signal pre-capture; see
-      ACQUISITION_PIPELINE.md Stage 2."
+      ACQUISITION_PIPELINE.md Stage 2. Billing/auth/rate-limit fix added 2026-06-23: discover.openrouter_search()
+      previously let `except Exception` in run_wave2 catch and silently degrade ANY failure - including a 402
+      insufficient-balance error - to urls=[], which would have produced a wall of false manual_flag outcomes
+      once an account's pre-paid balance ran out, indistinguishable from genuine 'nothing found.' Fixed by
+      raising SystemExit (not a plain Exception, so run_wave2's except clause doesn't swallow it) for HTTP
+      401/402/429 specifically via discover.BILLING_AUTH_STATUS_CODES."
 
   - id: REQ-071
     description: "Stage 2 output - discovery.json (full per-school audit trail) + candidates.json (capture-ready, deduped), written once and versioned on redo"
