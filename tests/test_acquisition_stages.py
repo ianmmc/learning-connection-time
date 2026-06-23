@@ -2,6 +2,7 @@
 (skip stubs until live-wired), GT re-derivation process (REQ-057/058/059); Stage 1 Queue --
 exclusion filters, stratified sampling, per-band school selection, LEVEL-primary band
 classification, district status registry (REQ-061/062/063/064/065/066/067, built 2026-06-22)."""
+import json
 import sys
 from pathlib import Path
 import pytest
@@ -13,6 +14,7 @@ import school_sampling as S  # noqa: E402
 import aggregate as A  # noqa: E402
 import queue_batch as Q  # noqa: E402
 import district_status as DS  # noqa: E402
+import discover_stage2 as D2  # noqa: E402
 
 
 # ---------------------------------------------------------------- REQ-058 sampling
@@ -127,6 +129,24 @@ class TestPreQueueExclusion:
         registry = DS.load()
         pool, _, _ = Q.eligible_pool("2024_25", registry)
         assert "0200600" in pool
+
+    def test_stage1_only_district_stays_eligible_for_redraw(self):
+        """A district that only reached Stage 1 (queued, never captured) must remain in
+        the eligible pool -- excluding on ANY recorded stage silently dropped every
+        district from a never-captured batch on re-queue after a queue-time bug fix
+        (found 2026-06-22). Only Stage 3 (Capture)+ represents a real attempt."""
+        registry = {"schema_version": 1, "last_updated": None, "districts": {}}
+        DS.record_stage(registry, "0200600", "Fairbanks", "AK", stage=1, stage_name="queue", outcome="queued")
+        pool, _, _ = Q.eligible_pool("2024_25", registry)
+        assert "0200600" in pool
+
+    def test_captured_district_is_excluded_from_redraw(self):
+        """A district that reached Stage 3 (Capture) is a real attempt -- it must be
+        excluded from the eligible pool regardless of outcome."""
+        registry = {"schema_version": 1, "last_updated": None, "districts": {}}
+        DS.record_stage(registry, "0200600", "Fairbanks", "AK", stage=3, stage_name="capture", outcome="captured")
+        pool, _, _ = Q.eligible_pool("2024_25", registry)
+        assert "0200600" not in pool
 
 
 # ---------------------------------------------------------------- REQ-063 enrollment-quartile sampling
@@ -262,15 +282,13 @@ class TestLevelPrimaryBandClassification:
         """Breathitt County KY's elementary spans are genuinely redundant/overlapping
         (PK-02, 03-06, AND PK-06, where PK-06 subsumes the other two) -- not a clean
         ascending partition, so recursive_band_groups() returns None and the conservative
-        any-overlap rescue applies unchanged: both grade-6-touching elementaries stay in
-        middle's pool alongside the high school."""
+        any-overlap rescue (bands_for_rescue()) applies. Sebastian and Highland-Turner
+        Elementary both top out at grade 6 -- pure elementary, same distinction the
+        West Bonner fix established -- so middle's sole representative is Breathitt
+        County High School (07-12), which actually reaches grade 7."""
         idx = S.school_index("2024_25")
         middle_names = {s["name"] for s in idx.get("2100690", {}).get("middle", [])}
-        assert middle_names == {
-            "Breathitt County High School",
-            "Sebastian Elementary School",
-            "Highland-Turner Elementary School",
-        }
+        assert middle_names == {"Breathitt County High School"}
 
     def test_identical_span_multi_building_partition_now_resolved(self):
         """Northern Tioga PA has 3 elementaries all spanning the IDENTICAL KG-06 and 2
@@ -314,6 +332,46 @@ class TestLevelPrimaryBandClassification:
         assert middle_names == {"Old Quarry Middle Sch"}
         assert high_names == set()
 
+    def test_lone_secondary_segment_does_not_join_elementary(self):
+        """The Bridge Academy (CT) is a single LEVEL=High, 07-12 school -- the district's
+        only segment. The old position-based rule put segment[0] in elementary
+        unconditionally whenever no leading <=6-top run existed (designed for a K-12
+        'Other'-LEVEL school where that's correct); here it wrongly pulled a 07-12 HIGH
+        school into the elementary candidate pool just because it was first. The
+        per-segment overlap check must check the segment's own span, not its position --
+        07-12 doesn't start in elementary's range, so elementary must be empty."""
+        idx = S.school_index("2024_25")
+        for band in ("elementary", "middle", "high"):
+            names = {s["name"] for s in idx.get("0900015", {}).get(band, [])}
+            if band == "elementary":
+                assert names == set()
+            else:
+                assert names == {"The Bridge Academy"}
+
+    def test_trailing_segment_stays_middle_not_high_by_position(self):
+        """Sequoia Union Elementary (CA) has a LEVEL=Elementary KG-07 school and a
+        LEVEL=Middle 08-08 school (confusingly named '...Elementary' despite its LEVEL).
+        The old rule treated everything after an elem+middle-merged leading segment as
+        unconditionally 'high'; the 08-08 segment doesn't reach grade 9, so it must
+        resolve to middle, not be pulled into the high band just for coming last."""
+        idx = S.school_index("2024_25")
+        middle_names = {s["name"] for s in idx.get("0636360", {}).get("middle", [])}
+        high_names = {s["name"] for s in idx.get("0636360", {}).get("high", [])}
+        assert middle_names == {"Sequoia Union Elementary"}
+        assert high_names == set()
+
+    def test_pk08_elementary_does_not_over_claim_into_trailing_high(self):
+        """Quitman County (GA) has a LEVEL=Elementary PK-08 school (covers elementary AND
+        middle) followed by a LEVEL=High 09-12 school. The 09-12 high school must NOT also
+        be pulled into middle just because it immediately follows a middle-covering
+        segment -- middle's sole representative is the PK-08 elementary, not the high
+        school."""
+        idx = S.school_index("2024_25")
+        middle_names = {s["name"] for s in idx.get("1304290", {}).get("middle", [])}
+        high_names = {s["name"] for s in idx.get("1304290", {}).get("high", [])}
+        assert middle_names == {"Quitman County Elementary"}
+        assert high_names == {"Quitman County High School"}
+
 
 # --------------------------------------------------- REQ-065 (extended) early-childhood exclusion
 class TestEarlyChildhoodExclusion:
@@ -334,16 +392,57 @@ class TestEarlyChildhoodExclusion:
         assert "Albany Elementary School" in names
 
 
+# -------------------------------------------------------------------- virtual school exclusion
+class TestVirtualSchoolExclusion:
+    def test_exclusively_virtual_school_excluded(self):
+        """Virginia Connections Academy (a Pearson-operated full-virtual school, NCES
+        VIRTUAL_TEXT='Exclusively virtual') has no real in-person bell-to-bell day -- must
+        not appear in Scott County VA's candidate pool for any band."""
+        idx = S.school_index("2024_25")
+        ids = {s["school_id"] for band in idx.get("5103480", {}).values() for s in band}
+        assert "510348003096" not in ids
+
+    def test_supplemental_virtual_school_not_excluded(self):
+        """A normal in-person school that merely OFFERS a supplemental virtual option
+        (NCES VIRTUAL_TEXT='Supplemental Virtual') still has a real bell schedule and must
+        NOT be excluded -- only majority/exclusively-virtual schools are."""
+        idx = S.school_index("2024_25")
+        names = {s["name"] for s in idx.get("0200120", {}).get("elementary", [])}
+        assert "Dillingham Elementary" in names
+
+
+# -------------------------------------------------------------------- REQ-066 any-overlap rescue
+class TestAnyOverlapRescueMiddleBoundary:
+    def test_grade6_topping_school_not_rescued_into_middle(self):
+        """West Bonner County ID has a genuinely messy, non-clean-partition shape (3
+        overlapping/redundant elementary spans: PK-06, PK-06, PK-07). IDAHO HILL and
+        PRIEST RIVER ELEMENTARY (both PK-06) must NOT be rescued into middle just because
+        grade 6 sits in BANDS['middle']'s nominal 6-8 range -- they top out at 6, the same
+        'pure elementary' distinction recursive_band_groups() already makes for clean
+        partitions. PRIEST LAKE ELEMENTARY (PK-07) and PRIEST RIVER LAMANNA HIGH (07-12)
+        DO reach grade 7 and correctly remain in middle."""
+        idx = S.school_index("2024_25")
+        middle_names = {s["name"] for s in idx.get("1600001", {}).get("middle", [])}
+        assert middle_names == {"PRIEST LAKE ELEMENTARY SCHOOL", "PRIEST RIVER LAMANNA HIGH"}
+
+
 # ---------------------------------------------------------------- REQ-067 district status registry
 class TestDistrictStatusRegistry:
     def test_record_and_check_attempted(self):
+        """already_attempted() only fires once a district reaches Stage 3 (Capture) --
+        Stage 1 (queue) alone is not a real, costly attempt (found 2026-06-22: excluding
+        on ANY stage silently dropped every district from a never-captured batch on
+        re-queue, masking a queue-time bug fix instead of demonstrating it)."""
         registry = {"schema_version": 1, "last_updated": None, "districts": {}}
         assert not DS.already_attempted(registry, "0200600")
         DS.record_stage(registry, "0200600", "Fairbanks", "AK", stage=1, stage_name="queue",
                          outcome="queued", batch_id="batch_00001")
-        assert DS.already_attempted(registry, "0200600")
         assert registry["districts"]["0200600"]["furthest_stage"] == 1
         assert len(registry["districts"]["0200600"]["history"]) == 1
+        assert not DS.already_attempted(registry, "0200600")  # Stage 1 only -- still eligible for redraw
+        DS.record_stage(registry, "0200600", "Fairbanks", "AK", stage=3, stage_name="capture",
+                         outcome="captured")
+        assert DS.already_attempted(registry, "0200600")  # Stage 3 reached -- now excluded
 
     def test_history_accumulates_across_stages(self):
         """Pre-queue exclusions are deliberately never recorded here -- this test only
@@ -356,3 +455,202 @@ class TestDistrictStatusRegistry:
         assert d["furthest_stage"] == 2
         assert d["topology"] == "hub"
         assert len(d["history"]) == 2
+
+
+# ------------------------------------------------------------------------ Stage 2 (Discover)
+def _synthetic_district():
+    """A synthetic batch-file district entry: one elementary-only school, one school
+    spanning BOTH middle and high (to exercise build_roster's per-school_id dedup)."""
+    return {
+        "district_id": "9999999", "name": "Test Schools District", "state": "ZZ",
+        "domain": "testschools.example",
+        "schools_by_band": {
+            "elementary": {"schools": [
+                {"school_id": "9999999001", "name": "Test Elementary", "level": "Elementary"}
+            ]},
+            "middle": {"schools": [
+                {"school_id": "9999999002", "name": "Test MS/HS", "level": "Secondary"}
+            ]},
+            "high": {"schools": [
+                {"school_id": "9999999002", "name": "Test MS/HS", "level": "Secondary"}
+            ]},
+        },
+    }
+
+
+class TestSlugAndDir:
+    def test_slugify_collapses_punctuation(self):
+        assert D2.slugify("Mt. Abraham Unified School District #61!!") == "mt_abraham_unified_school_district_61"
+
+    def test_slugify_truncates_long_names(self):
+        slug = D2.slugify("NEW YORK CITY GEOGRAPHIC DISTRICT #14 - A VERY LONG DISTRICT NAME")
+        assert len(slug) <= 40
+
+    def test_lea_dir_prefixes_district_id(self):
+        assert D2.lea_dir("2600992", "Blue Water Middle College") == \
+            D2.RAW_DIR / "2600992_blue_water_middle_college"
+
+
+class TestRosterBuilding:
+    def test_multi_band_school_dedups_to_one_row_with_both_bands(self):
+        roster = D2.build_roster(_synthetic_district())
+        by_id = {r["school_id"]: r for r in roster}
+        assert len(roster) == 2
+        assert sorted(by_id["9999999002"]["bands"]) == ["high", "middle"]
+        assert by_id["9999999001"]["bands"] == ["elementary"]
+
+    def test_query_includes_school_and_state_not_district_or_year(self):
+        roster = D2.build_roster(_synthetic_district())
+        q = next(r["query"] for r in roster if r["school_id"] == "9999999001")
+        assert q == "Test Elementary ZZ bell schedule start and end times"
+
+
+class TestReconcile:
+    def test_district_with_no_disk_artifact_and_no_registry_entry_is_todo(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(D2, "RAW_DIR", tmp_path)
+        batch = {"batch_id": "batch_00099", "districts": [_synthetic_district()]}
+        registry = {"schema_version": 1, "last_updated": None, "districts": {}}
+        todo, skipped = D2.reconcile(batch, registry)
+        assert [d["district_id"] for d in todo] == ["9999999"]
+        assert skipped == []
+
+    def test_disk_ahead_of_registry_reconciles_up_and_skips(self, tmp_path, monkeypatch):
+        """Found 2026-06-23 design session: a district can complete Stage 2 (discovery.json
+        written) without the registry ever having been told -- the filesystem is the real
+        fact, so the registry must catch up to it, not the other way around."""
+        monkeypatch.setattr(D2, "RAW_DIR", tmp_path)
+        d = _synthetic_district()
+        D2.lea_dir(d["district_id"], d["name"]).mkdir(parents=True)
+        (D2.lea_dir(d["district_id"], d["name"]) / "discovery.json").write_text("{}")
+        batch = {"batch_id": "batch_00099", "districts": [d]}
+        registry = {"schema_version": 1, "last_updated": None, "districts": {}}
+        todo, skipped = D2.reconcile(batch, registry)
+        assert todo == []
+        assert [x["district_id"] for x in skipped] == ["9999999"]
+        assert registry["districts"]["9999999"]["furthest_stage"] == 2
+
+    def test_registry_ahead_of_disk_halts_the_entire_run(self, tmp_path, monkeypatch):
+        """The converse drift: registry claims Stage 2 done but the file doesn't exist.
+        This is a control failure (lost data, wrong path, bad migration), not routine
+        drift -- must stop everything rather than silently resample or silently trust."""
+        monkeypatch.setattr(D2, "RAW_DIR", tmp_path)
+        d = _synthetic_district()
+        batch = {"batch_id": "batch_00099", "districts": [d]}
+        registry = {"schema_version": 1, "last_updated": None, "districts": {}}
+        DS.record_stage(registry, d["district_id"], d["name"], d["state"],
+                         stage=2, stage_name="discover", outcome="found_all")
+        with pytest.raises(SystemExit, match="CONTROL FAILURE"):
+            D2.reconcile(batch, registry)
+
+
+class TestWave1Handoff:
+    def test_matching_district_id_and_domain_passes(self):
+        d = _synthetic_district()
+        raw = {"district_id": "9999999", "domain": "testschools.example", "schools": []}
+        assert D2.validate_wave1_result(raw, d) is raw
+
+    def test_mismatched_district_id_fails_loud(self):
+        d = _synthetic_district()
+        raw = {"district_id": "0000000", "domain": "testschools.example", "schools": []}
+        with pytest.raises(SystemExit, match="district_id mismatch"):
+            D2.validate_wave1_result(raw, d)
+
+    def test_mismatched_domain_fails_loud(self):
+        """The domain echo is the whole point of carrying the NCES seed alongside the
+        subagent's findings -- a mismatch here means the subagent searched the wrong
+        site, and that must never be silently accepted into discovery.json."""
+        d = _synthetic_district()
+        raw = {"district_id": "9999999", "domain": "wrongsite.example", "schools": []}
+        with pytest.raises(SystemExit, match="domain mismatch"):
+            D2.validate_wave1_result(raw, d)
+
+    def test_merge_attaches_urls_by_school_id_missing_school_gets_empty(self):
+        roster = D2.build_roster(_synthetic_district())
+        raw = {"district_id": "9999999", "domain": "testschools.example",
+               "schools": [{"school_id": "9999999001", "urls": ["https://testschools.example/elem-bell.pdf"]}]}
+        merged = D2.merge_wave1(roster, raw, "testschools.example")
+        by_id = {r["school_id"]: r for r in merged}
+        assert by_id["9999999001"]["wave1_raw_urls"] == ["https://testschools.example/elem-bell.pdf"]
+        assert by_id["9999999001"]["wave1_gated"][0]["kept"] is True
+        assert by_id["9999999002"]["wave1_raw_urls"] == []
+        assert by_id["9999999002"]["wave1_gated"] == []
+
+
+class TestResidualAndWave2Gating:
+    def test_school_with_kept_wave1_candidate_is_not_residual(self):
+        roster = [{"school": "A", "wave1_gated": [{"url": "u", "kept": True, "reason": "on-domain"}]}]
+        assert D2.residual_schools(roster) == []
+
+    def test_school_with_zero_kept_candidates_is_residual(self):
+        roster = [{"school": "A", "wave1_gated": [{"url": "u", "kept": False, "reason": "off-district"}]},
+                  {"school": "B", "wave1_gated": []}]
+        assert len(D2.residual_schools(roster)) == 2
+
+
+class TestOutcomeRollup:
+    def test_found_all_when_every_school_resolved(self):
+        roster = [{"wave1_gated": [{"kept": True}], "wave2_gated": []},
+                  {"wave1_gated": [], "wave2_gated": [{"kept": True}]}]
+        assert D2.district_outcome(roster) == "found_all"
+
+    def test_manual_flag_all_when_nothing_found(self):
+        roster = [{"wave1_gated": [{"kept": False}], "wave2_gated": [{"kept": False}]}]
+        assert D2.district_outcome(roster) == "manual_flag_all"
+
+    def test_found_partial_when_mixed(self):
+        roster = [{"wave1_gated": [{"kept": True}], "wave2_gated": []},
+                  {"wave1_gated": [{"kept": False}], "wave2_gated": [{"kept": False}]}]
+        assert D2.district_outcome(roster) == "found_partial"
+
+
+class TestFlatten:
+    def test_dedups_a_hub_page_shared_by_two_schools(self):
+        """Independent of any topology label -- normalized-URL dedup alone collapses a hub
+        page into one shared capture target, which is why dropping topology classification
+        doesn't cost the 'capture the hub once' efficiency (see ACQUISITION_PIPELINE.md)."""
+        roster = [
+            {"school": "Elem A", "wave1_gated": [{"url": "https://d.example/hub", "kept": True, "reason": "on-domain"}], "wave2_gated": []},
+            {"school": "Middle B", "wave1_gated": [{"url": "https://d.example/hub?x=1", "kept": True, "reason": "on-domain"}], "wave2_gated": []},
+        ]
+        cands = D2.flatten(roster)
+        assert len(cands) == 1
+        assert sorted(cands[0]["schools"]) == ["Elem A", "Middle B"]
+        assert cands[0]["tools"] == ["claude"]
+
+    def test_rejected_candidates_excluded(self):
+        roster = [{"school": "A", "wave1_gated": [{"url": "https://wrong.example/x", "kept": False, "reason": "off-district"}], "wave2_gated": []}]
+        assert D2.flatten(roster) == []
+
+    def test_wave2_tool_tagged_separately_from_wave1(self):
+        roster = [{"school": "A", "wave1_gated": [], "wave2_gated": [{"url": "https://d.example/x", "kept": True, "reason": "on-domain"}]}]
+        cands = D2.flatten(roster)
+        assert cands[0]["tools"] == ["openrouter"]
+
+
+class TestWriteDiscovery:
+    def test_writes_discovery_and_candidates_json(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(D2, "RAW_DIR", tmp_path)
+        d = _synthetic_district()
+        roster = D2.merge_wave1(D2.build_roster(d),
+                                 {"district_id": "9999999", "domain": "testschools.example", "schools": []},
+                                 "testschools.example")
+        out_dir = D2.write_discovery(d, roster, "batch_00099")
+        assert (out_dir / "discovery.json").exists()
+        assert (out_dir / "candidates.json").exists()
+        doc = json.loads((out_dir / "discovery.json").read_text())
+        assert len(doc["schools"]) == 2
+        assert all(s["outcome"] == "manual_flag" for s in doc["schools"])
+
+    def test_redo_versions_the_old_file_instead_of_overwriting(self, tmp_path, monkeypatch):
+        """data/raw/ is write-once in spirit -- a redo must never destroy the prior
+        attempt's audit trail, per CLAUDE.md's 'never modify data/raw/' rule."""
+        monkeypatch.setattr(D2, "RAW_DIR", tmp_path)
+        d = _synthetic_district()
+        empty_raw = {"district_id": "9999999", "domain": "testschools.example", "schools": []}
+        roster1 = D2.merge_wave1(D2.build_roster(d), empty_raw, "testschools.example")
+        out_dir = D2.write_discovery(d, roster1, "batch_00099")
+        roster2 = D2.merge_wave1(D2.build_roster(d), empty_raw, "testschools.example")
+        D2.write_discovery(d, roster2, "batch_00100")
+        versioned = list(out_dir.glob("discovery.*.json"))
+        assert len(versioned) == 1
+        assert (out_dir / "discovery.json").exists()  # the new one, not destroyed

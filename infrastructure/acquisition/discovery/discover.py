@@ -41,9 +41,27 @@ def perplexity_search(q, dhost, k=10):
     r=Perplexity().search.create(**kw)
     return [getattr(it,"url","") for it in (r.results or []) if getattr(it,"url","")]
 
+SECRETS_FILE = Path("config/secrets.local.json")
+
+def _openrouter_key():
+    """OPENROUTER_API_KEY isn't auto-loaded from .env or secrets.local.json -- and in any
+    execution environment where each shell command starts fresh (no persisted env across
+    calls), an `export` done once is silently gone by the next call. Fall back to reading
+    the key directly from secrets.local.json rather than depending on that export having
+    survived. Returns the value directly -- deliberately does NOT set os.environ, since
+    that would make the key visible to every later subprocess this process spawns for no
+    functional benefit (the one caller uses the return value directly)."""
+    key = os.getenv("OPENROUTER_API_KEY")
+    if key:
+        return key
+    try:
+        return json.loads(SECRETS_FILE.read_text()).get("OPENROUTER_API_KEY")
+    except Exception:
+        return None
+
 def openrouter_search(q, dhost, k=10):
     import openai
-    c=openai.OpenAI(base_url="https://openrouter.ai/api/v1", api_key=os.getenv("OPENROUTER_API_KEY"))
+    c=openai.OpenAI(base_url="https://openrouter.ai/api/v1", api_key=_openrouter_key())
     query=f"{q} site:{dhost}" if dhost else q
     r=c.chat.completions.create(model="openai/gpt-4o-mini-search-preview",
         messages=[{"role":"user","content":query}], max_tokens=600, extra_body={"plugins":[{"id":"web"}]})

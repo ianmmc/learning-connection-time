@@ -9,7 +9,10 @@ Pre-queue exclusion filters (live, recomputed every run -- never a frozen list):
   1. Not operating (LEA SY_STATUS_TEXT != "Open")
   2. CTC / shared-service entity (districts.is_shared_service_entity, METHODOLOGY.md Rule 6)
   3. Grade-span integrity (LEA-level claimed band with zero school-level coverage, Rule 7)
-  4. Already attempted (any outcome) per district_status.json
+  4. Already attempted -- reached Stage 3 (Capture) or beyond, any outcome, per
+     district_status.json. A district that only reached Stage 1/2 (queued/searched but
+     never actually captured) stays eligible for redraw -- see
+     district_status.ATTEMPTED_THRESHOLD_STAGE.
 
 Stratified sampling: enrollment quartiles (priority axis) + state (tiebreak).
 Per-band school selection: cap 12/band, most-constrained-first cross-band overlap

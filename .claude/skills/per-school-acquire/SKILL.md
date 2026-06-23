@@ -5,6 +5,8 @@ description: Run the per-school bell-schedule acquisition pipeline for one or mo
 
 # /per-school-acquire — Per-School Acquisition Pipeline
 
+> **OBSOLETE (2026-06-23).** Built against the pre-Stage-1 `ground_truth_manifest.json` workflow. Its `per_school_run.py roster` step rebuilds its own per-school band roster from raw NCES CSV via plain `bands_for()` — bypassing Stage 1's `batch_NNNNN.json` entirely and silently discarding every CP-A fix (virtual-school exclusion, CTC exclusion, `recursive_band_groups()`, the 12-per-band cap, cross-band dedup). **Use `.claude/skills/stage2-discover/` instead** for any new discovery work. Kept for reference only — do not run as-is.
+
 Orchestrates the validated per-school pipeline (see `docs/ACQUISITION_PIPELINE.md`). Exists as a **skill, not a script**, because **Wave 1 (Claude WebSearch) can only run from inside the agent** — it spawns a Haiku WebSearch subagent, which a plain `.py` cannot do. The skill is the glue; the `.py` workers do the deterministic stages.
 
 **Tradeoff to state once per run:** this leverages the Claude subscription (flat-rate, run overnight), so it is **agent-in-the-loop, not lights-out**. Fully unattended runs would require dropping Wave 1 for an API-only path (lower coverage, real per-call cost).

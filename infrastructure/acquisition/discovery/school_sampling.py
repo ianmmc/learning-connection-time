@@ -43,6 +43,27 @@ def bands_for(gslo, gshi):
     span = set(range(lo, hi+1))
     return {b for b, rng in BANDS.items() if span & set(rng)}
 
+def bands_for_rescue(gslo, gshi):
+    """Like bands_for(), but for the conservative any-overlap RESCUE only (districts whose
+    grade spans don't form a clean partition): a school must reach grade 7 to count as
+    touching middle -- topping out at grade 6 alone is treated as pure elementary, mirroring
+    the same distinction recursive_band_groups() already makes for clean partitions via its
+    top<=6 leading-prefix collapse. bands_for() itself is left as the literal grade-6-8
+    definition for other callers (e.g. LEA-level claimed-band checks) -- this is specifically
+    about per-school rescue-candidate selection, not the district's overall claimed span.
+    Found 2026-06-22: West Bonner County ID's PRIEST RIVER ELEMENTARY and IDAHO HILL
+    ELEMENTARY (both PK-06) were wrongly rescued into middle's candidate pool under plain
+    bands_for() just because grade 6 sits in BANDS['middle']'s nominal range, while PRIEST
+    LAKE ELEMENTARY (PK-07) and PRIEST RIVER LAMANNA HIGH (07-12) -- which actually reach
+    grade 7 -- correctly do belong there."""
+    lo, hi = GRADE_ORD.get(norm(gslo)), GRADE_ORD.get(norm(gshi))
+    if lo is None or hi is None or hi < lo: return set()
+    bands = set()
+    if lo <= GRADE_ORD["05"]: bands.add("elementary")
+    if lo <= GRADE_ORD["08"] and hi >= GRADE_ORD["07"]: bands.add("middle")
+    if hi >= GRADE_ORD["09"]: bands.add("high")
+    return bands
+
 # NCES LEVEL maps cleanly to exactly one band for these three values -- trust it over
 # grade-range when it applies (fixes dilution: a K-6 "Elementary" school no longer also
 # counts toward middle just because grade 6 clips our band boundary). Everything else
@@ -81,25 +102,31 @@ def recursive_band_groups(spans):
 
     Rule (validated against the full 2024-25 NCES corpus, 2026-06-22 -- see
     ACQUISITION_PIPELINE.md Stage 1 / METHODOLOGY.md):
-    1. Accumulate consecutive LEADING segments with top grade <=6 as "elementary" -- handles
-       1, 2, or 3+ elementary sub-segments (lower/upper elementary, primary/intermediate splits).
-    2. Whatever remains after that:
-       - 0 left -> no secondary at all (a real K-elementary-only feeder district; Rule 7
-         won't flag this as a gap since the LEA-level span won't claim middle/high either).
-       - Exactly 1 left -> recurse the SAME test on it: top <=8 -> it's "middle" alone (e.g.
-         a K-8 feeder district with no high school at all); top >=9 -> "middle+high" merged
-         (the Jasper Co./Jefferson-Morgan/Calhan/Martins Mill case -- no separate middle
-         identity exists, the secondary school represents both).
-       - 2+ left -> the first is "middle" alone; everything after it is "high" (itself
-         possibly split into lower-high/upper-high sub-segments, e.g. a freshman campus +
-         main high school -- confirmed real, e.g. Aledo ISD TX: 09-09 then 10-12).
-    This supersedes the old exactly-2-school "largest overlap" tie-break entirely -- it's a
-    strict generalization, validated against every case that tie-break covered plus the much
-    longer tail of 3+/4+/5+/6-segment real district shapes the tie-break never addressed.
+    1. Accumulate consecutive LEADING segments with top grade <=6 into "elementary" --
+       handles 1, 2, or 3+ elementary sub-segments (lower/upper elementary, primary/
+       intermediate splits). If even segment[0] already exceeds grade 6 at its top, it
+       isn't part of this prefix at all (elementary is empty unless segment[0] itself
+       starts within elementary's range -- see step 2).
+    2. EVERY segment not claimed by the elementary prefix (which, when the prefix is
+       empty, means every segment) is independently checked against its OWN span, not its
+       position: it joins "middle" if it starts at grade <=8, and joins "high" if it ends
+       at grade >=9. A segment can join both (the "middle+high merged" case -- Jasper
+       Co./Jefferson-Morgan/Calhan/Martins Mill, no separate middle identity exists) or
+       just one (Quitman County: a PK-08 elementary already fully covers middle, so the
+       following 09-12 high school does NOT also need to claim middle; Sequoia Union
+       Elementary: an 08-08 segment trailing an elem+middle-merged KG-07 segment is still
+       middle, not high, regardless of coming last). A segment whose own span doesn't
+       start within elementary's range (Bridge Academy CT: a lone 07-12 segment) never
+       joins elementary just because it's first.
+    This is a per-segment overlap check, not position-based guessing -- it supersedes the
+    old exactly-2-school "largest overlap" tie-break entirely, and several earlier,
+    narrower versions of this same function that got the boundary cases wrong (see
+    docs/diagrams/acquisition_pipeline_flow.md for the full trail).
     """
     ordered = _clean_ascending_partition(spans)
     if not ordered:  # None (not a clean partition) or [] (no parseable spans at all)
         return None
+    los = [_grade_num(lo) for lo, _ in ordered]
     tops = [_grade_num(hi) for _, hi in ordered]
     n = len(ordered)
 
@@ -110,27 +137,20 @@ def recursive_band_groups(spans):
         i += 1
 
     if elem_end == -1:
-        # segment[0] itself already exceeds grade 6 -- elem+middle merge (N=2-style boundary
-        # at grade 7 or 8), e.g. a PK-7 school with a separate 8-12 high.
-        remaining = list(range(1, n))
-        if not remaining:
-            # single segment, nothing follows -- represents elem+middle, and high TOO if its
-            # own span actually reaches that far (e.g. a K-12 LEVEL="Other" school -- the N=1
-            # trivial case, just reached via this path since LEVEL didn't shortcut it earlier;
-            # found 2026-06-22, Universal Academy MI).
-            return {"elementary": [0], "middle": [0], "high": [0] if tops[0] >= 9 else []}
-        return {"elementary": [0], "middle": [0], "high": remaining}
+        elem = [0] if los[0] <= 5 else []
+        start = 0  # segment[0] itself still needs the middle/high check below
+    else:
+        elem = list(range(elem_end + 1))
+        start = elem_end + 1
 
-    elem_idx = list(range(elem_end + 1))
-    remaining = list(range(elem_end + 1, n))
-    if not remaining:
-        return {"elementary": elem_idx, "middle": [], "high": []}
-    if len(remaining) == 1:
-        sole = remaining[0]
-        if tops[sole] <= 8:
-            return {"elementary": elem_idx, "middle": [sole], "high": []}
-        return {"elementary": elem_idx, "middle": [sole], "high": [sole]}
-    return {"elementary": elem_idx, "middle": [remaining[0]], "high": remaining[1:]}
+    middle, high = [], []
+    for pos in range(start, n):
+        if los[pos] <= 8:
+            middle.append(pos)
+        if tops[pos] >= 9:
+            high.append(pos)
+
+    return {"elementary": elem, "middle": middle, "high": high}
 
 def sample_size(N, z=1.96, e=0.05, p=0.5):
     """95/5 finite-population-corrected sample size; censuses small N."""
@@ -152,6 +172,31 @@ def _lea_file(year):
     if len(matches) != 1:
         raise SystemExit(f"expected exactly one ccd_lea_029_*.csv in data/raw/federal/nces-ccd/{year}, found {matches}")
     return matches[0]
+
+def _virtual_file(year):
+    f = Path(f"data/raw/federal/nces-ccd/{year}/ccd_sch_129_{year[2:4]}{year[7:9]}_w_1a_073025.csv")
+    if not f.exists():  # fall back to glob
+        f = next(Path(f"data/raw/federal/nces-ccd/{year}").glob("ccd_sch_129_*_w_1a_*.csv"))
+    return f
+
+# NCES VIRTUAL_TEXT enum: No virtual instruction / Supplemental Virtual / Primarily virtual /
+# Exclusively virtual / Missing / Not reported. Only the majority/exclusively-virtual values
+# are excluded -- a school with Supplemental Virtual is still a normal in-person school with a
+# real bell schedule, just one that also offers a virtual option. Missing/Not reported are left
+# alone (no positive evidence to exclude on, same principle as everywhere else in this file).
+# Found 2026-06-22: Virginia Connections Academy (510348003096, Scott County VA) -- a
+# Pearson-operated full-virtual school, LEVEL=Secondary so it was rescued into both middle and
+# high via the ambiguous-LEVEL path -- confirmed VIRTUAL_TEXT="Exclusively virtual".
+VIRTUAL_EXCLUDED = {"Exclusively virtual", "Primarily virtual"}
+
+def _virtual_ids(year):
+    """NCESSCH set of schools too virtual to represent a normal in-person bell-to-bell day."""
+    ids = set()
+    with open(_virtual_file(year), encoding="utf-8-sig", errors="replace") as fh:
+        for row in csv.DictReader(fh):
+            if row.get("VIRTUAL_TEXT", "") in VIRTUAL_EXCLUDED:
+                ids.add(row.get("NCESSCH", ""))
+    return ids
 
 REGULAR_SCH_TYPE = "Regular School"  # NCES SCH_TYPE_TEXT enum: Regular / Special Education /
 # Career and Technical / Alternative. Only "Regular School" is reliably representative of a
@@ -191,13 +236,20 @@ def school_index(year):
        to the original conservative rule: any school whose grade range overlaps a still-empty
        band counts as a candidate for it. Not yet validated for these messier shapes -- kept
        deliberately permissive rather than guessing.
+
+    Schools that are majority/exclusively virtual (NCES ccd_sch_129 VIRTUAL_TEXT, see
+    VIRTUAL_EXCLUDED) are dropped before any of the above -- a virtual school has no real
+    in-person bell-to-bell day to sample (found 2026-06-22: Virginia Connections Academy,
+    Scott County VA).
     """
     idx = defaultdict(lambda: defaultdict(list))
     by_district = defaultdict(list)  # did -> [school, ...] (every eligible school, LEVEL-clean or not)
+    virtual_ids = _virtual_ids(year)
     with open(_sch_file(year), encoding="utf-8-sig", errors="replace") as fh:
         for row in csv.DictReader(fh):
             if row.get("SY_STATUS","") not in OPEN: continue
             if row.get("SCH_TYPE_TEXT","") != REGULAR_SCH_TYPE: continue
+            if row.get("NCESSCH","") in virtual_ids: continue
             if row.get("GSHI","") in ("PK", "KG"): continue  # standalone preschool / early-childhood
             # center, e.g. Lake Preschool (PK-PK) or Clinton County Early Childhood Center
             # (PK-KG) -- not representative of a normal K-12 academic day. Narrower than
@@ -256,14 +308,15 @@ def school_index(year):
                             idx[did][band].append(school)
         else:
             # Not a clean partition -- conservative any-overlap fallback (unvalidated shape).
+            # bands_for_rescue(), not bands_for() -- see its docstring (West Bonner County ID).
             for school in ambiguous:
-                for b in bands_for(school["gslo"], school["gshi"]):
+                for b in bands_for_rescue(school["gslo"], school["gshi"]):
                     if school not in idx[did][b]:
                         idx[did][b].append(school)
             for band in BANDS:
                 if idx[did][band]: continue
                 for school in schools:
-                    if band in bands_for(school["gslo"], school["gshi"]):
+                    if band in bands_for_rescue(school["gslo"], school["gshi"]):
                         idx[did][band].append(school)
     return idx
 

@@ -7,6 +7,10 @@ LEA_TYPE_TEXT / grade-span every run, never a frozen list (see ACQUISITION_PIPEL
 Stage 1). Keyed by district_id for O(1) lookup -- structure over scan-ability, since this
 is process input read by every batch-build run, not primarily a human-read record.
 
+already_attempted() only excludes a district once it has reached Stage 3 (Capture) --
+a district merely queued (Stage 1) or searched (Stage 2) has had no real, costly attempt
+yet and stays eligible for redraw (e.g. after a queue-time bug fix).
+
 Schema reference: data/acquisition/status/district_status.example.json
 Doc: docs/ACQUISITION_PIPELINE.md (Stage 1), docs/diagrams/acquisition_pipeline_flow.md
 """
@@ -16,6 +20,14 @@ import json
 
 STATUS_FILE = Path("data/acquisition/status/district_status.json")
 SCHEMA_VERSION = 1
+
+# Stage 3 = Capture is the first stage with a real, costly attempt (an actual fetch of a
+# district/school page). Stage 1 (Queue) and Stage 2 (Discover) just target/search -- a
+# district that only reached one of those has not actually been "tried" yet, so it must
+# stay eligible for redraw (e.g. after a Stage 1 bug fix). Found 2026-06-22: re-running
+# queue_batch.py after a school_sampling.py fix silently excluded every district from the
+# prior (never-captured) batch_00001, masking the fix instead of demonstrating it.
+ATTEMPTED_THRESHOLD_STAGE = 3
 
 
 def _now() -> str:
@@ -36,7 +48,10 @@ def save(registry: dict) -> None:
 
 
 def already_attempted(registry: dict, district_id: str) -> bool:
-    return district_id in registry["districts"]
+    """True only once a district has reached Stage 3 (Capture) or beyond -- Stage 1/2-only
+    districts (queued or searched but never actually fetched) remain eligible for redraw."""
+    d = registry["districts"].get(district_id)
+    return d is not None and d.get("furthest_stage", 0) >= ATTEMPTED_THRESHOLD_STAGE
 
 
 def record_stage(

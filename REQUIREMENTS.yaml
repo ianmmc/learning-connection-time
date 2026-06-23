@@ -1370,17 +1370,21 @@ requirements:
       - A district is excluded from the eligible pool if its LEA-level SY_STATUS_TEXT != "Open"
       - A district is excluded if districts.is_shared_service_entity is True (REQ-061)
       - A district is excluded AND logged if its LEA-level claimed grade span includes a band with zero school-level coverage (Rule 7, grade-span integrity)
-      - A district is excluded if it already appears in the district_status.json registry, regardless of prior outcome (REQ-067)
+      - A district is excluded if it has reached Stage 3 (Capture) or beyond in the district_status.json registry, regardless of outcome (REQ-067) - a district that only reached Stage 1 (queue) or Stage 2 (discover) has had no real, costly attempt yet and remains eligible for redraw
       - All four filters are live/recomputed every run, never a persisted exclusion list - a future policy change lets a district back in for free
     tests:
       - tests/test_acquisition_stages.py::TestPreQueueExclusion::test_grade_span_gap_excludes_phantom_lea
       - tests/test_acquisition_stages.py::TestPreQueueExclusion::test_healthy_district_is_eligible
+      - tests/test_acquisition_stages.py::TestPreQueueExclusion::test_stage1_only_district_stays_eligible_for_redraw
+      - tests/test_acquisition_stages.py::TestPreQueueExclusion::test_captured_district_is_excluded_from_redraw
     created: "2026-06-22T00:00:00Z"
     updated: "2026-06-22T00:00:00Z"
     notes: "infrastructure/acquisition/discovery/queue_batch.py::eligible_pool. Rule 7 (grade-span integrity)
       excluded ~985 districts on the first full run against the 2024-25 NCES corpus - e.g. Alabama Youth Services
       claims KG-12 at LEA level but has zero schools listed anywhere in ccd_sch_029, not even closed ones.
-      See docs/ACQUISITION_PIPELINE.md Stage 1, docs/METHODOLOGY.md Rule 7."
+      Already-attempted threshold corrected 2026-06-22 to Stage 3+ (see REQ-067 notes) - excluding on ANY
+      stage masked a Stage 1 bug fix by silently dropping every district from the never-captured batch_00001
+      on re-queue. See docs/ACQUISITION_PIPELINE.md Stage 1, docs/METHODOLOGY.md Rule 7."
 
   - id: REQ-063
     description: "Enrollment-quartile stratified district sampling for acquisition batch composition"
@@ -1436,12 +1440,16 @@ requirements:
       - Standalone preschool/early-childhood schools (GSHI in ("PK","KG"), no grade-1+) are excluded
       - A normal K-5 school that also offers PK (GSLO=PK, GSHI=05) is NOT excluded by the preschool rule
       - Exclusion is based on NCES structural fields (SCH_TYPE_TEXT, GSHI), never school-name pattern matching
+      - Majority/exclusively-virtual schools (NCES ccd_sch_129 VIRTUAL_TEXT in "Exclusively virtual"/"Primarily virtual") are excluded - no real in-person bell-to-bell day to sample
+      - A school with VIRTUAL_TEXT="Supplemental Virtual" (a normal in-person school that also offers a virtual option) is NOT excluded
     tests:
       - tests/test_acquisition_stages.py::TestSchoolEligibilityFiltering::test_alternative_school_excluded
       - tests/test_acquisition_stages.py::TestSchoolEligibilityFiltering::test_career_technical_school_excluded
       - tests/test_acquisition_stages.py::TestSchoolEligibilityFiltering::test_standalone_preschool_excluded
       - tests/test_acquisition_stages.py::TestEarlyChildhoodExclusion::test_pk_kg_only_center_excluded
       - tests/test_acquisition_stages.py::TestEarlyChildhoodExclusion::test_normal_k5_school_not_excluded
+      - tests/test_acquisition_stages.py::TestVirtualSchoolExclusion::test_exclusively_virtual_school_excluded
+      - tests/test_acquisition_stages.py::TestVirtualSchoolExclusion::test_supplemental_virtual_school_not_excluded
     created: "2026-06-22T00:00:00Z"
     updated: "2026-06-22T00:00:00Z"
     notes: "infrastructure/acquisition/discovery/school_sampling.py::school_index. Found via CP-A human review of
@@ -1452,7 +1460,10 @@ requirements:
       an accepted, deferred gap - the project's SPED staffing work already flags this category for dedicated
       attention later, not a clean fit for this filter's rationale. Extended same day after adding gslo/gshi to
       the JSON for human inspection surfaced Clinton County Early Childhood Center (GSLO=PK, GSHI=KG) - the
-      GSHI=='PK'-only rule missed it; extended to GSHI in ('PK','KG')."
+      GSHI=='PK'-only rule missed it; extended to GSHI in ('PK','KG'). Virtual-school exclusion added 2026-06-22
+      (CP-A review of a regenerated batch): Virginia Connections Academy (Pearson-operated, Scott County VA,
+      LEVEL=Secondary so it was being rescued into both middle and high) confirmed VIRTUAL_TEXT='Exclusively
+      virtual' in ccd_sch_129."
 
   - id: REQ-066
     description: "LEVEL-primary band classification with recursive grade-range grouping for whatever LEVEL leaves unresolved"
@@ -1462,10 +1473,14 @@ requirements:
     acceptance_criteria:
       - A school whose NCES LEVEL is a clean Elementary/Middle/High is assigned to exactly that one band, regardless of grade-range overlap with an adjacent band
       - Grade 13 counts as part of the high band (a real, sanctioned NCES code some states use for a continuation/extra-year high school program) rather than vanishing from band classification entirely
-      - For a district whose schools' distinct grade spans form a clean ascending, non-overlapping, contiguous partition, recursive_band_groups() resolves elementary/middle/high by structural position: consecutive leading segments with top grade <=6 collapse into elementary (handles 1-3+ elementary sub-segments, e.g. lower/upper elementary splits); whatever remains is middle alone (top <=8), middle+high merged (top >=9, when there's no separate middle identity at all), or middle alone followed by one-or-more high segments (handles lower/upper-high splits, e.g. a 9th-grade campus + main high school)
+      - For a district whose schools' distinct grade spans form a clean ascending, non-overlapping, contiguous partition, recursive_band_groups() resolves elementary by structural position (consecutive leading segments with top grade <=6 collapse into elementary, handling 1-3+ elementary sub-segments) but resolves middle/high by a PER-SEGMENT overlap check, not position: every segment not claimed by the elementary prefix joins middle if its own span starts at grade <=8, and joins high if its own span ends at grade >=9 - a segment can join both (middle+high merged, no separate middle identity exists) or just one, and a segment whose own span doesn't start within elementary's range must never join elementary just because it's first
+      - A lone non-elementary segment with no separate middle identity (e.g. a single 07-12 LEVEL=High school) must resolve to middle+high only, NOT elementary, even though it has no leading segment in front of it
+      - A trailing segment after an elem+middle-merged leading segment is classified by its OWN span, not by coming last - a segment that doesn't reach grade 9 stays in middle even if it's the final segment in the partition
+      - A segment whose span fully covers middle (e.g. a PK-08 elementary) must not cause a later, distinct high segment to also be claimed by middle - middle/high membership is independent per segment
       - An ambiguous-LEVEL school (Other/Secondary/Not reported/Ungraded/blank) may join a band the recursive grouping assigns it to even if that band already has LEVEL-clean coverage from other schools (a 9th-grade campus must join an already-populated high band, not be dropped)
       - A LEVEL-clean school may ONLY be added to an additional band via recursion if that band was a genuine gap (no LEVEL-clean coverage at all) - it must never be added to a second band that already has separate LEVEL-clean coverage, which would reintroduce the original dilution bug
-      - If a district's spans do NOT form a clean partition (genuinely different/overlapping spans on one side, e.g. multiple elementary buildings with different ranges, one subsuming another), fall back to the original any-overlap rescue, unvalidated for that shape
+      - If a district's spans do NOT form a clean partition (genuinely different/overlapping spans on one side, e.g. multiple elementary buildings with different ranges, one subsuming another), fall back to the any-overlap rescue (bands_for_rescue())
+      - In the any-overlap rescue, a school must reach grade 7 to count as touching middle - topping out at grade 6 alone is treated as pure elementary (mirrors the clean-partition per-segment rule), so a grade-6-topping elementary does not dilute middle's candidate pool just because grade 6 sits in the nominal 6-8 middle range
       - Multiple schools sharing an IDENTICAL grade span (different buildings, same shape) collapse to one logical segment and are treated identically to a single-building district with the same shape
     tests:
       - tests/test_acquisition_stages.py::TestLevelPrimaryBandClassification::test_grade_13_counts_as_high
@@ -1478,15 +1493,25 @@ requirements:
       - tests/test_acquisition_stages.py::TestLevelPrimaryBandClassification::test_ambiguous_level_school_spanning_full_range_gets_all_bands
       - tests/test_acquisition_stages.py::TestLevelPrimaryBandClassification::test_ambiguous_school_joins_already_populated_band
       - tests/test_acquisition_stages.py::TestLevelPrimaryBandClassification::test_k8_feeder_district_has_no_high_band
+      - tests/test_acquisition_stages.py::TestLevelPrimaryBandClassification::test_lone_secondary_segment_does_not_join_elementary
+      - tests/test_acquisition_stages.py::TestLevelPrimaryBandClassification::test_trailing_segment_stays_middle_not_high_by_position
+      - tests/test_acquisition_stages.py::TestLevelPrimaryBandClassification::test_pk08_elementary_does_not_over_claim_into_trailing_high
+      - tests/test_acquisition_stages.py::TestAnyOverlapRescueMiddleBoundary::test_grade6_topping_school_not_rescued_into_middle
     created: "2026-06-22T00:00:00Z"
     updated: "2026-06-22T00:00:00Z"
     notes: "infrastructure/acquisition/discovery/school_sampling.py::primary_bands_for, bands_for,
-      recursive_band_groups, _clean_ascending_partition. Found via CP-A human review of batch_00001: pure
-      grade-range classification diluted Fayette County IN's real middle school (Connersville Middle, 1 school)
-      6-to-1 with 5 unrelated K-6 elementary schools that merely clipped the boundary grade. The grade-13 fix was
-      found while tracing why Jackson County MS's Vocational Center looked like the sole high-band candidate -
-      its three real comprehensive high schools (coded 09-13) were silently invisible to the old classifier;
-      222 open schools nationally use GSHI=13.
+      bands_for_rescue, recursive_band_groups, _clean_ascending_partition. Found via CP-A human review of
+      batch_00001: pure grade-range classification diluted Fayette County IN's real middle school (Connersville
+      Middle, 1 school) 6-to-1 with 5 unrelated K-6 elementary schools that merely clipped the boundary grade.
+      The grade-13 fix was found while tracing why Jackson County MS's Vocational Center looked like the sole
+      high-band candidate - its three real comprehensive high schools (coded 09-13) were silently invisible to
+      the old classifier; 222 open schools nationally use GSHI=13. bands_for_rescue() added 2026-06-22 after
+      West Bonner County ID's two PK-06 elementaries (IDAHO HILL, PRIEST RIVER) were wrongly rescued into middle
+      under plain bands_for() within the any-overlap fallback - the same dilution bug the LEVEL-primary/
+      per-segment fixes above already solved for the clean-partition path, just not yet for this fallback.
+      Re-running the fix against Breathitt County KY (an existing test fixture) surfaced the identical bug there
+      too - Sebastian and Highland-Turner Elementary (both top out at grade 6) no longer dilute middle; the test
+      assertion was corrected to match.
 
       An initial fix (exactly-2-school 'largest overlap wins' tie-break) was scoped narrowly to avoid touching
       Breathitt County KY/Chama Valley NM/Northern Tioga PA (3+ schools). That scoping turned out to be wrong:
@@ -1516,7 +1541,8 @@ requirements:
       - One registry entry exists per district that has entered the pipeline (passed Stage 1's pre-queue filters), keyed by district_id
       - The registry is updated at every stage (1-9) a district progresses through, recording furthest_stage, stage_name, outcome, and an appended history[] trail
       - Pre-queue exclusions (CTC, not-operating, grade-span gap) are never recorded in this registry - they are re-derived live every run via REQ-062, not a frozen list
-      - A district already present in the registry is excluded from future queueing regardless of its recorded outcome (REQ-062) - failures are triaged separately, not silently retried
+      - A district that has reached Stage 3 (Capture) or beyond is excluded from future queueing regardless of its recorded outcome (REQ-062) - failures are triaged separately, not silently retried
+      - A district whose furthest recorded stage is 1 (queue) or 2 (discover) is NOT excluded - those stages target/search only, with no real, costly attempt yet, so the district stays eligible for redraw (e.g. after a queue-time bug fix)
     tests:
       - tests/test_acquisition_stages.py::TestDistrictStatusRegistry::test_record_and_check_attempted
       - tests/test_acquisition_stages.py::TestDistrictStatusRegistry::test_history_accumulates_across_stages
@@ -1525,4 +1551,123 @@ requirements:
     notes: "infrastructure/acquisition/discovery/district_status.py. Replaces training_batch.py's
       directory-presence heuristic (archived to data/archive/training_batch_py-superseded-20260622/), which
       inferred attempt status from which directories happened to exist rather than recording it explicitly.
-      Schema reference: data/acquisition/status/district_status.example.json."
+      Schema reference: data/acquisition/status/district_status.example.json. Threshold corrected 2026-06-22:
+      already_attempted() originally fired on ANY presence in the registry (any stage); found wrong when
+      re-running queue_batch.py after a school_sampling.py bug fix silently excluded all 12 districts from the
+      prior, never-captured batch_00001 instead of re-confirming the fix on them. Now gated on
+      ATTEMPTED_THRESHOLD_STAGE = 3 (Capture) - Stage 1/2 alone is not a real attempt."
+
+  - id: REQ-068
+    description: "Stage 2 (Discover) input contract - read Stage 1's batch JSON directly, never recompute band membership"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - Per-school targeting data (school_id, name, bands, query) is built ONLY from a Stage 1 batch.json's schools_by_band - never recomputed from raw NCES CSV via bands_for() or any other classifier
+      - A school spanning multiple bands (e.g. a combined middle/high secondary) appears as exactly one roster row listing all its bands, keyed by school_id - never duplicated per band
+      - The per-school query is "{school} {state} bell schedule start and end times" - no district name, no explicit school-year reference
+    tests:
+      - tests/test_acquisition_stages.py::TestRosterBuilding::test_multi_band_school_dedups_to_one_row_with_both_bands
+      - tests/test_acquisition_stages.py::TestRosterBuilding::test_query_includes_school_and_state_not_district_or_year
+    created: "2026-06-23T00:00:00Z"
+    updated: "2026-06-23T00:00:00Z"
+    notes: "infrastructure/acquisition/discovery/discover_stage2.py::build_roster, query_for. Deliberately
+      re-deriving nothing from CSV - that's exactly the bug class Stage 1's CP-A review spent a full day fixing
+      (virtual-school exclusion, CTC exclusion, recursive_band_groups(), the 12-per-band cap, cross-band dedup);
+      recomputing here would silently discard every one of those fixes. See ACQUISITION_PIPELINE.md Stage 2."
+
+  - id: REQ-069
+    description: "Stage 2 reconciliation - the filesystem is authoritative over the registry, never the reverse"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - A district's discovery.json existing in data/raw/lea-website-captures/<district_id>_<slug>/ is the authoritative fact that Stage 2 is done for that district - the registry is a cache of this fact, not an independent source of truth
+      - Before any searching starts, every district in the batch is checked against disk: if discovery.json exists but the registry doesn't reflect furthest_stage>=2, the registry is reconciled UP to match disk and the district is skipped (never re-searched)
+      - If the registry claims furthest_stage>=2 for a district but discovery.json does not exist on disk, this is a control failure (not routine drift) - the ENTIRE run halts immediately (not just that one district) rather than risk propagating whatever caused the inconsistency
+      - The slug used in the directory name is derived from the district name (lowercase, non-alphanumeric collapsed to underscore, truncated ~40 chars) - the district_id prefix, not the slug, is the real disambiguator
+    tests:
+      - tests/test_acquisition_stages.py::TestReconcile::test_district_with_no_disk_artifact_and_no_registry_entry_is_todo
+      - tests/test_acquisition_stages.py::TestReconcile::test_disk_ahead_of_registry_reconciles_up_and_skips
+      - tests/test_acquisition_stages.py::TestReconcile::test_registry_ahead_of_disk_halts_the_entire_run
+      - tests/test_acquisition_stages.py::TestSlugAndDir::test_slugify_collapses_punctuation
+      - tests/test_acquisition_stages.py::TestSlugAndDir::test_slugify_truncates_long_names
+      - tests/test_acquisition_stages.py::TestSlugAndDir::test_lea_dir_prefixes_district_id
+    created: "2026-06-23T00:00:00Z"
+    updated: "2026-06-23T00:00:00Z"
+    notes: "infrastructure/acquisition/discovery/discover_stage2.py::reconcile, slugify, lea_dir. Output
+      location is data/raw/lea-website-captures/, not data/acquisition/ - discovered URLs and captured pages
+      are evidence pulled from the outside world (same category as the NCES downloads already under
+      data/raw/), not our own pipeline process state, so CLAUDE.md's 'never modify files in data/raw/' rule
+      applies: discovery.json is write-once (see REQ-071). See ACQUISITION_PIPELINE.md Stage 2 and
+      docs/diagrams/acquisition_pipeline_flow.md for the full design-session trail."
+
+  - id: REQ-070
+    description: "Stage 2 wave dispatch - Wave 1 (Claude WebSearch subagent) with a strict handoff contract, Wave 2 (OpenRouter) conditional on a residual"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "Wave 1 (Claude WebSearch) runs as one Haiku subagent PER DISTRICT, never multiple districts in one subagent - the subagent returns a single strictly-formatted JSON result (district_id, domain, per-school urls), never prose for the orchestrator to read and hand-transcribe"
+      - The subagent's result MUST echo the district_id and domain it was given - a mismatch on either fails loud (SystemExit) rather than being silently accepted, since a wrong-district result would contaminate discovery.json with another district's URLs
+      - A school is "residual" only if it has zero KEPT candidates after gating Wave 1's raw URLs (reject news/aggregator domains, off-domain misses)
+      - Wave 2 (OpenRouter gpt-4o-mini-search) is a deterministic script call, NEVER a subagent, and runs ONLY when at least one residual school exists - if Wave 1 + gating satisfied every school in the district, Wave 2 is skipped entirely (no OpenRouter call is made), not just scoped down
+      - A school still unsatisfied after both waves is recorded with outcome="manual_flag" - the assumption is that neither Claude WebSearch nor OpenRouter found anything, not an error condition
+    tests:
+      - tests/test_acquisition_stages.py::TestWave1Handoff::test_matching_district_id_and_domain_passes
+      - tests/test_acquisition_stages.py::TestWave1Handoff::test_mismatched_district_id_fails_loud
+      - tests/test_acquisition_stages.py::TestWave1Handoff::test_mismatched_domain_fails_loud
+      - tests/test_acquisition_stages.py::TestWave1Handoff::test_merge_attaches_urls_by_school_id_missing_school_gets_empty
+      - tests/test_acquisition_stages.py::TestResidualAndWave2Gating::test_school_with_kept_wave1_candidate_is_not_residual
+      - tests/test_acquisition_stages.py::TestResidualAndWave2Gating::test_school_with_zero_kept_candidates_is_residual
+    created: "2026-06-23T00:00:00Z"
+    updated: "2026-06-23T00:00:00Z"
+    notes: "infrastructure/acquisition/discovery/discover_stage2.py::validate_wave1_result, merge_wave1,
+      residual_schools, run_wave2, gate_urls (reuses discover.py's gate()/host_of()/openrouter_search()).
+      The Wave-2-must-be-conditional fix was a real correction caught reviewing the Mermaid diagram, which had
+      drawn Wave 1 -> Wave 2 -> flatten as an unconditional straight line, silently implying Wave 2 always
+      runs - wasting an OpenRouter call whenever Wave 1 already satisfied every school. Topology classification
+      (hub/per_school/none) was deliberately dropped from Wave 1's job - not enough signal pre-capture; see
+      ACQUISITION_PIPELINE.md Stage 2."
+
+  - id: REQ-071
+    description: "Stage 2 output - discovery.json (full per-school audit trail) + candidates.json (capture-ready, deduped), written once and versioned on redo"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - discovery.json lists EVERY school in the targeted roster, found or flagged - if a school went into discovery, its outcome must be recorded, not silently omitted
+      - candidates.json is the flattened, deduped candidate list (by normalized URL) across all schools in the district - this collapses a hub page shared by multiple schools into one capture target automatically, independent of any topology label
+      - Both files are written exactly once per district, atomically, only after the full chain (Wave 1 + gating + Wave 2-if-needed + flatten) completes - never partially
+      - A redo (deliberate, manual only - Stage 2 never auto-retries a district with an existing discovery.json) NEVER overwrites the existing discovery.json/candidates.json in place - the prior files are renamed aside with a UTC timestamp suffix first, preserving the full attempt history
+    tests:
+      - tests/test_acquisition_stages.py::TestFlatten::test_dedups_a_hub_page_shared_by_two_schools
+      - tests/test_acquisition_stages.py::TestFlatten::test_rejected_candidates_excluded
+      - tests/test_acquisition_stages.py::TestFlatten::test_wave2_tool_tagged_separately_from_wave1
+      - tests/test_acquisition_stages.py::TestWriteDiscovery::test_writes_discovery_and_candidates_json
+      - tests/test_acquisition_stages.py::TestWriteDiscovery::test_redo_versions_the_old_file_instead_of_overwriting
+    created: "2026-06-23T00:00:00Z"
+    updated: "2026-06-23T00:00:00Z"
+    notes: "infrastructure/acquisition/discovery/discover_stage2.py::write_discovery, flatten, school_outcome.
+      Output lives under data/raw/lea-website-captures/<district_id>_<slug>/, not data/acquisition/ - see
+      REQ-069 notes. Capture's own per-district artifacts (screenshots, PDFs, OCR text) will land in the same
+      directory once Stage 3 exists, rather than introducing a second per-district location."
+
+  - id: REQ-072
+    description: "Stage 2 registry write-back - one write per district at completion, orchestrator-only, never from a subagent"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - The registry is written exactly once per district, at actual completion (discovery.json + candidates.json already on disk) - never an interim 'started' marker, since there is nothing meaningful to reconcile against a half-finished state
+      - Only the single-threaded orchestrating script ever reads or writes district_status.json for Stage 2 - never a subagent directly - to avoid race conditions on the shared JSON file under concurrent subagent dispatch
+      - The district-level outcome is a rollup of every school's outcome: found_all (every school resolved), manual_flag_all (zero schools resolved), or found_partial (mixed) - full per-school detail lives only in discovery.json, never duplicated into the registry
+    tests:
+      - tests/test_acquisition_stages.py::TestOutcomeRollup::test_found_all_when_every_school_resolved
+      - tests/test_acquisition_stages.py::TestOutcomeRollup::test_manual_flag_all_when_nothing_found
+      - tests/test_acquisition_stages.py::TestOutcomeRollup::test_found_partial_when_mixed
+    created: "2026-06-23T00:00:00Z"
+    updated: "2026-06-23T00:00:00Z"
+    notes: "infrastructure/acquisition/discovery/discover_stage2.py::district_outcome, finish_district. The
+      'flag for human follow-up' decision is a registry outcome only, deliberately not a separate flagged-list
+      file - one place to scan for fallout across every stage, per the project's stated preference."
