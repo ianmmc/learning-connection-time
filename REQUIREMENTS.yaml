@@ -1681,3 +1681,147 @@ requirements:
     notes: "infrastructure/acquisition/discovery/discover_stage2.py::district_outcome, finish_district. The
       'flag for human follow-up' decision is a registry outcome only, deliberately not a separate flagged-list
       file - one place to scan for fallout across every stage, per the project's stated preference."
+
+  - id: REQ-073
+    description: "Stage 3 (Capture) reconciliation - the filesystem is authoritative over the registry, applying the same Stage 2 pattern to a new stage"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - A district's captures.json existing in data/raw/lea-website-captures/<district_id>_<slug>/ is the authoritative fact that Stage 3 is done for that district - the registry is a cache of this fact, not an independent source of truth
+      - A district is only Stage 3's concern once it has BOTH discovery.json and candidates.json (Stage 2's output) - name/state/domain are read from discovery.json, never re-derived, since candidates.json alone doesn't carry them
+      - Before any fetching starts, every eligible district is checked against disk: if captures.json exists but the registry doesn't reflect furthest_stage>=3, the registry is reconciled UP to match disk and the district is skipped (never re-captured)
+      - If the registry claims furthest_stage>=3 for a district but captures.json does not exist on disk, this is a control failure (not routine drift) - the ENTIRE run halts immediately rather than risk propagating whatever caused the inconsistency
+    tests:
+      - tests/test_acquisition_stages.py::TestCaptureStage3FindDistricts::test_finds_district_with_both_files
+      - tests/test_acquisition_stages.py::TestCaptureStage3FindDistricts::test_excludes_district_missing_candidates_json
+      - tests/test_acquisition_stages.py::TestCaptureStage3FindDistricts::test_empty_root_returns_empty_list
+      - tests/test_acquisition_stages.py::TestCaptureStage3Reconcile::test_district_with_no_disk_artifact_and_no_registry_entry_is_todo
+      - tests/test_acquisition_stages.py::TestCaptureStage3Reconcile::test_disk_ahead_of_registry_reconciles_up_and_skips
+      - tests/test_acquisition_stages.py::TestCaptureStage3Reconcile::test_registry_ahead_of_disk_halts_the_entire_run
+    created: "2026-06-23T00:00:00Z"
+    updated: "2026-06-23T00:00:00Z"
+    notes: "infrastructure/acquisition/discovery/capture_stage3.py::find_districts, reconcile. Mirrors
+      discover_stage2.py's reconcile() pattern exactly (REQ-069), applied to captures.json instead of
+      discovery.json and stage=3 instead of stage=2 - same control-failure halt semantics, same
+      registry-is-a-cache-never-a-source-of-truth principle. See ACQUISITION_PIPELINE.md Stage 3."
+
+  - id: REQ-074
+    description: "Stage 3 outcome rollup and registry write-back - OAuth/Drive failures are a per-item flag, not a batch halt, distinct from the Stage 2 billing CONTROL FAILURE"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - The district-level outcome is a rollup of every candidate's ok/err: captured_all (every candidate succeeded), capture_failed_all (none did), or captured_partial (mixed) - full per-candidate detail lives only in captures.json, never duplicated into the registry
+      - A failed candidate's specific reason (e.g. needs_oauth_reauth) is summarized in the registry's notes field, but the registry NEVER maintains a live array of open issues - a human generates the actual triage list on demand by scanning captures.json files for a specific err value when ready to act, avoiding the sync-bug risk of an accumulating structure that has to stay in sync with reality
+      - An OAuth/Drive-API failure on one candidate does NOT halt the run (unlike the Stage 2 billing CONTROL FAILURE, where one failure means every subsequent call fails identically) - one stuck Drive item says nothing about the rest of the batch, so capture moves on to the next candidate
+      - The registry is written exactly once per district, at actual completion (captures.json already on disk) - same single-write-orchestrator-only principle as Stage 2 (REQ-072), no schema changes to district_status.py needed
+    tests:
+      - tests/test_acquisition_stages.py::TestCaptureStage3OutcomeRollup::test_captured_all_when_every_candidate_ok
+      - tests/test_acquisition_stages.py::TestCaptureStage3OutcomeRollup::test_capture_failed_all_when_nothing_ok
+      - tests/test_acquisition_stages.py::TestCaptureStage3OutcomeRollup::test_captured_partial_when_mixed
+      - tests/test_acquisition_stages.py::TestCaptureStage3OutcomeRollup::test_missing_err_field_does_not_crash
+      - tests/test_acquisition_stages.py::TestCaptureStage3Finish::test_finish_reads_captures_json_and_writes_registry
+    created: "2026-06-23T00:00:00Z"
+    updated: "2026-06-23T00:00:00Z"
+    notes: "infrastructure/acquisition/discovery/capture_stage3.py::compute_outcome, finish_district. Decided
+      explicitly against a registry-held issues array (the user's words: 'that's a recipe for sync issues') -
+      see ACQUISITION_PIPELINE.md Stage 3 and the diagram decision log for the full reasoning trail."
+
+  - id: REQ-075
+    description: "Stage 3 capture mechanics - modal dismissal and unconditional page.pdf() alongside innerText+screenshot for every HTML page"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "Modal/cookie-consent overlays are dismissed before content capture: CSS-injection to hide overlays globally, then click known dismiss-button selectors, then DOM removal as a last resort - ported near-verbatim from capturer.ts, confirmed to have zero coupling to the dead Crawlee/Express-server architecture"
+      - Modal dismissal is sequenced AFTER the existing 2.5s post-navigation wait, giving slow/deliberately-delayed cookie banners a window to actually render before dismissal is attempted
+      - page.pdf() is captured unconditionally for every HTML page, alongside innerText (all frames) and a full-page screenshot - no multi-column-detection trigger, removing the need to ever define the Reader-Routing spec's previously-unsolved Tier 1->2 escalation trigger
+      - A URL that is already a PDF (direct fetch branch) never goes through page.pdf() - that would be a lossy, pointless re-render of a PDF viewer's own rendering
+    tests:
+      - (verified via local fixture + real-network smoke test during implementation - see docs/diagrams/acquisition_pipeline_flow.md decision log; no automated test harness exists yet for capture_discovery.mjs, which has no test framework wired up - REQ-079 watch-item)
+    created: "2026-06-23T00:00:00Z"
+    updated: "2026-06-23T00:00:00Z"
+    notes: "infrastructure/scraper/capture_discovery.mjs::dismissModals, setupPageDialogHandler, processTask.
+      Smoke-tested against a local HTML fixture with a real cookie-consent-style overlay (confirmed the
+      overlay's text does NOT appear in captured innerText) and against a real district (Blue Water Middle
+      College, 4 real URLs, all captured cleanly with txt+png+pdf)."
+
+  - id: REQ-076
+    description: "Stage 3 emergent-candidate discovery - one-hop SCHED_KW-keyword link-following, explicitly intended for CDN-hosted materials as well as same-domain links"
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - "While an HTML page is rendered, its DOM is scanned for anchor tags whose link text or href matches the SCHED_KW keyword list - the SAME list discover.py already uses for ranking schedule-named URLs, not a new or duplicated list"
+      - A matching link becomes a new candidate task tagged source=emergent and found_on=<the page it was found on>, recorded in captures.json for full traceability back to its origin
+      - Emergent-candidate discovery is exactly ONE HOP - an emergent candidate's own rendered page is never itself scanned for further emergent candidates, and this is not a revival of the abandoned blind-crawl design (gated on the same keyword signal already proven useful elsewhere, triggered only from a page Capture is already rendering anyway)
+      - This path is explicitly intended to catch CDN-hosted materials (Finalsite, BoardDocs, SchoolWires/Blackboard, S3, etc. - discover.py's existing CMS_HOSTS set) that Discovery's domain-scoped search would never surface directly, not only Drive/Docs links - this must be reflected in test coverage, not left as an incidental side effect of Drive/Docs-focused cases
+      - A duplicate URL already seen for a district (whether originally discovered or already-emergent) is never re-queued
+    tests:
+      - (verified via local fixture during implementation: a 'Bell Schedule' link was correctly captured as emergent with source/found_on populated, while an unrelated 'About Us' link on the same page was correctly NOT picked up - see docs/diagrams/acquisition_pipeline_flow.md decision log; no automated test harness exists yet for capture_discovery.mjs - REQ-079 watch-item)
+    created: "2026-06-23T00:00:00Z"
+    updated: "2026-06-23T00:00:00Z"
+    notes: "infrastructure/scraper/capture_discovery.mjs::findEmergentLinks, processTask. The CDN-hosted-
+      materials framing was added after the fact, specifically to prevent the feature's test coverage and
+      future maintenance from narrowing around the Drive/Docs research that immediately preceded it - see
+      ACQUISITION_PIPELINE.md Stage 3 and the diagram decision log."
+
+  - id: REQ-077
+    description: "Stage 3 Google Drive/Docs/Sheets/Slides Tier 1 - unauthenticated export-URL handling, no OAuth needed for this tier"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - A drive.google.com or docs.google.com URL is detected before the generic direct-fetch/HTML-render branches - it must never be captured as a generic HTML page (which would just screenshot Drive's UI chrome, not the file) or fall through to a generic binary fetch
+      - "A recognized single-resource URL pattern (file/d/, document/d/, spreadsheets/d/, presentation/d/, open?id=) resolves to the correct export format(s): Docs -> PDF + Markdown, Slides -> PDF, Sheets -> CSV + PDF (PDF specifically to catch an image pasted into a spreadsheet cell, which CSV alone would silently lose), a generic Drive-hosted file -> direct download with its real format inferred from content-type, not assumed"
+      - A folder URL, or any URL not matching a recognized single-resource pattern, returns null from driveExportCandidates() - the caller must escalate to Tier 2 (OAuth Drive API, not yet implemented), never guess or fall back to generic HTML capture
+      - An export attempt that returns an HTML interstitial (error/auth-wall page) instead of the requested format is treated as that format failing, not as success
+    tests:
+      - infrastructure/scraper/capture_drive.test.mjs (run via `npm test` in infrastructure/scraper/ - node:test, no new dependency)
+    created: "2026-06-23T00:00:00Z"
+    updated: "2026-06-23T00:00:00Z"
+    notes: "infrastructure/scraper/capture_drive.mjs::isGoogleUrl, extractFileId, driveExportCandidates.
+      Salvaged from google_drive_handler.py's DRIVE_PATTERNS/get_export_url logic (file-level patterns only;
+      it never handled folders, see REQ-078). Confirmed via research (Gemini MCP + a citation-backed
+      Perplexity cross-check) the unauthenticated export-URL trick still works reliably for 'anyone with the
+      link' content today. Tier 2 (OAuth Drive API) is REQ-078, not yet built."
+
+  - id: REQ-078
+    description: "Stage 3 Google Drive Tier 2 - OAuth Drive API for folder enumeration and Tier-1 fallback (DELIBERATELY DEFERRED, not just blocked)"
+    type: functional
+    priority: should
+    status: not_started
+    acceptance_criteria:
+      - files.list (folder enumeration, bounded recursion) and files.get/files.export (content retrieval) are called only via an OAuth-authenticated client - confirmed via research there is no API-key-only path for folder listing, even for fully public folders
+      - A one-time human setup (GCP project, OAuth installed-app client, consent screen explicitly moved OUT of Testing publishing status) is a documented prerequisite, not automated - the refresh token this produces is intended to remain valid indefinitely until revoked, making routine human-present operation the exception rather than the rule
+      - No Playwright-preview tier and no Gemini-API tier - both dropped from google_drive_handler.py's original 3-tier design as superseded (Playwright-preview depended on the dead Express microservice) or redundant (Gemini would only call the same Drive API that already failed)
+      - A Tier 2 failure (invalid/expired/revoked token, genuinely inaccessible content, quota) is recorded as err=needs_oauth_reauth on that specific candidate and does not halt the run - see REQ-074
+    tests: []
+    created: "2026-06-23T00:00:00Z"
+    updated: "2026-06-23T00:00:00Z"
+    notes: "NOT YET BUILT, and deliberately so as of this session's close - not merely blocked on the GCP
+      prerequisite. The first real batch_00001 run produced zero Drive/folder links needing Tier 2; the
+      user's explicit call: build this when a real Drive link is actually hit, not speculatively ('it's also
+      very possible it's never needed... getting ahead of ourselves is counterproductive'). Until then,
+      infrastructure/scraper/capture_discovery.mjs's Drive branch correctly falls through to
+      err=needs_oauth_reauth for any folder or Tier-1 failure - the real, intended behavior of this gap, not
+      a placeholder bug."
+
+  - id: REQ-079
+    description: "WATCH-ITEM: capture_discovery.mjs has no automated test harness beyond capture_drive.mjs's pure-function tests"
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - capture_drive.mjs's URL-pattern-matching and export-candidate logic is unit-tested (node:test, no new dependency) and runs via `npm test` in infrastructure/scraper/
+      - The browser-driving logic in capture_discovery.mjs itself (modal dismissal, page.pdf(), emergent-candidate scanning, the overall branch dispatch) is verified only by manual smoke test (a local HTML fixture plus one real district) during this implementation session, not by an automated, repeatable test suite
+    tests:
+      - infrastructure/scraper/capture_drive.test.mjs
+    created: "2026-06-23T00:00:00Z"
+    updated: "2026-06-23T00:00:00Z"
+    notes: "Recorded as a deliberate, named gap rather than silently shipping without test coverage. A real
+      automated harness for capture_discovery.mjs's browser-driving logic would need either a local
+      fixture-server convention (serving the smoke-test HTML fixtures used during implementation from a
+      fixed path) or a Playwright-test-style mocking approach - worth building before this script sees
+      heavy use at scale, not before this first batch."

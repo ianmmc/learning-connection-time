@@ -16,6 +16,7 @@ import queue_batch as Q  # noqa: E402
 import district_status as DS  # noqa: E402
 import discover_stage2 as D2  # noqa: E402
 import discover as DISC  # noqa: E402
+import capture_stage3 as C3  # noqa: E402
 
 
 # ---------------------------------------------------------------- REQ-058 sampling
@@ -713,3 +714,121 @@ class TestWriteDiscovery:
         versioned = list(out_dir.glob("discovery.*.json"))
         assert len(versioned) == 1
         assert (out_dir / "discovery.json").exists()  # the new one, not destroyed
+
+
+# ------------------------------------------------------------------------ Stage 3 (Capture)
+def _write_stage2_outputs(d, district_id="8888888", name="Test Capture District", state="ZZ", domain="testcapture.example"):
+    """A district directory with the discovery.json + candidates.json Stage 2 would have
+    produced -- capture_stage3.find_districts() requires both before treating a district
+    as Stage 3's concern."""
+    (d / "discovery.json").write_text(json.dumps({
+        "district_id": district_id, "name": name, "state": state, "domain": domain,
+        "batch_id": "batch_00099", "generated_at": "2026-06-23T00:00:00Z", "schools": [],
+    }))
+    (d / "candidates.json").write_text(json.dumps({
+        "district_id": district_id, "name": name, "domain": domain, "candidates": [],
+    }))
+
+
+class TestCaptureStage3FindDistricts:
+    def test_finds_district_with_both_files(self, tmp_path):
+        d = tmp_path / "8888888_test_capture_district"
+        d.mkdir()
+        _write_stage2_outputs(d)
+        found = C3.find_districts(tmp_path)
+        assert len(found) == 1
+        assert found[0]["district_id"] == "8888888"
+        assert found[0]["state"] == "ZZ"
+
+    def test_excludes_district_missing_candidates_json(self, tmp_path):
+        """A district only as far as discovery.json (e.g. Stage 2 ran but produced zero
+        candidates for some reason) is not yet Stage 3's concern."""
+        d = tmp_path / "8888888_test_capture_district"
+        d.mkdir()
+        (d / "discovery.json").write_text(json.dumps({
+            "district_id": "8888888", "name": "X", "state": "ZZ", "domain": "", "schools": [],
+        }))
+        assert C3.find_districts(tmp_path) == []
+
+    def test_empty_root_returns_empty_list(self, tmp_path):
+        assert C3.find_districts(tmp_path / "does_not_exist") == []
+
+
+class TestCaptureStage3Reconcile:
+    def test_district_with_no_disk_artifact_and_no_registry_entry_is_todo(self, tmp_path):
+        d = tmp_path / "8888888_test_capture_district"
+        d.mkdir()
+        _write_stage2_outputs(d)
+        districts = C3.find_districts(tmp_path)
+        registry = {"schema_version": 1, "last_updated": None, "districts": {}}
+        todo, skipped = C3.reconcile(districts, registry)
+        assert [x["district_id"] for x in todo] == ["8888888"]
+        assert skipped == []
+
+    def test_disk_ahead_of_registry_reconciles_up_and_skips(self, tmp_path):
+        """Found during Stage 2's build, applies identically here: a district can complete
+        Stage 3 (captures.json written) without the registry ever having been told -- the
+        filesystem is the real fact, so the registry must catch up to it."""
+        d = tmp_path / "8888888_test_capture_district"
+        d.mkdir()
+        _write_stage2_outputs(d)
+        (d / "captures.json").write_text("[]")
+        districts = C3.find_districts(tmp_path)
+        registry = {"schema_version": 1, "last_updated": None, "districts": {}}
+        todo, skipped = C3.reconcile(districts, registry)
+        assert todo == []
+        assert [x["district_id"] for x in skipped] == ["8888888"]
+        assert registry["districts"]["8888888"]["furthest_stage"] == 3
+
+    def test_registry_ahead_of_disk_halts_the_entire_run(self, tmp_path):
+        """The converse drift: registry claims Stage 3 done but captures.json doesn't
+        exist. A control failure, not routine drift -- must stop everything."""
+        d = tmp_path / "8888888_test_capture_district"
+        d.mkdir()
+        _write_stage2_outputs(d)
+        districts = C3.find_districts(tmp_path)
+        registry = {"schema_version": 1, "last_updated": None, "districts": {}}
+        DS.record_stage(registry, "8888888", "Test Capture District", "ZZ",
+                         stage=3, stage_name="capture", outcome="captured_all")
+        with pytest.raises(SystemExit, match="CONTROL FAILURE"):
+            C3.reconcile(districts, registry)
+
+
+class TestCaptureStage3OutcomeRollup:
+    def test_captured_all_when_every_candidate_ok(self):
+        assert C3.compute_outcome([{"ok": True}, {"ok": True}]) == ("captured_all", "")
+
+    def test_capture_failed_all_when_nothing_ok(self):
+        outcome, notes = C3.compute_outcome([{"ok": False, "err": "needs_oauth_reauth"}])
+        assert outcome == "capture_failed_all"
+        assert "needs_oauth_reauth" in notes
+
+    def test_captured_partial_when_mixed(self):
+        outcome, _ = C3.compute_outcome([{"ok": True}, {"ok": False, "err": "timeout"}])
+        assert outcome == "captured_partial"
+
+    def test_missing_err_field_does_not_crash(self):
+        """A capture failure with no err string set (shouldn't normally happen, but a
+        missing field must not blow up outcome computation) is summarized as 'unknown'."""
+        outcome, notes = C3.compute_outcome([{"ok": False}])
+        assert outcome == "capture_failed_all"
+        assert "unknown" in notes
+
+
+class TestCaptureStage3Finish:
+    def test_finish_reads_captures_json_and_writes_registry(self, tmp_path):
+        d = tmp_path / "8888888_test_capture_district"
+        d.mkdir()
+        _write_stage2_outputs(d)
+        (d / "captures.json").write_text(json.dumps([
+            {"url": "https://testcapture.example/a", "ok": True},
+            {"url": "https://testcapture.example/b", "ok": False, "err": "needs_oauth_reauth"},
+        ]))
+        district = C3.find_districts(tmp_path)[0]
+        registry = {"schema_version": 1, "last_updated": None, "districts": {}}
+        outcome = C3.finish_district(district, registry)
+        assert outcome == "captured_partial"
+        rec = registry["districts"]["8888888"]
+        assert rec["furthest_stage"] == 3
+        assert rec["outcome"] == "captured_partial"
+        assert "needs_oauth_reauth" in rec["notes"]
