@@ -574,6 +574,7 @@ def get_lct_summary_by_scope(
     # Get count of districts with this scope
     count = (
         session.query(sqlfunc.count(StaffCountsEffective.district_id))
+        .filter(StaffCountsEffective.effective_year == year)
         .filter(staff_col.isnot(None))
         .filter(staff_col > 0)
         .scalar()
@@ -605,6 +606,7 @@ def get_districts_needing_calculation(
             EnrollmentByGrade,
             StaffCountsEffective.district_id == EnrollmentByGrade.district_id,
         )
+        .filter(StaffCountsEffective.effective_year == year)
         .filter(EnrollmentByGrade.source_year == year)
         .filter(StaffCountsEffective.scope_teachers_only.isnot(None))
     )

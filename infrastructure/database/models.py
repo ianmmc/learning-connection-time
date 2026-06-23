@@ -93,8 +93,8 @@ class District(Base):
     staff_counts: Mapped[List["StaffCounts"]] = relationship(
         back_populates="district", cascade="all, delete-orphan"
     )
-    staff_counts_effective: Mapped[Optional["StaffCountsEffective"]] = relationship(
-        back_populates="district", cascade="all, delete-orphan", uselist=False
+    staff_counts_effective: Mapped[List["StaffCountsEffective"]] = relationship(
+        back_populates="district", cascade="all, delete-orphan"
     )
     enrollment_by_grade: Mapped[List["EnrollmentByGrade"]] = relationship(
         back_populates="district", cascade="all, delete-orphan"
@@ -759,18 +759,20 @@ class StaffCountsEffective(Base):
     """
     Resolved current staff counts after precedence rules.
 
-    One row per district. Primary query table for applications.
+    One row per (district, effective_year) — multi-year (migration 017).
+    Callers select the year explicitly; see calculate_lct_variants.py's
+    get_most_recent_staff for the "most recent year with real data" rule.
     Contains pre-calculated scope values for all 5 LCT variants.
     """
     __tablename__ = "staff_counts_effective"
 
-    # Primary key (one row per district)
+    # Composite primary key (one row per district per effective_year)
     district_id: Mapped[str] = mapped_column(
         String(10), ForeignKey("districts.nces_id", ondelete="CASCADE"), primary_key=True
     )
 
     # Source tracking
-    effective_year: Mapped[str] = mapped_column(String(10), nullable=False)
+    effective_year: Mapped[str] = mapped_column(String(10), primary_key=True)
     primary_source: Mapped[str] = mapped_column(String(50), nullable=False)
     sources_used = Column(JSONB, default=list)
 

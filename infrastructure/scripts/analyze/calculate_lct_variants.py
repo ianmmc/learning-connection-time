@@ -295,6 +295,50 @@ def get_most_recent_enrollment(session, target_year: Optional[str] = None) -> Di
     return {e.district_id: (e, e.source_year) for e in enrollments}
 
 
+def get_most_recent_staff(session, target_year: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Get StaffCountsEffective per district, preferring target_year if specified,
+    else the most recent year that has usable data (scope_teachers_only > 0).
+
+    staff_counts_effective is multi-year (migration 017): a district can have a
+    row per effective_year, and a newer year's NCES report can come back 0/null
+    (incomplete reporting) without the district actually losing its staff. Falling
+    back to the next most recent non-zero year avoids silently zeroing out LCT
+    for those districts (238 found on the 2024-25 import).
+
+    Args:
+        session: Database session
+        target_year: If specified, filter to this year (TARGET_YEAR mode) with
+            no fallback — TARGET_YEAR mode means "this year, as reported."
+
+    Returns:
+        Dict mapping district_id to (StaffCountsEffective record, effective_year)
+    """
+    if target_year:
+        records = session.query(StaffCountsEffective).filter(
+            StaffCountsEffective.effective_year == target_year
+        ).all()
+        return {r.district_id: (r, target_year) for r in records}
+
+    # BLENDED mode: most recent year with scope_teachers_only > 0, else fall back
+    all_records = session.query(StaffCountsEffective).all()
+    by_district: Dict[str, List[StaffCountsEffective]] = {}
+    for r in all_records:
+        by_district.setdefault(r.district_id, []).append(r)
+
+    result = {}
+    for district_id, records in by_district.items():
+        records.sort(key=lambda r: r.effective_year, reverse=True)
+        usable = next(
+            (r for r in records if r.scope_teachers_only and r.scope_teachers_only > 0),
+            None,
+        )
+        chosen = usable or records[0]
+        result[district_id] = (chosen, chosen.effective_year)
+
+    return result
+
+
 def get_most_recent_sped(session, target_year: Optional[str] = None) -> Dict[str, Any]:
     """
     Get SPED estimates, preferring target_year if specified, else most recent.
@@ -414,15 +458,24 @@ def calculate_all_variants(
     # Track all years used for data range reporting
     all_years_used = set()
 
-    # Get all effective staff counts (excluding shared service entities)
-    # Shared service entities (CTCs, BOCES, cooperatives, etc.) serve students part-time
-    # from multiple districts, causing artificially inflated teacher-to-student ratios
-    staff_records = session.query(StaffCountsEffective).join(
-        District,
-        StaffCountsEffective.district_id == District.nces_id
-    ).filter(
-        District.is_shared_service_entity == False
-    ).all()
+    # Get staff counts (mode-aware; multi-year since migration 017 — see get_most_recent_staff)
+    staff_with_years = get_most_recent_staff(
+        session,
+        target_year if calculation_mode == CalculationMode.TARGET_YEAR else None
+    )
+
+    # Exclude shared service entities (CTCs, BOCES, cooperatives, etc.) — they serve
+    # students part-time from multiple districts, causing artificially inflated
+    # teacher-to-student ratios
+    shared_service_ids = {
+        d.nces_id for d in session.query(District).filter(
+            District.is_shared_service_entity == True
+        ).all()
+    }
+    staff_records = [
+        r for district_id, (r, _) in staff_with_years.items()
+        if district_id not in shared_service_ids
+    ]
     print(f"  Found {len(staff_records):,} districts with staff data (excluding shared service entities)")
 
     # Get enrollment (mode-aware)

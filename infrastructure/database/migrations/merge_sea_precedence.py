@@ -262,9 +262,11 @@ def merge_sea_into_effective(
         result = session.execute(query, {"state_code": state_code, "nces_year": nces_year})
         district_ids = [row[0] for row in result]  # Get district_id column
 
-        # Now fetch the ORM objects
+        # Now fetch the ORM objects (year-scoped to match the raw-SQL prefilter above —
+        # staff_counts_effective is multi-year since migration 017)
         effective_records = session.query(StaffCountsEffective).filter(
-            StaffCountsEffective.district_id.in_(district_ids)
+            StaffCountsEffective.district_id.in_(district_ids),
+            StaffCountsEffective.effective_year == nces_year,
         ).all() if district_ids else []
 
         logger.info(f"  Found {len(effective_records)} {state_code} districts in staff_counts_effective")

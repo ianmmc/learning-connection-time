@@ -437,11 +437,29 @@ def main():
     parser.add_argument("--enrollment-file", type=Path, help="Path to membership CSV file")
     args = parser.parse_args()
 
-    # Default file paths
+    # Default file paths: glob by NCES file-ID prefix, since the release-date
+    # suffix (e.g. _073124, _073025) varies by year and can't be derived from
+    # the --year argument alone.
     data_dir = project_root / "data" / "raw" / "federal" / "nces-ccd" / args.year.replace("-", "_")
 
-    staff_file = args.staff_file or data_dir / "ccd_lea_059_2324_l_1a_073124.csv"
-    enrollment_file = args.enrollment_file or data_dir / "ccd_lea_052_2324_l_1a_073124.csv"
+    def find_default_file(file_id: str) -> Optional[Path]:
+        matches = sorted(data_dir.glob(f"ccd_lea_{file_id}_*.csv"))
+        if len(matches) == 1:
+            return matches[0]
+        if len(matches) > 1:
+            print(f"Error: multiple ccd_lea_{file_id}_*.csv files in {data_dir}, pass --staff-file/--enrollment-file explicitly: {matches}")
+            sys.exit(1)
+        return None
+
+    staff_file = args.staff_file or find_default_file("059")
+    enrollment_file = args.enrollment_file or find_default_file("052")
+
+    if staff_file is None:
+        print(f"Error: no ccd_lea_059_*.csv found in {data_dir}; pass --staff-file explicitly")
+        sys.exit(1)
+    if enrollment_file is None:
+        print(f"Error: no ccd_lea_052_*.csv found in {data_dir}; pass --enrollment-file explicitly")
+        sys.exit(1)
 
     # Verify files exist
     if not staff_file.exists():
