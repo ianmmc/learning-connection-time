@@ -9,10 +9,25 @@
 // explicitly meant to catch CDN-hosted materials (Finalsite, BoardDocs, S3, etc. --
 // discover.py's CMS_HOSTS) that Discovery's domain-scoped search would never surface
 // directly, not just same-domain links.
+//
+// Hosting/CMS fingerprint (added 2026-06-24): every record carries a `fingerprint` block of
+// RAW signals about how/where the page is hosted (host, response headers, CDN hints, <meta
+// generator>, off-domain resource hosts, a JS-dependency flag, and one cheap cms_hint from
+// CMS_HOSTS). Facts only -- no real CMS classification here; that's a later pure function
+// over these signals, refinable retroactively without re-capture. Same "capture facts,
+// decide downstream" invariant as the rest of the pipeline.
+//
+// Modes:
+//   node capture_discovery.mjs <ROOT> [CONC]                       -- normal capture
+//   node capture_discovery.mjs backfill-fingerprints <ROOT> [CONC] -- re-visit existing
+//       records and patch in `fingerprint` only (does NOT re-render/re-save page.* or touch
+//       Stage 4 outputs -- additive, keeps processed.json valid). For parity on pre-2026-06-24
+//       captures that predate fingerprinting.
 import { chromium } from 'playwright';
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, renameSync } from 'fs';
 import { createHash } from 'crypto';
 import path from 'path';
+import { pathToFileURL } from 'url';
 import { isGoogleUrl, driveExportCandidates } from './capture_drive.mjs';
 
 // Matches discover_stage2.py's write_discovery() convention exactly (Python's
@@ -35,13 +50,115 @@ function writeVersioned(filePath, content) {
   writeFileSync(filePath, content);
 }
 
-const ROOT = process.argv[2];
-const CONC = parseInt(process.argv[3] || '5', 10);
 const TIME = /\b\d{1,2}:\d{2}\s*(?:[AaPp]\.?[Mm]\.?)?/g;
 
 // Same keyword list discover.py's SCHED_KW already uses for ranking schedule-named URLs --
 // reused here, not duplicated, so "what counts as a schedule link" stays one source of truth.
 const SCHED_KW = ['bell', 'schedule', 'hours', 'start-time', 'start_time', 'daily-schedule', 'times', 'school-day', 'schoolday'];
+
+// Mirrors discover.py's CMS_HOSTS (kept in sync by hand, same as SCHED_KW above) -- domain
+// SUFFIXES that signal a known K-12 CMS / content host. Matched via endsWith, exactly as
+// discover.py does (`any(h.endswith(c) for c in CMS_HOSTS)`).
+const CMS_HOSTS = ['finalsite.net', 'echalksites.com', 'sites.google.com', 'drive.google.com',
+  'docs.google.com', 'schoolwires.net', 'schoolwires.com', 'blackboard.com'];
+
+// --- Fingerprint helpers (raw signals only, no classification) ---------------------------
+// The pure ones are exported for unit testing (capture_fingerprint.test.mjs); the
+// browser-driving ones are not.
+export function hostOf(u) {
+  try { return new URL(u).hostname.toLowerCase(); } catch { return ''; }
+}
+
+// Presence-detect well-known CDN/host platforms from response headers. Deliberately a small,
+// explicit list -- not an exhaustive ruleset (that's a later analysis concern, refinable over
+// the accumulated raw headers). `headers` is a plain object with lowercase keys.
+export function cdnHints(headers) {
+  const out = [];
+  const server = (headers['server'] || '').toLowerCase();
+  if (headers['cf-ray'] || server.includes('cloudflare')) out.push('cloudflare');
+  if (Object.keys(headers).some((k) => k.startsWith('x-amz'))) out.push('aws');
+  if (headers['x-vercel-id'] || headers['x-vercel-cache']) out.push('vercel');
+  if (headers['x-github-request-id']) out.push('github-pages');
+  if (server.includes('netlify') || headers['x-nf-request-id']) out.push('netlify');
+  if (headers['x-served-by'] || server.includes('fastly')) out.push('fastly');
+  if (server.includes('windows-azure') || headers['x-ms-blob-type'] || headers['x-azure-ref']) out.push('azure');
+  if (server.includes('gse') || headers['x-goog-generation'] || headers['x-guploader-uploadid']) out.push('google');
+  return out;
+}
+
+// The ONE cheap inline classification: a host-suffix match against CMS_HOSTS, same logic as
+// discover.py's gate(). Returns the matched suffix or null -- richer classification stays a
+// later pure function over the raw signals.
+export function cmsHint(hosts) {
+  for (const host of hosts) {
+    if (!host) continue;
+    for (const cms of CMS_HOSTS) {
+      if (host === cms || host.endsWith('.' + cms) || host.endsWith(cms)) return cms;
+    }
+  }
+  return null;
+}
+
+// Crude tag-strip + length, for the js_dependent proxy only (does the served HTML carry the
+// content, or is it a near-empty shell hydrated by JS?). Not used for any captured text.
+export function strippedLen(html) {
+  return (html || '')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim().length;
+}
+
+// DOM-level signals, gathered in one page.evaluate: the <meta generator> declaration (high
+// precision when present) and the set of distinct resource hostnames (script/link/img srcs --
+// vendor CDN bundles betray the platform). Ephemeral: innerText can't reconstruct these once
+// the page closes, so they MUST be read at render time.
+async function domFingerprint(page) {
+  return page.evaluate(() => {
+    const gen = document.querySelector('meta[name="generator" i]');
+    const hosts = {};
+    for (const el of document.querySelectorAll('script[src],link[href],img[src]')) {
+      const raw = el.getAttribute('src') || el.getAttribute('href');
+      if (!raw) continue;
+      try { const hn = new URL(raw, location.href).hostname.toLowerCase(); if (hn) hosts[hn] = 1; } catch { /* skip unparseable */ }
+    }
+    return { meta_generator: gen ? (gen.getAttribute('content') || null) : null, resource_hosts: Object.keys(hosts) };
+  }).catch(() => ({ meta_generator: null, resource_hosts: [] }));
+}
+
+export function buildHtmlFingerprint({ finalHost, headers, dom, jsDependent }) {
+  // Off-domain resource hosts are the signal; drop the page's own host, cap to keep the
+  // record small even on asset-heavy pages.
+  const resourceHosts = (dom.resource_hosts || []).filter((hn) => hn && hn !== finalHost).slice(0, 20);
+  return {
+    final_host: finalHost || null,
+    server: headers['server'] || null,
+    powered_by: headers['x-powered-by'] || null,
+    cdn_hints: cdnHints(headers),
+    meta_generator: dom.meta_generator || null,
+    resource_hosts: resourceHosts,
+    js_dependent: jsDependent,
+    cms_hint: cmsHint([finalHost, ...resourceHosts]),
+  };
+}
+
+// Reduced fingerprint for a direct byte fetch (PDF/image/Drive export) -- no DOM, so no
+// meta_generator / resource_hosts / js_dependent. `response` is a WHATWG fetch Response.
+export function buildFetchFingerprint(response) {
+  const headers = Object.fromEntries(response.headers); // fetch headers are already lowercased
+  const finalHost = hostOf(response.url);
+  return {
+    final_host: finalHost || null,
+    server: headers['server'] || null,
+    powered_by: headers['x-powered-by'] || null,
+    cdn_hints: cdnHints(headers),
+    meta_generator: null,
+    resource_hosts: [],
+    js_dependent: null,
+    cms_hint: cmsHint([finalHost]),
+  };
+}
 
 // --- Modal dismissal, ported from infrastructure/scraper/src/capturer.ts -- verified pure
 // Playwright with zero coupling to the dead Crawlee/Express-server architecture, so this is
@@ -109,25 +226,6 @@ async function dismissModals(page) {
   return dismissed;
 }
 
-// --- Setup: load every district's candidates.json, build the initial task queue ---
-const dirs = readdirSync(ROOT).filter((d) => existsSync(path.join(ROOT, d, 'candidates.json')));
-const byDistrict = {};
-const tasks = [];
-for (const did of dirs) {
-  const meta = JSON.parse(readFileSync(path.join(ROOT, did, 'candidates.json')));
-  const capDir = path.join(ROOT, did, 'captures');
-  mkdirSync(capDir, { recursive: true });
-  byDistrict[did] = { capDir, records: [], seen: new Set() };
-  for (const c of meta.candidates) {
-    const u = stripFragment(c.url);
-    byDistrict[did].seen.add(u);
-    tasks.push({ did, url: u, tools: c.tools, source: 'discovered', found_on: null, capDir });
-  }
-}
-
-const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
-const ctx = await browser.newContext({ ignoreHTTPSErrors: true, userAgent: 'Mozilla/5.0 (research; bell-schedule discovery)' });
-
 // A URL fragment (#pageTitle, #nav_items_0, etc.) never represents different
 // server-side content -- it's purely client-side same-page navigation. Found on the
 // first real run: Stroudsburg's bell-schedule pages link to themselves via fragment
@@ -152,142 +250,274 @@ function findEmergentLinks(anchors) {
   return out;
 }
 
-async function processTask(t) {
-  const { did, url, tools, source, found_on, capDir } = t;
-  const h = createHash('md5').update(url).digest('hex').slice(0, 10);
-  // One subdirectory per captured URL (named by its hash) -- not flat hash-prefixed files
-  // sharing the district's captures/ folder. The whole point of hashing the URL was so a
-  // human reviewing CP-B output can open one folder and see everything for that one page,
-  // not have to mentally regroup files by matching prefixes.
-  const recDir = path.join(capDir, h);
-  mkdirSync(recDir, { recursive: true });
-  const rec = { url, tools: tools || [], source, found_on, hash: h, ok: false, files: {} };
+// Re-visit a single HTML URL and return ONLY its fingerprint (no file writes). Shared by the
+// backfill path; the live path inlines the equivalent gather alongside its file writes.
+async function htmlFingerprintFor(ctx, url) {
+  const page = await ctx.newPage();
+  setupPageDialogHandler(page);
   try {
-    // --- Google Drive / Docs / Sheets / Slides: Tier 1 only (Tier 2 OAuth not wired yet) ---
-    if (isGoogleUrl(url)) {
-      const drive = driveExportCandidates(url);
-      if (drive) {
-        let any = false;
-        for (const { format, fetchUrl } of drive) {
-          try {
-            const r = await fetch(fetchUrl, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
-            const ct = (r.headers.get('content-type') || '').toLowerCase();
-            if (ct.includes('html')) continue; // interstitial/error page -- this format failed, try the next
-            const ext = format === 'auto' ? (ct.includes('pdf') ? 'pdf' : (ct.split('/')[1] || 'bin').split(';')[0]) : format;
-            const buf = Buffer.from(await r.arrayBuffer());
-            const filename = format === 'auto' ? `file.${ext}` : `${format}.${ext}`;
-            writeFileSync(path.join(recDir, filename), buf);
-            rec.files[format === 'auto' ? 'bin' : format] = filename;
-            any = true;
-          } catch { /* this format failed, try the next */ }
-        }
-        if (any) {
-          rec.kind = 'drive_export';
-          rec.ok = true;
-          byDistrict[did].records.push(rec);
-          return rec;
-        }
-      }
-      // Tier 1 didn't pan out (folder URL, unrecognized pattern, or every format failed).
-      // Per the Stage 3 design: a per-item flag, NOT a run-halting control failure -- one
-      // stuck Drive item says nothing about the rest of the batch. Tier 2 (OAuth Drive
-      // API) is not implemented in this script yet; until it is, this is the real outcome,
-      // not a placeholder.
-      rec.err = 'needs_oauth_reauth';
-      byDistrict[did].records.push(rec);
-      return rec;
+    const response = await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 }).catch(() => null);
+    const rawHtml = response ? await response.text().catch(() => '') : '';
+    await page.waitForTimeout(2500);
+    await dismissModals(page);
+    let rendered = '';
+    for (const fr of page.frames()) {
+      try { rendered += `\n${(await fr.evaluate(() => (document.body ? document.body.innerText : ''))) || ''}`; } catch { /* cross-origin frame */ }
     }
+    const dom = await domFingerprint(page);
+    const jsDependent = strippedLen(rawHtml) < 200 && rendered.trim().length >= 600;
+    return buildHtmlFingerprint({ finalHost: hostOf(page.url()), headers: response ? response.headers() : {}, dom, jsDependent });
+  } finally {
+    await page.close();
+  }
+}
 
-    let ct = '';
+// ============================ NORMAL CAPTURE ============================
+async function runCapture(ROOT, CONC) {
+  const dirs = readdirSync(ROOT).filter((d) => existsSync(path.join(ROOT, d, 'candidates.json')));
+  const byDistrict = {};
+  const tasks = [];
+  for (const did of dirs) {
+    const meta = JSON.parse(readFileSync(path.join(ROOT, did, 'candidates.json')));
+    const capDir = path.join(ROOT, did, 'captures');
+    mkdirSync(capDir, { recursive: true });
+    byDistrict[did] = { capDir, records: [], seen: new Set() };
+    for (const c of meta.candidates) {
+      const u = stripFragment(c.url);
+      byDistrict[did].seen.add(u);
+      tasks.push({ did, url: u, tools: c.tools, source: 'discovered', found_on: null, capDir });
+    }
+  }
+
+  const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
+  const ctx = await browser.newContext({ ignoreHTTPSErrors: true, userAgent: 'Mozilla/5.0 (research; bell-schedule discovery)' });
+
+  async function processTask(t) {
+    const { did, url, tools, source, found_on, capDir } = t;
+    const h = createHash('md5').update(url).digest('hex').slice(0, 10);
+    // One subdirectory per captured URL (named by its hash) -- not flat hash-prefixed files
+    // sharing the district's captures/ folder. The whole point of hashing the URL was so a
+    // human reviewing CP-B output can open one folder and see everything for that one page,
+    // not have to mentally regroup files by matching prefixes.
+    const recDir = path.join(capDir, h);
+    mkdirSync(recDir, { recursive: true });
+    const rec = { url, tools: tools || [], source, found_on, hash: h, ok: false, files: {} };
     try {
-      const r = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
-      ct = (r.headers.get('content-type') || '').toLowerCase();
-      rec.final_url = r.url;
-      if (ct.includes('pdf') || ct.includes('image')) {
-        const ext = ct.includes('pdf') ? 'pdf' : ((ct.split('/')[1] || 'img').split(';')[0]);
-        writeFileSync(path.join(recDir, `original.${ext}`), Buffer.from(await r.arrayBuffer()));
-        rec.kind = ct.includes('pdf') ? 'pdf' : 'image';
-        rec.files.bin = `original.${ext}`;
-        rec.ok = true;
-      }
-    } catch { /* fall through to render */ }
-
-    if (!rec.ok) {
-      const page = await ctx.newPage();
-      setupPageDialogHandler(page);
-      try {
-        await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 }).catch(() => {});
-        await page.waitForTimeout(2500);
-        rec.final_url = page.url();
-
-        // Modal dismissal sequenced AFTER the 2.5s wait, giving slow/deliberately-delayed
-        // cookie-consent banners a window to actually render before dismissal is attempted.
-        const modalsDismissed = await dismissModals(page);
-        rec.modals_dismissed = modalsDismissed;
-        if (modalsDismissed) await page.waitForTimeout(500);
-
-        let text = '';
-        for (const fr of page.frames()) {
-          try { text += `\n${(await fr.evaluate(() => (document.body ? document.body.innerText : ''))) || ''}`; } catch {}
-        }
-        writeFileSync(path.join(recDir, 'page.txt'), text);
-        await page.screenshot({ path: path.join(recDir, 'page.png'), fullPage: true }).catch(() => {});
-        // Unconditional -- no multi-column-detection trigger. Local compute is free; the
-        // decision of which representation to actually use moves downstream to Stage 4/7.
-        await page
-          .pdf({
-            path: path.join(recDir, 'page.pdf'),
-            format: 'Letter',
-            scale: 0.9,
-            margin: { top: '0.5in', bottom: '0.5in', left: '0.5in', right: '0.5in' },
-            printBackground: true,
-          })
-          .then(() => { rec.files.pdf = 'page.pdf'; })
-          .catch((e) => { rec.pdf_err = String(e).slice(0, 80); });
-
-        rec.kind = 'html';
-        rec.files.txt = 'page.txt';
-        rec.files.png = 'page.png';
-        rec.text_times = (text.match(TIME) || []).length;
-        rec.ok = true;
-
-        // --- Emergent candidates: exactly one hop, never recursive. An emergent
-        // candidate's own page is never scanned for further emergent candidates. ---
-        if (source === 'discovered') {
-          const anchors = await page
-            .evaluate(() => Array.from(document.querySelectorAll('a[href]')).map((a) => ({ text: a.innerText || '', href: a.href })))
-            .catch(() => []);
-          for (const eu of findEmergentLinks(anchors)) {
-            if (byDistrict[did].seen.has(eu)) continue;
-            byDistrict[did].seen.add(eu);
-            tasks.push({ did, url: eu, tools: [], source: 'emergent', found_on: rec.final_url, capDir });
+      // --- Google Drive / Docs / Sheets / Slides: Tier 1 only (Tier 2 OAuth not wired yet) ---
+      if (isGoogleUrl(url)) {
+        const drive = driveExportCandidates(url);
+        if (drive) {
+          let any = false;
+          for (const { format, fetchUrl } of drive) {
+            try {
+              const r = await fetch(fetchUrl, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
+              const ct = (r.headers.get('content-type') || '').toLowerCase();
+              if (ct.includes('html')) continue; // interstitial/error page -- this format failed, try the next
+              const ext = format === 'auto' ? (ct.includes('pdf') ? 'pdf' : (ct.split('/')[1] || 'bin').split(';')[0]) : format;
+              const buf = Buffer.from(await r.arrayBuffer());
+              const filename = format === 'auto' ? `file.${ext}` : `${format}.${ext}`;
+              writeFileSync(path.join(recDir, filename), buf);
+              rec.files[format === 'auto' ? 'bin' : format] = filename;
+              if (!rec.fingerprint) rec.fingerprint = buildFetchFingerprint(r);
+              any = true;
+            } catch { /* this format failed, try the next */ }
+          }
+          if (any) {
+            rec.kind = 'drive_export';
+            rec.ok = true;
+            byDistrict[did].records.push(rec);
+            return rec;
           }
         }
-      } finally {
-        await page.close();
+        // Tier 1 didn't pan out (folder URL, unrecognized pattern, or every format failed).
+        // Per the Stage 3 design: a per-item flag, NOT a run-halting control failure -- one
+        // stuck Drive item says nothing about the rest of the batch. Tier 2 (OAuth Drive
+        // API) is not implemented in this script yet; until it is, this is the real outcome,
+        // not a placeholder.
+        rec.err = 'needs_oauth_reauth';
+        byDistrict[did].records.push(rec);
+        return rec;
       }
+
+      let ct = '';
+      try {
+        const r = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
+        ct = (r.headers.get('content-type') || '').toLowerCase();
+        rec.final_url = r.url;
+        if (ct.includes('pdf') || ct.includes('image')) {
+          const ext = ct.includes('pdf') ? 'pdf' : ((ct.split('/')[1] || 'img').split(';')[0]);
+          writeFileSync(path.join(recDir, `original.${ext}`), Buffer.from(await r.arrayBuffer()));
+          rec.kind = ct.includes('pdf') ? 'pdf' : 'image';
+          rec.files.bin = `original.${ext}`;
+          rec.fingerprint = buildFetchFingerprint(r);
+          rec.ok = true;
+        }
+      } catch { /* fall through to render */ }
+
+      if (!rec.ok) {
+        const page = await ctx.newPage();
+        setupPageDialogHandler(page);
+        try {
+          const response = await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 }).catch(() => null);
+          const rawHtml = response ? await response.text().catch(() => '') : '';
+          await page.waitForTimeout(2500);
+          rec.final_url = page.url();
+
+          // Modal dismissal sequenced AFTER the 2.5s wait, giving slow/deliberately-delayed
+          // cookie-consent banners a window to actually render before dismissal is attempted.
+          const modalsDismissed = await dismissModals(page);
+          rec.modals_dismissed = modalsDismissed;
+          if (modalsDismissed) await page.waitForTimeout(500);
+
+          let text = '';
+          for (const fr of page.frames()) {
+            try { text += `\n${(await fr.evaluate(() => (document.body ? document.body.innerText : ''))) || ''}`; } catch { /* cross-origin frame */ }
+          }
+          writeFileSync(path.join(recDir, 'page.txt'), text);
+          await page.screenshot({ path: path.join(recDir, 'page.png'), fullPage: true }).catch(() => {});
+          // Unconditional -- no multi-column-detection trigger. Local compute is free; the
+          // decision of which representation to actually use moves downstream to Stage 4/7.
+          await page
+            .pdf({
+              path: path.join(recDir, 'page.pdf'),
+              format: 'Letter',
+              scale: 0.9,
+              margin: { top: '0.5in', bottom: '0.5in', left: '0.5in', right: '0.5in' },
+              printBackground: true,
+            })
+            .then(() => { rec.files.pdf = 'page.pdf'; })
+            .catch((e) => { rec.pdf_err = String(e).slice(0, 80); });
+
+          rec.kind = 'html';
+          rec.files.txt = 'page.txt';
+          rec.files.png = 'page.png';
+          rec.text_times = (text.match(TIME) || []).length;
+
+          // Hosting/CMS fingerprint -- gathered from the goto Response (headers we used to
+          // discard) + a single DOM evaluate + a JS-dependency proxy (served-HTML text near
+          // empty but rendered text substantial -> content came from JS).
+          const dom = await domFingerprint(page);
+          rec.fingerprint = buildHtmlFingerprint({
+            finalHost: hostOf(rec.final_url),
+            headers: response ? response.headers() : {},
+            dom,
+            jsDependent: strippedLen(rawHtml) < 200 && text.trim().length >= 600,
+          });
+          rec.ok = true;
+
+          // --- Emergent candidates: exactly one hop, never recursive. An emergent
+          // candidate's own page is never scanned for further emergent candidates. ---
+          if (source === 'discovered') {
+            const anchors = await page
+              .evaluate(() => Array.from(document.querySelectorAll('a[href]')).map((a) => ({ text: a.innerText || '', href: a.href })))
+              .catch(() => []);
+            for (const eu of findEmergentLinks(anchors)) {
+              if (byDistrict[did].seen.has(eu)) continue;
+              byDistrict[did].seen.add(eu);
+              tasks.push({ did, url: eu, tools: [], source: 'emergent', found_on: rec.final_url, capDir });
+            }
+          }
+        } finally {
+          await page.close();
+        }
+      }
+    } catch (e) {
+      rec.err = String(e).slice(0, 120);
     }
-  } catch (e) {
-    rec.err = String(e).slice(0, 120);
+    byDistrict[did].records.push(rec);
+    return rec;
   }
-  byDistrict[did].records.push(rec);
-  return rec;
+
+  let idx = 0;
+  let done = 0;
+  async function worker() {
+    while (idx < tasks.length) {
+      const t = tasks[idx++];
+      await processTask(t);
+      if (++done % 25 === 0) console.log(`  ...${done}/${tasks.length} captured`);
+    }
+  }
+  console.log(`capturing ${tasks.length} candidate URLs across ${dirs.length} districts (concurrency ${CONC})`);
+  await Promise.all(Array.from({ length: CONC }, () => worker()));
+
+  for (const did of Object.keys(byDistrict)) {
+    writeVersioned(path.join(ROOT, did, 'captures.json'), JSON.stringify(byDistrict[did].records, null, 2));
+  }
+  await browser.close();
+  console.log(`CAPTURE DONE — ${done} URLs (incl. emergent), ${dirs.length} districts`);
 }
 
-let idx = 0;
-let done = 0;
-async function worker() {
-  while (idx < tasks.length) {
-    const t = tasks[idx++];
-    await processTask(t);
-    if (++done % 25 === 0) console.log(`  ...${done}/${tasks.length} captured`);
+// ============================ FINGERPRINT BACKFILL ============================
+// Re-visit each existing ok:true record, compute ONLY its fingerprint, and patch it into the
+// record. Does not re-render/re-save page.* or touch any Stage 4 output -- additive, leaving
+// processed.json valid (Stage 4 never reads fingerprints). For parity on captures that
+// predate fingerprinting. Records that already carry a fingerprint, and ok:false records
+// (no content was captured), are skipped.
+async function runBackfill(ROOT, CONC) {
+  const dirs = readdirSync(ROOT).filter((d) => existsSync(path.join(ROOT, d, 'captures.json')));
+  const tasks = [];
+  const byDistrict = {};
+  for (const did of dirs) {
+    const records = JSON.parse(readFileSync(path.join(ROOT, did, 'captures.json')));
+    byDistrict[did] = { records, dirty: false };
+    records.forEach((rec, i) => {
+      if (!rec.ok || rec.fingerprint) return;
+      const target = rec.final_url || rec.url;
+      if (!target) return;
+      tasks.push({ did, i, rec, target });
+    });
+  }
+
+  const total = tasks.length;
+  if (total === 0) {
+    console.log('BACKFILL: nothing to do (every ok record already has a fingerprint).');
+    return;
+  }
+
+  const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
+  const ctx = await browser.newContext({ ignoreHTTPSErrors: true, userAgent: 'Mozilla/5.0 (research; bell-schedule discovery)' });
+
+  let idx = 0;
+  let done = 0;
+  async function worker() {
+    while (idx < tasks.length) {
+      const t = tasks[idx++];
+      try {
+        if (t.rec.kind === 'html') {
+          t.rec.fingerprint = await htmlFingerprintFor(ctx, t.target);
+        } else {
+          // pdf / image / drive_export -- reduced fingerprint from a direct byte fetch.
+          const r = await fetch(t.target, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
+          t.rec.fingerprint = buildFetchFingerprint(r);
+        }
+        byDistrict[t.did].dirty = true;
+      } catch (e) {
+        t.rec.fingerprint = { error: String(e).slice(0, 120) };
+        byDistrict[t.did].dirty = true;
+      }
+      if (++done % 25 === 0) console.log(`  ...${done}/${total} fingerprinted`);
+    }
+  }
+  console.log(`backfilling fingerprints for ${total} records across ${dirs.length} districts (concurrency ${CONC})`);
+  await Promise.all(Array.from({ length: CONC }, () => worker()));
+
+  for (const did of Object.keys(byDistrict)) {
+    if (byDistrict[did].dirty) {
+      writeVersioned(path.join(ROOT, did, 'captures.json'), JSON.stringify(byDistrict[did].records, null, 2));
+    }
+  }
+  await browser.close();
+  console.log(`BACKFILL DONE — ${done}/${total} records fingerprinted across ${dirs.length} districts`);
+}
+
+// ============================ DISPATCH ============================
+// Only run when executed directly (node capture_discovery.mjs ...), never when imported by a
+// test that just wants the pure helpers -- otherwise the import would kick off a capture run.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const argv = process.argv.slice(2);
+  if (argv[0] === 'backfill-fingerprints') {
+    await runBackfill(argv[1], parseInt(argv[2] || '5', 10));
+  } else {
+    await runCapture(argv[0], parseInt(argv[1] || '5', 10));
   }
 }
-console.log(`capturing ${tasks.length} candidate URLs across ${dirs.length} districts (concurrency ${CONC})`);
-await Promise.all(Array.from({ length: CONC }, () => worker()));
-
-for (const did of Object.keys(byDistrict)) {
-  writeVersioned(path.join(ROOT, did, 'captures.json'), JSON.stringify(byDistrict[did].records, null, 2));
-}
-await browser.close();
-console.log(`CAPTURE DONE — ${done} URLs (incl. emergent), ${dirs.length} districts`);

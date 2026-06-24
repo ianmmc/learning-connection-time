@@ -1,6 +1,6 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-06-23T00:00:00Z"
+last_updated: "2026-06-24T00:00:00Z"
 
 requirements:
   - id: REQ-001
@@ -1954,3 +1954,30 @@ requirements:
       dedup deferral in REQ-081 - a deliberate non-decision, not forgotten work. The user's own framing:
       'After we get some data, the answer may be that there aren't any [synthesized files] that we want at
       this point.' Revisit once Stage 5 is built and run for real, not before."
+
+  - id: REQ-086
+    description: "Stage 3 per-record hosting/CMS fingerprint - raw signals only (no inline classification beyond a cheap CMS_HOSTS hint), recorded at the URL level, with a backfill mode for parity on pre-fingerprint captures"
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - "Every captures.json record carries a fingerprint block of RAW signals: final_host, server, powered_by, cdn_hints[] (cloudflare/aws/vercel/github-pages/netlify/fastly/azure/google, presence-detected from response headers), meta_generator, resource_hosts[] (distinct off-domain script/link/img hostnames, own-host dropped, capped at 20), js_dependent (served-text-near-empty-but-rendered-substantial proxy; null for non-HTML records), cms_hint (host-suffix match against the same CMS_HOSTS set discover.py uses, null on no match)"
+      - "Recorded at the URL level (per captures/<hash>/ record), not district level - school subdomains routinely run a different platform than the district root"
+      - "Gathered for free from data the capture already held and discarded: the goto/fetch Response headers (previously only content-type was kept) plus one DOM evaluate alongside the existing emergent-anchor scan. No new network requests on the live path."
+      - "Facts only - NO real CMS classification inline beyond cms_hint. Real platform identification is explicitly deferred to a later pure function over the raw signals (refinable retroactively without re-capture), same capture-facts-decide-downstream invariant as the rest of the pipeline"
+      - "Direct PDF/image/Drive records get a reduced fingerprint (host + headers + cdn_hints only; meta_generator/resource_hosts null/empty, js_dependent null) since there is no DOM"
+      - "backfill-fingerprints mode (node capture_discovery.mjs backfill-fingerprints <root> [conc]) re-visits each existing ok record, computes ONLY the fingerprint, and patches it into captures.json via versioned-redo - does NOT re-render/re-save page.* or touch any Stage 4 output, keeping processed.json valid (Stage 4 never reads fingerprints). Run live 2026-06-24: 150/150 records across all 12 batch_00001 districts, 0 errors."
+      - "Parity via backfill was a deliberate choice over full re-capture, which would have mixed fresh Stage-3 artifacts with existing Stage-4 outputs in the same captures/<hash>/ dirs, left processed.json stale, and risked content drift - all to add one additive field"
+      - "Pure helpers (hostOf, cdnHints, cmsHint, strippedLen, buildHtmlFingerprint, buildFetchFingerprint) are exported and unit-tested (capture_fingerprint.test.mjs, node:test); a main-module guard prevents importing the module for tests from triggering a capture run"
+    tests:
+      - infrastructure/scraper/capture_fingerprint.test.mjs (6 tests; run via `npm test` in infrastructure/scraper/ alongside capture_drive.test.mjs - 14 total)
+    created: "2026-06-24T00:00:00Z"
+    updated: "2026-06-24T00:00:00Z"
+    notes: "First live run earned the feature's keep: cms_hint was null on all 150 (correctly - the real
+      platforms in the sample are not in the discovery-era CMS_HOSTS), but raw resource_hosts revealed the
+      actual landscape - SharpSchool (51 records), Apptegy/Thrillshare (~24), Educational Networks (25).
+      Whether to grow CMS_HOSTS (cross-cutting: also changes discover.py's gate()) or give fingerprinting its
+      own broader platform list is ACQUISITION_PIPELINE.md Open decision #8, deliberately not acted on
+      unilaterally. The browser-driving fingerprint paths (domFingerprint, htmlFingerprintFor, the live
+      processTask wiring, runBackfill) share the same no-automated-harness gap as the rest of
+      capture_discovery.mjs's render logic - REQ-079."
