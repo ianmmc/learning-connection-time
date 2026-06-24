@@ -1983,6 +1983,9 @@ requirements:
       TestDiscoveryGate coverage). GOVERNANCE (the user's standing rule): every CMS_HOSTS addition is
       human-in-the-loop, never automated, and must be a school-district-specific vendor - NOT a general
       host/CDN (amazonaws.com deliberately excluded despite core-docs.s3.amazonaws.com in the data). The
-      existing 12 districts' stored cms_hint still reads null until re-derived (a cheap pure recompute over
-      stored resource_hosts, no re-capture) - not yet done. The browser-driving fingerprint paths share the
-      same no-automated-harness gap as the rest of capture_discovery.mjs's render logic - REQ-079."
+      existing 12 districts' cms_hint was then re-derived in place via `capture_discovery.mjs
+      recompute-cms-hint` - a pure recompute over stored resource_hosts (no browser/network), 107/150
+      records updated: SharpSchool 59, Educational Networks 25, Apptegy 19, Thrillshare 4, null 43. That
+      mode is the standing mechanism for applying future CMS_HOSTS changes to captured data without
+      re-capture. The browser-driving fingerprint paths share the same no-automated-harness gap as the rest
+      of capture_discovery.mjs's render logic - REQ-079."

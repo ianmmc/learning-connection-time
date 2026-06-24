@@ -23,6 +23,9 @@
 //       records and patch in `fingerprint` only (does NOT re-render/re-save page.* or touch
 //       Stage 4 outputs -- additive, keeps processed.json valid). For parity on pre-2026-06-24
 //       captures that predate fingerprinting.
+//   node capture_discovery.mjs recompute-cms-hint <ROOT>           -- re-derive ONLY cms_hint
+//       from each record's already-stored fingerprint (no browser, no network). Apply a
+//       human-approved CMS_HOSTS change to already-captured data without re-capturing.
 import { chromium } from 'playwright';
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, renameSync } from 'fs';
 import { createHash } from 'crypto';
@@ -515,6 +518,33 @@ async function runBackfill(ROOT, CONC) {
   console.log(`BACKFILL DONE — ${done}/${total} records fingerprinted across ${dirs.length} districts`);
 }
 
+// ============================ RECOMPUTE cms_hint ============================
+// Re-derive ONLY cms_hint, in place, from each record's already-stored fingerprint
+// (final_host + resource_hosts) -- a pure recompute over facts already on disk, NO browser,
+// NO network. This is the mechanism for applying a (human-approved) CMS_HOSTS change to
+// already-captured data without re-capturing: the raw signals never changed, only the
+// classification function over them. Writes via versioned-redo only for districts that
+// actually changed.
+function runRecomputeCmsHint(ROOT) {
+  const dirs = readdirSync(ROOT).filter((d) => existsSync(path.join(ROOT, d, 'captures.json')));
+  let changed = 0;
+  let scanned = 0;
+  for (const did of dirs) {
+    const capPath = path.join(ROOT, did, 'captures.json');
+    const records = JSON.parse(readFileSync(capPath));
+    let dirty = false;
+    for (const rec of records) {
+      const fp = rec.fingerprint;
+      if (!fp || fp.error) continue;
+      scanned += 1;
+      const next = cmsHint([fp.final_host, ...(fp.resource_hosts || [])]);
+      if (next !== (fp.cms_hint ?? null)) { fp.cms_hint = next; dirty = true; changed += 1; }
+    }
+    if (dirty) writeVersioned(capPath, JSON.stringify(records, null, 2));
+  }
+  console.log(`RECOMPUTE cms_hint DONE — ${changed} of ${scanned} fingerprinted records updated across ${dirs.length} districts`);
+}
+
 // ============================ DISPATCH ============================
 // Only run when executed directly (node capture_discovery.mjs ...), never when imported by a
 // test that just wants the pure helpers -- otherwise the import would kick off a capture run.
@@ -522,6 +552,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const argv = process.argv.slice(2);
   if (argv[0] === 'backfill-fingerprints') {
     await runBackfill(argv[1], parseInt(argv[2] || '5', 10));
+  } else if (argv[0] === 'recompute-cms-hint') {
+    runRecomputeCmsHint(argv[1]);
   } else {
     await runCapture(argv[0], parseInt(argv[1] || '5', 10));
   }
