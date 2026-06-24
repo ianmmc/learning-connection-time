@@ -24,7 +24,7 @@ Per district, **daily instructional minutes per grade band (elementary / middle 
 
 ### 1 · Queue — designed and built 2026-06-22
 
-Builds a batch of districts (default 12) plus, per district, the per-band school lists to target — the structured input Stage 2 (Discover) and Stage 3 (Capture) consume. Source data: NCES `ccd_lea_029_2425` (district directory + claimed grade span) and `ccd_sch_029_2425` (school directory + per-school grade span), cross-referenced against the DB (`enrollment_by_grade`, `districts.is_shared_service_entity`). Code: `infrastructure/acquisition/discovery/queue_batch.py`, reusing `school_sampling.py` (extended) and the new `district_status.py` registry.
+Builds a batch of districts (default 12) plus, per district, the per-band school lists to target — the structured input Stage 2 (Discover) and Stage 3 (Capture) consume. Source data: NCES `ccd_lea_029_2425` (district directory + claimed grade span) and `ccd_sch_029_2425` (school directory + per-school grade span), cross-referenced against the DB (`enrollment_by_grade`, `districts.is_shared_service_entity`). Code: `infrastructure/acquisition/stage1_queue/queue_batch.py`, reusing `school_sampling.py` (extended) and the new `district_status.py` registry.
 
 **Pre-queue exclusion filters** (applied in this order to build the eligible pool; all are *live filters recomputed every run*, never a persisted exclusion list — a future policy change lets a district back in for free, no cleanup needed):
 
@@ -56,7 +56,7 @@ A district must also have non-null, non-zero `enrollment_k12` (most recent year 
 
 **Checkpoint A (human review)** happens here, **out-of-band** — no `approved`/`reviewed_by` fields in the batch JSON for now (matches the project's current high-touch ramp-up posture; revisit if/when a machine-checkable gate is wanted). The reviewer reads the batch file, confirms the districts/bands/schools are sensible, and gives a verbal/chat go-ahead before Stage 2 runs.
 
-**Status registry** (`data/acquisition/status/district_status.json`, module `infrastructure/acquisition/discovery/district_status.py`) — a single JSON dict keyed by `district_id` (structure prioritized over scan-ability; this is process input read by every future batch-build to exclude already-attempted districts, not primarily a human-read record). Updated at **every** stage 1-9 as a district progresses, with a per-district `history[]` trail so a human can see why a district landed where it did without cross-referencing batch files. Lives under `data/acquisition/status/`, not nested under `queue/`, since "acquisition" is the umbrella term for the whole 9-stage process and every stage writes to it. **Pre-queue exclusions are deliberately not recorded here** — see filter list above. Schema reference: `data/acquisition/status/district_status.example.json`. Replaces the directory-presence heuristic previously used in `training_batch.py` (archived, see *Key files*).
+**Status registry** (`data/acquisition/status/district_status.json`, module `infrastructure/acquisition/common/district_status.py`) — a single JSON dict keyed by `district_id` (structure prioritized over scan-ability; this is process input read by every future batch-build to exclude already-attempted districts, not primarily a human-read record). Updated at **every** stage 1-9 as a district progresses, with a per-district `history[]` trail so a human can see why a district landed where it did without cross-referencing batch files. Lives under `data/acquisition/status/`, not nested under `queue/`, since "acquisition" is the umbrella term for the whole 9-stage process and every stage writes to it. **Pre-queue exclusions are deliberately not recorded here** — see filter list above. Schema reference: `data/acquisition/status/district_status.example.json`. Replaces the directory-presence heuristic previously used in `training_batch.py` (archived, see *Key files*).
 
 ### 2 · Discovery — designed 2026-06-23 (full session, not yet built or run)
 
@@ -188,10 +188,10 @@ Discovery is a **recall** problem (find *a* schedule page; capture verifies it),
 
 **Stage 4 / Stage 5 boundary, restated after the "always run" pivot: Stage 4 is production, Stage 5 is decisions — but a standardized, always-wanted synthesized file is still Stage 4's job, *if* one turns out to exist.** The user's framing: comparing/ranking/filtering across representations belongs to Stage 5, but if a particular synthesis (e.g. a deterministic merge of agreeing representations) turns out to be something every downstream consumer always wants in the same operationalized shape, producing it is production, not a decision, and belongs in Stage 4. **Not decided now** — there's no evidence yet that such a synthesis exists or is worth building; Stage 4 currently produces the raw list of representations + cheap per-representation attributes (`n_chars`, `n_times`) and nothing more. Revisit once Stage 5 has run against real `processed.json` output and we can see whether a recurring synthesis pattern actually emerges. Stage 5's own output is provisionally named **`filtered.json`** (the user's proposal, accepted) — a bare array, same reasoning as `processed.json` given the volume of material a human reviews at CP-B.
 
-**Built and run live 2026-06-23, real result:** `infrastructure/acquisition/discovery/process_stage4.py run --all` against all 12 `batch_00001` districts — **150/150 records processed, zero crashes**, 10 districts `processed_all`, 2 `processed_partial` (Stroudsburg, Pittsylvania). Only 4/150 records (2.7%) have no usable representation at all, and all four are explainable, not bugs: three are Pittsylvania Student/Parent Handbook PDFs that captured as genuinely near-empty content (`n_chars=1`, no errors — the capture itself got little/nothing, consistent with the "schedule buried in a handbook" failure mode named in Deferred hard input cases, below), and one is Stroudsburg's already-flagged low-value `cross.jsp` cross-reference link.
+**Built and run live 2026-06-23, real result:** `infrastructure/acquisition/stage4_process/process_stage4.py run --all` against all 12 `batch_00001` districts — **150/150 records processed, zero crashes**, 10 districts `processed_all`, 2 `processed_partial` (Stroudsburg, Pittsylvania). Only 4/150 records (2.7%) have no usable representation at all, and all four are explainable, not bugs: three are Pittsylvania Student/Parent Handbook PDFs that captured as genuinely near-empty content (`n_chars=1`, no errors — the capture itself got little/nothing, consistent with the "schedule buried in a handbook" failure mode named in Deferred hard input cases, below), and one is Stroudsburg's already-flagged low-value `cross.jsp` cross-reference link.
 
 ### 5 · Local filtering (coarse)
-Cheap `pdftotext`-density sniff: clock-time count + bell keywords; reject obvious non-schedules (board calendars, administrative pages). Deliberately cheap and high-recall — precision tightening (URL-keyword weighting, time-grid detection) is a later pass. Code: `infrastructure/acquisition/discovery/relevance.py`.
+Cheap `pdftotext`-density sniff: clock-time count + bell keywords; reject obvious non-schedules (board calendars, administrative pages). Deliberately cheap and high-recall — precision tightening (URL-keyword weighting, time-grid detection) is a later pass. Code: `infrastructure/acquisition/stage5_filter/relevance.py` (stale draft, predates the Stage 1-4 redesign — see Key files).
 
 ### 6 · Hand to OpenRouter
 Extraction standardizes on **OpenRouter** (`google/gemini-2.5-flash` etc.) — even though the first Flash pass used the native Google API. Inputs: OCR'd text / clean text / PDFs / screenshots per the tier.
@@ -284,7 +284,7 @@ A managed-scraping fallback (Zyte/Firecrawl, budget-bounded) is available for JS
 
 ## Sampling policy (stage 1/7) — two separate decisions, queue-time settled, extraction-time still open
 
-Computed per-district per-band school counts and the textbook **95% / ±5% finite-population sample size** from NCES `ccd_sch_029_2425` (classifier `infrastructure/acquisition/discovery/school_sampling.py`; bands by grade span `GSLO`-`GSHI`, so a K-8 counts for *both* elementary and middle; open schools only). **Result kills the survey-formula approach:**
+Computed per-district per-band school counts and the textbook **95% / ±5% finite-population sample size** from NCES `ccd_sch_029_2425` (classifier `infrastructure/acquisition/stage1_queue/school_sampling.py`; bands by grade span `GSLO`-`GSHI`, so a K-8 counts for *both* elementary and middle; open schools only). **Result kills the survey-formula approach:**
 
 - Across **18,158 districts**, 95/±5 sampling = **127,513 band-extractions = 96% of a full census (132,803)** — the finite-population correction saves only ~4%.
 - Reason: the corpus is mostly small districts (**median 4 calls / district across 3 bands; p95 = 22**), which get censused regardless. The formula only inflates a few mega-districts (**LA Unified n=496, Broward 286, Orange 254**) — i.e., maximum effort exactly where the marginal school adds least.
@@ -394,30 +394,31 @@ Two independent extractors disagree on a large share of districts; at <1 hr/week
 
 | Concern | File |
 |---|---|
-| **Queue (Stage 1): exclusion filters, stratified sampling, batch writer** | `infrastructure/acquisition/discovery/queue_batch.py` |
-| **NCES classification: per-school bands, LEA claimed span, charter lookup** | `infrastructure/acquisition/discovery/school_sampling.py` |
-| **Cross-stage district status registry (all 9 stages)** | `infrastructure/acquisition/discovery/district_status.py` |
+| **Queue (Stage 1): exclusion filters, stratified sampling, batch writer** | `infrastructure/acquisition/stage1_queue/queue_batch.py` |
+| **NCES classification: per-school bands, LEA claimed span, charter lookup** | `infrastructure/acquisition/stage1_queue/school_sampling.py` |
+| **Cross-stage district status registry (all 9 stages)** | `infrastructure/acquisition/common/district_status.py` |
 | **Stage 1 output / status registry schema references** | `data/acquisition/queue/batch.example.json`, `data/acquisition/status/district_status.example.json` |
 | **CTC/shared-service classification backfill (Rule 6)** | `infrastructure/database/migrations/apply_ctc_classification.py` |
 | Archived: pre-redesign stratified batch picker (superseded by `queue_batch.py`) | `data/archive/training_batch_py-superseded-20260622/training_batch.py` |
-| **Discovery (Stage 2): deterministic half, built + tested 2026-06-23** | `infrastructure/acquisition/discovery/discover_stage2.py` |
+| **Discovery (Stage 2): deterministic half, built + tested 2026-06-23** | `infrastructure/acquisition/stage2_discover/discover_stage2.py` |
 | **Discovery (Stage 2): orchestration skill (Wave 1 subagent dispatch)** | `.claude/skills/stage2-discover/SKILL.md` |
-| Discovery utility functions only (manifest-reading/roster parts superseded) | `infrastructure/acquisition/discovery/discover.py` |
-| Superseded: GT-manifest-era per-school discovery (bypasses Stage 1's batch, do not use as-is) | `infrastructure/acquisition/discovery/per_school_run.py` |
+| Discovery utility functions only (manifest-reading/roster parts superseded) | `infrastructure/acquisition/common/discover.py` |
+| Archived 2026-06-24: GT-manifest-era per-school discovery (bypassed Stage 1's batch) | `data/archive/gt-benchmark-era-tools-superseded-20260624/per_school_run.py` |
 | Superseded skills (built on the above, pre-Stage-1 design) | `.claude/skills/per-school-acquire/`, `.claude/skills/per-school-acquire-training/` |
 | **Capture (Stage 3): built + run live 2026-06-23, 150/150 captured** | `infrastructure/scraper/capture_discovery.mjs` (active) |
-| **Capture (Stage 3): orchestration (reconcile/outcome-rollup/registry)** | `infrastructure/acquisition/discovery/capture_stage3.py` |
+| **Capture (Stage 3): orchestration (reconcile/outcome-rollup/registry)** | `infrastructure/acquisition/stage3_capture/capture_stage3.py` |
 | Drive Tier 1 export-URL handling (built, tested) | `infrastructure/scraper/capture_drive.mjs` |
 | Drive Tier 2 (OAuth) — deliberately deferred, not built | REQ-078 |
-| **Local processing (Stage 4): built + run live 2026-06-23, 150/150 records processed** | `infrastructure/acquisition/discovery/process_stage4.py` |
+| **Local processing (Stage 4): built + run live 2026-06-23, 150/150 records processed** | `infrastructure/acquisition/stage4_process/process_stage4.py` |
 | **Stage 4 PDF-tool spike (real data, 150 PDFs) — kept/dropped tool decision evidence** | `data/benchmark_results/stage4_pdf_tool_spike/run_spike.py`, `summary.jsonl` |
-| Existing pdftotext→OCR fallback pattern Stage 4 ports from (`_ocr_pdf`, `PDF_MIN_TEXT_CHARS`) | `infrastructure/acquisition/reading.py`, `infrastructure/acquisition/gt_propose.py` |
+| Existing pdftotext→OCR fallback pattern Stage 4 ports from (`_ocr_pdf`, `PDF_MIN_TEXT_CHARS`) — archived 2026-06-24, no live code imports either | `data/archive/gt-benchmark-era-tools-superseded-20260624/reading.py`, `.../gt_propose.py` |
 | Modal dismissal + page.pdf() options ported in (verified pure-Playwright, no dead-architecture coupling) | `infrastructure/scraper/src/capturer.ts` |
 | Superseded: abandoned Jan-2026 blind-site-mapping (do not revive) | `infrastructure/scraper/src/mapper.ts` |
-| Stale: coarse relevance filter — pre-Stage-1-3-redesign, reads the old `data/acquisition/discovery/` layout and old tool names (perplexity/openrouter/claude); not yet ported to the new `captures.json` shape | `infrastructure/acquisition/discovery/relevance.py` |
+| Stale: coarse relevance filter — pre-Stage-1-3-redesign, reads the old `data/acquisition/discovery/` layout and old tool names (perplexity/openrouter/claude); not yet ported to the new `captures.json` shape | `infrastructure/acquisition/stage5_filter/relevance.py` |
 | Discovery→extraction loop test (archived) | `data/archive/gt-benchmark-*/dead_benchmark_scripts/extract_test.py` |
-| Extraction harness + providers | `infrastructure/acquisition/{extractors,reading,score_minutes}.py` (run_manifest_benchmark archived) |
+| Extraction harness + providers — archived 2026-06-24 (GT-benchmark era, no live code imports either) | `data/archive/gt-benchmark-era-tools-superseded-20260624/{extractors,reading,score_minutes,council_extract}.py` |
 | Google Drive handler | `infrastructure/scripts/enrich/google_drive_handler.py` |
+| **Aggregation (Stage 8): mode-then-mean logic, pure logic/no I/O** | `infrastructure/acquisition/stage8_aggregate/aggregate.py` |
 | Per-school schema + MODE aggregation | `school_schedules` / `bell_schedules` (migration 016), REQ-042 |
 | LCT precedence (bell → statutory → 360) | `infrastructure/scripts/analyze/calculate_lct_variants.py::get_instructional_minutes` |
 | Requirements | REQ-024, 032, 042, 043–053 |

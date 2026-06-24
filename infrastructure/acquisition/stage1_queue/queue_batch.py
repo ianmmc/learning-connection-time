@@ -34,6 +34,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 import school_sampling as S
+sys.path.insert(0, str(Path(__file__).parent.parent / "common"))
 import district_status as DS
 from discover import host_of
 

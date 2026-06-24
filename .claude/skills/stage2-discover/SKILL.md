@@ -9,7 +9,7 @@ Written explicitly so the procedure survives across sessions without relying on 
 
 **Supersedes** `.claude/skills/per-school-acquire/` and `per-school-acquire-training/` — both obsolete, see their headers.
 
-**Why a skill, not a script:** Wave 1 (Claude WebSearch) can only run from inside the agent — it spawns a Haiku WebSearch subagent, which `discover_stage2.py` cannot do on its own. Every other step (reconciliation, gating, Wave 2, flatten, write, registry) is pure deterministic script, invoked via `infrastructure/acquisition/discovery/discover_stage2.py`.
+**Why a skill, not a script:** Wave 1 (Claude WebSearch) can only run from inside the agent — it spawns a Haiku WebSearch subagent, which `discover_stage2.py` cannot do on its own. Every other step (reconciliation, gating, Wave 2, flatten, write, registry) is pure deterministic script, invoked via `infrastructure/acquisition/stage2_discover/discover_stage2.py`.
 
 ## Non-negotiable invariants (re-state these to yourself before running; do not silently relax any of them)
 
@@ -33,7 +33,7 @@ Written explicitly so the procedure survives across sessions without relying on 
 ### Step 0 — Reconcile (always run first, before dispatching anything)
 
 ```
-python3 infrastructure/acquisition/discovery/discover_stage2.py reconcile data/acquisition/queue/batch_NNNNN.json
+python3 infrastructure/acquisition/stage2_discover/discover_stage2.py reconcile data/acquisition/queue/batch_NNNNN.json
 ```
 
 - If this exits with `CONTROL FAILURE`: **stop.** Do not run `roster` or dispatch any subagent for this batch. Report the error verbatim to the user.
@@ -45,7 +45,7 @@ For each `todo` district, **up to 2 at a time** (use the Agent tool with `run_in
 
 1. Get that district's roster and domain:
    ```
-   python3 infrastructure/acquisition/discovery/discover_stage2.py roster data/acquisition/queue/batch_NNNNN.json <district_id>
+   python3 infrastructure/acquisition/stage2_discover/discover_stage2.py roster data/acquisition/queue/batch_NNNNN.json <district_id>
    ```
 2. Spawn a subagent (model: haiku) with **exactly** this brief — fill in the bracketed parts from the roster output, and do not add extra instructions beyond what's below:
 
@@ -76,7 +76,7 @@ For each `todo` district, **up to 2 at a time** (use the Agent tool with `run_in
 For each district whose Wave-1 scratch file is ready:
 
 ```
-python3 infrastructure/acquisition/discovery/discover_stage2.py finish data/acquisition/queue/batch_NNNNN.json <district_id> data/acquisition/_scratch/wave1/<district_id>.json
+python3 infrastructure/acquisition/stage2_discover/discover_stage2.py finish data/acquisition/queue/batch_NNNNN.json <district_id> data/acquisition/_scratch/wave1/<district_id>.json
 ```
 
 This single command does everything else: validates the subagent's district_id/domain echo (fails loud on mismatch — if this happens, do not retry blindly, investigate why the subagent's result doesn't match what it was given), gates Wave 1's URLs, checks for a residual, runs Wave 2 only if one exists, flattens/dedups, writes `discovery.json` + `candidates.json` to `data/raw/lea-website-captures/<id>_<slug>/`, and writes the registry outcome. It prints the final outcome (`found_all` / `found_partial` / `manual_flag_all`).

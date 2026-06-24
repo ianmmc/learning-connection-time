@@ -8,9 +8,14 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "infrastructure" / "acquisition"))
-sys.path.insert(0, str(ROOT / "infrastructure" / "acquisition" / "discovery"))
+sys.path.insert(0, str(ROOT / "infrastructure" / "acquisition" / "stage8_aggregate"))
 import aggregate as A  # noqa: E402
+
+# extractors.py is archived (GT-benchmark era, no live pipeline code imports it) -- still
+# imported here because TestInvariant checks a durable design invariant (REQ-054: models
+# read times, never minutes/a picked "typical" schedule) against it as reference material,
+# not because it's live code.
+sys.path.insert(0, str(ROOT / "data" / "archive" / "gt-benchmark-era-tools-superseded-20260624"))
 
 
 # ---------------------------------------------------------------- REQ-054 invariant

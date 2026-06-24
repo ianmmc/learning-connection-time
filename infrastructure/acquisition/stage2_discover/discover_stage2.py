@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent / "common"))
 import district_status as DS
 from discover import host_of, gate, openrouter_search
 

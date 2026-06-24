@@ -8,8 +8,9 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "infrastructure" / "acquisition"))
-sys.path.insert(0, str(ROOT / "infrastructure" / "acquisition" / "discovery"))
+ACQ = ROOT / "infrastructure" / "acquisition"
+for _sub in ("common", "stage1_queue", "stage2_discover", "stage3_capture", "stage4_process", "stage8_aggregate"):
+    sys.path.insert(0, str(ACQ / _sub))
 import school_sampling as S  # noqa: E402
 import aggregate as A  # noqa: E402
 import queue_batch as Q  # noqa: E402
