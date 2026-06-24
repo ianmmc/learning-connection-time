@@ -58,9 +58,14 @@ const SCHED_KW = ['bell', 'schedule', 'hours', 'start-time', 'start_time', 'dail
 
 // Mirrors discover.py's CMS_HOSTS (kept in sync by hand, same as SCHED_KW above) -- domain
 // SUFFIXES that signal a known K-12 CMS / content host. Matched via endsWith, exactly as
-// discover.py does (`any(h.endswith(c) for c in CMS_HOSTS)`).
+// discover.py does (`any(h.endswith(c) for c in CMS_HOSTS)`). GOVERNANCE: this list is
+// LOAD-BEARING in discover.py's gate() (discovery recall), so additions are ALWAYS a
+// human-in-the-loop decision -- school-district vendors only, never a general host/CDN (S3 etc.).
+// Keep in sync with discover.py's CMS_HOSTS. The 2026-06-24 additions
+// (sharpschool/apptegy/thrillshare/educationalnetworks) came from Stage 3 fingerprinting.
 const CMS_HOSTS = ['finalsite.net', 'echalksites.com', 'sites.google.com', 'drive.google.com',
-  'docs.google.com', 'schoolwires.net', 'schoolwires.com', 'blackboard.com'];
+  'docs.google.com', 'schoolwires.net', 'schoolwires.com', 'blackboard.com',
+  'sharpschool.com', 'apptegy.net', 'thrillshare.com', 'educationalnetworks.net'];
 
 // --- Fingerprint helpers (raw signals only, no classification) ---------------------------
 // The pure ones are exported for unit testing (capture_fingerprint.test.mjs); the

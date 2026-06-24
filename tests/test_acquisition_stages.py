@@ -649,6 +649,38 @@ class TestOpenRouterBillingFailure:
             D2.run_wave2(residual, "example.org")
 
 
+class TestDiscoveryGate:
+    """gate() decides keep/reject for a discovered URL. CMS_HOSTS is load-bearing here:
+    an off-domain URL on a known school-CMS host is KEPT only when the district slug is in
+    the URL. Regression coverage for the 2026-06-24 CMS_HOSTS additions, which changed
+    discovery recall (human-approved per ACQUISITION_PIPELINE.md Open decision #8)."""
+
+    def test_on_domain_url_is_kept(self):
+        ok, why = DISC.gate("https://www.marion-isd.org/o/vms/page/school-hours", "marion-isd.org", "marion-isd", True)
+        assert ok and why == "on-domain"
+
+    def test_news_aggregator_is_rejected(self):
+        ok, why = DISC.gate("https://www.greatschools.org/x/marion", "marion-isd.org", "marion-isd", True)
+        assert not ok and why == "news/aggregator"
+
+    def test_off_domain_non_cms_is_rejected(self):
+        ok, why = DISC.gate("https://example.com/marion-isd/bell", "marion-isd.org", "marion-isd", True)
+        assert not ok and why == "off-district"
+
+    def test_newly_added_vendor_host_with_slug_is_kept(self):
+        """A SharpSchool/Apptegy/Educational-Networks URL that names the district is now
+        kept (was 'off-district' before the 2026-06-24 additions)."""
+        for host in ("district5.sharpschool.com", "cmsv2-assets.apptegy.net", "x.educationalnetworks.net"):
+            ok, why = DISC.gate(f"https://{host}/district5/bell-schedule", "district5.org", "district5", True)
+            assert ok and why == "cms-slug", f"{host} should be kept via cms-slug"
+
+    def test_cms_host_without_slug_is_rejected(self):
+        """The slug guard still holds -- a CMS host that does NOT name this district is
+        rejected, so the whitelist can't pull in some OTHER district's content."""
+        ok, why = DISC.gate("https://other.sharpschool.com/somewhere/bell", "district5.org", "district5", True)
+        assert not ok and why == "off-district"
+
+
 class TestOutcomeRollup:
     def test_found_all_when_every_school_resolved(self):
         roster = [{"wave1_gated": [{"kept": True}], "wave2_gated": []},

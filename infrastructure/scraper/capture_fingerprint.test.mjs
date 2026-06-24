@@ -28,6 +28,12 @@ test('cmsHint matches CMS_HOSTS by suffix, like discover.py gate()', () => {
   assert.equal(cmsHint(['cmsv2.schoolwires.com']), 'schoolwires.com');
   // a Google Sites page
   assert.equal(cmsHint(['sites.google.com']), 'sites.google.com');
+  // the 2026-06-24 school-district-vendor additions
+  assert.equal(cmsHint(['cdnsm1-ss18.sharpschool.com']), 'sharpschool.com');
+  assert.equal(cmsHint(['cmsv2-assets.apptegy.net']), 'apptegy.net');
+  assert.equal(cmsHint(['counter.educationalnetworks.net']), 'educationalnetworks.net');
+  // a general host/CDN is deliberately NOT in the list (pollution guard)
+  assert.equal(cmsHint(['core-docs.s3.amazonaws.com']), null);
   // a plain district domain matches nothing
   assert.equal(cmsHint(['www.marion-isd.org']), null);
   // first match across the list wins; empty/falsey hosts skipped

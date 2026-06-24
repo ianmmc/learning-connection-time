@@ -1970,14 +1970,19 @@ requirements:
       - "Parity via backfill was a deliberate choice over full re-capture, which would have mixed fresh Stage-3 artifacts with existing Stage-4 outputs in the same captures/<hash>/ dirs, left processed.json stale, and risked content drift - all to add one additive field"
       - "Pure helpers (hostOf, cdnHints, cmsHint, strippedLen, buildHtmlFingerprint, buildFetchFingerprint) are exported and unit-tested (capture_fingerprint.test.mjs, node:test); a main-module guard prevents importing the module for tests from triggering a capture run"
     tests:
-      - infrastructure/scraper/capture_fingerprint.test.mjs (6 tests; run via `npm test` in infrastructure/scraper/ alongside capture_drive.test.mjs - 14 total)
+      - infrastructure/scraper/capture_fingerprint.test.mjs (run via `npm test` in infrastructure/scraper/ alongside capture_drive.test.mjs - 14 total)
+      - tests/test_acquisition_stages.py::TestDiscoveryGate (regression coverage for the CMS_HOSTS additions, which changed Stage 2 gate() recall)
     created: "2026-06-24T00:00:00Z"
     updated: "2026-06-24T00:00:00Z"
     notes: "First live run earned the feature's keep: cms_hint was null on all 150 (correctly - the real
-      platforms in the sample are not in the discovery-era CMS_HOSTS), but raw resource_hosts revealed the
+      platforms in the sample were not in the discovery-era CMS_HOSTS), but raw resource_hosts revealed the
       actual landscape - SharpSchool (51 records), Apptegy/Thrillshare (~24), Educational Networks (25).
-      Whether to grow CMS_HOSTS (cross-cutting: also changes discover.py's gate()) or give fingerprinting its
-      own broader platform list is ACQUISITION_PIPELINE.md Open decision #8, deliberately not acted on
-      unilaterally. The browser-driving fingerprint paths (domFingerprint, htmlFingerprintFor, the live
-      processTask wiring, runBackfill) share the same no-automated-harness gap as the rest of
-      capture_discovery.mjs's render logic - REQ-079."
+      RESOLVED 2026-06-24 (Open decision #8): those three vendors were human-approved and added to CMS_HOSTS
+      in BOTH discover.py and capture_discovery.mjs (hand-synced), which also makes Stage 2 gate() keep
+      slug-matched URLs on those hosts it previously rejected (a discovery-recall change, hence the new
+      TestDiscoveryGate coverage). GOVERNANCE (the user's standing rule): every CMS_HOSTS addition is
+      human-in-the-loop, never automated, and must be a school-district-specific vendor - NOT a general
+      host/CDN (amazonaws.com deliberately excluded despite core-docs.s3.amazonaws.com in the data). The
+      existing 12 districts' stored cms_hint still reads null until re-derived (a cheap pure recompute over
+      stored resource_hosts, no re-capture) - not yet done. The browser-driving fingerprint paths share the
+      same no-automated-harness gap as the rest of capture_discovery.mjs's render logic - REQ-079."
