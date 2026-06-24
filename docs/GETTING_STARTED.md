@@ -81,12 +81,13 @@ pytest tests/ -v -m integration
 ```
 learning-connection-time/
 ├── CLAUDE.md                    # Claude Code project briefing
-├── REQUIREMENTS.yaml            # Tracked requirements with tests
+├── requirements.txt              # Python dependencies (pip install -r)
 ├── data/
 │   ├── raw/                     # Source data (never modify)
 │   ├── processed/               # Cleaned and normalized
 │   └── enriched/                # With calculated metrics
 ├── docs/
+│   ├── REQUIREMENTS.yaml        # Tracked project requirements with tests
 │   ├── claude-instructions/     # Modular Claude context files
 │   └── archive/                 # Historical documentation
 ├── infrastructure/
@@ -149,7 +150,7 @@ with session_scope() as session:
 
 ### Test-Driven Development
 
-1. Check [REQUIREMENTS.yaml](../REQUIREMENTS.yaml) for existing requirements
+1. Check [REQUIREMENTS.yaml](REQUIREMENTS.yaml) for existing requirements
 2. Write tests first in `tests/`
 3. Implement the feature
 4. Verify tests pass: `pytest tests/ -v`

@@ -1,6 +1,6 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-06-22T00:00:00Z"
+last_updated: "2026-06-23T00:00:00Z"
 
 requirements:
   - id: REQ-001
@@ -1825,3 +1825,132 @@ requirements:
       fixture-server convention (serving the smoke-test HTML fixtures used during implementation from a
       fixed path) or a Playwright-test-style mocking approach - worth building before this script sees
       heavy use at scale, not before this first batch."
+
+  - id: REQ-080
+    description: "Stage 4 (Local processing) reconciliation - registry consistency AND a new, finer-grained file-existence consistency check, both fail loud"
+    type: functional
+    priority: must
+    status: not_started
+    acceptance_criteria:
+      - A district's processed.json existing on disk IS Stage-4-done for that district; the registry is a cache reconciled from disk, never the reverse - same shape as Stages 2/3's reconcile()
+      - Registry-ahead-of-disk (claims furthest_stage>=4, processed.json missing) halts the ENTIRE run as a control failure, not a per-district skip
+      - Disk-ahead-of-registry (processed.json exists, registry hasn't caught up) reconciles the registry UP silently - never re-processed, never halted
+      - "NEW check, finer-grained than any prior stage: for every ok:true record in captures.json, every filename in its files map must actually exist in that record's captures/<hash>/ directory - a mismatch halts the entire run at the same severity as registry-ahead-of-disk, since captures.json claiming a file exists when it doesn't signals a structural break (partial write, manual deletion, a Stage 3 bug), not a normal content failure"
+      - "ok:false records (files: {} by design - capture_failed, needs_oauth_reauth) are exempt from the file-existence check, not flagged as inconsistent"
+    tests: []
+    created: "2026-06-23T00:00:00Z"
+    updated: "2026-06-23T00:00:00Z"
+    notes: "Designed 2026-06-23, not yet built. See ACQUISITION_PIPELINE.md Stage 4 section and the diagram
+      decision log for the full design conversation. The file-existence check is a deliberate escalation of
+      the existing CONTROL FAILURE principle to finer granularity, not a new principle."
+
+  - id: REQ-081
+    description: "Stage 4 per-record processing: run every KEPT tool against every applicable input, always - no waterfall, no gating on prior success. Usable-text bar deliberately weaker than and separate from Stage 5's relevance check."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "No waterfall: every PDF (page.pdf / original.pdf / drive pdf.pdf) gets ALL FOUR kept tools unconditionally - pdftotext -layout, pdfplumber.extract_tables(lines strategy), camelot.read_pdf(flavor=stream), camelot.read_pdf(flavor=hybrid). Each representation is evaluated independently against the usable-text bar; none gates whether the others run. pdfplumber/camelot output is rendered as real Markdown-table syntax (header + --- separator + rows), not flattened pipe-text - kept as plain .txt (not .md), since the file extension is invisible to the model once content is pasted into an OpenRouter prompt string."
+      - "Tesseract OCR runs unconditionally on up to THREE separately-named representations per record, not one generic 'tesseract' entry: tesseract_screenshot (existing page.png, html-kind), tesseract_image (a direct image download, kind=image), tesseract_raster (a fresh pdftoppm -r 200 rasterization of any PDF present, PERSISTED as raster_p-<N>.png - not ephemeral, unlike reading.py's tempdir precedent). All three run regardless of whether .txt or a PDF method already produced usable text. This REVERSES the original design (OCR only when nothing else worked) - confirmed correct empirically: Tesseract had the highest hit-rate of any tool tested (60.0% of 150 real PDFs) and beat the existing .txt baseline on 15/150 PDFs despite usually running on records where other text already existed."
+      - "Existing .txt/.md/.csv (from Stage 3 or a Drive export) is evaluated against the same usable-text bar as every other representation, with no special priority, and is REFERENCED not rewritten - confirmed via a real test (Longfellow Elementary's page.pdf, text_times=9 already) where pdftotext -layout surfaced a cleaner '8:20-School Begins'/'3:20-School Ends' pair than the already-good .txt, proving the original short-circuit-at-first-success design threw away real signal"
+      - "Every attempted representation gets an entry in the output, including failures (caught per-tool, never propagated/crashing the record) and below-bar results - never silently omitted. Completeness, not just success, is the audit bar, same principle as discovery.json. Validated live against real batch_00001 data: 3 of the 4 not-usable records in the full 150-record production run were genuine near-empty captures (n_chars=1, zero tool errors), not silently-swallowed extraction failures."
+      - "'Usable text' = recognizable text format (non-trivial length + printable-character/encoding-sanity check), NOT a time-count/keyword relevance check - that distinction is deliberate so Stage 4 and Stage 5 stay separate questions (validated against real Marion ISD records aa1d5cfb30/d9e387ea42: ~2,600 bytes of genuine page.txt content, text_times=0 - Stage 4 correctly calls these usable=true, Stage 5's relevance filter is what rejects them). Evaluated PER REPRESENTATION, independently, not as a gate for whether to attempt another tool."
+      - "Starting length threshold: 120 characters, reused from reading.py's existing PDF_MIN_TEXT_CHARS precedent rather than inventing a new number - revisit only if real data demands a different threshold"
+      - "Tool roster resolved by a real empirical spike against all 150 captured PDFs in batch_00001 (see REQ-083) - kept: pdftotext, pdfplumber (lines strategy only), camelot (stream + hybrid flavors), tesseract. Dropped with evidence: PyMuPDF/fitz, pdfplumber (text strategy), camelot (network + lattice flavors), img2table (bordered + borderless)"
+      - "Drive export md/csv formats go straight to the usability check (already plain text, no extraction needed); the pdf export format gets the same treatment as any other PDF"
+      - "If literally no representation clears the bar: record usable=false. Stage 4 does NOT escalate to vision - that is explicitly Stage 6/7's concern"
+      - Byte-identical PDFs captured under different URLs (confirmed real on Marion ISD - two emergent-candidate captures of the same CDN file via a shortlink and its resolved URL) are NOT deduped - a deliberate, recorded deferral, not an oversight
+    tests:
+      - tests/test_acquisition_stages.py::TestProcessStage4RecordProcessing (real tool invocations against generated PDF/image fixtures, not mocked)
+      - tests/test_acquisition_stages.py::TestUsableTextBar
+      - tests/test_acquisition_stages.py::TestMarkdownRendering
+    created: "2026-06-23T00:00:00Z"
+    updated: "2026-06-23T00:00:00Z"
+    notes: "Designed 2026-06-23 across several feedback rounds, grounded against real captured PDFs rather
+      than designed in the abstract, then revised a second time mid-design when the waterfall itself was
+      proven wrong by a real test (Longfellow) and replaced with 'run everything, always'. Built same day as
+      infrastructure/acquisition/discovery/process_stage4.py and run live against all 12 real batch_00001
+      districts (150/150 records, 0 crashes) - see the diagram decision log for the full trace."
+
+  - id: REQ-082
+    description: "Stage 4 output (processed.json - a LIST of representations per record, reference-only text pointers, never inline) and registry outcome"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "processed.json is a bare array (matching captures.json's shape, not discovery.json's metadata-wrapper shape), written once per district, NEVER amends captures.json - same write-once relationship every prior stage has to the stage before it"
+      - "Per-record schema changed from a single winning {source, text_file} to a LIST: {url, hash, usable, texts: [{source, text_file, n_chars, n_times, usable, error?}, ...]} - changed once REQ-081's waterfall was replaced by 'run every kept tool, always', since there is no longer one winning representation to pick. Each entry carries its OWN usable boolean (not just the record-level rollup), since below-bar and errored attempts are recorded too, not omitted. text_file is null when the attempt errored."
+      - "usable at the record level is an OR across the list (at least one representation cleared the bar), not a single source's verdict"
+      - "processed.json stays MINIMAL - just url/hash as the join key back to captures.json, no denormalized convenience fields (kind, final_url, etc.) - avoids drift risk if captures.json is ever redone independently"
+      - "text_file is a REFERENCE ONLY (a filename resolved against that record's own captures/<hash>/ directory, the same convention captures.json already uses for files) - each representation's actual text is written to its own file and is NEVER embedded inline as a string in processed.json"
+      - "Redo is versioned, never an overwrite: an existing processed.json is renamed aside with a UTC timestamp suffix (processed.<ts>.json) before the new one is written - the same convention discover_stage2.py's write_discovery() already uses. capture_discovery.mjs's captures.json write was retrofitted to match this same convention in the same round of work (it previously just overwrote in place)."
+      - "Cross-representation comparison/ranking/synthesis is explicitly NOT Stage 4's job - Stage 4 produces the raw list + cheap per-representation attributes (n_chars, n_times) only; Stage 5 (or later) does the deciding. A standardized, always-wanted synthesized file IS still Stage 4's job if one turns out to exist empirically - not decided yet, see REQ-085"
+      - "Registry outcome via record_stage() (same API as Stages 1-3, no schema changes), written once per district at the conclusion of that district's processing: processed_all / processed_partial / no_usable_text_any"
+    tests:
+      - tests/test_acquisition_stages.py::TestProcessStage4WriteProcessed
+      - tests/test_acquisition_stages.py::TestProcessStage4OutcomeRollup
+      - tests/test_acquisition_stages.py::TestProcessStage4Finish
+    created: "2026-06-23T00:00:00Z"
+    updated: "2026-06-23T00:00:00Z"
+    notes: "Designed 2026-06-23, schema revised same day once the waterfall (one winning representation) was
+      replaced by 'run every kept tool, always' (a list of representations). The reference-only-vs-inline-text
+      question was explicitly raised and confirmed by the user mid-design. Built and run live against all 12
+      real batch_00001 districts the same day: 10 processed_all, 2 processed_partial, 150/150 records
+      processed with zero crashes - see the diagram decision log."
+
+  - id: REQ-083
+    description: "Stage 4 PDF/OCR tool roster - RESOLVED by an empirical spike against all 150 real captured PDFs in batch_00001, not decided from research alone"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "Spike installed and ran 8 fast/deterministic candidates (pdftotext, pdfplumber lines+text strategies, PyMuPDF, camelot stream/network/hybrid/lattice, img2table bordered+borderless) plus tesseract against every PDF (150 total across 12 districts) via data/benchmark_results/stage4_pdf_tool_spike/run_spike.py, recording cheap comparison metrics (char count, plausible-time count, table count, printable ratio, elapsed seconds, error) per (PDF, tool) to summary.jsonl"
+      - "KEPT (real evidence, not just literature): pdftotext (58.7% hit rate), pdfplumber lines-strategy only (42.7% hit rate, but added genuinely NEW signal beyond the existing .txt baseline on 30/150 PDFs - more than any other tool), camelot stream (51.3% hit rate) and hybrid (42.0% hit rate but highest average richness at 11.4 times/hit), tesseract (60.0% hit rate, the single highest of any tool, beat baseline on 15/150)"
+      - "DROPPED (real evidence): PyMuPDF/fitz (14.7% hit rate, confirmed low marginal value over pdfplumber - a PyMuPDF maintainer's own GitHub comment confirms the two tools 'have the same root'); pdfplumber text-strategy (33.3% hit rate despite extracting MORE raw characters than lines-strategy - confirmed garbling on Longfellow's page.pdf: word-chopped fragments, a Private-Use-Area icon-webfont glyph bleeding into output); camelot network (24.0%) and lattice (20.7%) flavors (stream/hybrid cover the same ground better); img2table bordered (2.0% hit rate - found a time in ZERO of the 140 page.pdf/Chromium-rendered captures, exactly confirming the predicted weakness that CSS border strokes do not survive OpenCV rasterization) and borderless (23.3%, mediocre, and the most complex to wire - needs an OCR backend internally for no payoff over camelot/pdftotext)"
+      - "Spot-checked the two biggest raw-metric 'wins' by hand before trusting them: Stroudsburg's camelot_hybrid win (88->206 times) was real, a clean multi-variant Period/Start/End/Length table the flattened .txt had muddled. Pittsylvania's biggest win was a Student Handbook PDF, not a schedule page - camelot_hybrid mis-fired table detection on prose. Confirms a raw time-count is supporting evidence, not proof of quality."
+      - "Heavy ML-model document tools (Docling, EasyOCR, PaddleOCR) were also installed and timed (13-120s/PDF for Docling depending on page count and one-time model download, ~29s/page EasyOCR, ~56s/page PaddleOCR steady-state) - see REQ-084 for why these were rejected, not just slow"
+    tests:
+      - data/benchmark_results/stage4_pdf_tool_spike/run_spike.py (exploratory harness, not a production test suite)
+      - data/benchmark_results/stage4_pdf_tool_spike/summary.jsonl (the actual evidence - 1,650 rows, 150 PDFs x 11 kept+dropped fast tools)
+    created: "2026-06-23T00:00:00Z"
+    updated: "2026-06-23T00:00:00Z"
+    notes: "Closes the watch-item this REQ originally recorded. requirements.txt updated to list only the
+      kept tools' packages (pdfplumber, pymupdf, camelot-py, img2table stay installed for reference/possible
+      revisit despite pymupdf/img2table being dropped from the active roster; docling/paddleocr/paddlepaddle/
+      easyocr were uninstalled, not just unused, per REQ-084). See the diagram decision log for the full
+      numbers and the Longfellow/Stroudsburg/Pittsylvania spot-checks."
+
+  - id: REQ-084
+    description: "Stage 4 excludes heavy ML-model document tools (Docling, EasyOCR, PaddleOCR) by deliberate, closed architectural decision - any input needing that level of understanding escalates to the paid Stage 7 vision council, not a slow local model"
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "Docling, EasyOCR, and PaddleOCR are NOT part of Stage 4's tool roster, and are NOT installed in the project's Python environment - confirmed uninstalled (pip3 uninstall), not merely unused in code"
+      - "The reasoning is cost/architecture, not just speed annoyance: each tool measured at 13-120 seconds (Docling) to 29-56 seconds PER PAGE (EasyOCR/PaddleOCR) of local model-inference time - at full ~20K-district corpus scale this is hours-to-days of wall-clock for a stage whose entire purpose is reducing what Stage 7 has to read/cost, not substituting large local compute for it"
+      - "User's explicit framing, recorded verbatim as the governing principle: 'I can't imagine any scenario where I'm going to approve anything in the slow tier as a better tradeoff than the models via API. That's the same tradeoff that took us away from local LLMs.' Any case that genuinely needs heavy-model-level document/vision understanding routes to Stage 7's paid council instead."
+      - "A background spike run already mid-execution (heavy tier not yet started, fast tier 129/150 complete) was killed cleanly on this decision rather than allowed to finish for documentation purposes - the decision applied immediately, not after the data was already in hand"
+      - "Tesseract remains the only OCR engine in the kept tool roster (REQ-083) - cheap, fast (sub-second to a few seconds per page), and empirically the single highest hit-rate tool of any tested (60.0%)"
+    tests: []
+    created: "2026-06-23T00:00:00Z"
+    updated: "2026-06-23T00:00:00Z"
+    notes: "This is a durable architectural principle, not a one-time tool pick - recorded as its own
+      requirement (separate from REQ-083's tool-roster mechanics) so a future session doesn't re-litigate
+      'should we add Docling/a VLM-based local tool' without first seeing this was already decided, and why."
+
+  - id: REQ-085
+    description: "WATCH-ITEM: whether Stage 4 should ever produce a standardized, always-wanted SYNTHESIZED file (e.g. a deterministic merge across agreeing representations) is explicitly NOT decided - deferred pending real Stage 5 experience"
+    type: functional
+    priority: should
+    status: not_started
+    acceptance_criteria:
+      - "Stage 4 currently produces only the raw list of per-tool representations + cheap per-representation attributes (n_chars, n_times) in processed.json (REQ-082) - no cross-representation comparison, ranking, or synthesis happens in Stage 4 today"
+      - "The Stage 4/Stage 5 boundary is: Stage 4 = production, Stage 5 = decisions. A synthesized file is still Stage 4's job ONLY IF it turns out to be something every downstream consumer always wants in the same standardized, operationalized shape - that is a production fact, not a decision, if and when it exists"
+      - "There is no evidence yet that such a synthesis pattern exists or is worth building - this must not be built speculatively ahead of Stage 5 actually running against real processed.json output and revealing a recurring need"
+    tests: []
+    created: "2026-06-23T00:00:00Z"
+    updated: "2026-06-23T00:00:00Z"
+    notes: "Recorded as an explicit watch-item, same posture as REQ-078 (Drive Tier 2) and the duplicate-PDF
+      dedup deferral in REQ-081 - a deliberate non-decision, not forgotten work. The user's own framing:
+      'After we get some data, the answer may be that there aren't any [synthesized files] that we want at
+      this point.' Revisit once Stage 5 is built and run for real, not before."

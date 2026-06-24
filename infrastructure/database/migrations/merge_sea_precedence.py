@@ -34,7 +34,7 @@ Usage:
 
 Reference:
     - docs/SEA_INTEGRATION_GUIDE.md
-    - REQUIREMENTS.yaml (REQ-026, REQ-027)
+    - docs/REQUIREMENTS.yaml (REQ-026, REQ-027)
 """
 
 import argparse

@@ -464,7 +464,7 @@ class TestDataPrecedenceIntegration:
     def test_precedence_rules_documented_in_requirements(self):
         """
         All three precedence rules (enrollment/staff, instructional time, SPED)
-        should be documented in REQUIREMENTS.yaml for transparency.
+        should be documented in docs/REQUIREMENTS.yaml for transparency.
         """
         # This test documents that precedence rules exist in requirements
         precedence_requirements = [

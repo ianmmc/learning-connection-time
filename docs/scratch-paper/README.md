@@ -6,7 +6,7 @@ source of truth.**
 
 ## What this means
 - **Not authoritative.** Nothing here decides anything. The canonical docs are `docs/ACQUISITION_PIPELINE.md`,
-  `docs/METHODOLOGY.md`, `docs/TERMINOLOGY.md`, `REQUIREMENTS.yaml`, `docs/PROJECT_HISTORY.md`, etc.
+  `docs/METHODOLOGY.md`, `docs/TERMINOLOGY.md`, `docs/REQUIREMENTS.yaml`, `docs/PROJECT_HISTORY.md`, etc.
 - **Exploratory / in-flux.** Files here may be half-formed, contradictory, or stale. If something here
   conflicts with a canonical doc, the canonical doc wins.
 - **Promotion is explicit.** Content moves from here into the authoritative docs **only when the human

@@ -10,10 +10,30 @@
 // discover.py's CMS_HOSTS) that Discovery's domain-scoped search would never surface
 // directly, not just same-domain links.
 import { chromium } from 'playwright';
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, renameSync } from 'fs';
 import { createHash } from 'crypto';
 import path from 'path';
 import { isGoogleUrl, driveExportCandidates } from './capture_drive.mjs';
+
+// Matches discover_stage2.py's write_discovery() convention exactly (Python's
+// datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")) -- an existing captures.json is
+// never overwritten in place, it's renamed aside with a UTC timestamp suffix first. data/raw/
+// is write-once in spirit; this was a real gap (capture_discovery.mjs used to just
+// writeFileSync over whatever was there), found while designing Stage 4's own redo
+// convention and fixed here to match Stage 2's, not invent a second one.
+function tsSuffix() {
+  return new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+}
+
+function writeVersioned(filePath, content) {
+  if (existsSync(filePath)) {
+    const ts = tsSuffix();
+    const dir = path.dirname(filePath);
+    const base = path.basename(filePath, '.json');
+    renameSync(filePath, path.join(dir, `${base}.${ts}.json`));
+  }
+  writeFileSync(filePath, content);
+}
 
 const ROOT = process.argv[2];
 const CONC = parseInt(process.argv[3] || '5', 10);
@@ -267,7 +287,7 @@ console.log(`capturing ${tasks.length} candidate URLs across ${dirs.length} dist
 await Promise.all(Array.from({ length: CONC }, () => worker()));
 
 for (const did of Object.keys(byDistrict)) {
-  writeFileSync(path.join(ROOT, did, 'captures.json'), JSON.stringify(byDistrict[did].records, null, 2));
+  writeVersioned(path.join(ROOT, did, 'captures.json'), JSON.stringify(byDistrict[did].records, null, 2));
 }
 await browser.close();
 console.log(`CAPTURE DONE — ${done} URLs (incl. emergent), ${dirs.length} districts`);

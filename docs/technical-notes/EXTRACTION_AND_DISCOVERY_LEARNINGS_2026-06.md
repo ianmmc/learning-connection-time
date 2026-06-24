@@ -1,7 +1,7 @@
 # Technical Note — Extraction Bake-off & Discovery Architecture (2026-06-13)
 
 > Consolidated learnings from the multi-provider extraction bake-off and the discovery proof-out.
-> Companions: `docs/EXTRACTION_BENCHMARK_FINDINGS.md` (full leaderboard tables), `docs/INSTRUCTIONAL_MINUTES_ACQUISITION_STRATEGY.md` (strategy), `REQUIREMENTS.yaml` (REQ-043…053).
+> Companions: `docs/EXTRACTION_BENCHMARK_FINDINGS.md` (full leaderboard tables), `docs/INSTRUCTIONAL_MINUTES_ACQUISITION_STRATEGY.md` (strategy), `docs/REQUIREMENTS.yaml` (REQ-043…053).
 
 ## Per-school build + first test (2026-06-20)
 

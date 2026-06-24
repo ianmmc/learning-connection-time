@@ -149,3 +149,9 @@ infrastructure/**/CLAUDE.md
 
 # discovery benchmark page captures (binary, regenerable)
 data/benchmark_results/discovery/*/captures/
+
+# Stage 4 PDF-tool spike: keep run_spike.py + summary.jsonl (the actual evidence cited in
+# REQ-083/ACQUISITION_PIPELINE.md), ignore the 178MB/2000+ files of regenerable raw per-tool
+# output and the noisy stdout log.
+data/benchmark_results/stage4_pdf_tool_spike/*/
+data/benchmark_results/stage4_pdf_tool_spike/run.log

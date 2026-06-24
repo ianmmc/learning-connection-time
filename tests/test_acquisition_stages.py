@@ -17,6 +17,7 @@ import district_status as DS  # noqa: E402
 import discover_stage2 as D2  # noqa: E402
 import discover as DISC  # noqa: E402
 import capture_stage3 as C3  # noqa: E402
+import process_stage4 as P4  # noqa: E402
 
 
 # ---------------------------------------------------------------- REQ-058 sampling
@@ -832,3 +833,321 @@ class TestCaptureStage3Finish:
         assert rec["furthest_stage"] == 3
         assert rec["outcome"] == "captured_partial"
         assert "needs_oauth_reauth" in rec["notes"]
+
+
+# ---------------------------------------------------------------- Stage 4 (Local processing)
+def _write_discovery(d, district_id="9999999", name="Test Process District", state="ZZ", domain="testprocess.example"):
+    """Stage 4 pulls district_id/name/state from discovery.json, same as capture_stage3.py
+    pulls them rather than re-deriving -- process_stage4.find_districts() requires it
+    alongside captures.json."""
+    (d / "discovery.json").write_text(json.dumps({
+        "district_id": district_id, "name": name, "state": state, "domain": domain,
+        "batch_id": "batch_00099", "generated_at": "2026-06-23T00:00:00Z", "schools": [],
+    }))
+
+
+def _make_pdf(path, text):
+    """A tiny REAL pdf with extractable text, generated with PyMuPDF -- not mocked, so the
+    actual pdftotext/pdfplumber/camelot calls run for real against real bytes. PyMuPDF is
+    only a test-fixture convenience here, not a Stage 4 production dependency (it was
+    dropped from the kept tool roster, REQ-083)."""
+    import fitz
+    doc = fitz.open()
+    page = doc.new_page()
+    page.insert_text((72, 72), text)
+    doc.save(str(path))
+    doc.close()
+
+
+def _make_image(path, text):
+    """A tiny REAL image with legible drawn text, for a genuine (not mocked) Tesseract
+    OCR pass."""
+    from PIL import Image, ImageDraw
+    img = Image.new("RGB", (800, 200), color="white")
+    d = ImageDraw.Draw(img)
+    d.text((20, 60), text, fill="black")
+    img.save(str(path))
+
+
+class TestProcessStage4FindDistricts:
+    def test_finds_district_with_both_files(self, tmp_path):
+        d = tmp_path / "9999999_test_process_district"
+        d.mkdir()
+        _write_discovery(d)
+        (d / "captures.json").write_text("[]")
+        found = P4.find_districts(tmp_path)
+        assert len(found) == 1
+        assert found[0]["district_id"] == "9999999"
+        assert found[0]["state"] == "ZZ"
+
+    def test_excludes_district_missing_captures_json(self, tmp_path):
+        d = tmp_path / "9999999_test_process_district"
+        d.mkdir()
+        _write_discovery(d)
+        assert P4.find_districts(tmp_path) == []
+
+    def test_empty_root_returns_empty_list(self, tmp_path):
+        assert P4.find_districts(tmp_path / "does_not_exist") == []
+
+
+class TestProcessStage4FileConsistency:
+    def test_passes_when_every_referenced_file_exists(self, tmp_path):
+        d = tmp_path / "9999999_test_process_district"
+        d.mkdir()
+        _write_discovery(d)
+        rec_dir = d / "captures" / "abc123"
+        rec_dir.mkdir(parents=True)
+        (rec_dir / "page.txt").write_text("hello")
+        captures = [{"url": "https://x/1", "hash": "abc123", "ok": True, "files": {"txt": "page.txt"}}]
+        (d / "captures.json").write_text(json.dumps(captures))
+        district = P4.find_districts(tmp_path)[0]
+        P4.check_file_consistency(district)  # must not raise
+
+    def test_halts_on_missing_referenced_file(self, tmp_path):
+        d = tmp_path / "9999999_test_process_district"
+        d.mkdir()
+        _write_discovery(d)
+        rec_dir = d / "captures" / "abc123"
+        rec_dir.mkdir(parents=True)
+        # page.txt deliberately NOT written -- captures.json claims it exists.
+        captures = [{"url": "https://x/1", "hash": "abc123", "ok": True, "files": {"txt": "page.txt"}}]
+        (d / "captures.json").write_text(json.dumps(captures))
+        district = P4.find_districts(tmp_path)[0]
+        with pytest.raises(SystemExit, match="CONTROL FAILURE"):
+            P4.check_file_consistency(district)
+
+    def test_ok_false_records_are_exempt(self, tmp_path):
+        """files: {} by design for a capture failure -- not an inconsistency."""
+        d = tmp_path / "9999999_test_process_district"
+        d.mkdir()
+        _write_discovery(d)
+        captures = [{"url": "https://x/1", "hash": "abc123", "ok": False, "err": "needs_oauth_reauth", "files": {}}]
+        (d / "captures.json").write_text(json.dumps(captures))
+        district = P4.find_districts(tmp_path)[0]
+        P4.check_file_consistency(district)  # must not raise
+
+
+class TestProcessStage4Reconcile:
+    def test_district_with_no_disk_artifact_and_no_registry_entry_is_todo(self, tmp_path):
+        d = tmp_path / "9999999_test_process_district"
+        d.mkdir()
+        _write_discovery(d)
+        (d / "captures.json").write_text("[]")
+        districts = P4.find_districts(tmp_path)
+        registry = {"schema_version": 1, "last_updated": None, "districts": {}}
+        todo, skipped = P4.reconcile(districts, registry)
+        assert [x["district_id"] for x in todo] == ["9999999"]
+        assert skipped == []
+
+    def test_disk_ahead_of_registry_reconciles_up_and_skips(self, tmp_path):
+        d = tmp_path / "9999999_test_process_district"
+        d.mkdir()
+        _write_discovery(d)
+        (d / "captures.json").write_text("[]")
+        (d / "processed.json").write_text("[]")
+        districts = P4.find_districts(tmp_path)
+        registry = {"schema_version": 1, "last_updated": None, "districts": {}}
+        todo, skipped = P4.reconcile(districts, registry)
+        assert todo == []
+        assert [x["district_id"] for x in skipped] == ["9999999"]
+        assert registry["districts"]["9999999"]["furthest_stage"] == 4
+
+    def test_registry_ahead_of_disk_halts_the_entire_run(self, tmp_path):
+        d = tmp_path / "9999999_test_process_district"
+        d.mkdir()
+        _write_discovery(d)
+        (d / "captures.json").write_text("[]")
+        districts = P4.find_districts(tmp_path)
+        registry = {"schema_version": 1, "last_updated": None, "districts": {}}
+        DS.record_stage(registry, "9999999", "Test Process District", "ZZ",
+                         stage=4, stage_name="process", outcome="processed_all")
+        with pytest.raises(SystemExit, match="CONTROL FAILURE"):
+            P4.reconcile(districts, registry)
+
+    def test_missing_referenced_file_halts_before_registry_comparison(self, tmp_path):
+        """The file-existence check fires inside reconcile() too, not just standalone --
+        a structural problem must be caught even on a district that would otherwise look
+        like ordinary 'todo' work."""
+        d = tmp_path / "9999999_test_process_district"
+        d.mkdir()
+        _write_discovery(d)
+        rec_dir = d / "captures" / "abc123"
+        rec_dir.mkdir(parents=True)
+        captures = [{"url": "https://x/1", "hash": "abc123", "ok": True, "files": {"txt": "page.txt"}}]
+        (d / "captures.json").write_text(json.dumps(captures))
+        districts = P4.find_districts(tmp_path)
+        registry = {"schema_version": 1, "last_updated": None, "districts": {}}
+        with pytest.raises(SystemExit, match="CONTROL FAILURE"):
+            P4.reconcile(districts, registry)
+
+
+class TestUsableTextBar:
+    def test_short_text_is_not_usable(self):
+        assert P4.is_usable("too short") is False
+
+    def test_empty_text_is_not_usable(self):
+        assert P4.is_usable("") is False
+        assert P4.is_usable(None) is False
+
+    def test_long_readable_text_is_usable(self):
+        assert P4.is_usable("School Hours: 8:00 AM to 3:15 PM. " * 5) is True
+
+    def test_garbled_low_printable_ratio_is_not_usable(self):
+        garbled = "\x00\x01\x02\x03" * 40  # long enough on length alone, but not printable
+        assert P4.is_usable(garbled) is False
+
+
+class TestMarkdownRendering:
+    def test_basic_table_gets_header_and_separator_row(self):
+        md = P4._rows_to_markdown([["Period", "Time"], ["1", "8:00 AM"]])
+        lines = md.splitlines()
+        assert lines[0] == "| Period | Time |"
+        assert lines[1] == "| --- | --- |"
+        assert lines[2] == "| 1 | 8:00 AM |"
+
+    def test_empty_rows_returns_empty_string(self):
+        assert P4._rows_to_markdown([]) == ""
+
+    def test_none_cells_become_empty_string(self):
+        md = P4._rows_to_markdown([["A", None], ["1", "2"]])
+        assert "| A |  |" == md.splitlines()[0]
+
+    def test_ragged_rows_are_padded_to_max_width(self):
+        md = P4._rows_to_markdown([["A", "B", "C"], ["1"]])
+        lines = md.splitlines()
+        assert lines[2] == "| 1 |  |  |"
+
+
+class TestProcessStage4OutcomeRollup:
+    def test_processed_all_when_every_record_usable(self):
+        assert P4.compute_outcome([{"usable": True}, {"usable": True}]) == "processed_all"
+
+    def test_no_usable_text_any_when_none_usable(self):
+        assert P4.compute_outcome([{"usable": False}, {"usable": False}]) == "no_usable_text_any"
+
+    def test_processed_partial_when_mixed(self):
+        assert P4.compute_outcome([{"usable": True}, {"usable": False}]) == "processed_partial"
+
+    def test_empty_list_is_no_usable_text_any(self):
+        assert P4.compute_outcome([]) == "no_usable_text_any"
+
+
+class TestProcessStage4RecordProcessing:
+    """Real tool invocations against real (small, generated) fixtures -- not mocked, so
+    pdftotext/pdfplumber/camelot/tesseract actually run, closing the gap Stage 3's own
+    browser-driving logic left open (REQ-079)."""
+
+    def test_pdf_only_record_runs_all_four_pdf_tools_plus_raster_ocr(self, tmp_path):
+        rec_dir = tmp_path / "captures" / "abc123"
+        rec_dir.mkdir(parents=True)
+        _make_pdf(rec_dir / "original.pdf", "School Hours\nStart: 8:00 AM\nEnd: 3:15 PM")
+        rec = {"url": "https://x/1", "hash": "abc123", "ok": True, "files": {"bin": "original.pdf"}}
+        out = P4.process_record(rec, rec_dir)
+        sources = {t["source"] for t in out["texts"]}
+        assert sources == {"pdftotext", "pdfplumber_lines", "camelot_stream", "camelot_hybrid", "tesseract_raster"}
+        pdftotext_entry = next(t for t in out["texts"] if t["source"] == "pdftotext")
+        assert pdftotext_entry["usable"] is False  # short fixture text, below the 120-char bar -- still an entry, just not usable
+        assert (rec_dir / "pdftotext.txt").exists()
+        assert (rec_dir / "tesseract_raster.txt").exists()
+        assert any(rec_dir.glob("raster_p*.png")), "rasterized pages must be persisted, not discarded"
+
+    def test_existing_txt_is_referenced_not_rewritten(self, tmp_path):
+        rec_dir = tmp_path / "captures" / "def456"
+        rec_dir.mkdir(parents=True)
+        original = "School Hours: 8:00 AM to 3:15 PM. " * 5
+        (rec_dir / "page.txt").write_text(original)
+        rec = {"url": "https://x/2", "hash": "def456", "ok": True, "files": {"txt": "page.txt"}}
+        out = P4.process_record(rec, rec_dir)
+        txt_entry = next(t for t in out["texts"] if t["source"] == "txt")
+        assert txt_entry["text_file"] == "page.txt"
+        assert txt_entry["usable"] is True
+        assert (rec_dir / "page.txt").read_text() == original  # never rewritten
+
+    def test_existing_png_only_gets_tesseract_screenshot_only(self, tmp_path):
+        rec_dir = tmp_path / "captures" / "ghi789"
+        rec_dir.mkdir(parents=True)
+        _make_image(rec_dir / "page.png", "School Hours 8:00 AM to 3:15 PM")
+        rec = {"url": "https://x/3", "hash": "ghi789", "ok": True, "files": {"png": "page.png"}}
+        out = P4.process_record(rec, rec_dir)
+        sources = {t["source"] for t in out["texts"]}
+        assert sources == {"tesseract_screenshot"}
+        assert (rec_dir / "tesseract_screenshot.txt").exists()
+
+    def test_direct_image_download_gets_tesseract_image(self, tmp_path):
+        rec_dir = tmp_path / "captures" / "jkl012"
+        rec_dir.mkdir(parents=True)
+        _make_image(rec_dir / "original.png", "Bell Schedule 8:00 AM")
+        rec = {"url": "https://x/4", "hash": "jkl012", "ok": True, "files": {"bin": "original.png"}}
+        out = P4.process_record(rec, rec_dir)
+        sources = {t["source"] for t in out["texts"]}
+        assert sources == {"tesseract_image"}
+
+    def test_corrupt_pdf_is_caught_per_tool_not_raised(self, tmp_path):
+        """A malformed file shouldn't crash the whole record -- each tool's failure is
+        caught and recorded as an error entry, same completeness-over-success principle
+        as discovery.json."""
+        rec_dir = tmp_path / "captures" / "mno345"
+        rec_dir.mkdir(parents=True)
+        (rec_dir / "original.pdf").write_bytes(b"this is not a real pdf")
+        rec = {"url": "https://x/5", "hash": "mno345", "ok": True, "files": {"bin": "original.pdf"}}
+        out = P4.process_record(rec, rec_dir)  # must not raise
+        assert len(out["texts"]) > 0
+        assert all(t["usable"] is False for t in out["texts"])
+        assert out["usable"] is False
+
+    def test_html_kind_record_with_pdf_and_png_gets_two_separate_ocr_entries(self, tmp_path):
+        """page.png (screenshot) and the PDF's own rasterization are kept as separate OCR
+        inputs, since print-CSS reflow can differ from the on-screen render."""
+        rec_dir = tmp_path / "captures" / "pqr678"
+        rec_dir.mkdir(parents=True)
+        _make_pdf(rec_dir / "page.pdf", "School Hours\nStart: 8:00 AM\nEnd: 3:15 PM")
+        _make_image(rec_dir / "page.png", "School Hours 8:00 AM to 3:15 PM")
+        (rec_dir / "page.txt").write_text("School Hours: 8:00 AM to 3:15 PM. " * 5)
+        rec = {"url": "https://x/6", "hash": "pqr678", "ok": True,
+               "files": {"pdf": "page.pdf", "png": "page.png", "txt": "page.txt"}}
+        out = P4.process_record(rec, rec_dir)
+        sources = {t["source"] for t in out["texts"]}
+        assert {"tesseract_screenshot", "tesseract_raster"} <= sources
+        assert "txt" in sources
+        assert out["usable"] is True  # the long .txt entry alone clears the bar
+
+
+class TestProcessStage4WriteProcessed:
+    def test_first_write_creates_the_file(self, tmp_path):
+        d = tmp_path / "9999999_test_process_district"
+        d.mkdir()
+        district = {"dir": d}
+        path = P4.write_processed(district, [{"url": "https://x/1", "usable": True}])
+        assert path == d / "processed.json"
+        assert json.loads(path.read_text()) == [{"url": "https://x/1", "usable": True}]
+
+    def test_second_write_renames_the_first_aside_with_a_timestamp(self, tmp_path):
+        d = tmp_path / "9999999_test_process_district"
+        d.mkdir()
+        district = {"dir": d}
+        P4.write_processed(district, [{"url": "https://x/1"}])
+        P4.write_processed(district, [{"url": "https://x/2"}])
+        versioned = list(d.glob("processed.*.json"))
+        assert len(versioned) == 1
+        assert json.loads((d / "processed.json").read_text()) == [{"url": "https://x/2"}]
+        assert json.loads(versioned[0].read_text()) == [{"url": "https://x/1"}]
+
+
+class TestProcessStage4Finish:
+    def test_finish_processes_real_record_and_writes_registry(self, tmp_path):
+        d = tmp_path / "9999999_test_process_district"
+        d.mkdir()
+        _write_discovery(d)
+        rec_dir = d / "captures" / "abc123"
+        rec_dir.mkdir(parents=True)
+        (rec_dir / "page.txt").write_text("School Hours: 8:00 AM to 3:15 PM. " * 5)
+        captures = [{"url": "https://x/1", "hash": "abc123", "ok": True, "files": {"txt": "page.txt"}}]
+        (d / "captures.json").write_text(json.dumps(captures))
+        district = P4.find_districts(tmp_path)[0]
+        registry = {"schema_version": 1, "last_updated": None, "districts": {}}
+        outcome = P4.finish_district(district, registry)
+        assert outcome == "processed_all"
+        assert (d / "processed.json").exists()
+        rec = registry["districts"]["9999999"]
+        assert rec["furthest_stage"] == 4
+        assert rec["outcome"] == "processed_all"
