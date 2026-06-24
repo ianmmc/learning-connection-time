@@ -21,6 +21,10 @@ const FLAGS = [
   ["duplicate", "Duplicate of another record"],
   ["buried_in_long_doc", "Target buried in a long doc (handbook)"],
 ];
+// The one human-only signal: the target is plainly visible in the image/PDF but NO text
+// extractor (pdftotext/camelot/tesseract) captured it -> this record needs vision at Stage 6/7.
+// Only meaningful when a Target-present label is chosen; sits next to the target shapes.
+const IMAGE_ONLY = ["target_image_only", "Target is in the image/PDF but missing from ALL text extractions — needs vision"];
 const DEFS = {
   school_bell_schedule: "A table or list that breaks the school day into periods.",
   school_start_end_prose: "Sentence(s) declaring the start and end time of the school day.",
@@ -36,6 +40,7 @@ const DEFS = {
   unusable: "Garbled, effectively empty, or impossible to interpret.",
   duplicate: "Byte-identical content to another record; label the canonical once.",
   buried_in_long_doc: "Target info present but inside a multi-topic document (e.g. a handbook).",
+  target_image_only: "You can see the target (bell schedule / start-end / instructional time) in the image or PDF, but NO text extractor captured it. The 'needs vision' signal — only tick it on a record that IS a target.",
 };
 const TIER_DEF = {
   A: "Strong target candidate — a time pair in the school-day window + schedule keywords.",
@@ -190,6 +195,8 @@ function renderPanel(d) {
     <div class="panel-section"><h3>Signals <span style="font-weight:400;font-size:var(--fs-xs);color:var(--text-secondary)">(objective)</span></h3>${sig}</div>
     <div class="panel-section"><h3>Label <span id="savedFlash" class="saved-flash"></span></h3>
       <div class="axis-label">Target present — by shape</div>${radios(TARGET)}
+      <label class="check-row special"><input type="checkbox" name="flag" value="${IMAGE_ONLY[0]}" ${flags.includes(IMAGE_ONLY[0]) ? "checked" : ""}/>
+        <span>${IMAGE_ONLY[1]}</span></label>
       <div class="axis-label">Non-target — by reason</div>${radios(NONTARGET)}
       <div class="axis-label">Flags</div>${checks}
       <div class="axis-label">Note (optional)</div>
@@ -271,7 +278,7 @@ function buildGlossary() {
     <dl>${Object.entries(TIER_DEF).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>
     <h4>Primary labels — target present</h4>${dl(TARGET)}
     <h4>Primary labels — non-target</h4>${dl(NONTARGET)}
-    <h4>Flags</h4>${dl(FLAGS)}`;
+    <h4>Flags</h4>${dl([...FLAGS, IMAGE_ONLY])}`;
 }
 
 $("#glossaryBtn").onclick = () => $("#glossary").classList.remove("hidden");

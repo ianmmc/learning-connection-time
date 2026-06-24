@@ -99,6 +99,9 @@ details > summary { cursor: pointer; font-size: var(--fs-sm); padding: var(--spa
   border-radius: var(--radius-sm); cursor: pointer; font-size: var(--fs-sm); }
 .radio-row:hover, .check-row:hover { background: var(--surface-alt); }
 .radio-row input, .check-row input { accent-color: var(--action-primary); width: 16px; height: 16px; }
+.check-row.special { background: var(--mmm-orange-tint); border-left: 3px solid var(--accent-orange);
+  margin: var(--space-2) 0; align-items: flex-start; }
+.check-row.special span { font-size: var(--fs-sm); line-height: var(--lh-snug); }
 textarea.note { width: 100%; min-height: 64px; font-family: var(--font-body); font-size: var(--fs-sm);
   border: var(--border-hair) solid var(--border-subtle); border-radius: var(--radius-md); padding: var(--space-2); resize: vertical; }
 textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); border-color: var(--border-strong); }
