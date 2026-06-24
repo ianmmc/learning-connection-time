@@ -1,0 +1,32 @@
+/* MMM base element styles (vendored) */
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-normal);
+  color: var(--text-primary);
+  background: var(--surface-page);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: var(--lh-snug);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-4);
+  letter-spacing: var(--ls-tight);
+}
+h1 { font-size: var(--fs-h1); } h2 { font-size: var(--fs-h2); }
+h3 { font-size: var(--fs-h3); } h4 { font-size: var(--fs-h4); }
+p { margin: 0 0 var(--space-4); }
+a { color: var(--action-primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.mmm-eyebrow {
+  font-family: var(--font-body); font-weight: var(--fw-bold);
+  font-size: var(--fs-sm); letter-spacing: var(--ls-wider);
+  text-transform: uppercase; color: var(--accent-orange);
+}
+.mmm-rule { border: 0; height: var(--border-rule); width: 56px; background: var(--accent-orange); margin: var(--space-4) 0; }
+::selection { background: var(--mmm-lavender); color: #fff; }

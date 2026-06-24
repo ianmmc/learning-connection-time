@@ -1,10 +1,12 @@
 # Stage 5 (Local Filtering) — Design & Data-Collection Plan (2026-06-24)
 
 > Working design note for Stage 5 of the acquisition pipeline. Captures the decisions made
-> in the opening Stage 5 design conversation so nothing is lost before we build. Status:
-> **design phase — nothing built yet.** Companion to `docs/ACQUISITION_PIPELINE.md` (Stage 5
-> stub) and `docs/diagrams/acquisition_pipeline_flow.md`. When decisions here are settled and
-> implemented, fold the durable parts into `ACQUISITION_PIPELINE.md`'s Stage 5 section.
+> in the opening Stage 5 design conversation. Status: **data-collection review app BUILT
+> 2026-06-24** (`infrastructure/acquisition/stage5_filter/review_app/`, see its README) and run
+> against the real 12 `batch_00001` districts; human labeling not yet started; the operational
+> Stage 5 filter itself is still to be defined *from* the labels this app collects. Companion to
+> `docs/ACQUISITION_PIPELINE.md` (Stage 5 stub) and `docs/diagrams/acquisition_pipeline_flow.md`.
+> When the filters are defined, fold the durable parts into `ACQUISITION_PIPELINE.md`'s Stage 5 section.
 
 ---
 
@@ -163,15 +165,23 @@ A local review/labeling tool, **not** the operational `filtered.json`.
 - Excludes incidental metadata that doesn't help judge content (e.g. `cms_hint`/fingerprint —
   not useful for "does this artifact contain the info we want").
 
-**Architecture — RECOMMENDED, pending confirmation:** **SQLite + a thin local FastAPI review
-app.** Rationale: the exercise accumulates labels across batches and then queries *which signals
-separate the labels* (SQL-shaped); a DB cleanly separates **regenerable script-computed signals**
-from **precious hand-entered labels** (separate tables, different lifecycles); SQLite is a single
-file that **cannot touch the production LCT database**, needs no container/port, and suits a tiny
-single-user dataset — with the schema designed to migrate to a Dockerized Postgres later *if*
-scale demands. Alternative on the table: stand up Postgres-in-Docker now to seed the scalable
-continuous-improvement pipeline (defensible; framed as higher-setup, not lower-risk). **This is
-the open decision to settle before building the tool.**
+**Architecture — DECIDED & BUILT 2026-06-24: SQLite + a thin local FastAPI review app**
+(`infrastructure/acquisition/stage5_filter/review_app/`). SQLite is a single file that cannot
+touch the production LCT DB, needs no container/port, and suits the tiny single-user dataset;
+schema can migrate to Postgres later if scale demands. The DB cleanly separates **regenerable
+script-computed signals** (districts/records/representations/signals tables — dropped + rebuilt
+each ingest) from **precious hand-entered labels** (the `label` table — never dropped; labels key
+on `district_id:hash` and survive re-ingest, verified). Styled with the user's **MMM Design
+System** (claude.ai/design) tokens, vendored under the app's `static/tokens/`. UI confirmed
+rendering correctly against the real 12 districts.
+
+**Successive-batch + Checkpoint-B intent (user, 2026-06-24).** This app is explicitly intended for
+use across **successive batches**, not just these 12 — and may well become the actual **CP-B**
+review surface. The architecture supports this directly: the `captures/` directory accumulates all
+districts across batches, each ingest rebuilds the full record set from disk grouped by `batch_id`,
+and labels persist across re-ingests. Nothing here precludes the operational CP-B send/hold
+decision being layered on later (the operational `filtered.json` stays decoupled per the exercise
+vs. operational split above).
 
 ---
 
@@ -203,8 +213,10 @@ capture results are in hand") finally gets answered.
 
 ## Open items / things still to decide or explore
 
-1. **DB-vs-Postgres architecture** — settle before building the tool (recommendation: SQLite +
-   thin FastAPI; see above).
+1. ~~**DB-vs-Postgres architecture**~~ — **RESOLVED & BUILT 2026-06-24:** SQLite + thin FastAPI,
+   labels-survive-reingest, batch-aware (see Architecture above). Topology remains the noisiest
+   signal (CMS school-switcher nav pollutes `roster_school_names_hit`) — a refinement target for
+   the labels, not blind tuning now.
 2. **Handbook page-harvesting (promising — elevate, don't just flag).** Detect a student/parent
    handbook (`"handbook"` in URL/title/text + document length), then use the **per-page** signal
    scoring to harvest only the schedule-bearing page(s) rather than sending the whole (expensive)

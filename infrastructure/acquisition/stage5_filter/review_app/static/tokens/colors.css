@@ -1,0 +1,75 @@
+/* ============================================================
+   MMM COLOR TOKENS  (vendored from the MMM Design System, claude.ai/design)
+   "Structured Energy" — deep purple foundation, flame accents.
+   ============================================================ */
+:root {
+  /* ---- Brand primaries (raw) ---- */
+  --mmm-purple:        #45146C;  /* Deep Purple — dominant brand color */
+  --mmm-red:           #DE1616;  /* Signal Red — emphasis, logo mark */
+  --mmm-orange:        #F08A26;  /* Warm Orange — secondary emphasis */
+  --mmm-yellow:        #FFC144;  /* Golden Yellow — highlights */
+  --mmm-lavender:      #C775E5;  /* Lavender — subtle differentiation */
+
+  /* ---- Purple ramp (derived) ---- */
+  --mmm-purple-950:    #1A0A2E;
+  --mmm-purple-900:    #2A0F49;
+  --mmm-purple-800:    #45146C;
+  --mmm-purple-700:    #5A2486;
+  --mmm-purple-600:    #7338A3;
+  --mmm-purple-500:    #8C52BF;
+  --mmm-purple-300:    #B98AD9;
+  --mmm-purple-100:    #E7D7F2;
+  --mmm-purple-50:     #F0E8F5;
+
+  /* ---- Warm neutrals ---- */
+  --mmm-white:         #FFFFFF;
+  --mmm-warm-white:    #FAF8FC;
+  --mmm-cloud:         #F0E8F5;
+  --mmm-charcoal:      #2D2D3D;
+  --mmm-muted:         #6B5E7B;
+  --mmm-border:        #E0D6EA;
+
+  /* ---- Accent tints ---- */
+  --mmm-red-tint:      #FBE3E3;
+  --mmm-orange-tint:   #FDEBD7;
+  --mmm-yellow-tint:   #FFF3D6;
+  --mmm-lavender-tint: #F6E9FB;
+
+  /* ---- Semantic aliases ---- */
+  --surface-page:      var(--mmm-warm-white);
+  --surface-card:      var(--mmm-white);
+  --surface-alt:       var(--mmm-purple-50);
+  --surface-inverse:   var(--mmm-purple);
+  --surface-dark:      var(--mmm-purple-950);
+
+  --text-primary:      var(--mmm-charcoal);
+  --text-secondary:    var(--mmm-muted);
+  --text-on-dark:      var(--mmm-white);
+  --text-on-dark-dim:  rgba(255,255,255,0.72);
+  --text-brand:        var(--mmm-purple);
+
+  --action-primary:        var(--mmm-purple);
+  --action-primary-hover:  var(--mmm-purple-700);
+  --action-primary-active: var(--mmm-purple-900);
+
+  --accent-red:        var(--mmm-red);
+  --accent-orange:     var(--mmm-orange);
+  --accent-yellow:     var(--mmm-yellow);
+  --accent-lavender:   var(--mmm-lavender);
+
+  --status-danger:     var(--mmm-red);
+  --status-warning:    var(--mmm-orange);
+  --status-success:    #1F8A5B;
+  --status-info:       var(--mmm-purple-600);
+
+  --border-subtle:     var(--mmm-border);
+  --border-strong:     var(--mmm-purple-300);
+
+  --focus-ring:        var(--mmm-lavender);
+
+  --chart-1: var(--mmm-purple);
+  --chart-2: var(--mmm-red);
+  --chart-3: var(--mmm-orange);
+  --chart-4: var(--mmm-yellow);
+  --chart-5: var(--mmm-lavender);
+}

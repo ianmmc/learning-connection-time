@@ -1,0 +1,32 @@
+/* MMM TYPOGRAPHY TOKENS (vendored). Headline: Calistoga · Body: Open Sans */
+:root {
+  --font-display: "Calistoga", Georgia, "Times New Roman", serif;
+  --font-body:    "Open Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono:    ui-monospace, monospace;
+
+  --fw-regular:   400;
+  --fw-medium:    500;
+  --fw-semibold:  600;
+  --fw-bold:      700;
+  --fw-extrabold: 800;
+
+  --fs-display:   3.5rem;
+  --fs-h1:        2.5rem;
+  --fs-h2:        2rem;
+  --fs-h3:        1.5rem;
+  --fs-h4:        1.25rem;
+  --fs-lg:        1.125rem;
+  --fs-body:      1rem;
+  --fs-sm:        0.875rem;
+  --fs-xs:        0.75rem;
+
+  --lh-tight:     1.1;
+  --lh-snug:      1.25;
+  --lh-normal:    1.55;
+  --lh-relaxed:   1.7;
+
+  --ls-tight:     -0.01em;
+  --ls-normal:    0;
+  --ls-wide:      0.04em;
+  --ls-wider:     0.12em;
+}

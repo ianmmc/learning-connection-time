@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stage 5 — Capture Review</title>
+  <link rel="stylesheet" href="/static/tokens/fonts.css" />
+  <link rel="stylesheet" href="/static/tokens/colors.css" />
+  <link rel="stylesheet" href="/static/tokens/typography.css" />
+  <link rel="stylesheet" href="/static/tokens/spacing.css" />
+  <link rel="stylesheet" href="/static/tokens/base.css" />
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">MMM</span><span class="brand-app">Stage&nbsp;5 · Capture Review</span></div>
+    <div class="topbar-right">
+      <span id="progress" class="progress">…</span>
+      <button id="glossaryBtn" class="btn btn-ghost">Glossary &amp; Instructions</button>
+    </div>
+  </header>
+
+  <main class="cols">
+    <nav id="tree" class="col col-tree" aria-label="Districts and records"></nav>
+    <section id="center" class="col col-center"><div class="empty">Select a record from the left to begin.</div></section>
+    <aside id="panel" class="col col-panel"><div class="empty">No record selected.</div></aside>
+  </main>
+
+  <div id="glossary" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head"><h2>Glossary &amp; Instructions</h2><button id="glossaryClose" class="btn btn-ghost">Close</button></div>
+      <div id="glossaryBody" class="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
