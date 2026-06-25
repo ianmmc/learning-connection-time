@@ -368,3 +368,51 @@ explicit_instructional_time 2 · school_start_end_prose 1. (Targets = 41 of 150.
   specific, narrow content class — say a clean single-school bell table on a known CMS template),
   scoped to that class, with disagreements always routed to human/council. Collect the comparison data
   first; that IS the evidence base.
+
+---
+
+# Topology — formal set + derivation (designed 2026-06-24; NCES-confirmed; NOT YET IMPLEMENTED)
+
+Two topology values per district, kept **separate** (don't conflate):
+- **`guessed_topology`** — computed from *signals* (`roster_school_names_hit`) at ingest. Noisy (CMS
+  school-switcher nav pollutes the roster count → false `hub`, e.g. Marion). Kept to **measure** the
+  heuristic, not to trust.
+- **`labeled_topology`** — derived **deterministically from the human labels + NCES** once a district
+  is labeled. The truth. This is what informs Stage 7.
+
+## Formal `labeled_topology` set (approved 2026-06-24)
+
+| value | meaning | derivation |
+|---|---|---|
+| `single_school` | the LEA genuinely has one school | **NCES-confirmed** — `ccd_sch_029` shows 1 regular school for the LEA. **NOT** inferred from discovery/capture yielding one page. |
+| `per_school` | school-level schedules covering ~all the district's schools | school-level target labels present **and** the count of schools we have target data for ≈ the NCES school count |
+| `district_hub` | one page covers all schools / grade bands | `district_hub_schedule` label present, no/few school-level targets |
+| `mixed` | both a district hub **and** school-level targets | both present (Stroudsburg: `cross.jsp` district rollups + per-school bell pages) |
+| `incomplete_coverage` | school-level targets, but fewer schools than NCES lists | school-level targets present **and** captured-school count **< NCES count** — the "more discovery may be warranted" signal |
+| `none_found` | records were labeled, none is a target | no target labels anywhere in the district (→ likely needs re-discovery) |
+| `unknown` | can't classify | fallback |
+
+**Binding rule (user, 2026-06-24): `single_school` and the coverage check are confirmed against NCES
+(`ccd_sch_029`, via `school_sampling.py`), NOT inferred from what discovery/capture happened to
+yield.** Stage 1 caps the sample at 12 schools/band, so "we have data for 1 school" must never be
+mistaken for "the district *has* 1 school" — the true count comes from NCES.
+
+## Naming note
+`incomplete_coverage` chosen over `more_discovery_needed`: it names the **observed state** (a coverage
+gap vs NCES) rather than prescribing an **action**, consistent with the user's "we're not deciding what
+to *do* with this yet." `more_discovery_needed` is an equivalent one-word swap if the action framing is
+later preferred. **No decision is being made yet about what to do with `incomplete_coverage` or
+`none_found` districts** — these states are recorded for later routing/feedback design.
+
+## Not a topology value: completeness
+Whether we got **both** bell ends for **every** band is a *separate dimension* from the hub/per-school
+*shape*. Urbana's hub was complete for the 5 elementary schools but had only the start time (prose) for
+middle/high. Capture this as a flag/field on the record or district, **not** as a topology value — so
+"what shape" and "how complete" stay orthogonal.
+
+## Implementation sketch (build next)
+- A derivation function over the `label` table + NCES school counts (`school_sampling.py`), producing
+  `labeled_topology` per district; shown in the app's district header **alongside** `guessed_topology`
+  (the divergence is learning data — Marion: guess `hub`, labeled `per_school`).
+- Recomputed whenever labels change (or on an explicit "recompute topology" pass), since it depends on
+  the human labels.
