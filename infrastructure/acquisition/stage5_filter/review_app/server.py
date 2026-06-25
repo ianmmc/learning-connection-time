@@ -21,6 +21,7 @@ HERE = Path(__file__).resolve().parent
 PROJECT_ROOT = HERE.parents[3]            # .../learning-connection-time
 DB_PATH = PROJECT_ROOT / "data/acquisition/stage5_review/review.db"
 LABELS_JSON = PROJECT_ROOT / "data/acquisition/stage5_review/labels.json"
+CLUSTER_SPLITS_JSON = PROJECT_ROOT / "data/acquisition/stage5_review/cluster_splits.json"
 RAW_DIR = PROJECT_ROOT / "data/raw/lea-website-captures"
 
 sys.path.insert(0, str(HERE))
@@ -37,20 +38,21 @@ def db():
 
 @app.get("/api/tree")
 def tree():
-    """Districts -> records for the left column. Records carry tier + label status only
-    (NOT the category hypothesis — that stays hidden until the record is labeled)."""
+    """Districts -> records for the left column. Records carry tier + label status +
+    cluster grouping (NOT the category hypothesis — that stays hidden until labeled)."""
     con = db()
     out = []
     for d in con.execute("SELECT * FROM district ORDER BY name"):
         recs = []
         q = """SELECT r.rec_key, r.url, r.hash, r.kind, r.tier, r.sort_score, r.duplicate_of,
-                      l.status, l.primary_label
+                      r.cluster_id, r.is_cluster_rep, r.cluster_size, l.status, l.primary_label
                FROM record r LEFT JOIN label l ON l.rec_key=r.rec_key
                WHERE r.district_id=? ORDER BY r.tier, r.sort_score DESC"""
         for r in con.execute(q, (d["district_id"],)):
             recs.append(dict(r))
         out.append({"district_id": d["district_id"], "name": d["name"], "state": d["state"],
-                    "batch_id": d["batch_id"], "topology_hypothesis": d["topology_hypothesis"],
+                    "batch_id": d["batch_id"], "guessed_topology": d["guessed_topology"],
+                    "labeled_topology": d["labeled_topology"], "nces_school_count": d["nces_school_count"],
                     "records": recs})
     con.close()
     return out
@@ -67,6 +69,15 @@ def record(rec_key: str):
         "SELECT source, filename, file_kind, n_chars, n_times, usable FROM representation WHERE rec_key=?",
         (rec_key,))]
     label = dict(con.execute("SELECT * FROM label WHERE rec_key=?", (rec_key,)).fetchone() or {})
+    # cluster members (siblings) so the panel can show the cascade + per-member split control
+    members = []
+    if r["cluster_id"]:
+        for m in con.execute(
+                """SELECT r.rec_key, r.url, r.is_cluster_rep, l.status FROM record r
+                   LEFT JOIN label l ON l.rec_key=r.rec_key
+                   WHERE r.cluster_id=? ORDER BY r.is_cluster_rep DESC, r.tier, r.sort_score DESC""",
+                (r["cluster_id"],)):
+            members.append(dict(m))
     con.close()
     signals = json.loads(r["signals_json"])
     # category_hypothesis is returned but the FRONTEND keeps it hidden until labeled, to avoid
@@ -76,30 +87,79 @@ def record(rec_key: str):
         "final_url": r["final_url"], "district_dir": r["district_dir"], "tier": r["tier"],
         "category_hypothesis": r["category_hypothesis"], "duplicate_of": r["duplicate_of"],
         "content_hash": r["content_hash"], "signals": signals, "representations": reps,
-        "label": label,
+        "label": label, "cluster_id": r["cluster_id"], "is_cluster_rep": r["is_cluster_rep"],
+        "cluster_size": r["cluster_size"], "cluster_members": members,
     }
+
+
+UPSERT_LABEL = """INSERT INTO label (rec_key, primary_label, flags_json, note, status, updated_at)
+   VALUES (?,?,?,?,?,?)
+   ON CONFLICT(rec_key) DO UPDATE SET
+     primary_label=excluded.primary_label, flags_json=excluded.flags_json,
+     note=excluded.note, status=excluded.status, updated_at=excluded.updated_at"""
 
 
 @app.post("/api/label/{rec_key}")
 async def save_label(rec_key: str, payload: dict):
     con = db()
-    if not con.execute("SELECT 1 FROM record WHERE rec_key=?", (rec_key,)).fetchone():
+    rec = con.execute("SELECT district_id, cluster_id, is_cluster_rep FROM record WHERE rec_key=?",
+                      (rec_key,)).fetchone()
+    if not rec:
         con.close()
         raise HTTPException(404, "no such record")
     from datetime import datetime, timezone
-    con.execute(
-        """INSERT INTO label (rec_key, primary_label, flags_json, note, status, updated_at)
-           VALUES (?,?,?,?,?,?)
-           ON CONFLICT(rec_key) DO UPDATE SET
-             primary_label=excluded.primary_label, flags_json=excluded.flags_json,
-             note=excluded.note, status=excluded.status, updated_at=excluded.updated_at""",
-        (rec_key, payload.get("primary_label"), json.dumps(payload.get("flags", [])),
-         payload.get("note", ""), payload.get("status", "labeled"),
-         datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")))
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    vals = (payload.get("primary_label"), json.dumps(payload.get("flags", [])),
+            payload.get("note", ""), payload.get("status", "labeled"), ts)
+    con.execute(UPSERT_LABEL, (rec_key, *vals))
+    # Cluster cascade: labeling the REPRESENTATIVE applies the same label to its (unsplit)
+    # members, so a near-dup cluster is labeled once. Split members already have cluster_id
+    # cleared, so they're naturally excluded.
+    cascaded = 0
+    if rec["cluster_id"] and rec["is_cluster_rep"]:
+        for (m,) in con.execute("SELECT rec_key FROM record WHERE cluster_id=? AND rec_key!=?",
+                                (rec["cluster_id"], rec_key)).fetchall():
+            con.execute(UPSERT_LABEL, (m, *vals))
+            cascaded += 1
+    BS.recompute_labeled_topology(con, rec["district_id"])
     con.commit()
     # Export-on-save: the precious label is now backed up to the tracked JSON before we return,
     # so it survives DB loss with zero action from the user (no reliance on remembering).
     BS.export_labels(con, LABELS_JSON)
+    con.close()
+    return {"ok": True, "cascaded": cascaded}
+
+
+@app.post("/api/split/{rec_key}")
+async def split_record(rec_key: str):
+    """Pull one record OUT of its auto-cluster (it turned out to be genuinely unique). Cheap,
+    DB-only: detach the record, re-fix the remaining cluster (new rep / collapse to singleton),
+    and record a DURABLE split so re-ingest keeps it out. NOT a re-cluster (no re-shingling)."""
+    con = db()
+    rec = con.execute("SELECT district_id, cluster_id FROM record WHERE rec_key=?", (rec_key,)).fetchone()
+    if not rec:
+        con.close()
+        raise HTTPException(404, "no such record")
+    from datetime import datetime, timezone
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    # Precious, durable override first (survives re-ingest + DB wipe via the JSON backup).
+    con.execute("INSERT OR IGNORE INTO cluster_split (rec_key, created_at) VALUES (?,?)", (rec_key, ts))
+    cid = rec["cluster_id"]
+    if cid:
+        con.execute("UPDATE record SET cluster_id=NULL, is_cluster_rep=1, cluster_size=1 WHERE rec_key=?",
+                    (rec_key,))
+        rest = [row[0] for row in con.execute(
+            "SELECT rec_key FROM record WHERE cluster_id=? ORDER BY tier, sort_score DESC", (cid,)).fetchall()]
+        if len(rest) <= 1:   # cluster collapses — remaining record (if any) becomes a singleton
+            for rk in rest:
+                con.execute("UPDATE record SET cluster_id=NULL, is_cluster_rep=1, cluster_size=1 WHERE rec_key=?", (rk,))
+        else:                # promote a new representative; refresh sizes
+            for i, rk in enumerate(rest):
+                con.execute("UPDATE record SET is_cluster_rep=?, cluster_size=? WHERE rec_key=?",
+                            (1 if i == 0 else 0, len(rest), rk))
+    BS.recompute_labeled_topology(con, rec["district_id"])
+    con.commit()
+    BS.export_splits(con, CLUSTER_SPLITS_JSON)
     con.close()
     return {"ok": True}
 

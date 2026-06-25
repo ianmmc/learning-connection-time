@@ -19,6 +19,7 @@ import json
 import re
 import sqlite3
 import subprocess
+import sys
 from pathlib import Path
 
 RAW_DIR = Path("data/raw/lea-website-captures")
@@ -28,6 +29,24 @@ DB_PATH = Path("data/acquisition/stage5_review/review.db")
 # it). Written on every label save (server) + at the end of each ingest; re-imported on ingest.
 LABELS_JSON = Path("data/acquisition/stage5_review/labels.json")
 LABEL_COLS = ["rec_key", "primary_label", "flags_json", "note", "status", "updated_at"]
+# Durable backup for the OTHER precious human signal: cluster SPLITS (a record the reviewer
+# pulled out of an auto-cluster because it's genuinely unique). Like labels, survives DB wipe.
+CLUSTER_SPLITS_JSON = Path("data/acquisition/stage5_review/cluster_splits.json")
+
+NCES_YEAR = "2024_25"   # ccd_sch_029 source for the topology denominator (school counts)
+
+# ---- near-duplicate clustering (deterministic, content-similarity, NO AI) ----
+SHINGLE_K = 3              # word k-shingles
+CLUSTER_THRESHOLD = 0.90  # Jaccard >= this clusters. CONSERVATIVE on purpose: the only remedy
+# is split (no easy re-merge), so under-cluster (a few extra clicks) rather than over-cluster
+# (wrongly hide a unique page). Stroudsburg's normal vs 2-hr-delay schedules differ enough to
+# stay apart; printer-friendly/?id= variants of one page sit ~1.0.
+TIER_RANK = {"A": 0, "B": 1, "C": 2, "D": 3}
+
+# ---- labeled-topology taxonomy (derived from human labels + NCES; see the design note) ----
+TARGET_LABELS = {"school_bell_schedule", "school_start_end_prose", "district_hub_schedule",
+                 "explicit_instructional_time", "nonstandard_format"}
+SCHOOL_LEVEL_LABELS = {"school_bell_schedule", "school_start_end_prose"}
 
 TIME_RE = re.compile(r"\b(\d{1,2}):(\d{2})\s*([AaPp])?\.?[Mm]?\.?")
 USABLE_MIN_CHARS = 120
@@ -121,6 +140,123 @@ def norm_school(name: str) -> str:
     return re.sub(r"[^a-z0-9 ]", " ", n).strip()
 
 
+# ----------------------------- NCES school counts (topology denominator) -----------------------------
+def nces_school_counts(year: str = NCES_YEAR) -> dict:
+    """did(7-digit) -> count of DISTINCT open, regular, graded schools (ccd_sch_029, via
+    school_sampling.school_index). This is the true school count — NOT what discovery/capture
+    happened to yield — used to confirm single_school and the incomplete_coverage gap. Best
+    effort: returns {} if the NCES files aren't present, and topology degrades gracefully."""
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "stage1_queue"))
+        import school_sampling as ss
+        idx = ss.school_index(year)
+    except Exception:
+        return {}
+    return {did: len({s["school_id"] for b in bands.values() for s in b})
+            for did, bands in idx.items()}
+
+
+# ----------------------------- near-duplicate clustering -----------------------------
+def shingles(text: str, k: int = SHINGLE_K) -> frozenset:
+    toks = re.sub(r"\s+", " ", text.lower()).strip().split()
+    if len(toks) < k:
+        return frozenset(toks)
+    return frozenset(" ".join(toks[i:i + k]) for i in range(len(toks) - k + 1))
+
+
+def jaccard(a: frozenset, b: frozenset) -> float:
+    if not a and not b:
+        return 1.0
+    if not a or not b:
+        return 0.0
+    return len(a & b) / len(a | b)
+
+
+def cluster_district(items: list, splits: set):
+    """items: [(rec_key, shingle_set, tier, sort_score), ...] for one district's records.
+    splits: rec_keys the human forced to stand alone (never merged). Returns
+    {rec_key: (cluster_id_or_None, is_rep, cluster_size)} via connected components over
+    Jaccard >= CLUSTER_THRESHOLD. Singletons get cluster_id None (no badge in the UI)."""
+    parent = {rk: rk for rk, *_ in items}
+
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    n = len(items)
+    for i in range(n):
+        rk_i, sh_i = items[i][0], items[i][1]
+        if rk_i in splits:
+            continue
+        for j in range(i + 1, n):
+            rk_j, sh_j = items[j][0], items[j][1]
+            if rk_j in splits:
+                continue
+            if jaccard(sh_i, sh_j) >= CLUSTER_THRESHOLD:
+                parent[find(rk_i)] = find(rk_j)
+
+    meta = {rk: (tier, score) for rk, _, tier, score in items}
+    comps = {}
+    for rk, *_ in items:
+        comps.setdefault(find(rk), []).append(rk)
+
+    out = {}
+    did = items[0][0].split(":")[0] if items else ""
+    for idx, (_, members) in enumerate(sorted(comps.items())):
+        if len(members) == 1:
+            out[members[0]] = (None, 1, 1)
+            continue
+        cid = f"{did}:c{idx}"
+        rep = min(members, key=lambda rk: (TIER_RANK.get(meta[rk][0], 9), -meta[rk][1], rk))
+        for rk in members:
+            out[rk] = (cid, 1 if rk == rep else 0, len(members))
+    return out
+
+
+# ----------------------------- labeled topology -----------------------------
+def derive_labeled_topology(primaries: list, nces_count) -> str:
+    """primaries: primary_label strings for a district's labeled CANONICAL records (non-dup,
+    cluster representatives). nces_count: distinct NCES regular schools, or None. One value.
+    Precedence is deliberate and documented in STAGE5_FILTER_DESIGN_2026-06.md."""
+    labeled = [p for p in primaries if p]
+    if not labeled:
+        return "unknown"                 # not reviewed yet
+    targets = [p for p in labeled if p in TARGET_LABELS]
+    if not targets:
+        return "none_found"              # reviewed, nothing on-target -> re-discovery signal
+    if nces_count == 1:
+        return "single_school"           # NCES-confirmed one-school LEA
+    has_hub = "district_hub_schedule" in targets
+    school_level = [p for p in targets if p in SCHOOL_LEVEL_LABELS]
+    if has_hub and school_level:
+        return "mixed"
+    if has_hub:
+        return "district_hub"
+    # exact, narrow incomplete_coverage criterion (user, 2026-06-25)
+    if len(targets) == 1 and targets[0] == "school_bell_schedule" and nces_count and nces_count > 1:
+        return "incomplete_coverage"
+    if school_level:
+        return "per_school"
+    return "unknown"
+
+
+def recompute_labeled_topology(con, district_id: str) -> str:
+    """Recompute + persist district.labeled_topology from the live labels. Cheap (no NCES read —
+    nces_school_count is stored on the district at ingest). Called at ingest and on every save."""
+    row = con.execute("SELECT nces_school_count FROM district WHERE district_id=?", (district_id,)).fetchone()
+    nces_count = row[0] if row else None
+    primaries = [r[0] for r in con.execute(
+        """SELECT l.primary_label FROM record r JOIN label l ON l.rec_key=r.rec_key
+           WHERE r.district_id=? AND r.duplicate_of IS NULL
+             AND (r.is_cluster_rep=1 OR r.cluster_id IS NULL)
+             AND l.status!='unlabeled' AND l.primary_label IS NOT NULL""", (district_id,))]
+    topo = derive_labeled_topology(primaries, nces_count)
+    con.execute("UPDATE district SET labeled_topology=? WHERE district_id=?", (topo, district_id))
+    return topo
+
+
 # ----------------------------- signal computation -----------------------------
 def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dict):
     """All deterministic, no AI. `texts` = processed.json texts[]; `files` = captures.json files{}."""
@@ -174,13 +310,15 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
             for p in range(1, min(pdf_page_count(pdf), 15) + 1):
                 pages.append({"page": p, "n_times": len(time_positions(pdf_page_text(pdf, p)))})
 
-    return {
+    sig = {
         "n_times": n_times, "n_times_in_window": len(in_window), "times_after_5pm": len(after5),
         "proximity_pairs": prox, "positive_kw": pos, "negative_kw": neg, "neg_total": neg_total,
         "instructional_time": instructional, "has_table": has_table, "period_hits": period_hits,
         "roster_school_names_hit": roster_hits, "visual_text_gap": visual_text_gap,
         "max_text_chars": max_chars, "pages": pages,
     }
+    # `best_text` is the richest single representation — the content basis for near-dup clustering.
+    return sig, best_text
 
 
 def tier_and_category(sig: dict, roster_size: int):
@@ -233,22 +371,27 @@ def tier_and_category(sig: dict, roster_size: int):
 
 
 # ----------------------------- DB -----------------------------
-# label is the PRECIOUS human data: created once, NEVER dropped on re-ingest.
+# PRECIOUS human data: created once, NEVER dropped on re-ingest. label = the ground-truth
+# labels; cluster_split = records the reviewer pulled out of an auto-cluster (a durable override).
 LABEL_SCHEMA = """
 CREATE TABLE IF NOT EXISTS label (
   rec_key TEXT PRIMARY KEY, primary_label TEXT, flags_json TEXT, note TEXT,
   status TEXT DEFAULT 'unlabeled', updated_at TEXT);
+CREATE TABLE IF NOT EXISTS cluster_split (
+  rec_key TEXT PRIMARY KEY, created_at TEXT);
 """
 # Regenerable tables: dropped + rebuilt every ingest so schema/signal changes always apply.
 REBUILD_SCHEMA = """
 DROP TABLE IF EXISTS district; DROP TABLE IF EXISTS record; DROP TABLE IF EXISTS representation;
 CREATE TABLE district (
   district_id TEXT PRIMARY KEY, name TEXT, state TEXT, district_dir TEXT,
-  batch_id TEXT, topology_hypothesis TEXT, n_records INTEGER);
+  batch_id TEXT, guessed_topology TEXT, labeled_topology TEXT, nces_school_count INTEGER,
+  n_records INTEGER);
 CREATE TABLE record (
   rec_key TEXT PRIMARY KEY, district_id TEXT, district_dir TEXT, url TEXT, hash TEXT,
   kind TEXT, final_url TEXT, content_hash TEXT, duplicate_of TEXT,
-  tier TEXT, sort_score REAL, category_hypothesis TEXT, signals_json TEXT);
+  tier TEXT, sort_score REAL, category_hypothesis TEXT, signals_json TEXT,
+  cluster_id TEXT, is_cluster_rep INTEGER, cluster_size INTEGER);
 CREATE TABLE representation (
   rec_key TEXT, source TEXT, filename TEXT, file_kind TEXT,
   n_chars INTEGER, n_times INTEGER, usable INTEGER);
@@ -267,6 +410,29 @@ def export_labels(con, out: Path = LABELS_JSON) -> int:
     tmp.write_text(json.dumps(data, indent=2))
     tmp.replace(out)   # atomic
     return len(data)
+
+
+def export_splits(con, out: Path = CLUSTER_SPLITS_JSON) -> int:
+    """Dump the precious cluster-split rec_keys to a tracked JSON (atomic). The split backup."""
+    rows = [r[0] for r in con.execute("SELECT rec_key FROM cluster_split ORDER BY rec_key")]
+    out.parent.mkdir(parents=True, exist_ok=True)
+    tmp = out.with_name(out.name + ".tmp")
+    tmp.write_text(json.dumps(rows, indent=2))
+    tmp.replace(out)
+    return len(rows)
+
+
+def import_splits(con, src: Path = CLUSTER_SPLITS_JSON) -> int:
+    """Restore cluster splits from JSON into the table (recovery path after a DB wipe; a no-op
+    on normal re-ingest since cluster_split is never dropped). Must run BEFORE clustering so the
+    overrides are honored when components are recomputed."""
+    if not src.exists():
+        return 0
+    n = 0
+    for rk in json.loads(src.read_text()):
+        con.execute("INSERT OR IGNORE INTO cluster_split (rec_key, created_at) VALUES (?, NULL)", (rk,))
+        n += 1
+    return n
 
 
 def import_labels(con, src: Path = LABELS_JSON) -> int:
@@ -290,8 +456,11 @@ def import_labels(con, src: Path = LABELS_JSON) -> int:
 def ingest(root: Path, db_path: Path):
     db_path.parent.mkdir(parents=True, exist_ok=True)
     con = sqlite3.connect(db_path)
-    con.executescript(LABEL_SCHEMA)      # ensure the precious table exists; never dropped
+    con.executescript(LABEL_SCHEMA)      # ensure the precious tables exist; never dropped
     con.executescript(REBUILD_SCHEMA)    # drop + rebuild the regenerable tables
+    import_splits(con)                   # restore cluster splits to the table if it was wiped
+    splits = {r[0] for r in con.execute("SELECT rec_key FROM cluster_split")}
+    nces = nces_school_counts()          # did -> distinct regular-school count (once, from CSV)
 
     for ddir in sorted(p for p in root.iterdir() if p.is_dir()):
         cj, pj, dj = ddir / "captures.json", ddir / "processed.json", ddir / "discovery.json"
@@ -308,13 +477,14 @@ def ingest(root: Path, db_path: Path):
 
         seen_content = {}   # content_hash -> canonical rec_key
         district_records = []
+        cluster_items = []  # (rec_key, shingle_set, tier, sort_score) for near-dup clustering
         for h, prec in processed.items():
             cap = caps.get(h, {})
             rec_key = f"{disc['district_id']}:{h}"
             rdir = ddir / "captures" / h
             files = cap.get("files") or {}
 
-            sig = compute_signals(rdir, prec.get("texts", []), roster_norm, files)
+            sig, best_text = compute_signals(rdir, prec.get("texts", []), roster_norm, files)
             tier, score, cat = tier_and_category(sig, roster_size)
 
             # content hash for dedup: prefer the primary binary, else the best text content
@@ -335,10 +505,13 @@ def ingest(root: Path, db_path: Path):
                 seen_content[content_hash] = rec_key
 
             con.execute(
-                "INSERT INTO record VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                """INSERT INTO record (rec_key, district_id, district_dir, url, hash, kind,
+                     final_url, content_hash, duplicate_of, tier, sort_score, category_hypothesis,
+                     signals_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (rec_key, disc["district_id"], ddir.name, prec["url"], h, cap.get("kind"),
                  cap.get("final_url"), content_hash, dup_of, tier, score, cat, json.dumps(sig)))
             con.execute("INSERT OR IGNORE INTO label (rec_key) VALUES (?)", (rec_key,))
+            cluster_items.append((rec_key, shingles(best_text), tier, score))
 
             # representations: text reps (from processed.json) + binaries on disk
             for t in prec.get("texts", []):
@@ -361,7 +534,12 @@ def ingest(root: Path, db_path: Path):
                             (rec_key, "raster", rp.name, "image", None, None, 1))
             district_records.append((rec_key, sig, tier, dup_of))
 
-        # topology hypothesis (coarse, deterministic)
+        # near-duplicate clustering (content-similarity; honors human splits) -> UPDATE records
+        for rk, (cid, is_rep, size) in cluster_district(cluster_items, splits).items():
+            con.execute("UPDATE record SET cluster_id=?, is_cluster_rep=?, cluster_size=? WHERE rec_key=?",
+                        (cid, is_rep, size, rk))
+
+        # guessed topology (coarse, deterministic, from SIGNALS — noisy; kept to measure the heuristic)
         non_dup = [(rk, s, tr) for rk, s, tr, d in district_records if not d]
         sched = [(rk, s) for rk, s, tr in non_dup if tr in ("A", "B")]
         max_roster_on_one = max((s["roster_school_names_hit"] for _, s in sched), default=0)
@@ -371,23 +549,36 @@ def ingest(root: Path, db_path: Path):
             topo = "per_school"
         else:
             topo = "unknown"
-        con.execute("INSERT INTO district VALUES (?,?,?,?,?,?,?)",
-                    (disc["district_id"], disc.get("name"), disc.get("state"), ddir.name,
-                     disc.get("batch_id"), topo, len(district_records)))
+        con.execute(
+            """INSERT INTO district (district_id, name, state, district_dir, batch_id,
+                 guessed_topology, labeled_topology, nces_school_count, n_records)
+               VALUES (?,?,?,?,?,?,?,?,?)""",
+            (disc["district_id"], disc.get("name"), disc.get("state"), ddir.name,
+             disc.get("batch_id"), topo, None, nces.get(str(disc["district_id"]).zfill(7)),
+             len(district_records)))
 
     # Restore any labels the DB is missing from the JSON source of truth (no-op on a normal
     # re-ingest where the label table was preserved; the recovery path after a DB wipe).
     restored = import_labels(con)
+    # labeled_topology is derived from the (now-restored) human labels + the stored NCES count.
+    for (did,) in con.execute("SELECT district_id FROM district").fetchall():
+        recompute_labeled_topology(con, did)
     con.commit()
     n_rec = con.execute("SELECT COUNT(*) FROM record").fetchone()[0]
     n_lab = con.execute("SELECT COUNT(*) FROM label WHERE status!='unlabeled'").fetchone()[0]
     n_dist = con.execute("SELECT COUNT(*) FROM district").fetchone()[0]
     by_tier = dict(con.execute("SELECT tier, COUNT(*) FROM record GROUP BY tier").fetchall())
-    exported = export_labels(con)   # keep the JSON backup in sync with the DB
+    n_clustered = con.execute("SELECT COUNT(*) FROM record WHERE cluster_id IS NOT NULL").fetchone()[0]
+    n_clusters = con.execute("SELECT COUNT(DISTINCT cluster_id) FROM record WHERE cluster_id IS NOT NULL").fetchone()[0]
+    by_topo = dict(con.execute("SELECT labeled_topology, COUNT(*) FROM district GROUP BY labeled_topology").fetchall())
+    exported = export_labels(con)        # keep the JSON backups in sync with the DB
+    exported_splits = export_splits(con)
     con.close()
     print(f"ingest done: {n_dist} districts, {n_rec} records, {n_lab} labeled "
           f"({restored} restored from labels.json), {exported} exported to labels.json")
+    print(f"clustering: {n_clustered} records in {n_clusters} clusters; {exported_splits} splits backed up")
     print("by tier:", by_tier)
+    print("labeled_topology:", by_topo)
 
 
 def main():

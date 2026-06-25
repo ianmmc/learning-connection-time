@@ -160,7 +160,9 @@ data/benchmark_results/discovery/*/captures/
 data/benchmark_results/stage4_pdf_tool_spike/*/
 data/benchmark_results/stage4_pdf_tool_spike/run.log
 
-# Stage 5 review app — ignore the regenerable local SQLite DB, but TRACK labels.json
-# (the durable, version-controlled source of truth for the precious human labels).
+# Stage 5 review app — ignore the regenerable local SQLite DB, but TRACK the precious,
+# version-controlled human-data backups: labels.json (the labels) and cluster_splits.json
+# (records the reviewer pulled out of an auto-cluster — a durable override that survives re-ingest).
 data/acquisition/stage5_review/*
 !data/acquisition/stage5_review/labels.json
+!data/acquisition/stage5_review/cluster_splits.json

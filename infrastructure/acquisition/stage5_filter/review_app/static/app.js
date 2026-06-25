@@ -60,6 +60,7 @@ let CURRENT = null;   // rec_key
 let DATA = null;      // record detail
 
 function fileUrl(d, fn) { return `/files/${d.district_dir}/${d.hash}/${encodeURIComponent(fn)}`; }
+const short = (u) => (u || "").replace(/^https?:\/\//, "").slice(0, 40);
 
 // ----------------------------- tree -----------------------------
 async function loadTree() {
@@ -77,29 +78,67 @@ async function loadTree() {
   refreshProgress();
 }
 
+function topoBadge(kind, val) {
+  const v = val || "unknown";
+  const title = kind === "guessed"
+    ? "guessed topology — from signals (noisy; measures the heuristic)"
+    : "labeled topology — derived from your labels + NCES (the truth)";
+  return `<span class="topo ${kind} ${v}" title="${title}">${kind === "guessed" ? "guess" : "labeled"}: ${v}</span>`;
+}
+
 function renderDistrict(d) {
   const wrap = document.createElement("div"); wrap.className = "district";
-  const topo = d.topology_hypothesis || "unknown";
   const head = document.createElement("div"); head.className = "district-head";
+  const nces = d.nces_school_count != null ? ` · ${d.nces_school_count} NCES school${d.nces_school_count === 1 ? "" : "s"}` : "";
   head.innerHTML = `<div><div class="district-name">${d.name}</div>
-    <div class="district-meta">${d.state} · ${d.records.length} records</div></div>
-    <span class="topo ${topo}" title="topology hypothesis (noisy — your call)">${topo}</span>`;
+      <div class="district-meta">${d.state} · ${d.records.length} records${nces}</div></div>
+    <div class="topos">${topoBadge("labeled", d.labeled_topology)}${topoBadge("guessed", d.guessed_topology)}</div>`;
   const ul = document.createElement("ul"); ul.className = "rec-list";
-  d.records.forEach((r) => ul.appendChild(renderRecRow(r)));
+
+  // Group records into near-duplicate clusters. A cluster renders as its representative row
+  // (with a "+N" badge that expands the members); standalone records render directly.
+  const clusters = {};
+  d.records.forEach((r) => {
+    if (!r.cluster_id) return;
+    (clusters[r.cluster_id] ||= { rep: null, members: [] });
+    if (r.is_cluster_rep) clusters[r.cluster_id].rep = r;
+    else clusters[r.cluster_id].members.push(r);
+  });
+  const seen = new Set();
+  d.records.forEach((r) => {
+    if (!r.cluster_id) { ul.appendChild(renderRecRow(r)); return; }
+    if (seen.has(r.cluster_id)) return;
+    seen.add(r.cluster_id);
+    ul.appendChild(renderCluster(clusters[r.cluster_id]));
+  });
+
   head.onclick = () => ul.classList.toggle("hidden");
   wrap.append(head, ul);
   return wrap;
 }
 
-function renderRecRow(r) {
+function renderCluster(c) {
+  const rep = c.rep || c.members[0];
+  const li = renderRecRow(rep, c.members.length + 1);   // representative row, with +N badge
+  const sub = document.createElement("ul"); sub.className = "rec-list cluster-members hidden";
+  c.members.forEach((m) => sub.appendChild(renderRecRow(m)));
+  li.appendChild(sub);
+  const badge = li.querySelector(".cluster-badge");
+  if (badge) badge.onclick = (e) => { e.stopPropagation(); sub.classList.toggle("hidden"); li.classList.toggle("expanded"); };
+  return li;
+}
+
+function renderRecRow(r, clusterSize) {
   const li = document.createElement("li");
-  li.className = "rec-row" + (r.duplicate_of ? " dup" : "");
+  li.className = "rec-row" + (r.duplicate_of ? " dup" : "") + (clusterSize > 1 ? " cluster-rep" : "");
   li.dataset.recKey = r.rec_key;
-  const tail = (r.url || "").replace(/^https?:\/\//, "").slice(0, 38);
+  const tail = (r.url || "").replace(/^https?:\/\//, "").slice(0, 34);
+  const badge = clusterSize > 1
+    ? `<span class="cluster-badge" title="${clusterSize - 1} near-duplicate(s) — click to expand">+${clusterSize - 1}</span>` : "";
   li.innerHTML = `<span class="tier ${r.tier}">${r.tier}</span>
     <span class="rec-label" title="${r.url}">${tail}${r.duplicate_of ? " · dup" : ""}</span>
-    <span class="status-dot ${r.status || "unlabeled"}"></span>`;
-  li.onclick = () => selectRecord(r.rec_key, li);
+    ${badge}<span class="status-dot ${r.status || "unlabeled"}"></span>`;
+  li.onclick = (e) => { e.stopPropagation(); selectRecord(r.rec_key, li); };
   return li;
 }
 
@@ -198,6 +237,7 @@ function renderPanel(d) {
      <span>${t}</span></label>`).join("");
 
   $("#panel").innerHTML = `
+    ${clusterBanner(d)}
     <div class="panel-section"><h3>Signals <span style="font-weight:400;font-size:var(--fs-xs);color:var(--text-secondary)">(objective)</span></h3>${sig}</div>
     <div class="panel-section"><h3>Label <span id="savedFlash" class="saved-flash"></span></h3>
       <div class="axis-label">Target present — by shape</div>${radios(TARGET)}
@@ -215,7 +255,35 @@ function renderPanel(d) {
   $("#panel").querySelectorAll('input[name="flag"]').forEach((el) => el.onchange = () => save(currentStatus()));
   $("#panel .note").onblur = () => save(currentStatus());
   $("#unsureBtn").onclick = () => save("unsure");
+  $("#panel").querySelectorAll("[data-go]").forEach((a) => a.onclick = (e) => { e.preventDefault(); selectRecord(a.dataset.go); });
+  $("#panel").querySelectorAll("[data-split]").forEach((b) => b.onclick = (e) => { e.preventDefault(); splitRecord(b.dataset.split); });
   renderGuess(d, lab.status);
+}
+
+// Near-duplicate cluster banner: shows the cascade relationship + per-member split control.
+function clusterBanner(d) {
+  if (!d.cluster_id) return "";
+  const n = d.cluster_size, members = d.cluster_members || [];
+  const rep = members.find((m) => m.is_cluster_rep);
+  const head = d.is_cluster_rep
+    ? `<b>Cluster representative</b> · ${n - 1} near-duplicate${n - 1 === 1 ? "" : "s"}. Labeling this <b>cascades to all members</b>.`
+    : `<b>Cluster member</b> — label inherited from representative ${rep ? `<a href="#" data-go="${rep.rec_key}">★ ${short(rep.url)}</a>` : ""}.`;
+  const rows = members.map((m) => {
+    const cur = m.rec_key === d.rec_key ? " cur" : "";
+    return `<div class="cl-member${cur}">
+        <a href="#" data-go="${m.rec_key}" class="cl-link" title="${m.url}">${m.is_cluster_rep ? "★ " : ""}${short(m.url)}</a>
+        <button class="btn btn-ghost cl-split" data-split="${m.rec_key}" title="this one's genuinely unique — pull it out of the cluster">split out</button>
+      </div>`;
+  }).join("");
+  return `<div class="panel-section cluster-banner"><div class="axis-label">Near-duplicate cluster (${n})</div>
+      <div class="cl-head">${head}</div><div class="cl-members">${rows}</div>
+      <div class="cl-hint">Clustered by content similarity. If a member is actually different, split it out — the split is durable (survives re-ingest).</div></div>`;
+}
+
+async function splitRecord(recKey) {
+  await fetch(`/api/split/${recKey}`, { method: "POST" });
+  await loadTree();             // cluster membership changed — rebuild the tree
+  await selectRecord(recKey);   // reselect the now-standalone record
 }
 
 function currentStatus() {

@@ -371,7 +371,20 @@ explicit_instructional_time 2 · school_start_end_prose 1. (Targets = 41 of 150.
 
 ---
 
-# Topology — formal set + derivation (designed 2026-06-24; NCES-confirmed; NOT YET IMPLEMENTED)
+# Topology — formal set + derivation (designed 2026-06-24; **BUILT 2026-06-25**; NCES-confirmed)
+
+> **BUILT (2026-06-25).** `build_signals.py`: `nces_school_counts()` (distinct open/regular/graded
+> schools via `school_sampling.school_index`, stored as `district.nces_school_count` at ingest),
+> `derive_labeled_topology()`, and `recompute_labeled_topology()` (re-run at ingest **and** on every
+> label save in `server.py`). District header shows **both** badges (labeled solid, guessed outlined).
+> **Precedence decision (agent, documented):** `unknown` (nothing labeled) → `none_found` (labeled, no
+> target — fires *before* `single_school`, since "we found nothing, re-discover" is the salient state
+> even for a 1-school LEA) → `single_school` (NCES==1, ≥1 target) → `mixed` → `district_hub` →
+> `incomplete_coverage` (exact rule) → `per_school` → `unknown`. **Validated on the 12-district batch:**
+> HOPE→`single_school`, ROY (NCES 2, one `school_bell_schedule`)→`incomplete_coverage` (criterion fires),
+> Urbana→`mixed`, Marion **guess `hub` vs labeled `per_school`** (the CMS-nav false-positive divergence,
+> now measurable). NOTE: NCES count is currently read live from the CCD CSV at ingest with a hardcoded
+> `NCES_YEAR="2024_25"`; the planned move is to capture it at Stage 1 (see follow-up below).
 
 Two topology values per district, kept **separate** (don't conflate):
 - **`guessed_topology`** — computed from *signals* (`roster_school_names_hit`) at ingest. Noisy (CMS
@@ -471,7 +484,21 @@ weigh before moving it upstream:
 
 ---
 
-# Proposal (under discussion, 2026-06-25): near-duplicate CLUSTERING in the CP-B app
+# Near-duplicate CLUSTERING in the CP-B app (proposed + **BUILT 2026-06-25**)
+
+> **BUILT (2026-06-25).** All three open decisions resolved as recommended: (1) **content-similarity**
+> (word-3-shingle Jaccard, no CMS rules); (2) **conservative threshold `CLUSTER_THRESHOLD=0.90`**
+> (under-cluster; split is the only remedy); (3) **durable split override** — a `cluster_split` table
+> (never dropped) + `cluster_splits.json` backup (tracked, like `labels.json`), re-applied before
+> clustering on every ingest. Connected-components within each district; representative = best
+> tier→score→key. **Labeling the rep cascades to unsplit members** (`server.py` save_label). **Split is
+> DB-only** (detach + promote new rep / collapse), no re-shingling. UI: tree shows rep with a `+N` badge
+> that expands members; right-panel banner lists members with per-member "split out". **Validated:**
+> Stroudsburg `index.jsp?id=`-vs-directory variants + 3 `cross.jsp?wREC_ID=5711` subdomains collapsed;
+> **Pittsylvania 19 per-school `/calendar` pages** (all `board_schedule`, ~0.9+ similar) collapsed to one
+> labeling action; split tested end-to-end incl. survival across re-ingest. 37/150 records in 9 clusters.
+
+## Original proposal (under discussion, 2026-06-25): near-duplicate CLUSTERING in the CP-B app
 
 **Goal (user-confirmed):** group high-likelihood duplicate records so the reviewer labels the cluster
 **once** instead of clicking through many near-identical pages (the Stroudsburg `educationalnetworks.net`
