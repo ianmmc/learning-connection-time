@@ -388,9 +388,16 @@ Two topology values per district, kept **separate** (don't conflate):
 | `per_school` | school-level schedules covering ~all the district's schools | school-level target labels present **and** the count of schools we have target data for ≈ the NCES school count |
 | `district_hub` | one page covers all schools / grade bands | `district_hub_schedule` label present, no/few school-level targets |
 | `mixed` | both a district hub **and** school-level targets | both present (Stroudsburg: `cross.jsp` district rollups + per-school bell pages) |
-| `incomplete_coverage` | school-level targets, but fewer schools than NCES lists | school-level targets present **and** captured-school count **< NCES count** — the "more discovery may be warranted" signal |
+| `incomplete_coverage` | we have exactly one bell schedule for a district NCES says has >1 school | **exact initial criterion below** |
 | `none_found` | records were labeled, none is a target | no target labels anywhere in the district (→ likely needs re-discovery) |
 | `unknown` | can't classify | fallback |
+
+**`incomplete_coverage` — exact initial criterion (user, 2026-06-25), deliberately narrow & clear-cut:**
+assign it when **(a)** the district has exactly **one** target record, **(b)** that record is labeled
+**`school_bell_schedule`**, **and (c)** NCES (`ccd_sch_029`) shows the district has **more than one
+school**. That's it — one clean rule to start. We expect to **revise the criterion upward later** (once
+the filtering / deterministic characterization is better — e.g. "we have k of N schools" for k>1), but
+the first cut is this single unambiguous case.
 
 **Binding rule (user, 2026-06-24): `single_school` and the coverage check are confirmed against NCES
 (`ccd_sch_029`, via `school_sampling.py`), NOT inferred from what discovery/capture happened to
@@ -416,3 +423,48 @@ middle/high. Capture this as a flag/field on the record or district, **not** as 
   (the divergence is learning data — Marion: guess `hub`, labeled `per_school`).
 - Recomputed whenever labels change (or on an explicit "recompute topology" pass), since it depends on
   the human labels.
+
+---
+
+# Proposal (under discussion, 2026-06-25): collect fingerprints at Stage 2, for upstream dedup
+
+**The proposal (user).** Along the `D_RECON -->|doesn't exist|` path in Stage 2, after reconciliation
+but before `D_FLATTEN`, have Playwright probe each *discovered* URL and collect the same
+hosting/CMS **fingerprint** we currently grab in Stage 3 — at per-discovered-URL granularity (right for
+dedup; district CMS may differ from school CMS). Store fingerprints in `discovery.json` (changes the
+shape of the planned SQLite ingest). Motivation: get environment data **visible before capture**, so we
+can define CMS/URL-template-aware dedup (e.g. the `educationalnetworks.net` variant explosion at
+Stroudsburg — ~30 records, many printer-friendly/`?id=`/`cross.jsp` near-dups) *before* paying to
+capture redundant pages. Stage 3 still fingerprints emergent URLs (unchanged); Stage 3 would also need
+conditional gating so emergent URLs don't reintroduce already-deduped URLs.
+
+**Assessment (agent).** The *direction* is right and the per-URL granularity is correct. Three things to
+weigh before moving it upstream:
+
+1. **The double-visit.** Stage 3 already collects the fingerprint *during* capture — it rides the render
+   essentially for free. A Stage-2 fingerprint probe is a **second page-load** per URL (probe, then
+   capture). A probe can be lighter than a full capture (skip screenshot/`page.pdf()`/the 2.5s settle/
+   modal dismissal — just `goto` + headers + one DOM `evaluate`), but the `goto`/render is the expensive
+   part, so a probe is ~half a capture, not free. Net compute is a win **only if** pre-capture dedup is
+   aggressive (unique M ≪ discovered N). Stroudsburg yes; low-dup districts net-negative.
+2. **"Visibility earlier" is already achievable without moving anything.** We *already* capture
+   fingerprints in Stage 3. For **analysis** — the stated immediate goal — we just ingest the existing
+   Stage-3 fingerprints into the SQLite DB (already planned) and study CMS-vs-dedup patterns there. By DB
+   time, all stages have run, so Stage-3 timing costs nothing for analysis. Moving to Stage 2 pays off
+   **only** if we want to *act* (dedup) before capture — which is where the double-visit cost lands.
+3. **Emergent URLs argue for one dedup point downstream, not split.** Emergent URLs are discovered
+   *during* Stage 3, so Stage-2 dedup can't see them — hence the proposal's own "conditional gating in
+   Stage 3" caveat. By contrast, **Stage 4/5 sees ALL records (discovered + emergent) in one place**, so
+   the variant-collapsing that most reduces the *human* CP-B burden can happen there — with full content
+   + fingerprints + URL patterns — as a single dedup pass, no split logic, no double-visit. And capture
+   is local/cheap, so avoiding redundant *captures* (the Stage-2 probe's only unique win) is a small prize.
+
+**Recommended path (phased, evidence-first):**
+- **Now:** ingest the existing Stage-3 fingerprints into the DB and measure how often CMS/URL-template
+  dedup would actually help, across this batch and the next few. Gets the visibility the user wants with
+  **no pipeline change**.
+- **Later, only if the data shows pre-capture dedup is worth it:** add the Stage-2 fingerprint probe
+  (the user's design) — by then we'd have evidence it pays for the double-visit and dedup rules learned
+  from more than one CMS/example. Matches the user's own "premature to tighten on Stroudsburg alone."
+- Either way, **dedup of the human-facing record set belongs at Stage 5** (all URLs converge there).
+  Stage-2 fingerprinting is an *optimization to avoid captures*, not the dedup mechanism itself.
