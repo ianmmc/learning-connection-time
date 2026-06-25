@@ -2,18 +2,18 @@
   {
     "rec_key": "1739960:03aba1b1c1",
     "primary_label": "none",
-    "flags_json": "[]",
+    "flags_json": "[\"building_hours_visible\"]",
     "note": "This page has what appear to be building hours in the footer  (I think for the district office rather than the specific school) \u2014 a potential red herring for actual bell schedule information.",
     "status": "labeled",
-    "updated_at": "2026-06-25T04:18:38Z"
+    "updated_at": "2026-06-25T06:23:17Z"
   },
   {
     "rec_key": "1739960:1997f42a55",
     "primary_label": "none",
-    "flags_json": "[]",
+    "flags_json": "[\"building_hours_visible\"]",
     "note": "This page has what appear to be building hours in the footer  (I think for the district office rather than the specific school) \u2014 a potential red herring for actual bell schedule information.",
     "status": "labeled",
-    "updated_at": "2026-06-25T04:18:24Z"
+    "updated_at": "2026-06-25T06:23:17Z"
   },
   {
     "rec_key": "1739960:3c11c24113",
@@ -74,10 +74,10 @@
   {
     "rec_key": "1739960:a7d489f0f1",
     "primary_label": "school_bell_schedule",
-    "flags_json": "[]",
+    "flags_json": "[\"building_hours_visible\"]",
     "note": "Bell schedule in the \"Bell Schedule\" block. Building hours \u2014 a potential red herring for school start and end \u2014 is in the \"Find Us\" block.",
     "status": "labeled",
-    "updated_at": "2026-06-25T04:16:13Z"
+    "updated_at": "2026-06-25T06:23:17Z"
   },
   {
     "rec_key": "1739960:c8d6b3b9e7",
@@ -90,18 +90,18 @@
   {
     "rec_key": "1739960:d05b7dcfe3",
     "primary_label": "district_hub_schedule",
-    "flags_json": "[]",
+    "flags_json": "[\"building_hours_visible\"]",
     "note": "This is a tricky one and it's partial. It's a district hub where the start and end times are present for the 5 elementary schools (and the early childhood center which we're not interested in).\n\nUrbana Middle School and Urbana High School do have the school start time in prose here, but not the end time. We only get one end of the time range we need for these two representatives of the respective bands.\n\nIt also has what appears to be building hours for the district office in the footer \u2014 a potential red herring for bell schedule.",
     "status": "labeled",
-    "updated_at": "2026-06-25T04:15:05Z"
+    "updated_at": "2026-06-25T06:23:17Z"
   },
   {
     "rec_key": "1739960:d0a0a39bd8",
     "primary_label": "other_schedule",
-    "flags_json": "[]",
+    "flags_json": "[\"building_hours_visible\"]",
     "note": "This page has what appear to be building hours in the footer  (I think for the district office rather than the specific school) \u2014 a potential red herring for actual bell schedule information.",
     "status": "labeled",
-    "updated_at": "2026-06-25T04:18:16Z"
+    "updated_at": "2026-06-25T06:23:17Z"
   },
   {
     "rec_key": "1739960:d7aec1ccc2",
@@ -241,11 +241,11 @@
   },
   {
     "rec_key": "2006180:f255ce5bb9",
-    "primary_label": "other_schedule",
+    "primary_label": "community_calendar",
     "flags_json": "[]",
     "note": "Events calendar is a page element",
     "status": "labeled",
-    "updated_at": "2026-06-25T01:07:00Z"
+    "updated_at": "2026-06-25T06:23:17Z"
   },
   {
     "rec_key": "2600992:0ead93f5b2",
@@ -282,26 +282,26 @@
   {
     "rec_key": "2700159:01c390fa72",
     "primary_label": "none",
-    "flags_json": "[]",
+    "flags_json": "[\"building_hours_visible\"]",
     "note": "This is tricky. This has \"Building Hours 7:15 am \u2013 3:15 pm\" at the very bottom of the page in the footer, but I suspect this isn't the time where school starts and ends for students. I believe it's just when the building is open.\n\nAlso note that this isn't a handbook. It's a very long staff listing webpage where the pdf capture broke into multiple pages. Student handbooks are more likely to be (although not necessarily) direct download PDFs.",
     "status": "labeled",
-    "updated_at": "2026-06-25T02:23:59Z"
+    "updated_at": "2026-06-25T06:23:17Z"
   },
   {
     "rec_key": "2700159:46ba725353",
     "primary_label": "none",
-    "flags_json": "[]",
+    "flags_json": "[\"building_hours_visible\"]",
     "note": "This is tricky. This has \"Building Hours 7:15 am \u2013 3:15 pm\" at the very bottom of the page in the footer, but I suspect this isn't the time where school starts and ends for students. I believe it's just when the building is open.",
     "status": "labeled",
-    "updated_at": "2026-06-25T02:24:09Z"
+    "updated_at": "2026-06-25T06:23:17Z"
   },
   {
     "rec_key": "2700159:495f949451",
     "primary_label": "none",
-    "flags_json": "[]",
+    "flags_json": "[\"building_hours_visible\"]",
     "note": "This is tricky. This has \"Building Hours 7:15 am \u2013 3:15 pm\" at the very bottom of the page in the footer, but I suspect this isn't the time where school starts and ends for students. I believe it's just when the building is open.\n\nPage also has calendar links and an embedded calendar for staff about payroll timing.",
     "status": "labeled",
-    "updated_at": "2026-06-25T02:25:28Z"
+    "updated_at": "2026-06-25T06:23:17Z"
   },
   {
     "rec_key": "2900601:47d3a31eb0",
@@ -601,11 +601,11 @@
   },
   {
     "rec_key": "4222860:8fca26be3e",
-    "primary_label": "other_schedule",
+    "primary_label": "community_calendar",
     "flags_json": "[]",
     "note": "Has a community calendar",
     "status": "labeled",
-    "updated_at": "2026-06-25T04:04:27Z"
+    "updated_at": "2026-06-25T06:23:17Z"
   },
   {
     "rec_key": "4222860:959e5fb2e8",

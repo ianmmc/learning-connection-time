@@ -12,7 +12,9 @@ const NONTARGET = [
   ["board_schedule", "School Board / Trustees"],
   ["sports_schedule", "Athletics / sports"],
   ["academic_calendar", "Academic calendar"],
+  ["community_calendar", "Community / events calendar"],
   ["transportation_schedule", "Bus / transportation"],
+  ["embedded_feed", "Embedded social-media / blog feed"],
   ["other_schedule", "Other activity schedule"],
   ["none", "No schedule / instructional info"],
   ["unusable", "Garbled / empty / uninterpretable"],
@@ -20,6 +22,7 @@ const NONTARGET = [
 const FLAGS = [
   ["duplicate", "Duplicate of another record"],
   ["buried_in_long_doc", "Target buried in a long doc (handbook)"],
+  ["building_hours_visible", "Building/office hours visible (start-end red herring)"],
 ];
 // The one human-only signal: the target is plainly visible in the image/PDF but NO text
 // extractor (pdftotext/camelot/tesseract) captured it -> this record needs vision at Stage 6/7.
@@ -34,12 +37,15 @@ const DEFS = {
   board_schedule: "Scheduling/agenda info for the School Board / Board of Trustees.",
   sports_schedule: "Scheduling for athletics/sports teams.",
   academic_calendar: "A school/district calendar (year, holidays, early-release) — time-bearing but not a schedule.",
+  community_calendar: "A community / events calendar (school or community events) — not the academic calendar, not a schedule.",
   transportation_schedule: "Bus/transport times. Tricky boundary vs. legitimate start/end prose.",
+  embedded_feed: "An embedded social-media or blog feed is the dominant content — its date/time stamps are spurious signal, not a schedule.",
   other_schedule: "Scheduling for some other school activity — the residual non-target bucket.",
   none: "No discernible schedule or instructional-time info.",
   unusable: "Garbled, effectively empty, or impossible to interpret.",
   duplicate: "Byte-identical content to another record; label the canonical once.",
   buried_in_long_doc: "Target info present but inside a multi-topic document (e.g. a handbook).",
+  building_hours_visible: "The page shows building/office hours (often a footer 'Building Hours 7:15–3:15') that mimic a start/end pair but are NOT the student day — a red herring to monitor.",
   target_image_only: "You can see the target (bell schedule / start-end / instructional time) in the image or PDF, but NO text extractor captured it. The 'needs vision' signal — only tick it on a record that IS a target.",
 };
 const TIER_DEF = {
