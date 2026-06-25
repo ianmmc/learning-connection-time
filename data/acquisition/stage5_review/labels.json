@@ -1,10 +1,1202 @@
 [
   {
+    "rec_key": "1739960:03aba1b1c1",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "This page has what appear to be building hours in the footer  (I think for the district office rather than the specific school) \u2014 a potential red herring for actual bell schedule information.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:18:38Z"
+  },
+  {
+    "rec_key": "1739960:1997f42a55",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "This page has what appear to be building hours in the footer  (I think for the district office rather than the specific school) \u2014 a potential red herring for actual bell schedule information.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:18:24Z"
+  },
+  {
+    "rec_key": "1739960:3c11c24113",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Bus / transportation info for local public transportation (not district managed), but no schedule of any sort.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:22:15Z"
+  },
+  {
+    "rec_key": "1739960:46aa4f1509",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:20:29Z"
+  },
+  {
+    "rec_key": "1739960:5b1eacbb58",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:20:49Z"
+  },
+  {
+    "rec_key": "1739960:5bb66dc186",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "In the bell schedule block",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:16:41Z"
+  },
+  {
+    "rec_key": "1739960:815ad7e883",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:19:28Z"
+  },
+  {
+    "rec_key": "1739960:8e030312cd",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "In the Bell Schedule block",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:19:14Z"
+  },
+  {
+    "rec_key": "1739960:a0a98bdf1b",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:07:41Z"
+  },
+  {
+    "rec_key": "1739960:a7d489f0f1",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "Bell schedule in the \"Bell Schedule\" block. Building hours \u2014 a potential red herring for school start and end \u2014 is in the \"Find Us\" block.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:16:13Z"
+  },
+  {
+    "rec_key": "1739960:c8d6b3b9e7",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:19:39Z"
+  },
+  {
+    "rec_key": "1739960:d05b7dcfe3",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "This is a tricky one and it's partial. It's a district hub where the start and end times are present for the 5 elementary schools (and the early childhood center which we're not interested in).\n\nUrbana Middle School and Urbana High School do have the school start time in prose here, but not the end time. We only get one end of the time range we need for these two representatives of the respective bands.\n\nIt also has what appears to be building hours for the district office in the footer \u2014 a potential red herring for bell schedule.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:15:05Z"
+  },
+  {
+    "rec_key": "1739960:d0a0a39bd8",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "This page has what appear to be building hours in the footer  (I think for the district office rather than the specific school) \u2014 a potential red herring for actual bell schedule information.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:18:16Z"
+  },
+  {
+    "rec_key": "1739960:d7aec1ccc2",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:19:59Z"
+  },
+  {
+    "rec_key": "1739960:e01c25bbd2",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:07:33Z"
+  },
+  {
+    "rec_key": "1739960:ffda304e6d",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "In the bell schedule block",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:16:54Z"
+  },
+  {
+    "rec_key": "1918690:1c693ea3aa",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[\"duplicate\"]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:20:27Z"
+  },
+  {
+    "rec_key": "1918690:1deeb63356",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "8:30 School begins, tardy bell\nYour classroom lunch time will be sent home by classroom teachers\n3:30 Dismissal",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:26:55Z"
+  },
+  {
+    "rec_key": "1918690:600ade165e",
+    "primary_label": "unusable",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:29:13Z"
+  },
+  {
+    "rec_key": "1918690:8015fc58df",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "The info we're looking for:\n8:20-School Begins\n3:20-School Ends\n\nThe script guessed district hub. I'm wondering if there's a way that we can programmatically determine that this is a school page for Longfellow Elementary School rather than a district page.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:24:57Z"
+  },
+  {
+    "rec_key": "1918690:8f6ed54432",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "Key information:\n8:20 \u2013 School Begins\n3:20 \u2013 School Ends\n\nNot a duplicate, but very similar to Longfellow Elementary School page.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:26:14Z"
+  },
+  {
+    "rec_key": "1918690:a8bfb0b149",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[\"duplicate\"]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:21:49Z"
+  },
+  {
+    "rec_key": "1918690:aa1d5cfb30",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "This page is a Documents page that contains a link to a PDF document titled 23-24 Full Bell Schedule It also has \"VMS Bell Schedule\" in the navigation breadcrumbs. It's just a file list with one file presented, though.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:30:30Z"
+  },
+  {
+    "rec_key": "1918690:c2751c4f92",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:20:09Z"
+  },
+  {
+    "rec_key": "1918690:d9e387ea42",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "This page is a Documents page that contains a link to a PDF document titled MHS Bell Schedule 24-25. It also has \"Bell Schedule\" in the navigation breadcrumbs.  It's just a file list with one file presented, though.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:30:38Z"
+  },
+  {
+    "rec_key": "1918690:f67b48e026",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:21:26Z"
+  },
+  {
+    "rec_key": "2006180:2e63cfff0f",
+    "primary_label": "unusable",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:07:14Z"
+  },
+  {
+    "rec_key": "2006180:5c26779380",
+    "primary_label": "unusable",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:07:27Z"
+  },
+  {
+    "rec_key": "2006180:84f1cf3eb7",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Last day of school notice",
+    "status": "labeled",
+    "updated_at": "2026-06-25T00:40:24Z"
+  },
+  {
+    "rec_key": "2006180:a5836ff821",
+    "primary_label": "unusable",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:07:05Z"
+  },
+  {
+    "rec_key": "2006180:f255ce5bb9",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Events calendar is a page element",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:07:00Z"
+  },
+  {
+    "rec_key": "2600992:0ead93f5b2",
+    "primary_label": "unusable",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T00:15:08Z"
+  },
+  {
+    "rec_key": "2600992:0eadbca24d",
+    "primary_label": "unusable",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T00:15:24Z"
+  },
+  {
     "rec_key": "2600992:4b124a580e",
     "primary_label": "academic_calendar",
     "flags_json": "[]",
     "note": null,
     "status": "labeled",
     "updated_at": "2026-06-24T18:07:58Z"
+  },
+  {
+    "rec_key": "2600992:f067ea2f83",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T00:14:49Z"
+  },
+  {
+    "rec_key": "2700159:01c390fa72",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "This is tricky. This has \"Building Hours 7:15 am \u2013 3:15 pm\" at the very bottom of the page in the footer, but I suspect this isn't the time where school starts and ends for students. I believe it's just when the building is open.\n\nAlso note that this isn't a handbook. It's a very long staff listing webpage where the pdf capture broke into multiple pages. Student handbooks are more likely to be (although not necessarily) direct download PDFs.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:23:59Z"
+  },
+  {
+    "rec_key": "2700159:46ba725353",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "This is tricky. This has \"Building Hours 7:15 am \u2013 3:15 pm\" at the very bottom of the page in the footer, but I suspect this isn't the time where school starts and ends for students. I believe it's just when the building is open.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:24:09Z"
+  },
+  {
+    "rec_key": "2700159:495f949451",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "This is tricky. This has \"Building Hours 7:15 am \u2013 3:15 pm\" at the very bottom of the page in the footer, but I suspect this isn't the time where school starts and ends for students. I believe it's just when the building is open.\n\nPage also has calendar links and an embedded calendar for staff about payroll timing.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:25:28Z"
+  },
+  {
+    "rec_key": "2900601:47d3a31eb0",
+    "primary_label": "academic_calendar",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:15:09Z"
+  },
+  {
+    "rec_key": "2900601:6b202a190b",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:12:53Z"
+  },
+  {
+    "rec_key": "2900601:783f67d875",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "There's an embedded blog or social media feed.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:14:58Z"
+  },
+  {
+    "rec_key": "2900601:d880a9f87b",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "This isn't strictly speaking a bell schedule, not is it prose. There are a few sets of hours hours in this. The relevant one is:\n\nINSTRUCTIONAL HOURS:\nMonday- Friday\n8:10AM- 3:15PM",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:12:25Z"
+  },
+  {
+    "rec_key": "2900601:f4044f0a6c",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "There is a link to the school calendar with an embedded thumbnail that I'm guessing also links.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:14:13Z"
+  },
+  {
+    "rec_key": "3400734:10ebdb6c0c",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Admissions dates and deadlines on page",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:16:00Z"
+  },
+  {
+    "rec_key": "3400734:77dc315725",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "There's a timeline of the school's history.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:20:00Z"
+  },
+  {
+    "rec_key": "3400734:e16f61806c",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "I'm curious why the .txt file capture a lot more information than those extracted from the graphic. Is there an embedded set of slides of something? The inconsistency caught my attention.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:18:25Z"
+  },
+  {
+    "rec_key": "3400734:e6845fb9b9",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:16:28Z"
+  },
+  {
+    "rec_key": "3400734:f639c0b22d",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:18:41Z"
+  },
+  {
+    "rec_key": "3502280:31170892b5",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "Titled here as \"Class Schedule\". We may want to add that to favorable keywords as equivalent key phrases to \"Bell Schedule\". (It should not just be the word \"class\", though.)",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:12:27Z"
+  },
+  {
+    "rec_key": "3502280:db9e0ef9cd",
+    "primary_label": "sports_schedule",
+    "flags_json": "[]",
+    "note": "It's not actually a sports schedule per se; it's a documents list that includes links to FY26 FOOTBALL.pdf, FY26 VOLLEYBALL.pdf, 2025 XC Schedule 6-11-2025.pdf.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:17:10Z"
+  },
+  {
+    "rec_key": "3805460:574a093366",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T00:34:09Z"
+  },
+  {
+    "rec_key": "3805460:84db5b8100",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Embedded social media feed",
+    "status": "labeled",
+    "updated_at": "2026-06-25T00:16:25Z"
+  },
+  {
+    "rec_key": "3805460:95519bda9c",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T00:39:36Z"
+  },
+  {
+    "rec_key": "3805460:a294b71351",
+    "primary_label": "explicit_instructional_time",
+    "flags_json": "[\"duplicate\"]",
+    "note": "See also: www.dunseith.k12.nd.us/page/2025-2026-school-year-calendar. Check note there for information about the gold nugget explicit instructional minute buried in here.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T00:33:03Z"
+  },
+  {
+    "rec_key": "3805460:b657f56ee8",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "This is a flyer for a private tutoring service named \"Lindawood-Bell\". It makes total sense why it would come out of discovery.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T00:39:06Z"
+  },
+  {
+    "rec_key": "3805460:b9fc49b0e3",
+    "primary_label": "explicit_instructional_time",
+    "flags_json": "[\"duplicate\"]",
+    "note": "See also www.dunseith.k12.nd.us/o/dps/page/2025-2026-school-year-calendar\n\nThis is really subtle. This is primarily an academic calendar. However,  the calendar image that appears to be embedded in the page, there is a block at the bottom center that starts with an underlined \"Days of Classroom Instruction -147\" In that block is an explicit statement of instructional *hours*. It's shows up in .txt, tesseract_raster, and tesseract_screenshot.\n\n---\nDays of Classroom Instruction \u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026..147\n\nHigh School Days 147 x 7.5 hrs. per day = 1102.5 hrs.\nState Requirement = 1,050 hrs.\nElementary Days 147 x 7.25 hrs. per day= 1065.75 hrs.\nState Requirement = 963.5 hrs.\n---\nThis shows that each High school day is 7.5 hours and each elementary school day is 7.25 hours. From this, we should be able to derive that each high school day is 450 minutes and each elementary school day is 435 minutes. I'm unclear whether North Dakota or Dunseith Public School District 4M groups middle school with the elementary schools or the high schools (as middle school is typically categorized with high school as a secondary school).\n\nWe'll need to keep an eye out for academic calendars that have information like this so we don't prematurely filter them out when there's a gold nugget buried in there.\n\n\n",
+    "status": "labeled",
+    "updated_at": "2026-06-25T00:37:28Z"
+  },
+  {
+    "rec_key": "4222860:0115cb4b01",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:00:53Z"
+  },
+  {
+    "rec_key": "4222860:0286264bfb",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "Related to jhs.sburg.org/apps/bell_schedules/index.jsp?rn=741. This is a subset with just the normal regular bell schedule we're looking for.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T03:56:26Z"
+  },
+  {
+    "rec_key": "4222860:0324cb31f0",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "The district's hosting application appears to be missing a file specific to this school.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:07:14Z"
+  },
+  {
+    "rec_key": "4222860:08f592aa23",
+    "primary_label": "other_schedule",
+    "flags_json": "[\"duplicate\"]",
+    "note": "Related to of jhs.sburg.org/apps/bell_schedules/index.jsp?rn=741 -- but special case schedule.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T03:55:06Z"
+  },
+  {
+    "rec_key": "4222860:0b76e3c493",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T03:41:48Z"
+  },
+  {
+    "rec_key": "4222860:0ba126eb4d",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "Printer-friendly version of jhs.sburg.org/apps/bell_schedules/index.jsp?rn=741",
+    "status": "labeled",
+    "updated_at": "2026-06-25T03:36:47Z"
+  },
+  {
+    "rec_key": "4222860:0d10a183d3",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "This is odd. While under the banner of Stroudsberg Junior High School, this seems to have the standard schedules across the district for all bands -- even though it's not presented within the district website, but rather a school-specific website. Similar to morey.sburg.org/apps/cross.jsp?wREC_ID=5711&crossPath=/apps3/bell_sche",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:06:36Z"
+  },
+  {
+    "rec_key": "4222860:1da0a99205",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "This is not the standard bell schedule we're targeting. This is a subset focused on a special bell schedule rather than standard school day. Related to high.sburg.org/apps/bell_schedules/index.jsp. Check all related pages for subsets and dupes.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T03:59:44Z"
+  },
+  {
+    "rec_key": "4222860:1f51effa21",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "Printer-friendly version of hamilton.sburg.org/apps/bell_schedules/",
+    "status": "labeled",
+    "updated_at": "2026-06-25T03:43:15Z"
+  },
+  {
+    "rec_key": "4222860:2ca0e1c23b",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "This page has a lot of related pages where there are subsets of the listings on this page. In this case, our target is \"Normal Schedule\"",
+    "status": "labeled",
+    "updated_at": "2026-06-25T03:54:12Z"
+  },
+  {
+    "rec_key": "4222860:38d8c26e9b",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "This is not the standard bell schedule we're targeting. This is a subset focused on a special bell schedule rather than standard school day. Related to high.sburg.org/apps/bell_schedules/index.jsp. Check all related pages for subsets and dupes.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T03:59:51Z"
+  },
+  {
+    "rec_key": "4222860:5d7778b6a7",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "Related to other schedule pages with URL hamilton.sburg.org/apps/bell_schedules/",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:03:40Z"
+  },
+  {
+    "rec_key": "4222860:6271fb3277",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[\"duplicate\"]",
+    "note": "Dupe of middle.sburg.org/apps/bell_schedules/",
+    "status": "labeled",
+    "updated_at": "2026-06-25T03:39:04Z"
+  },
+  {
+    "rec_key": "4222860:68c1d17836",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "Printer-friendly version of Stroudsburg High School, captured on two other pages: high.sburg.org/apps/bell_schedules/index.jsp\n",
+    "status": "labeled",
+    "updated_at": "2026-06-25T03:35:57Z"
+  },
+  {
+    "rec_key": "4222860:6a908720a1",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "Dupe of hamilton.sburg.org/apps/bell_schedules/",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:00:22Z"
+  },
+  {
+    "rec_key": "4222860:77a6eec89d",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "Printer-friendly version of middle.sburg.org/apps/bell_schedules/",
+    "status": "labeled",
+    "updated_at": "2026-06-25T03:37:28Z"
+  },
+  {
+    "rec_key": "4222860:7bbb2ff11e",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "Related to high.sburg.org/apps/bell_schedules/index.jsp. Check all related pages for subsets and dupes.\n\nThis subset is the normal schedule we're looking for.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T03:52:46Z"
+  },
+  {
+    "rec_key": "4222860:80076e74ab",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "Printer-friendly version of middle.sburg.org/apps/bell_schedules/",
+    "status": "labeled",
+    "updated_at": "2026-06-25T03:38:45Z"
+  },
+  {
+    "rec_key": "4222860:8c9f1b965b",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "This is not the standard bell schedule we're targeting. This is a subset focused on a special bell schedule rather than standard school day. Related to high.sburg.org/apps/bell_schedules/index.jsp. Check all related pages for subsets and dupes.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T03:52:17Z"
+  },
+  {
+    "rec_key": "4222860:8fca26be3e",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Has a community calendar",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:04:27Z"
+  },
+  {
+    "rec_key": "4222860:959e5fb2e8",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "The district's hosting application appears to be missing a file specific to this school.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:07:09Z"
+  },
+  {
+    "rec_key": "4222860:9707adcffa",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Related to high.sburg.org/apps/bell_schedules/index.jsp. Check all related pages for subsets and dupes. This isn't the regular bell schedule we're actively looking for, but it is a valid bell schedule.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T03:59:08Z"
+  },
+  {
+    "rec_key": "4222860:a2346ca195",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Special week of school.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:02:48Z"
+  },
+  {
+    "rec_key": "4222860:a622435c8a",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T03:36:33Z"
+  },
+  {
+    "rec_key": "4222860:bca38d0fb5",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "This is not the standard bell schedule we're targeting. This is a subset focused on a special bell schedule rather than standard school day. Related to high.sburg.org/apps/bell_schedules/index.jsp. Check all related pages for subsets and dupes.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T03:59:35Z"
+  },
+  {
+    "rec_key": "4222860:cbe2b6cac5",
+    "primary_label": "academic_calendar",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:02:54Z"
+  },
+  {
+    "rec_key": "4222860:cd6cde4fbb",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[\"duplicate\"]",
+    "note": "Dupe of high.sburg.org/apps/bell_schedules/index.jsp. This is without the index page explict in the URL, so directory level with it defaulting to index.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T03:48:43Z"
+  },
+  {
+    "rec_key": "4222860:cfbdf6bb1d",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "This is odd. While under the banner of B.F. Morey Elementary school, this seems to have the standard schedules across the district for all bands -- even though it's not presented within the district website, but rather a school-specific website. Similar to jhs.sburg.org/apps/cross.jsp?wREC_ID=5711&crossPath=/apps3/bell_schedu",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:06:19Z"
+  },
+  {
+    "rec_key": "4222860:d778cd678c",
+    "primary_label": "unusable",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T04:04:31Z"
+  },
+  {
+    "rec_key": "4222860:fa8bdfce9a",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T03:41:29Z"
+  },
+  {
+    "rec_key": "5000425:88e7b7e0ef",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Multiple non-bell schedule signals here. Board meeting noted, performance of Seussical, Jr. Community meeting.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:38:13Z"
+  },
+  {
+    "rec_key": "5102940:0932688744",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:52:46Z"
+  },
+  {
+    "rec_key": "5102940:0be745c22a",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:49:26Z"
+  },
+  {
+    "rec_key": "5102940:0f6c7da050",
+    "primary_label": "school_start_end_prose",
+    "flags_json": "[]",
+    "note": "The information is buried in what is presented as a letter from the principal.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:49:03Z"
+  },
+  {
+    "rec_key": "5102940:103592a40a",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:50:28Z"
+  },
+  {
+    "rec_key": "5102940:11e85ccda9",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Contains a link to the student handbook",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:03:20Z"
+  },
+  {
+    "rec_key": "5102940:1267deb49e",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:50:03Z"
+  },
+  {
+    "rec_key": "5102940:1b532dbab6",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:50:34Z"
+  },
+  {
+    "rec_key": "5102940:1b9c58bf45",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Appears to have links to academic calendar (\"school calendar\").",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:09:00Z"
+  },
+  {
+    "rec_key": "5102940:1e482af0ea",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Appears to have links to academic calendar (\"school calendar\").",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:08:53Z"
+  },
+  {
+    "rec_key": "5102940:20de29fcbc",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "This appears to be a schedule for a human resources / internal communications initiative for recognizing employees on the school district website.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:06:28Z"
+  },
+  {
+    "rec_key": "5102940:26f8330ade",
+    "primary_label": "unusable",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:04:51Z"
+  },
+  {
+    "rec_key": "5102940:2bc454c1fd",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:04:30Z"
+  },
+  {
+    "rec_key": "5102940:2c5175f534",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Appears to have links to academic calendar (\"school calendar\").",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:09:06Z"
+  },
+  {
+    "rec_key": "5102940:30e3d174be",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:52:52Z"
+  },
+  {
+    "rec_key": "5102940:33ab0ee79d",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[\"buried_in_long_doc\"]",
+    "note": "Bell schedule on page 4",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:43:41Z"
+  },
+  {
+    "rec_key": "5102940:3b7bf17c6d",
+    "primary_label": "sports_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:06:59Z"
+  },
+  {
+    "rec_key": "5102940:3fd75486f1",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:04:24Z"
+  },
+  {
+    "rec_key": "5102940:46df5a5d38",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:52:15Z"
+  },
+  {
+    "rec_key": "5102940:4d0e3897b6",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:09:38Z"
+  },
+  {
+    "rec_key": "5102940:4ea496b9c9",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[\"buried_in_long_doc\"]",
+    "note": "Bell schedule headers are at the bottom of page 1 and the actual content is the majority of page 2.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:41:46Z"
+  },
+  {
+    "rec_key": "5102940:5531f7eabb",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:50:42Z"
+  },
+  {
+    "rec_key": "5102940:5b44e6d4ea",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:11:03Z"
+  },
+  {
+    "rec_key": "5102940:62582cfee5",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:50:59Z"
+  },
+  {
+    "rec_key": "5102940:63eeeee740",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:52:58Z"
+  },
+  {
+    "rec_key": "5102940:6fc33f633f",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:10:53Z"
+  },
+  {
+    "rec_key": "5102940:7864300351",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:50:55Z"
+  },
+  {
+    "rec_key": "5102940:808d4180b8",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:52:07Z"
+  },
+  {
+    "rec_key": "5102940:871421de78",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:10:46Z"
+  },
+  {
+    "rec_key": "5102940:88d466cfc7",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:50:22Z"
+  },
+  {
+    "rec_key": "5102940:914d37165f",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "Contains links to 2025 - 2026 school calendar and 2026 - 2027 school calendar",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:51:58Z"
+  },
+  {
+    "rec_key": "5102940:91ffd42319",
+    "primary_label": "unusable",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:04:43Z"
+  },
+  {
+    "rec_key": "5102940:9216457fa8",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Appears to have links to academic calendar (\"school calendar\").",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:08:57Z"
+  },
+  {
+    "rec_key": "5102940:92ffbdfd40",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:52:36Z"
+  },
+  {
+    "rec_key": "5102940:962702e3f9",
+    "primary_label": "sports_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:06:36Z"
+  },
+  {
+    "rec_key": "5102940:9632b15d02",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:10:05Z"
+  },
+  {
+    "rec_key": "5102940:964c98f1f2",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:50:51Z"
+  },
+  {
+    "rec_key": "5102940:98380ddd67",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "This is an embedded calendar presented in conventional month-view format, whereas other schools in the district present a list format and only show an upcoming school board meeting.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:01:13Z"
+  },
+  {
+    "rec_key": "5102940:994f7edea3",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:04:37Z"
+  },
+  {
+    "rec_key": "5102940:9a8e758342",
+    "primary_label": "sports_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:06:54Z"
+  },
+  {
+    "rec_key": "5102940:9bf40e0720",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:52:01Z"
+  },
+  {
+    "rec_key": "5102940:a542d620ef",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:09:48Z"
+  },
+  {
+    "rec_key": "5102940:a7bd20cb3e",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "This is an embedded calendar presented in conventional month-view format, whereas other schools in the district present a list format and only show an upcoming school board meeting.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:02:21Z"
+  },
+  {
+    "rec_key": "5102940:a8f029279e",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[\"buried_in_long_doc\"]",
+    "note": "Bell schedule on page 4",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:47:34Z"
+  },
+  {
+    "rec_key": "5102940:ac65b33181",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:52:25Z"
+  },
+  {
+    "rec_key": "5102940:acaad817a3",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:52:40Z"
+  },
+  {
+    "rec_key": "5102940:ad6bd3260f",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:52:30Z"
+  },
+  {
+    "rec_key": "5102940:ae80e294f7",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:10:33Z"
+  },
+  {
+    "rec_key": "5102940:af08a2b300",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:09:59Z"
+  },
+  {
+    "rec_key": "5102940:b073e624d1",
+    "primary_label": "sports_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:06:48Z"
+  },
+  {
+    "rec_key": "5102940:b179512e96",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:50:11Z"
+  },
+  {
+    "rec_key": "5102940:b4b30960b2",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "This is an embedded calendar presented in conventional month-view format, whereas other schools in the district present a list format and only show an upcoming school board meeting.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:02:29Z"
+  },
+  {
+    "rec_key": "5102940:bd2b14c3ce",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:10:24Z"
+  },
+  {
+    "rec_key": "5102940:be2a5e9d93",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "This is an embedded calendar presented in conventional month-view format, whereas other schools in the district present a list format and only show an upcoming school board meeting.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:01:25Z"
+  },
+  {
+    "rec_key": "5102940:c4af92ee30",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "This is an embedded calendar presented in conventional month-view format, whereas other schools in the district present a list format and only show an upcoming school board meeting.",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:01:03Z"
+  },
+  {
+    "rec_key": "5102940:d4f33c0491",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:10:59Z"
+  },
+  {
+    "rec_key": "5102940:d50dcec7d4",
+    "primary_label": "unusable",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:04:18Z"
+  },
+  {
+    "rec_key": "5102940:dd03629a0f",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:49:54Z"
+  },
+  {
+    "rec_key": "5102940:e8d79f4891",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:03:28Z"
+  },
+  {
+    "rec_key": "5102940:f0bac27369",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:09:30Z"
+  },
+  {
+    "rec_key": "5102940:f3ee9fc349",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:09:14Z"
+  },
+  {
+    "rec_key": "5102940:f5d6f611fb",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[\"buried_in_long_doc\"]",
+    "note": "Bell schedule on page 3",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:42:37Z"
+  },
+  {
+    "rec_key": "5102940:f68f559a07",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T01:50:46Z"
+  },
+  {
+    "rec_key": "5102940:ff0014c2b0",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-25T02:03:37Z"
   }
 ]

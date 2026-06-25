@@ -243,3 +243,128 @@ capture results are in hand") finally gets answered.
 - Per-page signal granularity (enables handbook harvesting + multi-page handling).
 - Dedup: byte-identical, shown-but-marked, `duplicate_of` links to canonical, label once.
 - Recall-bias + human-as-precision-backstop governs the operational filter (not this exercise).
+
+---
+
+# batch_00001 review — first full labeling pass (2026-06-24)
+
+The user labeled **all 150 records** in the review app. Labels are the ground truth; the script's
+tier + category guess are what we measure against. (Labels backed up to `labels.json`, committed.)
+
+**Label distribution:** none 56 · school_bell_schedule 35 · board_schedule 23 · other_schedule 12 ·
+unusable 10 · sports_schedule 5 · district_hub_schedule 3 · academic_calendar 3 ·
+explicit_instructional_time 2 · school_start_end_prose 1. (Targets = 41 of 150.)
+
+## Headline: the TIER works; the CATEGORY GUESS does not
+
+| tier | targets | non-targets | precision |
+|---|---|---|---|
+| A | 40 | 7 | **85%** |
+| B | 0 | 6 | 0% |
+| C | 1 | 38 | 3% |
+| D | 0 | 58 | 0% |
+
+- **An "A → council" filter recalls 40/41 targets (98%) at 85% precision.** Tier D (58 records, 39%
+  of the batch) contains **zero** targets — safe to drop, big cost win. **Tier B caught zero
+  targets** (6 false) — the B definition is currently noise (it's catching building-hours red
+  herrings + special-day schedules). The single target in C is an Urbana bell schedule ("in the
+  Bell Schedule block").
+- **The category hypothesis is wrong almost everywhere a real bell schedule exists** — it guessed
+  `sports_schedule`/`board_schedule` on most true `school_bell_schedule` records (all of
+  Stroudsburg, Urbana, ROY, HOPE, Marion, Pittsylvania handbooks). **Root cause: negative keywords
+  (board/sports/athletic) live in the CMS nav + footer chrome present on *every* page**, so the
+  "which negative class wins" logic fires on chrome, not content. **Positive signals (time
+  proximity + positive keywords) are robust to chrome; negative-class disambiguation is not.** This
+  is the same nav-chrome pollution that fools the topology hypothesis (roster-name count). **The
+  single highest-leverage fix for Stage 5: strip nav/header/footer chrome before computing signals
+  (or weight positive structure over mere negative-keyword presence).**
+
+## By the standard per-batch learning questions
+
+### 1 · Refinements to the CP-B application
+- **Add `community_calendar`** as a non-target label (distinct from `academic_calendar` — community
+  events; seen at Stroudsburg). *(user)*
+- **Add a `building_hours_visible` flag** — a recurring red herring: "Building Hours 7:15a–3:15p" in
+  footers (Urbana, Sojourner Truth) mimics a real start/end pair but is building-open hours, not the
+  student day. Flag to monitor + eventually detect. *(user)*
+- **Consider an `embedded_feed` flag** — several districts embed social-media/blog feeds that emit
+  date/time stamps and confuse the signals (DUNSEITH "embedded social media feed" guessed sports;
+  HOPE blog). *(user)*
+- **Variant grouping** — Stroudsburg generated ~6 CMS URL variants per school the user had to label
+  individually; a "related variants" grouping (by URL template) would cut review effort.
+
+### 2 · Immediate scoring / earlier-stage updates
+- **De-chrome the signals (Stage 5) — the big one.** Negative keywords from nav/footer must not
+  drive categorization. Strip boilerplate (nav, header, footer, school-switcher) before scanning.
+- **Detect instructional time in HOURS, not just minutes (Stage 5).** DUNSEITH buries gold in an
+  academic calendar: "147 days × 7.5 hrs/day" (HS) and "× 7.25 hrs/day" (elem) → 450 / 435 min/day.
+  Our `INSTRUCTIONAL_RE` only anchors on "minutes." Add hours patterns (and "hrs per day").
+- **Do NOT hard-drop `academic_calendar`** — DUNSEITH proves a calendar can carry explicit
+  instructional time. Calendars stay eligible; the instructional-time detector is what rescues them.
+- **Add "class schedule" (and equivalents) to positive keywords (Stage 5)** — ROY titles its bell
+  schedule "Class Schedule." Not bare "class." *(user)*
+- **Building-hours handling (Stage 5).** A start/end pair in a "building hours"/"office hours"
+  context should be separated/down-weighted, not counted as the bell schedule.
+- **URL-template dedup for CMS apps (Stage 5/3).** Stroudsburg: `/apps/bell_schedules/` ≡
+  `…/index.jsp` ≡ `…/printerfriendly.jsp` are the same content; our byte-identical dedup caught
+  **zero** of these (each variant has a slightly different HTML wrapper). Need near-dup / URL-pattern
+  collapsing, not just content-hash.
+- **Stage 4 watch (Hoboken):** the user noticed `.txt` captured *more* than the graphic extractions
+  on one record — worth checking why representations disagree (embedded slides?).
+
+### 3 · Emerging patterns / hypotheses (collect evidence across batches)
+- **CMS-templated schedule apps.** `educationalnetworks.net` (Stroudsburg) exposes a
+  `/apps/bell_schedules/` app per school subdomain with: the directory/index/printerfriendly variants
+  (same content), `?id=NNNN` alternates (id 7100 = normal day → target; 7101–7105 = 2-hr-delay /
+  early-dismissal / special → `other_schedule`), and a `cross.jsp?...crossPath=/apps3/bell_schedules`
+  **district-wide rollup that appears under each school subdomain** (a *school* URL that is actually a
+  *hub*). HYPOTHESIS: per-CMS URL templates can drive targeted capture, variant dedup, and "pick the
+  Normal schedule" logic. Collect across more `educationalnetworks.net` districts. **High
+  false-positive risk** (many valid-but-non-standard bell schedules).
+- **CMS nav-chrome pollution (Apptegy/SharpSchool/etc.).** School-switcher nav + footer building-hours
+  inflate roster-name counts (topology) and negative keywords (category). HYPOTHESIS: chrome-stripping
+  materially improves both. Ties to the Stage 3 `cms_hint` fingerprint.
+- **Academic calendars carrying instructional time** (DUNSEITH). HYPOTHESIS: a minority do; don't drop.
+- **Handbooks carry bell schedules** (Pittsylvania, PROVEN this batch). The per-page time-count signal
+  located the schedule page (p2/p3/p4); buried_in_long_doc flag + per-page harvest is viable.
+- **Building-hours red herring.** Footers state building-open hours that mimic start/end. Recognizable;
+  collect to define a detector.
+
+### 4 · Follow-on districts / queries
+- **Stroudsburg:** (a) among each school's `?id=` variants, identify the *Normal/Regular* schedule and
+  collapse the rest; (b) the `cross.jsp` rollups are the district-hub source; (c) `/about-us/bell-schedule`
+  pages came back empty ("missing file") — the `/apps/bell_schedules/` app is the real source.
+- **Marion:** the two Tier-D "Documents" pages are file-lists linking to the real VMS/MHS bell-schedule
+  PDFs — which discovery *did* capture via the emergent (thrillshare) path; the list pages themselves
+  are noise. Confirms the emergent path earned its keep here.
+- **DUNSEITH:** the instructional-hours calendar is a target we'd otherwise filter — the canary for the
+  "don't drop calendars" rule.
+- **Urbana:** one record is a *partial* district hub — start+end for the 5 elementary schools, but only
+  the start (prose) for middle/high. Partial-band extraction is its own edge.
+
+## Pipeline-level questions (positions, for discussion)
+- **"Will the script's district guesses update from my labels?"** — **No**, by current design.
+  Topology + category are recomputed deterministically from *signals* on every ingest; labels never
+  feed back. PROPOSAL: compute a **separate "labeled topology"** from the user's labels (if the
+  bell-schedule records are per-school → per_school; if one record covers all schools → hub) and show
+  both — the guess (pre-label) and the truth (post-label). Same for category: keep the guess for
+  measuring the heuristic; the label is truth.
+- **Should the SQLite DB ingest the earlier-stage JSONs (discovery/captures/processed) per district?**
+  Leaning **yes** — it turns the DB into a cross-stage analysis hub: we could then query "which CMS /
+  discovery wave / fingerprint correlates with targets," which is exactly the feedback-to-earlier-stages
+  engine. Low cost; high analytical value.
+- **Is SQLite still the right tool?** For single-user local analysis at this scale (thousands of rows),
+  yes. Revisit Postgres-in-Docker only on a concrete pressure (multi-user CP-B, very large scale,
+  concurrent web hosting). Schema is portable; don't migrate ahead of need.
+- **Feed deterministic start/end guesses INTO the council as input?** **Recommend against** — anchoring
+  risk: the council could rubber-stamp our guess, manufacturing false consensus and propagating our
+  errors. **Instead, the user's own better framing: compute deterministic guesses INDEPENDENTLY and
+  compare against the council POST-hoc (Stage 7+).** That yields (a) an agreement signal (agree →
+  confidence; disagree → human review) and (b) the learning data for the next question — with zero
+  biasing of the council.
+- **Eventually skip the council for high-confidence deterministic extractions?** Possible, but only
+  after the post-hoc comparison above accumulates evidence. Tests to pass before trusting a skip:
+  on a council-verified set, the deterministic extractor must hit a high agreement bar (e.g. ≥99% on a
+  specific, narrow content class — say a clean single-school bell table on a known CMS template),
+  scoped to that class, with disagreements always routed to human/council. Collect the comparison data
+  first; that IS the evidence base.
