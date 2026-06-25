@@ -207,6 +207,37 @@ REGULAR_SCH_TYPE = "Regular School"  # NCES SCH_TYPE_TEXT enum: Regular / Specia
 # real batch). Special Education School is excluded too for now -- a separate, deferred body
 # of work, not because it's structurally like the other two.
 
+def _eligible(row, virtual_ids):
+    """Shared school-level eligibility predicate: open, regular, non-virtual, not a standalone
+    preschool. Used by BOTH school_index() (band assignment) and school_level_counts() (raw-LEVEL
+    denominator) so the two can never disagree on which schools count -- school_level_counts()'s
+    'total' is therefore exactly school_index()'s distinct-school count."""
+    return (row.get("SY_STATUS", "") in OPEN
+            and row.get("SCH_TYPE_TEXT", "") == REGULAR_SCH_TYPE
+            and row.get("NCESSCH", "") not in virtual_ids
+            and row.get("GSHI", "") not in ("PK", "KG"))
+
+
+def school_level_counts(year):
+    """did(7-digit) -> {'total': n, 'by_level': {LEVEL: count}} for schools meeting OUR criteria
+    (open, regular, non-virtual, non-preschool -- see _eligible), grouped by the RAW ccd_sch
+    LEVEL field (Elementary/Middle/High/Secondary/Other/Not reported/...). This is the transparent
+    topology denominator -- the count of schools we'd actually try to schedule -- NOT ccd_lea's
+    self-reported figure and NOT the derived 3-band assignment. 'total' == school_index() distinct
+    count (same eligibility). A blank/missing LEVEL is bucketed as 'Not reported'."""
+    virtual_ids = _virtual_ids(year)
+    out = defaultdict(lambda: {"total": 0, "by_level": defaultdict(int)})
+    with open(_sch_file(year), encoding="utf-8-sig", errors="replace") as fh:
+        for row in csv.DictReader(fh):
+            if not _eligible(row, virtual_ids):
+                continue
+            did = row.get("LEAID", "").zfill(7)
+            lvl = (row.get("LEVEL", "") or "").strip() or "Not reported"
+            out[did]["total"] += 1
+            out[did]["by_level"][lvl] += 1
+    return {did: {"total": v["total"], "by_level": dict(v["by_level"])} for did, v in out.items()}
+
+
 def school_index(year):
     """district_id -> band -> [{school_id, name, is_charter, level, gslo, gshi}, ...] for open,
     regular, non-preschool-only graded schools. gslo/gshi are included for human inspection
@@ -247,13 +278,12 @@ def school_index(year):
     virtual_ids = _virtual_ids(year)
     with open(_sch_file(year), encoding="utf-8-sig", errors="replace") as fh:
         for row in csv.DictReader(fh):
-            if row.get("SY_STATUS","") not in OPEN: continue
-            if row.get("SCH_TYPE_TEXT","") != REGULAR_SCH_TYPE: continue
-            if row.get("NCESSCH","") in virtual_ids: continue
-            if row.get("GSHI","") in ("PK", "KG"): continue  # standalone preschool / early-childhood
-            # center, e.g. Lake Preschool (PK-PK) or Clinton County Early Childhood Center
-            # (PK-KG) -- not representative of a normal K-12 academic day. Narrower than
-            # excluding any PK-serving school: a K-5 school with GSLO=PK, GSHI=05 still counts.
+            # Eligibility (open, regular, non-virtual, not standalone preschool) is the shared
+            # _eligible() predicate -- excludes e.g. Lake Preschool (PK-PK) / Clinton County Early
+            # Childhood Center (PK-KG) via GSHI in (PK,KG), narrower than excluding any PK-serving
+            # school (a K-5 with GSLO=PK, GSHI=05 still counts). Kept in lockstep with
+            # school_level_counts() so the band index and the LEVEL denominator agree.
+            if not _eligible(row, virtual_ids): continue
             did = row.get("LEAID","").zfill(7)
             school = {
                 "school_id": row.get("NCESSCH",""),

@@ -45,14 +45,18 @@ def tree():
     for d in con.execute("SELECT * FROM district ORDER BY name"):
         recs = []
         q = """SELECT r.rec_key, r.url, r.hash, r.kind, r.tier, r.sort_score, r.duplicate_of,
-                      r.cluster_id, r.is_cluster_rep, r.cluster_size, l.status, l.primary_label
+                      r.cluster_id, r.is_cluster_rep, r.cluster_size, r.is_emergent,
+                      l.status, l.primary_label
                FROM record r LEFT JOIN label l ON l.rec_key=r.rec_key
                WHERE r.district_id=? ORDER BY r.tier, r.sort_score DESC"""
         for r in con.execute(q, (d["district_id"],)):
             recs.append(dict(r))
+        t = con.execute("SELECT nces_by_level_json FROM district_target WHERE district_id=?",
+                        (d["district_id"],)).fetchone()
         out.append({"district_id": d["district_id"], "name": d["name"], "state": d["state"],
                     "batch_id": d["batch_id"], "guessed_topology": d["guessed_topology"],
                     "labeled_topology": d["labeled_topology"], "nces_school_count": d["nces_school_count"],
+                    "nces_by_level": json.loads(t["nces_by_level_json"]) if t else None,
                     "records": recs})
     con.close()
     return out
@@ -89,6 +93,9 @@ def record(rec_key: str):
         "content_hash": r["content_hash"], "signals": signals, "representations": reps,
         "label": label, "cluster_id": r["cluster_id"], "is_cluster_rep": r["is_cluster_rep"],
         "cluster_size": r["cluster_size"], "cluster_members": members,
+        "intended_schools": json.loads(r["intended_schools_json"] or "[]"),
+        "candidate_tools": json.loads(r["candidate_tools_json"] or "[]"),
+        "is_emergent": r["is_emergent"],
     }
 
 

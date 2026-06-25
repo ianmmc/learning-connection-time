@@ -23,6 +23,7 @@ import sys
 from pathlib import Path
 
 RAW_DIR = Path("data/raw/lea-website-captures")
+QUEUE_DIR = Path("data/acquisition/queue")   # Stage 1 batch_*.json (targeting + NCES denominator)
 DB_PATH = Path("data/acquisition/stage5_review/review.db")
 # Durable, version-controlled source of truth for the PRECIOUS human labels. The DB is a
 # regenerable cache; this JSON is what survives DB loss and lives in git (gitignore re-includes
@@ -154,6 +155,41 @@ def nces_school_counts(year: str = NCES_YEAR) -> dict:
         return {}
     return {did: len({s["school_id"] for b in bands.values() for s in b})
             for did, bands in idx.items()}
+
+
+# ----------------------------- Stage 1 batch + Stage 2 candidates (funnel ingredients) -----------------------------
+def load_batches(queue_dir: Path = QUEUE_DIR) -> dict:
+    """did(7) -> per-district Stage-1 targeting entry, enriched with the batch's nces_year. Reads
+    every batch_*.json. The 'targeted' end of the funnel + the authoritative NCES denominator
+    (nces_school_counts.total), captured at queue time. Best effort: {} if the dir is absent."""
+    out = {}
+    if not queue_dir.exists():
+        return out
+    for bf in sorted(queue_dir.glob("batch_*.json")):
+        try:
+            doc = json.loads(bf.read_text())
+        except Exception:
+            continue
+        year = doc.get("nces_year")
+        for d in doc.get("districts", []):
+            did = str(d.get("district_id", "")).zfill(7)
+            out[did] = {**d, "_nces_year": year, "_batch_id": doc.get("batch_id")}
+    return out
+
+
+def load_candidates(ddir: Path) -> dict:
+    """url -> {'schools': [...], 'tools': [...]} from a district's candidates.json (the Stage 2
+    D_FLATTEN capture plan, carrying the URL->school map). {} if absent/unreadable. Records whose
+    URL is NOT a key here were captured but never planned -> emergent (discovered mid-capture)."""
+    cf = ddir / "candidates.json"
+    if not cf.exists():
+        return {}
+    try:
+        doc = json.loads(cf.read_text())
+    except Exception:
+        return {}
+    return {c["url"]: {"schools": c.get("schools", []), "tools": c.get("tools", [])}
+            for c in doc.get("candidates", []) if c.get("url")}
 
 
 # ----------------------------- near-duplicate clustering -----------------------------
@@ -383,6 +419,7 @@ CREATE TABLE IF NOT EXISTS cluster_split (
 # Regenerable tables: dropped + rebuilt every ingest so schema/signal changes always apply.
 REBUILD_SCHEMA = """
 DROP TABLE IF EXISTS district; DROP TABLE IF EXISTS record; DROP TABLE IF EXISTS representation;
+DROP TABLE IF EXISTS district_target;
 CREATE TABLE district (
   district_id TEXT PRIMARY KEY, name TEXT, state TEXT, district_dir TEXT,
   batch_id TEXT, guessed_topology TEXT, labeled_topology TEXT, nces_school_count INTEGER,
@@ -391,10 +428,18 @@ CREATE TABLE record (
   rec_key TEXT PRIMARY KEY, district_id TEXT, district_dir TEXT, url TEXT, hash TEXT,
   kind TEXT, final_url TEXT, content_hash TEXT, duplicate_of TEXT,
   tier TEXT, sort_score REAL, category_hypothesis TEXT, signals_json TEXT,
-  cluster_id TEXT, is_cluster_rep INTEGER, cluster_size INTEGER);
+  cluster_id TEXT, is_cluster_rep INTEGER, cluster_size INTEGER,
+  intended_schools_json TEXT, candidate_tools_json TEXT, is_emergent INTEGER);
 CREATE TABLE representation (
   rec_key TEXT, source TEXT, filename TEXT, file_kind TEXT,
   n_chars INTEGER, n_times INTEGER, usable INTEGER);
+-- Stage 1 targeting provenance (the funnel's "targeted" end + the NCES denominator). One row
+-- per district when a batch_*.json entry exists; the topology denominator (nces_total) prefers
+-- this over the live CSV. Regenerable.
+CREATE TABLE district_target (
+  district_id TEXT PRIMARY KEY, batch_id TEXT, nces_year TEXT, nces_total INTEGER,
+  nces_by_level_json TEXT, enrollment_k12 INTEGER, lea_claimed_bands_json TEXT,
+  schools_by_band_json TEXT);
 """
 
 BIN_KINDS = {"png": "image", "pdf": "pdf", "bin": "binary"}
@@ -460,7 +505,8 @@ def ingest(root: Path, db_path: Path):
     con.executescript(REBUILD_SCHEMA)    # drop + rebuild the regenerable tables
     import_splits(con)                   # restore cluster splits to the table if it was wiped
     splits = {r[0] for r in con.execute("SELECT rec_key FROM cluster_split")}
-    nces = nces_school_counts()          # did -> distinct regular-school count (once, from CSV)
+    batches = load_batches()             # did -> Stage-1 targeting entry (preferred NCES denominator)
+    nces = nces_school_counts()          # did -> distinct regular-school count (live CSV FALLBACK)
 
     for ddir in sorted(p for p in root.iterdir() if p.is_dir()):
         cj, pj, dj = ddir / "captures.json", ddir / "processed.json", ddir / "discovery.json"
@@ -474,6 +520,7 @@ def ingest(root: Path, db_path: Path):
         roster_size = len(roster_norm)
         caps = {r["hash"]: r for r in json.loads(cj.read_text())}
         processed = {r["hash"]: r for r in json.loads(pj.read_text())}
+        cand_map = load_candidates(ddir)   # url -> {schools, tools}; misses = emergent
 
         seen_content = {}   # content_hash -> canonical rec_key
         district_records = []
@@ -504,12 +551,21 @@ def ingest(root: Path, db_path: Path):
             if content_hash and not dup_of:
                 seen_content[content_hash] = rec_key
 
+            # candidates.json join (URL -> intended school(s) + discovery tools); a record whose
+            # URL was never a planned candidate is EMERGENT (discovered during capture).
+            cand = cand_map.get(prec["url"]) or cand_map.get(cap.get("final_url") or "")
+            intended_schools = cand["schools"] if cand else []
+            cand_tools = cand["tools"] if cand else []
+            is_emergent = 0 if cand else 1
+
             con.execute(
                 """INSERT INTO record (rec_key, district_id, district_dir, url, hash, kind,
                      final_url, content_hash, duplicate_of, tier, sort_score, category_hypothesis,
-                     signals_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                     signals_json, intended_schools_json, candidate_tools_json, is_emergent)
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (rec_key, disc["district_id"], ddir.name, prec["url"], h, cap.get("kind"),
-                 cap.get("final_url"), content_hash, dup_of, tier, score, cat, json.dumps(sig)))
+                 cap.get("final_url"), content_hash, dup_of, tier, score, cat, json.dumps(sig),
+                 json.dumps(intended_schools), json.dumps(cand_tools), is_emergent))
             con.execute("INSERT OR IGNORE INTO label (rec_key) VALUES (?)", (rec_key,))
             cluster_items.append((rec_key, shingles(best_text), tier, score))
 
@@ -549,13 +605,27 @@ def ingest(root: Path, db_path: Path):
             topo = "per_school"
         else:
             topo = "unknown"
+        # NCES denominator: PREFER the Stage-1 batch (captured at queue time, with provenance);
+        # fall back to the live CSV count when no batch entry exists for this district.
+        did7 = str(disc["district_id"]).zfill(7)
+        bt = batches.get(did7)
+        nces_counts = (bt or {}).get("nces_school_counts") or {}
+        nces_total = nces_counts.get("total", nces.get(did7))
         con.execute(
             """INSERT INTO district (district_id, name, state, district_dir, batch_id,
                  guessed_topology, labeled_topology, nces_school_count, n_records)
                VALUES (?,?,?,?,?,?,?,?,?)""",
             (disc["district_id"], disc.get("name"), disc.get("state"), ddir.name,
-             disc.get("batch_id"), topo, None, nces.get(str(disc["district_id"]).zfill(7)),
-             len(district_records)))
+             disc.get("batch_id"), topo, None, nces_total, len(district_records)))
+        if bt:
+            con.execute(
+                """INSERT INTO district_target (district_id, batch_id, nces_year, nces_total,
+                     nces_by_level_json, enrollment_k12, lea_claimed_bands_json, schools_by_band_json)
+                   VALUES (?,?,?,?,?,?,?,?)""",
+                (disc["district_id"], bt.get("_batch_id"), bt.get("_nces_year"),
+                 nces_counts.get("total"), json.dumps(nces_counts.get("by_level", {})),
+                 bt.get("enrollment_k12"), json.dumps(bt.get("lea_claimed_bands", [])),
+                 json.dumps(bt.get("schools_by_band", {}))))
 
     # Restore any labels the DB is missing from the JSON source of truth (no-op on a normal
     # re-ingest where the label table was preserved; the recovery path after a DB wipe).
@@ -571,12 +641,15 @@ def ingest(root: Path, db_path: Path):
     n_clustered = con.execute("SELECT COUNT(*) FROM record WHERE cluster_id IS NOT NULL").fetchone()[0]
     n_clusters = con.execute("SELECT COUNT(DISTINCT cluster_id) FROM record WHERE cluster_id IS NOT NULL").fetchone()[0]
     by_topo = dict(con.execute("SELECT labeled_topology, COUNT(*) FROM district GROUP BY labeled_topology").fetchall())
+    n_targeted = con.execute("SELECT COUNT(*) FROM district_target").fetchone()[0]
+    n_emergent = con.execute("SELECT COUNT(*) FROM record WHERE is_emergent=1").fetchone()[0]
     exported = export_labels(con)        # keep the JSON backups in sync with the DB
     exported_splits = export_splits(con)
     con.close()
     print(f"ingest done: {n_dist} districts, {n_rec} records, {n_lab} labeled "
           f"({restored} restored from labels.json), {exported} exported to labels.json")
     print(f"clustering: {n_clustered} records in {n_clusters} clusters; {exported_splits} splits backed up")
+    print(f"stage-1/2 ingest: {n_targeted} districts with batch targeting; {n_emergent} emergent records (captured, not a candidate)")
     print("by tier:", by_tier)
     print("labeled_topology:", by_topo)
 

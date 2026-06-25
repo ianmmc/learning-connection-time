@@ -2,6 +2,8 @@
   "batch_id": "batch_00001",
   "created": "2026-06-22T22:00:00Z",
   "n": 12,
+  "nces_year": "2024_25",
+  "nces_school_counts_criteria": "count of ccd_sch schools meeting our eligibility (open, regular, non-virtual, not standalone-preschool), grouped by the RAW ccd_sch LEVEL field. The topology denominator -- NOT ccd_lea's reported figure. total == the distinct school count used for band selection.",
   "stratification": {
     "priority": ["enrollment", "state"],
     "method": "enrollment quartiles over current eligible pool, 3 districts/quartile, seeded shuffle preferring unused state, top up from adjacent quartile if short"
@@ -16,6 +18,7 @@
       "domain": "k12northstar.org",
       "enrollment_k12": 12877,
       "lea_claimed_bands": ["elementary", "middle", "high"],
+      "nces_school_counts": { "total": 29, "by_level": { "Elementary": 20, "High": 5, "Middle": 4 } },
       "band_processing_order": ["middle", "high", "elementary"],
       "schools_by_band": {
         "middle": {

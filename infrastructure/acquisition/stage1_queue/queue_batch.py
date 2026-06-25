@@ -182,6 +182,7 @@ def main():
     registry = DS.load()
 
     pool, sch_idx, gap_excluded = eligible_pool(a.year, registry)
+    level_counts = S.school_level_counts(a.year)   # did -> {total, by_level} (the topology denominator)
     print(f"Eligible pool: {len(pool):,} districts (excluded {len(gap_excluded)} for grade-span gap)")
     if gap_excluded:
         for g in gap_excluded[:10]:
@@ -205,6 +206,7 @@ def main():
             "domain": domain,
             "enrollment_k12": info["enrollment_k12"],
             "lea_claimed_bands": sorted(info["claimed_bands"]),
+            "nces_school_counts": level_counts.get(did, {"total": 0, "by_level": {}}),
             "band_processing_order": order,
             "schools_by_band": schools_by_band,
         })
@@ -215,6 +217,11 @@ def main():
         "batch_id": batch_id,
         "created": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "n": len(districts_out),
+        "nces_year": a.year,
+        "nces_school_counts_criteria": ("count of ccd_sch schools meeting our eligibility (open, "
+            "regular, non-virtual, not standalone-preschool), grouped by the RAW ccd_sch LEVEL "
+            "field. The topology denominator -- NOT ccd_lea's reported figure. total == the distinct "
+            "school count used for band selection."),
         "stratification": {
             "priority": ["enrollment", "state"],
             "method": "enrollment quartiles over current eligible pool, 3 districts/quartile, seeded shuffle preferring unused state, top up from adjacent quartile if short",

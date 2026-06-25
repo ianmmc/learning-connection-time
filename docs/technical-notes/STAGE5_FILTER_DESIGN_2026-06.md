@@ -531,6 +531,34 @@ discovered + emergent, already converge.)
 recommend content-similarity (general); (2) conservative threshold (split-only remedy) — agree?;
 (3) the split override is durable across re-ingest (stored like labels) — agree?
 
+# Stage-1/2 funnel ingredients in the DB + LEVEL-based denominator (**BUILT 2026-06-25**)
+
+The Stage 5 DB now ingests two upstream artifacts so "schools we targeted vs. schools we actually
+got" (a later funnel analysis — *ingredients only, not built yet*) and the topology denominator are
+first-class. Two parts:
+
+**1. NCES denominator = our-criteria school count, grouped by raw ccd_sch LEVEL (not ccd_lea).**
+`school_sampling.school_level_counts(year)` counts schools meeting our eligibility — open · regular ·
+non-virtual · non-preschool, the **shared `_eligible()` predicate** now used by *both* it and
+`school_index()` so they can never disagree — grouped by the **raw ccd_sch `LEVEL`** field
+(Elementary/Middle/High/Secondary/Other/Not reported/…). `total` == `school_index()`'s distinct count.
+Captured at **Stage 1** into `batch_*.json` (`nces_year` + per-district `nces_school_counts:{total,
+by_level}`); `queue_batch.py` emits it, `batch.example.json` documents it, `batch_00001.json` patched
+in place (selections untouched). **Stage 5 prefers the batch value over the live CSV** (provenance, no
+year-drift); live `nces_school_counts()` remains the fallback when a district has no batch entry. This
+**retires the hardcoded-`NCES_YEAR` live-CSV read** flagged when topology was first built.
+
+**2. `candidates.json` (Stage 2 D_FLATTEN) ingested → per-record provenance + emergent flag.**
+`candidates.json` is the only artifact with the **URL→school map**. Each record now carries
+`intended_schools` + `candidate_tools` (from the URL join) and `is_emergent` (captured but never a
+planned candidate → discovered mid-capture). Validated: Marion's 6 candidate pages map to their
+schools (tools=`claude`); its 4 emergent records are the actual `5il.co`/`thrillshare` bell-schedule
+PDFs found during capture. **38/150 records are emergent**, concentrated in Stroudsburg (23) — exactly
+where near-dup clustering pays off. Stage-1 targeting lands in a `district_target` table
+(batch_id, nces_year, nces_total, by_level, enrollment, claimed bands, schools_by_band). UI surfacing
+is deliberately light (emergent ⚡ marker, panel "Provenance" line, by-level in the district header
+tooltip) — the funnel/yield analysis itself is **later**.
+
 # Future bridge (noted 2026-06-25, not acting yet): disk footprint at scale
 At thousands of records the captured `page.png` / `page.pdf` / `raster_p*.png` will dominate disk. The
 user plans to move the project to a large external drive by then. Options to revisit when we get there:

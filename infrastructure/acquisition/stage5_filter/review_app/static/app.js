@@ -86,12 +86,15 @@ function topoBadge(kind, val) {
   return `<span class="topo ${kind} ${v}" title="${title}">${kind === "guessed" ? "guess" : "labeled"}: ${v}</span>`;
 }
 
+function byLevelStr(bl) { return bl ? Object.entries(bl).map(([k, v]) => `${k}: ${v}`).join(", ") : ""; }
+
 function renderDistrict(d) {
   const wrap = document.createElement("div"); wrap.className = "district";
   const head = document.createElement("div"); head.className = "district-head";
   const nces = d.nces_school_count != null ? ` · ${d.nces_school_count} NCES school${d.nces_school_count === 1 ? "" : "s"}` : "";
+  const blTitle = d.nces_by_level ? ` (${byLevelStr(d.nces_by_level)})` : "";
   head.innerHTML = `<div><div class="district-name">${d.name}</div>
-      <div class="district-meta">${d.state} · ${d.records.length} records${nces}</div></div>
+      <div class="district-meta" title="NCES schools by level${blTitle}">${d.state} · ${d.records.length} records${nces}</div></div>
     <div class="topos">${topoBadge("labeled", d.labeled_topology)}${topoBadge("guessed", d.guessed_topology)}</div>`;
   const ul = document.createElement("ul"); ul.className = "rec-list";
 
@@ -135,9 +138,10 @@ function renderRecRow(r, clusterSize) {
   const tail = (r.url || "").replace(/^https?:\/\//, "").slice(0, 34);
   const badge = clusterSize > 1
     ? `<span class="cluster-badge" title="${clusterSize - 1} near-duplicate(s) — click to expand">+${clusterSize - 1}</span>` : "";
+  const emergent = r.is_emergent ? `<span class="emergent-dot" title="emergent — captured but not a planned candidate">⚡</span>` : "";
   li.innerHTML = `<span class="tier ${r.tier}">${r.tier}</span>
     <span class="rec-label" title="${r.url}">${tail}${r.duplicate_of ? " · dup" : ""}</span>
-    ${badge}<span class="status-dot ${r.status || "unlabeled"}"></span>`;
+    ${emergent}${badge}<span class="status-dot ${r.status || "unlabeled"}"></span>`;
   li.onclick = (e) => { e.stopPropagation(); selectRecord(r.rec_key, li); };
   return li;
 }
@@ -237,6 +241,7 @@ function renderPanel(d) {
      <span>${t}</span></label>`).join("");
 
   $("#panel").innerHTML = `
+    ${provenanceBlock(d)}
     ${clusterBanner(d)}
     <div class="panel-section"><h3>Signals <span style="font-weight:400;font-size:var(--fs-xs);color:var(--text-secondary)">(objective)</span></h3>${sig}</div>
     <div class="panel-section"><h3>Label <span id="savedFlash" class="saved-flash"></span></h3>
@@ -258,6 +263,19 @@ function renderPanel(d) {
   $("#panel").querySelectorAll("[data-go]").forEach((a) => a.onclick = (e) => { e.preventDefault(); selectRecord(a.dataset.go); });
   $("#panel").querySelectorAll("[data-split]").forEach((b) => b.onclick = (e) => { e.preventDefault(); splitRecord(b.dataset.split); });
   renderGuess(d, lab.status);
+}
+
+// Provenance: where this record came from in the funnel (Stage-2 candidate → school, or emergent).
+function provenanceBlock(d) {
+  const tools = (d.candidate_tools || []).join(", ");
+  if (d.is_emergent) {
+    return `<div class="panel-section provenance emergent"><div class="axis-label">Provenance</div>
+        <div><b>⚡ Emergent</b> — captured but never a planned candidate (discovered during capture, not tied to a targeted school).</div></div>`;
+  }
+  const sch = d.intended_schools || [];
+  if (!sch.length) return "";
+  return `<div class="panel-section provenance"><div class="axis-label">Provenance</div>
+      <div>Intended for: <b>${sch.join(", ")}</b>${tools ? ` · found via ${tools}` : ""}</div></div>`;
 }
 
 // Near-duplicate cluster banner: shows the cascade relationship + per-member split control.
