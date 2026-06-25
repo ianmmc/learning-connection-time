@@ -42,6 +42,23 @@ every representation, **visual first** (screenshot/PDF), then extracted text. Ri
   (districts/records/representations/signals) every run, but **never** touches the `label` table.
   So you can refine the signal heuristics and re-ingest without losing a single hand-entered
   judgment (labels key on `district_id:hash`).
+- **Labels are continuously backed up — automatically, no remembering.** The SQLite DB is
+  gitignored (a binary DB doesn't belong in git), so it is **not** a backup. Instead:
+  - The server **exports every label to `data/acquisition/stage5_review/labels.json` on each
+    save** (atomic write). That JSON **is** tracked in git (the gitignore re-includes it) and is
+    the durable source of truth. The instant you label, it's safe on disk in a tracked file.
+  - `build_signals.py` **re-imports `labels.json` on ingest**, restoring every label into a fresh
+    DB. So the DB is fully regenerable: signals from disk + labels from JSON. Delete `review.db`,
+    re-run `build_signals.py`, and your labels come back.
+  - **Getting `labels.json` into commits:** it shows up in `git status` whenever you've labeled —
+    just commit it. To make even that automatic, add this to `.git/hooks/pre-commit` (left to you,
+    since it's a local, per-machine file that auto-stages on your behalf):
+    ```bash
+    S5_LABELS="data/acquisition/stage5_review/labels.json"
+    if [ -f "$S5_LABELS" ] && ! git diff --quiet -- "$S5_LABELS" 2>/dev/null; then
+      git add "$S5_LABELS"; echo "Auto-staged $S5_LABELS"
+    fi
+    ```
 - **Batch-aware + accumulating.** The `captures/` directory accumulates districts across batches;
   each ingest rebuilds the full record set from disk and groups by `batch_id`. This is what lets
   the same tool serve successive batches (and, potentially, Checkpoint B itself).

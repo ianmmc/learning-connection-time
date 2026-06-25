@@ -10,6 +10,7 @@ Run:  uvicorn server:app --reload --port 8005   (from this directory)
 """
 import json
 import sqlite3
+import sys
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -19,7 +20,11 @@ from fastapi.staticfiles import StaticFiles
 HERE = Path(__file__).resolve().parent
 PROJECT_ROOT = HERE.parents[3]            # .../learning-connection-time
 DB_PATH = PROJECT_ROOT / "data/acquisition/stage5_review/review.db"
+LABELS_JSON = PROJECT_ROOT / "data/acquisition/stage5_review/labels.json"
 RAW_DIR = PROJECT_ROOT / "data/raw/lea-website-captures"
+
+sys.path.insert(0, str(HERE))
+import build_signals as BS    # noqa: E402  (export_labels lives here, shared with ingest)
 
 app = FastAPI(title="Stage 5 Review")
 
@@ -92,6 +97,9 @@ async def save_label(rec_key: str, payload: dict):
          payload.get("note", ""), payload.get("status", "labeled"),
          datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")))
     con.commit()
+    # Export-on-save: the precious label is now backed up to the tracked JSON before we return,
+    # so it survives DB loss with zero action from the user (no reliance on remembering).
+    BS.export_labels(con, LABELS_JSON)
     con.close()
     return {"ok": True}
 

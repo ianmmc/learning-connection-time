@@ -23,6 +23,11 @@ from pathlib import Path
 
 RAW_DIR = Path("data/raw/lea-website-captures")
 DB_PATH = Path("data/acquisition/stage5_review/review.db")
+# Durable, version-controlled source of truth for the PRECIOUS human labels. The DB is a
+# regenerable cache; this JSON is what survives DB loss and lives in git (gitignore re-includes
+# it). Written on every label save (server) + at the end of each ingest; re-imported on ingest.
+LABELS_JSON = Path("data/acquisition/stage5_review/labels.json")
+LABEL_COLS = ["rec_key", "primary_label", "flags_json", "note", "status", "updated_at"]
 
 TIME_RE = re.compile(r"\b(\d{1,2}):(\d{2})\s*([AaPp])?\.?[Mm]?\.?")
 USABLE_MIN_CHARS = 120
@@ -252,6 +257,36 @@ CREATE TABLE representation (
 BIN_KINDS = {"png": "image", "pdf": "pdf", "bin": "binary"}
 
 
+def export_labels(con, out: Path = LABELS_JSON) -> int:
+    """Dump all non-unlabeled rows to a tracked JSON (atomic write). The label backup."""
+    rows = con.execute(
+        f"SELECT {','.join(LABEL_COLS)} FROM label WHERE status!='unlabeled' ORDER BY rec_key").fetchall()
+    data = [dict(zip(LABEL_COLS, r)) for r in rows]
+    out.parent.mkdir(parents=True, exist_ok=True)
+    tmp = out.with_name(out.name + ".tmp")
+    tmp.write_text(json.dumps(data, indent=2))
+    tmp.replace(out)   # atomic
+    return len(data)
+
+
+def import_labels(con, src: Path = LABELS_JSON) -> int:
+    """Restore labels from the JSON into the DB -- but ONLY for records the DB currently has
+    as unlabeled, so a stale export can never clobber a live DB label. This restores labels
+    after a DB wipe/rebuild; on a normal re-ingest (label table preserved) it's a no-op."""
+    if not src.exists():
+        return 0
+    n = 0
+    for d in json.loads(src.read_text()):
+        cur = con.execute("SELECT status FROM label WHERE rec_key=?", (d["rec_key"],)).fetchone()
+        if not cur or cur[0] != "unlabeled":
+            continue
+        con.execute("UPDATE label SET primary_label=?, flags_json=?, note=?, status=?, updated_at=? WHERE rec_key=?",
+                    (d.get("primary_label"), d.get("flags_json"), d.get("note"),
+                     d.get("status", "labeled"), d.get("updated_at"), d["rec_key"]))
+        n += 1
+    return n
+
+
 def ingest(root: Path, db_path: Path):
     db_path.parent.mkdir(parents=True, exist_ok=True)
     con = sqlite3.connect(db_path)
@@ -340,13 +375,18 @@ def ingest(root: Path, db_path: Path):
                     (disc["district_id"], disc.get("name"), disc.get("state"), ddir.name,
                      disc.get("batch_id"), topo, len(district_records)))
 
+    # Restore any labels the DB is missing from the JSON source of truth (no-op on a normal
+    # re-ingest where the label table was preserved; the recovery path after a DB wipe).
+    restored = import_labels(con)
     con.commit()
     n_rec = con.execute("SELECT COUNT(*) FROM record").fetchone()[0]
     n_lab = con.execute("SELECT COUNT(*) FROM label WHERE status!='unlabeled'").fetchone()[0]
     n_dist = con.execute("SELECT COUNT(*) FROM district").fetchone()[0]
     by_tier = dict(con.execute("SELECT tier, COUNT(*) FROM record GROUP BY tier").fetchall())
+    exported = export_labels(con)   # keep the JSON backup in sync with the DB
     con.close()
-    print(f"ingest done: {n_dist} districts, {n_rec} records, {n_lab} already-labeled preserved")
+    print(f"ingest done: {n_dist} districts, {n_rec} records, {n_lab} labeled "
+          f"({restored} restored from labels.json), {exported} exported to labels.json")
     print("by tier:", by_tier)
 
 
