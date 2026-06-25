@@ -468,3 +468,45 @@ weigh before moving it upstream:
   from more than one CMS/example. Matches the user's own "premature to tighten on Stroudsburg alone."
 - Either way, **dedup of the human-facing record set belongs at Stage 5** (all URLs converge there).
   Stage-2 fingerprinting is an *optimization to avoid captures*, not the dedup mechanism itself.
+
+---
+
+# Proposal (under discussion, 2026-06-25): near-duplicate CLUSTERING in the CP-B app
+
+**Goal (user-confirmed):** group high-likelihood duplicate records so the reviewer labels the cluster
+**once** instead of clicking through many near-identical pages (the Stroudsburg `educationalnetworks.net`
+variant explosion: printer-friendly / `?id=` / directory-vs-`index.jsp` versions of the same schedule).
+**Hard requirement: the reviewer can SPLIT a member out** of a proposed cluster if it turns out to be
+genuinely unique. (No Stage-2 fingerprint probe — clustering happens in Stage 5, where all records,
+discovered + emergent, already converge.)
+
+**Proposed design (agent):**
+- **Cluster within a district, by content similarity (deterministic, no AI, no CMS-specific rules).**
+  Compute a normalized-text signature from each record's best extracted text (lowercase, collapse
+  whitespace) and cluster records with similarity ≥ a **conservative** threshold (word-shingle Jaccard,
+  or simhash Hamming; within-district n is tiny so pairwise is fine). **Exact byte-duplicates
+  (`content_hash`) are the certain subset (similarity 1.0).** Generic similarity — not URL-template rules
+  — keeps us from over-fitting to one CMS (consistent with "premature to tighten on Stroudsburg alone").
+- **Conservative threshold on purpose:** the only correction is *split* (no easy re-merge), so we'd
+  rather under-cluster (a few extra clicks) than over-cluster (wrongly hide a unique page). Notably,
+  Stroudsburg's "normal" vs "2-hour-delay/early-dismissal" subsets share structure but are genuinely
+  different (labeled `school_bell_schedule` vs `other_schedule`) — a high threshold should keep them
+  apart; if it doesn't, the human splits.
+- **Labeling:** label the cluster **representative** (highest-tier / richest) → applies to all members.
+  Members show as collapsed under it with a "+N similar" badge.
+- **Split = a durable human override** (precious, like a label): a `cluster_split` table survives
+  re-ingest, so a record the reviewer pulled out stays out even when clustering recomputes. Re-ingest
+  recomputes `cluster_id` deterministically, then re-applies the human splits.
+- **UI:** tree shows the representative with a "+N similar" badge; expand to list members; per-member
+  "this one's different — split out" button; labeling the representative cascades to unsplit members.
+
+**Open decisions to confirm before building:** (1) content-similarity clustering vs. URL-template — I
+recommend content-similarity (general); (2) conservative threshold (split-only remedy) — agree?;
+(3) the split override is durable across re-ingest (stored like labels) — agree?
+
+# Future bridge (noted 2026-06-25, not acting yet): disk footprint at scale
+At thousands of records the captured `page.png` / `page.pdf` / `raster_p*.png` will dominate disk. The
+user plans to move the project to a large external drive by then. Options to revisit when we get there:
+external/relocatable capture root, compressing or dropping regenerable rasters, or keeping only the
+representations a record actually needs. **Cross that bridge when we come to it** — recorded so it isn't
+forgotten.
