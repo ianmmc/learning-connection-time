@@ -68,8 +68,10 @@ Two axes. A record gets **one primary label** (its dominant content) plus option
 |---|---|
 | `board_schedule` | Scheduling/agenda info for the School Board / Board of Trustees. |
 | `sports_schedule` | Scheduling for athletics/sports teams. |
-| `academic_calendar` | A school/district calendar (year, holidays, early-release days) — time-bearing but not a schedule. **Common confusable, added 2026-06-24.** |
-| `transportation_schedule` | Bus/transport times. **Tricky boundary** — "pick-up 7:15 / drop-off 2:30" mimics legitimate `school_start_end_prose`; labeled separately to measure the confusion. Added 2026-06-24. |
+| `academic_calendar` | A school/district calendar (year, holidays, early-release days) — time-bearing but not a schedule. Common confusable. |
+| `community_calendar` | A community / events calendar (school or community events) — distinct from the academic calendar, and not a schedule. Its event date/times are spurious time signal. |
+| `transportation_schedule` | Bus/transport times. **Tricky boundary** — "pick-up 7:15 / drop-off 2:30" mimics legitimate `school_start_end_prose`; labeled separately to measure the confusion. |
+| `embedded_feed` | An embedded social-media / blog feed is the dominant content — its post date/timestamps are spurious time signal, not a schedule. |
 | `other_schedule` | Scheduling for some other school activity (extracurriculars, performing arts, community meetings, …) — the residual non-target bucket. |
 | `none` | No discernible schedule or instructional-time info. |
 | `unusable` | Garbled, effectively empty, or otherwise impossible for a human to interpret. |
@@ -77,8 +79,10 @@ Two axes. A record gets **one primary label** (its dominant content) plus option
 ### Flags (optional, orthogonal to the primary label)
 | Flag | Meaning |
 |---|---|
-| `duplicate` | Byte-identical content to another record; `duplicate_of` references the canonical record. Labeled once on the canonical; duplicates inherit. |
+| `duplicate` | Byte-identical content to another record; `duplicate_of` references the canonical record. Labeled once on the canonical; duplicates inherit. Now **generalized by near-duplicate clustering** — label the cluster representative and it cascades to members. |
 | `buried_in_long_doc` | Target info is present but inside a multi-topic document (e.g. a student/parent handbook). See the handbook-harvesting open item below. |
+| `building_hours_visible` | The page shows building/office hours (often a footer "Building Hours 7:15–3:15") that mimic a student start/end pair but are **not** the student day — a red herring to monitor. The motivating case for the planned **Stage 3 DOM de-chroming** (header/footer segmentation). |
+| `target_image_only` | The target is visible in the image/PDF but **no** text extractor captured it → this record needs **vision** at Stage 6/7. Only meaningful on a record that *is* a target. |
 
 **Naming note:** standardized on `district_hub_schedule` (the conversation also wrote
 `district_hub_table` — same thing).
@@ -371,71 +375,62 @@ explicit_instructional_time 2 · school_start_end_prose 1. (Targets = 41 of 150.
 
 ---
 
-# Topology — formal set + derivation (designed 2026-06-24; **BUILT 2026-06-25**; NCES-confirmed)
+# Topology — formal set + derivation (current; NCES-confirmed, built 2026-06-25)
 
-> **BUILT (2026-06-25).** `build_signals.py`: `nces_school_counts()` (distinct open/regular/graded
-> schools via `school_sampling.school_index`, stored as `district.nces_school_count` at ingest),
-> `derive_labeled_topology()`, and `recompute_labeled_topology()` (re-run at ingest **and** on every
-> label save in `server.py`). District header shows **both** badges (labeled solid, guessed outlined).
-> **Precedence decision (agent, documented):** `unknown` (nothing labeled) → `none_found` (labeled, no
-> target — fires *before* `single_school`, since "we found nothing, re-discover" is the salient state
-> even for a 1-school LEA) → `single_school` (NCES==1, ≥1 target) → `mixed` → `district_hub` →
-> `incomplete_coverage` (exact rule) → `per_school` → `unknown`. **Validated on the 12-district batch:**
-> HOPE→`single_school`, ROY (NCES 2, one `school_bell_schedule`)→`incomplete_coverage` (criterion fires),
-> Urbana→`mixed`, Marion **guess `hub` vs labeled `per_school`** (the CMS-nav false-positive divergence,
-> now measurable). NOTE: NCES count is currently read live from the CCD CSV at ingest with a hardcoded
-> `NCES_YEAR="2024_25"`; the planned move is to capture it at Stage 1 (see follow-up below).
-
-Two topology values per district, kept **separate** (don't conflate):
+Every district carries **two** topology values, kept **separate** (don't conflate):
 - **`guessed_topology`** — computed from *signals* (`roster_school_names_hit`) at ingest. Noisy (CMS
-  school-switcher nav pollutes the roster count → false `hub`, e.g. Marion). Kept to **measure** the
-  heuristic, not to trust.
-- **`labeled_topology`** — derived **deterministically from the human labels + NCES** once a district
-  is labeled. The truth. This is what informs Stage 7.
+  school-switcher **nav** pollutes the roster count → false `hub`, e.g. Marion). Kept only to **measure**
+  the heuristic against the truth — its divergence from `labeled_topology` is the learning signal (and a
+  prime motivator for the Stage 3 nav/chrome de-chroming).
+- **`labeled_topology`** — derived **deterministically from the human labels + the NCES school count**.
+  **The truth**; this is what informs Stage 7. Recomputed at ingest **and** on every label save.
 
-## Formal `labeled_topology` set (approved 2026-06-24)
+## Formal `labeled_topology` set
 
 | value | meaning | derivation |
 |---|---|---|
-| `single_school` | the LEA genuinely has one school | **NCES-confirmed** — `ccd_sch_029` shows 1 regular school for the LEA. **NOT** inferred from discovery/capture yielding one page. |
-| `per_school` | school-level schedules covering ~all the district's schools | school-level target labels present **and** the count of schools we have target data for ≈ the NCES school count |
-| `district_hub` | one page covers all schools / grade bands | `district_hub_schedule` label present, no/few school-level targets |
+| `single_school` | the LEA genuinely has one school | **NCES-confirmed** — the LEA's NCES school count is 1, **and** ≥1 target was labeled. **Not** inferred from discovery/capture yielding one page. |
+| `per_school` | school-level schedules covering ~all the district's schools | school-level target labels present (`school_bell_schedule`/`school_start_end_prose`), not the `incomplete_coverage` case |
+| `district_hub` | one page covers all schools / grade bands | `district_hub_schedule` label present, no school-level targets |
 | `mixed` | both a district hub **and** school-level targets | both present (Stroudsburg: `cross.jsp` district rollups + per-school bell pages) |
-| `incomplete_coverage` | we have exactly one bell schedule for a district NCES says has >1 school | **exact initial criterion below** |
+| `incomplete_coverage` | exactly one bell schedule for a district NCES says has >1 school | **exact criterion below** |
 | `none_found` | records were labeled, none is a target | no target labels anywhere in the district (→ likely needs re-discovery) |
-| `unknown` | can't classify | fallback |
+| `unknown` | not yet labeled, or labeled-but-unclassifiable | fallback |
 
-**`incomplete_coverage` — exact initial criterion (user, 2026-06-25), deliberately narrow & clear-cut:**
-assign it when **(a)** the district has exactly **one** target record, **(b)** that record is labeled
-**`school_bell_schedule`**, **and (c)** NCES (`ccd_sch_029`) shows the district has **more than one
-school**. That's it — one clean rule to start. We expect to **revise the criterion upward later** (once
-the filtering / deterministic characterization is better — e.g. "we have k of N schools" for k>1), but
-the first cut is this single unambiguous case.
+**Derivation precedence (the canonical ordering the code applies):**
+`unknown` (nothing labeled yet) → `none_found` (labeled, zero targets — *before* `single_school`, since
+"we found nothing, re-discover" is the salient state even for a 1-school LEA) → `single_school`
+(NCES count == 1, ≥1 target) → `mixed` (hub + school-level) → `district_hub` (hub only) →
+`incomplete_coverage` (exact rule) → `per_school` (school-level targets) → `unknown`.
 
-**Binding rule (user, 2026-06-24): `single_school` and the coverage check are confirmed against NCES
-(`ccd_sch_029`, via `school_sampling.py`), NOT inferred from what discovery/capture happened to
-yield.** Stage 1 caps the sample at 12 schools/band, so "we have data for 1 school" must never be
-mistaken for "the district *has* 1 school" — the true count comes from NCES.
+**`incomplete_coverage` — exact initial criterion, deliberately narrow & clear-cut:** assign it when
+**(a)** the district has exactly **one** target record, **(b)** that record is labeled
+**`school_bell_schedule`**, **and (c)** NCES shows the district has **more than one school**. One clean
+rule to start; expected to be **revised upward later** (e.g. "we have k of N schools" for k>1, once
+per-school "got" matching exists) — the first cut is this single unambiguous case.
 
-## Naming note
-`incomplete_coverage` chosen over `more_discovery_needed`: it names the **observed state** (a coverage
-gap vs NCES) rather than prescribing an **action**, consistent with the user's "we're not deciding what
-to *do* with this yet." `more_discovery_needed` is an equivalent one-word swap if the action framing is
-later preferred. **No decision is being made yet about what to do with `incomplete_coverage` or
-`none_found` districts** — these states are recorded for later routing/feedback design.
+**Binding rule: the NCES count is the authority, never "what discovery/capture happened to yield."**
+Stage 1 caps the sample at 12 schools/band, so "we have data for 1 school" must never be read as "the
+district *has* 1 school." The count is the **our-criteria, by-`LEVEL` denominator captured at Stage 1**
+(`batch_*.json` `nces_school_counts.total`, see ACQUISITION_PIPELINE.md Stage 1); Stage 5 reads it from
+the batch (provenance, `nces_year`-stamped), with a live `school_sampling` lookup as the fallback when a
+district has no batch entry.
 
-## Not a topology value: completeness
-Whether we got **both** bell ends for **every** band is a *separate dimension* from the hub/per-school
-*shape*. Urbana's hub was complete for the 5 elementary schools but had only the start time (prose) for
-middle/high. Capture this as a flag/field on the record or district, **not** as a topology value — so
-"what shape" and "how complete" stay orthogonal.
+**Naming note.** `incomplete_coverage` (names the *observed state* — a coverage gap vs NCES) was chosen
+over `more_discovery_needed` (names an *action*), consistent with "we're not deciding what to *do* with
+these yet." `incomplete_coverage` and `none_found` are recorded for later routing/feedback design; no
+action attached yet.
 
-## Implementation sketch (build next)
-- A derivation function over the `label` table + NCES school counts (`school_sampling.py`), producing
-  `labeled_topology` per district; shown in the app's district header **alongside** `guessed_topology`
-  (the divergence is learning data — Marion: guess `hub`, labeled `per_school`).
-- Recomputed whenever labels change (or on an explicit "recompute topology" pass), since it depends on
-  the human labels.
+**Not a topology value: completeness.** Whether we got **both** bell ends for **every** band is a
+*separate, orthogonal dimension* from the hub/per-school *shape* — Urbana's hub was complete for its 5
+elementary schools but had only the start time (prose) for middle/high. Captured as a record/district
+field, never folded into the topology value.
+
+**Implementation (built).** `build_signals.py`: `derive_labeled_topology()` + `recompute_labeled_topology()`
+over the `label` table + the stored `district.nces_school_count`; `server.py` recomputes on every save.
+Both badges render in the district header (labeled solid, guessed outlined). Validated on the 12-district
+batch: HOPE→`single_school`, ROY (NCES 2, one `school_bell_schedule`)→`incomplete_coverage`,
+Urbana→`mixed`, Marion **guess `hub` vs labeled `per_school`** (the CMS-nav divergence, now measurable).
 
 ---
 
