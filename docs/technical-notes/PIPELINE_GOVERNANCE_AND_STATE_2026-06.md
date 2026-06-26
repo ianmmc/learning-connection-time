@@ -1,7 +1,12 @@
 # Pipeline Governance, State Model & the Stage 5→6 Release (2026-06-26)
 
-> **Status: DESIGN (design-first, no code yet).** This note is the architecture for three coupled
-> decisions that outgrew `STAGE5_FILTER_DESIGN_2026-06.md`:
+> **Status: DESIGN + BUILD UNDERWAY (updated 2026-06-26).** Shipped: the tuning foundations
+> (REQ-095 ledger, REQ-096 frontier) and **REQ-098** (acquisition tree packaged, code moved, tooling
+> wired — import-linter/grimp/vulture/dependency-cruiser). **In progress: REQ-103** (Postgres
+> governance DB) — **103a foundation done & committed; paused for context, RESUME at 103b → see §1b.**
+> Still design-only: state event-log (REQ-099), release generator (REQ-094), console UI (REQ-100/102),
+> Stage 2 headless (REQ-104). This note is the architecture for three coupled decisions that outgrew
+> `STAGE5_FILTER_DESIGN_2026-06.md`:
 > 1. **STATE vs DATA** — migrate the cross-stage *registry* (`district_status.json`) into the DB;
 >    keep the per-stage *data* artifacts as JSON on disk.
 > 2. **The Stage 5→6 release** — `filtered.json` as a generated **export** of the DB's release state
@@ -74,6 +79,67 @@ review cache") no longer holds once the app becomes the central, precious-state-
 data in from `review.db` (or rebuild cache + re-import the JSON backups); repoint `build_signals` / `server`
 / `harness` / `frontier` to `session_scope`. The drop+rebuild-on-ingest pattern stays, now scoped to the
 governance DB. Supersedes the SQLite decision in `STAGE5_FILTER_DESIGN_2026-06.md` (§Architecture).
+
+---
+
+## 1b. REQ-103 status & RESUME HERE (paused 2026-06-26 after 103a)
+
+**Decisions locked (do not relitigate):** scope = **port + cross-stage cache together**; ORM =
+**models for PRECIOUS tables, ingest-managed DDL for the REGENERABLE cache**; tests = **a real
+Postgres fixture** (no SQLite stand-in). The governance DB connection lives in the acquisition tree
+(`common/db.py`) and must **never import `infrastructure.database`** (the import-linter contract
+enforces this — keep it that way).
+
+### ✅ 103a DONE & committed (3c725f3) — additive, the live SQLite path is untouched
+- **`governance` database + `governance_user`** exist in the `lct_postgres` container (verified).
+  Recreate idempotently (lct_user is superuser) if ever needed:
+  ```bash
+  docker exec lct_postgres psql -U lct_user -d learning_connection_time -c \
+    "CREATE ROLE governance_user LOGIN PASSWORD 'governance_pw'"      # guard: pg_roles
+  docker exec lct_postgres psql -U lct_user -d learning_connection_time -c \
+    "CREATE DATABASE governance OWNER governance_user"                # guard: pg_database
+  docker exec lct_postgres psql -U lct_user -d learning_connection_time -c \
+    "GRANT ALL PRIVILEGES ON DATABASE governance TO governance_user"
+  ```
+- **`infrastructure/acquisition/common/db.py`** — `Base`, `get_engine`, `session_scope`,
+  `init_precious_schema()`. Config: `GOVERNANCE_DATABASE_URL` (cloud) or `GOVERNANCE_DB_*`
+  (defaults → local container: host localhost, port 5432, name `governance`, user `governance_user`,
+  pw `governance_pw`). Driver psycopg2, `postgresql://` URL.
+- **`infrastructure/acquisition/stage5_filter/models.py`** — precious `Label` + `ClusterSplit`
+  models on `Base`. `init_precious_schema()` create_all's them (caller imports the models so
+  `common/` stays stage-agnostic). Verified create_all stands up `label`+`cluster_split`.
+
+### ⏳ REMAINING — the large/risky core (resume at 103b)
+**103b — convert `build_signals.ingest()` (the heart of Stage 5) sqlite → governance Postgres.**
+Current ingest is `sqlite3.connect(DB_PATH)` + `executescript(LABEL_SCHEMA/REBUILD_SCHEMA)` + many
+`?`-placeholder `INSERT`s (build_signals.py ~line 565). Conversion notes:
+  - **Precious tables** (`label`, `cluster_split`): create via `init_precious_schema()` (models);
+    NEVER drop them. Keep the labels.json/cluster_splits.json import/export (the source of truth).
+  - **Regenerable cache** (`district`, `record`, `representation`, `district_target`): keep the
+    drop+rebuild, but as Postgres DDL run on the governance engine.
+  - **Dialect gotchas:** `?` → `%(name)s`/`%s` (psycopg2) or use SQLAlchemy `text()` with bound
+    params; `INSERT OR IGNORE` → `INSERT … ON CONFLICT DO NOTHING`; `executescript` → discrete
+    `execute`s; sqlite `Row` access → SQLAlchemy `Row`/`.mappings()`. Types: `TEXT`→`text`,
+    `INTEGER`→`integer`/`boolean` (sqlite stored bools as ints).
+**103c — cross-stage cache (NEW schema):** ingest each district's `discovery.json` /
+`candidates.json` / `captures.json` / `processed.json` (and `batch_*.json`) as queryable tables, not
+just the Stage-5 signals. Design the tables; these are regenerable (drop+rebuild DDL). build_signals
+already partially ingests candidates (funnel) + batch (denominator) — extend to full per-stage rows.
+**103d — readers:** `harness.py` (`sqlite3.connect`, ~l.140), `frontier.py` (~l.157),
+`process_governance/server.py` (`sqlite3.connect`, ~l.32, + `row_factory`). Swap to the governance
+engine/session; SELECTs are mostly standard. `frontier.load_labeled(con)` / `harness` take a
+connection — keep them connection/`Session`-agnostic where possible.
+**103e — tests:** a real Postgres fixture (conftest already has a `USE_REAL_DB`/`TEST_DATABASE_URL`
+pattern). Tests using **in-memory SQLite** today: `tests/test_tuning_frontier.py` (`_mini_db`),
+check `test_harness.py`. Point them at a throwaway governance schema/transaction, rolled back.
+**103f — re-ingest + verify:** run the ingest; confirm counts match the old SQLite
+(`data/acquisition/stage5_review/review.db` still on disk = reference: 150 records / 120 canonical /
+labels). Sanity-run `harness.py` + `frontier.py`.
+**103g — docs:** update `docs/DATABASE_SETUP.md` + `docs/GETTING_STARTED.md` for the governance DB
+(the deferred obligation); add a reproducible governance-DB setup script/step.
+
+**Key files (the 4 SQLite consumers to convert):** `build_signals.py`, `harness.py`, `frontier.py`,
+`process_governance/server.py`. `paths.REVIEW_DB` (the old SQLite path) gets retired once done.
 
 ---
 

@@ -2323,7 +2323,7 @@ requirements:
     description: Postgres migration — isolated governance database + cross-stage cache (SQLite review.db retired)
     type: non-functional
     priority: must
-    status: accepted
+    status: in_progress
     acceptance_criteria:
       - A dedicated 'governance' database in the existing lct_postgres container, own DB user; drop+rebuild cannot reach the production LCT tables
       - Schema ported to SQLAlchemy models + a numbered migration on the project's existing framework; consumers use session_scope
@@ -2336,7 +2336,13 @@ requirements:
       STAGE5_FILTER_DESIGN_2026-06.md. Later governance steps (REQ-100 trigger UI, REQ-101 handoff, REQ-102 CP-A view,
       REQ-104 Stage 2 headless) are enumerated in §9 and will be registered tests-first at build time.
       DOC OBLIGATION (user 2026-06-26): on completion of this migration, update docs/DATABASE_SETUP.md and
-      docs/GETTING_STARTED.md for the new isolated governance DB. Deferred until the migration lands."
+      docs/GETTING_STARTED.md for the new isolated governance DB. Deferred until the migration lands.
+      DECISIONS LOCKED: scope = port + cross-stage cache together; ORM = models for precious / DDL for
+      regenerable cache; tests = real Postgres fixture.
+      IN PROGRESS — 103a DONE (commit 3c725f3): governance DB+user created, common/db.py (engine/session/Base,
+      no infrastructure.database import), stage5_filter/models.py (precious Label/ClusterSplit), create_all
+      verified, contracts 3/0. PAUSED 2026-06-26 for context headroom. RESUME at 103b (ingest sqlite->PG) —
+      full step-by-step resume guide in PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §1b."
 
   - id: REQ-105
     description: Stage 5 labeled-topology derivation from human labels + the NCES school count (replaces REQ-057)
