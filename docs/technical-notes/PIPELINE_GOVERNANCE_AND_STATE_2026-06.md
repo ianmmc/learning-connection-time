@@ -335,8 +335,11 @@ all three fingerprints (config,labels,data); console filters by which changed** 
 
 Don't stall the actual goal (representations → council) behind an app re-architecture. Order:
 
-1. **Code move first** (§7): `review_app`→`common/console/`, `build_signals`→`stage5_filter/`, fix imports,
-   green the 36 tests. Mechanical, isolated, reversible. *(REQ-098)*
+1. **Package + code move + tooling baseline** (§7, §10): convert `infrastructure/acquisition/` to a proper
+   installable package (`pyproject.toml`, real imports, **kill the `sys.path.insert` shims**) — packaging is
+   the highest-leverage prerequisite for the static-analysis tools (§10); then `review_app`→`common/console/`,
+   `build_signals`→`stage5_filter/`, fix imports, green the tests; then wire the proven tool baseline
+   (import-linter + grimp + vulture; dependency-cruiser for the `.mjs` side). *(REQ-098)*
 2. **Postgres migration + cross-stage cache** (§1a, §7a-A): stand up the isolated `governance` DB + user;
    port the schema to SQLAlchemy models + a migration; **ingest all stages' artifacts (not just Stage 5)**;
    move existing data in (or rebuild cache + re-import JSON backups); repoint `build_signals`/`server`/
@@ -354,3 +357,55 @@ Steps 1–2 are foundational and **independent of the still-open decisions** (§
 staleness) — they can proceed while those settle. Steps 3+ need those rulings. REQ numbers provisional
 (094 reused for the now-DB-backed release; 098/099/103/100–102 new). Each pre-registered tests-first per
 the workflow. Drift detector (REQ-097) still waits for batch 2.
+
+**Confirmed build order (user, 2026-06-26):** install tools (step 1) → CP-B App → Governance App evolution
+(steps 3/5/7) → Stage 5→6 handoff (step 6). **Doc-update obligations attached to steps:**
+- *Now (this pass):* `docs/DATA_SOURCES.md` gains a reference to `docs/ACQUISITION_PIPELINE.md`; the toolchain
+  is recorded here in §10 (user: keep it in this note for now, not a separate file — extract later if it grows).
+- *On REQ-103 completion (Postgres+Docker migration):* update `docs/DATABASE_SETUP.md` and
+  `docs/GETTING_STARTED.md` for the new isolated `governance` DB (these are deferred until the migration lands).
+
+---
+
+## 10. Tooling: dependency tracing, dead-code & architecture enforcement — DECIDED 2026-06-26
+
+Adopted to **equip the agent to monitor/manage** the codebase (machine-readable, CLI/CI-driven — not
+browser dashboards) and to keep this infrastructure investment from eroding. Research basis (saved):
+`docs/technical-notes/Polyglot Pipeline Architecture Toolchain.md` (Perplexity deep-research) + the
+earlier scratch-paper passes. Kept in this note for now (user's call) — extract to its own note only if
+it grows.
+
+**The prerequisite — packaging (highest leverage).** The acquisition tree's pervasive `sys.path.insert`
++ in-function imports make static import-analysis coverage of inter-stage dependencies *near zero*.
+Converting to a proper installable package (real `import` paths) is **categorical**, not incremental, for
+tool accuracy — so it's folded into REQ-098 step 1, before the tools are wired. A pre-packaging tool spike
+would mostly surface `sys.path` noise; **package first, then the tools light up.**
+
+**Three-layer model (no single tool spans it — confirmed by both the agent and the research):**
+
+| layer | covered by | adopt |
+|---|---|---|
+| **Intra-Python graph + contracts** | `import-linter` (contracts: layers/forbidden/independence) on `grimp` (queryable graph); `vulture` (dead code) | **now** (REQ-098) |
+| **Intra-Node graph + contracts** | `dependency-cruiser` (rule engine + schema-validated JSON; the import-linter analog for `.mjs`/TS) | **now** (REQ-098) |
+| **Cross-boundary edges** (Python→subprocess→Node/CLI · shared `config/*.json` read by both · file-based stage handoffs) | **no tool** → a hand-declared `arch-manifest.json` + **fitness-function tests** (AST scan of `subprocess.*` / config-path reads, asserted against the manifest); `datacontract-cli` for stage-handoff schema validation | **manifest+tests grown alongside the build; datacontract-cli when REQ-094/101 land** |
+
+**Concrete contracts to encode (import-linter), once packaged:** stage *layering* (1→…→9); *forbidden* —
+no stage imports the production LCT/database layer's internals (enforces the STATE-vs-DATA + DB isolation
+boundary); *independence* among stages that shouldn't know each other; `common` is a base layer everything
+may import but which imports no stage.
+
+**Chosen over the alternatives (proven > novel, for an agent driver):** `import-linter` over **Tach**
+(longer history, denser docs, stable CLI/config); `dependency-cruiser` over **madge/skott** (rule
+enforcement + schema-validated JSON, not just visualization). **Deferred / evaluate-later:** the MCP
+code-intelligence servers (`codebase-memory-mcp`, `Code Pathfinder`, …) — the most direct "give the agent
+a queryable cross-language graph" path, but too new (2026) and license-varied (GitNexus is noncommercial)
+to bet the architecture on; revisit as a separate spike. Browser visualization (pydeps/Tach UI) explicitly
+**not** a priority.
+
+**Possible open-source give-back (noted, not acted on — same build-for-us-first discipline).** The one
+genuinely underserved piece is the **cross-boundary layer**: auto-extracting + enforcing subprocess /
+shared-config / file-handoff edges as a *unified* graph reconciled against a declared manifest. Both the
+agent's and the research's conclusion is that no production tool closes this. If our `arch-manifest.json` +
+fitness-function generators prove out here (and ideally survive a second real project shape, not generalized
+from N=1), they're a candidate to extract and publish. **Architect it cleanly separable; do not design *for*
+publication now.** Flag the moment it's earned its generality.

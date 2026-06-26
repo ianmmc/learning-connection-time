@@ -4,6 +4,8 @@
 
 This document catalogs all data sources for the Instructional Minute Metric project, including access methods, update frequencies, and known limitations.
 
+> **Bell schedules / daily instructional minutes** are acquired by the per-school **acquisition pipeline**, not a static feed — see **`docs/ACQUISITION_PIPELINE.md`** (the canonical 9-stage discovery → capture → filter → council-extraction design) and its companion `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`. The federal NCES sources below remain the foundation for district/school rosters, enrollment, and staffing (the LCT denominator/staff inputs); the acquisition pipeline supplies the instructional-minutes numerator.
+
 ## Federal Sources
 
 ### NCES Common Core of Data (CCD)

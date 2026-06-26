@@ -2278,19 +2278,25 @@ requirements:
       are the wrong layer). Deferred until batch 2 exists to demonstrate against. Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §7a."
 
   - id: REQ-098
-    description: Code move — review_app -> common/console (governance app), build_signals.py -> stage5_filter; fix imports
+    description: Package the acquisition tree + code move + wire the dependency/dead-code/architecture tooling baseline
     type: non-functional
     priority: should
     status: accepted
     acceptance_criteria:
-      - infrastructure/acquisition/stage5_filter/review_app/ (server + static) moves to infrastructure/acquisition/common/console/
-      - build_signals.py moves to infrastructure/acquisition/stage5_filter/ (stage logic, not app logic)
-      - sys.path/imports in harness.py, frontier.py, and the test suite updated; all Stage-5 tests stay green
-      - Mechanical and reversible; no behavior change
+      - infrastructure/acquisition/ becomes a proper installable package (pyproject.toml, real imports); the sys.path.insert shims are removed
+      - review_app/ (server + static) moves to infrastructure/acquisition/common/console/; build_signals.py moves to stage5_filter/ (stage logic, not app logic)
+      - All imports updated to package paths; the full test suite stays green (no behavior change)
+      - Tool baseline wired - import-linter + grimp (Python architecture contracts), vulture (dead code), dependency-cruiser (the .mjs capture layer)
+      - import-linter contracts encode the architecture - stage layering (1..9), forbidden (no stage imports the production LCT/DB internals), independence among stages, common as a base layer
     created: "2026-06-26T00:00:00Z"
     updated: "2026-06-26T00:00:00Z"
-    notes: "First step of the governance build sequence (PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §9 step 1).
-      Isolated/mechanical; the ~56 Stage-5 tests are the safety net."
+    notes: "First step of the governance build sequence (PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §9 step 1 + §10).
+      Packaging is the highest-leverage prerequisite: with the current sys.path pattern, static-analysis coverage of
+      inter-stage deps is near zero, so package FIRST, then wire the tools. Tools chosen proven-over-novel for an agent
+      driver (import-linter over Tach; dependency-cruiser over madge/skott). Cross-boundary edges (subprocess / shared
+      config / file handoffs) have NO tool -> covered by an arch-manifest.json + fitness-function tests, grown alongside
+      the build (and a possible OSS give-back; build-for-us-first). MCP code-intelligence servers + datacontract-cli
+      deferred. The full suite is the safety net."
 
   - id: REQ-099
     description: Cross-stage STATE as a Postgres event log; migrate district_status.py's registry functions
@@ -2323,7 +2329,9 @@ requirements:
     updated: "2026-06-26T00:00:00Z"
     notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §1a/§9 (step 2). Supersedes the SQLite decision in
       STAGE5_FILTER_DESIGN_2026-06.md. Later governance steps (REQ-100 trigger UI, REQ-101 handoff, REQ-102 CP-A view,
-      REQ-104 Stage 2 headless) are enumerated in §9 and will be registered tests-first at build time."
+      REQ-104 Stage 2 headless) are enumerated in §9 and will be registered tests-first at build time.
+      DOC OBLIGATION (user 2026-06-26): on completion of this migration, update docs/DATABASE_SETUP.md and
+      docs/GETTING_STARTED.md for the new isolated governance DB. Deferred until the migration lands."
 
   - id: REQ-105
     description: Stage 5 labeled-topology derivation from human labels + the NCES school count (replaces REQ-057)
