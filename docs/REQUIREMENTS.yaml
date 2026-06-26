@@ -2079,7 +2079,7 @@ requirements:
     description: Stage 3 DOM segmentation (de-chrome) - header/footer/nav vs main as separate representations
     type: functional
     priority: should
-    status: accepted
+    status: tested
     acceptance_criteria:
       - At render time, capture innerText of semantic+ARIA landmarks (header/footer/nav/banner/contentinfo/navigation) and main into page.main/header/footer/nav.txt
       - Full page.txt always kept; segmentation is additive and best-effort - when no landmarks exist, main=full page (never worse than today)
@@ -2106,7 +2106,19 @@ requirements:
       harness (REQ-090) measures whether main-only beats full-page (esp. Marion's nav-inflated topology and
       the 0.43 category ceiling). Open for that run: widen landmarks past semantic/ARIA only on measured
       footer-miss rate; the promote/suppress chrome screening uses the existing building_hours_visible flag
-      + the keyword buckets the user supplied."
+      + the keyword buckets the user supplied.
+      MEASURED 2026-06-25 (live backfill-segments run, 140/140 html records, 123/150 dechromed): a STRONG
+      win. Harness before->after: category-guess accuracy 0.43->0.60 (+26 records - the '0.43 ceiling' the
+      design note attributed to chrome, lifted 17pts); topology coarse agreement 0.6->0.8 (Marion guessed
+      flipped hub->per_school, now matching labeled - the school-switcher/footer roster that faked a hub was
+      stripped); tier A UNCHANGED (precision 0.85, recall 0.98 - the load-bearing tier is robust to
+      de-chrome). SIDE-EFFECT the harness surfaced: stripping footer negatives floated 24 non-targets C->B
+      (tier B 6->29), so tier A+B precision dropped 0.75->0.53 - the tier-C neg_dominant logic was partly
+      leaning on chrome negatives; retuning it for main-only negatives is the next Tier-0 follow-up the
+      harness can now measure. Two real bugs caught by validating on Marion FIRST (not synthetic):
+      segmentChrome used textContent on a detached clone (98KB hidden cruft vs 3KB visible) -> fixed to
+      innerText on the live DOM after removing chrome; the backfill goto lacked the .catch(()=>null) the
+      capture path uses, so networkidle timeouts aborted segmentation -> fixed."
 
   - id: REQ-092
     description: Handbook page-harvesting - harvest only schedule-bearing page(s) from long multi-topic docs

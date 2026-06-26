@@ -147,9 +147,9 @@ async function domFingerprint(page) {
 
 // DOM segmentation (REQ-091): split the rendered page into MAIN (body minus chrome) + the chrome
 // segments (header/footer/nav). MUST run at render time -- innerText can't reconstruct the DOM
-// structure once the page closes, exactly like the fingerprint above. `main` = a clone of <body>
-// with every landmark element removed, read as textContent (robust on a detached node, no layout
-// needed for keyword/time signals); the named segments use innerText of the live landmark elements.
+// structure once the page closes, exactly like the fingerprint above. `main` = body.innerText after
+// removing the landmark (chrome) elements from the live DOM; the named segments are the chrome
+// elements' innerText, grabbed before removal. innerText throughout = VISIBLE text, mirroring page.txt.
 async function segmentChrome(page, landmarks) {
   const removeSel = landmarks.join(',');
   return page.evaluate((removeSel) => {
@@ -157,18 +157,17 @@ async function segmentChrome(page, landmarks) {
       try { return Array.from(document.querySelectorAll(sel)).map((e) => e.innerText || '').join('\n').trim(); }
       catch { return ''; }
     };
-    let main = '';
-    try {
-      const clone = document.body.cloneNode(true);
-      if (removeSel) clone.querySelectorAll(removeSel).forEach((el) => el.remove());
-      main = (clone.textContent || '').replace(/[ \t ]+/g, ' ').replace(/\n\s*\n\s*/g, '\n').trim();
-    } catch { main = ''; }
-    return {
-      main,
-      header: grab('header,[role="banner"]'),
-      footer: grab('footer,[role="contentinfo"]'),
-      nav: grab('nav,[role="navigation"]'),
-    };
+    // VISIBLE text (innerText), mirroring page.txt. Grab the chrome segments FIRST, then remove the
+    // chrome from the LIVE dom and read body.innerText for main. innerText needs layout, so it must
+    // run on the live tree -- a detached clone's textContent pulls in hidden menus/modals/JSON-LD
+    // (caught on real Marion data: 98KB of hidden cruft vs 3KB visible). Mutating the live dom is
+    // safe -- the page is already captured/throwaway by now.
+    const header = grab('header,[role="banner"]');
+    const footer = grab('footer,[role="contentinfo"]');
+    const nav = grab('nav,[role="navigation"]');
+    if (removeSel) { try { document.querySelectorAll(removeSel).forEach((el) => el.remove()); } catch { /* ignore */ } }
+    const main = (document.body && document.body.innerText ? document.body.innerText : '').trim();
+    return { main, header, footer, nav };
   }, removeSel).catch(() => ({ main: '', header: '', footer: '', nav: '' }));
 }
 
@@ -626,7 +625,9 @@ async function runBackfillSegments(ROOT, CONC) {
       const t = tasks[idx++];
       const page = await ctx.newPage();
       try {
-        await page.goto(t.target, { waitUntil: 'networkidle', timeout: 30000 });
+        // Match runCapture: networkidle often never settles on JS-heavy school CMSs, so CATCH the
+        // timeout and segment whatever rendered (the DOM is present) rather than aborting.
+        await page.goto(t.target, { waitUntil: 'networkidle', timeout: 30000 }).catch(() => null);
         await page.waitForTimeout(2500);
         writeSegments(t.recDir, await segmentChrome(page, DE_CHROME_LANDMARKS));
         t.rec.segmented = true;
