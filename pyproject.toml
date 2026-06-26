@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "learning-connection-time"
+version = "0.1.0"
+description = "Learning Connection Time — LCT equity metrics + the per-school instructional-time acquisition pipeline"
+requires-python = ">=3.10"
+# Dependencies are intentionally NOT declared here yet — they remain managed by requirements.txt
+# (`pip install -r requirements.txt`). This file exists so `pip install -e .` makes the source tree
+# importable as proper packages (`infrastructure.acquisition.*`), removing the sys.path.insert shims
+# (REQ-098, see docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §9a). Folding deps into
+# pyproject is a separate, later step.
+
+[tool.setuptools.packages.find]
+where = ["."]
+# `infrastructure` is a PEP 420 namespace package (no top-level __init__.py); its source subpackages
+# (acquisition.*, database, scripts, utilities) carry their own markers or resolve as namespaces.
+include = ["infrastructure*"]
+# The Node capture layer (infrastructure/scraper, incl. node_modules) is invoked via subprocess, never
+# imported by Python — exclude it so find doesn't try to package thousands of node_modules dirs.
+exclude = ["infrastructure.scraper*", "*node_modules*", "*__pycache__*"]
+namespaces = true
