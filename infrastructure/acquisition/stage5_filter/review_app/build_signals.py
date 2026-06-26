@@ -22,17 +22,20 @@ import subprocess
 import sys
 from pathlib import Path
 
-RAW_DIR = Path("data/raw/lea-website-captures")
-QUEUE_DIR = Path("data/acquisition/queue")   # Stage 1 batch_*.json (targeting + NCES denominator)
-DB_PATH = Path("data/acquisition/stage5_review/review.db")
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "common"))
+import paths  # noqa: E402  (single source of truth for runtime-state locations — REQ-087)
+
+RAW_DIR = paths.RAW_CAPTURES
+QUEUE_DIR = paths.QUEUE_DIR                   # Stage 1 batch_*.json (targeting + NCES denominator)
+DB_PATH = paths.REVIEW_DB
 # Durable, version-controlled source of truth for the PRECIOUS human labels. The DB is a
 # regenerable cache; this JSON is what survives DB loss and lives in git (gitignore re-includes
 # it). Written on every label save (server) + at the end of each ingest; re-imported on ingest.
-LABELS_JSON = Path("data/acquisition/stage5_review/labels.json")
+LABELS_JSON = paths.LABELS_JSON
 LABEL_COLS = ["rec_key", "primary_label", "flags_json", "note", "status", "updated_at"]
 # Durable backup for the OTHER precious human signal: cluster SPLITS (a record the reviewer
 # pulled out of an auto-cluster because it's genuinely unique). Like labels, survives DB wipe.
-CLUSTER_SPLITS_JSON = Path("data/acquisition/stage5_review/cluster_splits.json")
+CLUSTER_SPLITS_JSON = paths.CLUSTER_SPLITS_JSON
 
 NCES_YEAR = "2024_25"   # ccd_sch_029 source for the topology denominator (school counts)
 

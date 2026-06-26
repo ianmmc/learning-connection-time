@@ -18,14 +18,14 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 HERE = Path(__file__).resolve().parent
-PROJECT_ROOT = HERE.parents[3]            # .../learning-connection-time
-DB_PATH = PROJECT_ROOT / "data/acquisition/stage5_review/review.db"
-LABELS_JSON = PROJECT_ROOT / "data/acquisition/stage5_review/labels.json"
-CLUSTER_SPLITS_JSON = PROJECT_ROOT / "data/acquisition/stage5_review/cluster_splits.json"
-RAW_DIR = PROJECT_ROOT / "data/raw/lea-website-captures"
-
 sys.path.insert(0, str(HERE))
 import build_signals as BS    # noqa: E402  (export_labels lives here, shared with ingest)
+
+# Runtime-state locations come from the single source of truth (paths.py, via build_signals).
+DB_PATH = BS.DB_PATH
+LABELS_JSON = BS.LABELS_JSON
+CLUSTER_SPLITS_JSON = BS.CLUSTER_SPLITS_JSON
+RAW_DIR = BS.RAW_DIR
 
 app = FastAPI(title="Stage 5 Review")
 

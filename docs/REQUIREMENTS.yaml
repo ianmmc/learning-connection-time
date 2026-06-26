@@ -1995,16 +1995,22 @@ requirements:
     description: Centralize acquisition runtime-state paths behind a single paths module with a configurable DATA_ROOT
     type: constraint
     priority: should
-    status: not_started
+    status: tested
     acceptance_criteria:
       - infrastructure/acquisition/common/paths.py defines DATA_ROOT plus every runtime location (queue, status, stage5_review db/labels/splits, raw captures)
       - Existing hardcoded data/acquisition/... literals (build_signals.py, server.py, queue_batch.py, the pre-commit hook, gitignore references) repointed at it; behavior unchanged
       - DATA_ROOT is overridable (env or single constant) so all generated state relocates to an external drive as one unit
       - Runtime state stays under data/; config stays near code (does not move state into the code tree)
-    tests: []
+    tests:
+      - tests/test_acquisition_paths.py
     created: "2026-06-25T00:00:00Z"
     updated: "2026-06-25T00:00:00Z"
-    notes: "Foundation slice 1. Behavior-preserving refactor done BEFORE feature work so paths aren't rewritten twice. See STAGE5_FILTER_DESIGN / the reorg discussion 2026-06-25."
+    notes: "BUILT 2026-06-25. infrastructure/acquisition/common/paths.py; build_signals.py, server.py,
+      district_status.py, queue_batch.py repointed (verified by a full re-ingest producing byte-identical
+      output + 231 existing acquisition/status/queue tests green + 5 new paths tests). The Python literals
+      are centralized; the .gitignore / pre-commit-hook references stay as literal DEFAULT-root paths (they
+      are not Python and the precious JSON backups are only git-tracked under the in-repo default root
+      anyway), which is correct, not a gap."
 
   - id: REQ-088
     description: Config-as-data layer (versioned JSON, cross-language) with per-entry provenance

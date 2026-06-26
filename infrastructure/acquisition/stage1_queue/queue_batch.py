@@ -36,6 +36,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 import school_sampling as S
 sys.path.insert(0, str(Path(__file__).parent.parent / "common"))
 import district_status as DS
+import paths  # noqa: E402  (single source of truth for runtime-state locations — REQ-087)
 from discover import host_of
 
 project_root = Path(__file__).parent.parent.parent.parent
@@ -45,7 +46,7 @@ from infrastructure.database.models import District, EnrollmentByGrade
 
 CAP = 12
 QUARTILES = 4
-OUT_DIR = Path("data/acquisition/queue")
+OUT_DIR = paths.QUEUE_DIR
 BANDS = ("elementary", "middle", "high")
 
 

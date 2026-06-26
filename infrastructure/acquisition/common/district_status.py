@@ -17,8 +17,12 @@ Doc: docs/ACQUISITION_PIPELINE.md (Stage 1), docs/diagrams/acquisition_pipeline_
 from datetime import datetime, timezone
 from pathlib import Path
 import json
+import sys
 
-STATUS_FILE = Path("data/acquisition/status/district_status.json")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import paths  # noqa: E402  (single source of truth for runtime-state locations — REQ-087)
+
+STATUS_FILE = paths.STATUS_FILE
 SCHEMA_VERSION = 1
 
 # Stage 3 = Capture is the first stage with a real, costly attempt (an actual fetch of a
