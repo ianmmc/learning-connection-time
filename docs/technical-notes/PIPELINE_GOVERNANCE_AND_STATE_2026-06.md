@@ -310,6 +310,31 @@ at overnight-17k-district volume. Pre-registered as its own step (REQ-104).
 
 ---
 
+## 7b. Console — running UI notes (deferred from the plumbing; revisit at console-build, REQ-100/102)
+
+A scratchpad of console/UI-relevant questions the plumbing work raises, captured so context resets don't
+lose them. **No layouts yet** (user's call) — these are *things the eventual UI must expose or decide*,
+recorded as they surface:
+
+- **Data source flips SQLite→Postgres** (REQ-103): the console reads/writes via `session_scope` against the
+  isolated `governance` DB, not a local SQLite file. The "open a file, no Docker" ergonomic of the old
+  review app goes away — the console now requires the container up (already a project precondition).
+- **Home view = a projection over the event log** (REQ-099): "what needs my attention" (districts awaiting
+  CP-A approval / CP-B release / re-discovery) is a query over `state_event` current-state, not a static
+  list. The UI's primary surface is this attention queue, not a stage tree.
+- **Stage selector** (the wordmark combo box) swaps views per stage; CP-A (queue), CP-B (release), later
+  CP-C (write). Open: which stages get a *read* view vs an *action* surface.
+- **Generate/Release trigger + staleness** (REQ-100/§6): each district shows new/current/stale from the
+  three stamped fingerprints (config,labels,data) — the UI must let the human filter by *which* changed.
+- **Tuning console surface** (§10 / REQ-095/096/097): where drift alerts, the advisory frontier (with
+  which-records-move), and ledger history live in the UI — a distinct surface from per-district review.
+- **Orchestration triggers** (§7a-B/C): "run next stage" buttons dispatch background work whose status is
+  itself event-log rows; the UI needs a job/attention view fed by those events.
+- **Actor identity** (§7a-D): single-user now, but the event log carries identity — the UI should capture
+  "who" (login/operator) once multi-user (cloud) arrives.
+
+---
+
 ## 8. Open decisions
 
 **RESOLVED 2026-06-26:** ~~Database engine~~ → Postgres, isolated `governance` DB (§1a). ~~Council
@@ -364,6 +389,61 @@ the workflow. Drift detector (REQ-097) still waits for batch 2.
   is recorded here in §10 (user: keep it in this note for now, not a separate file — extract later if it grows).
 - *On REQ-103 completion (Postgres+Docker migration):* update `docs/DATABASE_SETUP.md` and
   `docs/GETTING_STARTED.md` for the new isolated `governance` DB (these are deferred until the migration lands).
+
+---
+
+## 9a. REQ-098 execution plan — package + code move + tooling (drafted & approved 2026-06-26)
+
+The detailed sub-plan for §9 step 1. Persisted so a cold start can execute it.
+
+**The key enabling insight:** an **editable install** (`pip install -e .`) registers `infrastructure` as an
+importable package, so an absolute import (`from infrastructure.acquisition.common import paths`) resolves
+*regardless of cwd or how a script is launched*. Therefore `python3 infrastructure/acquisition/.../x.py`
+keeps working unchanged — **no invocation churn across the ~12 docs/skills** that reference that pattern.
+The only new setup step is a one-time `pip install -e .`.
+
+**Grounding facts (from the 2026-06-26 audit):**
+- Acquisition is a clean internal DAG: `common/` (paths → config_loader/discover/district_status) is the
+  base; stages depend on common, not each other; `aggregate.py` is a pure leaf.
+- **Sanctioned cross-cluster imports already exist and are THE POINT of the pipeline:** `stage1_queue`
+  reads `infrastructure.database.{connection,models}` (enrollment for the queue); `stage9` will *write*
+  minutes back. These are named boundaries in the contracts, not violations.
+- `infrastructure/` is currently a namespace package (no `__init__.py`) that works only because pytest runs
+  from repo root — the fragility the editable install removes.
+- Rewrite scope: ~13 acquisition modules + ~14 test files swap bare imports (`import paths`) for absolute;
+  33 `sys.path.insert` shims get deleted.
+
+**Steps (suite green at 0 and 3+; mid-2 is transiently mixed, all git-reversible):**
+0. **Scaffold** — `pyproject.toml` (minimal: metadata + setuptools find `infrastructure*`; deps stay in
+   requirements.txt for now), `__init__.py` in `infrastructure/` + every acquisition subpackage,
+   `pip install -e .`, smoke-test `python -c "import infrastructure.acquisition.stage5_filter.harness"`.
+   *(Validate the editable install resolves the package cleanly — the one early risk; fallback is the
+   `infrastructure/__init__.py` we're adding anyway → plain regular package.)*
+1. **Moves (git mv):** `stage5_filter/review_app/{server.py,static/}` → `common/console/`;
+   `stage5_filter/review_app/build_signals.py` → `stage5_filter/build_signals.py`. Moves first → rewrite once.
+2. **Rewrite intra-acquisition imports to absolute** (final layout), file-by-file (modules, then tests),
+   leaving the redundant `sys.path.insert` lines temporarily; run relevant tests per file.
+3. **Strip all 33 `sys.path.insert` shims.** Full suite green (997).
+4. **Wire Python tools** — dev-deps `import-linter`/`grimp`/`vulture`; `.importlinter` contracts (below);
+   run `lint-imports` + a `vulture` sweep; fix/encode findings.
+5. **Wire Node tool** — `dependency-cruiser` npm dev-dep in `infrastructure/scraper/` + rules config; run.
+6. **Docs** — add `pip install -e .` to GETTING_STARTED; confirm no invocation references broke.
+
+**import-linter contracts to encode (step 4):**
+- **Layers/forbidden:** `common` is the base — stages may import it; `common` must NOT import any stage.
+- **Independence:** the stage packages do not import each other.
+- **Forbidden + exceptions:** `infrastructure.acquisition` must not import `infrastructure.database` internals
+  *except* the sanctioned `stage1_queue` enrollment read (and future `stage9` write) — encode via
+  `ignore_imports`.
+- **Forbidden (reverse):** the LCT side (`infrastructure.database`, `infrastructure.scripts`) must not import
+  `infrastructure.acquisition` — keeps the two clusters decoupled (the separation confirmed in the
+  requirements review).
+
+**Import-rewrite map (bare → absolute):** `paths`/`config_loader`/`discover`/`district_status` →
+`infrastructure.acquisition.common.*`; `school_sampling`/`queue_batch` → `…stage1_queue.*`;
+`discover_stage2` → `…stage2_discover.*`; `capture_stage3` → `…stage3_capture.*`; `process_stage4` →
+`…stage4_process.*`; `build_signals`/`harness`/`frontier`/`tuning_ledger` → `…stage5_filter.*`; `aggregate`
+→ `…stage8_aggregate.*`; `console/server.py` imports `…stage5_filter.build_signals`.
 
 ---
 
