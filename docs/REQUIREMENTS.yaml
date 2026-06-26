@@ -2281,7 +2281,7 @@ requirements:
     description: Package the acquisition tree + code move + wire the dependency/dead-code/architecture tooling baseline
     type: non-functional
     priority: should
-    status: accepted
+    status: tested
     acceptance_criteria:
       - infrastructure/acquisition/ becomes a proper installable package (pyproject.toml, real imports); the sys.path.insert shims are removed
       - the Stage-5 review app (server + static) moves to infrastructure/acquisition/process_governance/ (a top app layer, not common/); build_signals.py moves to stage5_filter/ (stage logic, not app logic)
@@ -2296,7 +2296,12 @@ requirements:
       driver (import-linter over Tach; dependency-cruiser over madge/skott). Cross-boundary edges (subprocess / shared
       config / file handoffs) have NO tool -> covered by an arch-manifest.json + fitness-function tests, grown alongside
       the build (and a possible OSS give-back; build-for-us-first). MCP code-intelligence servers + datacontract-cli
-      deferred. The full suite is the safety net."
+      deferred. The full suite is the safety net.
+      DONE 2026-06-26 (commits e37f6ed scaffold, 93f0fd4 package+move+deshim, 2590c1b tools+contracts, 3b4fdf3
+      dependency-cruiser, 333dbe0 docs). Full suite green throughout (995 passed); 67 sys.path shims removed; 3
+      import-linter contracts KEPT. The tooling immediately earned its keep — it caught two layering inversions
+      (school_sampling miscategorized into stage1_queue -> moved to common; the app inverted under common -> moved to
+      process_governance), both fixed. 'tests' = the full suite passing under the new package layout + lint-imports."
 
   - id: REQ-099
     description: Cross-stage STATE as a Postgres event log; migrate district_status.py's registry functions
