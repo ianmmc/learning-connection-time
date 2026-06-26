@@ -1,38 +1,22 @@
 """Tests for the per-school consensus + gross-minutes aggregation (REQ-054/055/056).
 
-Covers the INVARIANT (models read times, code computes minutes/mode), GROSS metric,
-cross-family per-school consensus, the exact-mode (380-not-381) fix, and mode-stability.
+Covers the INVARIANT (deterministic code computes minutes/mode — the half enforceable today),
+GROSS metric, cross-family per-school consensus, the exact-mode (380-not-381) fix, and mode-stability.
+
+REQ-054 invariant, prompt-side half ("models read TIMES only, never minutes / a picked 'typical'
+schedule"): the GT-era extractors.py that once embodied this prompt was archived 2026-06-24 and its
+top-level import broke when infrastructure/api was removed (2026-06-25). The bare `import extractors`
+TestInvariant here imported that archived, broken module — a live test depending on archived code —
+so it was removed 2026-06-26. The prompt-side invariant will be re-tested against the LIVE Stage-7
+council extractor when it exists. The CODE-side half (Python computes gross = end-start and the
+per-band MODE; the model never does) is live and tested below (TestGross, TestMode).
 """
 import sys
 from pathlib import Path
-import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "infrastructure" / "acquisition" / "stage8_aggregate"))
 import aggregate as A  # noqa: E402
-
-# extractors.py is archived (GT-benchmark era, no live pipeline code imports it) -- still
-# imported here because TestInvariant checks a durable design invariant (REQ-054: models
-# read times, never minutes/a picked "typical" schedule) against it as reference material,
-# not because it's live code.
-sys.path.insert(0, str(ROOT / "data" / "archive" / "gt-benchmark-era-tools-superseded-20260624"))
-
-
-# ---------------------------------------------------------------- REQ-054 invariant
-class TestInvariant:
-    def test_extractor_prompt_requests_times_not_minutes(self):
-        """Models are asked for start/end times, NOT instructional minutes."""
-        import extractors as E
-        p = E.LEAN_SYSTEM_PROMPT.lower()
-        assert "start" in p and "end" in p
-        # must not instruct the model to compute/return minutes or pick a typical schedule
-        assert "instructional minutes" not in p
-        assert "most common" not in p and "typical full-day" not in p
-
-    def test_no_triage_prompt_asks_model_to_pick_typical(self):
-        """The removed triage prompt (model picks the modal schedule) must stay gone."""
-        import extractors as E
-        assert not hasattr(E, "TRIAGE_SYSTEM_PROMPT")
 
 
 # ---------------------------------------------------------------- REQ-055 gross

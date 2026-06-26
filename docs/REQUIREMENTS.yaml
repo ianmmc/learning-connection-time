@@ -809,7 +809,7 @@ requirements:
       - tests/test_pipeline_orchestration.py::TestEndToEndFlow::test_url_to_lct_calculation
     created: "2026-01-23T21:30:00Z"
     updated: "2026-01-23T21:30:00Z"
-    notes: "SUPERSEDED 2026-06-26 — tests the OLD scraper→parser→DB→LCT contract (markdown/html scraper_response, ContentParser), i.e. the Crawlee-era architecture, not the 9-stage acquisition pipeline. The intent (cross-stage data contracts) now lives in the as-built stage REQs (068–083) and, going forward, the governance event log. content_parser.py (Jan-2026) is likely dead code pending a separate cleanup. Original: E2E pipeline testing ensures data contracts maintained across all stages."
+    notes: "SUPERSEDED 2026-06-26 — tests the OLD scraper→parser→DB→LCT contract (markdown/html scraper_response, ContentParser), i.e. the Crawlee-era architecture, not the 9-stage acquisition pipeline. The intent (cross-stage data contracts) now lives in the as-built stage REQs (068–083) and, going forward, the governance event log. CORRECTION 2026-06-26: an earlier draft of this note called content_parser.py 'likely dead code' — that is WRONG. content_parser.py is LIVE via the LCT-cluster manual-import path (rebuild_database.py phase 6 → import_manual_bell_schedules.py → ContentParser), tested by tests/test_content_parser.py (REQ-032). It is NOT retired. Only this orchestration test models the dead scraper contract. Original: E2E pipeline testing ensures data contracts maintained across all stages."
 
   - id: REQ-035
     description: Enrichment count verification against database before documentation
@@ -1215,13 +1215,20 @@ requirements:
       - All aggregation (the per-band mode/mean over schools) is performed in Python code, not by a model
       - A prompt that asks a model to return minutes, or to pick the typical/modal schedule, is a violation of this requirement
     tests:
-      - tests/test_aggregate.py::TestInvariant::test_extractor_prompt_requests_times_not_minutes
-      - tests/test_aggregate.py::TestInvariant::test_no_triage_prompt_asks_model_to_pick_typical
+      - tests/test_aggregate.py::TestGross::test_gross_is_end_minus_start
+      - tests/test_aggregate.py::TestGross::test_no_deduction_applied
+      - tests/test_aggregate.py::TestMode::test_exact_mode_not_cluster_mean_380_not_381
     created: "2026-06-21T00:00:00Z"
-    updated: "2026-06-21T00:00:00Z"
+    updated: "2026-06-26T00:00:00Z"
     notes: "The principle the user locked down 2026-06-21. A prior design let models return pre-aggregated
-      minutes and a triage prompt asked the model to pick the typical schedule; both removed. See
-      docs/ACQUISITION_PIPELINE.md (council INVARIANT) and docs/TERMINOLOGY.md."
+      minutes and a triage prompt asked the model to pick the typical schedule; both removed. TEST RE-POINTING
+      2026-06-26: this invariant has two halves. CODE-SIDE ('Python computes gross=end-start and the per-band
+      mode, never the model') is LIVE and tested against aggregate.py (the tests listed above). PROMPT-SIDE
+      ('models read TIMES only') was previously tested by importing the archived GT-era extractors.py
+      (tests/test_aggregate.py::TestInvariant) — but that module's top-level import broke when infrastructure/api
+      was removed (2026-06-25), so a live test depended on archived, broken code. TestInvariant was removed
+      2026-06-26; the prompt-side half will be re-tested against the LIVE Stage-7 council extractor when built.
+      See docs/ACQUISITION_PIPELINE.md (council INVARIANT) and docs/TERMINOLOGY.md."
 
   - id: REQ-055
     description: "Instructional minutes from bell schedules are GROSS (bell-to-bell), not net"
