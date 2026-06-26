@@ -299,6 +299,32 @@ def recompute_labeled_topology(con, district_id: str) -> str:
 
 
 # ----------------------------- signal computation -----------------------------
+# ----------------------------- handbook page-harvesting (REQ-092) -----------------------------
+HANDBOOK_HARVEST_MIN = 6   # a PDF page with >= this many clock times is a likely schedule page
+
+
+def is_handbook_doc(text_lc: str, files: dict, n_pages: int, max_chars: int) -> bool:
+    """A multi-topic student/parent handbook: the word 'handbook' in the text or a filename AND
+    real document length (multi-page PDF, or a lot of text). Pairs with the human buried_in_long_doc
+    flag — the schedule is in here somewhere, just not the whole point of the doc."""
+    blob = (text_lc or "") + " " + " ".join(str(v).lower() for v in (files or {}).values())
+    return "handbook" in blob and (n_pages > 1 or max_chars > 8000)
+
+
+def harvest_schedule_pages(pages: list, min_times: int = HANDBOOK_HARVEST_MIN) -> list:
+    """Deterministic harvest: in a multi-page doc, the page number(s) whose clock-time count stands
+    out are the likely schedule page(s) -> Stage 6/7 sends ONLY these to the council, not the whole
+    (expensive, noisy) doc. Reuses the existing per-page n_times signal. Empty if nothing stands out
+    (no page clears the floor) or it's a single page. PROVEN on Pittsylvania (p2/p3/p4)."""
+    if not pages or len(pages) <= 1:
+        return []
+    mx = max(p["n_times"] for p in pages)
+    if mx < min_times:
+        return []
+    cut = max(min_times, mx * 0.5)   # the standout page(s): at/above half the peak, floor at min_times
+    return [p["page"] for p in pages if p["n_times"] >= cut]
+
+
 def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dict):
     """All deterministic, no AI. `texts` = processed.json texts[]; `files` = captures.json files{}."""
     # Gather text: best (max n_times, usable) for time density; union of usable reps for keywords.
@@ -357,6 +383,8 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
         "instructional_time": instructional, "has_table": has_table, "period_hits": period_hits,
         "roster_school_names_hit": roster_hits, "visual_text_gap": visual_text_gap,
         "max_text_chars": max_chars, "pages": pages,
+        "is_handbook": is_handbook_doc(all_lc, files, len(pages), max_chars),
+        "harvest_pages": harvest_schedule_pages(pages),
     }
     # `best_text` is the richest single representation — the content basis for near-dup clustering.
     return sig, best_text

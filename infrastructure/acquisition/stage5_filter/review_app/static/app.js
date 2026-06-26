@@ -182,9 +182,12 @@ async function renderCenter(d) {
 
   // Per-page n_times (handbook-harvest signal) if a multi-page PDF.
   if (s.pages && s.pages.length > 1) {
-    const rows = s.pages.map((p) => `<tr><td>p${p.page}</td><td class="${p.n_times >= 8 ? "hot" : ""}">${p.n_times} times</td></tr>`).join("");
-    html += card("Per-page time counts (handbook signal)", "high-count pages are likely the schedule page",
-      `<table class="pages-table">${rows}</table>`);
+    const harvest = new Set(s.harvest_pages || []);
+    const rows = s.pages.map((p) => `<tr><td>${harvest.has(p.page) ? "★ " : ""}p${p.page}</td><td class="${harvest.has(p.page) ? "hot" : (p.n_times >= 8 ? "hot" : "")}">${p.n_times} times</td></tr>`).join("");
+    const meta = s.harvest_pages && s.harvest_pages.length
+      ? `${s.is_handbook ? "handbook · " : ""}harvest p${s.harvest_pages.join(", p")} → council (not the whole doc)`
+      : (s.is_handbook ? "handbook — no schedule page stood out" : "high-count pages are likely the schedule page");
+    html += card("Per-page time counts (handbook harvest)", meta, `<table class="pages-table">${rows}</table>`);
   }
 
   // Text reps (best open). Content fetched lazily.

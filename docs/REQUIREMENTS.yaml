@@ -2094,15 +2094,23 @@ requirements:
     description: Handbook page-harvesting - harvest only schedule-bearing page(s) from long multi-topic docs
     type: functional
     priority: should
-    status: not_started
+    status: tested
     acceptance_criteria:
       - Detect a handbook (keyword in URL/title/text + document length)
       - Use the per-page time-count signal to identify the schedule-bearing page(s); deterministic, reuses existing per-page rasterization/pdftotext
       - Sends the harvested page(s), not the whole doc, downstream - addresses the Broward/Orange/Pittsylvania multi-page failures
-    tests: []
+    tests:
+      - tests/test_stage5_scoring.py
     created: "2026-06-25T00:00:00Z"
     updated: "2026-06-25T00:00:00Z"
-    notes: "Tier-0 (re-derive over already-rasterized pages). In-scope for this wave per the 2026-06-25 scope calls."
+    notes: "BUILT 2026-06-25. build_signals.is_handbook_doc() ('handbook' in text/filename + multi-page or
+      long) and harvest_schedule_pages() (the page(s) whose per-page clock-time count stands out - >= half
+      the peak, floor at HANDBOOK_HARVEST_MIN=6) added to the signal vector (is_handbook, harvest_pages);
+      surfaced in CP-B (per-page table stars the harvest pages). Deterministic, reuses the existing per-page
+      n_times signal (no new extraction). VALIDATED on the proven case: Pittsylvania's 15-page handbooks ->
+      harvest [4,9] / [3] / [2] (drhs p2 has 112 times); Marion longfellow -> [2]. So Stage 6/7 sends those
+      pages, not the whole doc. (harvest_pages is a per-record signal of WHICH pages to send IF the record
+      is pursued; the tier still governs whether it is - a harvest on a non-target is harmless.)"
 
   - id: REQ-093
     description: Stage 5 Tier-0 scoring refinements, each measured against labels via the harness

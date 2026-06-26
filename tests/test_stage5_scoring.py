@@ -56,3 +56,31 @@ def test_strong_target_still_tier_A_not_demoted_by_rescue():
              instructional_time=True),
         roster_size=2)
     assert tier == "A"
+
+
+# ---- REQ-092 handbook page-harvest ----
+def _pages(*counts):
+    return [{"page": i + 1, "n_times": c} for i, c in enumerate(counts)]
+
+
+def test_harvest_pinpoints_the_standout_schedule_page():
+    # a 15-page handbook where page 3 is the schedule (42 times) -> harvest just page 3 (Pittsylvania chs)
+    assert BS.harvest_schedule_pages(_pages(0, 0, 42, 0, 0, 0, 9, 4, 0, 0, 2, 2, 0, 6, 0)) == [3]
+
+
+def test_harvest_returns_multiple_when_several_pages_stand_out():
+    # two comparable schedule pages -> both harvested (>= half the peak, floor at min_times)
+    assert BS.harvest_schedule_pages(_pages(0, 0, 0, 8, 2, 0, 2, 0, 6)) == [4, 9]
+
+
+def test_harvest_empty_when_single_page_or_nothing_stands_out():
+    assert BS.harvest_schedule_pages(_pages(42)) == []          # single page
+    assert BS.harvest_schedule_pages(_pages(2, 3, 1, 0)) == []  # nothing clears the floor (min 6)
+    assert BS.harvest_schedule_pages([]) == []
+
+
+def test_is_handbook_needs_the_word_and_real_length():
+    assert BS.is_handbook_doc("student parent handbook ...", {}, n_pages=15, max_chars=9000) is True
+    assert BS.is_handbook_doc("bell schedule", {}, n_pages=1, max_chars=400) is False   # not a handbook
+    assert BS.is_handbook_doc("", {"pdf": "student_handbook.pdf"}, n_pages=3, max_chars=500) is True  # filename
+    assert BS.is_handbook_doc("handbook", {}, n_pages=1, max_chars=200) is False        # too short, single page
