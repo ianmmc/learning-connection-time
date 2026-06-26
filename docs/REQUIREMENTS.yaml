@@ -2170,3 +2170,23 @@ requirements:
       the 0.43 category ceiling) is a VISION / DE-CHROME problem, NOT a keyword-regex one -> folded into
       REQ-091. This is the harness doing exactly its job: preventing a net-negative ship and redirecting
       effort to the real lever. Baseline scorecard preserved (A47/B6/C39/D58, tier-A precision 0.85)."
+
+  - id: REQ-095
+    description: Tuning-episode ledger — durable, append-only record of every config tuning round (diff -> scorecard delta -> rationale)
+    type: functional
+    priority: should
+    status: in_progress
+    acceptance_criteria:
+      - An episode records the before/after scorecard fingerprints (config, label_set, data), the metric deltas, the knobs touched, a rationale, decided_by, and whether the recall constraint held
+      - Append-only JSONL under data/acquisition/stage5_review/tuning_ledger/ (data lifecycle, NOT loadable as a config knob); version-controlled like labels.json
+      - A helper records an episode from two scorecard files (before, after) so any tuning round - chat-driven now, automated later - writes the same shape
+      - The ledger is the training history a future tuning recommender reads; episodes are derivable/auditable from the referenced scorecards
+      - Reuses the harness fingerprint scheme; does not duplicate scorecard metric computation
+    tests:
+      - tests/test_tuning_ledger.py
+    created: "2026-06-25T00:00:00Z"
+    updated: "2026-06-25T00:00:00Z"
+    notes: "Foundational for the Stage 5 learning loop at scale (~17k districts / ~100k schools). Built BEFORE
+      the grid search and drift detector so both write episodes to it from day one. Location is data/ (history),
+      deliberately NOT common/config/ (which is runtime input). Companion to REQ-090 (harness) and the planned
+      grid-search + drift-detector REQs."

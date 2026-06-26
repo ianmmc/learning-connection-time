@@ -604,6 +604,124 @@ where near-dup clustering pays off. Stage-1 targeting lands in a `district_targe
 is deliberately light (emergent ⚡ marker, panel "Provenance" line, by-level in the district header
 tooltip) — the funnel/yield analysis itself is **later**.
 
+# Tuning-engine foundations (REQ-095… ; design 2026-06-25)
+
+The Tier-0 retuning the harness made cheap is, at scale (~17k districts / ~100k schools), a *family*
+of learning loops — not one. The organizing axis is **cost-to-re-measure**, which the config's own
+`loop_tier` field already names:
+
+| knob class | files | re-measure cost | tuning engine |
+|---|---|---|---|
+| **Tier 0** — Stage 5 scoring | `stage5_positive_kw`, `stage5_neg_*` | cheap (re-ingest + harness, seconds, no $) | **grid/coordinate search** — automatable |
+| **Tier 1** — Stage 3 segmentation | `de_chrome_landmarks` | medium (re-render captures, no $, slow) | semi-auto (re-render once, then grid) |
+| **Tier 2** — Stage 2 discovery | `cms_hosts`, search keywords/queries | expensive (live web + paid Haiku/OpenRouter) | **human-in-the-loop only** (CMS_HOSTS rule) |
+
+Grid search owns Tier 0 (re-measuring is free); the drift detector spans all tiers (detection is
+cheap everywhere); Tier 2 stays human-judgment with the ledger as its memory. **Build order: ledger →
+grid search → drift detector** — the latter two write episodes to the ledger from day one.
+
+## Tuning-episode ledger (REQ-095, **BUILT 2026-06-25**)
+`infrastructure/acquisition/stage5_filter/tuning_ledger.py` + `tests/test_tuning_ledger.py`. An
+**episode** = a transition between two harness scorecards (`before → after`): before/after
+fingerprints (config/label_set/data), metric **deltas** (tier-A prec/recall, A+B prec, category,
+topology, counts), the **recall-constraint** check, the knobs touched, the rationale, decided_by.
+Append-only **JSONL** under `data/acquisition/stage5_review/tuning_ledger/episodes.jsonl` — *history,
+deliberately NOT in `common/config/`* (which is runtime input); version-controlled like `labels.json`.
+It is the **training history** a future recommender reads, and a human-readable decision log. Reuses
+the harness fingerprints; does not recompute metrics.
+
+**First real episode recorded = the de-chrome before/after** (the two existing scorecards): category
++0.1733, topology +0.20, tier-A unchanged — **and it captured the cost the prose noted**: A+B
+precision **−0.2284** (the 24 records floated C→B). That regression is now *data* for the next tune.
+
+**Two findings from the first episode (carry into the grid/drift design):**
+1. **A Stage-5 config change is almost never a "pure config move" under the fingerprint scheme.** The
+   harness `data` fingerprint hashes `record.tier`/`category_hypothesis`, which are *config-derived* —
+   so changing a knob moves the `data` hash too. The ledger honestly flags `pure_config_move=False`.
+   The **drift detector must distinguish *config-induced* data change from *new-district* data change**
+   (the former is the tuning move's own effect; only the latter is "the world shifted, retune").
+2. The live config's tier-A recall is **0.9756 (40/41)**, *below* a naive 0.98 floor — so the recall
+   floor must be set as the operational policy decision it is (≤0.9756 today), not a round number.
+
+## Research basis (two Perplexity passes + WebSearch, 2026-06-25)
+Saved verbatim: `docs/scratch-paper/I'm building a human-in-the-loop tuning system for.md` (the n≈150/
+12-group regime) and `…/Follow-up on a human-in-the-loop threshold-tuning.md` (the 17k-group scale
+regime). The findings below are distilled from those; the raw outputs are the citation trail.
+
+**The hard now/later boundary (discipline — do not over-engineer for n=12).** At 150 examples / 12
+districts, hierarchical MCMC, online-FDR, and ICC *magnitudes* are high-variance noise. What we build
+NOW is the small-n-correct core + the *architecture* for scale; the heavy machinery is documented as
+the **scale endgame**, built only when label coverage justifies it.
+
+| layer | BUILD NOW (small-n correct) | SCALE ENDGAME (documented, deferred) |
+|---|---|---|
+| optimize | exact sorted-breakpoint frontier (single knob) + coarse grid/coordinate (≤5 knobs) | constrained **Optuna TPE** (`constraints_func`, c-TPE) at 6–12+ knobs |
+| detect | **Bernoulli CUSUM + Wilson-CI two-gate** per metric | **ADDIS online-FDR** across 17k streams → BH roll-up at state/CMS |
+| guard | **LOGO-by-district** report + **bootstrap threshold-stability** + min-group-support | **empirical-Bayes hierarchical shrinkage** global→CMS→state→district |
+| scope | (n/a yet) | **VPC/ICC** decides which level each knob lives at |
+| deps | `scikit-learn`, `scikit-optimize` (approved, added now) | `pingouin`, `online-fdr`, `bambi`/`pymc` (only when coverage warrants) |
+
+## Frontier / grid search (REQ-096, PLANNED — build next)
+Advisory, not auto-applied. **Better primitive than brute grid for our shape (max precision s.t. hard
+recall floor):** for a single-threshold knob, do *not* enumerate a grid — **sort records by score and
+walk the breakpoints** to get the EXACT precision/recall frontier (the λ/ROC-style result: "the Pareto
+frontier is piecewise, ≤ n·m points"), then pick the highest-precision point still clearing the recall
+floor. Exact, instant, whole-frontier-inspectable. For interacting multi-knob cases, coordinate descent
+or coarse grid now; **constrained Optuna TPE** is the documented escalation at 6–12+ knobs (our eventual
+"one threshold per CMS-cluster/state" structure lands there). Objective is cheap (just re-scoring
+labels) → thousands of trials are free when we get to BO.
+- **Output:** the feasible Pareto frontier + *which records move* at each point (keeps the chat "why").
+- **Overfitting guard, from day one (research-confirmed):** `sklearn.model_selection.LeaveOneGroupOut`
+  with **districts as groups** (records within a district are correlated — same CMS chrome/templates —
+  so plain k-fold leaks). Report in-sample vs. LOGO-CV precision side by side; **CV detects overfit, it
+  does not prevent it** — so it's a *reported guard*, not a gate, and at n=12 the estimate is
+  high-variance (surface, don't trust the magnitude). Plus **bootstrap threshold-stability** (resample
+  200–500×, report each knob's coefficient of variation; CV>0.3 = fragile knob needing more labels) and
+  **min-group-support** (don't fit a per-group threshold under ~10 labels; fall back to the default).
+- **Immediately actionable:** computes the optimal `neg_dominant` threshold for the C→B regression the
+  ledger's first episode recorded (A+B precision −0.2284).
+
+## Drift detector (REQ-097, PLANNED)
+Detection, not action: when a new labeled batch arrives, decide "does this degrade the live config
+enough to warrant retuning?" and flag it in the CP-B app — you and Claude decide (CP ramp-up posture).
+**Method (research-corrected — EWMA was my first instinct; CUSUM is better for *binary-proportion*
+metrics like recall/precision):**
+- **Bernoulli CUSUM** on recall and precision *separately* vs the floor — accumulates evidence, so a
+  single batch with 2–3 extra misses won't trip it (the small-n robustness we need). ~10-line NumPy fn.
+- **Two-gate to kill small-n false alarms:** alert only when CUSUM trips **AND** the **lower Wilson-score
+  CI bound** (`statsmodels … proportion_confint(method='wilson')`) also breaches the floor. At n=150 the
+  95% Wilson CI for recall is ±3–4pp — that width *is* why a single batch can't be trusted.
+- **McNemar's test** (`mlxtend`) as the "bother retuning?" gate when comparing old vs new thresholds on
+  the *same* examples; Fisher's exact for unequal batch sizes.
+- **Avoid (research-flagged):** Page-Hinkley (assumes Gaussian; poor on binary proportions) and
+  KS/chi-squared/Evidently/Alibi-Detect (those detect *input-distribution* drift, the wrong layer — we
+  need *labeled-performance* drift).
+- **Finding-1 carve-out:** must separate *config-induced* data change (the tuning move's own effect — a
+  `pure_config_move=False` episode) from *new-district* data change (the world shifted → retune). Only
+  the latter feeds the detector.
+
+## Scale architecture (documented endgame — DO NOT build until coverage warrants)
+The three layers compose into the system that survives ~17k districts / ~100k schools. Recorded now so
+the foundations above are built compatibly; **none of this runs at n=12.**
+1. **Estimation — hierarchical partial-pooling shrinkage** `global → CMS-vendor → state → district`,
+   each level shrinking toward its parent ∝ how little local data it has; a zero-label district inherits
+   its state posterior mean (itself shrunk toward CMS-cluster). Empirical Bayes (closed-form
+   Beta-Binomial / `statsmodels MixedLM`) over full MCMC for cost; `bambi`/`pymc` for the 3-level nest.
+   Zero-support thresholds are **inherited, not exposed to the optimizer** — separates estimation from
+   optimization.
+2. **Detection — ADDIS online-FDR** (`online-fdr`) across the per-district CUSUM streams (sequential,
+   discards in-control streams early → power where most streams are fine), rolled up via batch **BH** at
+   the ~50 state / handful of CMS levels; only **state/CMS-level alerts reach the human** — district
+   signals trigger automated re-estimation, not manual review. `p-filter` (Barber & Ramdas) if we want
+   provable multi-level group-FDR ("flag TX only if ≥k TX districts signal").
+3. **Scope — VPC/ICC variance-components** (`pingouin.intraclass_corr`, or `bambi` nested random
+   effects) decides *which level a knob lives at*: VPC>0.3 → free parameter at that level; 0.1–0.3 →
+   covariate/offset; <0.1 → pool fully. **Strong prior from our own data: CMS-vendor will explain more
+   variance than state** (chrome/template behavior is vendor-driven, not geographic) — so the optimizer
+   likely sees a handful of CMS-level thresholds + state offsets only where VPC warrants, keeping
+   dimensionality (and thus the grid-vs-BO crossover) tractable. **Can run for *directional* signal on
+   the current 150 labels — but treat magnitudes as noise until coverage grows.**
+
 # Future bridge (noted 2026-06-25, not acting yet): disk footprint at scale
 At thousands of records the captured `page.png` / `page.pdf` / `raster_p*.png` will dominate disk. The
 user plans to move the project to a large external drive by then. Options to revisit when we get there:
