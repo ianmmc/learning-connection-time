@@ -34,6 +34,7 @@ STAGE5_DIR = ACQUISITION / "stage5_review"
 REVIEW_DB = STAGE5_DIR / "review.db"                     # regenerable SQLite cache
 LABELS_JSON = STAGE5_DIR / "labels.json"                # precious, version-controlled
 CLUSTER_SPLITS_JSON = STAGE5_DIR / "cluster_splits.json"  # precious, version-controlled
+SCORECARDS_DIR = STAGE5_DIR / "scorecards"              # harness output (config-vs-labels metrics)
 
 # --- config-as-data (versioned tunables; near code, intentionally NOT under DATA_ROOT) ---
 CONFIG_DIR = Path(__file__).resolve().parent / "config"

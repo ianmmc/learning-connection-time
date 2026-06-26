@@ -2055,16 +2055,25 @@ requirements:
     description: Measurement harness - score a config state against human labels, emit a reproducible scorecard
     type: functional
     priority: should
-    status: not_started
+    status: tested
     acceptance_criteria:
       - Scores programmatic-vs-human at representation / url / district granularity (tier precision-recall, category accuracy, topology agreement)
       - Each scorecard stamps config version + label-set hash + ingest snapshot (reproducible/auditable)
       - Runs on-demand and at batch completion (or after n updates - n a config knob); NOT per-label-write
       - Output is diffable
-    tests: []
+    tests:
+      - tests/test_harness.py
     created: "2026-06-25T00:00:00Z"
     updated: "2026-06-25T00:00:00Z"
-    notes: "Turns every config proposal from hunch into number; prerequisite for the CP-B proposals view. Scored against live labels, fingerprinted for reproducibility."
+    notes: "BUILT 2026-06-25. infrastructure/acquisition/stage5_filter/harness.py - pure metric fns
+      (tier_target_metrics / category_accuracy / topology_report) + a read-only DB scorer + a
+      fingerprinted scorecard writer (config/label_set/data md5s) to data/acquisition/stage5_review/
+      scorecards/ (gitignored). BASELINE on batch_00001 quantifies the design-note findings: tier A =
+      40 target / 7 non-target (predict-target=A: precision 0.85, recall 0.98, f1 0.91), tier D = 0
+      targets; category-guess accuracy 0.43 (the 'guess does not work' finding); topology coarse hub/
+      per-school agreement 0.6, Marion hub->per_school flagged. v1 scores the current ingest; compare
+      configs by re-ingesting (Tier-0) and re-running - scorecards are comparable via their fingerprints.
+      Runs on demand / at batch completion (--no-write for CI), never per-label-write."
 
   - id: REQ-091
     description: Stage 3 DOM segmentation (de-chrome) - header/footer/nav vs main as separate representations
