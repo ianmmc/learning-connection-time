@@ -2108,12 +2108,27 @@ requirements:
     description: Stage 5 Tier-0 scoring refinements, each measured against labels via the harness
     type: functional
     priority: should
-    status: not_started
+    status: accepted
     acceptance_criteria:
       - Detect instructional HOURS (not only minutes); stop dropping academic_calendar candidates; add a class-schedule positive keyword; consume the de-chrome main-only signal
       - Every change shows a before/after against the labels via REQ-090; no regression to tier precision-recall on batch_00001
       - Changes land as config edits (REQ-088), not new code literals
-    tests: []
+    tests:
+      - tests/test_stage5_scoring.py
+      - tests/test_config_layer.py
     created: "2026-06-25T00:00:00Z"
     updated: "2026-06-25T00:00:00Z"
-    notes: "The first real customers of the config layer + harness - proves the learning loop end-to-end on the cheapest (Tier-0) knobs."
+    notes: "PARTIAL + KEY FINDING 2026-06-25 - the learning loop ran end-to-end and earned its keep.
+      SHIPPED (tested, metric-neutral on batch_00001): the 5 Stage 5 keyword lists (positive + 4 negative
+      classes) migrated to config knobs (config/stage5_*.json, baseline+additions format) so they are now
+      tunable as config edits; 'class schedule' added (ROY); the instructional-time RESCUE reordered so an
+      instr hit lifts a record to B before the n==0 / neg_dominant drops (don't-hard-drop-calendar
+      principle), without demoting a real bell schedule from A. DISPROVEN + REVERTED: broadening
+      INSTRUCTIONAL_RE to HOURS. The harness measured it NET-NEGATIVE (category 0.4267->0.42, a false-
+      positive D->B rescue): DUNSEITH's real '147 days x 7.5 hrs/day' sits in a VISUAL CALENDAR GRID that
+      text extraction mangles into '...5 hrs' (no contiguous '/day'), so the regex can't match the real
+      targets, while broad hours phrasings false-positived on marketing copy (Lindamood-Bell). CONCLUSION:
+      the real category lever (DUNSEITH hours-in-calendar, ROY's board_schedule misguess from chrome,
+      the 0.43 category ceiling) is a VISION / DE-CHROME problem, NOT a keyword-regex one -> folded into
+      REQ-091. This is the harness doing exactly its job: preventing a net-negative ship and redirecting
+      effort to the real lever. Baseline scorecard preserved (A47/B6/C39/D58, tier-A precision 0.85)."

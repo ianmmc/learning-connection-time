@@ -1,0 +1,7 @@
+{
+  "knob": "stage5_neg_board",
+  "description": "Stage 5 NEGATIVE keywords — School Board / Trustees class. Hits lean a page toward board_schedule (non-target). Tier-0.",
+  "baseline": {"added": "2026-06-24", "rationale": "original Stage 5 board negative-keyword set", "approved_by": "design", "loop_tier": 0},
+  "values": ["board of education", "board of trustees", "board meeting", "school board", "trustees", "agenda", "regular meeting", "work session"],
+  "additions": []
+}

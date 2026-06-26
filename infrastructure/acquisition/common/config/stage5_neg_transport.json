@@ -1,0 +1,7 @@
+{
+  "knob": "stage5_neg_transport",
+  "description": "Stage 5 NEGATIVE keywords — bus/transportation class. Hits lean a page toward transportation_schedule (non-target). Tricky boundary: pick-up/drop-off times mimic real start/end prose. Tier-0.",
+  "baseline": {"added": "2026-06-24", "rationale": "original Stage 5 transport negative-keyword set", "approved_by": "design", "loop_tier": 0},
+  "values": ["bus route", "bus schedule", "transportation department", "bus stop", "bus number"],
+  "additions": []
+}

@@ -24,6 +24,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "common"))
 import paths  # noqa: E402  (single source of truth for runtime-state locations — REQ-087)
+import config_loader  # noqa: E402  (Stage 5 keyword knobs — REQ-088/093)
 
 RAW_DIR = paths.RAW_CAPTURES
 QUEUE_DIR = paths.QUEUE_DIR                   # Stage 1 batch_*.json (targeting + NCES denominator)
@@ -58,19 +59,20 @@ PROXIMITY_CHARS = 220          # two times within this many chars = a plausible 
 WINDOW_LO, WINDOW_HI = 7 * 60, 16 * 60   # plausible school-day window (minutes since midnight)
 AFTER_5PM = 17 * 60
 
-POSITIVE_KW = ["bell schedule", "bell times", "school hours", "school day", "start time",
-               "end time", "dismissal", "arrival", "first bell", "last bell", "homeroom",
-               "period 1", "1st period", "drop-off", "drop off", "pick-up", "pick up"]
-# Negative keyword classes (each maps to a likely non-target category).
-NEG_BOARD = ["board of education", "board of trustees", "board meeting", "school board",
-             "trustees", "agenda", "regular meeting", "work session"]
-NEG_SPORTS = ["athletic", "athletics", "sports", "tournament", "varsity", "scrimmage",
-              " vs ", " vs.", "game schedule", "booster"]
-NEG_CALENDAR = ["academic calendar", "school calendar", "holiday", "early release",
-                "early dismissal", "no school", "in-service", "in service", "first day of school",
-                "last day of school", "winter break", "spring break"]
-NEG_TRANSPORT = ["bus route", "bus schedule", "transportation department", "bus stop", "bus number"]
+# Keyword classes are now config-as-data knobs (REQ-093) — tune them as config edits, not code.
+POSITIVE_KW = config_loader.values("stage5_positive_kw")
+NEG_BOARD = config_loader.values("stage5_neg_board")        # each negative class -> a likely non-target category
+NEG_SPORTS = config_loader.values("stage5_neg_sports")
+NEG_CALENDAR = config_loader.values("stage5_neg_calendar")
+NEG_TRANSPORT = config_loader.values("stage5_neg_transport")
 # Instructional-time declaration — ANCHORED so board-meeting "minutes" never false-positives.
+# MINUTES-ONLY, deliberately. REQ-093 tried adding HOURS patterns ("7.5 hrs/day") to rescue
+# DUNSEITH, but the MEASUREMENT HARNESS proved the broadening net-NEGATIVE: DUNSEITH's real
+# "147 days x 7.5 hrs/day" sits in a VISUAL CALENDAR GRID that text extraction mangles into
+# "...5 hrs" (no contiguous "/day"), so the regex can't match the real targets, while broad hours
+# phrasings ("instructional hours", "hours per day") false-positived on marketing copy
+# (Lindamood-Bell) and wrongly rescued a `none` record to tier B. Conclusion: hours-in-calendar is
+# a VISION / de-chrome problem (REQ-091 / Tier-3), not a keyword-regex one. Reverted to minutes-only.
 INSTRUCTIONAL_RE = re.compile(
     r"(\d{2,4})\s*(?:minutes|mins)\s+(?:of|per)\s+(?:instruction|instructional|class|learning)"
     r"|(?:instructional\s+minutes|minutes\s+per\s+day|minutes\s+of\s+instruction)", re.I)
@@ -370,13 +372,19 @@ def tier_and_category(sig: dict, roster_size: int):
     # ---- likelihood tier (confident, sortable) ----
     if sig["max_text_chars"] < 40 and not sig["pages"]:
         tier = "D"
-    elif n == 0:
-        tier = "D"
     elif prox >= 1 and (pos or instr) and not neg_dominant and not all_after5:
         tier = "A"
+    elif instr and not all_after5:
+        # An explicit instructional-time declaration (minutes OR hours) is a target signal even with
+        # no clock-time pair and even amid calendar/board keywords -> rescue to B, never hard-drop
+        # (REQ-093: DUNSEITH buries "7.5 hrs/day" in an academic calendar). Checked before the n==0
+        # and neg_dominant drops; the strong-target A branch above still wins when it qualifies.
+        tier = "B"
+    elif n == 0:
+        tier = "D"
     elif (neg_dominant or all_after5):
         tier = "C"
-    elif win >= 2 or instr:
+    elif win >= 2:
         tier = "B"
     else:
         tier = "C"

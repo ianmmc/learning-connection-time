@@ -1,0 +1,7 @@
+{
+  "knob": "stage5_neg_sports",
+  "description": "Stage 5 NEGATIVE keywords — athletics/sports class. Hits lean a page toward sports_schedule (non-target). Tier-0.",
+  "baseline": {"added": "2026-06-24", "rationale": "original Stage 5 sports negative-keyword set", "approved_by": "design", "loop_tier": 0},
+  "values": ["athletic", "athletics", "sports", "tournament", "varsity", "scrimmage", " vs ", " vs.", "game schedule", "booster"],
+  "additions": []
+}

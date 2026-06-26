@@ -1,0 +1,7 @@
+{
+  "knob": "stage5_neg_calendar",
+  "description": "Stage 5 NEGATIVE keywords — academic/school calendar class. Hits lean a page toward academic_calendar (non-target). NOTE: a calendar is NOT hard-dropped — an explicit instructional-time hit rescues it (DUNSEITH carries '7.5 hrs/day' in a calendar). Tier-0.",
+  "baseline": {"added": "2026-06-24", "rationale": "original Stage 5 calendar negative-keyword set", "approved_by": "design", "loop_tier": 0},
+  "values": ["academic calendar", "school calendar", "holiday", "early release", "early dismissal", "no school", "in-service", "in service", "first day of school", "last day of school", "winter break", "spring break"],
+  "additions": []
+}

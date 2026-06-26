@@ -1,0 +1,9 @@
+{
+  "knob": "stage5_positive_kw",
+  "description": "Stage 5 POSITIVE keywords — a lowercased-substring hit signals a likely bell-schedule / instructional-time page (feeds the tier + category signals). Tier-0: re-ingest to re-measure.",
+  "baseline": {"added": "2026-06-24", "rationale": "original Stage 5 positive-keyword set", "approved_by": "design", "loop_tier": 0},
+  "values": ["bell schedule", "bell times", "school hours", "school day", "start time", "end time", "dismissal", "arrival", "first bell", "last bell", "homeroom", "period 1", "1st period", "drop-off", "drop off", "pick-up", "pick up"],
+  "additions": [
+    {"value": "class schedule", "added": "2026-06-25", "rationale": "ROY titles its bell schedule 'Class Schedule' (NOT bare 'class', which would over-match) — REQ-093", "approved_by": "ian", "loop_tier": 0}
+  ]
+}

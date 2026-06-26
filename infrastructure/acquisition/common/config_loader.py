@@ -30,5 +30,15 @@ def load(name: str) -> dict:
 
 
 def values(name: str) -> list:
-    """Just the live list of entry values — what the pipeline actually consumes."""
-    return [e["value"] for e in load(name).get("entries", [])]
+    """The live list of values the pipeline consumes. Two supported knob shapes:
+      * full provenance per item:  {"entries": [{"value": ..., <provenance>}, ...]}
+        (use for consequential, individually-justified items, e.g. cms_hosts)
+      * baseline + tracked additions:  {"baseline": {...}, "values": [...],
+        "additions": [{"value": ..., <provenance>}, ...]}
+        (use for large lists where the bulk shares one baseline provenance and only the
+        deltas need individual justification, e.g. keyword lists)
+    Order preserved: entries, or baseline values then additions."""
+    doc = load(name)
+    if "entries" in doc:
+        return [e["value"] for e in doc["entries"]]
+    return list(doc.get("values", [])) + [a["value"] for a in doc.get("additions", [])]
