@@ -5,7 +5,7 @@ classification, district status registry (REQ-061/062/063/064/065/066/067, built
 import json
 import pytest
 
-from infrastructure.acquisition.stage1_queue import school_sampling as S
+from infrastructure.acquisition.common import school_sampling as S
 from infrastructure.acquisition.stage8_aggregate import aggregate as A
 from infrastructure.acquisition.stage1_queue import queue_batch as Q
 from infrastructure.acquisition.common import district_status as DS

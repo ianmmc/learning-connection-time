@@ -151,7 +151,7 @@ def nces_school_counts(year: str = NCES_YEAR) -> dict:
     happened to yield — used to confirm single_school and the incomplete_coverage gap. Best
     effort: returns {} if the NCES files aren't present, and topology degrades gracefully."""
     try:
-        from infrastructure.acquisition.stage1_queue import school_sampling as ss
+        from infrastructure.acquisition.common import school_sampling as ss
 
         idx = ss.school_index(year)
     except Exception:

@@ -31,7 +31,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-from infrastructure.acquisition.stage1_queue import school_sampling as S
+from infrastructure.acquisition.common import school_sampling as S
 
 from infrastructure.acquisition.common import district_status as DS
 

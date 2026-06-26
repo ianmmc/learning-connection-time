@@ -13,6 +13,37 @@ requires-python = ">=3.10"
 # (REQ-098, see docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §9a). Folding deps into
 # pyproject is a separate, later step.
 
+# --- Architecture contracts (REQ-098 step 4): `lint-imports` enforces these in CI. ---
+[tool.importlinter]
+root_packages = ["infrastructure"]
+
+[[tool.importlinter.contracts]]
+name = "Layering: process_governance (app) > stages (independent) > common (base)"
+type = "layers"
+layers = [
+    "process_governance",
+    "stage1_queue | stage2_discover | stage3_capture | stage4_process | stage5_filter | stage8_aggregate",
+    "common",
+]
+containers = ["infrastructure.acquisition"]
+
+[[tool.importlinter.contracts]]
+name = "Acquisition must not import the LCT database layer (except the sanctioned Stage 1 read / Stage 9 write — THE POINT of the pipeline)"
+type = "forbidden"
+source_modules = ["infrastructure.acquisition"]
+forbidden_modules = ["infrastructure.database"]
+# Stage 1 reads enrollment for the queue; Stage 9 (not built yet) will write minutes back.
+ignore_imports = [
+    "infrastructure.acquisition.stage1_queue.queue_batch -> infrastructure.database.connection",
+    "infrastructure.acquisition.stage1_queue.queue_batch -> infrastructure.database.models",
+]
+
+[[tool.importlinter.contracts]]
+name = "The LCT/database/scripts layer must not import the acquisition pipeline"
+type = "forbidden"
+source_modules = ["infrastructure.database", "infrastructure.scripts"]
+forbidden_modules = ["infrastructure.acquisition"]
+
 [tool.setuptools.packages.find]
 where = ["."]
 # `infrastructure` is a PEP 420 namespace package (no top-level __init__.py); its source subpackages
