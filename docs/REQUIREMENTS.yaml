@@ -1,6 +1,6 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-06-24T00:00:00Z"
+last_updated: "2026-06-25T00:00:00Z"
 
 requirements:
   - id: REQ-001
@@ -1989,3 +1989,106 @@ requirements:
       mode is the standing mechanism for applying future CMS_HOSTS changes to captured data without
       re-capture. The browser-driving fingerprint paths share the same no-automated-harness gap as the rest
       of capture_discovery.mjs's render logic - REQ-079."
+
+  # --- Learning-loop / config-as-data implementation wave (pre-registered 2026-06-25, tests-first) ---
+  - id: REQ-087
+    description: Centralize acquisition runtime-state paths behind a single paths module with a configurable DATA_ROOT
+    type: constraint
+    priority: should
+    status: not_started
+    acceptance_criteria:
+      - infrastructure/acquisition/common/paths.py defines DATA_ROOT plus every runtime location (queue, status, stage5_review db/labels/splits, raw captures)
+      - Existing hardcoded data/acquisition/... literals (build_signals.py, server.py, queue_batch.py, the pre-commit hook, gitignore references) repointed at it; behavior unchanged
+      - DATA_ROOT is overridable (env or single constant) so all generated state relocates to an external drive as one unit
+      - Runtime state stays under data/; config stays near code (does not move state into the code tree)
+    tests: []
+    created: "2026-06-25T00:00:00Z"
+    updated: "2026-06-25T00:00:00Z"
+    notes: "Foundation slice 1. Behavior-preserving refactor done BEFORE feature work so paths aren't rewritten twice. See STAGE5_FILTER_DESIGN / the reorg discussion 2026-06-25."
+
+  - id: REQ-088
+    description: Config-as-data layer (versioned JSON, cross-language) with per-entry provenance
+    type: functional
+    priority: should
+    status: not_started
+    acceptance_criteria:
+      - Tunables live in versioned JSON under infrastructure/acquisition/common/config/, readable by BOTH the Python and Node halves
+      - Each entry carries per-entry provenance - added, rationale, evidence, approved_by, loop_tier - so a knob is its own decision log
+      - A loader returns live values and exposes provenance for audit
+      - Tunables are externalized from code literals (no behavior change on first migration)
+    tests: []
+    created: "2026-06-25T00:00:00Z"
+    updated: "2026-06-25T00:00:00Z"
+    notes: "JSON chosen over YAML for native cross-language read (no Node YAML dep). Per-entry (not per-file) provenance, for the lineage/audit principle the user requires."
+
+  - id: REQ-089
+    description: Migrate CMS_HOSTS to the config layer as the first knob (single source of truth)
+    type: functional
+    priority: should
+    status: not_started
+    acceptance_criteria:
+      - CMS_HOSTS lives in one config file with per-entry provenance; the hand-synced dual definition (discover.py + capture_discovery.mjs) is eliminated
+      - discover.py gate()/cms_hint and capture_discovery.mjs cms_hint resolve IDENTICALLY to before (regression - same cms_hint distribution over the 150 records)
+      - Governance preserved - human-in-the-loop, school-district-vendor-only additions
+    tests: []
+    created: "2026-06-25T00:00:00Z"
+    updated: "2026-06-25T00:00:00Z"
+    notes: "First real knob; proves the cross-language read end-to-end and kills the drift-prone dual-file sync flagged repeatedly."
+
+  - id: REQ-090
+    description: Measurement harness - score a config state against human labels, emit a reproducible scorecard
+    type: functional
+    priority: should
+    status: not_started
+    acceptance_criteria:
+      - Scores programmatic-vs-human at representation / url / district granularity (tier precision-recall, category accuracy, topology agreement)
+      - Each scorecard stamps config version + label-set hash + ingest snapshot (reproducible/auditable)
+      - Runs on-demand and at batch completion (or after n updates - n a config knob); NOT per-label-write
+      - Output is diffable
+    tests: []
+    created: "2026-06-25T00:00:00Z"
+    updated: "2026-06-25T00:00:00Z"
+    notes: "Turns every config proposal from hunch into number; prerequisite for the CP-B proposals view. Scored against live labels, fingerprinted for reproducibility."
+
+  - id: REQ-091
+    description: Stage 3 DOM segmentation (de-chrome) - header/footer/nav vs main as separate representations
+    type: functional
+    priority: should
+    status: not_started
+    acceptance_criteria:
+      - At render time, capture innerText of semantic+ARIA landmarks (header/footer/nav/banner/contentinfo/navigation) and main into page.main/header/footer/nav.txt
+      - Full page.txt always kept; segmentation is additive and best-effort - when no landmarks exist, main=full page (never worse than today)
+      - Segments are first-class representations; Stage 5 tiers on main and screens chrome separately (building-hours suppress vs school-hours promote per the keyword buckets)
+      - backfill-segments mode re-visits already-captured records without touching Stage 4 output (mirrors backfill-fingerprints)
+    tests: []
+    created: "2026-06-25T00:00:00Z"
+    updated: "2026-06-25T00:00:00Z"
+    notes: "Highest-leverage Stage 5 signal fix. Must live at Stage 3 - we persist innerText only, not raw HTML, so the DOM is gone by Stage 4. Open: exact landmark list (start strict) + the promote/suppress keyword lists."
+
+  - id: REQ-092
+    description: Handbook page-harvesting - harvest only schedule-bearing page(s) from long multi-topic docs
+    type: functional
+    priority: should
+    status: not_started
+    acceptance_criteria:
+      - Detect a handbook (keyword in URL/title/text + document length)
+      - Use the per-page time-count signal to identify the schedule-bearing page(s); deterministic, reuses existing per-page rasterization/pdftotext
+      - Sends the harvested page(s), not the whole doc, downstream - addresses the Broward/Orange/Pittsylvania multi-page failures
+    tests: []
+    created: "2026-06-25T00:00:00Z"
+    updated: "2026-06-25T00:00:00Z"
+    notes: "Tier-0 (re-derive over already-rasterized pages). In-scope for this wave per the 2026-06-25 scope calls."
+
+  - id: REQ-093
+    description: Stage 5 Tier-0 scoring refinements, each measured against labels via the harness
+    type: functional
+    priority: should
+    status: not_started
+    acceptance_criteria:
+      - Detect instructional HOURS (not only minutes); stop dropping academic_calendar candidates; add a class-schedule positive keyword; consume the de-chrome main-only signal
+      - Every change shows a before/after against the labels via REQ-090; no regression to tier precision-recall on batch_00001
+      - Changes land as config edits (REQ-088), not new code literals
+    tests: []
+    created: "2026-06-25T00:00:00Z"
+    updated: "2026-06-25T00:00:00Z"
+    notes: "The first real customers of the config layer + harness - proves the learning loop end-to-end on the cheapest (Tier-0) knobs."
