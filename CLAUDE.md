@@ -23,9 +23,11 @@ Part of "Reducing the Ratio" educational equity initiative. Currently implementi
 
 ---
 
-## Current Status (2026-06-22)
+## Current Status (2026-06-26)
 
 Building the **per-school acquisition pipeline** stage-by-stage with **human-in-the-loop checkpoints**. The GT/benchmark exploration concluded and was archived; the validated design is now the active build. Canonical pipeline doc: **`docs/ACQUISITION_PIPELINE.md`** (9 stages + failure-modes→checkpoints table + reader-routing spec). Live code: **`infrastructure/acquisition/`** (promoted out of the retired `scripts/benchmark/`). Council research: `docs/technical-notes/LLM_COUNCIL_RESEARCH_2026-06.md`. Leaderboard/costs: `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.
+
+**Build progress (2026-06-26):** Stages **1–4 built + run live** on `batch_00001` (12 districts, 150 URLs). **Stage 5** (local filter) — review app + deterministic signals + de-chrome + near-dup clustering + labeled topology + the **tuning learning-loop** (config-as-data, measurement harness REQ-090, episode ledger REQ-095, frontier/grid search REQ-096) all built; the operational `filtered.json` release generator (REQ-094) is the remaining Stage-5 piece. The project is now executing the **governance/state/Postgres re-architecture** — **authority doc: `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`** (read it first; it supersedes older design notes where they conflict). **REQ-098 DONE** (acquisition tree is now a proper installable package — **run `pip install -e .`**, no more `sys.path` shims; import-linter/grimp/vulture + dependency-cruiser enforce layering). **REQ-103 (Postgres governance DB) IN PROGRESS — paused after 103a; RESUME at `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §1b.**
 
 **Metric = GROSS bell-to-bell minutes (end − start), NOT net.** No lunch/passing/recess deduction, no *assumed* deductions. Existing GT is already gross; gross needs only two reliably-published numbers (↑accuracy). Net is a deferred enhancement. Labeled `gross_bell_to_bell`. Plausibility gate 240–510 min. (REQ-055; supersedes net in REQ-042/046.)
 
@@ -39,16 +41,28 @@ Building the **per-school acquisition pipeline** stage-by-stage with **human-in-
 
 **Human-in-the-loop checkpoints (current mode) = 3:** **CP-A Queue** (right schools/bands targeted), **CP-B Input** (legible capture — the critical gate), **CP-C Output→Write** (per-school times correct + honestly labeled; approval gates the DB write). Loosen later once confident.
 
-**Notes:** Local Ollama deleted; paid-cloud extraction is cheap (~$0.05–0.30/1M). Granite 4.1 8B = self-host candidate (headless Ubuntu server, separate project). Keys in gitignored `config/secrets.local.json` + `.env`. Requirements: **REQ-043…060** (042/046/048 superseded). Restore point for the archived GT/benchmark exercise: git tag `gt-exercise-complete`.
+**Notes:** Local Ollama deleted; paid-cloud extraction is cheap (~$0.05–0.30/1M). Granite 4.1 8B = self-host candidate (headless Ubuntu server, separate project). Keys in gitignored `config/secrets.local.json` + `.env`. Requirements: **REQ-001…107** (042/046/048/057 superseded; 028–031/033 retired with the Crawlee era). Restore point for the archived GT/benchmark exercise: git tag `gt-exercise-complete`.
 
 > **SEA central-data harvest is a dead end for daily minutes** (verified) — states publish only statutory minimums / day-counts, not actual daily minutes. Web discovery + extraction is the primary acquisition path. See `docs/INSTRUCTIONAL_TIME_HARVEST.md`.
 
-### Next session (where we paused)
-1. **Fold the 940 verified schools → new gross GT manifest**, repoint live code from `data/benchmark/ground_truth_manifest.json` to it.
-2. **Council composition decision** — the Mistral-Small-pivotal-~8% question + Path-1/Path-2/Path-1-minus-Mistral A/B (by escalation rate).
-3. **Per-school extract→aggregate fix** — `gt_propose`/pipeline must extract **per file, not concat+truncate** (the Orange/Baldwin undercount bug); then isolate the per-school accuracy lift vs the new GT.
-4. **Build the 3 checkpoints — CP-A done (2026-06-22).** Stage 1 (Queue) designed, built, and tested end-to-end: `infrastructure/acquisition/discovery/queue_batch.py` (exclusion filters, enrollment-quartile stratification, per-band school selection) + `district_status.py` (cross-stage registry, replaces the old `training_batch.py`, now archived). Real `batch_00001.json` generated (12 districts, `data/acquisition/queue/`, 5-digit batch numbering) — out-of-band human review (CP-A) is the immediate next step before Stage 2 runs on it. CP-B/CP-C tooling still open. **NOTE: the real Wave-1 (Claude WebSearch subagent) has still never actually executed** — Stage 1 only builds the queue; running `batch_00001` through Stage 2 (Discover) will be Wave-1's first real smoke test.
-5. The existing `.claude/skills/per-school-acquire*` are **premature** (bundle all 9 stages) — kept for reference, but we're walking stages individually and they'll evolve. Don't treat them as the runbook.
+### Next session (RESUME HERE — 2026-06-26)
+**The immediate task is REQ-103b** (the Postgres governance-DB migration). Full step-by-step resume
+guide: **`docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §1b** (decisions locked, the 4
+SQLite consumers to convert, dialect gotchas, test-fixture plan). 103a (governance DB+user,
+`common/db.py`, precious models) is **done + committed** (`3c725f3`), additive, suite green.
+
+**First, in a fresh session:** `/catchup`, then `pip install -e .` (required since REQ-098 packaged the
+tree), then open §1b. Verify state with `lint-imports` (expect 3 kept/0 broken) and `pytest -q`.
+
+**Build sequence after REQ-103** (from the governance doc §9): **REQ-099** state event-log (migrate
+`district_status` → Postgres) → **REQ-094** release generator (`filtered.json`) → REQ-100 trigger UI →
+REQ-101 Stage-6 handoff → REQ-102 CP-A view / stage selector → REQ-104 Stage 2 headless (`claude -p`).
+
+**Watch-items:** (a) the Stage-5 review app moved to `infrastructure/acquisition/process_governance/`
+and `build_signals.py` to `stage5_filter/` (REQ-098) — imports are now absolute package paths, no
+`sys.path` shims; (b) discovery's Wave 1 is moving from an in-chat Haiku *subagent* to **headless
+`claude -p`** (REQ-104, not built yet); (c) the `.claude/skills/per-school-acquire*` skills are
+**premature/stale** (bundle all 9 stages) — don't treat them as the runbook; walk stages individually.
 
 ---
 
