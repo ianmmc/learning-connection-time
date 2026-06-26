@@ -1,0 +1,19 @@
+{
+  "knob": "cms_hosts",
+  "description": "Trusted K-12 CMS / content-host domain SUFFIXES (matched via endsWith). Two uses: (1) Stage 2 discover.py gate() keeps an off-domain candidate whose host ends with one of these AND contains the district slug -- LOAD-BEARING for discovery recall (a Tier-2 effect, only re-measurable by re-running discovery); (2) Stage 3 cms_hint = host-suffix match against this list (a Tier-0 recompute via `capture_discovery.mjs recompute-cms-hint`, no re-capture). Single source of truth for BOTH discover.py and capture_discovery.mjs (REQ-089, ending the prior hand-synced dual definition).",
+  "governance": "Every addition is a human-in-the-loop decision, never automated. Each entry MUST be a vendor that specifically serves school districts -- NEVER a general hosting/CDN provider (amazonaws.com is deliberately excluded despite core-docs.s3.amazonaws.com appearing in real data: S3 hosts everything, so whitelisting it would invite pollution).",
+  "entries": [
+    {"value": "finalsite.net", "added": "2026-06-13", "rationale": "original discovery-era K-12 CMS/content host", "evidence": "known school-CMS vendor", "approved_by": "design", "loop_tier": 0},
+    {"value": "echalksites.com", "added": "2026-06-13", "rationale": "original discovery-era K-12 CMS (eChalk); image-only schedule pages seen on it", "evidence": "known school-CMS vendor", "approved_by": "design", "loop_tier": 0},
+    {"value": "sites.google.com", "added": "2026-06-13", "rationale": "Google Sites — common school content host", "evidence": "known school-content host", "approved_by": "design", "loop_tier": 0},
+    {"value": "drive.google.com", "added": "2026-06-13", "rationale": "Google Drive — schedule PDFs/docs frequently hosted here", "evidence": "known school-content host", "approved_by": "design", "loop_tier": 0},
+    {"value": "docs.google.com", "added": "2026-06-13", "rationale": "Google Docs — schedule documents hosted here", "evidence": "known school-content host", "approved_by": "design", "loop_tier": 0},
+    {"value": "schoolwires.net", "added": "2026-06-13", "rationale": "SchoolWires/Blackboard K-12 CMS", "evidence": "known school-CMS vendor", "approved_by": "design", "loop_tier": 0},
+    {"value": "schoolwires.com", "added": "2026-06-13", "rationale": "SchoolWires/Blackboard K-12 CMS", "evidence": "known school-CMS vendor", "approved_by": "design", "loop_tier": 0},
+    {"value": "blackboard.com", "added": "2026-06-13", "rationale": "Blackboard K-12 CMS", "evidence": "known school-CMS vendor", "approved_by": "design", "loop_tier": 0},
+    {"value": "sharpschool.com", "added": "2026-06-24", "rationale": "dominant K-12 CMS in batch_00001 (Open decision #8)", "evidence": "51 records; cms_hint was null until added", "approved_by": "ian", "loop_tier": 0},
+    {"value": "apptegy.net", "added": "2026-06-24", "rationale": "Apptegy/Thrillshare K-12 platform in batch_00001 (Open decision #8)", "evidence": "~24 records (apptegy.net + core-docs.s3)", "approved_by": "ian", "loop_tier": 0},
+    {"value": "thrillshare.com", "added": "2026-06-24", "rationale": "Apptegy/Thrillshare K-12 platform in batch_00001 (Open decision #8)", "evidence": "Apptegy's content host", "approved_by": "ian", "loop_tier": 0},
+    {"value": "educationalnetworks.net", "added": "2026-06-24", "rationale": "Educational Networks K-12 platform in batch_00001 (Open decision #8)", "evidence": "25 records", "approved_by": "ian", "loop_tier": 0}
+  ]
+}

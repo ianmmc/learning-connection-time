@@ -30,7 +30,7 @@ import { chromium } from 'playwright';
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, renameSync } from 'fs';
 import { createHash } from 'crypto';
 import path from 'path';
-import { pathToFileURL } from 'url';
+import { pathToFileURL, fileURLToPath } from 'url';
 import { isGoogleUrl, driveExportCandidates } from './capture_drive.mjs';
 
 // Matches discover_stage2.py's write_discovery() convention exactly (Python's
@@ -59,16 +59,15 @@ const TIME = /\b\d{1,2}:\d{2}\s*(?:[AaPp]\.?[Mm]\.?)?/g;
 // reused here, not duplicated, so "what counts as a schedule link" stays one source of truth.
 const SCHED_KW = ['bell', 'schedule', 'hours', 'start-time', 'start_time', 'daily-schedule', 'times', 'school-day', 'schoolday'];
 
-// Mirrors discover.py's CMS_HOSTS (kept in sync by hand, same as SCHED_KW above) -- domain
-// SUFFIXES that signal a known K-12 CMS / content host. Matched via endsWith, exactly as
-// discover.py does (`any(h.endswith(c) for c in CMS_HOSTS)`). GOVERNANCE: this list is
-// LOAD-BEARING in discover.py's gate() (discovery recall), so additions are ALWAYS a
-// human-in-the-loop decision -- school-district vendors only, never a general host/CDN (S3 etc.).
-// Keep in sync with discover.py's CMS_HOSTS. The 2026-06-24 additions
-// (sharpschool/apptegy/thrillshare/educationalnetworks) came from Stage 3 fingerprinting.
-const CMS_HOSTS = ['finalsite.net', 'echalksites.com', 'sites.google.com', 'drive.google.com',
-  'docs.google.com', 'schoolwires.net', 'schoolwires.com', 'blackboard.com',
-  'sharpschool.com', 'apptegy.net', 'thrillshare.com', 'educationalnetworks.net'];
+// CMS_HOSTS is the shared config-as-data knob `cms_hosts` -- the SAME JSON file discover.py reads,
+// so the two can no longer drift (REQ-089, ending the prior hand-synced duplication). Domain
+// SUFFIXES signalling a known K-12 CMS / content host, matched via endsWith. Governance +
+// per-entry provenance live in the config file. Path resolved from this module (CWD-independent):
+// infrastructure/scraper/ -> ../acquisition/common/config/cms_hosts.json.
+const CMS_HOSTS = JSON.parse(readFileSync(
+  path.join(path.dirname(fileURLToPath(import.meta.url)),
+            '..', 'acquisition', 'common', 'config', 'cms_hosts.json'), 'utf8')
+).entries.map((e) => e.value);
 
 // --- Fingerprint helpers (raw signals only, no classification) ---------------------------
 // The pure ones are exported for unit testing (capture_fingerprint.test.mjs); the

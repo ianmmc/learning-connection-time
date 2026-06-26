@@ -2016,30 +2016,40 @@ requirements:
     description: Config-as-data layer (versioned JSON, cross-language) with per-entry provenance
     type: functional
     priority: should
-    status: not_started
+    status: tested
     acceptance_criteria:
       - Tunables live in versioned JSON under infrastructure/acquisition/common/config/, readable by BOTH the Python and Node halves
       - Each entry carries per-entry provenance - added, rationale, evidence, approved_by, loop_tier - so a knob is its own decision log
       - A loader returns live values and exposes provenance for audit
       - Tunables are externalized from code literals (no behavior change on first migration)
-    tests: []
+    tests:
+      - tests/test_config_layer.py
     created: "2026-06-25T00:00:00Z"
     updated: "2026-06-25T00:00:00Z"
-    notes: "JSON chosen over YAML for native cross-language read (no Node YAML dep). Per-entry (not per-file) provenance, for the lineage/audit principle the user requires."
+    notes: "BUILT 2026-06-25. infrastructure/acquisition/common/config_loader.py reads knob JSON from
+      paths.CONFIG_DIR; values(name) returns the live list, load(name) the full doc with provenance. JSON
+      chosen over YAML for native cross-language read (no Node YAML dep) - the Node half reads the same
+      files directly. Per-entry (not per-file) provenance, for the lineage/audit principle the user requires."
 
   - id: REQ-089
     description: Migrate CMS_HOSTS to the config layer as the first knob (single source of truth)
     type: functional
     priority: should
-    status: not_started
+    status: tested
     acceptance_criteria:
       - CMS_HOSTS lives in one config file with per-entry provenance; the hand-synced dual definition (discover.py + capture_discovery.mjs) is eliminated
       - discover.py gate()/cms_hint and capture_discovery.mjs cms_hint resolve IDENTICALLY to before (regression - same cms_hint distribution over the 150 records)
       - Governance preserved - human-in-the-loop, school-district-vendor-only additions
-    tests: []
+    tests:
+      - tests/test_config_layer.py
     created: "2026-06-25T00:00:00Z"
     updated: "2026-06-25T00:00:00Z"
-    notes: "First real knob; proves the cross-language read end-to-end and kills the drift-prone dual-file sync flagged repeatedly."
+    notes: "BUILT 2026-06-25. config/cms_hosts.json is the single source of truth; discover.py
+      (CMS_HOSTS=tuple(config_loader.values('cms_hosts'))) and capture_discovery.mjs (reads the same JSON
+      via import.meta.url) both consume it - the hand-synced dual definition is gone. Verified IDENTICAL
+      resolution: both languages return the same 12 hosts in order; TestDiscoveryGate green (gate() behavior
+      unchanged); 14 node capture tests green. The 12 entries carry per-entry provenance (8 discovery-era +
+      the 4 human-approved 2026-06-24 additions, Open decision #8)."
 
   - id: REQ-090
     description: Measurement harness - score a config state against human labels, emit a reproducible scorecard

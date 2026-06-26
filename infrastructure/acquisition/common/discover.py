@@ -6,21 +6,16 @@ import os, json, sys, csv
 from pathlib import Path
 from urllib.parse import urlparse
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import config_loader  # noqa: E402  (config-as-data layer — REQ-088)
+
 OUT=Path("data/acquisition/discovery")
 NCES="data/raw/federal/nces-ccd/2023_24/ccd_lea_029_2324_w_1a_073124.csv"
-# Trusted K-12 CMS / content-host SUFFIXES. LOAD-BEARING in Stage 2 discovery: gate() keeps an
-# off-domain candidate URL whose host ends with one of these AND contains the district slug
-# (see gate() below) -- i.e. "this is on a known school-CMS platform and names this district, so
-# it's almost certainly this district's content." So an addition here CHANGES discovery recall.
-# GOVERNANCE: additions are ALWAYS a human-in-the-loop decision, never automated -- every entry
-# must be a vendor that specifically serves school districts, NOT a general hosting/CDN provider
-# (e.g. amazonaws.com is deliberately excluded despite core-docs.s3.amazonaws.com appearing in
-# real data: S3 hosts everything, so whitelisting it would invite pollution). Mirror any change
-# into capture_discovery.mjs's CMS_HOSTS (hand-synced, like SCHED_KW).
-# 2026-06-24: sharpschool.com / apptegy.net / thrillshare.com / educationalnetworks.net added
-# after Stage 3 fingerprinting surfaced them as the dominant real platforms in batch_00001
-# (human-approved; see ACQUISITION_PIPELINE.md Open decision #8, now resolved).
-CMS_HOSTS=("finalsite.net","echalksites.com","sites.google.com","drive.google.com","docs.google.com","schoolwires.net","schoolwires.com","blackboard.com","sharpschool.com","apptegy.net","thrillshare.com","educationalnetworks.net")
+# Trusted K-12 CMS / content-host SUFFIXES -- now the shared config-as-data knob `cms_hosts`
+# (single source of truth with capture_discovery.mjs; no more hand-syncing). LOAD-BEARING in
+# gate(): an off-domain candidate whose host ends with one of these AND contains the district
+# slug is kept. Governance + per-entry provenance live in the config file. REQ-089.
+CMS_HOSTS=tuple(config_loader.values("cms_hosts"))
 NEWS_AGG=("patch.com","niche.com","greatschools.org","wikipedia.org","news12.com","facebook.com","instagram.com","twitter.com","x.com","yelp.com","usnews.com","schooldigger.com","publicschoolreview.com")
 SCHED_KW=("bell","schedule","hours","start-time","start_time","daily-schedule","times","school-day","schoolday")
 
