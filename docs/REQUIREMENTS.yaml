@@ -2079,16 +2079,34 @@ requirements:
     description: Stage 3 DOM segmentation (de-chrome) - header/footer/nav vs main as separate representations
     type: functional
     priority: should
-    status: not_started
+    status: accepted
     acceptance_criteria:
       - At render time, capture innerText of semantic+ARIA landmarks (header/footer/nav/banner/contentinfo/navigation) and main into page.main/header/footer/nav.txt
       - Full page.txt always kept; segmentation is additive and best-effort - when no landmarks exist, main=full page (never worse than today)
       - Segments are first-class representations; Stage 5 tiers on main and screens chrome separately (building-hours suppress vs school-hours promote per the keyword buckets)
       - backfill-segments mode re-visits already-captured records without touching Stage 4 output (mirrors backfill-fingerprints)
-    tests: []
+    tests:
+      - tests/test_stage5_scoring.py
+      - tests/test_config_layer.py
     created: "2026-06-25T00:00:00Z"
     updated: "2026-06-25T00:00:00Z"
-    notes: "Highest-leverage Stage 5 signal fix. Must live at Stage 3 - we persist innerText only, not raw HTML, so the DOM is gone by Stage 4. Open: exact landmark list (start strict) + the promote/suppress keyword lists."
+    notes: "BUILT 2026-06-25, MEASUREMENT PENDING A LIVE BACKFILL. Three parts shipped: (1) the landmark
+      selector list is a config knob (config/de_chrome_landmarks.json, STRICT semantic+ARIA to start);
+      (2) capture_discovery.mjs gains segmentChrome() (page.evaluate -> main = body-minus-landmarks via
+      textContent, plus header/footer/nav innerText), writes page.main/header/footer/nav.txt on every HTML
+      capture, AND a `backfill-segments` mode mirroring backfill-fingerprints; (3) Stage 5 consumes it -
+      build_signals.compute_signals(main_text=...) computes the time/keyword/roster signals over MAIN when
+      page.main.txt exists (sig.dechromed), registers the segments as inspectable reps, and GRACEFULLY
+      FALLS BACK to the full page when main is absent/too-thin (verified: re-ingest with no segments =
+      byte-identical baseline, dechromed=0/150). OFFLINE-TESTED: landmark knob loads (py+node); Stage 5
+      consumption + fallback (synthetic main vs noisy full -> fewer neg keywords). NOT yet measurable here:
+      the actual lift needs segment DATA, which only a live `node capture_discovery.mjs backfill-segments`
+      run produces (browser + real sites, same constraint as the original captures) - the browser-side
+      segmentChrome shares the offline-untested gap of all render code (REQ-079). Once a backfill runs, the
+      harness (REQ-090) measures whether main-only beats full-page (esp. Marion's nav-inflated topology and
+      the 0.43 category ceiling). Open for that run: widen landmarks past semantic/ARIA only on measured
+      footer-miss rate; the promote/suppress chrome screening uses the existing building_hours_visible flag
+      + the keyword buckets the user supplied."
 
   - id: REQ-092
     description: Handbook page-harvesting - harvest only schedule-bearing page(s) from long multi-topic docs

@@ -325,8 +325,12 @@ def harvest_schedule_pages(pages: list, min_times: int = HANDBOOK_HARVEST_MIN) -
     return [p["page"] for p in pages if p["n_times"] >= cut]
 
 
-def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dict):
-    """All deterministic, no AI. `texts` = processed.json texts[]; `files` = captures.json files{}."""
+def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dict, main_text: str = None):
+    """All deterministic, no AI. `texts` = processed.json texts[]; `files` = captures.json files{}.
+    `main_text` = the Stage-3 DE-CHROMED page (page.main.txt) when present (REQ-091): the time /
+    keyword / roster signals are then computed over MAIN instead of the full page, so footer
+    building-hours and school-switcher nav can't inject false signal. Graceful: a too-thin main
+    falls back to the full text, so segmentation can never make things worse."""
     # Gather text: best (max n_times, usable) for time density; union of usable reps for keywords.
     usable = [t for t in texts if t.get("usable") and t.get("text_file")]
     def read(t):
@@ -335,10 +339,15 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
         except Exception:
             return ""
     best = max(usable, key=lambda t: t.get("n_times", 0), default=None)
-    best_text = read(best) if best else ""
-    all_text = "\n".join(read(t) for t in usable)
-    all_lc = all_text.lower()
+    full_best = read(best) if best else ""
+    full_all = "\n".join(read(t) for t in usable)
     max_chars = max((t.get("n_chars", 0) for t in texts), default=0)
+
+    # De-chrome: signals over MAIN when a usable page.main.txt segment exists, else the full page.
+    dechromed = bool(main_text and len(main_text.strip()) >= USABLE_MIN_CHARS)
+    best_text = main_text if dechromed else full_best   # time-signal basis
+    all_text = main_text if dechromed else full_all      # keyword/roster basis
+    all_lc = all_text.lower()
 
     # Time signals (on the richest single representation).
     tps = time_positions(best_text)
@@ -385,9 +394,10 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
         "max_text_chars": max_chars, "pages": pages,
         "is_handbook": is_handbook_doc(all_lc, files, len(pages), max_chars),
         "harvest_pages": harvest_schedule_pages(pages),
+        "dechromed": dechromed,   # REQ-091: signals computed over MAIN (chrome removed)?
     }
-    # `best_text` is the richest single representation — the content basis for near-dup clustering.
-    return sig, best_text
+    # Clustering dedups by WHOLE-page content, so it uses the full best text, not the de-chromed main.
+    return sig, full_best
 
 
 def tier_and_category(sig: dict, roster_size: int):
@@ -570,7 +580,10 @@ def ingest(root: Path, db_path: Path):
             rdir = ddir / "captures" / h
             files = cap.get("files") or {}
 
-            sig, best_text = compute_signals(rdir, prec.get("texts", []), roster_norm, files)
+            # De-chrome (REQ-091): if a Stage-3 page.main.txt segment exists, signals compute over it.
+            mp = rdir / "page.main.txt"
+            main_text = mp.read_text(errors="replace") if mp.exists() else None
+            sig, best_text = compute_signals(rdir, prec.get("texts", []), roster_norm, files, main_text)
             tier, score, cat = tier_and_category(sig, roster_size)
 
             # content hash for dedup: prefer the primary binary, else the best text content
@@ -627,6 +640,14 @@ def ingest(root: Path, db_path: Path):
             for rp in sorted(rdir.glob("raster_p*.png")):
                 con.execute("INSERT INTO representation VALUES (?,?,?,?,?,?,?)",
                             (rec_key, "raster", rp.name, "image", None, None, 1))
+            # Stage-3 DOM segments (REQ-091) as inspectable text reps when present: main (de-chromed
+            # body, what signals run on) + the quarantined chrome (header/footer/nav, screened separately).
+            for seg in ("page.main.txt", "page.header.txt", "page.footer.txt", "page.nav.txt"):
+                sp = rdir / seg
+                if sp.exists():
+                    con.execute("INSERT INTO representation VALUES (?,?,?,?,?,?,?)",
+                                (rec_key, f"segment:{seg.split('.')[1]}", seg, "text",
+                                 len(sp.read_text(errors='replace')), None, 1))
             district_records.append((rec_key, sig, tier, dup_of))
 
         # near-duplicate clustering (content-similarity; honors human splits) -> UPDATE records

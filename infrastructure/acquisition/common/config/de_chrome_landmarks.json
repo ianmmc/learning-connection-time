@@ -1,0 +1,8 @@
+{
+  "knob": "de_chrome_landmarks",
+  "description": "CSS selectors treated as page CHROME for Stage 3 DOM segmentation (REQ-091). At render time, the innerText of elements matching these is captured as page.header/footer/nav.txt, and page.main.txt = body innerText with these removed. Stage 5 tiers on MAIN so chrome (a footer 'Building Hours', a school-switcher nav) can't inject false signal; the chrome segments stay inspectable and are screened separately.",
+  "governance": "STRICT to start: semantic + ARIA landmarks only. Class/id heuristics (.site-footer, #colophon, .main-nav, ...) are deliberately DEFERRED until we measure the footer-miss rate on real data, because over-matching risks stripping real content. We always keep the full page.txt, so a missed footer only forgoes the de-chrome win, never makes things worse. Widen only on measured evidence. Tier-1: changing this needs a backfill-segments re-visit to re-measure.",
+  "baseline": {"added": "2026-06-25", "rationale": "strict semantic + ARIA landmark set (start narrow)", "approved_by": "design", "loop_tier": 1},
+  "values": ["header", "footer", "nav", "[role=\"banner\"]", "[role=\"contentinfo\"]", "[role=\"navigation\"]"],
+  "additions": []
+}

@@ -64,10 +64,21 @@ const SCHED_KW = ['bell', 'schedule', 'hours', 'start-time', 'start_time', 'dail
 // SUFFIXES signalling a known K-12 CMS / content host, matched via endsWith. Governance +
 // per-entry provenance live in the config file. Path resolved from this module (CWD-independent):
 // infrastructure/scraper/ -> ../acquisition/common/config/cms_hosts.json.
-const CMS_HOSTS = JSON.parse(readFileSync(
-  path.join(path.dirname(fileURLToPath(import.meta.url)),
-            '..', 'acquisition', 'common', 'config', 'cms_hosts.json'), 'utf8')
-).entries.map((e) => e.value);
+function loadConfigValues(name) {
+  // Read a config-as-data knob (REQ-088) in either shape: {entries:[{value}]} or
+  // {values:[...], additions:[{value}]}. Path resolved from this module (CWD-independent).
+  const f = path.join(path.dirname(fileURLToPath(import.meta.url)),
+                      '..', 'acquisition', 'common', 'config', `${name}.json`);
+  const doc = JSON.parse(readFileSync(f, 'utf8'));
+  if (doc.entries) return doc.entries.map((e) => e.value);
+  return (doc.values || []).concat((doc.additions || []).map((a) => a.value));
+}
+
+const CMS_HOSTS = loadConfigValues('cms_hosts');
+// De-chrome landmark selectors (REQ-091) — the SAME config knob Stage 5 documents. innerText of
+// these is captured as page.header/footer/nav.txt; page.main.txt = body minus these (the de-chromed
+// text Stage 5 tiers on, so footer building-hours / school-switcher nav can't inject false signal).
+const DE_CHROME_LANDMARKS = loadConfigValues('de_chrome_landmarks');
 
 // --- Fingerprint helpers (raw signals only, no classification) ---------------------------
 // The pure ones are exported for unit testing (capture_fingerprint.test.mjs); the
@@ -132,6 +143,42 @@ async function domFingerprint(page) {
     }
     return { meta_generator: gen ? (gen.getAttribute('content') || null) : null, resource_hosts: Object.keys(hosts) };
   }).catch(() => ({ meta_generator: null, resource_hosts: [] }));
+}
+
+// DOM segmentation (REQ-091): split the rendered page into MAIN (body minus chrome) + the chrome
+// segments (header/footer/nav). MUST run at render time -- innerText can't reconstruct the DOM
+// structure once the page closes, exactly like the fingerprint above. `main` = a clone of <body>
+// with every landmark element removed, read as textContent (robust on a detached node, no layout
+// needed for keyword/time signals); the named segments use innerText of the live landmark elements.
+async function segmentChrome(page, landmarks) {
+  const removeSel = landmarks.join(',');
+  return page.evaluate((removeSel) => {
+    const grab = (sel) => {
+      try { return Array.from(document.querySelectorAll(sel)).map((e) => e.innerText || '').join('\n').trim(); }
+      catch { return ''; }
+    };
+    let main = '';
+    try {
+      const clone = document.body.cloneNode(true);
+      if (removeSel) clone.querySelectorAll(removeSel).forEach((el) => el.remove());
+      main = (clone.textContent || '').replace(/[ \t ]+/g, ' ').replace(/\n\s*\n\s*/g, '\n').trim();
+    } catch { main = ''; }
+    return {
+      main,
+      header: grab('header,[role="banner"]'),
+      footer: grab('footer,[role="contentinfo"]'),
+      nav: grab('nav,[role="navigation"]'),
+    };
+  }, removeSel).catch(() => ({ main: '', header: '', footer: '', nav: '' }));
+}
+
+// Persist the segments (only non-empty ones) as page.main/header/footer/nav.txt. Stage 5 reads
+// page.main.txt when present and tiers on it; full page.txt is always kept, so this is additive.
+function writeSegments(recDir, seg) {
+  const files = { main: 'page.main.txt', header: 'page.header.txt', footer: 'page.footer.txt', nav: 'page.nav.txt' };
+  for (const [k, fname] of Object.entries(files)) {
+    if (seg && seg[k]) writeFileSync(path.join(recDir, fname), seg[k]);
+  }
 }
 
 export function buildHtmlFingerprint({ finalHost, headers, dom, jsDependent }) {
@@ -410,6 +457,9 @@ async function runCapture(ROOT, CONC) {
             dom,
             jsDependent: strippedLen(rawHtml) < 200 && text.trim().length >= 600,
           });
+          // DOM segmentation (REQ-091): de-chrome the page for Stage 5 signals (additive; page.txt kept).
+          try { writeSegments(recDir, await segmentChrome(page, DE_CHROME_LANDMARKS)); rec.segmented = true; }
+          catch { rec.segmented = false; }
           rec.ok = true;
 
           // --- Emergent candidates: exactly one hop, never recursive. An emergent
@@ -544,6 +594,60 @@ function runRecomputeCmsHint(ROOT) {
   console.log(`RECOMPUTE cms_hint DONE — ${changed} of ${scanned} fingerprinted records updated across ${dirs.length} districts`);
 }
 
+// ============================ SEGMENT BACKFILL (de-chrome, REQ-091) ============================
+// Re-visit each existing ok HTML record, run DOM segmentation, and write page.main/header/footer/
+// nav.txt into the record's capture dir. ADDITIVE: never touches page.txt/png/pdf or any Stage 4
+// output -- Stage 5 reads page.main.txt when present (tiers on it), else falls back to the full
+// page. The mechanism for applying de-chrome to already-captured data without a full re-capture,
+// mirroring backfill-fingerprints. Only HTML records carry a DOM to segment.
+async function runBackfillSegments(ROOT, CONC) {
+  const dirs = readdirSync(ROOT).filter((d) => existsSync(path.join(ROOT, d, 'captures.json')));
+  const tasks = [];
+  const byDistrict = {};
+  for (const did of dirs) {
+    const records = JSON.parse(readFileSync(path.join(ROOT, did, 'captures.json')));
+    byDistrict[did] = { records, dirty: false };
+    records.forEach((rec) => {
+      if (!rec.ok || rec.kind !== 'html') return;
+      const target = rec.final_url || rec.url;
+      if (!target || !rec.hash) return;
+      tasks.push({ did, rec, target, recDir: path.join(ROOT, did, 'captures', rec.hash) });
+    });
+  }
+  const total = tasks.length;
+  if (total === 0) { console.log('SEGMENT BACKFILL: nothing to do (no ok html records).'); return; }
+
+  const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
+  const ctx = await browser.newContext({ ignoreHTTPSErrors: true, userAgent: 'Mozilla/5.0 (research; bell-schedule discovery)' });
+  let idx = 0;
+  let done = 0;
+  async function worker() {
+    while (idx < tasks.length) {
+      const t = tasks[idx++];
+      const page = await ctx.newPage();
+      try {
+        await page.goto(t.target, { waitUntil: 'networkidle', timeout: 30000 });
+        await page.waitForTimeout(2500);
+        writeSegments(t.recDir, await segmentChrome(page, DE_CHROME_LANDMARKS));
+        t.rec.segmented = true;
+      } catch (e) {
+        t.rec.segment_err = String(e).slice(0, 120);
+      } finally {
+        await page.close().catch(() => {});
+        byDistrict[t.did].dirty = true;
+      }
+      if (++done % 25 === 0) console.log(`  ...${done}/${total} segmented`);
+    }
+  }
+  console.log(`segmenting ${total} html records across ${dirs.length} districts (concurrency ${CONC})`);
+  await Promise.all(Array.from({ length: CONC }, () => worker()));
+  for (const did of Object.keys(byDistrict)) {
+    if (byDistrict[did].dirty) writeVersioned(path.join(ROOT, did, 'captures.json'), JSON.stringify(byDistrict[did].records, null, 2));
+  }
+  await browser.close();
+  console.log(`SEGMENT BACKFILL DONE — ${done}/${total} html records segmented across ${dirs.length} districts`);
+}
+
 // ============================ DISPATCH ============================
 // Only run when executed directly (node capture_discovery.mjs ...), never when imported by a
 // test that just wants the pure helpers -- otherwise the import would kick off a capture run.
@@ -551,6 +655,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const argv = process.argv.slice(2);
   if (argv[0] === 'backfill-fingerprints') {
     await runBackfill(argv[1], parseInt(argv[2] || '5', 10));
+  } else if (argv[0] === 'backfill-segments') {
+    await runBackfillSegments(argv[1], parseInt(argv[2] || '5', 10));
   } else if (argv[0] === 'recompute-cms-hint') {
     runRecomputeCmsHint(argv[1]);
   } else {

@@ -84,3 +84,25 @@ def test_is_handbook_needs_the_word_and_real_length():
     assert BS.is_handbook_doc("bell schedule", {}, n_pages=1, max_chars=400) is False   # not a handbook
     assert BS.is_handbook_doc("", {"pdf": "student_handbook.pdf"}, n_pages=3, max_chars=500) is True  # filename
     assert BS.is_handbook_doc("handbook", {}, n_pages=1, max_chars=200) is False        # too short, single page
+
+
+# ---- REQ-091 de-chrome: signals compute over MAIN when a page.main.txt segment exists ----
+def test_signals_compute_over_dechromed_main_not_full_page(tmp_path):
+    full = "Board of Education agenda. Athletics tournament. Footer Building Hours 7:15 AM - 3:15 PM."
+    (tmp_path / "page.txt").write_text(full)
+    texts = [{"usable": True, "text_file": "page.txt", "n_chars": len(full), "n_times": 2}]
+    main = "Bell Schedule. School starts at 8:00 AM and dismissal is at 3:00 PM every day. " * 5  # clean, >120
+    sig_full, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text=None)
+    sig_dech, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text=main)
+    assert sig_full["dechromed"] is False and sig_dech["dechromed"] is True
+    # chrome negatives (board/sports) drop out when we score MAIN; the real positive kw is present
+    assert sig_dech["neg_total"] < sig_full["neg_total"]
+    assert "bell schedule" in sig_dech["positive_kw"]
+
+
+def test_dechrome_falls_back_when_main_too_thin(tmp_path):
+    full = "School hours 8:00 AM to 3:00 PM bell schedule dismissal arrival every school day here."
+    (tmp_path / "page.txt").write_text(full)
+    texts = [{"usable": True, "text_file": "page.txt", "n_chars": len(full), "n_times": 2}]
+    sig, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text="too short")  # below USABLE_MIN_CHARS
+    assert sig["dechromed"] is False  # graceful fallback to the full page — never worse than today
