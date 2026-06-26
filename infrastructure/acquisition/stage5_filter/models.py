@@ -22,7 +22,9 @@ class Label(Base):
     primary_label: Mapped[str | None] = mapped_column(String)
     flags_json: Mapped[str | None] = mapped_column(String)
     note: Mapped[str | None] = mapped_column(String)
-    status: Mapped[str] = mapped_column(String, default="unlabeled")
+    # server_default mirrors the original sqlite `DEFAULT 'unlabeled'` so the ingest's raw
+    # `INSERT INTO label (rec_key)` gets the default at the DB (not just the ORM) — REQ-103.
+    status: Mapped[str] = mapped_column(String, default="unlabeled", server_default="unlabeled")
     updated_at: Mapped[str | None] = mapped_column(String)
 
 

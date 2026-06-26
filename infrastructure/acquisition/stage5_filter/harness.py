@@ -17,13 +17,15 @@ Usage:  python3 harness.py [--db <path>] [--no-write]   (prints a summary; write
 import argparse
 import hashlib
 import json
-import sqlite3
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
+from sqlalchemy import text
+
 from infrastructure.acquisition.stage5_filter import build_signals as BS   # noqa: E402  (TARGET_LABELS + the path constants)
 from infrastructure.acquisition.common import paths                  # noqa: E402
+from infrastructure.acquisition.common import db as gdb              # noqa: E402  (governance Postgres — REQ-103)
 
 TARGET = BS.TARGET_LABELS
 
@@ -93,20 +95,20 @@ def _r(x, p=4):
 
 # ----------------------------- DB reading + fingerprints -----------------------------
 def _labeled_records(con):
-    return con.execute(
+    return con.execute(text(
         """SELECT r.tier, r.category_hypothesis, l.primary_label
            FROM record r JOIN label l ON l.rec_key = r.rec_key
-           WHERE l.status != 'unlabeled' AND l.primary_label IS NOT NULL""").fetchall()
+           WHERE l.status != 'unlabeled' AND l.primary_label IS NOT NULL""")).fetchall()
 
 
 def score(con):
     recs = _labeled_records(con)
     tier_rows = [(t, lab in TARGET) for t, _cat, lab in recs]
     cat_rows = [(cat, lab) for _t, cat, lab in recs]
-    topo_rows = con.execute(
-        "SELECT name, guessed_topology, labeled_topology FROM district ORDER BY name").fetchall()
-    n_rec = con.execute("SELECT COUNT(*) FROM record").fetchone()[0]
-    n_dist = con.execute("SELECT COUNT(*) FROM district").fetchone()[0]
+    topo_rows = con.execute(text(
+        "SELECT name, guessed_topology, labeled_topology FROM district ORDER BY name")).fetchall()
+    n_rec = con.execute(text("SELECT COUNT(*) FROM record")).scalar()
+    n_dist = con.execute(text("SELECT COUNT(*) FROM district")).scalar()
     return {
         "counts": {"records": n_rec, "labeled": len(recs), "districts": n_dist,
                    "targets": sum(1 for _t, g in tier_rows if g)},
@@ -123,12 +125,12 @@ def _h(s):
 def fingerprints(con):
     cfg = "".join(sorted(f.read_text() for f in paths.CONFIG_DIR.glob("*.json"))) \
         if paths.CONFIG_DIR.exists() else ""
-    labels = con.execute(
+    labels = con.execute(text(
         """SELECT rec_key, primary_label, status, flags_json FROM label
-           WHERE status != 'unlabeled' ORDER BY rec_key""").fetchall()
-    data = con.execute("SELECT rec_key, tier, category_hypothesis FROM record ORDER BY rec_key").fetchall()
-    topo = con.execute(
-        "SELECT district_id, guessed_topology, labeled_topology, nces_school_count FROM district ORDER BY district_id").fetchall()
+           WHERE status != 'unlabeled' ORDER BY rec_key""")).fetchall()
+    data = con.execute(text("SELECT rec_key, tier, category_hypothesis FROM record ORDER BY rec_key")).fetchall()
+    topo = con.execute(text(
+        "SELECT district_id, guessed_topology, labeled_topology, nces_school_count FROM district ORDER BY district_id")).fetchall()
     return {
         "config": _h(cfg),
         "label_set": _h("|".join("·".join(map(str, r)) for r in labels)),
@@ -136,16 +138,13 @@ def fingerprints(con):
     }
 
 
-def build_scorecard(db_path=None):
-    con = sqlite3.connect(db_path or paths.REVIEW_DB)
-    try:
+def build_scorecard():
+    with gdb.session_scope() as con:
         return {
             "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "fingerprints": fingerprints(con),
             **score(con),
         }
-    finally:
-        con.close()
 
 
 def write_scorecard(card, out_dir=None):
@@ -179,10 +178,9 @@ def print_summary(card):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--db", default=None)
     ap.add_argument("--no-write", action="store_true")
     a = ap.parse_args()
-    card = build_scorecard(a.db)
+    card = build_scorecard()
     print_summary(card)
     if not a.no_write:
         print("wrote", write_scorecard(card))

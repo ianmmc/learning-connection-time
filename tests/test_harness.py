@@ -1,7 +1,8 @@
 """REQ-090 — the measurement harness scores config+signals vs labels correctly, with
 reproducible fingerprints. Pure metric functions tested against synthetic inputs (not the
-live DB, whose values shift as labels change)."""
-import sqlite3
+live DB, whose values shift as labels change); the score/fingerprint DB readers run against the
+real governance Postgres via CONNECTION-SCOPED TEMP tables (the gov_session fixture)."""
+from sqlalchemy import text
 
 from infrastructure.acquisition.stage5_filter import harness  # noqa: E402
 
@@ -44,24 +45,22 @@ def test_empty_inputs_dont_crash():
     assert harness.topology_report([])["coarse_agreement"] is None
 
 
-def _mini_db():
-    con = sqlite3.connect(":memory:")
-    con.executescript("""
-        CREATE TABLE record (rec_key TEXT, tier TEXT, category_hypothesis TEXT);
-        CREATE TABLE label (rec_key TEXT, primary_label TEXT, status TEXT, flags_json TEXT);
-        CREATE TABLE district (district_id TEXT, name TEXT, guessed_topology TEXT,
-                               labeled_topology TEXT, nces_school_count INTEGER);
-        INSERT INTO record VALUES ('d:1','A','school_bell_schedule'),('d:2','D','none');
-        INSERT INTO label VALUES ('d:1','school_bell_schedule','labeled','[]'),
-                                 ('d:2','none','labeled','[]');
-        INSERT INTO district VALUES ('d','D','per_school','per_school',3);
-    """)
-    con.commit()
-    return con
+def _seed_mini(sess):
+    """The three tables harness.score/fingerprints read, as CONNECTION-SCOPED TEMP tables on the
+    governance session (auto-dropped at close — never touches real governance data)."""
+    sess.execute(text("CREATE TEMP TABLE record (rec_key text, tier text, category_hypothesis text)"))
+    sess.execute(text("CREATE TEMP TABLE label (rec_key text, primary_label text, status text, flags_json text)"))
+    sess.execute(text("""CREATE TEMP TABLE district (district_id text, name text, guessed_topology text,
+                               labeled_topology text, nces_school_count integer)"""))
+    sess.execute(text("INSERT INTO record VALUES ('d:1','A','school_bell_schedule'),('d:2','D','none')"))
+    sess.execute(text("""INSERT INTO label VALUES ('d:1','school_bell_schedule','labeled','[]'),
+                                 ('d:2','none','labeled','[]')"""))
+    sess.execute(text("INSERT INTO district VALUES ('d','D','per_school','per_school',3)"))
+    return sess
 
 
-def test_score_and_fingerprints_are_deterministic():
-    con = _mini_db()
+def test_score_and_fingerprints_are_deterministic(gov_session):
+    con = _seed_mini(gov_session)
     s1 = harness.score(con)
     assert s1["counts"]["labeled"] == 2 and s1["counts"]["targets"] == 1
     assert s1["category_accuracy"]["overall"] == 1.0   # both guesses match labels here

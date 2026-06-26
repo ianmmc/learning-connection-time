@@ -17,16 +17,18 @@ import argparse
 import hashlib
 import json
 import re
-import sqlite3
 import subprocess
 from pathlib import Path
 
+from sqlalchemy import text
+
 from infrastructure.acquisition.common import paths  # noqa: E402  (single source of truth for runtime-state locations — REQ-087)
 from infrastructure.acquisition.common import config_loader  # noqa: E402  (Stage 5 keyword knobs — REQ-088/093)
+from infrastructure.acquisition.common import db as gdb  # noqa: E402  (isolated governance Postgres engine/session — REQ-103)
+from infrastructure.acquisition.stage5_filter import models  # noqa: F401,E402  (registers PRECIOUS Label/ClusterSplit on gdb.Base)
 
 RAW_DIR = paths.RAW_CAPTURES
 QUEUE_DIR = paths.QUEUE_DIR                   # Stage 1 batch_*.json (targeting + NCES denominator)
-DB_PATH = paths.REVIEW_DB
 # Durable, version-controlled source of truth for the PRECIOUS human labels. The DB is a
 # regenerable cache; this JSON is what survives DB loss and lives in git (gitignore re-includes
 # it). Written on every label save (server) + at the end of each ingest; re-imported on ingest.
@@ -281,18 +283,22 @@ def derive_labeled_topology(primaries: list, nces_count) -> str:
     return "unknown"
 
 
-def recompute_labeled_topology(con, district_id: str) -> str:
+def recompute_labeled_topology(s, district_id: str) -> str:
     """Recompute + persist district.labeled_topology from the live labels. Cheap (no NCES read —
-    nces_school_count is stored on the district at ingest). Called at ingest and on every save."""
-    row = con.execute("SELECT nces_school_count FROM district WHERE district_id=?", (district_id,)).fetchone()
+    nces_school_count is stored on the district at ingest). Called at ingest and on every save.
+    `s` is a governance Session/Connection (SQLAlchemy execute API)."""
+    row = s.execute(text("SELECT nces_school_count FROM district WHERE district_id=:did"),
+                    {"did": district_id}).fetchone()
     nces_count = row[0] if row else None
-    primaries = [r[0] for r in con.execute(
+    primaries = [r[0] for r in s.execute(text(
         """SELECT l.primary_label FROM record r JOIN label l ON l.rec_key=r.rec_key
-           WHERE r.district_id=? AND r.duplicate_of IS NULL
+           WHERE r.district_id=:did AND r.duplicate_of IS NULL
              AND (r.is_cluster_rep=1 OR r.cluster_id IS NULL)
-             AND l.status!='unlabeled' AND l.primary_label IS NOT NULL""", (district_id,))]
+             AND l.status!='unlabeled' AND l.primary_label IS NOT NULL"""),
+        {"did": district_id})]
     topo = derive_labeled_topology(primaries, nces_count)
-    con.execute("UPDATE district SET labeled_topology=? WHERE district_id=?", (topo, district_id))
+    s.execute(text("UPDATE district SET labeled_topology=:topo WHERE district_id=:did"),
+              {"topo": topo, "did": district_id})
     return topo
 
 
@@ -468,49 +474,50 @@ def tier_and_category(sig: dict, roster_size: int, params: dict = None):
     return tier, score, cat
 
 
-# ----------------------------- DB -----------------------------
-# PRECIOUS human data: created once, NEVER dropped on re-ingest. label = the ground-truth
-# labels; cluster_split = records the reviewer pulled out of an auto-cluster (a durable override).
-LABEL_SCHEMA = """
-CREATE TABLE IF NOT EXISTS label (
-  rec_key TEXT PRIMARY KEY, primary_label TEXT, flags_json TEXT, note TEXT,
-  status TEXT DEFAULT 'unlabeled', updated_at TEXT);
-CREATE TABLE IF NOT EXISTS cluster_split (
-  rec_key TEXT PRIMARY KEY, created_at TEXT);
-"""
-# Regenerable tables: dropped + rebuilt every ingest so schema/signal changes always apply.
-REBUILD_SCHEMA = """
-DROP TABLE IF EXISTS district; DROP TABLE IF EXISTS record; DROP TABLE IF EXISTS representation;
-DROP TABLE IF EXISTS district_target;
-CREATE TABLE district (
-  district_id TEXT PRIMARY KEY, name TEXT, state TEXT, district_dir TEXT,
-  batch_id TEXT, guessed_topology TEXT, labeled_topology TEXT, nces_school_count INTEGER,
-  n_records INTEGER);
-CREATE TABLE record (
-  rec_key TEXT PRIMARY KEY, district_id TEXT, district_dir TEXT, url TEXT, hash TEXT,
-  kind TEXT, final_url TEXT, content_hash TEXT, duplicate_of TEXT,
-  tier TEXT, sort_score REAL, category_hypothesis TEXT, signals_json TEXT,
-  cluster_id TEXT, is_cluster_rep INTEGER, cluster_size INTEGER,
-  intended_schools_json TEXT, candidate_tools_json TEXT, is_emergent INTEGER);
-CREATE TABLE representation (
-  rec_key TEXT, source TEXT, filename TEXT, file_kind TEXT,
-  n_chars INTEGER, n_times INTEGER, usable INTEGER);
--- Stage 1 targeting provenance (the funnel's "targeted" end + the NCES denominator). One row
--- per district when a batch_*.json entry exists; the topology denominator (nces_total) prefers
--- this over the live CSV. Regenerable.
-CREATE TABLE district_target (
-  district_id TEXT PRIMARY KEY, batch_id TEXT, nces_year TEXT, nces_total INTEGER,
-  nces_by_level_json TEXT, enrollment_k12 INTEGER, lea_claimed_bands_json TEXT,
-  schools_by_band_json TEXT);
-"""
+# ----------------------------- DB (isolated governance Postgres — REQ-103) -----------------------------
+# PRECIOUS human data (label = ground-truth labels; cluster_split = records the reviewer pulled out
+# of an auto-cluster) is created via gdb.init_precious_schema() from the SQLAlchemy models and is
+# NEVER dropped on re-ingest.
+#
+# Regenerable cache tables: dropped + rebuilt every ingest so schema/signal changes always apply.
+# Postgres DDL run on the ISOLATED governance DB — the drop can't reach districts/bell_schedules/
+# lct_calculations in the production LCT database. (sqlite INTEGER bool columns stay `integer` here;
+# the code reads/writes 0/1 and the UI expects 0/1, so behavior is identical. sqlite REAL → double
+# precision.) Each statement is run discretely (no executescript on Postgres).
+REBUILD_DDL = [
+    "DROP TABLE IF EXISTS district CASCADE",
+    "DROP TABLE IF EXISTS record CASCADE",
+    "DROP TABLE IF EXISTS representation CASCADE",
+    "DROP TABLE IF EXISTS district_target CASCADE",
+    """CREATE TABLE district (
+        district_id text PRIMARY KEY, name text, state text, district_dir text,
+        batch_id text, guessed_topology text, labeled_topology text, nces_school_count integer,
+        n_records integer)""",
+    """CREATE TABLE record (
+        rec_key text PRIMARY KEY, district_id text, district_dir text, url text, hash text,
+        kind text, final_url text, content_hash text, duplicate_of text,
+        tier text, sort_score double precision, category_hypothesis text, signals_json text,
+        cluster_id text, is_cluster_rep integer, cluster_size integer,
+        intended_schools_json text, candidate_tools_json text, is_emergent integer)""",
+    """CREATE TABLE representation (
+        rec_key text, source text, filename text, file_kind text,
+        n_chars integer, n_times integer, usable integer)""",
+    # Stage 1 targeting provenance (the funnel's "targeted" end + the NCES denominator). One row
+    # per district when a batch_*.json entry exists; the topology denominator (nces_total) prefers
+    # this over the live CSV. Regenerable.
+    """CREATE TABLE district_target (
+        district_id text PRIMARY KEY, batch_id text, nces_year text, nces_total integer,
+        nces_by_level_json text, enrollment_k12 integer, lea_claimed_bands_json text,
+        schools_by_band_json text)""",
+]
 
 BIN_KINDS = {"png": "image", "pdf": "pdf", "bin": "binary"}
 
 
-def export_labels(con, out: Path = LABELS_JSON) -> int:
+def export_labels(s, out: Path = LABELS_JSON) -> int:
     """Dump all non-unlabeled rows to a tracked JSON (atomic write). The label backup."""
-    rows = con.execute(
-        f"SELECT {','.join(LABEL_COLS)} FROM label WHERE status!='unlabeled' ORDER BY rec_key").fetchall()
+    rows = s.execute(text(
+        f"SELECT {','.join(LABEL_COLS)} FROM label WHERE status!='unlabeled' ORDER BY rec_key")).fetchall()
     data = [dict(zip(LABEL_COLS, r)) for r in rows]
     out.parent.mkdir(parents=True, exist_ok=True)
     tmp = out.with_name(out.name + ".tmp")
@@ -519,9 +526,9 @@ def export_labels(con, out: Path = LABELS_JSON) -> int:
     return len(data)
 
 
-def export_splits(con, out: Path = CLUSTER_SPLITS_JSON) -> int:
+def export_splits(s, out: Path = CLUSTER_SPLITS_JSON) -> int:
     """Dump the precious cluster-split rec_keys to a tracked JSON (atomic). The split backup."""
-    rows = [r[0] for r in con.execute("SELECT rec_key FROM cluster_split ORDER BY rec_key")]
+    rows = [r[0] for r in s.execute(text("SELECT rec_key FROM cluster_split ORDER BY rec_key"))]
     out.parent.mkdir(parents=True, exist_ok=True)
     tmp = out.with_name(out.name + ".tmp")
     tmp.write_text(json.dumps(rows, indent=2))
@@ -529,7 +536,7 @@ def export_splits(con, out: Path = CLUSTER_SPLITS_JSON) -> int:
     return len(rows)
 
 
-def import_splits(con, src: Path = CLUSTER_SPLITS_JSON) -> int:
+def import_splits(s, src: Path = CLUSTER_SPLITS_JSON) -> int:
     """Restore cluster splits from JSON into the table (recovery path after a DB wipe; a no-op
     on normal re-ingest since cluster_split is never dropped). Must run BEFORE clustering so the
     overrides are honored when components are recomputed."""
@@ -537,12 +544,13 @@ def import_splits(con, src: Path = CLUSTER_SPLITS_JSON) -> int:
         return 0
     n = 0
     for rk in json.loads(src.read_text()):
-        con.execute("INSERT OR IGNORE INTO cluster_split (rec_key, created_at) VALUES (?, NULL)", (rk,))
+        s.execute(text("INSERT INTO cluster_split (rec_key, created_at) VALUES (:rk, NULL) "
+                       "ON CONFLICT (rec_key) DO NOTHING"), {"rk": rk})
         n += 1
     return n
 
 
-def import_labels(con, src: Path = LABELS_JSON) -> int:
+def import_labels(s, src: Path = LABELS_JSON) -> int:
     """Restore labels from the JSON into the DB -- but ONLY for records the DB currently has
     as unlabeled, so a stale export can never clobber a live DB label. This restores labels
     after a DB wipe/rebuild; on a normal re-ingest (label table preserved) it's a no-op."""
@@ -550,175 +558,199 @@ def import_labels(con, src: Path = LABELS_JSON) -> int:
         return 0
     n = 0
     for d in json.loads(src.read_text()):
-        cur = con.execute("SELECT status FROM label WHERE rec_key=?", (d["rec_key"],)).fetchone()
+        cur = s.execute(text("SELECT status FROM label WHERE rec_key=:rk"),
+                        {"rk": d["rec_key"]}).fetchone()
         if not cur or cur[0] != "unlabeled":
             continue
-        con.execute("UPDATE label SET primary_label=?, flags_json=?, note=?, status=?, updated_at=? WHERE rec_key=?",
-                    (d.get("primary_label"), d.get("flags_json"), d.get("note"),
-                     d.get("status", "labeled"), d.get("updated_at"), d["rec_key"]))
+        s.execute(text("UPDATE label SET primary_label=:pl, flags_json=:fj, note=:nt, "
+                       "status=:st, updated_at=:ua WHERE rec_key=:rk"),
+                  {"pl": d.get("primary_label"), "fj": d.get("flags_json"), "nt": d.get("note"),
+                   "st": d.get("status", "labeled"), "ua": d.get("updated_at"), "rk": d["rec_key"]})
         n += 1
     return n
 
 
-def ingest(root: Path, db_path: Path):
-    db_path.parent.mkdir(parents=True, exist_ok=True)
-    con = sqlite3.connect(db_path)
-    con.executescript(LABEL_SCHEMA)      # ensure the precious tables exist; never dropped
-    con.executescript(REBUILD_SCHEMA)    # drop + rebuild the regenerable tables
-    import_splits(con)                   # restore cluster splits to the table if it was wiped
-    splits = {r[0] for r in con.execute("SELECT rec_key FROM cluster_split")}
-    batches = load_batches()             # did -> Stage-1 targeting entry (preferred NCES denominator)
-    nces = nces_school_counts()          # did -> distinct regular-school count (live CSV FALLBACK)
+REC_COLS = ("rec_key", "district_id", "district_dir", "url", "hash", "kind", "final_url",
+            "content_hash", "duplicate_of", "tier", "sort_score", "category_hypothesis",
+            "signals_json", "intended_schools_json", "candidate_tools_json", "is_emergent")
+INSERT_RECORD = text(
+    "INSERT INTO record (" + ", ".join(REC_COLS) + ") "
+    "VALUES (" + ", ".join(f":{c}" for c in REC_COLS) + ")")
+INSERT_REP = text(
+    "INSERT INTO representation (rec_key, source, filename, file_kind, n_chars, n_times, usable) "
+    "VALUES (:rec_key, :source, :filename, :file_kind, :n_chars, :n_times, :usable)")
 
-    for ddir in sorted(p for p in root.iterdir() if p.is_dir()):
-        cj, pj, dj = ddir / "captures.json", ddir / "processed.json", ddir / "discovery.json"
-        if not (cj.exists() and pj.exists() and dj.exists()):
-            continue
-        disc = json.loads(dj.read_text())
-        # Dedup + drop short stems: schools sharing the district name ("Marion High"/"Marion
-        # Middle" both -> "marion") must not over-count roster hits (would false-positive hub).
-        roster_norm = sorted({rn for s in disc.get("schools", [])
-                              if len(rn := norm_school(s.get("school", ""))) >= 4})
-        roster_size = len(roster_norm)
-        caps = {r["hash"]: r for r in json.loads(cj.read_text())}
-        processed = {r["hash"]: r for r in json.loads(pj.read_text())}
-        cand_map = load_candidates(ddir)   # url -> {schools, tools}; misses = emergent
 
-        seen_content = {}   # content_hash -> canonical rec_key
-        district_records = []
-        cluster_items = []  # (rec_key, shingle_set, tier, sort_score) for near-dup clustering
-        for h, prec in processed.items():
-            cap = caps.get(h, {})
-            rec_key = f"{disc['district_id']}:{h}"
-            rdir = ddir / "captures" / h
-            files = cap.get("files") or {}
+def _rep(rec_key, source, filename, file_kind, n_chars, n_times, usable):
+    return {"rec_key": rec_key, "source": source, "filename": filename, "file_kind": file_kind,
+            "n_chars": n_chars, "n_times": n_times, "usable": usable}
 
-            # De-chrome (REQ-091): if a Stage-3 page.main.txt segment exists, signals compute over it.
-            mp = rdir / "page.main.txt"
-            main_text = mp.read_text(errors="replace") if mp.exists() else None
-            sig, best_text = compute_signals(rdir, prec.get("texts", []), roster_norm, files, main_text)
-            tier, score, cat = tier_and_category(sig, roster_size)
 
-            # content hash for dedup: prefer the primary binary, else the best text content
-            content_hash = None
-            binp = files.get("bin") or files.get("pdf")
-            if binp and (rdir / binp).exists():
-                content_hash = md5_file(rdir / binp)
+def ingest(root: Path):
+    """Ingest into the isolated governance Postgres DB (REQ-103). The PRECIOUS tables are created
+    from the models (never dropped); the regenerable cache is dropped + rebuilt each run; the whole
+    pass is one transaction (atomic re-ingest)."""
+    gdb.init_precious_schema()           # PRECIOUS label + cluster_split (models); never dropped
+    with gdb.session_scope() as sess:
+        for ddl in REBUILD_DDL:          # drop + rebuild the regenerable cache tables
+            sess.execute(text(ddl))
+        import_splits(sess)              # restore cluster splits to the table if it was wiped
+        splits = {r[0] for r in sess.execute(text("SELECT rec_key FROM cluster_split"))}
+        batches = load_batches()         # did -> Stage-1 targeting entry (preferred NCES denominator)
+        nces = nces_school_counts()      # did -> distinct regular-school count (live CSV FALLBACK)
+
+        for ddir in sorted(p for p in root.iterdir() if p.is_dir()):
+            cj, pj, dj = ddir / "captures.json", ddir / "processed.json", ddir / "discovery.json"
+            if not (cj.exists() and pj.exists() and dj.exists()):
+                continue
+            disc = json.loads(dj.read_text())
+            # Dedup + drop short stems: schools sharing the district name ("Marion High"/"Marion
+            # Middle" both -> "marion") must not over-count roster hits (would false-positive hub).
+            roster_norm = sorted({rn for sc in disc.get("schools", [])
+                                  if len(rn := norm_school(sc.get("school", ""))) >= 4})
+            roster_size = len(roster_norm)
+            caps = {r["hash"]: r for r in json.loads(cj.read_text())}
+            processed = {r["hash"]: r for r in json.loads(pj.read_text())}
+            cand_map = load_candidates(ddir)   # url -> {schools, tools}; misses = emergent
+
+            seen_content = {}   # content_hash -> canonical rec_key
+            district_records = []
+            cluster_items = []  # (rec_key, shingle_set, tier, sort_score) for near-dup clustering
+            for h, prec in processed.items():
+                cap = caps.get(h, {})
+                rec_key = f"{disc['district_id']}:{h}"
+                rdir = ddir / "captures" / h
+                files = cap.get("files") or {}
+
+                # De-chrome (REQ-091): if a Stage-3 page.main.txt segment exists, signals compute over it.
+                mp = rdir / "page.main.txt"
+                main_text = mp.read_text(errors="replace") if mp.exists() else None
+                sig, best_text = compute_signals(rdir, prec.get("texts", []), roster_norm, files, main_text)
+                tier, score, cat = tier_and_category(sig, roster_size)
+
+                # content hash for dedup: prefer the primary binary, else the best text content
+                content_hash = None
+                binp = files.get("bin") or files.get("pdf")
+                if binp and (rdir / binp).exists():
+                    content_hash = md5_file(rdir / binp)
+                else:
+                    best = max((t for t in prec.get("texts", []) if t.get("usable")),
+                               key=lambda t: t.get("n_chars", 0), default=None)
+                    if best:
+                        try:
+                            content_hash = md5_text((rdir / best["text_file"]).read_text(errors="replace"))
+                        except Exception:
+                            content_hash = None
+                dup_of = seen_content.get(content_hash) if content_hash else None
+                if content_hash and not dup_of:
+                    seen_content[content_hash] = rec_key
+
+                # candidates.json join (URL -> intended school(s) + discovery tools); a record whose
+                # URL was never a planned candidate is EMERGENT (discovered during capture).
+                cand = cand_map.get(prec["url"]) or cand_map.get(cap.get("final_url") or "")
+                intended_schools = cand["schools"] if cand else []
+                cand_tools = cand["tools"] if cand else []
+                is_emergent = 0 if cand else 1
+
+                sess.execute(INSERT_RECORD, {
+                    "rec_key": rec_key, "district_id": disc["district_id"], "district_dir": ddir.name,
+                    "url": prec["url"], "hash": h, "kind": cap.get("kind"),
+                    "final_url": cap.get("final_url"), "content_hash": content_hash, "duplicate_of": dup_of,
+                    "tier": tier, "sort_score": score, "category_hypothesis": cat,
+                    "signals_json": json.dumps(sig), "intended_schools_json": json.dumps(intended_schools),
+                    "candidate_tools_json": json.dumps(cand_tools), "is_emergent": is_emergent})
+                sess.execute(text("INSERT INTO label (rec_key) VALUES (:rk) ON CONFLICT (rec_key) DO NOTHING"),
+                             {"rk": rec_key})
+                cluster_items.append((rec_key, shingles(best_text), tier, score))
+
+                # representations: text reps (from processed.json) + binaries on disk
+                for t in prec.get("texts", []):
+                    sess.execute(INSERT_REP, _rep(rec_key, t["source"], t.get("text_file"), "text",
+                                                  t.get("n_chars", 0), t.get("n_times", 0),
+                                                  int(bool(t.get("usable")))))
+                for key, fname in files.items():
+                    fk = BIN_KINDS.get(key)
+                    if not fk:
+                        continue
+                    if str(fname).lower().endswith(".pdf"):
+                        fk = "pdf"
+                    elif str(fname).lower().rsplit(".", 1)[-1] in ("png", "jpg", "jpeg", "webp", "gif"):
+                        fk = "image"
+                    sess.execute(INSERT_REP, _rep(rec_key, f"capture:{key}", fname, fk, None, None, 1))
+                # rasterized pages (Stage 4) as image reps for visual inspection
+                for rp in sorted(rdir.glob("raster_p*.png")):
+                    sess.execute(INSERT_REP, _rep(rec_key, "raster", rp.name, "image", None, None, 1))
+                # Stage-3 DOM segments (REQ-091) as inspectable text reps when present: main (de-chromed
+                # body, what signals run on) + the quarantined chrome (header/footer/nav, screened separately).
+                for seg in ("page.main.txt", "page.header.txt", "page.footer.txt", "page.nav.txt"):
+                    sp = rdir / seg
+                    if sp.exists():
+                        sess.execute(INSERT_REP, _rep(rec_key, f"segment:{seg.split('.')[1]}", seg, "text",
+                                                      len(sp.read_text(errors='replace')), None, 1))
+                district_records.append((rec_key, sig, tier, dup_of))
+
+            # near-duplicate clustering (content-similarity; honors human splits) -> UPDATE records
+            for rk, (cid, is_rep, size) in cluster_district(cluster_items, splits).items():
+                sess.execute(text("UPDATE record SET cluster_id=:cid, is_cluster_rep=:rep, "
+                                  "cluster_size=:sz WHERE rec_key=:rk"),
+                             {"cid": cid, "rep": is_rep, "sz": size, "rk": rk})
+
+            # guessed topology (coarse, deterministic, from SIGNALS — noisy; kept to measure the heuristic)
+            non_dup = [(rk, sg, tr) for rk, sg, tr, d in district_records if not d]
+            sched = [(rk, sg) for rk, sg, tr in non_dup if tr in ("A", "B")]
+            max_roster_on_one = max((sg["roster_school_names_hit"] for _, sg in sched), default=0)
+            if roster_size and max_roster_on_one >= max(2, roster_size * 0.5):
+                topo = "hub"
+            elif len(sched) >= 2:
+                topo = "per_school"
             else:
-                best = max((t for t in prec.get("texts", []) if t.get("usable")),
-                           key=lambda t: t.get("n_chars", 0), default=None)
-                if best:
-                    try:
-                        content_hash = md5_text((rdir / best["text_file"]).read_text(errors="replace"))
-                    except Exception:
-                        content_hash = None
-            dup_of = seen_content.get(content_hash) if content_hash else None
-            if content_hash and not dup_of:
-                seen_content[content_hash] = rec_key
+                topo = "unknown"
+            # NCES denominator: PREFER the Stage-1 batch (captured at queue time, with provenance);
+            # fall back to the live CSV count when no batch entry exists for this district.
+            did7 = str(disc["district_id"]).zfill(7)
+            bt = batches.get(did7)
+            nces_counts = (bt or {}).get("nces_school_counts") or {}
+            nces_total = nces_counts.get("total", nces.get(did7))
+            sess.execute(text(
+                """INSERT INTO district (district_id, name, state, district_dir, batch_id,
+                     guessed_topology, labeled_topology, nces_school_count, n_records)
+                   VALUES (:district_id, :name, :state, :district_dir, :batch_id,
+                     :guessed_topology, :labeled_topology, :nces_school_count, :n_records)"""),
+                {"district_id": disc["district_id"], "name": disc.get("name"), "state": disc.get("state"),
+                 "district_dir": ddir.name, "batch_id": disc.get("batch_id"), "guessed_topology": topo,
+                 "labeled_topology": None, "nces_school_count": nces_total, "n_records": len(district_records)})
+            if bt:
+                sess.execute(text(
+                    """INSERT INTO district_target (district_id, batch_id, nces_year, nces_total,
+                         nces_by_level_json, enrollment_k12, lea_claimed_bands_json, schools_by_band_json)
+                       VALUES (:district_id, :batch_id, :nces_year, :nces_total,
+                         :nces_by_level_json, :enrollment_k12, :lea_claimed_bands_json, :schools_by_band_json)"""),
+                    {"district_id": disc["district_id"], "batch_id": bt.get("_batch_id"),
+                     "nces_year": bt.get("_nces_year"), "nces_total": nces_counts.get("total"),
+                     "nces_by_level_json": json.dumps(nces_counts.get("by_level", {})),
+                     "enrollment_k12": bt.get("enrollment_k12"),
+                     "lea_claimed_bands_json": json.dumps(bt.get("lea_claimed_bands", [])),
+                     "schools_by_band_json": json.dumps(bt.get("schools_by_band", {}))})
 
-            # candidates.json join (URL -> intended school(s) + discovery tools); a record whose
-            # URL was never a planned candidate is EMERGENT (discovered during capture).
-            cand = cand_map.get(prec["url"]) or cand_map.get(cap.get("final_url") or "")
-            intended_schools = cand["schools"] if cand else []
-            cand_tools = cand["tools"] if cand else []
-            is_emergent = 0 if cand else 1
-
-            con.execute(
-                """INSERT INTO record (rec_key, district_id, district_dir, url, hash, kind,
-                     final_url, content_hash, duplicate_of, tier, sort_score, category_hypothesis,
-                     signals_json, intended_schools_json, candidate_tools_json, is_emergent)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                (rec_key, disc["district_id"], ddir.name, prec["url"], h, cap.get("kind"),
-                 cap.get("final_url"), content_hash, dup_of, tier, score, cat, json.dumps(sig),
-                 json.dumps(intended_schools), json.dumps(cand_tools), is_emergent))
-            con.execute("INSERT OR IGNORE INTO label (rec_key) VALUES (?)", (rec_key,))
-            cluster_items.append((rec_key, shingles(best_text), tier, score))
-
-            # representations: text reps (from processed.json) + binaries on disk
-            for t in prec.get("texts", []):
-                con.execute("INSERT INTO representation VALUES (?,?,?,?,?,?,?)",
-                            (rec_key, t["source"], t.get("text_file"), "text",
-                             t.get("n_chars", 0), t.get("n_times", 0), int(bool(t.get("usable")))))
-            for key, fname in files.items():
-                fk = BIN_KINDS.get(key)
-                if not fk:
-                    continue
-                if str(fname).lower().endswith(".pdf"):
-                    fk = "pdf"
-                elif str(fname).lower().rsplit(".", 1)[-1] in ("png", "jpg", "jpeg", "webp", "gif"):
-                    fk = "image"
-                con.execute("INSERT INTO representation VALUES (?,?,?,?,?,?,?)",
-                            (rec_key, f"capture:{key}", fname, fk, None, None, 1))
-            # rasterized pages (Stage 4) as image reps for visual inspection
-            for rp in sorted(rdir.glob("raster_p*.png")):
-                con.execute("INSERT INTO representation VALUES (?,?,?,?,?,?,?)",
-                            (rec_key, "raster", rp.name, "image", None, None, 1))
-            # Stage-3 DOM segments (REQ-091) as inspectable text reps when present: main (de-chromed
-            # body, what signals run on) + the quarantined chrome (header/footer/nav, screened separately).
-            for seg in ("page.main.txt", "page.header.txt", "page.footer.txt", "page.nav.txt"):
-                sp = rdir / seg
-                if sp.exists():
-                    con.execute("INSERT INTO representation VALUES (?,?,?,?,?,?,?)",
-                                (rec_key, f"segment:{seg.split('.')[1]}", seg, "text",
-                                 len(sp.read_text(errors='replace')), None, 1))
-            district_records.append((rec_key, sig, tier, dup_of))
-
-        # near-duplicate clustering (content-similarity; honors human splits) -> UPDATE records
-        for rk, (cid, is_rep, size) in cluster_district(cluster_items, splits).items():
-            con.execute("UPDATE record SET cluster_id=?, is_cluster_rep=?, cluster_size=? WHERE rec_key=?",
-                        (cid, is_rep, size, rk))
-
-        # guessed topology (coarse, deterministic, from SIGNALS — noisy; kept to measure the heuristic)
-        non_dup = [(rk, s, tr) for rk, s, tr, d in district_records if not d]
-        sched = [(rk, s) for rk, s, tr in non_dup if tr in ("A", "B")]
-        max_roster_on_one = max((s["roster_school_names_hit"] for _, s in sched), default=0)
-        if roster_size and max_roster_on_one >= max(2, roster_size * 0.5):
-            topo = "hub"
-        elif len(sched) >= 2:
-            topo = "per_school"
-        else:
-            topo = "unknown"
-        # NCES denominator: PREFER the Stage-1 batch (captured at queue time, with provenance);
-        # fall back to the live CSV count when no batch entry exists for this district.
-        did7 = str(disc["district_id"]).zfill(7)
-        bt = batches.get(did7)
-        nces_counts = (bt or {}).get("nces_school_counts") or {}
-        nces_total = nces_counts.get("total", nces.get(did7))
-        con.execute(
-            """INSERT INTO district (district_id, name, state, district_dir, batch_id,
-                 guessed_topology, labeled_topology, nces_school_count, n_records)
-               VALUES (?,?,?,?,?,?,?,?,?)""",
-            (disc["district_id"], disc.get("name"), disc.get("state"), ddir.name,
-             disc.get("batch_id"), topo, None, nces_total, len(district_records)))
-        if bt:
-            con.execute(
-                """INSERT INTO district_target (district_id, batch_id, nces_year, nces_total,
-                     nces_by_level_json, enrollment_k12, lea_claimed_bands_json, schools_by_band_json)
-                   VALUES (?,?,?,?,?,?,?,?)""",
-                (disc["district_id"], bt.get("_batch_id"), bt.get("_nces_year"),
-                 nces_counts.get("total"), json.dumps(nces_counts.get("by_level", {})),
-                 bt.get("enrollment_k12"), json.dumps(bt.get("lea_claimed_bands", [])),
-                 json.dumps(bt.get("schools_by_band", {}))))
-
-    # Restore any labels the DB is missing from the JSON source of truth (no-op on a normal
-    # re-ingest where the label table was preserved; the recovery path after a DB wipe).
-    restored = import_labels(con)
-    # labeled_topology is derived from the (now-restored) human labels + the stored NCES count.
-    for (did,) in con.execute("SELECT district_id FROM district").fetchall():
-        recompute_labeled_topology(con, did)
-    con.commit()
-    n_rec = con.execute("SELECT COUNT(*) FROM record").fetchone()[0]
-    n_lab = con.execute("SELECT COUNT(*) FROM label WHERE status!='unlabeled'").fetchone()[0]
-    n_dist = con.execute("SELECT COUNT(*) FROM district").fetchone()[0]
-    by_tier = dict(con.execute("SELECT tier, COUNT(*) FROM record GROUP BY tier").fetchall())
-    n_clustered = con.execute("SELECT COUNT(*) FROM record WHERE cluster_id IS NOT NULL").fetchone()[0]
-    n_clusters = con.execute("SELECT COUNT(DISTINCT cluster_id) FROM record WHERE cluster_id IS NOT NULL").fetchone()[0]
-    by_topo = dict(con.execute("SELECT labeled_topology, COUNT(*) FROM district GROUP BY labeled_topology").fetchall())
-    n_targeted = con.execute("SELECT COUNT(*) FROM district_target").fetchone()[0]
-    n_emergent = con.execute("SELECT COUNT(*) FROM record WHERE is_emergent=1").fetchone()[0]
-    exported = export_labels(con)        # keep the JSON backups in sync with the DB
-    exported_splits = export_splits(con)
-    con.close()
+        # Restore any labels the DB is missing from the JSON source of truth (no-op on a normal
+        # re-ingest where the label table was preserved; the recovery path after a DB wipe).
+        restored = import_labels(sess)
+        # labeled_topology is derived from the (now-restored) human labels + the stored NCES count.
+        for (did,) in sess.execute(text("SELECT district_id FROM district")).fetchall():
+            recompute_labeled_topology(sess, did)
+        n_rec = sess.execute(text("SELECT COUNT(*) FROM record")).scalar()
+        n_lab = sess.execute(text("SELECT COUNT(*) FROM label WHERE status!='unlabeled'")).scalar()
+        n_dist = sess.execute(text("SELECT COUNT(*) FROM district")).scalar()
+        by_tier = dict(sess.execute(text("SELECT tier, COUNT(*) FROM record GROUP BY tier")).fetchall())
+        n_clustered = sess.execute(text("SELECT COUNT(*) FROM record WHERE cluster_id IS NOT NULL")).scalar()
+        n_clusters = sess.execute(text(
+            "SELECT COUNT(DISTINCT cluster_id) FROM record WHERE cluster_id IS NOT NULL")).scalar()
+        by_topo = dict(sess.execute(text(
+            "SELECT labeled_topology, COUNT(*) FROM district GROUP BY labeled_topology")).fetchall())
+        n_targeted = sess.execute(text("SELECT COUNT(*) FROM district_target")).scalar()
+        n_emergent = sess.execute(text("SELECT COUNT(*) FROM record WHERE is_emergent=1")).scalar()
+        exported = export_labels(sess)        # keep the JSON backups in sync with the DB
+        exported_splits = export_splits(sess)
     print(f"ingest done: {n_dist} districts, {n_rec} records, {n_lab} labeled "
           f"({restored} restored from labels.json), {exported} exported to labels.json")
     print(f"clustering: {n_clustered} records in {n_clusters} clusters; {exported_splits} splits backed up")
@@ -730,9 +762,8 @@ def ingest(root: Path, db_path: Path):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", default=str(RAW_DIR))
-    ap.add_argument("--db", default=str(DB_PATH))
     a = ap.parse_args()
-    ingest(Path(a.root), Path(a.db))
+    ingest(Path(a.root))
 
 
 if __name__ == "__main__":

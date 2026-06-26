@@ -23,11 +23,12 @@ Usage:
 import argparse
 import itertools
 import json
-import sqlite3
+
+from sqlalchemy import text
 
 from infrastructure.acquisition.stage5_filter import build_signals as BS  # noqa: E402  (DEFAULT_TIER_PARAMS, tier_and_category, TARGET_LABELS)
 from infrastructure.acquisition.stage5_filter import harness  # noqa: E402             (tier_target_metrics — the metric of record)
-from infrastructure.acquisition.common import paths  # noqa: E402
+from infrastructure.acquisition.common import db as gdb  # noqa: E402  (governance Postgres — REQ-103)
 
 TARGET = BS.TARGET_LABELS
 
@@ -40,12 +41,12 @@ DEFAULT_GRID = {"neg_dom_min": [2, 3, 4], "neg_dom_win_max": [1, 2, 3]}
 def load_labeled(con):
     """[(district_id, rec_key, signals_dict, primary_label), ...] over LABELED, non-duplicate,
     canonical (cluster-rep or singleton) records — the same population the harness scores."""
-    rows = con.execute(
+    rows = con.execute(text(
         """SELECT r.district_id, r.rec_key, r.signals_json, l.primary_label
            FROM record r JOIN label l ON l.rec_key = r.rec_key
            WHERE l.status != 'unlabeled' AND l.primary_label IS NOT NULL
              AND r.duplicate_of IS NULL
-             AND (r.is_cluster_rep = 1 OR r.cluster_id IS NULL)""").fetchall()
+             AND (r.is_cluster_rep = 1 OR r.cluster_id IS NULL)""")).fetchall()
     return [(d, rk, json.loads(sj), lab) for d, rk, sj, lab in rows]
 
 
@@ -148,17 +149,13 @@ def _fmt(x):
 
 def main():
     ap = argparse.ArgumentParser(description="Stage 5 frontier / grid search (REQ-096, advisory)")
-    ap.add_argument("--db", default=None)
     ap.add_argument("--recall-floor", type=float, default=0.97)
     ap.add_argument("--tier", default="A", help="positive tier to constrain/rank on (A or A+B)")
     ap.add_argument("--cv", action="store_true", help="also run LOGO-by-district on the top config")
     a = ap.parse_args()
 
-    con = sqlite3.connect(a.db or paths.REVIEW_DB)
-    try:
+    with gdb.session_scope() as con:
         records = load_labeled(con)
-    finally:
-        con.close()
     base_m = evaluate(records, BS.DEFAULT_TIER_PARAMS)["thresholds"][a.tier]
     print(f"loaded {len(records)} labeled records "
           f"({sum(1 for *_ , lab in records if lab in TARGET)} targets)")

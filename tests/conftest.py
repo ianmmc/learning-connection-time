@@ -19,6 +19,32 @@ from datetime import datetime, date
 from decimal import Decimal
 
 
+# --- Governance Postgres fixture (REQ-103) ---
+
+@pytest.fixture
+def gov_session():
+    """A Session on the ISOLATED governance Postgres DB (REQ-103), for unit tests that exercise the
+    Stage-5 SQL against the real engine. Tests create CONNECTION-SCOPED TEMP tables on it (auto-
+    dropped at close), so they never touch real governance data and need no cleanup. The session is
+    bound to a single checked-out connection so the temp tables are visible to every statement.
+    Skips cleanly if the governance DB isn't reachable (Docker down)."""
+    from sqlalchemy import text
+    from sqlalchemy.orm import Session
+    from infrastructure.acquisition.common import db as gdb
+    try:
+        conn = gdb.get_engine().connect()
+        conn.execute(text("SELECT 1"))
+    except Exception as e:
+        pytest.skip(f"governance Postgres unavailable: {type(e).__name__}: {e}")
+    sess = Session(bind=conn)
+    try:
+        yield sess
+    finally:
+        sess.rollback()
+        sess.close()
+        conn.close()
+
+
 # --- Configuration ---
 
 TEST_DATABASE_URL = os.getenv(

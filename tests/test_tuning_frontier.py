@@ -7,7 +7,8 @@ a LeaveOneGroupOut-by-district overfitting guard. Pure functions on synthetic si
 loader + LOGO are exercised against a tiny in-memory SQLite.
 """
 import json
-import sqlite3
+
+from sqlalchemy import text
 
 from infrastructure.acquisition.stage5_filter import build_signals as BS  # noqa: E402
 from infrastructure.acquisition.stage5_filter import frontier as FR  # noqa: E402
@@ -101,26 +102,25 @@ def test_logo_cv_holds_out_each_district():
     assert "recall_std" in cv and "precision_mean" in cv
 
 
-# ----------------------------- DB loader -----------------------------
-def _mini_db(tmp_path):
-    db = tmp_path / "review.db"
-    con = sqlite3.connect(db)
-    con.executescript("""
-        CREATE TABLE record (rec_key TEXT PRIMARY KEY, district_id TEXT, tier TEXT,
-            category_hypothesis TEXT, signals_json TEXT, duplicate_of TEXT,
-            cluster_id TEXT, is_cluster_rep INTEGER);
-        CREATE TABLE label (rec_key TEXT PRIMARY KEY, primary_label TEXT, status TEXT);
-    """)
+# ----------------------------- DB loader (real governance Postgres, TEMP tables) -----------------------------
+def _seed_mini(sess):
+    """Stand up the two columns load_labeled() needs as CONNECTION-SCOPED TEMP tables on the
+    governance session, seeded with _records(). Auto-dropped when the fixture closes the connection."""
+    sess.execute(text("""CREATE TEMP TABLE record (rec_key text PRIMARY KEY, district_id text, tier text,
+        category_hypothesis text, signals_json text, duplicate_of text,
+        cluster_id text, is_cluster_rep integer)"""))
+    sess.execute(text("CREATE TEMP TABLE label (rec_key text PRIMARY KEY, primary_label text, status text)"))
     for dist, rk, sig, lab in _records():
-        con.execute("INSERT INTO record VALUES (?,?,?,?,?,?,?,?)",
-                    (rk, dist, "A", "x", json.dumps(sig), None, None, 1))
-        con.execute("INSERT INTO label VALUES (?,?,?)", (rk, lab, "labeled"))
-    con.commit()
-    return con
+        sess.execute(text("""INSERT INTO record (rec_key, district_id, tier, category_hypothesis,
+            signals_json, duplicate_of, cluster_id, is_cluster_rep)
+            VALUES (:rk,:d,'A','x',:sj,NULL,NULL,1)"""), {"rk": rk, "d": dist, "sj": json.dumps(sig)})
+        sess.execute(text("INSERT INTO label (rec_key, primary_label, status) VALUES (:rk,:lab,'labeled')"),
+                     {"rk": rk, "lab": lab})
+    return sess
 
 
-def test_load_labeled_reads_signals_and_labels(tmp_path):
-    con = _mini_db(tmp_path)
+def test_load_labeled_reads_signals_and_labels(gov_session):
+    con = _seed_mini(gov_session)
     recs = FR.load_labeled(con)
     assert len(recs) == 4
     dists = {r[0] for r in recs}
