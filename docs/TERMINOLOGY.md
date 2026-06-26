@@ -1,307 +1,269 @@
 # Project Terminology Guide
 
-**Last Updated:** January 3, 2026
+**Last Updated:** 2026-06-25
 
-This document standardizes vocabulary used throughout the Learning Connection Time project to prevent confusion between human and AI collaboration.
+The canonical vocabulary for the Learning Connection Time (LCT) project — the file an auditor or new
+developer should read first. It standardizes the terms used across `docs/ACQUISITION_PIPELINE.md`,
+the design notes, the database, and the data artifacts.
 
----
-
-## Data Collection Methods
-
-### Human-Provided Data
-**Definition:** Data manually collected by human team members and placed in `data/raw/manual_import_files/`
-
-**Examples:**
-- PDFs downloaded by user when Claude encountered access blocks
-- Data compiled by user using external tools (Gemini, ChatGPT)
-- Documents obtained through official requests or non-public sources
-
-**Indicators in data:**
-- Source URLs contain "manual_import:" prefix
-- Files located in `data/raw/manual_import_files/`
-- Method field may show `manual_data_collection` or `human_provided`
-
-### Automated Enrichment
-**Definition:** Data collected by Claude Code through web scraping, PDF extraction, or API calls
-
-**Examples:**
-- Bell schedules scraped from district websites
-- PDFs downloaded and extracted with pdftotext/tesseract
-- HTML pages fetched and parsed
-
-**Indicators in data:**
-- Method field shows: `web_scraping`, `pdf_extraction`, `district_policy`, `school_sample`
-- Source URLs are direct web links (no "manual_import" prefix)
-- Collected during Claude sessions
-
-### Manual Intervention
-**Definition:** Cases where Claude attempted automated collection but required human assistance to proceed
-
-**Examples:**
-- Cloudflare/WAF blocks preventing automated access
-- CAPTCHAs or authentication requirements
-- Files requiring human judgment to locate or interpret
-
-**Process:**
-1. Claude attempts automated enrichment
-2. Encounters block/error
-3. Adds to `manual_followup_needed.json`
-4. Human provides data to `manual_import_files/`
-5. Claude processes the human-provided data
-6. Final JSON marked with human-provided indicators
+> **Two eras live side by side.** The database and older docs contain records/terms from the original
+> **enrichment-campaign** era (state-by-state manual + Crawlee/Ollama collection, retired); the active
+> work is the stage-based **acquisition pipeline** (`infrastructure/acquisition/`). Current vocabulary
+> comes first; the legacy terms are preserved (clearly marked **LEGACY**) at the end so old records and
+> docs remain readable. The retired Crawlee+Ollama code was archived 2026-06-25 to
+> `data/archive/crawlee-ollama-era-superseded-20260625/`.
 
 ---
 
-## Data Quality Classifications
+## 1 · The metric
 
-### Actual Bell Schedules (Enriched)
-**Definition:** Bell schedule data obtained from authoritative district or school sources
+### Learning Connection Time (LCT)
+`LCT = (Daily Instructional Minutes × Instructional Staff) / Student Enrollment` — minutes of
+teacher-time per student per day. Computed over nested staffing scopes
+(`teachers_only ⊂ teachers_core ⊂ instructional ⊂ instructional_plus_support ⊂ all`); **`instructional`
+is the recommended primary scope**.
 
-**Counts as enriched:** YES ✓
+### Daily Instructional Minutes — Gross vs. Net
+- **Gross (bell-to-bell) — the CURRENT target:** `end − start`, **no deductions**. What we extract and
+  store today; the ground truth is also gross. Overstates true instructional time by ~30–60 min/day
+  (lunch + passing + recess), inconsistently across districts, so it is always labeled
+  **`gross_bell_to_bell`** (`minutes_basis` field).
+- **Net (deferred):** gross − lunch − passing − recess. More accurate, much harder to extract; **not
+  attempted yet**. We never apply *assumed* deductions (a guessed 30-min lunch) — assumed precision is
+  fake precision.
 
-**Sources:**
-- District policy documents with specific times
-- School websites with published schedules
-- Official bell schedule PDFs/tables
-- District-provided documentation
-
-**Acquisition method:**
-- **Automated:** search-led discovery + tiered capture + cheap-cloud council extraction (see `docs/ACQUISITION_PIPELINE.md`)
-- **Manual:** human-collected schedules where the pipeline can't reach
-
-**Confidence levels:**
-- High: Detailed schedule with specific times from official source
-- Medium: School-sampled or estimated from total time
-- Low: Single school sample representing diverse district
-
-### Gross vs. Net Daily Instructional Minutes
-**Gross (bell-to-bell) — the CURRENT target:** last-bell end time − first-bell start time, with **no deductions**. This is what we extract from bell schedules and store today; the existing ground truth is also gross. It **overstates** true instructional time by ~30–60 min/day (lunch + passing + recess), and *inconsistently* across districts, so it is always labeled **gross / bell-to-bell**.
-
-**Net (deferred future enhancement):** gross − lunch − passing periods − recess. More accurate but requires extracting scattered, often-absent deduction fields — a harder extraction problem we are **not** attempting yet. We do **not** apply *assumed* deductions (e.g. a guessed 30-min lunch); assumed net adds fake precision and is explicitly avoided.
-
-**Why gross now (decided June 2026):** it needs only two reliably-published numbers (start, end), which sharply improves extraction accuracy, and it is a transparent, defensible step up from statutory minimums. Records carry `minutes_basis: gross_bell_to_bell`.
-
-### Statutory Fallback (NOT Enriched)
-**Definition:** State minimum instructional time requirements used as default
-
-**Counts as enriched:** NO ✗
-
-**Characteristics:**
-- Method: `state_statutory`
-- Confidence: low or assumed
-- Source: State education code/statute
-- No specific school/district times
-- Generic minutes (often 360, 420, etc.)
-
-**Minutes source:**
-- State statutory requirement (fallback when no actual schedule is found)
-
-**Storage:**
-- Stored in the `bell_schedules` table with `method = statutory_fallback`
-- NOT counted in enrichment campaign progress
+### The INVARIANT (extraction)
+**Extractors read TIMES; deterministic Python computes MINUTES and the MODE.** Models return only
+per-school facts `{start_time, end_time, grade_level, school_name}`; code does `gross = end − start` and
+the per-band exact mode. A model is **never** asked to compute minutes or pick a "typical" schedule.
 
 ---
 
-## Dataset Years
+## 2 · Data status & quality
 
-### Current Dataset (Mixed Years: 2023-24, 2024-25, 2025-26)
-**PostgreSQL database tracks all years**
+### Enriched
+A district/school for which we hold an **actual** bell-to-bell schedule (from an authoritative district
+or school source), **not** a statutory minimum. The goal of the pipeline. *(Counts toward progress.)*
 
-**Storage:**
-- Database: `learning_connection_time` PostgreSQL database
-- Table: `bell_schedules` (schedule records for enriched districts)
-- Export: `data/enriched/bell-schedules/bell_schedules_manual_collection_2024_25.json` (backup/legacy)
+### Statutory fallback
+A state's **minimum** instructional-time requirement, used as a default when no actual schedule is
+found. Stored with `method = statutory_fallback`; **NOT enriched**, does not count as collected data.
+The thing the pipeline exists to replace with real data.
 
-**Enrichment status:**
-- See [../CLAUDE.md](../CLAUDE.md#project-status) for current enrichment counts and campaign progress
-- **State campaigns:** Following Option A protocol (ranks 1-9, stop at 3 successful)
-
-**Bell Schedule Search Priority:**
-- 2025-26 (current year, most likely posted)
-- 2024-25 (recent year, still available)
-- 2023-24 (acceptable, matches primary dataset year)
-- **NEVER use 2019-20 through 2022-23** (COVID-era exclusion)
+### Confidence levels
+`High` (specific times from an official source) · `Medium` (school-sampled / reasonably representative)
+· `Low` (single school standing in for a diverse district) · `Assumed` (statutory only, no real schedule).
 
 ---
 
-## File Naming Conventions
+## 3 · The acquisition pipeline — structure
 
-### Bell Schedule Files
+### Stage / the 9 stages
+The pipeline is built and walked **stage by stage** with human checkpoints. Canonical doc:
+`docs/ACQUISITION_PIPELINE.md`. Stages: **1 Queue · 2 Discover · 3 Capture · 4 Local processing ·
+5 Local filtering · 6 Handoff · 7 Council extraction · 8 Aggregate · 9 Write**.
 
-**Individual district (current):**
-```
-{district_id}_2023-24.json
-Example: 5604510_2023-24.json (Natrona County SD #1)
-```
+### Checkpoints (CP-A / CP-B / CP-C) — human-in-the-loop
+Deliberate high-supervision gates: **CP-A (Queue)** — are the right schools/bands targeted? · **CP-B
+(Input)** — is the captured input legible and relevant (the critical gate, before any paid call)? ·
+**CP-C (Output→Write)** — are the per-school times correct + honestly labeled before the DB write?
 
-**Collection file (legacy):**
-```
-bell_schedules_manual_collection_2024_25.json
-```
+### Batch / `batch_NNNNN.json`
+One run's worth of targeting, produced by Stage 1 (`data/acquisition/queue/`). Carries the selected
+districts + per-band school lists + the NCES denominator. `batch_00001` is the live working batch.
 
-**Manual follow-up tracking:**
-```
-manual_followup_needed.json
-```
-
-### Manual Import Files
-
-**Structure:**
-```
-data/raw/manual_import_files/{District Name} ({State})/
-  ├── document1.pdf
-  ├── document2.pdf
-  └── README.md (optional - explains what's in the files)
-```
-
-**Examples:**
-```
-data/raw/manual_import_files/Sweetwater School District SD1 (WY)/
-  └── SchoolStartandEndTimes.pdf
-
-data/raw/manual_import_files/Albany School District No. 1 (WY)/
-  ├── Slade Elementary School.pdf
-  ├── Whiting High School Bell Schedule.pdf
-  └── Laramie Middle School Handbook.pdf
-```
+### District-status registry / `district_status.json`
+The cross-stage progress ledger (`data/acquisition/status/`): each district's `furthest_stage` and
+outcome. `already_attempted()` excludes a district from re-queue once it has reached **Stage 3
+(Capture)+** — searched/queued-only districts stay eligible.
 
 ---
 
-## Method Field Values
+## 4 · Stage-specific vocabulary
 
-Used in bell schedule JSON files to indicate collection approach:
+### Stage 1 — Queue (NCES targeting)
+- **LEA** — Local Education Agency (a school district), NCES's unit. **`ccd_lea` / `ccd_sch`** — NCES
+  Common Core of Data LEA-level and school-level files (`ccd_lea_029` / `ccd_sch_029_2425`).
+- **Band** — grade tier: **elementary / middle / high**. **`LEVEL`** — NCES's per-school category
+  (`Elementary`/`Middle`/`High`/`Secondary`/`Other`/…); **LEVEL-primary classification** trusts a clean
+  LEVEL over grade-range overlap. **`bands_for()` / `recursive_band_groups()`** — band-assignment from
+  grade spans when LEVEL is ambiguous.
+- **Claimed bands** — the bands an LEA's overall grade span covers. **Grade-span integrity (Rule 7)** —
+  exclude+flag a district whose claimed band has **zero** covering schools at the school level.
+- **CTC / shared-service entity** — career-technical / service agencies, excluded from sampling
+  (`is_shared_service_entity`).
+- **Cross-band overlap minimization** — a K-8/K-12 school can satisfy multiple bands; bands are sampled
+  **most-constrained-first** so one school isn't drawn into several bands unnecessarily.
+- **Cap** — ≤ **12 schools per band** (seeded random sample over the cap; full census below it).
+- **NCES denominator / `nces_school_counts`** — per district, `{total, by_level}`: the count of schools
+  meeting our eligibility (**open · regular · non-virtual · non-preschool**, the shared `_eligible()`
+  predicate), grouped by **raw `ccd_sch` LEVEL**. The **topology denominator** — our-criteria count,
+  *not* `ccd_lea`'s self-reported figure; captured at Stage 1 with `nces_year` for provenance.
 
-### Automated Methods (Claude-collected)
-- `web_scraping` - Scraped from district/school website HTML
-- `pdf_extraction` - Extracted from publicly accessible PDF
-- `district_policy` - From official district policy document
-- `school_sample` - Representative school(s) sampled
-- `school_specific_schedules` - Individual school schedules compiled
-- `district_standardized_schedule` - Uniform schedule across district
-- `school_hours_with_estimation` - Total hours with estimated breakdown
+### Stage 2 — Discover (recall)
+- **Discovery = a recall problem** — find *a* schedule page; capture verifies it. Run in cost-ascending
+  **waves** with stop-when-found (not a council): **Wave 1** Claude WebSearch (Haiku subagent) → **Wave 2**
+  OpenRouter `gpt-4o-mini-search` → flag for manual.
+- **`gate()`** — deterministic filter rejecting off-domain / news / aggregator URLs. **Residual** — a
+  school still unsatisfied after gating; only residuals go to Wave 2.
+- **`discovery.json`** — per-district discovery output (the `schools[]` roster + raw per-school URLs).
+- **`candidates.json`** — the Stage 2 **D_FLATTEN** output: the deduped, capture-ready URL list, each
+  candidate carrying its **`schools[]`** (the URL→school map) and `tools[]` (which wave found it).
 
-### Human-Provided Methods
-- `manual_data_collection` - User compiled/collected data
-- `human_provided` - User obtained and provided files
+### Stage 3 — Capture (tiered, local Playwright)
+- **Capture** — render/fetch each candidate, writing per-URL artifacts to
+  `data/raw/lea-website-captures/<district>/captures/<md5(url)>/` (`page.txt` innerText, `page.png`
+  screenshot, `page.pdf` Chromium print). **`captures.json`** records each. **Drive Tier 1/2** —
+  Google Drive/Docs export handling (Tier 1 unauthenticated; Tier 2 OAuth, deferred). **Modal dismissal**
+  — hide cookie/consent overlays before capture.
+- **Emergent candidate** — a schedule-keyword link found *in* a rendered page (one hop, no recursion) →
+  a new candidate Discovery never surfaced. **Emergent record** — a captured URL that was **never a
+  planned candidate** (`is_emergent`), i.e. discovered during capture.
+- **Fingerprint** — per-record raw hosting/CMS signals (`final_host`, `server`, `resource_hosts[]`,
+  `meta_generator`, `js_dependent`, **`cms_hint`**). **`CMS_HOSTS`** — the curated set of *school-district
+  CMS vendors* (SharpSchool, Apptegy, Educational Networks, …); a `cms_hint` is a host-suffix match
+  against it. Additions are **human-in-the-loop, school-vendor-only** (never a general host/CDN).
+- **DOM segmentation / de-chrome (PLANNED)** — segment a page's `<header>`/`<footer>`/`<nav>` vs `main`
+  at render time into separate representations (`page.main/header/footer/nav.txt`), so CMS **chrome**
+  (a footer "Building Hours", a school-switcher nav) can't pollute signals. **Landmark** — the
+  semantic/ARIA selectors used to identify chrome.
 
-### Fallback Methods (NOT enriched)
-- `state_statutory` - State minimum requirements only
-- `fallback_statutory` - Fallback to statutory when actual unavailable
+### Stage 4 — Local processing
+- **Representation** — one extracted view of a captured artifact: a text file from a tool, an image, a
+  rasterized PDF page. A record has many; they can disagree. **Usable text** — passes a weak length +
+  printable-char bar (≥120 chars) — "is this recognizable text," *not* "is this a schedule" (that's
+  Stage 5). **Tool roster** — `pdftotext -layout`, `pdfplumber` (lines), `camelot` (stream/hybrid),
+  `tesseract`; the rule is **run every kept tool on every applicable input, keep everything**.
+- **Raster** — `raster_p-N.png`, a PDF page rendered to image for OCR/inspection. **`processed.json`** —
+  per-record list of representations (each with `usable`, `n_chars`, `n_times`, a `text_file` reference).
 
----
+### Stage 5 — Local filtering / CP-B review
+- **Signal** — a deterministic, no-AI measurement over a representation's text (`n_times`,
+  `n_times_in_window`, `proximity_pairs`, `positive_kw`, `negative_kw`, `instructional_time`,
+  `roster_school_names_hit`, `visual_text_gap`, per-page time counts, …). The script's raw material.
+- **Tier (A–D)** — the script's confident, sortable likelihood: **A** strong target candidate · **B**
+  plausible · **C** unlikely/negative-leaning · **D** drop-candidate (no times/unusable).
+- **Category hypothesis** vs **label** — the *hypothesis* is the script's weak guess at the primary
+  label (noisy, hidden in the UI until the human labels, to avoid anchoring); the **label** is the
+  human's ground-truth judgment. (Full label taxonomy lives in `STAGE5_FILTER_DESIGN_2026-06.md`:
+  target-shape labels, non-target-reason labels incl. `community_calendar`/`embedded_feed`, and flags
+  incl. `duplicate`, `buried_in_long_doc`, `building_hours_visible`, `target_image_only`.)
+- **Topology** — a district's schedule *shape*, kept as two separate values: **`guessed_topology`**
+  (from signals — noisy) and **`labeled_topology`** (from human labels + NCES — **the truth**). Values:
+  **`single_school`** (NCES says 1 school) · **`per_school`** · **`district_hub`** (one page covers all)
+  · **`mixed`** · **`incomplete_coverage`** (one bell schedule but NCES says >1 school) · **`none_found`**
+  · **`unknown`**.
+- **Near-duplicate clustering** — group a district's content-similar records so the reviewer labels the
+  **cluster representative** once; labels cascade to members. **Split** — a durable human override
+  pulling a member out of its cluster (survives re-ingest). **Duplicate / `content_hash`** — exact
+  byte-identical dedup (a subset of clustering).
+- **Building hours (red herring)** — a footer's *building/office* open hours mimic a student start/end
+  pair but are **not** the student day; flagged `building_hours_visible`.
 
-## Confidence Levels
-
-### High
-- Detailed bell schedule with specific start/end times
-- Official district policy document
-- Comprehensive school-by-school data
-
-### Medium
-- School-sampled with reasonable representativeness
-- Estimated from total time with documented assumptions
-- News sources or secondary documentation
-
-### Low
-- Single school representing large diverse district
-- Significant estimation required
-- Outdated schedules used as proxy
-
-### Assumed
-- Statutory requirements only
-- No actual bell schedule data
-- Pure estimation
-
----
-
-## Enrichment Campaign Terminology
-
-### Target Districts
-Districts identified for enrichment campaign (mixed years: 2023-24, 2024-25, 2025-26)
-
-**Selection criteria:**
-- Population-based state ordering (ascending)
-- 3 districts per state (via Option A: attempt ranks 1-9, stop at 3 successful)
-- Minimum enrollment thresholds
-- Grade level diversity (K-12 coverage)
-- PostgreSQL database tracks all enrichment data
-
-### Enrichment Status
-
-**Enriched:** District has actual bell schedule data (NOT statutory fallback)
-
-**Pending:** Not yet attempted or in progress
-
-**Manual follow-up:** Attempted but requires human intervention
-- Stored in `manual_followup_needed.json`
-- Reasons: access blocks, no public schedules, technical issues
-
-**Completed manual collections:** Previously in manual follow-up, now resolved
-
----
-
-## Common Phrases - Standardized Usage
-
-### "We enriched this district"
-**Means:** Obtained actual bell schedule data (automated or manual collection)
-**Does NOT mean:** Applied statutory fallback
-
-### "Manual collection"
-**Means:** Human-provided data in manual_import_files/
-**Context matters:** Check if referring to human-provided vs manual intervention
-
-### "Scraped the data"
-**Means:** Automated web scraping via the local-first Crawlee + Ollama pipeline
-**Does NOT mean:** Human collected
-
-### "Statutory fallback"
-**Means:** Using state minimum requirements (NOT enriched)
-**Alternative terms:** state statutory, assumed data
-
----
-
-## Questions to Ask When Unclear
-
-1. **Who collected this data?**
-   - Human → human-provided
-   - Claude → automated enrichment
-
-2. **What's the source?**
-   - manual_import_files/ → human-provided
-   - Web URL → automated enrichment
-   - State statute → statutory fallback
-
-3. **Does it count as enriched?**
-   - Actual bell schedules → YES
-   - Statutory fallback → NO
-
-4. **What year is this for?**
-   - 2023-24 → current campaign
-   - 2024-25 → earlier work
-
-5. **Where is it stored?**
-   - Individual JSON → 2023-24 campaign
-   - Collection file → 2024-25 legacy
-   - Statutory fallback (method=statutory_fallback) → NOT enriched
+### Stages 6–9 — Handoff, Council, Aggregate, Write
+- **Council** (extraction = correctness) vs **waves** (discovery = recall). A small, **cross-family**
+  set of non-reasoning models reads the *same* captured input. Candidate set: Gemini 2.5 Flash, Mistral
+  Large 2512, DeepSeek V3.2, Mistral Small 24B, Gemini Flash-Lite, Qwen3-235B.
+- **Consensus** — agreement on the per-school **`(start, end)` pair, cross-family, within ±15 min**.
+  Same-family agreement is **not** consensus (shared blind spots → false consensus).
+- **Mode** — the deterministic per-band exact modal `(start,end)` chosen from the council's per-school
+  facts. **Per-school extract→aggregate** — extract per file (never concat-and-truncate), then aggregate.
+- **Reader-routing** (outcome-based, route the reader to the input): **Tier 1** plain text → **Tier 2**
+  `page.pdf()` + `pdftotext -layout` (multi-column) → **Tier 2.5** OCR a clean image → **Tier 3** vision
+  (Gemini Flash / Mistral Large read JS/image/scan pages text paths miss). Trigger = "did the cheap
+  reader recover usable content," not file format.
 
 ---
 
-## Examples of Correct Usage
+## 5 · The learning loop & configuration
 
-✓ "We have enriched districts with actual bell schedules across multiple states." (Check CLAUDE.md for current counts)
+### Config-as-data / tunables / knobs
+The pipeline's adjustable inputs — `CMS_HOSTS`, keyword lists, the Stage-4 tool roster, the de-chrome
+landmark list, search-query templates, council composition — externalized from code into versioned JSON
+under `infrastructure/acquisition/common/config/` (read by both Python and Node). Each entry carries
+**per-entry provenance** (`added`, `rationale`, `evidence`, `approved_by`, `loop_tier`) so a tunable
+*is* its own decision log.
 
-✓ "Broward County required human-provided data because Claude encountered Cloudflare blocks."
+### Loop tiers (cost of re-measuring a change)
+- **Tier 0 — Re-derive** (free, offline, same evidence): pure functions over stored artifacts — Stage 5
+  signals/keywords/tiers (re-ingest), `cms_hint` (recompute), Stage 4 roster (re-process).
+- **Tier 1 — Backfill** (one re-visit, no API/$): needs render-time data we didn't persist — de-chrome
+  landmarks (`backfill-segments`); drops to Tier 0 downstream after.
+- **Tier 2 — Re-acquire** (metered, stochastic): changes what we fetch — search queries, search APIs,
+  council config.
+- **Tier 3 — Re-sample** (changes the cohort): Stage 1 queue criteria — re-running yields *different*
+  districts, so you validate the *principle*, not a before/after on a fixed set.
+- **Design heuristic:** engineer knobs *down* the tiers (capture raw facts early so classification is a
+  cheap re-derive).
 
-✓ "The database contains bell schedule records for enriched districts." (Check database for current counts)
+### Measurement harness / scorecard
+The **scorecard** is the *result* of running a **config state** over the data and comparing programmatic
+outputs to the human labels — metrics at representation / url / district granularity (tier
+precision-recall, category accuracy, topology agreement). A score is only meaningful as the tuple
+**(config × label-set × data snapshot) → metrics**, so each scorecard **stamps all three input
+fingerprints** (config version, label-set hash, ingest snapshot) to be reproducible/auditable. Run
+**on-demand + at batch completion** (or after *n* updates — itself a knob), never per-label-write.
 
-✓ "This district uses statutory fallback, so it doesn't count as enriched."
+### Provenance / lineage
+The end-to-end chain that lets us **explain why** a district shows real daily instructional time rather
+than statutory fallback: page → extraction → signals → config version → human labels. Provenance-rich
+config, fingerprinted scorecards, and preserved labels are its building blocks (the project's
+transparency principle, defensible to an auditor).
 
-✗ "We manually collected 135 districts." (These are statutory fallback, NOT enriched)
+### `DATA_ROOT` / paths module
+A single settings indirection (`infrastructure/acquisition/common/paths.py`) defining every runtime
+location, so generated state stays in a consolidated, **relocatable** `data/` root (one knob to move it
+to an external drive) while *code* stays clean. Config lives near code; **runtime state stays in
+`data/`**.
 
-✗ "Manual enrichment for Los Angeles." (Unclear if human-provided or manual intervention)
-
-✗ "LCT is 185.5 minutes for SPED." (Calculation results live in outputs, not documentation)
+### CP-B tuning mode / proposals view
+A planned CP-B mode where the agent **proposes** evidence-backed config changes from the DB (e.g.
+"promote this CMS to `CMS_HOSTS` — 51 records, currently `null`"), each declaring its **loop tier** and,
+where Tier 0/1, a before/after against the labels. **Human disposes**; the agent never auto-applies.
+Guardrail: every knob has a stated *principle* for a valid change; Tier-2/3 changes need cross-batch
+confirmation.
 
 ---
 
-**Summary:** When in doubt, be specific about WHO collected the data (human vs Claude) and WHAT quality it represents (actual vs statutory).
+## 6 · Data-collection modes (who/how)
+
+- **Automated** — collected by the pipeline (search-led discovery + tiered capture + cheap-cloud council
+  extraction). The default path.
+- **Human-provided** — schedules a human collected and placed in `data/raw/manual_import_files/`
+  (e.g. where a WAF/Cloudflare block stopped automation). Still counts as **enriched** (it's real data).
+- **Manual intervention** — automation attempted, then hit a block needing human help; tracked, retried
+  deliberately (never silently). **Security blocks** (Cloudflare/WAF/CAPTCHA) get the **ONE-attempt
+  rule** — flagged for manual, never bypassed.
+
+---
+
+## 7 · LEGACY vocabulary (for reading old records & docs)
+
+These describe the retired enrichment-campaign / Crawlee+Ollama era. Kept so historical DB records and
+archived docs remain interpretable — **not** current practice.
+
+- **Enrichment campaign / "Option A"** — the old state-by-state sequencing (ascending enrollment, attempt
+  ranks 1–9, stop at 3 successes/state). Superseded by the batch/stage pipeline.
+- **Legacy `method` field values** (on older `bell_schedules` rows): `web_scraping`, `pdf_extraction`,
+  `district_policy`, `school_sample`, `school_specific_schedules`, `district_standardized_schedule`,
+  `school_hours_with_estimation`, `manual_data_collection`, `human_provided`, `state_statutory` /
+  `fallback_statutory`.
+- **Collection file** — `bell_schedules_manual_collection_2024_25.json` (a legacy bulk export).
+- **"Scraped the data"** — historically meant the Crawlee+Ollama scraper; today means the pipeline's
+  Stage 3 Playwright capture. Prefer "captured" for the current pipeline.
+- **Crawlee mapper / Ollama ranking-triage / the `:8000` API / `:3000` scraper** — the retired stack,
+  archived to `data/archive/crawlee-ollama-era-superseded-20260625/`.
+
+---
+
+## 8 · When unclear — disambiguating questions
+
+1. **Which era?** Stage/`batch_*`/`candidates.json`/`labeled_topology` → current pipeline; `method`
+   field / `manual_import_files` / "Option A" → legacy.
+2. **Enriched or not?** Actual schedule (gross bell-to-bell) → enriched; `statutory_fallback` → not.
+3. **Discovery or extraction?** Finding the page (recall, **waves**) vs reading the times (correctness,
+   **council**).
+4. **Guess or truth?** `guessed_topology` / `category_hypothesis` are the *script's* noisy guesses;
+   `labeled_topology` / the **label** are the *human's* ground truth.
+5. **Whose data / what quality?** Be explicit about WHO collected it (automated vs human-provided) and
+   WHAT it represents (actual schedule vs statutory).

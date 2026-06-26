@@ -158,7 +158,6 @@ This is the core briefing (~115 lines). For detailed information, load these app
 
 - **Crosswalk table**: `state_district_crosswalk` - single source of truth for all state mappings
 - **SPED baseline**: 2017-18 IDEA 618/CRDC exempt from temporal rule
-- **Acquisition API**: FastAPI (port 8000) + Crawlee (port 3000)
-- **Bell schedule pipeline**: Crawlee mapping → Ollama ranking → PDF capture → Ollama triage
+- **Acquisition pipeline**: the stage-based per-school pipeline in `infrastructure/acquisition/` — see `docs/ACQUISITION_PIPELINE.md` (the retired Crawlee+Ollama API/scraper was archived 2026-06-25 to `data/archive/crawlee-ollama-era-superseded-20260625/`)
 
 For detailed reference, load the appropriate appendix above.
