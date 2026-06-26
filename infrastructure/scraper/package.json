@@ -5,12 +5,16 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "node --test *.test.mjs"
+    "test": "node --test *.test.mjs",
+    "lint:deps": "depcruise --config .dependency-cruiser.cjs *.mjs"
   },
   "dependencies": {
     "playwright": "^1.49.0"
   },
   "engines": {
     "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "dependency-cruiser": "^18.0.0"
   }
 }
