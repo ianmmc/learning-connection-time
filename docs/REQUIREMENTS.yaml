@@ -665,7 +665,7 @@ requirements:
     description: Scraper service requires API key authentication for /scrape endpoint
     type: non-functional
     priority: must
-    status: tested
+    status: superseded
     acceptance_criteria:
       - /scrape endpoint requires X-API-Key header
       - Returns 401 Unauthorized if key missing or invalid
@@ -681,13 +681,13 @@ requirements:
       - tests/test_scraper_security.py::TestAPIKeyAuth::test_python_client_sends_api_key_header
     created: "2026-01-22T07:30:00Z"
     updated: "2026-01-23T16:45:00Z"
-    notes: "Gemini code review - implemented in server.ts with requireApiKey middleware"
+    notes: "SUPERSEDED 2026-06-26 — secured the archived Crawlee+Express scraper /scrape endpoint, retired 2026-06-25 to data/archive/crawlee-ollama-era-superseded-20260625/ (PROJECT_HISTORY: 'Retired Crawlee+Ollama era'). Tests self-skip ('Scraper service not running'); the live pipeline uses Stage 3 Playwright capture, no /scrape service. Original: Gemini code review - implemented in server.ts with requireApiKey middleware."
 
   - id: REQ-029
     description: HTML to Markdown conversion uses proper sanitization library
     type: non-functional
     priority: must
-    status: tested
+    status: superseded
     acceptance_criteria:
       - Uses DOMPurify for HTML sanitization (not regex)
       - Uses Turndown for HTML to Markdown conversion
@@ -702,13 +702,13 @@ requirements:
       - tests/test_scraper_security.py::TestHTMLSanitization::test_prevents_xss_attack
     created: "2026-01-22T07:30:00Z"
     updated: "2026-01-23T16:45:00Z"
-    notes: "Gemini code review - implemented in scraper.ts using DOMPurify + Turndown"
+    notes: "SUPERSEDED 2026-06-26 — HTML→Markdown sanitization for the archived Crawlee scraper (retired 2026-06-25). The live pipeline persists innerText at Stage 3 (de-chromed at REQ-091), not scraper HTML→MD. Original: Gemini code review - implemented in scraper.ts using DOMPurify + Turndown."
 
   - id: REQ-030
     description: Scrape requests use retry logic with exponential backoff
     type: non-functional
     priority: should
-    status: tested
+    status: superseded
     acceptance_criteria:
       - Retries transient failures (network errors, timeouts) up to 3 times
       - Uses exponential backoff with jitter (base 1s, max 8s)
@@ -725,13 +725,13 @@ requirements:
       - tests/test_scraper_resilience.py::TestRetryLogic::test_max_3_retries
     created: "2026-01-22T07:30:00Z"
     updated: "2026-01-23T21:45:00Z"
-    notes: "Implemented in scraper/src/queue.ts with RETRY_CONFIG constants. Non-retryable: BLOCKED, NOT_FOUND. Retryable: TIMEOUT, NETWORK_ERROR."
+    notes: "SUPERSEDED 2026-06-26 — retry/backoff for the archived Crawlee scraper queue (retired 2026-06-25). Live stages handle failure their own way (Stage 2 billing/auth hard-stop REQ-070; Stage 3 per-item flag REQ-074). Original: Implemented in scraper/src/queue.ts with RETRY_CONFIG constants. Non-retryable: BLOCKED, NOT_FOUND. Retryable: TIMEOUT, NETWORK_ERROR."
 
   - id: REQ-031
     description: Request ID correlation for scraper requests
     type: non-functional
     priority: should
-    status: tested
+    status: superseded
     acceptance_criteria:
       - Each scrape request assigned unique request ID (UUID)
       - Request ID included in all log messages for request
@@ -745,7 +745,7 @@ requirements:
       - tests/test_scraper_resilience.py::TestRequestCorrelation::test_python_client_logs_request_id
     created: "2026-01-22T07:30:00Z"
     updated: "2026-01-23T16:45:00Z"
-    notes: "Gemini code review - implemented in server.ts with randomUUID middleware"
+    notes: "SUPERSEDED 2026-06-26 — request-ID correlation for the archived Crawlee scraper service (retired 2026-06-25). Cross-stage traceability in the live pipeline is the district_status registry / per-stage JSON (and, going forward, the governance event log). Original: Gemini code review - implemented in server.ts with randomUUID middleware."
 
   - id: REQ-032
     description: Extract bell schedules for all grade levels based on district grade span
@@ -781,7 +781,7 @@ requirements:
     description: End-to-end pipeline orchestration testing with cross-stage data contracts
     type: non-functional
     priority: must
-    status: tested
+    status: superseded
     acceptance_criteria:
       - Test data contracts between scraper output and parser input
       - Test data contracts between parser output and database input
@@ -809,7 +809,7 @@ requirements:
       - tests/test_pipeline_orchestration.py::TestEndToEndFlow::test_url_to_lct_calculation
     created: "2026-01-23T21:30:00Z"
     updated: "2026-01-23T21:30:00Z"
-    notes: "E2E pipeline testing ensures data contracts maintained across all stages"
+    notes: "SUPERSEDED 2026-06-26 — tests the OLD scraper→parser→DB→LCT contract (markdown/html scraper_response, ContentParser), i.e. the Crawlee-era architecture, not the 9-stage acquisition pipeline. The intent (cross-stage data contracts) now lives in the as-built stage REQs (068–083) and, going forward, the governance event log. content_parser.py (Jan-2026) is likely dead code pending a separate cleanup. Original: E2E pipeline testing ensures data contracts maintained across all stages."
 
   - id: REQ-035
     description: Enrichment count verification against database before documentation
@@ -1017,7 +1017,7 @@ requirements:
     description: Discover candidate bell-schedule pages across a district web ecosystem (district site plus individual school subdomains) from an NCES CCD URL
     type: functional
     priority: must
-    status: accepted
+    status: tested
     acceptance_criteria:
       - Discovery is search-led (site search, sitemap.xml, a search API, or LLM-guided link selection), NOT blind whole-site crawling
       - Enumerates individual school sites/subdomains, since 80%+ of districts publish schedules only at the school level
@@ -1030,7 +1030,11 @@ requirements:
     updated: "2026-06-13T00:00:00Z"
     notes: "Replaces the abandoned Crawlee URL-glob crawl. Probe 2026-06-13 found glob targeting
       matched zero links on 4/4 districts and broad crawl was slow, noisy, and missed every known schedule;
-      federated school-subdomain structure (e.g. Sweetwater, KIPP) multiplies any crawl ~15x."
+      federated school-subdomain structure (e.g. Sweetwater, KIPP) multiplies any crawl ~15x.
+      IMPLEMENTED_BY (status bumped accepted→tested 2026-06-26): Stage 2, REQ-058 (cost-ascending waves)
+      + REQ-068/069/070/071/072 (tested); ran live on all 12 batch_00001 districts (12/12 found_all).
+      Design umbrella; the as-built stage REQs carry the tests. NOTE: Wave-1 execution is moving to
+      headless `claude -p` (REQ-104) — see PIPELINE_GOVERNANCE_AND_STATE_2026-06.md."
 
   - id: REQ-044
     description: Classify each captured candidate as a current bell schedule before extraction (relevance + recency gate)
@@ -1051,14 +1055,17 @@ requirements:
     description: Capture schedule content across all delivery formats and persist the raw artifact for audit and re-verification
     type: functional
     priority: must
-    status: accepted
+    status: tested
     acceptance_criteria:
       - Handles static HTML, image files (PNG/JPG/GIF), downloadable PDFs, Google Drive-hosted files, and server-side/JS-rendered pages (via scrape, export, render-to-PDF, or screenshot)
       - Persists the raw captured bytes (PDF/image/rendered HTML/screenshot), not only the source URL, because URLs rot and sources change
       - Stores capture method and timestamp alongside the artifact
       - A capture failure for one candidate is recorded and falls through to the next candidate or to fallback (REQ-049)
     created: "2026-06-13T00:00:00Z"
-    updated: "2026-06-13T00:00:00Z"
+    updated: "2026-06-26T00:00:00Z"
+    notes: "IMPLEMENTED_BY (status bumped accepted→tested 2026-06-26): Stage 3 Capture, REQ-073/074/075/076/077/086
+      (tested) + capture_drive.mjs (Node tests); ran live on all 12 batch_00001 districts (150/150 captured, 0 failures).
+      Design umbrella; the as-built stage REQs carry the tests."
 
   - id: REQ-046
     description: "[SUPERSEDED 2026-06-21 by REQ-054/REQ-055 — extractors return only start/end TIMES (gross), not deduction fields] Extract net-instructional-minutes fields with format-aware reading and typical-day selection"
@@ -1082,14 +1089,17 @@ requirements:
     description: Assign each sampled school's schedule to an elementary/middle/high band using NCES grade-span data
     type: functional
     priority: must
-    status: accepted
+    status: tested
     acceptance_criteria:
       - Maps a discovered school site/subdomain back to its NCES school record and grade span
       - Classifies into elementary/middle/high with a documented rule for spanning configs (K-8, 6-12, K-12)
       - A schedule that cannot be confidently assigned a band is flagged, not silently mis-binned
       - Band assignment is recorded with the per-school observation
     created: "2026-06-13T00:00:00Z"
-    updated: "2026-06-13T00:00:00Z"
+    updated: "2026-06-26T00:00:00Z"
+    notes: "IMPLEMENTED_BY (status bumped accepted→tested 2026-06-26): REQ-066 (LEVEL-primary band
+      classification + recursive grade-range grouping, tested) + REQ-032 (extract per grade level, tested).
+      Queue-time band assignment from NCES grade span; design umbrella, the stage REQs carry the tests."
 
   - id: REQ-048
     description: "[SUPERSEDED 2026-06-21 by REQ-056 — consensus is on per-school (start,end) TIMES, cross-family, not on the per-band minutes number] Verify extracted instructional minutes via 2-3 independent pathways and reconcile automatically"
@@ -1158,14 +1168,17 @@ requirements:
     description: Define the school-sampling policy and document its representativeness limitation
     type: non-functional
     priority: should
-    status: accepted
+    status: tested
     acceptance_criteria:
       - Sample size and selection rule defined as a function of district size and grade span (ties to REQ-043 discovery and REQ-042 aggregation)
       - District-band value is the MODE of sampled schools (REQ-042) with the distribution captured
       - Known limitation documented in METHODOLOGY - schedules are obtained only from schools that publish them, which may bias the sample
     created: "2026-06-13T00:00:00Z"
-    updated: "2026-06-13T00:00:00Z"
-    notes: "Complements REQ-042 (aggregation math) with the sampling/selection policy and the publish-bias caveat."
+    updated: "2026-06-26T00:00:00Z"
+    notes: "IMPLEMENTED_BY (status bumped accepted→tested 2026-06-26): queue-time sampling = REQ-063 (enrollment-quartile
+      stratification) + REQ-064 (per-band selection, cross-band overlap minimization) + REQ-065 (school eligibility), all
+      tested; the 12/band cap + 95/±5 rationale + publish-bias caveat documented in ACQUISITION_PIPELINE 'Sampling policy'.
+      Extraction-time mode-stability early-exit remains open (ACQUISITION_PIPELINE Open-decision #1/#2). Complements REQ-042."
 
   - id: REQ-053
     description: Ground all extraction in captured artifacts and abstract LLM providers behind a multi-model gateway, keeping search separate from LLM querying
@@ -1260,22 +1273,24 @@ requirements:
       was a user-caught cluster-mean bug fixed 2026-06-21."
 
   - id: REQ-057
-    description: "Classify district web topology (hub / per_school / none) from SEARCH RESULTS only, to route processing"
+    description: "[SUPERSEDED 2026-06-26 by REQ-105 — topology moved from search-results to Stage 5 labels+NCES] Classify district web topology (hub / per_school / none) from SEARCH RESULTS only, to route processing"
     type: functional
     priority: should
-    status: accepted
+    status: superseded
+    superseded_by: [REQ-105]
     acceptance_criteria:
       - The Wave-1 Claude WebSearch subagent classifies each district as hub (schedules on one district URL), per_school (distinct school subdomain/pages), or none (neither found)
       - Classification uses ONLY what the search results reveal; it does NOT open or read page contents
       - Whether a hub renders cleanly vs is an expanding/accordion edge case is a CAPTURE-stage determination, not the classifier's
       - Topology routes the downstream branch (capture-hub-once-and-fan vs extract-each-school-page)
       - The label is recorded (roster.json / claude_urls.json) and is checkable against hand topology labels
-    tests:
-      - tests/test_acquisition_stages.py::TestTopology::test_topology_label_recorded
     created: "2026-06-21T00:00:00Z"
-    updated: "2026-06-21T00:00:00Z"
-    notes: "Hand topology labels for ~27 GT districts captured in gt_curation CURATION_RECONCILED.json
-      (topology_truth) for later validating the classifier. Live subagent classification not yet wired -> test is a skip stub."
+    updated: "2026-06-26T00:00:00Z"
+    notes: "SUPERSEDED: Stage 2 DELIBERATELY DROPPED search-result topology (not enough signal before reading
+      page content; ACQUISITION_PIPELINE Stage 2 'Topology classification — dropped'). Topology is now derived at
+      Stage 5 as `labeled_topology` from human labels + the NCES school count (the `guessed_topology` from
+      roster-name signals is kept only to MEASURE the heuristic). Replaced by REQ-105. Hand topology labels for
+      ~27 GT districts remain in gt_curation CURATION_RECONCILED.json for validation."
 
   - id: REQ-058
     description: "Per-school discovery via cost-ascending waves (Claude WebSearch -> OpenRouter gpt-4o-mini-search -> manual), stop-when-found"
@@ -1638,7 +1653,12 @@ requirements:
       insufficient-balance error - to urls=[], which would have produced a wall of false manual_flag outcomes
       once an account's pre-paid balance ran out, indistinguishable from genuine 'nothing found.' Fixed by
       raising SystemExit (not a plain Exception, so run_wave2's except clause doesn't swallow it) for HTTP
-      401/402/429 specifically via discover.BILLING_AUTH_STATUS_CODES."
+      401/402/429 specifically via discover.BILLING_AUTH_STATUS_CODES.
+      EXECUTION-MODEL UPDATE 2026-06-26: Wave 1 moves from an in-chat Haiku *subagent* to a HEADLESS
+      `claude -p` invocation per district (full headless agent, subscription-billed, schedulable) — the
+      strict-JSON handoff contract and all gating/residual/Wave-2 logic are unchanged; only the execution
+      mechanism changes. Search providers become a pluggable layer (Claude CLI / OpenRouter / future
+      Bright Data, Brave). Tracked as REQ-104; see PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §7a."
 
   - id: REQ-071
     description: "Stage 2 output - discovery.json (full per-school audit trail) + candidates.json (capture-ready, deduped), written once and versioned on redo"
@@ -2175,7 +2195,7 @@ requirements:
     description: Tuning-episode ledger — durable, append-only record of every config tuning round (diff -> scorecard delta -> rationale)
     type: functional
     priority: should
-    status: in_progress
+    status: tested
     acceptance_criteria:
       - An episode records the before/after scorecard fingerprints (config, label_set, data), the metric deltas, the knobs touched, a rationale, decided_by, and whether the recall constraint held
       - Append-only JSONL under data/acquisition/stage5_review/tuning_ledger/ (data lifecycle, NOT loadable as a config knob); version-controlled like labels.json
@@ -2214,3 +2234,138 @@ requirements:
       0.886+-0.188 (leans on particular districts, directional at n=12). Population = canonical (user-approved):
       weight on attributes, not near-dup frequency; harness still counts all 150 for raw accuracy. Companion to
       REQ-090 (harness) / REQ-095 (ledger). Bootstrap-stability + min-group-support + Optuna escalation deferred."
+
+  - id: REQ-094
+    description: Operational Stage 5 release generator — emit filtered.json per district (DB-backed release export) for Stage 6
+    type: functional
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - Per district, select the CANONICAL records that pass the release rule (labels where present; else the recall-biased auto-filter — REJECT only high-precision negatives)
+      - One best representation per qualifying record (text by default; image on visual_text_gap/target_image_only; harvest_pages for handbooks)
+      - filtered.json is a REGENERABLE export of the DB release decision, stamped with (config,labels,data) fingerprints; honestly labeled gross_bell_to_bell
+      - Reuses build_signals.compute_signals / tier_and_category; recall on targets stays ~1.0, scored via the harness
+      - Carries per-district decision metadata for Stage 6 (topology, completeness, emergent, intended_schools, cost estimate)
+    tests:
+      - tests/test_stage5_release.py
+    created: "2026-06-26T00:00:00Z"
+    updated: "2026-06-26T00:00:00Z"
+    notes: "Reserved-then-created 2026-06-26 (the doc-referenced REQ-094 had no YAML entry). DB-backed per the
+      2026-06-26 architecture: release content is a projection of f(labels,signals,config); the CP-B release EVENT
+      is the precious part. Authority + sequencing: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §2/§4/§9 (step 4)."
+
+  - id: REQ-097
+    description: Stage 5 drift detector — alert when newly-labeled data degrades the live config enough to warrant a retune
+    type: functional
+    priority: should
+    status: accepted
+    acceptance_criteria:
+      - Bernoulli CUSUM on tier-A recall and precision separately vs the policy floor (accumulates evidence; a single noisy batch won't trip it)
+      - Two-gate against small-n false alarms — alert only when CUSUM trips AND the lower Wilson-score CI bound also breaches the floor
+      - Distinguishes config-induced data change (a tuning move's own effect) from new-district data change (the world shifted -> retune)
+      - Surfaces "retune recommended" in the governance console; never auto-retunes (CP ramp-up posture)
+      - Reads the tuning-ledger episode history (REQ-095) as its series
+    created: "2026-06-26T00:00:00Z"
+    updated: "2026-06-26T00:00:00Z"
+    notes: "Designed (research-backed: CUSUM+Wilson beat EWMA/Page-Hinkley for binary-proportion metrics; KS/chi-sq
+      are the wrong layer). Deferred until batch 2 exists to demonstrate against. Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §7a."
+
+  - id: REQ-098
+    description: Code move — review_app -> common/console (governance app), build_signals.py -> stage5_filter; fix imports
+    type: non-functional
+    priority: should
+    status: accepted
+    acceptance_criteria:
+      - infrastructure/acquisition/stage5_filter/review_app/ (server + static) moves to infrastructure/acquisition/common/console/
+      - build_signals.py moves to infrastructure/acquisition/stage5_filter/ (stage logic, not app logic)
+      - sys.path/imports in harness.py, frontier.py, and the test suite updated; all Stage-5 tests stay green
+      - Mechanical and reversible; no behavior change
+    created: "2026-06-26T00:00:00Z"
+    updated: "2026-06-26T00:00:00Z"
+    notes: "First step of the governance build sequence (PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §9 step 1).
+      Isolated/mechanical; the ~56 Stage-5 tests are the safety net."
+
+  - id: REQ-099
+    description: Cross-stage STATE as a Postgres event log; migrate district_status.py's registry functions
+    type: functional
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - state_event table (Option B) is the precious store; current-state is a projection over it
+      - actor field holds identity (ian / auto:scheduler / auto:drift-detector), not just human|auto
+      - The re-discovery loop is representable without contradiction (a re_discovery_requested event after a released event)
+      - district_status.py functions become readers/writers over state_event; the old district_status.json is demoted to a generated index
+      - Precious state keeps the version-controlled JSON-backup pattern (re-importable after a DB wipe), like labels.json
+    created: "2026-06-26T00:00:00Z"
+    updated: "2026-06-26T00:00:00Z"
+    notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §3/§9 (step 3). event_type vocabulary to finalize
+      during the build. Per-stage DATA JSON stays authoritative on disk (auditable receipts)."
+
+  - id: REQ-103
+    description: Postgres migration — isolated governance database + cross-stage cache (SQLite review.db retired)
+    type: non-functional
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - A dedicated 'governance' database in the existing lct_postgres container, own DB user; drop+rebuild cannot reach the production LCT tables
+      - Schema ported to SQLAlchemy models + a numbered migration on the project's existing framework; consumers use session_scope
+      - Cross-stage cache — ingests all stages' artifacts (discovery/candidates/captures/processed/batch), not just Stage 5
+      - Existing data migrated in (or cache rebuilt + precious JSON backups re-imported); Stage-5 tests stay green
+      - Cloud-ready via the existing DATABASE_URL path
+    created: "2026-06-26T00:00:00Z"
+    updated: "2026-06-26T00:00:00Z"
+    notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §1a/§9 (step 2). Supersedes the SQLite decision in
+      STAGE5_FILTER_DESIGN_2026-06.md. Later governance steps (REQ-100 trigger UI, REQ-101 handoff, REQ-102 CP-A view,
+      REQ-104 Stage 2 headless) are enumerated in §9 and will be registered tests-first at build time."
+
+  - id: REQ-105
+    description: Stage 5 labeled-topology derivation from human labels + the NCES school count (replaces REQ-057)
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - derive_labeled_topology maps a district's labeled canonical primaries + NCES count to one of {single_school, per_school, district_hub, mixed, incomplete_coverage, none_found, unknown}
+      - The documented precedence holds (unknown -> none_found -> single_school -> mixed -> district_hub -> incomplete_coverage -> per_school)
+      - incomplete_coverage fires only on the exact criterion (one school_bell_schedule target, NCES count > 1)
+      - guessed_topology (roster-name signal) is kept ONLY to measure the heuristic against the labeled truth
+      - NCES count is the authority, never "what discovery/capture happened to yield"
+    tests:
+      - tests/test_stage5_topology_clustering.py::TestLabeledTopology
+    created: "2026-06-26T00:00:00Z"
+    updated: "2026-06-26T00:00:00Z"
+    notes: "Replaces the reversed REQ-057 (search-result topology was DROPPED at Stage 2). Built earlier (STAGE5_FILTER_DESIGN
+      'Topology — formal set'); tests added 2026-06-26 to protect the plumbing per the standing 'untested = not implemented' rule."
+
+  - id: REQ-106
+    description: Stage 5 near-duplicate clustering (content-similarity, deterministic) with durable human splits
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - Word-3-shingle Jaccard within a district; >= CLUSTER_THRESHOLD (0.90) clusters via connected components
+      - jaccard edge cases correct (both empty -> 1.0; one empty -> 0.0; short text below k -> token fallback)
+      - The cluster representative is the best record (tier rank, then score, then key); singletons get no cluster id
+      - A human cluster_split keeps a record out of its cluster on re-clustering (durable override)
+    tests:
+      - tests/test_stage5_topology_clustering.py::TestShingleJaccard
+      - tests/test_stage5_topology_clustering.py::TestClusterDistrict
+    created: "2026-06-26T00:00:00Z"
+    updated: "2026-06-26T00:00:00Z"
+    notes: "Built earlier (STAGE5_FILTER_DESIGN 'Near-duplicate CLUSTERING'); tests added 2026-06-26 to protect the plumbing."
+
+  - id: REQ-107
+    description: Stage 5 funnel ingredients — the candidates.json URL->school map + emergent detection (plumbing only)
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - load_candidates parses candidates.json into a url -> {schools, tools} map; missing file -> {}
+      - A captured URL absent from the candidate map is emergent (discovered mid-capture, never a planned candidate)
+      - Coverage is deliberately light — the funnel/yield ANALYSIS is deferred; this guards the ingredients plumbing only
+    tests:
+      - tests/test_stage5_topology_clustering.py::TestFunnelPlumbing
+    created: "2026-06-26T00:00:00Z"
+    updated: "2026-06-26T00:00:00Z"
+    notes: "Built earlier (STAGE5_FILTER_DESIGN 'Stage-1/2 funnel ingredients'); NCES LEVEL denominator
+      (school_level_counts) is queue-time Stage-1 territory (REQ-063/065). Analysis layer is a ways off; tests added
+      2026-06-26 so we don't break the plumbing we have."
