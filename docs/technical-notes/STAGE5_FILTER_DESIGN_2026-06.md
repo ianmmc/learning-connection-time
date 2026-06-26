@@ -661,25 +661,44 @@ the **scale endgame**, built only when label coverage justifies it.
 | scope | (n/a yet) | **VPC/ICC** decides which level each knob lives at |
 | deps | `scikit-learn`, `scikit-optimize` (approved, added now) | `pingouin`, `online-fdr`, `bambi`/`pymc` (only when coverage warrants) |
 
-## Frontier / grid search (REQ-096, PLANNED — build next)
-Advisory, not auto-applied. **Better primitive than brute grid for our shape (max precision s.t. hard
-recall floor):** for a single-threshold knob, do *not* enumerate a grid — **sort records by score and
-walk the breakpoints** to get the EXACT precision/recall frontier (the λ/ROC-style result: "the Pareto
-frontier is piecewise, ≤ n·m points"), then pick the highest-precision point still clearing the recall
-floor. Exact, instant, whole-frontier-inspectable. For interacting multi-knob cases, coordinate descent
-or coarse grid now; **constrained Optuna TPE** is the documented escalation at 6–12+ knobs (our eventual
-"one threshold per CMS-cluster/state" structure lands there). Objective is cheap (just re-scoring
-labels) → thousands of trials are free when we get to BO.
-- **Output:** the feasible Pareto frontier + *which records move* at each point (keeps the chat "why").
-- **Overfitting guard, from day one (research-confirmed):** `sklearn.model_selection.LeaveOneGroupOut`
-  with **districts as groups** (records within a district are correlated — same CMS chrome/templates —
-  so plain k-fold leaks). Report in-sample vs. LOGO-CV precision side by side; **CV detects overfit, it
-  does not prevent it** — so it's a *reported guard*, not a gate, and at n=12 the estimate is
-  high-variance (surface, don't trust the magnitude). Plus **bootstrap threshold-stability** (resample
-  200–500×, report each knob's coefficient of variation; CV>0.3 = fragile knob needing more labels) and
-  **min-group-support** (don't fit a per-group threshold under ~10 labels; fall back to the default).
-- **Immediately actionable:** computes the optimal `neg_dominant` threshold for the C→B regression the
-  ledger's first episode recorded (A+B precision −0.2284).
+## Frontier / grid search (REQ-096, **BUILT 2026-06-25**)
+`infrastructure/acquisition/stage5_filter/frontier.py` + `tests/test_tuning_frontier.py` (7 green).
+Advisory, not auto-applied. Re-scores the labeled records under candidate threshold params and reports
+the recall-constrained precision frontier + which records move + a LOGO-by-district CV guard.
+- **No re-ingest:** the review DB already stores each record's `signals_json` + the human
+  `primary_label`, so we load those once and re-run the **parameterized** `tier_and_category` over the
+  stored signals (instant, exact). Metrics reuse `harness.tier_target_metrics`; thresholds reuse the
+  real scorer — nothing reimplemented. **Prereq done:** `build_signals.tier_and_category` refactored to
+  take `DEFAULT_TIER_PARAMS` (neg_dom_min/neg_dom_win_max/prox_min_a/win_min_b/min_chars_d); defaults
+  reproduce the old hardcoded behavior **exactly — 0/150 mismatches re-scoring the live DB.** (These
+  live next to the logic, not yet config-as-data knobs; promotion to `config/` comes once the frontier
+  settles them.)
+- **Population = CANONICAL records** (cluster reps + singletons; non-duplicate), **NOT all 150 labeled**
+  (user-approved 2026-06-25). Rationale: the operational filter sends only the cluster *representative*
+  to the council (members cascade), so tuning weight belongs on attributes/information, not on the
+  *frequency* a near-duplicate happens to recur. **Consequence:** the frontier baseline (tier-A 0.816
+  over 120) is intentionally NOT the harness/doc headline (0.85 over 150) — the harness still counts all
+  150 (raw classifier accuracy); the frontier measures the operational send-set. Different denominators,
+  both correct for their purpose; documented so the two numbers aren't mistaken for a discrepancy.
+- **Overfitting guard (built):** `logo_cv` = LeaveOneGroupOut by district (records within a district
+  correlate via shared CMS chrome/templates → plain k-fold leaks). REPORTED, never a gate (CV detects
+  overfit, doesn't prevent it); at n=12 high-variance → directional. Bootstrap threshold-stability +
+  min-group-support remain TODO for when coverage grows.
+- **Escalation path (unbuilt):** exact sorted-breakpoint frontier for a pure single-threshold knob;
+  **constrained Optuna TPE** at 6–12+ knobs (the eventual per-CMS-cluster/state structure). Objective is
+  cheap (just re-scoring labels) → thousands of BO trials are free when we get there.
+
+**First real run — findings (the tool earning its keep):**
+1. **The `neg_dominant` knob is INERT for precision.** Sweeping `neg_dom_min` ∈ {2,3,4} leaves tier-A
+   *and* A+B precision flat; the only moving direction (`neg_dom_win_max=3`) is **net-negative** —
+   drags a real target A→C, recall 0.969→0.938 for a small A+B bump. So the obvious fix for the ledger's
+   recorded C→B regression **does not work**; the real A+B problem (17 FPs in tier B) lives in the
+   **tier-B definition**, not neg-dominance. (Same redirect-effort role the harness played for the
+   hours-regex.)
+2. **Recall floor must be policy, not a round number:** baseline recall 0.9688 (31/32 canonical) → every
+   config is "infeasible" at 0.97. Set the floor ≤ 0.9688. (Confirms the ledger's finding-2.)
+3. **LOGO-CV: precision 0.886 ±0.188, recall 0.980 ±0.050** — high precision std = the config leans on
+   particular districts (expected at n=12; directional).
 
 ## Drift detector (REQ-097, PLANNED)
 Detection, not action: when a new labeled batch arrives, decide "does this degrade the live config

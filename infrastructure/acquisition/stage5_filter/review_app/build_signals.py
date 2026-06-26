@@ -400,17 +400,32 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
     return sig, full_best
 
 
-def tier_and_category(sig: dict, roster_size: int):
+# Tier-decision thresholds, extracted as a tunable params dict (REQ-096). Defaults reproduce the
+# original hardcoded behavior EXACTLY — the frontier/grid search varies these over the stored
+# signals (no re-ingest) to find the recall-constrained precision optimum. NOT yet config-as-data
+# knobs: they live here next to the logic until the frontier search settles them; promotion to
+# config/ comes after. (Score weights below are a separate, later optimization.)
+DEFAULT_TIER_PARAMS = {
+    "min_chars_d": 40,       # below this many chars AND no pages -> tier D (unusable)
+    "neg_dom_min": 2,        # neg_total >= this (and > #positives, and win <= win_max) -> neg-dominant
+    "neg_dom_win_max": 2,    # neg-dominant only when in-window times are this few
+    "prox_min_a": 1,         # proximity pairs >= this (+ a positive/instr signal) -> tier A
+    "win_min_b": 2,          # in-window times >= this -> tier B (the fallthrough plausible case)
+}
+
+
+def tier_and_category(sig: dict, roster_size: int, params: dict = None):
+    p = params or DEFAULT_TIER_PARAMS
     n, win, prox = sig["n_times"], sig["n_times_in_window"], sig["proximity_pairs"]
     pos, neg, instr = sig["positive_kw"], sig["negative_kw"], sig["instructional_time"]
     neg_total = sig["neg_total"]
     all_after5 = n > 0 and sig["times_after_5pm"] == n
-    neg_dominant = neg_total >= 2 and neg_total > len(pos) and win <= 2
+    neg_dominant = neg_total >= p["neg_dom_min"] and neg_total > len(pos) and win <= p["neg_dom_win_max"]
 
     # ---- likelihood tier (confident, sortable) ----
-    if sig["max_text_chars"] < 40 and not sig["pages"]:
+    if sig["max_text_chars"] < p["min_chars_d"] and not sig["pages"]:
         tier = "D"
-    elif prox >= 1 and (pos or instr) and not neg_dominant and not all_after5:
+    elif prox >= p["prox_min_a"] and (pos or instr) and not neg_dominant and not all_after5:
         tier = "A"
     elif instr and not all_after5:
         # An explicit instructional-time declaration (minutes OR hours) is a target signal even with
@@ -422,7 +437,7 @@ def tier_and_category(sig: dict, roster_size: int):
         tier = "D"
     elif (neg_dominant or all_after5):
         tier = "C"
-    elif win >= 2:
+    elif win >= p["win_min_b"]:
         tier = "B"
     else:
         tier = "C"

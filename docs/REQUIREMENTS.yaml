@@ -2190,3 +2190,27 @@ requirements:
       the grid search and drift detector so both write episodes to it from day one. Location is data/ (history),
       deliberately NOT common/config/ (which is runtime input). Companion to REQ-090 (harness) and the planned
       grid-search + drift-detector REQs."
+
+  - id: REQ-096
+    description: Stage 5 frontier / grid search over tier thresholds — advisory, recall-constrained precision frontier
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - Re-scores labeled records under candidate threshold params WITHOUT re-ingest (reads stored signals_json + labels)
+      - Reuses build_signals.tier_and_category (parameterized) and harness.tier_target_metrics; nothing reimplemented
+      - tier_and_category refactor is behavior-preserving (defaults reproduce stored tiers exactly on the live DB)
+      - Emits the precision/recall frontier filtered by a hard recall floor, ranked by precision, with per-record moves
+      - LeaveOneGroupOut-by-district CV reported as an overfitting guard (never a gate)
+      - Evaluates on CANONICAL records (cluster reps + singletons), not all labeled — operational send-set semantics
+    tests:
+      - tests/test_tuning_frontier.py
+    created: "2026-06-25T00:00:00Z"
+    updated: "2026-06-25T00:00:00Z"
+    notes: "BUILT 2026-06-25. Refactor verified behavior-preserving (0/150 mismatches re-scoring the live DB).
+      First real run earned its keep: PROVED the neg_dominant knob is INERT for tier-A/A+B precision (the obvious
+      fix for the ledger's recorded C->B regression doesn't work; the real A+B problem is the tier-B definition,
+      17 FPs). Confirmed the recall floor must be policy (baseline recall 0.9688 < a round 0.97). LOGO-CV precision
+      0.886+-0.188 (leans on particular districts, directional at n=12). Population = canonical (user-approved):
+      weight on attributes, not near-dup frequency; harness still counts all 150 for raw accuracy. Companion to
+      REQ-090 (harness) / REQ-095 (ledger). Bootstrap-stability + min-group-support + Optuna escalation deferred."
