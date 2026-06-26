@@ -6,8 +6,8 @@
 >    keep the per-stage *data* artifacts as JSON on disk.
 > 2. **The Stage 5→6 release** — `filtered.json` as a generated **export** of the DB's release state
 >    (not the primary store), + the Stage 6 `handoff_<hash>_<timestamp>.json` immutable dispatch record.
-> 3. **The app's scope** — `review_app` (Stage-5-only) → a **stage-selectable governance console**
->    under `common/`, the human-in-the-loop surface for CP-A / CP-B / (later) CP-C.
+> 3. **The app's scope** — the Stage-5-only review app → a **stage-selectable governance console**
+>    at `infrastructure/acquisition/process_governance/`, the human-in-the-loop surface for CP-A / CP-B / (later) CP-C.
 >
 > Companions: `ACQUISITION_PIPELINE.md` (the 9 stages + checkpoints), `STAGE5_FILTER_DESIGN_2026-06.md`
 > (Stage 5 signals/tiers/clustering/tuning — still authoritative for *that* content), `PROJECT_HISTORY.md`
@@ -217,7 +217,7 @@ console filter by *which* changed.
 
 ---
 
-## 7. App scope: `review_app` → stage-selectable governance console
+## 7. App scope: the review app → stage-selectable governance console (`process_governance`)
 
 The "Stage 5 - Capture Review" title by the wordmark becomes a **stage selector**; each stage swaps the
 view/controls. Once cross-stage STATE is in the DB, the app is the governance console for every checkpoint:
@@ -228,11 +228,11 @@ view/controls. Once cross-stage STATE is in the DB, the app is the governance co
 - **(later) Stage 7 / CP-C** — approve extraction outputs before the DB write.
 
 ### Code structure (PROPOSAL — confirm)
-- **Move the app** `stage5_filter/review_app/` (server + `static/`) → **`common/console/`** (cross-stage now).
+- **Move the app** the Stage-5 review app (server + `static/`) → **`infrastructure/acquisition/process_governance/`** (a top app layer, cross-stage). *(Done in REQ-098: relocated out of `common/` after import-linter flagged the common-imports-stages inversion; renamed console→process_governance for a slightly broader scope.)*
 - **Keep stage logic with its stage:** `build_signals.py` is Stage 5 ingest/signal logic, not app logic →
-  move it to **`stage5_filter/build_signals.py`** (out of the `review_app/` subfolder). The thin console
+  move it to **`stage5_filter/build_signals.py`** (out of the app's subfolder). The thin console
   imports each stage's logic; per-stage ingest/views live with their stage.
-- **Update the `sys.path`/imports** that reach into `review_app` today: `stage5_filter/harness.py`,
+- **Update the `sys.path`/imports** that reach into `process_governance` today: `stage5_filter/harness.py`,
   `stage5_filter/frontier.py`, `tests/test_tuning_frontier.py`, `tests/test_stage5_scoring.py`.
 - **Risk:** this touches the tested tuning code we just shipped (REQ-095/096). Do it as one mechanical,
   test-guarded move (the 36 Stage-5 tests are the safety net), **before** new feature work — not interleaved.
@@ -349,7 +349,7 @@ all three fingerprints (config,labels,data); console filters by which changed** 
 **Still open (gating the build):**
 1. **State model granularity** — RESOLVED Option B; `event_type` vocabulary still to finalize during §3 build.
 2. **Staleness policy** — RESOLVED stamp-all-three.
-3. **Code-move decomposition** (§7): app→`common/console/`, `build_signals`→`stage5_filter/`, names.
+3. **Code-move decomposition** (§7): app→`process_governance/`, `build_signals`→`stage5_filter/`, names.
 4. **Stage-6 index** (§5): a generated index file vs scan-the-dirs (lean: index, for scale).
 5. (Parked from `STAGE5_FILTER_DESIGN` §"Path to filtered.json") the exact REJECT rule + rank order for
    the auto-filter — unchanged in intent, now lands in the generator of §4/§6.
@@ -362,7 +362,7 @@ Don't stall the actual goal (representations → council) behind an app re-archi
 
 1. **Package + code move + tooling baseline** (§7, §10): convert `infrastructure/acquisition/` to a proper
    installable package (`pyproject.toml`, real imports, **kill the `sys.path.insert` shims**) — packaging is
-   the highest-leverage prerequisite for the static-analysis tools (§10); then `review_app`→`common/console/`,
+   the highest-leverage prerequisite for the static-analysis tools (§10); then the review app → `process_governance/`,
    `build_signals`→`stage5_filter/`, fix imports, green the tests; then wire the proven tool baseline
    (import-linter + grimp + vulture; dependency-cruiser for the `.mjs` side). *(REQ-098)*
 2. **Postgres migration + cross-stage cache** (§1a, §7a-A): stand up the isolated `governance` DB + user;
@@ -419,8 +419,8 @@ The only new setup step is a one-time `pip install -e .`.
    `pip install -e .`, smoke-test `python -c "import infrastructure.acquisition.stage5_filter.harness"`.
    *(Validate the editable install resolves the package cleanly — the one early risk; fallback is the
    `infrastructure/__init__.py` we're adding anyway → plain regular package.)*
-1. **Moves (git mv):** `stage5_filter/review_app/{server.py,static/}` → `common/console/`;
-   `stage5_filter/review_app/build_signals.py` → `stage5_filter/build_signals.py`. Moves first → rewrite once.
+1. **Moves (git mv):** the Stage-5 review app `{server.py,static/}` → `process_governance/`;
+   `build_signals.py` → `stage5_filter/build_signals.py`. Moves first → rewrite once.
 2. **Rewrite intra-acquisition imports to absolute** (final layout), file-by-file (modules, then tests),
    leaving the redundant `sys.path.insert` lines temporarily; run relevant tests per file.
 3. **Strip all 33 `sys.path.insert` shims.** Full suite green (997).

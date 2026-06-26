@@ -2284,7 +2284,7 @@ requirements:
     status: accepted
     acceptance_criteria:
       - infrastructure/acquisition/ becomes a proper installable package (pyproject.toml, real imports); the sys.path.insert shims are removed
-      - review_app/ (server + static) moves to infrastructure/acquisition/common/console/; build_signals.py moves to stage5_filter/ (stage logic, not app logic)
+      - the Stage-5 review app (server + static) moves to infrastructure/acquisition/process_governance/ (a top app layer, not common/); build_signals.py moves to stage5_filter/ (stage logic, not app logic)
       - All imports updated to package paths; the full test suite stays green (no behavior change)
       - Tool baseline wired - import-linter + grimp (Python architecture contracts), vulture (dead code), dependency-cruiser (the .mjs capture layer)
       - import-linter contracts encode the architecture - stage layering (1..9), forbidden (no stage imports the production LCT/DB internals), independence among stages, common as a base layer

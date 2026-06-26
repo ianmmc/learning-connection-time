@@ -5,7 +5,7 @@
 **Companions:** `docs/diagrams/acquisition_pipeline_flow.md` (Mermaid visual reference, built stage-by-stage alongside this doc), `docs/EXTRACTION_BENCHMARK_FINDINGS.md` (model leaderboard + measured costs), `docs/technical-notes/EXTRACTION_AND_DISCOVERY_LEARNINGS_2026-06.md` (full learnings), `docs/INSTRUCTIONAL_TIME_HARVEST.md` (why SEA central data is a dead end), `docs/METHODOLOGY.md` (Rules 6 & 7 — CTC and grade-span-integrity exclusions referenced below). The strategy/options report that preceded this is `docs/INSTRUCTIONAL_MINUTES_ACQUISITION_STRATEGY.md` (now a pointer here).
 
 > **⚑ Architecture update (2026-06-26) — governance app, state model & Postgres. Authority: `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`.** Five decisions reshape how the back half of the pipeline is governed; where this doc's older prose conflicts, the governance note wins (it supersedes; this doc is being reconciled to it, not rewritten):
-> 1. **The Stage-5 CP-B review app becomes the *Acquisition Pipeline Governance App*** — a stage-selectable console spanning **CP-A (Stage 1 queue approval) · CP-B (Stage 5 release) · CP-C (Stage 9 write)**, with tuning + funnel dashboards. It moves to `infrastructure/acquisition/common/console/`.
+> 1. **The Stage-5 CP-B review app becomes the *Acquisition Pipeline Governance App*** — a stage-selectable console spanning **CP-A (Stage 1 queue approval) · CP-B (Stage 5 release) · CP-C (Stage 9 write)**, with tuning + funnel dashboards. It moves to `infrastructure/acquisition/process_governance/`.
 > 2. **DB: SQLite → Postgres**, an **isolated `governance` database** in the existing `lct_postgres` container (own user; drop+rebuild can't reach the production LCT tables). It becomes a **cross-stage cache** (ingests all stages' artifacts, not just Stage 5).
 > 3. **STATE vs DATA.** The cross-stage *registry* migrates from `district_status.json` into a Postgres **event log** (Option B; current-state is a projection). The per-stage *JSON artifacts* (`discovery/candidates/captures/processed/batch`) **stay authoritative on disk** — their role shifts from data-carriers to **auditable receipts**. Precious state keeps the version-controlled JSON-backup pattern (like `labels.json`).
 > 4. **The Stage 5→6 release:** `filtered.json` per district = a **regenerable export** of the DB's release decision (one best representation per qualifying canonical record); Stage 6 emits an **immutable `handoff_<hash>_<timestamp>.json`** naming which districts go to the council, freezing fingerprints so "what we sent" is always recoverable.
@@ -308,7 +308,7 @@ A managed-scraping fallback (Zyte/Firecrawl, budget-bounded) is available for JS
 
 ## Sampling policy (stage 1/7) — two separate decisions, queue-time settled, extraction-time still open
 
-Computed per-district per-band school counts and the textbook **95% / ±5% finite-population sample size** from NCES `ccd_sch_029_2425` (classifier `infrastructure/acquisition/stage1_queue/school_sampling.py`; bands by grade span `GSLO`-`GSHI`, so a K-8 counts for *both* elementary and middle; open schools only). **Result kills the survey-formula approach:**
+Computed per-district per-band school counts and the textbook **95% / ±5% finite-population sample size** from NCES `ccd_sch_029_2425` (classifier `infrastructure/acquisition/common/school_sampling.py`; bands by grade span `GSLO`-`GSHI`, so a K-8 counts for *both* elementary and middle; open schools only). **Result kills the survey-formula approach:**
 
 - Across **18,158 districts**, 95/±5 sampling = **127,513 band-extractions = 96% of a full census (132,803)** — the finite-population correction saves only ~4%.
 - Reason: the corpus is mostly small districts (**median 4 calls / district across 3 bands; p95 = 22**), which get censused regardless. The formula only inflates a few mega-districts (**LA Unified n=496, Broward 286, Orange 254**) — i.e., maximum effort exactly where the marginal school adds least.
@@ -421,7 +421,7 @@ Two independent extractors disagree on a large share of districts; at <1 hr/week
 | Concern | File |
 |---|---|
 | **Queue (Stage 1): exclusion filters, stratified sampling, batch writer** | `infrastructure/acquisition/stage1_queue/queue_batch.py` |
-| **NCES classification: per-school bands, LEA claimed span, charter lookup** | `infrastructure/acquisition/stage1_queue/school_sampling.py` |
+| **NCES classification: per-school bands, LEA claimed span, charter lookup** | `infrastructure/acquisition/common/school_sampling.py` |
 | **Cross-stage district status registry (all 9 stages)** — *migrating to a Postgres event log (governance DB), 2026-06-26* | `infrastructure/acquisition/common/district_status.py` |
 | **Stage 1 output / status registry schema references** | `data/acquisition/queue/batch.example.json`, `data/acquisition/status/district_status.example.json` |
 | **CTC/shared-service classification backfill (Rule 6)** | `infrastructure/database/migrations/apply_ctc_classification.py` |
@@ -442,7 +442,7 @@ Two independent extractors disagree on a large share of districts; at <1 hr/week
 | Modal dismissal + page.pdf() options ported in (verified pure-Playwright, no dead-architecture coupling) | `infrastructure/scraper/src/capturer.ts` |
 | Superseded: abandoned Jan-2026 blind-site-mapping (do not revive) | `infrastructure/scraper/src/mapper.ts` |
 | Stale: coarse relevance filter — pre-Stage-1-3-redesign, reads the old `data/acquisition/discovery/` layout and old tool names (perplexity/openrouter/claude); not yet ported to the new `captures.json` shape | `infrastructure/acquisition/stage5_filter/relevance.py` |
-| **Stage 5: CP-B review app + deterministic signals/tier/topology/clustering/harvest/de-chrome ingest** — *app → `common/console/` (governance app); `build_signals.py` → `stage5_filter/`; DB → Postgres governance DB (2026-06-26)* | `infrastructure/acquisition/stage5_filter/review_app/build_signals.py`, `server.py` |
+| **Stage 5: CP-B review app + deterministic signals/tier/topology/clustering/harvest/de-chrome ingest** — *app → `process_governance/` (governance app); `build_signals.py` → `stage5_filter/`; DB → Postgres governance DB (2026-06-26)* | `infrastructure/acquisition/stage5_filter/build_signals.py`, `server.py` |
 | **Stage 5: measurement harness + tuning ledger + frontier search (config-vs-labels scorecard, fingerprinted)** | `infrastructure/acquisition/stage5_filter/{harness,tuning_ledger,frontier}.py` |
 | **Learning-loop: config-as-data layer (per-entry provenance) + loader + paths/DATA_ROOT** | `infrastructure/acquisition/common/{config_loader,paths}.py`, `infrastructure/acquisition/common/config/*.json` |
 | **Stage 3 de-chrome: segmentChrome + backfill-segments (REQ-091, built+measured)** | `infrastructure/scraper/capture_discovery.mjs`, `config/de_chrome_landmarks.json` |

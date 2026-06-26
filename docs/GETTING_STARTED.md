@@ -28,7 +28,17 @@ cd learning-connection-time
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+
+# Install the repo as an editable package so `infrastructure.acquisition.*` (the
+# acquisition pipeline) imports work from anywhere — required since REQ-098 removed
+# the sys.path shims. One-time; re-run only if packages are added/moved.
+pip install -e .
 ```
+
+> **Architecture checks (optional, recommended in CI):** `lint-imports` enforces the
+> acquisition layering contracts (pyproject.toml), `vulture infrastructure/acquisition`
+> finds dead code, and `cd infrastructure/scraper && npm run lint:deps` checks the Node
+> capture layer. See `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §10.
 
 ### 2. Database Connection
 

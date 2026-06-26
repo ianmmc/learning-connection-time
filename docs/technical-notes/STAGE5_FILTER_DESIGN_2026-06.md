@@ -9,7 +9,7 @@
 > **"Path to filtered.json (RESUME HERE)"** immediately below. Companion to
 > `docs/ACQUISITION_PIPELINE.md` (Stage 5) and `docs/diagrams/acquisition_pipeline_flow.md`.
 
-> **⚑ Superseded-in-part by the 2026-06-26 architecture (authority: `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`).** This remains the authority for Stage 5's *signal/tier/category/clustering/topology/tuning* content. But three things here are now superseded — read the governance note for the current design: **(1)** the **"CP-B review app" is becoming the cross-stage *Acquisition Pipeline Governance App*** (stage selector spanning CP-A/B/C), moving `review_app/` → `infrastructure/acquisition/common/console/` and `build_signals.py` → `stage5_filter/`. **(2)** the **SQLite decision** (see "Architecture — DECIDED & BUILT 2026-06-24: SQLite…" below) is replaced by **Postgres in an isolated `governance` database** (cross-stage cache); the labels/splits JSON-backup pattern carries over. **(3)** **`filtered.json` is a regenerable *export* of the DB release decision**, not the primary store, and the review app *is* CP-B (so `filtered.json` is the post-review release, not a pre-review candidate list). The "Path to filtered.json" section below predates these decisions; the release generator now lands DB-backed per the governance note's sequencing (§9).
+> **⚑ Superseded-in-part by the 2026-06-26 architecture (authority: `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`).** This remains the authority for Stage 5's *signal/tier/category/clustering/topology/tuning* content. But three things here are now superseded — read the governance note for the current design: **(1)** the **"CP-B review app" is becoming the cross-stage *Acquisition Pipeline Governance App*** (stage selector spanning CP-A/B/C), moving the review app → `infrastructure/acquisition/process_governance/` and `build_signals.py` → `stage5_filter/`. **(2)** the **SQLite decision** (see "Architecture — DECIDED & BUILT 2026-06-24: SQLite…" below) is replaced by **Postgres in an isolated `governance` database** (cross-stage cache); the labels/splits JSON-backup pattern carries over. **(3)** **`filtered.json` is a regenerable *export* of the DB release decision**, not the primary store, and the review app *is* CP-B (so `filtered.json` is the post-review release, not a pre-review candidate list). The "Path to filtered.json" section below predates these decisions; the release generator now lands DB-backed per the governance note's sequencing (§9).
 
 ---
 
@@ -222,7 +222,7 @@ A local review/labeling tool, **not** the operational `filtered.json`.
   not useful for "does this artifact contain the info we want").
 
 **Architecture — DECIDED & BUILT 2026-06-24: SQLite + a thin local FastAPI review app**
-(`infrastructure/acquisition/stage5_filter/review_app/`). SQLite is a single file that cannot
+(`infrastructure/acquisition/process_governance/`). SQLite is a single file that cannot
 touch the production LCT DB, needs no container/port, and suits the tiny single-user dataset;
 schema can migrate to Postgres later if scale demands. The DB cleanly separates **regenerable
 script-computed signals** (districts/records/representations/signals tables — dropped + rebuilt
