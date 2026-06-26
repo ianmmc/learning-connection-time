@@ -58,6 +58,11 @@ with session_scope() as session:
 
 > **Critical:** Never use `brew services start postgresql` — the `.env` is configured for Docker's PostgreSQL container.
 
+The same container also hosts a **separate, isolated `governance` database** for the acquisition
+pipeline's Stage-5 review/console state (REQ-103). It's distinct from the production LCT tables
+(own DB + user) so the pipeline's drop+rebuild ingest can never touch them. One-time setup +
+details: [DATABASE_SETUP.md → "Two databases"](DATABASE_SETUP.md#two-databases-production-lct-vs-governance-req-103).
+
 ### 3. Run Tests
 
 ```bash

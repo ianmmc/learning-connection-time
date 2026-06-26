@@ -2,10 +2,11 @@
 
 > **Status: DESIGN + BUILD UNDERWAY (updated 2026-06-26).** Shipped: the tuning foundations
 > (REQ-095 ledger, REQ-096 frontier) and **REQ-098** (acquisition tree packaged, code moved, tooling
-> wired — import-linter/grimp/vulture/dependency-cruiser). **In progress: REQ-103** (Postgres
-> governance DB) — **103a foundation done & committed; paused for context, RESUME at 103b → see §1b.**
-> Still design-only: state event-log (REQ-099), release generator (REQ-094), console UI (REQ-100/102),
-> Stage 2 headless (REQ-104). This note is the architecture for three coupled decisions that outgrew
+> wired — import-linter/grimp/vulture/dependency-cruiser). **REQ-103 (Postgres governance DB) is
+> functionally COMPLETE** — 103a (foundation) + **103b–f** (ingest + readers + tests migrated
+> SQLite→Postgres, committed `bbd0f66`) + **103c** (cross-stage cache) + **103g** (these docs) all done;
+> see §1b. **Next build step is REQ-099** (state event-log). Still design-only: release generator
+> (REQ-094), console UI (REQ-100/102), Stage 2 headless (REQ-104). This note is the architecture for three coupled decisions that outgrew
 > `STAGE5_FILTER_DESIGN_2026-06.md`:
 > 1. **STATE vs DATA** — migrate the cross-stage *registry* (`district_status.json`) into the DB;
 >    keep the per-stage *data* artifacts as JSON on disk.
@@ -82,13 +83,18 @@ governance DB. Supersedes the SQLite decision in `STAGE5_FILTER_DESIGN_2026-06.m
 
 ---
 
-## 1b. REQ-103 status & RESUME HERE (paused 2026-06-26 after 103a)
+## 1b. REQ-103 status — COMPLETE (2026-06-26)
 
-**Decisions locked (do not relitigate):** scope = **port + cross-stage cache together**; ORM =
+**Decisions (locked, as built):** scope = **port + cross-stage cache together**; ORM =
 **models for PRECIOUS tables, ingest-managed DDL for the REGENERABLE cache**; tests = **a real
 Postgres fixture** (no SQLite stand-in). The governance DB connection lives in the acquisition tree
-(`common/db.py`) and must **never import `infrastructure.database`** (the import-linter contract
+(`common/db.py`) and **never imports `infrastructure.database`** (the import-linter contract
 enforces this — keep it that way).
+
+**All of REQ-103 is now done.** 103a committed `3c725f3`; **103b–f committed `bbd0f66`**; **103c +
+103g** in the follow-up pass. The old `data/acquisition/stage5_review/review.db` (SQLite) is **kept
+on disk as the 103f reference** — retire it (and `paths.REVIEW_DB`) once you're confident.
+**Next build step: REQ-099** (state event-log; §3).
 
 ### ✅ 103a DONE & committed (3c725f3) — additive, the live SQLite path is untouched
 - **`governance` database + `governance_user`** exist in the `lct_postgres` container (verified).
@@ -109,37 +115,31 @@ enforces this — keep it that way).
   models on `Base`. `init_precious_schema()` create_all's them (caller imports the models so
   `common/` stays stage-agnostic). Verified create_all stands up `label`+`cluster_split`.
 
-### ⏳ REMAINING — the large/risky core (resume at 103b)
-**103b — convert `build_signals.ingest()` (the heart of Stage 5) sqlite → governance Postgres.**
-Current ingest is `sqlite3.connect(DB_PATH)` + `executescript(LABEL_SCHEMA/REBUILD_SCHEMA)` + many
-`?`-placeholder `INSERT`s (build_signals.py ~line 565). Conversion notes:
-  - **Precious tables** (`label`, `cluster_split`): create via `init_precious_schema()` (models);
-    NEVER drop them. Keep the labels.json/cluster_splits.json import/export (the source of truth).
-  - **Regenerable cache** (`district`, `record`, `representation`, `district_target`): keep the
-    drop+rebuild, but as Postgres DDL run on the governance engine.
-  - **Dialect gotchas:** `?` → `%(name)s`/`%s` (psycopg2) or use SQLAlchemy `text()` with bound
-    params; `INSERT OR IGNORE` → `INSERT … ON CONFLICT DO NOTHING`; `executescript` → discrete
-    `execute`s; sqlite `Row` access → SQLAlchemy `Row`/`.mappings()`. Types: `TEXT`→`text`,
-    `INTEGER`→`integer`/`boolean` (sqlite stored bools as ints).
-**103c — cross-stage cache (NEW schema):** ingest each district's `discovery.json` /
-`candidates.json` / `captures.json` / `processed.json` (and `batch_*.json`) as queryable tables, not
-just the Stage-5 signals. Design the tables; these are regenerable (drop+rebuild DDL). build_signals
-already partially ingests candidates (funnel) + batch (denominator) — extend to full per-stage rows.
-**103d — readers:** `harness.py` (`sqlite3.connect`, ~l.140), `frontier.py` (~l.157),
-`process_governance/server.py` (`sqlite3.connect`, ~l.32, + `row_factory`). Swap to the governance
-engine/session; SELECTs are mostly standard. `frontier.load_labeled(con)` / `harness` take a
-connection — keep them connection/`Session`-agnostic where possible.
-**103e — tests:** a real Postgres fixture (conftest already has a `USE_REAL_DB`/`TEST_DATABASE_URL`
-pattern). Tests using **in-memory SQLite** today: `tests/test_tuning_frontier.py` (`_mini_db`),
-check `test_harness.py`. Point them at a throwaway governance schema/transaction, rolled back.
-**103f — re-ingest + verify:** run the ingest; confirm counts match the old SQLite
-(`data/acquisition/stage5_review/review.db` still on disk = reference: 150 records / 120 canonical /
-labels). Sanity-run `harness.py` + `frontier.py`.
-**103g — docs:** update `docs/DATABASE_SETUP.md` + `docs/GETTING_STARTED.md` for the governance DB
-(the deferred obligation); add a reproducible governance-DB setup script/step.
+### ✅ As built
+- **103b — `build_signals.ingest()`** runs in one `session_scope` transaction (atomic re-ingest).
+  PRECIOUS `label`/`cluster_split` via `init_precious_schema()` (models, never dropped); the
+  REGENERABLE cache via Postgres drop+rebuild DDL. `?`→named `text()` params; `INSERT OR IGNORE`→
+  `ON CONFLICT DO NOTHING`; `executescript`→discrete execs; `REAL`→`double precision`. `models.py`
+  gained `label.status server_default="unlabeled"` so the raw insert gets the DB-level default.
+- **103c — cross-stage cache** (`ingest_cross_stage_cache`): `discovery_school` (Stage-2 funnel per
+  school, with rolled-up wave counts + raw JSON), `candidate` (Stage-2 plan per URL), `capture`
+  (Stage-3 receipt per hash — **incl. captures that never processed**), `processed_doc` (Stage-4
+  thin; texts stay in `representation`). Regenerable; verified row counts match the source JSON
+  (53 / 112 / 150 / 150 on `batch_00001`).
+- **103d — readers** (`harness.py`, `frontier.py`, `process_governance/server.py`) on the governance
+  session; server uses `.mappings()` to keep `r["col"]`/`dict(r)`, and `commit()`s before the JSON
+  export so the backup only reflects committed state. Obsolete `--db` file flags dropped.
+- **103e — tests:** `gov_session` fixture (`tests/conftest.py`) = real governance Postgres +
+  connection-scoped **TEMP tables** (auto-dropped, skips if Docker down). `test_harness` +
+  `test_tuning_frontier` migrated off in-memory SQLite; `test_stage5_cross_stage_cache.py` added.
+- **103f — verified:** new ingest matches the reference `review.db` exactly (12 districts / 150
+  records / 120 canonical / 150 labeled / 2207 representations / 12 district_target; tiers
+  A47/B29/C15/D59; 9 clusters; identical labeled_topology). `labels.json` round-trips byte-identical.
+- **103g — docs:** `DATABASE_SETUP.md` ("Two databases" section) + `GETTING_STARTED.md` pointer.
 
-**Key files (the 4 SQLite consumers to convert):** `build_signals.py`, `harness.py`, `frontier.py`,
-`process_governance/server.py`. `paths.REVIEW_DB` (the old SQLite path) gets retired once done.
+**The 4 (now 5) governance-DB consumers:** `build_signals.py`, `harness.py`, `frontier.py`,
+`process_governance/server.py` (+ the `gov_session` test fixture). `paths.REVIEW_DB` / the old
+SQLite file are retained as the 103f reference until retired.
 
 ---
 

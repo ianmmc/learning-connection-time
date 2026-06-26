@@ -509,6 +509,32 @@ REBUILD_DDL = [
         district_id text PRIMARY KEY, batch_id text, nces_year text, nces_total integer,
         nces_by_level_json text, enrollment_k12 integer, lea_claimed_bands_json text,
         schools_by_band_json text)""",
+    # ---- cross-stage cache (REQ-103c): per-stage raw artifacts as queryable rows ----
+    "DROP TABLE IF EXISTS discovery_school CASCADE",
+    "DROP TABLE IF EXISTS candidate CASCADE",
+    "DROP TABLE IF EXISTS capture CASCADE",
+    "DROP TABLE IF EXISTS processed_doc CASCADE",
+    # Stage 2 discovery funnel — one row per (district, school).
+    """CREATE TABLE discovery_school (
+        district_id text, school_id text, school text, bands_json text, query text,
+        wave1_n_raw integer, wave1_n_kept integer, wave2_invoked integer,
+        wave2_n_raw integer, wave2_n_kept integer, outcome text,
+        wave1_raw_urls_json text, wave1_gated_json text, wave2_raw_urls_json text, wave2_gated_json text,
+        PRIMARY KEY (district_id, school_id))""",
+    # Stage 2 capture plan — one row per (district, candidate URL).
+    """CREATE TABLE candidate (
+        district_id text, url text, schools_json text, tools_json text, n_schools integer,
+        PRIMARY KEY (district_id, url))""",
+    # Stage 3 capture receipt — one row per (district, capture hash).
+    """CREATE TABLE capture (
+        district_id text, hash text, url text, final_url text, ok integer, kind text, source text,
+        found_on text, tools_json text, files_json text, modals_dismissed integer, segmented integer,
+        text_times integer, final_host text, fingerprint_json text,
+        PRIMARY KEY (district_id, hash))""",
+    # Stage 4 processed doc — one row per (district, processed hash); texts live in `representation`.
+    """CREATE TABLE processed_doc (
+        district_id text, hash text, url text, usable integer, n_texts integer,
+        PRIMARY KEY (district_id, hash))""",
 ]
 
 BIN_KINDS = {"png": "image", "pdf": "pdf", "bin": "binary"}
@@ -586,6 +612,72 @@ def _rep(rec_key, source, filename, file_kind, n_chars, n_times, usable):
             "n_chars": n_chars, "n_times": n_times, "usable": usable}
 
 
+# ---- cross-stage cache (REQ-103c): the queryable/auditable mirror of each stage's raw artifact,
+# alongside the Stage-5 `record` signal view. All REGENERABLE (dropped + rebuilt each ingest). ----
+INSERT_DISCOVERY_SCHOOL = text(
+    """INSERT INTO discovery_school (district_id, school_id, school, bands_json, query,
+         wave1_n_raw, wave1_n_kept, wave2_invoked, wave2_n_raw, wave2_n_kept, outcome,
+         wave1_raw_urls_json, wave1_gated_json, wave2_raw_urls_json, wave2_gated_json)
+       VALUES (:district_id, :school_id, :school, :bands_json, :query,
+         :wave1_n_raw, :wave1_n_kept, :wave2_invoked, :wave2_n_raw, :wave2_n_kept, :outcome,
+         :wave1_raw_urls_json, :wave1_gated_json, :wave2_raw_urls_json, :wave2_gated_json)""")
+INSERT_CANDIDATE = text(
+    """INSERT INTO candidate (district_id, url, schools_json, tools_json, n_schools)
+       VALUES (:district_id, :url, :schools_json, :tools_json, :n_schools)""")
+INSERT_CAPTURE = text(
+    """INSERT INTO capture (district_id, hash, url, final_url, ok, kind, source, found_on,
+         tools_json, files_json, modals_dismissed, segmented, text_times, final_host, fingerprint_json)
+       VALUES (:district_id, :hash, :url, :final_url, :ok, :kind, :source, :found_on,
+         :tools_json, :files_json, :modals_dismissed, :segmented, :text_times, :final_host, :fingerprint_json)""")
+INSERT_PROCESSED_DOC = text(
+    """INSERT INTO processed_doc (district_id, hash, url, usable, n_texts)
+       VALUES (:district_id, :hash, :url, :usable, :n_texts)""")
+
+
+def ingest_cross_stage_cache(sess, disc, caps, processed, cand_map):
+    """REQ-103c: cache one district's raw stage artifacts (discovery/candidates/captures/processed)
+    as queryable rows so the governance console's Stage-1/2 surfaces can query the funnel directly,
+    not just the Stage-5 signals. Regenerable — these tables are dropped + rebuilt each ingest."""
+    did = disc["district_id"]
+    # Stage 2 discovery funnel — one row per school (rolled-up wave counts + raw JSON for audit).
+    for sc in disc.get("schools", []):
+        w1g, w2g = sc.get("wave1_gated", []), sc.get("wave2_gated", [])
+        sess.execute(INSERT_DISCOVERY_SCHOOL, {
+            "district_id": did, "school_id": sc.get("school_id"), "school": sc.get("school"),
+            "bands_json": json.dumps(sc.get("bands", [])), "query": sc.get("query"),
+            "wave1_n_raw": len(sc.get("wave1_raw_urls", [])),
+            "wave1_n_kept": sum(1 for g in w1g if g.get("kept")),
+            "wave2_invoked": int(bool(sc.get("wave2_invoked"))),
+            "wave2_n_raw": len(sc.get("wave2_raw_urls", [])),
+            "wave2_n_kept": sum(1 for g in w2g if g.get("kept")),
+            "outcome": sc.get("outcome"),
+            "wave1_raw_urls_json": json.dumps(sc.get("wave1_raw_urls", [])),
+            "wave1_gated_json": json.dumps(w1g),
+            "wave2_raw_urls_json": json.dumps(sc.get("wave2_raw_urls", [])),
+            "wave2_gated_json": json.dumps(w2g)})
+    # Stage 2 capture plan — one row per candidate URL (the URL->school map).
+    for url, c in cand_map.items():
+        sess.execute(INSERT_CANDIDATE, {
+            "district_id": did, "url": url, "schools_json": json.dumps(c.get("schools", [])),
+            "tools_json": json.dumps(c.get("tools", [])), "n_schools": len(c.get("schools", []))})
+    # Stage 3 capture receipts — one row per capture (incl. captures that never reached processing).
+    for h, cap in caps.items():
+        fp = cap.get("fingerprint") or {}
+        sess.execute(INSERT_CAPTURE, {
+            "district_id": did, "hash": h, "url": cap.get("url"), "final_url": cap.get("final_url"),
+            "ok": int(bool(cap.get("ok"))), "kind": cap.get("kind"), "source": cap.get("source"),
+            "found_on": cap.get("found_on"), "tools_json": json.dumps(cap.get("tools", [])),
+            "files_json": json.dumps(cap.get("files") or {}),
+            "modals_dismissed": int(bool(cap.get("modals_dismissed"))),
+            "segmented": int(bool(cap.get("segmented"))), "text_times": cap.get("text_times"),
+            "final_host": fp.get("final_host"), "fingerprint_json": json.dumps(fp)})
+    # Stage 4 processed docs — one row per processed hash (the texts themselves live in `representation`).
+    for h, prec in processed.items():
+        sess.execute(INSERT_PROCESSED_DOC, {
+            "district_id": did, "hash": h, "url": prec.get("url"),
+            "usable": int(bool(prec.get("usable"))), "n_texts": len(prec.get("texts", []))})
+
+
 def ingest(root: Path):
     """Ingest into the isolated governance Postgres DB (REQ-103). The PRECIOUS tables are created
     from the models (never dropped); the regenerable cache is dropped + rebuilt each run; the whole
@@ -612,6 +704,7 @@ def ingest(root: Path):
             caps = {r["hash"]: r for r in json.loads(cj.read_text())}
             processed = {r["hash"]: r for r in json.loads(pj.read_text())}
             cand_map = load_candidates(ddir)   # url -> {schools, tools}; misses = emergent
+            ingest_cross_stage_cache(sess, disc, caps, processed, cand_map)   # REQ-103c
 
             seen_content = {}   # content_hash -> canonical rec_key
             district_records = []
@@ -749,12 +842,17 @@ def ingest(root: Path):
             "SELECT labeled_topology, COUNT(*) FROM district GROUP BY labeled_topology")).fetchall())
         n_targeted = sess.execute(text("SELECT COUNT(*) FROM district_target")).scalar()
         n_emergent = sess.execute(text("SELECT COUNT(*) FROM record WHERE is_emergent=1")).scalar()
+        # cross-stage cache row counts (REQ-103c)
+        cache = {t: sess.execute(text(f"SELECT COUNT(*) FROM {t}")).scalar()
+                 for t in ("discovery_school", "candidate", "capture", "processed_doc")}
         exported = export_labels(sess)        # keep the JSON backups in sync with the DB
         exported_splits = export_splits(sess)
     print(f"ingest done: {n_dist} districts, {n_rec} records, {n_lab} labeled "
           f"({restored} restored from labels.json), {exported} exported to labels.json")
     print(f"clustering: {n_clustered} records in {n_clusters} clusters; {exported_splits} splits backed up")
     print(f"stage-1/2 ingest: {n_targeted} districts with batch targeting; {n_emergent} emergent records (captured, not a candidate)")
+    print(f"cross-stage cache: {cache['discovery_school']} discovery_school, {cache['candidate']} candidate, "
+          f"{cache['capture']} capture, {cache['processed_doc']} processed_doc rows")
     print("by tier:", by_tier)
     print("labeled_topology:", by_topo)
 

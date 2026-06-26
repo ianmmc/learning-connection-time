@@ -41,6 +41,60 @@ The project migrated from JSON files to PostgreSQL (December 2025) for:
 
 ---
 
+## Two databases: production LCT vs. governance (REQ-103)
+
+There are **two separate Postgres databases inside the same `lct_postgres` container**:
+
+| | database | user | owned by | holds |
+|---|---|---|---|---|
+| **Production LCT** | `learning_connection_time` | `lct_user` | `infrastructure.database` (`connection.py`) | `districts`, `bell_schedules`, `lct_calculations`, … (the analysis tables) |
+| **Governance** | `governance` | `governance_user` | `infrastructure.acquisition.common.db` | the acquisition pipeline's Stage-5 review/console state |
+
+**Why isolated:** the Stage-5 ingest does `DROP TABLE … CREATE TABLE` on its regenerable cache **every run**. In a dedicated database with its own user, that drop **cannot reach** the production tables. The two connection modules never import each other — the import-linter contract enforces it.
+
+### One-time setup of the `governance` database
+
+`lct_user` is a superuser, so create the DB + role idempotently:
+
+```bash
+docker exec lct_postgres psql -U lct_user -d learning_connection_time -c \
+  "CREATE ROLE governance_user LOGIN PASSWORD 'governance_pw'"     # skip if role exists
+docker exec lct_postgres psql -U lct_user -d learning_connection_time -c \
+  "CREATE DATABASE governance OWNER governance_user"               # skip if db exists
+docker exec lct_postgres psql -U lct_user -d learning_connection_time -c \
+  "GRANT ALL PRIVILEGES ON DATABASE governance TO governance_user"
+```
+
+Connection config (in `infrastructure/acquisition/common/db.py`), priority order:
+1. `GOVERNANCE_DATABASE_URL` — a full URL (cloud / Supabase), **or**
+2. `GOVERNANCE_DB_{HOST,PORT,NAME,USER,PASSWORD}` — defaults target the local container
+   (`localhost:5432`, db `governance`, user `governance_user`, pw `governance_pw`).
+
+### Schema: precious vs. regenerable
+
+The ingest (`infrastructure/acquisition/stage5_filter/build_signals.py`) rebuilds the whole governance schema in one transaction:
+
+- **PRECIOUS** (human decisions; **never dropped**): `label`, `cluster_split` — SQLAlchemy models in `stage5_filter/models.py`, created via `gdb.init_precious_schema()`. Also backed to version-controlled `labels.json` / `cluster_splits.json` (the engine-independent source of truth, re-imported on ingest).
+- **REGENERABLE** (drop + rebuild each run): the Stage-5 signal view (`district`, `record`, `representation`, `district_target`) **and** the cross-stage cache (`discovery_school`, `candidate`, `capture`, `processed_doc` — the queryable mirror of each stage's `*.json` artifact, REQ-103c).
+
+### Build / inspect
+
+```bash
+# (Re)build the governance DB from the on-disk capture artifacts (idempotent; ~150 records on batch_00001)
+python3 -m infrastructure.acquisition.stage5_filter.build_signals
+
+# Score the current config + signals vs the human labels (read-only)
+python3 -m infrastructure.acquisition.stage5_filter.harness --no-write
+
+# Connect
+psql -h localhost -p 5432 -U governance_user -d governance
+```
+
+> Tests that touch the governance DB use connection-scoped **TEMP tables** (the `gov_session`
+> fixture in `tests/conftest.py`) and **skip** cleanly if the container is down.
+
+---
+
 ## Quick Start
 
 ### 1. Start the Database

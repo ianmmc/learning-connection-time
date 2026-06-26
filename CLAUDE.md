@@ -27,7 +27,7 @@ Part of "Reducing the Ratio" educational equity initiative. Currently implementi
 
 Building the **per-school acquisition pipeline** stage-by-stage with **human-in-the-loop checkpoints**. The GT/benchmark exploration concluded and was archived; the validated design is now the active build. Canonical pipeline doc: **`docs/ACQUISITION_PIPELINE.md`** (9 stages + failure-modes→checkpoints table + reader-routing spec). Live code: **`infrastructure/acquisition/`** (promoted out of the retired `scripts/benchmark/`). Council research: `docs/technical-notes/LLM_COUNCIL_RESEARCH_2026-06.md`. Leaderboard/costs: `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.
 
-**Build progress (2026-06-26):** Stages **1–4 built + run live** on `batch_00001` (12 districts, 150 URLs). **Stage 5** (local filter) — review app + deterministic signals + de-chrome + near-dup clustering + labeled topology + the **tuning learning-loop** (config-as-data, measurement harness REQ-090, episode ledger REQ-095, frontier/grid search REQ-096) all built; the operational `filtered.json` release generator (REQ-094) is the remaining Stage-5 piece. The project is now executing the **governance/state/Postgres re-architecture** — **authority doc: `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`** (read it first; it supersedes older design notes where they conflict). **REQ-098 DONE** (acquisition tree is now a proper installable package — **run `pip install -e .`**, no more `sys.path` shims; import-linter/grimp/vulture + dependency-cruiser enforce layering). **REQ-103 (Postgres governance DB) IN PROGRESS — paused after 103a; RESUME at `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §1b.**
+**Build progress (2026-06-26):** Stages **1–4 built + run live** on `batch_00001` (12 districts, 150 URLs). **Stage 5** (local filter) — review app + deterministic signals + de-chrome + near-dup clustering + labeled topology + the **tuning learning-loop** (config-as-data, measurement harness REQ-090, episode ledger REQ-095, frontier/grid search REQ-096) all built; the operational `filtered.json` release generator (REQ-094) is the remaining Stage-5 piece. The project is now executing the **governance/state/Postgres re-architecture** — **authority doc: `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`** (read it first; it supersedes older design notes where they conflict). **REQ-098 DONE** (acquisition tree is now a proper installable package — **run `pip install -e .`**, no more `sys.path` shims; import-linter/grimp/vulture + dependency-cruiser enforce layering). **REQ-103 (Postgres governance DB) COMPLETE** — Stage-5 ingest + readers + tests migrated SQLite→isolated `governance` Postgres (103b–f, commit `bbd0f66`), cross-stage cache added (103c), docs updated (103g). **Next build step: REQ-099** (state event-log). See `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §1b.
 
 **Metric = GROSS bell-to-bell minutes (end − start), NOT net.** No lunch/passing/recess deduction, no *assumed* deductions. Existing GT is already gross; gross needs only two reliably-published numbers (↑accuracy). Net is a deferred enhancement. Labeled `gross_bell_to_bell`. Plausibility gate 240–510 min. (REQ-055; supersedes net in REQ-042/046.)
 
@@ -46,13 +46,15 @@ Building the **per-school acquisition pipeline** stage-by-stage with **human-in-
 > **SEA central-data harvest is a dead end for daily minutes** (verified) — states publish only statutory minimums / day-counts, not actual daily minutes. Web discovery + extraction is the primary acquisition path. See `docs/INSTRUCTIONAL_TIME_HARVEST.md`.
 
 ### Next session (RESUME HERE — 2026-06-26)
-**The immediate task is REQ-103b** (the Postgres governance-DB migration). Full step-by-step resume
-guide: **`docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §1b** (decisions locked, the 4
-SQLite consumers to convert, dialect gotchas, test-fixture plan). 103a (governance DB+user,
-`common/db.py`, precious models) is **done + committed** (`3c725f3`), additive, suite green.
+**The immediate task is REQ-099** (the state event-log — migrate `district_status` → Postgres
+`state_event` + derived current-state; design in `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §3).
+**REQ-103 is COMPLETE** (governance DB stood up; Stage-5 ingest/readers/tests on isolated `governance`
+Postgres; cross-stage cache; docs) — 103a `3c725f3`, 103b–f `bbd0f66`, 103c/g in the follow-up pass.
 
 **First, in a fresh session:** `/catchup`, then `pip install -e .` (required since REQ-098 packaged the
-tree), then open §1b. Verify state with `lint-imports` (expect 3 kept/0 broken) and `pytest -q`.
+tree). Verify state with `lint-imports` (expect 3 kept/0 broken) and `pytest -q`. Docker must be up
+(the governance-DB tests skip without it). Rebuild the governance DB if needed:
+`python3 -m infrastructure.acquisition.stage5_filter.build_signals`.
 
 **Build sequence after REQ-103** (from the governance doc §9): **REQ-099** state event-log (migrate
 `district_status` → Postgres) → **REQ-094** release generator (`filtered.json`) → REQ-100 trigger UI →
