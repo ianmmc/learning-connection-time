@@ -19,12 +19,10 @@ import json
 import re
 import sqlite3
 import subprocess
-import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "common"))
-import paths  # noqa: E402  (single source of truth for runtime-state locations — REQ-087)
-import config_loader  # noqa: E402  (Stage 5 keyword knobs — REQ-088/093)
+from infrastructure.acquisition.common import paths  # noqa: E402  (single source of truth for runtime-state locations — REQ-087)
+from infrastructure.acquisition.common import config_loader  # noqa: E402  (Stage 5 keyword knobs — REQ-088/093)
 
 RAW_DIR = paths.RAW_CAPTURES
 QUEUE_DIR = paths.QUEUE_DIR                   # Stage 1 batch_*.json (targeting + NCES denominator)
@@ -153,8 +151,8 @@ def nces_school_counts(year: str = NCES_YEAR) -> dict:
     happened to yield — used to confirm single_school and the incomplete_coverage gap. Best
     effort: returns {} if the NCES files aren't present, and topology degrades gracefully."""
     try:
-        sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "stage1_queue"))
-        import school_sampling as ss
+        from infrastructure.acquisition.stage1_queue import school_sampling as ss
+
         idx = ss.school_index(year)
     except Exception:
         return {}

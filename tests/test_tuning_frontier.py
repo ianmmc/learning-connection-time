@@ -8,14 +8,9 @@ loader + LOGO are exercised against a tiny in-memory SQLite.
 """
 import json
 import sqlite3
-import sys
-from pathlib import Path
 
-STAGE5 = Path(__file__).resolve().parents[1] / "infrastructure" / "acquisition" / "stage5_filter"
-sys.path.insert(0, str(STAGE5))
-sys.path.insert(0, str(STAGE5 / "review_app"))
-import build_signals as BS  # noqa: E402
-import frontier as FR  # noqa: E402
+from infrastructure.acquisition.stage5_filter import build_signals as BS  # noqa: E402
+from infrastructure.acquisition.stage5_filter import frontier as FR  # noqa: E402
 
 
 def _sig(**over):

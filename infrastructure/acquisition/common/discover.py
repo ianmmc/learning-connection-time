@@ -6,8 +6,7 @@ import os, json, sys, csv
 from pathlib import Path
 from urllib.parse import urlparse
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-import config_loader  # noqa: E402  (config-as-data layer — REQ-088)
+from infrastructure.acquisition.common import config_loader  # noqa: E402  (config-as-data layer — REQ-088)
 
 OUT=Path("data/acquisition/discovery")
 NCES="data/raw/federal/nces-ccd/2023_24/ccd_lea_029_2324_w_1a_073124.csv"

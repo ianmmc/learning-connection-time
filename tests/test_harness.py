@@ -2,12 +2,8 @@
 reproducible fingerprints. Pure metric functions tested against synthetic inputs (not the
 live DB, whose values shift as labels change)."""
 import sqlite3
-import sys
-from pathlib import Path
 
-STAGE5 = Path(__file__).resolve().parents[1] / "infrastructure" / "acquisition" / "stage5_filter"
-sys.path.insert(0, str(STAGE5))
-import harness  # noqa: E402
+from infrastructure.acquisition.stage5_filter import harness  # noqa: E402
 
 
 def test_tier_target_metrics_counts_and_thresholds():

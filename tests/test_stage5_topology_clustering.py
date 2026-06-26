@@ -5,14 +5,8 @@ deterministic logic without external data. The funnel coverage is deliberately l
 layer is still far off — but the plumbing must not silently break.
 """
 import json
-import sys
-from pathlib import Path
 
-REVIEW = Path(__file__).resolve().parents[1] / "infrastructure" / "acquisition" / "stage5_filter" / "review_app"
-STAGE1 = Path(__file__).resolve().parents[1] / "infrastructure" / "acquisition" / "stage1_queue"
-sys.path.insert(0, str(REVIEW))
-sys.path.insert(0, str(STAGE1))
-import build_signals as BS  # noqa: E402
+from infrastructure.acquisition.stage5_filter import build_signals as BS  # noqa: E402
 
 
 # ----------------------------- labeled topology (REQ-105) -----------------------------

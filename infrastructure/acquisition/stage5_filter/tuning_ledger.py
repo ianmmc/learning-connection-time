@@ -23,13 +23,10 @@ Usage:
 """
 import argparse
 import json
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent / "common"))
-import paths  # noqa: E402
+from infrastructure.acquisition.common import paths  # noqa: E402
 
 # Default recall floor for the Stage 5 operational filter: the human at CP-B is the precision
 # backstop, so the constraint we defend automatically is RECALL on targets (tier A).

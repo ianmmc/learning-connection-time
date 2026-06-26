@@ -1,12 +1,8 @@
 """REQ-093 — Stage 5 keyword knobs load from config; the instructional-time regex is MINUTES-ONLY
 (hours reverted after the harness proved it net-negative — a vision problem); an instructional-time
 hit rescues a record from the n==0 / neg-keyword drop."""
-import sys
-from pathlib import Path
 
-REVIEW = Path(__file__).resolve().parents[1] / "infrastructure" / "acquisition" / "stage5_filter" / "review_app"
-sys.path.insert(0, str(REVIEW))
-import build_signals as BS  # noqa: E402
+from infrastructure.acquisition.stage5_filter import build_signals as BS  # noqa: E402
 
 
 def _sig(**over):

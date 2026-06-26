@@ -15,12 +15,9 @@ Schema reference: data/acquisition/status/district_status.example.json
 Doc: docs/ACQUISITION_PIPELINE.md (Stage 1), docs/diagrams/acquisition_pipeline_flow.md
 """
 from datetime import datetime, timezone
-from pathlib import Path
 import json
-import sys
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-import paths  # noqa: E402  (single source of truth for runtime-state locations — REQ-087)
+from infrastructure.acquisition.common import paths  # noqa: E402  (single source of truth for runtime-state locations — REQ-087)
 
 STATUS_FILE = paths.STATUS_FILE
 SCHEMA_VERSION = 1

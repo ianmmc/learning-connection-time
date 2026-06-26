@@ -3,22 +3,16 @@
 exclusion filters, stratified sampling, per-band school selection, LEVEL-primary band
 classification, district status registry (REQ-061/062/063/064/065/066/067, built 2026-06-22)."""
 import json
-import sys
-from pathlib import Path
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
-ACQ = ROOT / "infrastructure" / "acquisition"
-for _sub in ("common", "stage1_queue", "stage2_discover", "stage3_capture", "stage4_process", "stage8_aggregate"):
-    sys.path.insert(0, str(ACQ / _sub))
-import school_sampling as S  # noqa: E402
-import aggregate as A  # noqa: E402
-import queue_batch as Q  # noqa: E402
-import district_status as DS  # noqa: E402
-import discover_stage2 as D2  # noqa: E402
-import discover as DISC  # noqa: E402
-import capture_stage3 as C3  # noqa: E402
-import process_stage4 as P4  # noqa: E402
+from infrastructure.acquisition.stage1_queue import school_sampling as S
+from infrastructure.acquisition.stage8_aggregate import aggregate as A
+from infrastructure.acquisition.stage1_queue import queue_batch as Q
+from infrastructure.acquisition.common import district_status as DS
+from infrastructure.acquisition.stage2_discover import discover_stage2 as D2
+from infrastructure.acquisition.common import discover as DISC
+from infrastructure.acquisition.stage3_capture import capture_stage3 as C3
+from infrastructure.acquisition.stage4_process import process_stage4 as P4
 
 
 # ---------------------------------------------------------------- REQ-058 sampling

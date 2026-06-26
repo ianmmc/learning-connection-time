@@ -11,12 +11,8 @@ so it was removed 2026-06-26. The prompt-side invariant will be re-tested agains
 council extractor when it exists. The CODE-side half (Python computes gross = end-start and the
 per-band MODE; the model never does) is live and tested below (TestGross, TestMode).
 """
-import sys
-from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "infrastructure" / "acquisition" / "stage8_aggregate"))
-import aggregate as A  # noqa: E402
+from infrastructure.acquisition.stage8_aggregate import aggregate as A  # noqa: E402
 
 
 # ---------------------------------------------------------------- REQ-055 gross

@@ -11,11 +11,9 @@ JSON is the format precisely so the Node half of the pipeline reads the *same* f
 this module is the Python reader; there is no separate Node loader to keep in sync.
 """
 import json
-import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-import paths  # noqa: E402
+from infrastructure.acquisition.common import paths  # noqa: E402
 
 PROVENANCE_FIELDS = ("value", "added", "rationale", "evidence", "approved_by", "loop_tier")
 

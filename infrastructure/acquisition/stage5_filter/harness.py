@@ -18,16 +18,12 @@ import argparse
 import hashlib
 import json
 import sqlite3
-import sys
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE / "review_app"))
-sys.path.insert(0, str(HERE.parent / "common"))
-import build_signals as BS   # noqa: E402  (TARGET_LABELS + the path constants)
-import paths                  # noqa: E402
+from infrastructure.acquisition.stage5_filter import build_signals as BS   # noqa: E402  (TARGET_LABELS + the path constants)
+from infrastructure.acquisition.common import paths                  # noqa: E402
 
 TARGET = BS.TARGET_LABELS
 

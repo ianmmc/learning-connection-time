@@ -1,13 +1,9 @@
 """REQ-088 / REQ-089 — the config-as-data layer, with CMS_HOSTS as the first knob and the
 single source of truth shared by discover.py and capture_discovery.mjs (no more hand-syncing)."""
-import sys
-from pathlib import Path
 
-COMMON = Path(__file__).resolve().parents[1] / "infrastructure" / "acquisition" / "common"
-sys.path.insert(0, str(COMMON))
 
-import config_loader  # noqa: E402
-import paths  # noqa: E402
+from infrastructure.acquisition.common import config_loader  # noqa: E402
+from infrastructure.acquisition.common import paths  # noqa: E402
 
 # The exact list (and order) that was hardcoded in BOTH files before the migration — the
 # behavior-preserving baseline for "resolves identically."
@@ -23,7 +19,8 @@ def test_loader_values_match_the_original_hardcoded_list():
 
 
 def test_discover_cms_hosts_unchanged_after_migration():
-    import discover
+    from infrastructure.acquisition.common import discover
+
     assert list(discover.CMS_HOSTS) == ORIGINAL_CMS_HOSTS
 
 

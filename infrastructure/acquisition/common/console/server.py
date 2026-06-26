@@ -10,7 +10,6 @@ Run:  uvicorn server:app --reload --port 8005   (from this directory)
 """
 import json
 import sqlite3
-import sys
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -18,8 +17,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
-import build_signals as BS    # noqa: E402  (export_labels lives here, shared with ingest)
+from infrastructure.acquisition.stage5_filter import build_signals as BS    # noqa: E402  (export_labels lives here, shared with ingest)
 
 # Runtime-state locations come from the single source of truth (paths.py, via build_signals).
 DB_PATH = BS.DB_PATH

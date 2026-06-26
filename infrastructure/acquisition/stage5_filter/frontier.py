@@ -24,15 +24,10 @@ import argparse
 import itertools
 import json
 import sqlite3
-import sys
-from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE / "review_app"))
-sys.path.insert(0, str(HERE.parent / "common"))
-import build_signals as BS  # noqa: E402  (DEFAULT_TIER_PARAMS, tier_and_category, TARGET_LABELS)
-import harness  # noqa: E402             (tier_target_metrics — the metric of record)
-import paths  # noqa: E402
+from infrastructure.acquisition.stage5_filter import build_signals as BS  # noqa: E402  (DEFAULT_TIER_PARAMS, tier_and_category, TARGET_LABELS)
+from infrastructure.acquisition.stage5_filter import harness  # noqa: E402             (tier_target_metrics — the metric of record)
+from infrastructure.acquisition.common import paths  # noqa: E402
 
 TARGET = BS.TARGET_LABELS
 

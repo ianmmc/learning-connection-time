@@ -21,14 +21,13 @@ Usage:
 import argparse
 import json
 import re
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "common"))
-import district_status as DS
-from discover import host_of, gate, openrouter_search
+from infrastructure.acquisition.common import district_status as DS
+
+from infrastructure.acquisition.common.discover import host_of, gate, openrouter_search
 
 RAW_DIR = Path("data/raw/lea-website-captures")
 BANDS = ("elementary", "middle", "high")

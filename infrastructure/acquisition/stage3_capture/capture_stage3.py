@@ -18,12 +18,11 @@ Usage:
 """
 import argparse
 import json
-import sys
 from collections import Counter
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "common"))
-import district_status as DS
+from infrastructure.acquisition.common import district_status as DS
+
 
 RAW_DIR = Path("data/raw/lea-website-captures")
 

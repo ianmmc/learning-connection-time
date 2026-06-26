@@ -3,12 +3,8 @@ between two scorecards (before -> after): fingerprints, metric deltas, the recal
 check, and the human rationale. Pure functions tested against synthetic scorecards; the I/O
 shell tested against a tmp JSONL file. Append-only; reuses the harness fingerprint scheme."""
 import json
-import sys
-from pathlib import Path
 
-STAGE5 = Path(__file__).resolve().parents[1] / "infrastructure" / "acquisition" / "stage5_filter"
-sys.path.insert(0, str(STAGE5))
-import tuning_ledger as TL  # noqa: E402
+from infrastructure.acquisition.stage5_filter import tuning_ledger as TL  # noqa: E402
 
 
 def _scorecard(cfg, labels, data, a_prec, a_rec, ab_prec=0.5, cat=0.43, topo=0.8,

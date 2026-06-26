@@ -27,20 +27,18 @@ data/acquisition/status/district_status.json (skipped on --dry-run).
 import argparse
 import json
 import random
-import sys
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent))
-import school_sampling as S
-sys.path.insert(0, str(Path(__file__).parent.parent / "common"))
-import district_status as DS
-import paths  # noqa: E402  (single source of truth for runtime-state locations — REQ-087)
-from discover import host_of
+from infrastructure.acquisition.stage1_queue import school_sampling as S
+
+from infrastructure.acquisition.common import district_status as DS
+
+from infrastructure.acquisition.common import paths  # noqa: E402  (single source of truth for runtime-state locations — REQ-087)
+from infrastructure.acquisition.common.discover import host_of
 
 project_root = Path(__file__).parent.parent.parent.parent
-sys.path.insert(0, str(project_root))
 from infrastructure.database.connection import session_scope
 from infrastructure.database.models import District, EnrollmentByGrade
 

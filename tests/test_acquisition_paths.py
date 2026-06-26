@@ -6,16 +6,15 @@ from pathlib import Path
 
 import pytest
 
-COMMON = Path(__file__).resolve().parents[1] / "infrastructure" / "acquisition" / "common"
-sys.path.insert(0, str(COMMON))
+_PATHS_MOD = "infrastructure.acquisition.common.paths"
 
 
 @pytest.fixture
 def fresh_paths(monkeypatch):
     """Import (or re-import) paths.py with the current environment applied."""
     def _load():
-        monkeypatch.delitem(sys.modules, "paths", raising=False)
-        return importlib.import_module("paths")
+        monkeypatch.delitem(sys.modules, _PATHS_MOD, raising=False)
+        return importlib.import_module(_PATHS_MOD)
     return _load
 
 
@@ -52,7 +51,8 @@ def test_config_dir_is_near_code_not_under_data_root(monkeypatch, fresh_paths):
     monkeypatch.delenv("LCT_DATA_ROOT", raising=False)
     p = fresh_paths()
     assert not str(p.CONFIG_DIR).startswith(str(p.DATA_ROOT))
-    assert p.CONFIG_DIR == COMMON / "config"
+    # config lives next to paths.py (the common/ package dir), not under DATA_ROOT
+    assert p.CONFIG_DIR == Path(p.__file__).resolve().parent / "config"
 
 
 def test_data_root_env_override_relocates_everything(monkeypatch, tmp_path, fresh_paths):
