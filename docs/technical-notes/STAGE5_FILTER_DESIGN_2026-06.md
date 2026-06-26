@@ -1,12 +1,62 @@
 # Stage 5 (Local Filtering) — Design & Data-Collection Plan (2026-06-24)
 
-> Working design note for Stage 5 of the acquisition pipeline. Captures the decisions made
-> in the opening Stage 5 design conversation. Status: **data-collection review app BUILT
-> 2026-06-24** (`infrastructure/acquisition/stage5_filter/review_app/`, see its README) and run
-> against the real 12 `batch_00001` districts; human labeling not yet started; the operational
-> Stage 5 filter itself is still to be defined *from* the labels this app collects. Companion to
-> `docs/ACQUISITION_PIPELINE.md` (Stage 5 stub) and `docs/diagrams/acquisition_pipeline_flow.md`.
-> When the filters are defined, fold the durable parts into `ACQUISITION_PIPELINE.md`'s Stage 5 section.
+> Working design note for Stage 5 of the acquisition pipeline. **Status (2026-06-25):** the CP-B
+> review app, the deterministic signals, the **full 150-label pass on `batch_00001`**, labeled
+> topology + near-duplicate clustering, the Stage-1/2 funnel ingredients, AND the **learning-loop
+> infrastructure (config-as-data + measurement harness)** are all BUILT; **de-chrome is BUILT and
+> has MEASURED a strong win** (category-guess 0.43→0.60, topology agreement 0.6→0.8, tier A intact).
+> What remains is the **operational Stage 5 filter that emits `filtered.json` for Stage 6** — see
+> **"Path to filtered.json (RESUME HERE)"** immediately below. Companion to
+> `docs/ACQUISITION_PIPELINE.md` (Stage 5) and `docs/diagrams/acquisition_pipeline_flow.md`.
+
+---
+
+## Path to filtered.json (RESUME HERE — the final push to Stage 6)
+
+Everything up to now built and *validated the ingredients*. The remaining work is the **operational
+Stage 5 filter**: a deterministic script that reads each district's `processed.json` + the (now
+de-chromed) signals and emits **`filtered.json`** — the recall-biased selection of records to hand to
+CP-B and then Stage 6/7.
+
+**Current state — all BUILT + committed (implementation wave 2026-06-25, REQ-087…093):**
+- **Signals are de-chromed** (REQ-091): `build_signals.compute_signals(main_text=…)` computes
+  time/keyword/roster signals over `page.main.txt` when present (header/footer/nav stripped at Stage 3),
+  graceful fallback to full page. **Measured win** on the live `backfill-segments` run: category-guess
+  0.43→0.60, topology 0.6→0.8, tier A unchanged.
+- **Tiers A–D validated:** tier A = 40/41 targets at **0.85 precision / 0.98 recall**; tier D = 0 targets.
+- **Topology** (guessed vs labeled), **near-dup clustering + durable splits**, **handbook `harvest_pages`**
+  (send the schedule page, not the whole doc), **emergent** flag, **funnel ingredients**
+  (`intended_schools`, NCES denominator) — all in the review DB and the signal vector.
+- **Learning loop:** config-as-data (`infrastructure/acquisition/common/config/`, `config_loader.py`,
+  per-entry provenance) + a **measurement harness** (`stage5_filter/harness.py` → fingerprinted
+  scorecards under `data/acquisition/stage5_review/scorecards/`) that turns any config change into a
+  before/after number. The `paths.py` / `DATA_ROOT` indirection underlies all of it.
+
+**What `filtered.json` should be (define + build):** per district, the records SELECTED for the council,
+each carrying — tier, the de-chromed signals, category hypothesis, topology, **cluster membership (send
+the representative only)**, `harvest_pages` (handbooks → those pages, not the whole doc), `emergent`,
+`intended_schools`. **Recall-biased** (see the recall-bias stance below): hard-REJECT only the
+high-precision negatives (tier D / zero plausible times / all-after-5pm / unambiguous board agenda);
+everything else flows through, scored + ranked, for the human at CP-B. Honestly labeled
+(`gross_bell_to_bell`, REQ-055).
+
+**Concretely, to resume:**
+1. Write the operational filter (e.g. `infrastructure/acquisition/stage5_filter/filter.py`) emitting
+   `filtered.json` per district from `processed.json` + the existing engine — **reuse
+   `build_signals.compute_signals` / `tier_and_category`**, don't reimplement them.
+2. Pin the exact REJECT rule (start: tier D + the high-precision negatives) and the rank order.
+3. Collapse to **cluster representatives**; attach `harvest_pages`; carry topology + `emergent` +
+   `intended_schools`.
+4. **Score the filter against the labels with the harness** — recall on targets must stay ≈1.0
+   (precision is the human's job at CP-B). Pre-register a REQ (REQ-094+), tests-first.
+
+**Open Tier-0 follow-ups the harness can now measure (do alongside/before the filter):**
+- **Retune tier-C `neg_dominant` for MAIN-ONLY negatives.** De-chrome floated 24 non-targets C→B
+  (A+B precision 0.75→0.53) — the threshold was partly leaning on chrome negatives. Now measurable.
+- **Widen de-chrome landmarks** past strict semantic/ARIA only if the **footer-miss rate** warrants
+  (some `page.main.txt` came out <120 chars → fell back to full). Measure first.
+- **Per-school "got" matching** (deferred): map a labeled bell record → a specific school; needed for
+  `per_school` topology "k of N" + the funnel.
 
 ---
 
