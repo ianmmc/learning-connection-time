@@ -5,11 +5,10 @@
 > wired — import-linter/grimp/vulture/dependency-cruiser). **REQ-103 (Postgres governance DB) is
 > functionally COMPLETE** — 103a (foundation) + **103b–f** (ingest + readers + tests migrated
 > SQLite→Postgres, committed `bbd0f66`) + **103c** (cross-stage cache) + **103g** (these docs) all done;
-> see §1b. **REQ-099 (state event-log) is also COMPLETE** — `district_status` → Postgres `state_event`
-> append-log + `current_state` SQL view; in-memory registry contract preserved (stage scripts unchanged);
-> 36-district/84-event data migrated; `district_status.json` is now the regenerable git-tracked backup
-> (§3). **Next build step is REQ-094** (the `filtered.json` release generator, §4/§5). Still design-only:
-> console UI (REQ-100/102), Stage 2 headless (REQ-104). This note is the architecture for three coupled decisions that outgrew
+> see §1b. **REQ-099 (state event-log) COMPLETE** (§3) and **REQ-094 (`filtered.json` release generator)
+> COMPLETE** — event-driven projection (§6). **Console & gate model decided 2026-06-27 (§11); Stage 6
+> design started (`STAGE6_HANDOFF_DESIGN_2026-06.md`).** Next: design the console UI, then Stage 6
+> council-config/routing; Stage 2 headless (REQ-104) still pending. This note is the architecture for three coupled decisions that outgrew
 > `STAGE5_FILTER_DESIGN_2026-06.md`:
 > 1. **STATE vs DATA** — migrate the cross-stage *registry* (`district_status.json`) into the DB;
 >    keep the per-stage *data* artifacts as JSON on disk.
@@ -20,8 +19,9 @@
 >
 > Companions: `ACQUISITION_PIPELINE.md` (the 9 stages + checkpoints), `STAGE5_FILTER_DESIGN_2026-06.md`
 > (Stage 5 signals/tiers/clustering/tuning — still authoritative for *that* content), `PROJECT_HISTORY.md`
-> (high-level ADR log). Standing checkpoints (CLAUDE.md): **CP-A Queue**, **CP-B Input/Release**, **CP-C
-> Output→Write**.
+> (high-level ADR log). **Gates are now stage-numbered (§11, 2026-06-27): `gate@1` (queue) · `gate@5`
+> (per-URL review) · `gate@6` (handoff) · `gate@7` (council requests) · `gate@8` (results, the effective
+> CP-C)** — supersedes the old CP-A/B/C naming throughout this note.
 
 ---
 
@@ -32,7 +32,7 @@ The registry currently blurs two different things. Separating them resolves the 
 | | what it is | authoritative home | properties |
 |---|---|---|---|
 | **DATA** | `discovery.json`, `candidates.json`, `captures.json`, `processed.json`, `batch_*.json` + the capture binaries | **JSON on disk**, next to captures | content; **regenerable from the web**; read natively by the Node capture half; relocatable as one tree (REQ-087) |
-| **STATE** | where each district is in the pipeline; what's approved at CP-A; what's released at CP-B; the re-discovery loop | **the DB** | small, queryable, concurrently-updated, *not* a linear listing; **precious** (human decisions, not rebuildable from DATA) |
+| **STATE** | where each district is in the pipeline; what's approved at gate@1; what's released at gate@5; the re-discovery loop | **the DB** | small, queryable, concurrently-updated, *not* a linear listing; **precious** (human decisions, not rebuildable from DATA) |
 | **SIGNALS** | tiers, categories, signal vectors, clusters | the DB | **regenerable cache** — dropped + rebuilt each ingest (today's behavior) |
 | **LABELS / SPLITS** | the human ground truth + cluster-split overrides | the DB | **precious** — already backed to `labels.json` / `cluster_splits.json` |
 
@@ -157,9 +157,9 @@ release_content(district)  =  f( labels , signals , tier-config )      # PURE, r
 So `filtered.json`'s *content* needs **no new precious table** — it is recomputed from labels (precious,
 stored) + signals (regenerable) + config (versioned). What **is** new-precious is the **act**:
 
-- **the CP-B release event** — "a human approved sending *this* district forward, at *this* time, at *this*
+- **the gate@5 release event** — "a human approved sending *this* district forward, at *this* time, at *this*
   `(config,labels,data)` fingerprint." Not derivable from labels; precious; part of lifecycle history.
-- **the CP-A queue-approval event** — same shape, one stage up.
+- **the gate@1 queue-approval event** — same shape, one stage up.
 - **(optional) explicit human representation overrides** — only if we ever support "hand-pick which reps
   go" (see §6 "selected"); deferred, since the current lean is *selected = scope, not override*.
 
@@ -196,7 +196,7 @@ fingerprinted scorecards, label backups) and handles "scattered" natively. Sketc
 ```
 -- PRECIOUS (backed to a versioned JSON, re-importable):
 state_event(
-  event_id INTEGER PK, district_id TEXT, stage TEXT, checkpoint TEXT,   -- 'CP-A'|'CP-B'|'CP-C'|NULL
+  event_id INTEGER PK, district_id TEXT, stage TEXT, checkpoint TEXT,   -- 'gate@1'|'gate@5'|'gate@6'|'gate@7'|'gate@8'|NULL (§11; was CP-A/B/C)
   event_type TEXT,        -- queued | approved | released | re_discovery_requested | dispatched | ...
   fingerprints_json TEXT, -- (config,labels,data) at the moment, when relevant
   actor TEXT,             -- 'human' | 'auto'  (eases toward automation: same rows, actor flips)
@@ -315,12 +315,15 @@ high-tier records flow on the recall-biased auto-filter) is a property of `relea
 ## 7. App scope: the review app → stage-selectable governance console (`process_governance`)
 
 The "Stage 5 - Capture Review" title by the wordmark becomes a **stage selector**; each stage swaps the
-view/controls. Once cross-stage STATE is in the DB, the app is the governance console for every checkpoint:
+view/controls. Once cross-stage STATE is in the DB, the app is the governance console for every gate
+(see §11 for the full gate model):
 
-- **Stage 1 / CP-A** — review & approve queued `batch_*.json` (today out-of-band); a `released`-shaped
-  approval event, same interaction as CP-B.
-- **Stage 5 / CP-B** — the current review/label surface + the **Generate/Release** trigger (§6).
-- **(later) Stage 7 / CP-C** — approve extraction outputs before the DB write.
+- **Stage 1 / gate@1** — review & approve queued `batch_*.json` (today out-of-band); an approval event.
+- **Stage 5 / gate@5** — the current review/label surface (per-URL representation review). `filtered.json`
+  is now an event-driven projection, not a Generate button (§6).
+- **Stage 6 / gate@6** — approve the handoff/dispatch (which reps → which council config).
+- **Stage 7 / gate@7** — review the council's requests/recommendations.
+- **(later) Stage 8 / gate@8** — review per-band results before the mechanical Stage-9 DB write (the effective old "CP-C").
 
 ### Code structure (PROPOSAL — confirm)
 - **Move the app** the Stage-5 review app (server + `static/`) → **`infrastructure/acquisition/process_governance/`** (a top app layer, cross-stage). *(Done in REQ-098: relocated out of `common/` after import-linter flagged the common-imports-stages inversion; renamed console→process_governance for a slightly broader scope.)*
@@ -584,3 +587,81 @@ agent's and the research's conclusion is that no production tool closes this. If
 fitness-function generators prove out here (and ideally survive a second real project shape, not generalized
 from N=1), they're a candidate to extract and publish. **Architect it cleanly separable; do not design *for*
 publication now.** Flag the moment it's earned its generality.
+
+---
+
+## 11. Console & gate model — DECIDED 2026-06-27 (from the APGA user-stories review)
+
+Formalizes the console-design session that worked through `docs/scratch-paper/apga_console_application_stage_view.md`
+(a disposable user-stories doc). The flow diagram (`acquisition_pipeline_flow.md`) already reflects the
+structural pieces (gates, back-edges, batch types); this is the authoritative prose. The console UI
+itself (stage selector, Overview, Settings, Stages 1–4 views) is **principle-set here, not yet
+wireframed — it needs its own design pass before build.**
+
+### 11a. Gates are STAGE-NUMBERED (`gate@N`) — replaces CP-A/B/C
+The 3 checkpoints become **5 stage-numbered gates**; the deterministic stages (2/3/4) and the mechanical
+Stage-9 DB write are ungated:
+
+| gate | stage | the human judgment | was |
+|---|---|---|---|
+| **gate@1** | 1 Queue | approve the batch (right districts/schools/bands) | CP-A |
+| **gate@5** | 5 Filter | per-URL representation review (labeling) | CP-B |
+| **gate@6** | 6 Handoff | approve routing/dispatch (which reps → which council config) | *new* |
+| **gate@7** | 7 Extract | review council requests/recommendations | *new* |
+| **gate@8** | 8 Aggregate | review per-band results; override needs a reason | *effective CP-C* |
+
+**gate@8 is the effective CP-C** — once results are approved there, Stage 9 writes to the LCT DB mechanically.
+
+### 11b. Settings: per-gate manual/auto (global default + overrides); AUTO is confidence-escalating
+Each gate toggles **manual** (human acts) / **auto** (self-advance), via a **global default + per-gate
+overrides**. **Auto is never blind: auto-with-confidence-escalation** — auto-accept the high-confidence,
+auto-escalate-or-flag the low-confidence to manual (the same pattern as Stage 5, and the conceptual shape
+of Stage 8). Especially gate@8: extracted minutes never reach the LCT DB without confidence. **Auto-advance
+through the paid stages (6/7) is cost-gated by the budget governor (REQ-051)** — full-auto must not run up
+unbounded OpenRouter spend.
+
+### 11c. Pipeline Overview = "what just happened" (an event-log projection)
+The Overview visualizes the **`state_event` log** — per stage, what just completed + the **attention queue**
+(§7b). It is **NOT a live in-flight feed**: the durable log is deliberately completion-only (no interim
+markers), and the ephemeral "what's processing right now" layer is **dropped** (user, 2026-06-27).
+Controls: **Start** (kick off full-auto advance) + **Safe-Stop** (let in-flight work complete, with a
+progress bar). **Pause dropped** (not worth the complexity).
+
+### 11d. Two batch types; completion grain = district × BAND
+- **first-run** (cold-start stratified draw; excludes already-attempted districts) vs **follow-up**
+  (re-discovery / gap-fill; deliberately re-includes attempted districts, targeting **unsatisfied bands**).
+  A district can recur across batches. **12-district hard cap on both** — a stages-1–4 blast-radius control
+  (representations don't exist yet at queue time, so a break shouldn't spiral; the cap also stops automated
+  follow-up creation running away — spillover starts the next batch). The **cost/representation ceiling is
+  the separate Stage-6 dispatch control**, where representations exist.
+- **Completion grain = district × BAND** (not district × school). Schools are **instrumental** — raw
+  material for search queries + expected sampling units — but once a captured page states the band-level
+  answer (Dunseith: "elementary 435 min / high 450 min"), the schools are moot. A district is **satisfied**
+  when every claimed band has confident minutes; re-queue targets unsatisfied **bands**. Per-band
+  eligibility leans on `discovery_school` (per-school discovery outcomes) + the extracted results.
+- **Directions route through Stage 1.** Anything needing NEW capture/discovery (re-discover, recapture,
+  band-gap fill) returns to Stage 1, where the follow-up `batch_*.json` is created and stays reviewable at
+  gate@1 — 7/8 never create a batch straight to discovery. Only re-routing EXISTING representations bypasses
+  Stage 1 (7→6 re-extract via a different config; 8→6 add an existing-rep URL to a new handoff).
+
+### 11e. The pipeline is CYCLIC (back-edges) — detail in the flow diagram
+Four back-edges: **7→6**, **7→1**, **8→1**, **8→6** (see `acquisition_pipeline_flow.md`). The immutable
+Stage-6 handoff freeze is what keeps "what we sent" recoverable across these loops.
+
+### 11f. Per-stage console notes
+- **Stage 3** — a thin **health / emergent readout**: emergent URLs, capture failures (WAF/security
+  blocks), and the **CMS/host distribution** from the `capture` table's `final_host`/`fingerprint_json`
+  (REQ-103c). NOT a live PNG feed (cute, low governance value).
+- **Stages 2 & 4 effectiveness** — the **measurement-harness pattern extended upstream**: attribute each
+  target-labeled record back to its discovery tool (`candidate_tools_json`) and its winning representation's
+  source (`representation.source`). Same fingerprinted-scorecard discipline as Stage 5, applied to discovery
+  and processing.
+- **Stage 6** — routing / release; see `STAGE6_HANDOFF_DESIGN_2026-06.md`.
+
+### 11g. Implications for what's built
+- `state_event.checkpoint` vocabulary: **`gate@1` | `gate@5` | `gate@6` | `gate@7` | `gate@8`** (was
+  CP-A/B/C). Free-string column → no schema change; update recorded values + docs as gates get wired.
+- `filtered.json` carries **alternate target-flagged reps** (the winner + alternates) so gate@6 can offer
+  representation override (REQ-094 follow-up; un-defers §4's "representation override deferred" lean).
+- The **console UI build needs its own design pass** (stage-by-stage, as we designed the pipeline) before
+  coding — Overview, Settings, the stage selector, and the Stage-1–4 views are principle-set, not designed.

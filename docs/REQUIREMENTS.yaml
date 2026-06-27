@@ -2242,25 +2242,6 @@ requirements:
       weight on attributes, not near-dup frequency; harness still counts all 150 for raw accuracy. Companion to
       REQ-090 (harness) / REQ-095 (ledger). Bootstrap-stability + min-group-support + Optuna escalation deferred."
 
-  - id: REQ-094
-    description: Operational Stage 5 release generator — emit filtered.json per district (DB-backed release export) for Stage 6
-    type: functional
-    priority: must
-    status: accepted
-    acceptance_criteria:
-      - Per district, select the CANONICAL records that pass the release rule (labels where present; else the recall-biased auto-filter — REJECT only high-precision negatives)
-      - One best representation per qualifying record (text by default; image on visual_text_gap/target_image_only; harvest_pages for handbooks)
-      - filtered.json is a REGENERABLE export of the DB release decision, stamped with (config,labels,data) fingerprints; honestly labeled gross_bell_to_bell
-      - Reuses build_signals.compute_signals / tier_and_category; recall on targets stays ~1.0, scored via the harness
-      - Carries per-district decision metadata for Stage 6 (topology, completeness, emergent, intended_schools, cost estimate)
-    tests:
-      - tests/test_stage5_release.py
-    created: "2026-06-26T00:00:00Z"
-    updated: "2026-06-26T00:00:00Z"
-    notes: "Reserved-then-created 2026-06-26 (the doc-referenced REQ-094 had no YAML entry). DB-backed per the
-      2026-06-26 architecture: release content is a projection of f(labels,signals,config); the CP-B release EVENT
-      is the precious part. Authority + sequencing: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §2/§4/§9 (step 4)."
-
   - id: REQ-097
     description: Stage 5 drift detector — alert when newly-labeled data degrades the live config enough to warrant a retune
     type: functional
@@ -2303,27 +2284,11 @@ requirements:
       (school_sampling miscategorized into stage1_queue -> moved to common; the app inverted under common -> moved to
       process_governance), both fixed. 'tests' = the full suite passing under the new package layout + lint-imports."
 
-  - id: REQ-099
-    description: Cross-stage STATE as a Postgres event log; migrate district_status.py's registry functions
-    type: functional
-    priority: must
-    status: accepted
-    acceptance_criteria:
-      - state_event table (Option B) is the precious store; current-state is a projection over it
-      - actor field holds identity (ian / auto:scheduler / auto:drift-detector), not just human|auto
-      - The re-discovery loop is representable without contradiction (a re_discovery_requested event after a released event)
-      - district_status.py functions become readers/writers over state_event; the old district_status.json is demoted to a generated index
-      - Precious state keeps the version-controlled JSON-backup pattern (re-importable after a DB wipe), like labels.json
-    created: "2026-06-26T00:00:00Z"
-    updated: "2026-06-26T00:00:00Z"
-    notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §3/§9 (step 3). event_type vocabulary to finalize
-      during the build. Per-stage DATA JSON stays authoritative on disk (auditable receipts)."
-
   - id: REQ-103
-    description: Postgres migration — isolated governance database + cross-stage cache (SQLite review.db retired)
+    description: Postgres migration — isolated governance database + cross-stage cache (SQLite review.db kept as the verification reference)
     type: non-functional
     priority: must
-    status: in_progress
+    status: tested
     acceptance_criteria:
       - A dedicated 'governance' database in the existing lct_postgres container, own DB user; drop+rebuild cannot reach the production LCT tables
       - Schema ported to SQLAlchemy models + a numbered migration on the project's existing framework; consumers use session_scope
@@ -2427,6 +2392,7 @@ requirements:
       - Per district, every CANONICAL record (non-duplicate; cluster rep or singleton) appears with decision (send|reject) + reason — a traceable, self-explaining artifact, not just the send subset
       - Release rule — a TARGET-labeled record sends; a labeled non-target rejects; unlabeled records fall to a recall-biased auto-filter (reject only tier D / no-rep) as a documented fallback
       - One best representation per sent record — densest usable text by default; the image on visual_text_gap / human target_image_only; the PDF + harvest_pages for handbooks
+      - Each sent record also carries its ALTERNATE candidate representations (the other usable reps) so Stage 6 / gate@6 can swap the representation (added 2026-06-27)
       - Each filtered.json carries per-district (config,labels,data) fingerprints (staleness), labeled topology, NCES denominator, completeness counts, a coarse cost estimate, and the honest gross_bell_to_bell label
       - EVENT-DRIVEN, no manual trigger — generated on the first scoring pass (build_signals ingest), refreshed on label/split events (server) and on re-ingest after new discovery; generate() is the single shared code path
     tests:
@@ -2438,3 +2404,37 @@ requirements:
       (batch dissolves as a unit at Stage 5). The release/routing decision (which representations -> which
       OpenRouter model set) is Stage 6 / REQ-100. Live on batch_00001: 12 filtered.json, 32 records to send
       (= the 32 canonical TARGET-labeled records); 5 none_found districts send 0."
+
+  - id: REQ-108
+    description: Stage-numbered human-review gates (gate@N) + per-gate manual/auto Settings — replaces the CP-A/B/C checkpoint model
+    type: functional
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - Five stage-numbered gates — gate@1 (queue), gate@5 (per-URL review), gate@6 (handoff/dispatch), gate@7 (council requests), gate@8 (results, the effective old CP-C); stages 2/3/4 and the Stage-9 DB write are ungated
+      - state_event.checkpoint records the gate value ('gate@1'|'gate@5'|'gate@6'|'gate@7'|'gate@8'|NULL); free-string column, no schema change
+      - Settings exposes a per-gate manual/auto toggle as a global default + per-gate overrides
+      - AUTO mode is confidence-escalating — auto-accept high-confidence, auto-escalate/flag low-confidence to manual; gate@8 never writes minutes to the LCT DB without confidence
+      - Auto-advance through the paid stages (6/7) is cost-gated by the budget governor (REQ-051)
+    created: "2026-06-27T00:00:00Z"
+    updated: "2026-06-27T00:00:00Z"
+    notes: "Decided 2026-06-27 (governance §11) from the APGA console user-stories review. Console UI not yet
+      built — the stage-selectable governance console (Overview = event-log projection, Settings, Stage 1-4
+      views) needs its own design pass first. Replaces 'CP-A/B/C / 3 checkpoints' language throughout the docs."
+
+  - id: REQ-109
+    description: Two batch types (first-run / follow-up) + completion grain = district x BAND; the pipeline is cyclic
+    type: functional
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - first-run batches exclude already-attempted districts (the original already_attempted intent); follow-up batches re-include attempted districts, targeting their unsatisfied BANDS
+      - A district can recur across batches; both batch types are hard-capped at 12 districts (a stages-1-4 blast-radius control)
+      - Completion grain is district x band (elem/middle/high) — a district is satisfied when every claimed band has confident minutes; schools are instrumental (query raw material + sampling units), not the unit of completion
+      - Directions from gate@7/gate@8 route back to Stage 1 (the follow-up batch_*.json is created there, reviewable at gate@1) — 7/8 never mint a batch straight to discovery
+      - Only re-routing EXISTING representations bypasses Stage 1 (7->6 re-extract via a different council config; 8->6 add an existing-rep URL to a new handoff)
+    created: "2026-06-27T00:00:00Z"
+    updated: "2026-06-27T00:00:00Z"
+    notes: "Decided 2026-06-27 (governance §11d, flow diagram). Not yet built — follow-up batches + per-band
+      satisfaction need the Stage 8 results that don't exist yet; first-run behavior is current. The Dunseith
+      case (one captured page stated band-level minutes, schools became moot) is why the grain is band, not school."

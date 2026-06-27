@@ -12,14 +12,14 @@ flowchart TD
         Q_SRC["NCES LEA + school-level data (2024-25)<br/>+ DB enrollment/staff (multi-year)"]
         Q_EXCL1["Exclude: not operating<br/>LEA SY_STATUS != Open"]
         Q_EXCL2["Exclude: CTC / shared-service entity<br/>name pattern AND LEA_TYPE_TEXT not charter"]
-        Q_EXCL3["Exclude: reached Stage 3+ (Capture)<br/>any outcome — district_status.json registry<br/>Stage 1/2-only districts stay eligible for redraw"]
+        Q_EXCL3["Exclude (FIRST-RUN batches only): district reached Stage 3+ (Capture)<br/>any outcome — state_event log (was district_status.json, REQ-099)<br/>FOLLOW-UP batches re-include by design, targeting<br/>not-yet-satisfied BANDS (completion grain = district×band;<br/>schools are instrumental — raw material for queries/sampling)"]
         Q_EXCL4["Exclude + flag: grade-span gap<br/>LEA span claims a band, school union shows 0<br/>ERR_GRADE_SPAN_GAP (name TBD)"]
         Q_STRAT["Stratified batch of 12 districts<br/>priority: enrollment spread, then state diversity"]
         Q_SCHOOLS["Per district: select schools per band<br/>(elem/middle/high) up to 12 or full set;<br/>0 schools OK if band not claimed by LEA span"]
         Q_OUT["Write batch JSON<br/>data/acquisition/queue/ (structured params only —<br/>no prompts; prompt construction is Stage 2's job)<br/>+ nces_school_counts {total, by_level} per district<br/>(our-criteria, by raw ccd_sch LEVEL — the topology denominator)"]
         Q_SRC --> Q_EXCL1 --> Q_EXCL2 --> Q_EXCL3 --> Q_EXCL4 --> Q_STRAT --> Q_SCHOOLS --> Q_OUT
     end
-    CPA{{"Checkpoint A — human review<br/>(right schools/bands targeted)"}}
+    CPA{{"gate@1 — human review (was Checkpoint A)<br/>right schools/bands targeted"}}
 
     subgraph STAGE2 ["Stage 2 — Discover (built + run live 2026-06-23, 12/12 found_all)"]
         direction TB
@@ -107,12 +107,15 @@ flowchart TD
         P_OUT --> P_REG
     end
 
-    S5[5. Local filter]
-    CPB{{"Checkpoint B — human review<br/>(legible, relevant input — the critical gate,<br/>placed AFTER filtering, before paid extraction)"}}
-    S6[6. Hand to OpenRouter]
-    S7[7. Extract]
-    S8[8. Aggregate]
-    S9[9. Incorporate]
+    S5[5. Local filter<br/>per-URL representation scoring + human labels<br/>-> filtered.json (event-driven projection)]
+    CPB{{"gate@5 — per-URL review (was Checkpoint B)<br/>legible, relevant input; the critical gate before paid extraction"}}
+    S6[6. Handoff<br/>route representations -> council config;<br/>immutable handoff_&lt;hash&gt;_&lt;ts&gt;.json freeze]
+    G6{{"gate@6 — handoff / dispatch approval<br/>which package -> which council config (cost-gated in auto mode)"}}
+    S7[7. Extract<br/>council reads reps; may request more evidence]
+    G7{{"gate@7 — review council requests / recommendations"}}
+    S8[8. Aggregate<br/>start/end -> daily instructional minutes by band;<br/>manual override requires a reason]
+    G8{{"gate@8 — review results (the effective CP-C;<br/>Stage 9 DB write is mechanical, no gate)"}}
+    S9[9. Incorporate -> LCT DB]
 
     Q_OUT --> CPA --> D_RECON
     D_REG --> C_RECON
@@ -121,7 +124,16 @@ flowchart TD
     C_SKIP --> P_RECON
     P_REG --> S5
     P_SKIP --> S5
-    S5 --> CPB --> S6 --> S7 --> S8 --> S9
+    S5 --> CPB --> S6 --> G6 --> S7 --> G7 --> S8 --> G8 --> S9
+
+    %% feedback loops — the acquisition pipeline is CYCLIC, not a DAG (dashed = back-edge).
+    %% Anything needing NEW capture/discovery routes back to Stage 1 as a reviewable follow-up batch
+    %% (batch_*.json is created at the return to Stage 1, never directly by 7/8). Only re-routing
+    %% EXISTING representations (re-extract / add-to-handoff) bypasses Stage 1.
+    S7 -.->|"re-extract existing reps via a different council config"| S6
+    S7 -.->|"directions: re-discover / recapture -> follow-up batch (reviewable)"| Q_SRC
+    S8 -.->|"band-coverage gap -> follow-up batch (district×band)"| Q_SRC
+    S8 -.->|"add an existing-rep URL to a new handoff"| S6
 ```
 
 ## Decision log
@@ -323,3 +335,11 @@ _(running notes on what each diagram change reflects, added as we go)_
 - **Stage 5→6 release.** `filtered.json` per district = **regenerable export** of the DB release decision (one best representation per qualifying canonical record). Stage 6 emits an **immutable `handoff_<hash>_<timestamp>.json`** freezing fingerprints so "what we sent" is always recoverable; the council (OpenRouter, out-of-process) is the consumer.
 - **Stage 2 headless + pluggable providers.** Discovery shells out to **`claude -p`** per district (full headless agent, subscription-billed) — no chat, schedulable overnight; the "subagent requires an agent-in-the-loop" framing is retired. Search providers are an **extensible layer** (Claude CLI WebSearch / OpenRouter `gpt-4o-mini-search` / future Bright Data, Brave, new OR models) behind a common candidate-URL contract.
 - **Build sequence (§9):** code move → Postgres+cross-stage cache → state event-log → release generator/`filtered.json` → Generate-trigger UI → Stage-6 handoff → CP-A/stage-selector → Stage 2 headless conversion. Open `event_type` vocabulary to finalize during the state-schema build.
+
+**2026-06-27 — pipeline is CYCLIC, gates are stage-numbered, batches have two types (console design session; authority once formalized: `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`).** From the APGA console user-stories review (`docs/scratch-paper/apga_console_application_stage_view.md`):
+- **Gates renamed CP-A/B/C → stage-numbered `gate@N`,** and the set grows from 3 to **5: gate@1 (queue), gate@5 (per-URL review), gate@6 (handoff/dispatch), gate@7 (council requests), gate@8 (results review)**. The deterministic stages (2/3/4) and the mechanical Stage-9 DB write get no gate; **gate@8 is the effective CP-C** (results approval), Stage 9 auto-writes. Settings exposes a per-gate manual/auto toggle (a global default + overrides). Reflected on the diagram tail; supersedes the "3 checkpoints" language in CLAUDE.md/§3 once formalized.
+- **The pipeline is cyclic (a DAG + feedback loops), not a pure DAG** — four back-edges drawn (dashed). **Directions route back to Stage 1:** anything needing NEW capture/discovery (re-discover / recapture / band-gap) returns to Stage 1, where the follow-up `batch_*.json` is created and stays **reviewable at gate@1** — 7/8 never create a batch straight to discovery. Only re-routing EXISTING representations bypasses Stage 1: **7→6** (re-extract existing reps via a different council config) and **8→6** (add an existing-rep URL to a new handoff). The other two (**7→1** re-discover/recapture, **8→1** band-coverage gap) land at Stage 1.
+- **Completion grain = district×BAND, not district×school** (user correction 2026-06-27). The goal is daily instructional minutes per district per band (elem/middle/high); **schools are instrumental** — raw material for search queries + expected sampling units — but once a captured page states the band-level answer (e.g. Dunseith: "elementary 435 min / high 450 min"), the schools are irrelevant. A district is "satisfied" when every claimed band has confident minutes; re-queue targets unsatisfied **bands**.
+- **Two batch types:** **first-run** (cold-start stratified draw; excludes already-attempted districts — the original `already_attempted` intent) and **follow-up** (re-discovery/gap-fill; deliberately re-includes attempted districts, targeting unsatisfied bands). A district can recur across batches. **12-district hard cap on BOTH types** — a blast-radius control for stages 1-4 (representations don't exist yet at queue time; a break shouldn't spiral) and a natural ceiling that stops automated follow-up creation running away; spillover starts the next batch. (The *cost/representation* ceiling is a separate, later control at Stage 6 dispatch, where representations exist.) `Q_EXCL3` scoped to first-run batches.
+- **Pipeline Overview = a visualization of the event log** ("what just happened / needs attention," a durable projection) **plus a thin ephemeral run-status layer** ("what's processing right now") — kept separate, since the durable `state_event` log is deliberately completion-only (no interim markers). **Start control** kicks off full-auto advance; **safe-stop** lets in-flight work complete (with a progress bar); pause dropped as not worth the complexity. Auto-advance through the paid stages (6/7) is **cost-gated** (budget governor, REQ-051).
+- **filtered.json will carry alternate target-flagged representations** (not just the winner) so gate@6 can offer representation-override — un-defers the §4 "representation override deferred" lean. A small REQ-094 follow-up.

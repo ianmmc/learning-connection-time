@@ -15,7 +15,8 @@ This docuemnt is a reference for collaborative co-Development between Ian McCull
 - As a user, I want to be able to select different console views from a menu.
 
 ### Piepline Overview
-- As a user, I want to be able to look at all nine stages at the same time and what they're processing at the moment — what district(s) are actively in the stage, what's waiting in line, and what needs human attention.
+> **RELAXED 2026-06-27 (Ian + Claude):** the Overview is **"what just happened / what needs attention" — a projection over the `state_event` log**, NOT a live "what's processing right now" feed. The durable event log is deliberately completion-only (no interim in-flight markers), so the ephemeral live layer is dropped. The four start/pause/stop stories below are also revised: **pause dropped** (not worth the complexity); keep a **Start** control (kicks off full-auto advance) and a **Safe-Stop** (lets in-flight work complete, with a progress bar). Auto-advance through the paid stages (6/7) is cost-gated (budget governor, REQ-051).
+- As a user, I want to be able to look at all nine stages at the same time and what they're processing at the moment — what district(s) are actively in the stage, what's waiting in line, and what needs human attention. *(→ relaxed to "what just happened," per the note above.)*
 - As a user I want to be able to see percentage yields and fallout from the chained stages 1-5 by batch.
 - As a user, I want to be able to start all processes.
 - As a user, I want to be able to pause all processes.
@@ -38,7 +39,7 @@ This docuemnt is a reference for collaborative co-Development between Ian McCull
 ### Stage 2: Discovery
 - As a user, I want to be able to review search query templates.
 - As a user, I want to be able to propose new search query templates.
-- As a user, I want to be able to see what any given search service is processing right at the moment — what district and what query. (Search service = Claude CLI WebSearch, gpt-4o-mini-search via OpenRouter, potential future servies (Bright Data, Brave API, Google Search API,etc.))
+- As a user, I want to be able to see what any given search service is processing right at the moment — what district and what query. (Search service = Claude CLI WebSearch, gpt-4o-mini-search via OpenRouter, potential future servies (Bright Data, Brave API, Google Search API,etc.)) *(RELAXED 2026-06-27 → "what just happened" via the event-log projection; the live per-query in-flight view is deferred/dropped.)*
 - As a user, I want insights into how effective combinations of search services and queries are at yielding bell schedule representations by the end of stage 5.
 
 ### Stage 3: Capture

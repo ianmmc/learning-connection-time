@@ -75,24 +75,53 @@ def best_send(reps: list, signals: dict, flags: list) -> list:
     return []
 
 
+# The quarantined de-chrome segments (header/footer/nav) are NOT swappable schedule representations —
+# they're the chrome we deliberately screened OUT. (segment:main, the de-chromed body, IS a candidate.)
+CHROME_SOURCES = {"segment:header", "segment:footer", "segment:nav"}
+
+
+def alternates(reps: list, exclude: set) -> list:
+    """The record's OTHER usable candidate representations (beyond the winner) — usable text reps +
+    images + pdfs, distinct by filename — that a reviewer could swap to at gate@6 (REQ-094 follow-up,
+    governance §11g). Only target-flagged records get alternates (the record is the target unit)."""
+    out, seen = [], set(exclude)
+    for r in reps:
+        fn = r.get("filename")
+        if not fn or fn in seen:
+            continue
+        if (r.get("source") or "") in CHROME_SOURCES:   # quarantined chrome, not a schedule rep
+            continue
+        fk = r.get("file_kind")
+        if fk == "text" and not r.get("usable"):
+            continue
+        if fk not in ("text", "image", "pdf"):
+            continue
+        out.append({"file": fn, "kind": fk})
+        seen.add(fn)
+    return out
+
+
 def decide(rec: dict) -> dict:
-    """The release decision for one canonical record. Returns {decision, reason, send}."""
+    """The release decision for one canonical record. Returns {decision, reason, send, alternates}."""
     label = rec.get("label")
     sig = rec.get("signals") or {}
     flags = rec.get("flags") or []
+    reps = rec.get("reps", [])
     if label in TARGET_LABELS:
-        send = best_send(rec.get("reps", []), sig, flags)
+        send = best_send(reps, sig, flags)
         reason = f"target-label:{label}" + ("" if send else ";no-usable-rep")
-        return {"decision": "send", "reason": reason, "send": send}
+        return {"decision": "send", "reason": reason, "send": send,
+                "alternates": alternates(reps, {s["file"] for s in send})}
     if label:                                   # labeled, non-target
-        return {"decision": "reject", "reason": f"non-target:{label}", "send": []}
+        return {"decision": "reject", "reason": f"non-target:{label}", "send": [], "alternates": []}
     # unlabeled → recall-biased auto-filter (documented fallback; not hit on a fully-labeled batch)
     if rec.get("tier") == "D":
-        return {"decision": "reject", "reason": "auto:tier-D", "send": []}
-    send = best_send(rec.get("reps", []), sig, flags)
+        return {"decision": "reject", "reason": "auto:tier-D", "send": [], "alternates": []}
+    send = best_send(reps, sig, flags)
     if send:
-        return {"decision": "send", "reason": "auto:recall-bias", "send": send}
-    return {"decision": "reject", "reason": "auto:no-rep", "send": []}
+        return {"decision": "send", "reason": "auto:recall-bias", "send": send,
+                "alternates": alternates(reps, {s["file"] for s in send})}
+    return {"decision": "reject", "reason": "auto:no-rep", "send": [], "alternates": []}
 
 
 def build_doc(district: dict, records: list, fingerprints: dict) -> dict:
@@ -105,7 +134,8 @@ def build_doc(district: dict, records: list, fingerprints: dict) -> dict:
             "rec_key": rec["rec_key"], "url": rec.get("url"), "tier": rec.get("tier"),
             "category": rec.get("category"), "label": rec.get("label"),
             "emergent": bool(rec.get("is_emergent")), "intended_schools": rec.get("intended_schools") or [],
-            "decision": d["decision"], "reason": d["reason"], "send": d["send"]})
+            "decision": d["decision"], "reason": d["reason"], "send": d["send"],
+            "alternates": d["alternates"]})
     n_send = sum(1 for r in decided if r["decision"] == "send")
     n_files = sum(len(r["send"]) for r in decided)
     return {

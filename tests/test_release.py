@@ -82,6 +82,40 @@ def test_decide_unlabeled_tier_d_rejects_unlabeled_recall_bias_sends():
     assert keep["decision"] == "send" and keep["reason"] == "auto:recall-bias"
 
 
+# ----------------------------- alternates (gate@6 representation override) -----------------------------
+def test_alternates_excludes_winner_and_lists_other_usable():
+    reps = [_text_rep("winner.txt", n_times=9), _text_rep("other.txt", n_times=2),
+            _text_rep("garbled.txt", usable=0),  # unusable text excluded
+            {"source": "capture:png", "filename": "page.png", "file_kind": "image"}]
+    alts = R.alternates(reps, exclude={"winner.txt"})
+    files = {a["file"] for a in alts}
+    assert files == {"other.txt", "page.png"}          # winner + unusable excluded; image kept
+
+
+def test_decide_target_carries_alternates_not_the_winner():
+    reps = [_text_rep("winner.txt", n_times=9), _text_rep("alt.txt", n_times=3),
+            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
+    d = R.decide(_rec(label="school_bell_schedule", reps=reps))
+    assert d["send"] == [{"file": "winner.txt", "kind": "text"}]
+    alt_files = {a["file"] for a in d["alternates"]}
+    assert alt_files == {"alt.txt", "page.pdf"}        # the swappable options, winner excluded
+
+
+def test_decide_reject_has_no_alternates():
+    d = R.decide(_rec(label="board_schedule", reps=[_text_rep("p.txt", n_times=4)]))
+    assert d["alternates"] == []
+
+
+def test_alternates_excludes_quarantined_chrome_segments():
+    reps = [_text_rep("winner.txt", n_times=9),
+            _text_rep("page.main.txt", n_times=4, source="segment:main"),    # de-chromed body: a candidate
+            _text_rep("page.header.txt", n_times=1, source="segment:header"),  # chrome: excluded
+            _text_rep("page.footer.txt", n_times=1, source="segment:footer"),  # chrome: excluded
+            _text_rep("page.nav.txt", n_times=1, source="segment:nav")]        # chrome: excluded
+    alts = {a["file"] for a in R.alternates(reps, exclude={"winner.txt"})}
+    assert alts == {"page.main.txt"}
+
+
 # ----------------------------- build_doc (traceable artifact) -----------------------------
 def test_build_doc_is_traceable_with_completeness_and_header():
     district = {"district_id": "d", "district_dir": "d_dir", "labeled_topology": "per_school",
