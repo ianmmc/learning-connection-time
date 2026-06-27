@@ -860,8 +860,19 @@ def ingest(root: Path):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", default=str(RAW_DIR))
+    ap.add_argument("--no-release", action="store_true",
+                    help="skip regenerating filtered.json after ingest")
     a = ap.parse_args()
     ingest(Path(a.root))
+    # Event-driven: the first scoring pass (and any re-ingest after new discovery adds URLs/reps)
+    # regenerates each district's filtered.json projection — no manual trigger (REQ-094). Local
+    # import avoids a build_signals<->release module cycle; runs AFTER ingest commits so reads see it.
+    if not a.no_release:
+        from infrastructure.acquisition.stage5_filter import release
+        with gdb.session_scope() as s:
+            summary = release.generate(s, root=Path(a.root))
+        print(f"filtered.json: regenerated {sum(1 for r in summary if r['written'])} "
+              f"({sum(r['n_send'] for r in summary)} records to send)")
 
 
 if __name__ == "__main__":

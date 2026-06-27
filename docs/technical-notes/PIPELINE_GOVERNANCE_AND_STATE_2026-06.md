@@ -272,28 +272,43 @@ the council config (which models) + total cost estimate. A `dispatched` `state_e
 
 ---
 
-## 6. The "Generate" trigger, menu semantics & staleness
+## 6. filtered.json is EVENT-DRIVEN — no manual trigger (REVISED 2026-06-26, REQ-094)
 
-The CP-B release is triggered from the console (a control in the header, near labeled/total + the Glossary
-modal). It runs the **deterministic generator** (a script/function), writes `filtered.json` per district,
-and records the CP-B `released` events. **Same function the future scheduler calls** — the button and
-automation share one code path (the "ease toward full automation" goal; `actor` flips human→auto).
+> **Supersedes the earlier "Generate button" framing.** `filtered.json` is **not** human-triggered and
+> is **not** the CP-B release record. It is a continuously-maintained, regenerable **projection** of the
+> governance DB — `content = f(labels, signals, config)` — that the events log keeps fresh. The *release*
+> (which package of representations goes to which OpenRouter model set/config) is a **separate Stage-6
+> routing decision (REQ-100)**, not an act of generating this file.
 
-**Staleness via the shared fingerprint** (the convergence with the tuning loop): each `filtered.json` is
-stamped with `(config,labels,data)`; **stale** = current ≠ stamped. The menu options map to states:
+**The granularity shift that forces this (user, 2026-06-26):** at Stage 5 the **batch dissolves as a
+meaningful unit** — work is per-URL/per-representation. **CP-B is the per-URL review of representations**
+(the human labeling surface), not a batch-level "release" gate. So there is nothing to "press a button
+for": each per-URL judgment is an event, and the district's projection should simply reflect the latest
+events at all times.
 
-| menu option | meaning |
-|---|---|
-| new : {all,labeled} | districts with **no** `filtered.json` yet |
-| new + changed : {all,labeled} | + districts whose fingerprint drifted (labels/captures **or** config) |
-| all : {labeled} / all | regenerate everything (a retune invalidates all → honest but noisy) |
-| selected | a scope mechanism (checkboxes) — **regenerate these districts now** |
+**What generates / updates `filtered.json` (all events — built REQ-094):**
+| event | mechanism | covers |
+|---|---|---|
+| **first scoring pass** over `processed.json` | Stage 5 ingest (`build_signals`) runs `release.generate()` after committing | the initial determination — every canonical record gets a send/reject decision |
+| **a human label is applied / a cluster is split** | `server.save_label` / `split` call `release.generate(district)` for that district | CP-B per-URL judgments flow into the projection immediately |
+| **new URLs/representations from more discovery** | a re-ingest (capture→process→`build_signals`) regenerates | additional evidence changes the canonical set |
 
-`{labeled}` vs `{all}` = the qualification basis: **labeled** uses human labels only; **all** also lets
-unlabeled-but-high-tier records flow on the auto-filter (serves the workflow evolution: label-everything →
-inspect-scoring). **Open:** should a *config* retune mark districts stale (honest, noisy) or should
-staleness track only labels/captures with config-version shown separately? Lean: stamp all three, let the
-console filter by *which* changed.
+`release.generate()` is the **single shared code path** (the function the ingest hook, the label hook, and
+a future `state_event` projector all call); `python3 -m …stage5_filter.release` remains as a manual
+full-regen utility. The descent is deterministic, no AI (governance §4).
+
+**Staleness is still a fact, for the console to surface — not a trigger.** Each `filtered.json` is stamped
+with **per-district `(config,labels,data)` fingerprints** (scoped to that district so a change elsewhere
+doesn't mark it stale). Because generation is event-driven, a district is normally never stale; the
+fingerprint stamp exists so the console (REQ-100) and the **Stage-6 handoff** can detect drift between
+*what was generated* and *what was last dispatched to the council* (the request-more-evidence loop). A
+fuller `state_event`-subscription projector (regenerate exactly the affected districts off the log) is the
+natural REQ-100 generalization of today's two inline hooks.
+
+**Open (deferred to REQ-100):** should a *config* retune eagerly regenerate all districts (honest, noisy)
+or be surfaced as a separate "config drifted" signal? Lean: stamp all three fingerprints, let the console
+decide. The `{labeled}` vs `{all}` qualification basis (human labels only vs. also letting unlabeled
+high-tier records flow on the recall-biased auto-filter) is a property of `release.decide()`, already built.
 
 ---
 

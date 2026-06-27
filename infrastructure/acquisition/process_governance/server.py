@@ -18,7 +18,20 @@ from sqlalchemy import text
 
 HERE = Path(__file__).resolve().parent
 from infrastructure.acquisition.stage5_filter import build_signals as BS    # noqa: E402  (export_labels lives here, shared with ingest)
+from infrastructure.acquisition.stage5_filter import release as REL         # noqa: E402  (filtered.json projection — REQ-094)
 from infrastructure.acquisition.common import db as gdb                     # noqa: E402  (isolated governance Postgres — REQ-103)
+
+
+def _refresh_filtered(con, district_id: str) -> None:
+    """Event-driven: a label/split change updates this district's filtered.json projection (REQ-094).
+    Best-effort — the precious label/split is already committed + JSON-backed, and filtered.json is a
+    regenerable projection that also refreshes on the next ingest, so a hiccup here must never fail
+    the write."""
+    try:
+        REL.generate(con, district_id=district_id)
+    except Exception as e:
+        print(f"[warn] filtered.json refresh for {district_id} failed ({type(e).__name__}: {e}); "
+              f"it will regenerate on the next ingest")
 
 # Runtime-state locations come from the single source of truth (paths.py, via build_signals).
 # The DB is now the isolated governance Postgres (gdb.session_scope), not a SQLite file.
@@ -124,6 +137,7 @@ async def save_label(rec_key: str, payload: dict):
         # Export-on-save: the precious label is backed up to the tracked JSON before we return,
         # so it survives DB loss with zero action from the user (no reliance on remembering).
         BS.export_labels(con, LABELS_JSON)
+        _refresh_filtered(con, rec["district_id"])   # label event -> refresh filtered.json
     return {"ok": True, "cascaded": cascaded}
 
 
@@ -160,6 +174,7 @@ async def split_record(rec_key: str):
         BS.recompute_labeled_topology(con, rec["district_id"])
         con.commit()   # persist before exporting, so the JSON backup only reflects committed state
         BS.export_splits(con, CLUSTER_SPLITS_JSON)
+        _refresh_filtered(con, rec["district_id"])   # split changes the canonical set -> refresh filtered.json
     return {"ok": True}
 
 

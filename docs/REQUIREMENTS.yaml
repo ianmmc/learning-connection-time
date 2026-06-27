@@ -2416,3 +2416,25 @@ requirements:
     notes: "Governance/state re-architecture (PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §3). Option B
       event-sourcing + SQL-view current_state (both confirmed 2026-06-26). Follows REQ-103 (governance DB).
       Next: REQ-094 (filtered.json release generator)."
+
+  - id: REQ-094
+    description: Stage 5->6 release generator — the deterministic record->representation descent that emits one traceable filtered.json per district
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - filtered.json is a regenerable projection of the governance DB (content = f(labels, signals, config)); NO AI in the descent
+      - Per district, every CANONICAL record (non-duplicate; cluster rep or singleton) appears with decision (send|reject) + reason — a traceable, self-explaining artifact, not just the send subset
+      - Release rule — a TARGET-labeled record sends; a labeled non-target rejects; unlabeled records fall to a recall-biased auto-filter (reject only tier D / no-rep) as a documented fallback
+      - One best representation per sent record — densest usable text by default; the image on visual_text_gap / human target_image_only; the PDF + harvest_pages for handbooks
+      - Each filtered.json carries per-district (config,labels,data) fingerprints (staleness), labeled topology, NCES denominator, completeness counts, a coarse cost estimate, and the honest gross_bell_to_bell label
+      - EVENT-DRIVEN, no manual trigger — generated on the first scoring pass (build_signals ingest), refreshed on label/split events (server) and on re-ingest after new discovery; generate() is the single shared code path
+    tests:
+      - tests/test_release.py
+    created: "2026-06-26T00:00:00Z"
+    updated: "2026-06-26T00:00:00Z"
+    notes: "Governance §4/§5; §6 revised 2026-06-26 — filtered.json is an event-driven projection, NOT a
+      manual 'Generate button' and NOT the CP-B release record. CP-B is the per-URL representation review
+      (batch dissolves as a unit at Stage 5). The release/routing decision (which representations -> which
+      OpenRouter model set) is Stage 6 / REQ-100. Live on batch_00001: 12 filtered.json, 32 records to send
+      (= the 32 canonical TARGET-labeled records); 5 none_found districts send 0."
