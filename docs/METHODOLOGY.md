@@ -129,7 +129,8 @@ Chicago PS High School:           390 minutes (actual)
 - Confidence: `high`, `medium`, `low`, or `assumed`
 - Documentation: URLs and sampling methodology recorded
 
-See `docs/BELL_SCHEDULE_SAMPLING_METHODOLOGY.md` for complete methodology.
+See **Bell Schedule Sampling Policy** (below) for the sampling methodology, and
+`docs/technical-notes/STAGE1_QUEUE_DESIGN_2026-06.md` for its Stage-1 implementation.
 
 #### 2. Staff Count (Multiple Scopes)
 
@@ -1102,6 +1103,38 @@ Each enrichment record includes:
 - Sources: District website, school-specific pages, Casper Star-Tribune article
 - Wyoming requirement: 900/1050/1100 hrs/year = 309/360/377 min/day (175 days)
 - **Finding**: District exceeds state minimums, especially elementary
+
+---
+
+## Bell Schedule Sampling Policy (acquisition — 2026-06)
+
+When acquiring bell schedules per district, we sample **schools** to estimate the **modal daily
+instructional minutes per band** (elementary/middle/high) — **not a population proportion**. That
+distinction determines how many schools to sample, and it kills the textbook survey-formula approach.
+
+**Why the 95% / ±5% finite-population survey formula is the wrong tool.** Computed per-district per-band
+school counts and the textbook 95/±5 finite-population sample size from NCES `ccd_sch_029`:
+- Across **18,158 districts**, 95/±5 sampling = **127,513 band-extractions = 96% of a full census
+  (132,803)** — the finite-population correction saves only ~4%.
+- The corpus is mostly small districts (**median 4 calls/district across 3 bands; p95 = 22**), censused
+  regardless. The formula only inflates a few mega-districts (LA Unified n=496, Broward 286, Orange 254) —
+  maximum effort exactly where the marginal school adds least.
+- The formula is statistically correct for the **wrong question**: it estimates a worst-case *proportion*
+  (p=0.5), but we want the **mode**, and bell times **cluster by district policy** → the modal band-minutes
+  stabilizes far below the proportion-formula n.
+
+**The methodological stance:** **census small districts; cap large ones; sample the mode, not the
+proportion.** The mode is robust to subsampling precisely because bell schedules are set by district
+policy (low within-band variance), so a handful of schools usually pins a band's minutes.
+
+**Where this is implemented — two separate decisions:**
+- **Queue-time cap (Stage 1, settled):** ≤ 12 schools/band → full census; larger → cap at 12/band (seeded
+  random sample, most-constrained-first overlap minimization). Implementation + rationale:
+  `docs/technical-notes/STAGE1_QUEUE_DESIGN_2026-06.md` §3.
+- **Extraction-time mode-stability early-exit (Stage 7, open):** within the queued candidates, stop once
+  the modal gross-minutes is stable (e.g. unchanged over the last ~5 schools) — LA elementary might resolve
+  in ~8 of 12. Blocked on Stage 7's per-school extract→aggregate; the 95/±5 number stands only as the
+  conservative upper bound this policy replaced.
 
 ---
 
