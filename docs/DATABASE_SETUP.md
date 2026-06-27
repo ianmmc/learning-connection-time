@@ -664,9 +664,8 @@ with session_scope() as session:
 
 ## See Also
 
-- [Data Dictionary](data-dictionaries/database_schema_latest.md) - Auto-generated schema documentation
+- [Database Models](../infrastructure/database/models.py) - SQLAlchemy ORM models — **the authoritative schema** (a stale 2025-12 auto-generated data dictionary was archived 2026-06-27; regenerate with `infrastructure/scripts/utilities/generate_data_dictionary.py` if a snapshot is wanted)
 - [Query Functions](../infrastructure/database/queries.py) - High-level query utilities
-- [Database Models](../infrastructure/database/models.py) - SQLAlchemy ORM models
 - [Migration Scripts](../infrastructure/database/migrations/) - Data import/export scripts
 
 ---
