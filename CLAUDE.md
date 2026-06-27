@@ -127,6 +127,22 @@ pytest tests/test_*_integration.py -v
 python3 infrastructure/scripts/verify_enrichment.py --quick
 ```
 
+### Architecture & code-exploration tools (use these to read/verify the codebase — REQ-098)
+These are installed (dev-deps) and are the project's standard way to map dependencies and enforce
+layering — reach for them before writing or verifying any "what depends on what" narrative:
+```bash
+lint-imports                 # enforce the acquisition layering contracts (.importlinter); expect "3 kept, 0 broken"
+python3 -c "import grimp; g=grimp.build_graph('infrastructure'); \
+  print(sorted(g.find_modules_directly_imported_by('infrastructure.acquisition.stage1_queue.queue_batch')))"
+                             # grimp: query the real import graph (what a module imports / is imported by)
+vulture infrastructure/acquisition    # dead-code sweep
+cd infrastructure/scraper && npx depcruise --config .dependency-cruiser.cjs lib   # Node (.mjs) side
+```
+> **Caveat (the recurring lesson):** these see **Python/Node imports only**. They do NOT see the
+> *environmental* dependencies that often matter most — NCES CSV files read by path/year, **LCT DB
+> tables** accessed via the ORM, `subprocess`/`claude -p` calls, OpenRouter API hosts. After the import
+> graph, **read the code** for those edges. (Toolchain rationale: `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §10.)
+
 ---
 
 ## Key Files
