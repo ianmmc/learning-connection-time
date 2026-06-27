@@ -165,15 +165,20 @@ cd infrastructure/scraper && npx depcruise --config .dependency-cruiser.cjs lib 
 
 ## Load Additional Context When Needed
 
-This is the core briefing (~115 lines). For detailed information, load these appendices:
+This is the core briefing. Load the right doc for the task (the old `docs/claude-instructions/` appendix
+system was archived 2026-06-27 — superseded by these current homes):
 
 | Context Needed | Load File |
 |----------------|-----------|
-| Historical progress, directory structure, technical stack | `docs/claude-instructions/CLAUDE_REFERENCE.md` |
-| Development workflow, testing, common commands | `docs/claude-instructions/CLAUDE_WORKFLOWS.md` |
-| Data architecture, SEA integrations, crosswalks | `docs/claude-instructions/CLAUDE_DATA.md` |
+| Decisions, lessons, history | `docs/PROJECT_HISTORY.md` |
+| Dev setup, workflow, testing, commands, conventions | `docs/GETTING_STARTED.md` |
+| Database setup + schema | `docs/DATABASE_SETUP.md` (schema authority = `infrastructure/database/models.py`) |
+| Data sources, SEA integrations, ID crosswalks, complex districts | `docs/DATA_SOURCES.md` · `docs/SEA_INTEGRATION_GUIDE.md` |
+| Data methodology (LCT, sampling, exclusions, temporal) | `docs/METHODOLOGY.md` |
+| The acquisition pipeline + per-stage design notes | `docs/ACQUISITION_PIPELINE.md` (map) → `docs/technical-notes/STAGE*_DESIGN_*.md` |
+| Governance / state model / gate model / console | `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` |
 
-**Token Efficiency:** Only load appendices relevant to the current task. This modular structure reduces context consumption by ~80% compared to the previous monolithic file.
+**Token Efficiency:** load only what the task needs.
 
 ---
 

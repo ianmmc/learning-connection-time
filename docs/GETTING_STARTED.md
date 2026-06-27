@@ -103,15 +103,13 @@ learning-connection-time/
 │   └── enriched/                # With calculated metrics
 ├── docs/
 │   ├── REQUIREMENTS.yaml        # Tracked project requirements with tests
-│   ├── claude-instructions/     # Modular Claude context files
-│   └── archive/                 # Historical documentation
+│   ├── technical-notes/         # Per-stage design notes, governance/state model, research
+│   └── archive/                 # Superseded documentation
 ├── infrastructure/
-│   ├── database/                # SQLAlchemy models, queries
-│   ├── scripts/
-│   │   ├── analyze/             # LCT calculations
-│   │   ├── enrich/              # Bell schedule enrichment
-│   │   └── transform/           # Data normalization
-│   └── scraper/                 # Crawlee scraper service (TypeScript)
+│   ├── acquisition/             # The bell-schedule acquisition pipeline (Stages 1-9; installable package)
+│   ├── database/                # SQLAlchemy models, queries, migrations
+│   ├── scripts/                 # LCT-core: analyze (LCT calc) / enrich / transform / download
+│   └── scraper/                 # Stage-3 Playwright capture (Node .mjs)
 └── tests/                       # pytest test suite
 ```
 
@@ -159,6 +157,15 @@ with session_scope() as session:
     print_enrichment_report(session)
 ```
 
+### Rebuild the LCT-core database from raw NCES sources
+
+```bash
+# Full-rebuild orchestrator (NCES import -> staff/enrollment -> SPED baseline -> LCT calc).
+python3 infrastructure/scripts/rebuild_database.py --dry-run   # preview; drop --dry-run to run
+python3 infrastructure/scripts/reset_database.py --force       # reset (preserves schema)
+# Targeted imports live in infrastructure/database/migrations/ — see DATABASE_SETUP.md.
+```
+
 ---
 
 ## Development Workflow
@@ -182,6 +189,13 @@ pytest tests/ -v
 # Commit with conventional format
 git commit -m "feat: Add new bell schedule parser"
 ```
+
+### Conventions
+
+- **Python:** 3.11+ (3.13 in CI), PEP 8, type hints where they help, `logging` over `print` in library code.
+- **File naming:** scripts `kebab-case.py`; data `name_YYYY_YY.csv`; generated artifacts
+  `name_YYYY_YY_<UTC-timestamp>.csv`; docs `CAPS_WITH_UNDERSCORES.md`.
+- **Git:** conventional-commit messages, one logical change per commit.
 
 ---
 
