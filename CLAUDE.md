@@ -69,7 +69,7 @@ slim *map*. Gate/console model, district×band grain, cyclic pipeline, two batch
 DB + `filtered.json`: `python3 -m infrastructure.acquisition.stage5_filter.build_signals`. Launch the console:
 `python3 -m infrastructure.acquisition.process_governance.server` (→ :8005). **Save state at session end with `/checkpoint`.**
 
-**Pending REQ#s** (provisional): console UI (REQ-100/102), Stage 6 routing (REQ-101 + council-config), Stage 2 headless (REQ-104).
+**Registered REQ#s for the console build** (written 2026-06-27, status `accepted`): **REQ-102** gate@1 console view (the first deliverable), **REQ-100** filtered.json staleness view, **REQ-101** Stage 6 handoff + gate@6 (+ council-config; OPEN #1 = config grain), **REQ-104** Stage 2 headless. The **currency/recency** gate is **REQ-044** (a Stage 5 filter enhancement — NOT REQ-104). **`batch_00002` is the forcing function:** it is created + advanced ONLY through the console, stage view by stage view (hand-run `queue_batch.py` is dev/test only); scope ends at **gate@6 approval — no paid dispatch**. Authority: `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §9 (2026-06-27 "SHARPENED" note).
 
 **Watch-items:** (a) docs rationalization continues — flagged not-yet-done: GETTING_STARTED's stale "Run
 Scraper Service" task (retired Express :3000), DATA_SOURCES dangling `data-dictionaries/` refs,

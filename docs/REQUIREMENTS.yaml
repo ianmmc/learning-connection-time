@@ -1047,9 +1047,14 @@ requirements:
       - Candidates failing the gate are not sent to extraction and never count as enriched
       - Records the classification decision and reason for audit
     created: "2026-06-13T00:00:00Z"
-    updated: "2026-06-13T00:00:00Z"
+    updated: "2026-06-27T00:00:00Z"
     notes: "Probe showed time-pattern signals are dominated by false positives; a relevance gate is
-      required before spending extraction calls."
+      required before spending extraction calls.
+      SCOPE (decided 2026-06-27): this is a STAGE 5 (Local filter) enhancement, not a separate stage —
+      currency/recency is a relevance concern that belongs with the existing Stage-5 signals + gate@5
+      review. Build it into stage5_filter (alongside build_signals / the de-chrome + signal work);
+      see STAGE5_FILTER_DESIGN_2026-06.md. Gates the filtered.json -> handoff boundary so stale/COVID-era
+      pages never reach the paid council (Stage 6/7)."
 
   - id: REQ-045
     description: Capture schedule content across all delivery formats and persist the raw artifact for audit and re-verification
@@ -2438,3 +2443,76 @@ requirements:
     notes: "Decided 2026-06-27 (governance §11d, flow diagram). Not yet built — follow-up batches + per-band
       satisfaction need the Stage 8 results that don't exist yet; first-run behavior is current. The Dunseith
       case (one captured page stated band-level minutes, schools became moot) is why the grain is band, not school."
+
+  - id: REQ-100
+    description: Console staleness surface for filtered.json — show new/current/stale per district from the three stamped fingerprints (config, labels, data), filterable by which changed
+    type: functional
+    priority: should
+    status: accepted
+    acceptance_criteria:
+      - filtered.json is event-driven (no Generate button) — that mechanism is REQ-094; this requirement is the console VIEW over it
+      - Each district shows new / current / stale derived from the (config, labels, data) fingerprints stamped on the release
+      - The human can filter the attention queue by WHICH fingerprint changed (config vs labels vs data)
+      - The surface is a projection over the state_event log (current-state), not a static list
+    created: "2026-06-27T00:00:00Z"
+    updated: "2026-06-27T00:00:00Z"
+    notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §6/§7b/§9 (step 5). Scope shrank once filtered.json
+      became event-driven (REQ-094) — the 'Generate trigger' is gone; what remains is the staleness/attention VIEW.
+      Console-first build, driven stage-by-stage by batch_00002 as the forcing function (see REQ-102)."
+
+  - id: REQ-101
+    description: Stage 6 Handoff — route filtered representations to an OpenRouter council config and emit an immutable handoff_<hash>_<ts>.json dispatch record; gate@6
+    type: functional
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - Input = each district's filtered.json (Stage 5 projection); does NO extraction itself (that is Stage 7) — it is routing + release only
+      - A council_config is a first-class registered object (lean: config-as-data JSON with provenance, mirroring common/config/; assignment + cost are runtime/DB)
+      - Default routing assigns a config, cascade-style (start cheap-trio; escalate to accuracy-pair on no-consensus per REQ-056), never silent on low confidence
+      - Output is an immutable handoff_<hash>_<timestamp>.json dispatch record; a 'dispatched' state_event references the handoff hash; re-handoff writes a NEW file, prior untouched
+      - Cost estimate per config x per rep (OpenRouter price/1M x token estimate) feeds the gate@6 go/no-go and the budget governor (REQ-051)
+      - gate@6 manual/auto (auto = confidence-escalating, cost-gated)
+    created: "2026-06-27T00:00:00Z"
+    updated: "2026-06-27T00:00:00Z"
+    notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §5/§9 (step 6) + STAGE6_HANDOFF_DESIGN_2026-06.md.
+      OPEN #1 (settle before build): council-config grain — per-district vs per-handoff vs per-representation
+      (shapes the artifact + cost model). Also open: seed config sets (the candidate 6 models), judge in-config
+      vs fixed-stage, token-estimation method. For batch_00002 we STOP at gate@6 approval — no paid dispatch
+      (Stage 7 out of scope this pass). Acceptance criteria firm up as the design note's OPEN sections resolve;
+      tests authored at build time."
+
+  - id: REQ-102
+    description: Governance console gate@1 (CP-A) queue view + stage selector — review/approve a queued batch_*.json as a recorded gate@1 event; create the batch-of-record via a console action, not a direct script run
+    type: functional
+    priority: must
+    status: accepted
+    acceptance_criteria:
+      - The wordmark becomes a stage selector that swaps per-stage views (gate@1 queue, gate@5 review, later gate@6 handoff)
+      - The gate@1 view presents the queued batch (districts / bands / per-band school selections + the NCES denominators) for human review
+      - Approval is an in-band recorded gate@1 state_event (actor identity captured) — replaces today's out-of-band go-ahead
+      - A 'create batch' console action invokes queue_batch.py as a callable (actor=human, the §7a-B orchestration model); the batch-of-record is created HERE
+      - Home view = an attention-queue projection over state_event current-state ('what needs my attention'), not a static stage tree
+    created: "2026-06-27T00:00:00Z"
+    updated: "2026-06-27T00:00:00Z"
+    notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §7/§7b/§9 (step 7) + governance §11.
+      FORCING FUNCTION (decided 2026-06-27): batch_00002 is created and advanced ONLY through the console,
+      stage view by stage view, driving the console toward a self-governing/self-sustaining app under the
+      ramp-up model (manual gates + high supervision now, easing back later). Hand-run queue_batch.py is for
+      dev/test batches only, never the batch-of-record. This is the FIRST console deliverable."
+
+  - id: REQ-104
+    description: Stage 2 discovery goes headless — orchestrator shells out to `claude -p` per district (subscription-billed), retiring the chat-bound subagent; search providers a pluggable layer
+    type: functional
+    priority: should
+    status: accepted
+    acceptance_criteria:
+      - Each district's Wave 1 runs as a headless `claude -p ... --model haiku --allowedTools WebSearch --output-format json` agent; the orchestrator collects the JSON and runs the existing deterministic Wave-2 / gating / flatten unchanged
+      - Search providers sit behind one contract — given a school, return candidate URLs as JSON — so providers can be added/reordered/swapped (Claude CLI, OpenRouter gpt-4o-mini-search, future Bright Data / Brave) without touching gating/flatten/dedup
+      - No chat, no human-in-loop; schedulable overnight; uses subscription auth (no ANTHROPIC_API_KEY shadowing the subscription)
+      - VERIFY FIRST — WebSearch behavior + subscription rate limits at overnight ~17k-district volume, before converting
+    created: "2026-06-27T00:00:00Z"
+    updated: "2026-06-27T00:00:00Z"
+    notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §7a/§9 (step 8). Lower priority for batch_00002 —
+      the current stage2-discover skill (subagent, concurrency cap 2) works for this batch; the headless
+      conversion is an efficiency/scale upgrade, not a blocker. Retires the 'subagent requires a chat open'
+      framing throughout the Stage 2 docs."

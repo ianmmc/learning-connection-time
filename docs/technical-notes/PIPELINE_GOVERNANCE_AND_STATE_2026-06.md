@@ -488,6 +488,21 @@ the workflow. Drift detector (REQ-097) still waits for batch 2.
 - *On REQ-103 completion (Postgres+Docker migration):* update `docs/DATABASE_SETUP.md` and
   `docs/GETTING_STARTED.md` for the new isolated `governance` DB (these are deferred until the migration lands).
 
+**SHARPENED 2026-06-27 — `batch_00002` is the FORCING FUNCTION; build is console-first, stage-by-stage.**
+Steps 1–4 are DONE (REQ-098/103/099/094, all `tested`). The §9 lean toward "prove the data model before the
+console UI / don't stall the goal behind the app" is now **superseded for `batch_00002`**: rather than
+hand-running scripts to reach the council fast, we deliberately drive **console development stage view by
+stage view**, with `batch_00002` as the vehicle that forces each view to exist. The batch-of-record is
+**created and advanced ONLY through the console** (hand-run `queue_batch.py` is dev/test only). Goal: a
+**self-governing, self-sustaining** app via the **ramp-up model** (manual gates + high supervision now,
+easing back later). Order from here: **gate@1 console view (REQ-102, first deliverable) → create
+`batch_00002` there → walk it: Stage 2/3/4 status + orchestration triggers → gate@5 (integrate the existing
+review surface) + the REQ-044 recency gate → Stage 6 + gate@6 (REQ-101).** Scope ends at **gate@6 approval —
+no paid dispatch** (Stage 7 out of scope this pass). The four steps 5–8 REQs are now registered (no longer
+"provisional"): REQ-100 (staleness view), REQ-101 (Stage 6 handoff), REQ-102 (gate@1 view), REQ-104 (Stage 2
+headless). **Correction:** the *currency/recency* gate is **REQ-044** (a Stage-5 filter enhancement), not
+REQ-104 — REQ-104 is the Stage 2 headless conversion.
+
 ---
 
 ## 9a. REQ-098 execution plan — package + code move + tooling (drafted & approved 2026-06-26)
