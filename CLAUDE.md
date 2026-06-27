@@ -23,11 +23,11 @@ Part of "Reducing the Ratio" educational equity initiative. Currently implementi
 
 ---
 
-## Current Status (2026-06-26)
+## Current Status (2026-06-27)
 
 Building the **per-school acquisition pipeline** stage-by-stage with **human-in-the-loop checkpoints**. The GT/benchmark exploration concluded and was archived; the validated design is now the active build. Canonical pipeline doc: **`docs/ACQUISITION_PIPELINE.md`** (9 stages + failure-modes→checkpoints table + reader-routing spec). Live code: **`infrastructure/acquisition/`** (promoted out of the retired `scripts/benchmark/`). Council research: `docs/technical-notes/LLM_COUNCIL_RESEARCH_2026-06.md`. Leaderboard/costs: `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.
 
-**Build progress (2026-06-26):** Stages **1–4 built + run live** on `batch_00001` (12 districts, 150 URLs). **Stage 5** (local filter) — review app + deterministic signals + de-chrome + near-dup clustering + labeled topology + the **tuning learning-loop** (config-as-data, measurement harness REQ-090, episode ledger REQ-095, frontier/grid search REQ-096) all built; the operational `filtered.json` release generator (REQ-094) is the remaining Stage-5 piece. The project is now executing the **governance/state/Postgres re-architecture** — **authority doc: `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`** (read it first; it supersedes older design notes where they conflict). **REQ-098 DONE** (acquisition tree is now a proper installable package — **run `pip install -e .`**, no more `sys.path` shims; import-linter/grimp/vulture + dependency-cruiser enforce layering). **REQ-103 (Postgres governance DB) COMPLETE** — Stage-5 ingest + readers + tests migrated SQLite→isolated `governance` Postgres (103b–f, commit `bbd0f66`), cross-stage cache added (103c), docs updated (103g). **REQ-099 COMPLETE** — `district_status` migrated to a Postgres `state_event` append-log + `current_state` SQL view (`district_status.json` demoted to the regenerable git-tracked backup). **REQ-094 COMPLETE** — `release.py` emits one event-driven, traceable `filtered.json` per district (governance §6). **Console & gate model decided 2026-06-27 (governance §11); Stage 6 design started (`STAGE6_HANDOFF_DESIGN_2026-06.md`).** **Next: design the console UI, then Stage 6 council-config/routing.** See `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`.
+**Build progress (2026-06-27):** Stages **1–4 built + run live** on `batch_00001`; **Stage 5 CONCLUDED** (review/label app + deterministic signals + de-chrome + clustering + labeled topology + the tuning learning-loop + the **event-driven `filtered.json` release generator**). The **governance/state/Postgres re-architecture is BUILT**: **REQ-098** (installable package — run **`pip install -e .`**; import-linter/grimp/vulture/dependency-cruiser enforce layering), **REQ-103** (isolated `governance` Postgres + cross-stage cache), **REQ-099** (`state_event` append-log + `current_state` view, replacing the `district_status.json` registry), **REQ-094** (event-driven `filtered.json`, governance §6). **Console & gate model + a per-stage documentation architecture decided 2026-06-27.** Read-first authority: **`docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`** (§11 = gates/console) + the per-stage `STAGE*_DESIGN_*.md`; the slim *map* is `ACQUISITION_PIPELINE.md`; history → `PROJECT_HISTORY.md` (2026-06-27 entry).
 
 **Metric = GROSS bell-to-bell minutes (end − start), NOT net.** No lunch/passing/recess deduction, no *assumed* deductions. Existing GT is already gross; gross needs only two reliably-published numbers (↑accuracy). Net is a deferred enhancement. Labeled `gross_bell_to_bell`. Plausibility gate 240–510 min. (REQ-055; supersedes net in REQ-042/046.)
 
@@ -41,32 +41,41 @@ Building the **per-school acquisition pipeline** stage-by-stage with **human-in-
 
 **Human-in-the-loop gates (stage-numbered, 2026-06-27; governance §11) = 5:** **gate@1** Queue (right districts/schools/bands), **gate@5** Filter (per-URL representation review — the critical gate), **gate@6** Handoff (which reps → which council config), **gate@7** Extract (review council requests), **gate@8** Aggregate (per-band results correct + honestly labeled — the effective old "CP-C"; Stage 9 then auto-writes). Stages 2/3/4 + the Stage-9 write are ungated. Each gate is manual/auto (Settings: global default + per-gate overrides; auto is confidence-escalating). Loosen later once confident.
 
-**Notes:** Local Ollama deleted; paid-cloud extraction is cheap (~$0.05–0.30/1M). Granite 4.1 8B = self-host candidate (headless Ubuntu server, separate project). Keys in gitignored `config/secrets.local.json` + `.env`. Requirements: **REQ-001…107** (042/046/048/057 superseded; 028–031/033 retired with the Crawlee era). Restore point for the archived GT/benchmark exercise: git tag `gt-exercise-complete`.
+**Notes:** Local Ollama deleted; paid-cloud extraction is cheap (~$0.05–0.30/1M). Granite 4.1 8B = self-host candidate (headless Ubuntu server, separate project). Keys in gitignored `config/secrets.local.json` + `.env`. Requirements: **REQ-001…109** (042/046/048/057 superseded; 028–031/033 retired with the Crawlee era). Restore point for the archived GT/benchmark exercise: git tag `gt-exercise-complete`.
 
 > **SEA central-data harvest is a dead end for daily minutes** (verified) — states publish only statutory minimums / day-counts, not actual daily minutes. Web discovery + extraction is the primary acquisition path. See `docs/INSTRUCTIONAL_TIME_HARVEST.md`.
 
 ### Next session (RESUME HERE — 2026-06-27)
-**Stage 5 is concluded.** REQ-103 (governance DB), REQ-099 (`state_event` log), and **REQ-094
-(`filtered.json` event-driven release generator)** are all COMPLETE. The **console & gate model are
-decided (governance §11)** and the **Stage 6 design note is started** (`STAGE6_HANDOFF_DESIGN_2026-06.md`).
-**Two next workstreams:** (1) **design the console UI** — the stage-selectable governance console
-(Overview = event-log projection, Settings = per-gate manual/auto, Stages 1–4 views) needs its own
-stage-by-stage design pass before build; (2) **Stage 6** — work through council-config / signals /
-routing / cost in the design note (OPEN #1 = config assignment grain: per-district vs per-rep).
+**Stage 5 concluded; the governance/state/Postgres re-architecture is built (REQ-103/099/094).** Currently
+in a **documentation restructure** — each pipeline stage gets a design note; `ACQUISITION_PIPELINE.md` is the
+slim *map*. Gate/console model, district×band grain, cyclic pipeline, two batch types: governance §11 +
+`PROJECT_HISTORY.md` 2026-06-27 entry.
 
-**First, in a fresh session:** `/catchup`, then `pip install -e .` (required since REQ-098). Verify with
-`lint-imports` (3 kept/0 broken) and `pytest -q`. Docker must be up (governance-DB tests skip without it).
-Rebuild the governance DB if needed: `python3 -m infrastructure.acquisition.stage5_filter.build_signals`
-(regenerates `filtered.json` too). Launch the console: `python3 -m infrastructure.acquisition.process_governance.server` (→ :8005).
+**The plan (approved sequence):**
+1. **Verify Stages 1–4 narratives against the code** (code is ground truth for built stages — use `grimp` +
+   read the scripts). **Stage 1 DONE** = `STAGE1_QUEUE_DESIGN_2026-06.md` (the template). **→ Stage 2 NEXT**,
+   then 3, 4, + a `CONSOLE_DESIGN` note. Per-stage template: code-verify → write the narrative (to inform the
+   console) → move its decision log out of the flow diagram into the note → slim the map section → route
+   methodology to `METHODOLOGY.md`.
+2. **Stage 6 design** — `STAGE6_HANDOFF_DESIGN_2026-06.md` (council-config object, signals→routing; OPEN #1 =
+   config grain per-district vs per-rep).
+3. **Console BUILD** — first deliverable = the `gate@1` queue view; **create `batch_00002` *via the console***
+   (a recorded `gate@1` action), **not** by triggering scripts directly for the batch-of-record — then walk it
+   stage-by-stage as views land. (Dev/test runs by hand are fine.)
 
-**Pending REQ numbers** (provisional): console UI (REQ-100/102), Stage 6 handoff/routing (REQ-101 + council-config),
-Stage 2 headless (REQ-104).
+**Fresh-session essentials:** `/catchup` → `pip install -e .` (REQ-098) → `lint-imports` (3 kept/0 broken) +
+`pytest -q`; **Docker up** (governance-DB tests skip without it). Architecture/code-exploration tools
+(`grimp`/`lint-imports`/`vulture`/dependency-cruiser) are in **Essential Commands**. Rebuild the governance
+DB + `filtered.json`: `python3 -m infrastructure.acquisition.stage5_filter.build_signals`. Launch the console:
+`python3 -m infrastructure.acquisition.process_governance.server` (→ :8005). **Save state at session end with `/checkpoint`.**
 
-**Watch-items:** (a) the Stage-5 review app moved to `infrastructure/acquisition/process_governance/`
-and `build_signals.py` to `stage5_filter/` (REQ-098) — imports are now absolute package paths, no
-`sys.path` shims; (b) discovery's Wave 1 is moving from an in-chat Haiku *subagent* to **headless
-`claude -p`** (REQ-104, not built yet); (c) the `.claude/skills/per-school-acquire*` skills are
-**premature/stale** (bundle all 9 stages) — don't treat them as the runbook; walk stages individually.
+**Pending REQ#s** (provisional): console UI (REQ-100/102), Stage 6 routing (REQ-101 + council-config), Stage 2 headless (REQ-104).
+
+**Watch-items:** (a) docs rationalization continues — flagged not-yet-done: GETTING_STARTED's stale "Run
+Scraper Service" task (retired Express :3000), DATA_SOURCES dangling `data-dictionaries/` refs,
+`docs/technical-notes/refactor-20260123/` (obsolete — designed the just-archived appendix system); (b) the
+`.claude/skills/per-school-acquire*` skills are **premature/stale** — don't treat as the runbook; (c)
+Wave-1 discovery moving to headless `claude -p` (REQ-104, not built).
 
 ---
 
