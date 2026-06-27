@@ -115,7 +115,7 @@ class TestPreQueueExclusion:
         """Alabama Youth Services claims KG-12 at LEA level but has zero schools listed
         anywhere in ccd_sch_029 (not even closed ones) -- a real data-integrity gap
         (Rule 7), not a bug. Must be excluded from the eligible pool."""
-        registry = DS.load()
+        registry = {"districts": {}}   # pre-queue-filter tests: attempt-state is irrelevant (REQ-099 made load() DB-backed)
         pool, _, gap_excluded = Q.eligible_pool("2024_25", registry)
         gap_ids = {g["district_id"] for g in gap_excluded}
         assert "0100002" in gap_ids
@@ -124,7 +124,7 @@ class TestPreQueueExclusion:
     def test_healthy_district_is_eligible(self):
         """Fairbanks (a normal, fully-graded, non-CTC, operating district) must pass
         every pre-queue filter and appear in the eligible pool."""
-        registry = DS.load()
+        registry = {"districts": {}}   # pre-queue-filter tests: attempt-state is irrelevant (REQ-099 made load() DB-backed)
         pool, _, _ = Q.eligible_pool("2024_25", registry)
         assert "0200600" in pool
 

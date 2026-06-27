@@ -2395,3 +2395,24 @@ requirements:
     notes: "Built earlier (STAGE5_FILTER_DESIGN 'Stage-1/2 funnel ingredients'); NCES LEVEL denominator
       (school_level_counts) is queue-time Stage-1 territory (REQ-063/065). Analysis layer is a ways off; tests added
       2026-06-26 so we don't break the plumbing we have."
+
+  - id: REQ-099
+    description: Cross-stage district lifecycle state migrated from a JSON registry to a Postgres state_event log + derived current_state view (governance DB)
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - state_event is an append-only PRECIOUS table in the isolated governance DB (one row per stage transition / checkpoint); never dropped
+      - The log is UNIFIED — both stage-progression events (stage+outcome) and checkpoint lifecycle events (checkpoint+event_type, actor identity) on one per-district timeline
+      - current_state is a SQL VIEW deriving the snapshot per district; furthest_stage = MAX(stage) ever reached (monotonic — a lower-stage re-discovery event does not lower it)
+      - already_attempted() still only excludes at furthest_stage >= 3 (Stage 3 Capture); Stage 1/2-only districts stay eligible for redraw
+      - The in-memory registry contract is preserved — record_stage()/already_attempted() are pure in-memory dict ops (no DB); only load()/save() touch the DB, so the stage scripts are unchanged
+      - district_status.json is demoted to a regenerable, version-controlled backup + human view, written on every save() and re-importable (import_status_json) after a wipe — like labels.json
+      - The existing 36-district / 84-event district_status.json migrated into state_event with zero snapshot mismatch; the regenerated JSON round-trips identically
+    tests:
+      - tests/test_state_event.py
+    created: "2026-06-26T00:00:00Z"
+    updated: "2026-06-26T00:00:00Z"
+    notes: "Governance/state re-architecture (PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §3). Option B
+      event-sourcing + SQL-view current_state (both confirmed 2026-06-26). Follows REQ-103 (governance DB).
+      Next: REQ-094 (filtered.json release generator)."

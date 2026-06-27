@@ -1,0 +1,942 @@
+{
+  "schema_version": 2,
+  "last_updated": "2026-06-27T01:22:04Z",
+  "districts": {
+    "0405820": {
+      "name": "Page Unified School District #8  (4196)",
+      "state": "AZ",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T02:09:36Z"
+        }
+      ],
+      "notes": ""
+    },
+    "0616080": {
+      "name": "Greenfield Union Elementary",
+      "state": "CA",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:05:31Z"
+        }
+      ],
+      "notes": ""
+    },
+    "0900015": {
+      "name": "The Bridge Academy District",
+      "state": "CT",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T02:09:36Z"
+        }
+      ],
+      "notes": ""
+    },
+    "1600001": {
+      "name": "WEST BONNER COUNTY DISTRICT",
+      "state": "ID",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:05:31Z"
+        }
+      ],
+      "notes": ""
+    },
+    "1713590": {
+      "name": "Egyptian CUSD 5",
+      "state": "IL",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T02:09:36Z"
+        }
+      ],
+      "notes": ""
+    },
+    "1724390": {
+      "name": "Manteno CUSD 5",
+      "state": "IL",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:05:31Z"
+        }
+      ],
+      "notes": ""
+    },
+    "1739960": {
+      "name": "Urbana SD 116",
+      "state": "IL",
+      "furthest_stage": 4,
+      "stage_name": "process",
+      "outcome": "processed_all",
+      "topology": null,
+      "batch_id": null,
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:43:43Z"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-23T08:27:26Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "reconciled_from_disk",
+          "at": "2026-06-23T21:04:31Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-06-23T21:04:40Z"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-06-24T04:47:00Z"
+        }
+      ],
+      "notes": ""
+    },
+    "1810380": {
+      "name": "South Henry School Corp",
+      "state": "IN",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T02:09:36Z"
+        }
+      ],
+      "notes": ""
+    },
+    "1918690": {
+      "name": "Marion Independent School District",
+      "state": "IA",
+      "furthest_stage": 4,
+      "stage_name": "process",
+      "outcome": "processed_all",
+      "topology": null,
+      "batch_id": null,
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:43:43Z"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-23T08:24:56Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "reconciled_from_disk",
+          "at": "2026-06-23T21:04:31Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-06-23T21:04:40Z"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-06-24T04:41:39Z"
+        }
+      ],
+      "notes": ""
+    },
+    "2006180": {
+      "name": "Fort Scott",
+      "state": "KS",
+      "furthest_stage": 4,
+      "stage_name": "process",
+      "outcome": "processed_all",
+      "topology": null,
+      "batch_id": null,
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:43:43Z"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-23T08:25:48Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "reconciled_from_disk",
+          "at": "2026-06-23T21:04:31Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-06-23T21:04:40Z"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-06-24T04:47:18Z"
+        }
+      ],
+      "notes": ""
+    },
+    "2013020": {
+      "name": "Jefferson County North",
+      "state": "KS",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:05:31Z"
+        }
+      ],
+      "notes": ""
+    },
+    "2103000": {
+      "name": "Jenkins Independent",
+      "state": "KY",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:05:31Z"
+        }
+      ],
+      "notes": ""
+    },
+    "2600992": {
+      "name": "Blue Water Middle College",
+      "state": "MI",
+      "furthest_stage": 4,
+      "stage_name": "process",
+      "outcome": "processed_all",
+      "topology": null,
+      "batch_id": null,
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:43:43Z"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-23T08:14:14Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "reconciled_from_disk",
+          "at": "2026-06-23T21:04:31Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-06-23T21:04:41Z"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-06-24T04:47:35Z"
+        }
+      ],
+      "notes": ""
+    },
+    "2610230": {
+      "name": "Colfax Township S/D #1F",
+      "state": "MI",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:05:31Z"
+        }
+      ],
+      "notes": ""
+    },
+    "2617550": {
+      "name": "Hancock Public Schools",
+      "state": "MI",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T02:09:36Z"
+        }
+      ],
+      "notes": ""
+    },
+    "2700159": {
+      "name": "Sojourner Truth Academy",
+      "state": "MN",
+      "furthest_stage": 4,
+      "stage_name": "process",
+      "outcome": "processed_all",
+      "topology": null,
+      "batch_id": null,
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:43:43Z"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-23T08:23:54Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "reconciled_from_disk",
+          "at": "2026-06-23T21:04:31Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-06-23T21:04:41Z"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-06-24T04:48:19Z"
+        }
+      ],
+      "notes": ""
+    },
+    "2900601": {
+      "name": "HOPE LEADERSHIP ACADEMY",
+      "state": "MO",
+      "furthest_stage": 4,
+      "stage_name": "process",
+      "outcome": "processed_all",
+      "topology": null,
+      "batch_id": null,
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:43:43Z"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-23T08:17:47Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "reconciled_from_disk",
+          "at": "2026-06-23T21:04:31Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-06-23T21:04:41Z"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-06-24T04:48:38Z"
+        }
+      ],
+      "notes": ""
+    },
+    "3300030": {
+      "name": "North Country Charter Academy",
+      "state": "NH",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:05:31Z"
+        }
+      ],
+      "notes": ""
+    },
+    "3400734": {
+      "name": "Hoboken Dual Language Charter School",
+      "state": "NJ",
+      "furthest_stage": 4,
+      "stage_name": "process",
+      "outcome": "processed_all",
+      "topology": null,
+      "batch_id": null,
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:43:43Z"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-23T08:23:43Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "reconciled_from_disk",
+          "at": "2026-06-23T21:04:31Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-06-23T21:04:41Z"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-06-24T04:48:55Z"
+        }
+      ],
+      "notes": ""
+    },
+    "3410890": {
+      "name": "Mt. Ephraim School District",
+      "state": "NJ",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T02:09:36Z"
+        }
+      ],
+      "notes": ""
+    },
+    "3502280": {
+      "name": "ROY",
+      "state": "NM",
+      "furthest_stage": 4,
+      "stage_name": "process",
+      "outcome": "processed_all",
+      "topology": null,
+      "batch_id": null,
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:43:43Z"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-23T08:20:10Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "reconciled_from_disk",
+          "at": "2026-06-23T21:04:31Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-06-23T21:04:41Z"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-06-24T04:49:00Z"
+        }
+      ],
+      "notes": ""
+    },
+    "3600119": {
+      "name": "NEW YORK CITY GEOGRAPHIC DISTRICT #14",
+      "state": "NY",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T02:09:36Z"
+        }
+      ],
+      "notes": ""
+    },
+    "3604530": {
+      "name": "BEMUS POINT CENTRAL SCHOOL DISTRICT",
+      "state": "NY",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:05:31Z"
+        }
+      ],
+      "notes": ""
+    },
+    "3700660": {
+      "name": "Caswell County Schools",
+      "state": "NC",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:05:31Z"
+        }
+      ],
+      "notes": ""
+    },
+    "3805460": {
+      "name": "DUNSEITH 1",
+      "state": "ND",
+      "furthest_stage": 4,
+      "stage_name": "process",
+      "outcome": "processed_all",
+      "topology": null,
+      "batch_id": null,
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:43:43Z"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-23T08:24:47Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "reconciled_from_disk",
+          "at": "2026-06-23T21:04:31Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-06-23T21:04:41Z"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-06-24T04:50:04Z"
+        }
+      ],
+      "notes": ""
+    },
+    "3901587": {
+      "name": "Dayton Athletic Vocational Academy",
+      "state": "OH",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:05:31Z"
+        }
+      ],
+      "notes": ""
+    },
+    "4207680": {
+      "name": "Dover Area SD",
+      "state": "PA",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:05:31Z"
+        }
+      ],
+      "notes": ""
+    },
+    "4222860": {
+      "name": "Stroudsburg Area SD",
+      "state": "PA",
+      "furthest_stage": 4,
+      "stage_name": "process",
+      "outcome": "processed_partial",
+      "topology": null,
+      "batch_id": null,
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:43:43Z"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-23T08:27:15Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "reconciled_from_disk",
+          "at": "2026-06-23T21:04:31Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-06-23T21:04:41Z"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_partial",
+          "at": "2026-06-24T04:51:19Z"
+        }
+      ],
+      "notes": ""
+    },
+    "4600041": {
+      "name": "Britton-Hecla School District 45-4",
+      "state": "SD",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T02:09:36Z"
+        }
+      ],
+      "notes": ""
+    },
+    "4828590": {
+      "name": "LULING ISD",
+      "state": "TX",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T02:09:36Z"
+        }
+      ],
+      "notes": ""
+    },
+    "5000425": {
+      "name": "Mt. Abraham Unified School District #61",
+      "state": "VT",
+      "furthest_stage": 4,
+      "stage_name": "process",
+      "outcome": "processed_all",
+      "topology": null,
+      "batch_id": null,
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:43:43Z"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-23T08:26:11Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "reconciled_from_disk",
+          "at": "2026-06-23T21:04:31Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-06-23T21:04:41Z"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-06-24T04:51:31Z"
+        }
+      ],
+      "notes": ""
+    },
+    "5102940": {
+      "name": "Pittsylvania County Public Schools",
+      "state": "VA",
+      "furthest_stage": 4,
+      "stage_name": "process",
+      "outcome": "processed_partial",
+      "topology": null,
+      "batch_id": null,
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:43:43Z"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-23T08:30:42Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "reconciled_from_disk",
+          "at": "2026-06-23T21:04:31Z"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-06-23T21:04:41Z"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_partial",
+          "at": "2026-06-24T04:57:09Z"
+        }
+      ],
+      "notes": ""
+    },
+    "5103480": {
+      "name": "Scott County Public Schools",
+      "state": "VA",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T03:05:31Z"
+        }
+      ],
+      "notes": ""
+    },
+    "5307020": {
+      "name": "Quillayute Valley School District",
+      "state": "WA",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T02:09:36Z"
+        }
+      ],
+      "notes": ""
+    },
+    "5510380": {
+      "name": "Nekoosa School District",
+      "state": "WI",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T02:09:36Z"
+        }
+      ],
+      "notes": ""
+    },
+    "5900038": {
+      "name": "Circle of Life Academy",
+      "state": "BI",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00001",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-23T02:09:36Z"
+        }
+      ],
+      "notes": ""
+    }
+  }
+}

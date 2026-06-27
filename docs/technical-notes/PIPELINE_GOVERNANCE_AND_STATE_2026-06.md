@@ -5,8 +5,11 @@
 > wired — import-linter/grimp/vulture/dependency-cruiser). **REQ-103 (Postgres governance DB) is
 > functionally COMPLETE** — 103a (foundation) + **103b–f** (ingest + readers + tests migrated
 > SQLite→Postgres, committed `bbd0f66`) + **103c** (cross-stage cache) + **103g** (these docs) all done;
-> see §1b. **Next build step is REQ-099** (state event-log). Still design-only: release generator
-> (REQ-094), console UI (REQ-100/102), Stage 2 headless (REQ-104). This note is the architecture for three coupled decisions that outgrew
+> see §1b. **REQ-099 (state event-log) is also COMPLETE** — `district_status` → Postgres `state_event`
+> append-log + `current_state` SQL view; in-memory registry contract preserved (stage scripts unchanged);
+> 36-district/84-event data migrated; `district_status.json` is now the regenerable git-tracked backup
+> (§3). **Next build step is REQ-094** (the `filtered.json` release generator, §4/§5). Still design-only:
+> console UI (REQ-100/102), Stage 2 headless (REQ-104). This note is the architecture for three coupled decisions that outgrew
 > `STAGE5_FILTER_DESIGN_2026-06.md`:
 > 1. **STATE vs DATA** — migrate the cross-stage *registry* (`district_status.json`) into the DB;
 >    keep the per-stage *data* artifacts as JSON on disk.
@@ -165,7 +168,18 @@ release event.** Content is reproducible; the decision-to-send is durable histor
 
 ---
 
-## 3. State schema (PROPOSAL — confirm the granularity)
+## 3. State schema — BUILT (REQ-099, 2026-06-26)
+
+> **Built as designed below: Option B event log + a `current_state` SQL view** (both confirmed
+> 2026-06-26). The log is **unified** (stage-progression + checkpoint events, one timeline);
+> `current_state` derives the snapshot with **furthest_stage = MAX(stage)** (monotonic). The model +
+> view + the migrated `district_status.py` live in `infrastructure/acquisition/common/district_status.py`;
+> the in-memory `registry` contract is preserved (`record_stage`/`already_attempted` stay pure dict
+> ops — no DB — so the stage scripts are unchanged; only `load()`/`save()` touch the DB). The existing
+> 36-district / 84-event `district_status.json` was migrated in with zero snapshot mismatch, and that
+> JSON is now the regenerable, git-tracked **backup** (re-importable via `import_status_json`). Tests:
+> `tests/test_state_event.py`. The `event_type` vocabulary lands as: progression events use the
+> `outcome` as `event_type`; checkpoint events use `approved`/`released`/… with `checkpoint` set.
 
 The user flagged that state "gets scattered" — a district can be *released for what we have* **and**
 *re-queued for more discovery* at once. A single status-per-district row breaks on that. Two options:
