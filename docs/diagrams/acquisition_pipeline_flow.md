@@ -21,7 +21,7 @@ flowchart TD
     end
     CPA{{"Checkpoint A — human review<br/>(right schools/bands targeted)"}}
 
-    subgraph STAGE2 ["Stage 2 — Discover (designed 2026-06-23, not yet built)"]
+    subgraph STAGE2 ["Stage 2 — Discover (built + run live 2026-06-23, 12/12 found_all)"]
         direction TB
         D_RECON["Reconciliation pass (BEFORE any searching)<br/>per district: does data/raw/lea-website-captures/&lt;id&gt;_&lt;slug&gt;/discovery.json exist?"]
         D_SKIP["Exists, registry behind -> reconcile registry UP, skip<br/>(already done, don't redo)"]
@@ -41,7 +41,7 @@ flowchart TD
         D_RECON -->|registry ahead, disk empty| D_HALT
     end
 
-    subgraph STAGE3 ["Stage 3 — Capture (designed 2026-06-23, not yet built)"]
+    subgraph STAGE3 ["Stage 3 — Capture (built + run live 2026-06-23, 150/150 captured)"]
         direction TB
         C_RECON["Reconciliation pass (BEFORE any fetching)<br/>per district: does .../captures.json exist?"]
         C_SKIP["Exists, registry behind -> reconcile UP, skip"]
