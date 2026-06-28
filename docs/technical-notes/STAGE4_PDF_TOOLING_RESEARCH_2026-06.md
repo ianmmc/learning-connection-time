@@ -1,3 +1,15 @@
+# Stage 4 — PDF/table-tooling research (saved research conversation)
+
+> **Status: RESEARCH PROVENANCE** — a saved research conversation (Perplexity, citation-backed) surveying
+> local/open-source PDF table-extraction tools (pdfplumber / PyMuPDF / Camelot / img2table / Docling / …)
+> for short grid-style bell-schedule PDFs. Migrated 2026-06-27 from the retired `docs/scratch-paper/`.
+> This is the *literature survey that preceded* the Stage-4 tool choice — NOT the design. The actual
+> decision (the empirical spike against all 150 captured PDFs, the kept/dropped roster, the heavy-ML
+> rejection) lives in `STAGE4_PROCESS_DESIGN_2026-06.md` §3. Kept for the methods + citations if we ever
+> revisit the tooling.
+
+---
+
 <img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
 
 # I'm evaluating Python/local PDF table-extraction tools for short (1-3 page), simple grid-style tables — specifically school bell-schedule documents that come in three flavors: (a) born-digital PDFs with genuine ruling-line table borders, (b) PDFs rendered from a CSS/HTML page print (no real table borders, columns are whitespace-aligned only), and (c) scanned/image-only PDFs needing OCR. Tables sometimes have merged/spanning cells. I need local, open-source tools only (no paid cloud OCR/table APIs like AWS Textract/Azure Document Intelligence/Google Document AI).

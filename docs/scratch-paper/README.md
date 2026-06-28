@@ -1,8 +1,14 @@
 # scratch-paper — collaborative, NON-authoritative
 
+> **2026-06-27: this directory is GITIGNORED — its contents are disposable and NOT version-controlled**
+> (only this README is tracked). **If it's not disposable, it shouldn't be in here** — promote durable
+> records to the canonical docs (`docs/technical-notes/STAGE*_DESIGN_*.md`, `docs/METHODOLOGY.md`,
+> `docs/PROJECT_HISTORY.md`, etc.) rather than letting them live here. The batch of records that had
+> accreted here was migrated out into the per-stage design notes / METHODOLOGY on this date.
+
 This directory is a **shared whiteboard** for charting things out during collaboration. It has more
-persistence than chat context (survives compaction, lives in git), but it is **explicitly not a
-source of truth.**
+persistence than chat context (survives within a session, on local disk), but it is **explicitly not a
+source of truth** and is no longer committed.
 
 ## What this means
 - **Not authoritative.** Nothing here decides anything. The canonical docs are `docs/ACQUISITION_PIPELINE.md`,

@@ -159,7 +159,17 @@ Stage 2 is **ungated** — there is no `gate@2`, so the console surfaces Stage 2
 only: per-district outcome (`found_all`/`found_partial`/`manual_flag_all`), Wave-1-only vs. Wave-2-invoked
 counts, and the list of `manual_flag` schools needing eventual human follow-up. The reviewer's first
 real decision point on this batch's discovery output is `gate@5` (Filter), after Capture + Local
-processing. Console-view specifics live in the forthcoming console design note.
+processing.
+
+**User stories (APGA, seed; migrated 2026-06-27):**
+- As a user, I want to **review search-query templates** and **propose new ones.**
+- As a user, I want to see **what a given search service is processing right now** — which district + query
+  (search service = Claude CLI WebSearch, OpenRouter `gpt-4o-mini-search`, future Bright Data / Brave /
+  Google Search API). *(RELAXED 2026-06-27 → "what just happened" via the event-log projection; the live
+  per-query view is deferred — governance §11c/§11f.)*
+- As a user, I want **insights into how effective combinations of search services + queries are at yielding
+  bell-schedule representations by the end of Stage 5** — the measurement-harness pattern extended upstream
+  (attribute each target-labeled record back to its discovery tool via `candidate_tools_json`; governance §11f).
 
 ---
 

@@ -1136,6 +1136,49 @@ policy (low within-band variance), so a handful of schools usually pins a band's
   in ~8 of 12. Blocked on Stage 7's per-school extract→aggregate; the 95/±5 number stands only as the
   conservative upper bound this policy replaced.
 
+### Grade-band classification — recognized partition shapes (fallback reference)
+
+When a school's NCES `ccd_sch_029` `LEVEL` is clean (Elementary/Middle/High), that drives the band directly.
+For the cases `LEVEL` leaves unresolved (ambiguous `Other`/`Secondary`/`Not reported`/blank, or
+inconsistencies between the LEA-level grade span and the school-level levels), Stage 1's
+`recursive_band_groups()` partitions a district's distinct grade spans into bands. This table is the set of
+**recognized clean partition shapes** it was profiled/validated against (hand-built, then checked against the
+full 2024-25 NCES corpus — see `STAGE1_QUEUE_DESIGN_2026-06.md` §2c for the algorithm). `PK`/`K` lead
+elementary; grade `13` (an extra-year HS code) rides with high.
+
+Three-band (elementary · middle · high):
+
+| elementary | middle | high |
+| ---------- | ------ | ------------- |
+| PK\|K\|1-5 | 6-8 | 9-11\|12\|13 |
+| PK\|K\|1-4 | 5-8 | 9-11\|12\|13 |
+| PK\|K\|1-4 | 5-7 | 8-11\|12\|13 |
+| PK\|K\|1-6 | 7-9 | 10-11\|12\|13 |
+| PK\|K\|1-6 | 7-8 | 9-11\|12\|13 |
+
+Elementary+middle merged · high:
+
+| elementary + middle | high |
+| ------------------- | ------------- |
+| PK\|K\|1-8 | 9-11\|12\|13 |
+| PK\|K\|1-7 | 8-11\|12\|13 |
+| PK\|K\|1-9 | 10-11\|12\|13 |
+
+Elementary · middle+high merged:
+
+| elementary | middle + high |
+| ---------- | ------------- |
+| PK\|K\|1-5 | 6-12\|13 |
+| PK\|K\|1-6 | 7-12\|13 |
+
+Single combined (all three in one school):
+
+| elementary + middle + high |
+| -------------------------- |
+| PK\|K\|1-10\|11\|12\|13 |
+
+*(Migrated 2026-06-27 from `docs/scratch-paper/Recognized Grade Bands for Fallback Scenarios.md`.)*
+
 ---
 
 ## Data Quality & Filtering

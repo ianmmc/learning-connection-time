@@ -113,6 +113,12 @@ Stage 3 is **ungated** — surface as status/observability: per-district outcome
 (esp. `needs_oauth_reauth`), emergent-candidate counts, and the fingerprint/`cms_hint` landscape (useful
 context for the `cms_hosts` human-in-the-loop refinement loop). The next human gate is `gate@5`.
 
+**User stories (APGA, seed; migrated 2026-06-27):** the user was unsure Stage 3 carries much console value
+— candidates were a possible **emergent-URL readout** and a **PNG-capture flow** to watch for unexpected
+patterns (or leave it a grayed-out option). Resolved direction (governance §11f): a thin **health/emergent
+readout** — emergent URLs, capture failures (WAF/security blocks), and the **CMS/host distribution** from
+the `capture` table's `final_host`/`fingerprint_json` — NOT a live PNG feed (low governance value).
+
 ## 4. Tool/code provenance
 Active: `capture_discovery.mjs` (+ `capture_drive.mjs`). The modal-dismissal + `page.pdf()` logic was
 ported from `capturer.ts` (confirmed pure-Playwright, zero coupling to the dead Crawlee/Express design).

@@ -646,9 +646,9 @@ precision **−0.2284** (the 24 records floated C→B). That regression is now *
    floor must be set as the operational policy decision it is (≤0.9756 today), not a round number.
 
 ## Research basis (two Perplexity passes + WebSearch, 2026-06-25)
-Saved verbatim: `docs/scratch-paper/I'm building a human-in-the-loop tuning system for.md` (the n≈150/
-12-group regime) and `…/Follow-up on a human-in-the-loop threshold-tuning.md` (the 17k-group scale
-regime). The findings below are distilled from those; the raw outputs are the citation trail.
+Saved verbatim in `docs/technical-notes/STAGE5_TUNING_NOTES_2026-06.md` — Part A (the n≈150/12-group
+regime) + Part B (the 17k-group scale regime). The findings below are distilled from those; the raw
+outputs are the citation trail.
 
 **The hard now/later boundary (discipline — do not over-engineer for n=12).** At 150 examples / 12
 districts, hierarchical MCMC, online-FDR, and ICC *magnitudes* are high-variance noise. What we build

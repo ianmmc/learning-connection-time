@@ -6,8 +6,8 @@
 > architecture remains `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`; this note will feed back into it +
 > `ACQUISITION_PIPELINE.md` + `REQUIREMENTS.yaml` once decisions settle.
 
-**Companions / inputs:** the user stories in `docs/scratch-paper/apga_console_application_stage_view.md`
-(Stage 6 block) seed this; `docs/technical-notes/LLM_COUNCIL_RESEARCH_2026-06.md` (council research:
+**Companions / inputs:** the Stage-6 **user stories are inline in §4** (migrated 2026-06-27 from the retired
+`apga_console_application_stage_view.md`); `docs/technical-notes/LLM_COUNCIL_RESEARCH_2026-06.md` (council research:
 diversity > count, cross-family consensus, judge > voter, cost cascades); `docs/EXTRACTION_BENCHMARK_FINDINGS.md`
 (model leaderboard + measured costs); `STAGE5_FILTER_DESIGN_2026-06.md` (the upstream `filtered.json`).
 
@@ -129,7 +129,7 @@ config + frozen `filtered.json` fingerprints; the council config(s) used; total 
 ---
 
 ## 5. References
-- `docs/scratch-paper/apga_console_application_stage_view.md` — Stage 6 user stories (the seed).
+- Stage 6 user stories — now inline in §4 (migrated 2026-06-27 from the retired apga doc).
 - `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §4/§5 (release/handoff), §7a (council out-of-process).
 - `LLM_COUNCIL_RESEARCH_2026-06.md` — cross-family consensus, judge, cost cascade.
 - `EXTRACTION_BENCHMARK_FINDINGS.md` — model leaderboard + measured costs (the config candidates).

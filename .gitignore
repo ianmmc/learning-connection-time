@@ -102,6 +102,11 @@ outputs/*
 !docs/**/*.jpg
 !docs/**/*.svg
 
+# scratch-paper is a disposable whiteboard — ignore its contents (the already-tracked README.md stays
+# tracked; durable records get promoted to docs/technical-notes / METHODOLOGY, not left here). A parent-dir
+# exclude, so the docs/** image negations above do NOT re-include renders dropped in here.
+docs/scratch-paper/
+
 # EXCEPTIONS: Keep the Stage 5 review app's vendored UI assets (logo, etc.) — these are part
 # of the app, not regenerable capture output.
 !infrastructure/acquisition/stage5_filter/review_app/static/assets/**

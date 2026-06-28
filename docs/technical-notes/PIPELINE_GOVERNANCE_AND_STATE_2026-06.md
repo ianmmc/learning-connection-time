@@ -611,8 +611,9 @@ publication now.** Flag the moment it's earned its generality.
 
 ## 11. Console & gate model — DECIDED 2026-06-27 (from the APGA user-stories review)
 
-Formalizes the console-design session that worked through `docs/scratch-paper/apga_console_application_stage_view.md`
-(a disposable user-stories doc). The flow diagram (`acquisition_pipeline_flow.md`) already reflects the
+Formalizes the console-design session that worked through the APGA console user-stories review (those
+stories were migrated 2026-06-27 into the per-stage `STAGE*_DESIGN_*.md` notes + `OVERVIEW_AND_SETTINGS_DESIGN_2026-06.md`,
+and the source doc retired). The flow diagram (`acquisition_pipeline_flow.md`) already reflects the
 structural pieces (gates, back-edges, batch types); this is the authoritative prose. The console UI
 itself (stage selector, Overview, Settings, Stages 1–4 views) is **principle-set here, not yet
 wireframed — it needs its own design pass before build.**

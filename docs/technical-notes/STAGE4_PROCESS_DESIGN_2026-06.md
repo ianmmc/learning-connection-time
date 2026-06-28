@@ -93,6 +93,10 @@ timestamp — a convention retrofitted into `capture_discovery.mjs`'s `captures.
 ---
 
 ## 3. The tool roster — resolved by an empirical spike, not from research alone
+*(The prior literature survey of the candidate tools — pdfplumber/PyMuPDF/Camelot/img2table/Docling, with
+citations — is `STAGE4_PDF_TOOLING_RESEARCH_2026-06.md`. The decision below was the empirical spike, not
+that survey.)*
+
 Installed every research-surfaced candidate (`pymupdf`, `camelot-py`, `img2table`, `docling`,
 `paddleocr`+`paddlepaddle`, `easyocr`) and ran them against all 150 real captured PDFs. **Kept:**
 `pdftotext`, `pdfplumber`-lines, `camelot`-stream, `camelot`-hybrid, `tesseract`. **Dropped on the
@@ -108,6 +112,11 @@ proof of quality** (a Pittsylvania Student-Handbook PDF false-won on `camelot_hy
 Stage 4 is **ungated** — surface as status/observability: per-district outcome, per-record `usable`
 representations vs. `no_usable_text` records (and *why* — genuine zero-content capture vs. tool error,
 which Stage 4 reports honestly). Feeds straight into the `gate@5` (Filter) review.
+
+**User stories (APGA, seed; migrated 2026-06-27):** as a user, I want **insights into how effective the
+PDF text-harvesters and OCR tools are at yielding bell-schedule representations by the end of Stage 5** —
+i.e. the measurement-harness pattern extended upstream: attribute each target-labeled record back to its
+winning representation's `source` (governance §11f). Same fingerprinted-scorecard discipline as Stage 5.
 
 ## 5. Open decisions
 - None blocking. Tier roster and the always-run model are settled by the spike (§3); the

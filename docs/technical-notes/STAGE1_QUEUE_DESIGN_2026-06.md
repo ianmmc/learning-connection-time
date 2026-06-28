@@ -98,7 +98,9 @@ NCES roster (never LEA-level — no per-school granularity), full census if ≤1
   ascending partition**: consecutive leading segments topping out ≤6 collapse into elementary; the rest is
   resolved **per-segment by its own span** (starts ≤8 → middle; ends ≥9 → high; a segment can join both,
   and never joins elementary merely for being first). Non-clean-partition districts fall back to the
-  conservative any-overlap rescue (`bands_for_rescue()`, grade-7 floor for middle).
+  conservative any-overlap rescue (`bands_for_rescue()`, grade-7 floor for middle). The recognized clean
+  partition shapes this was profiled against are tabulated in `METHODOLOGY.md` → "Grade-band classification
+  — recognized partition shapes (fallback reference)".
 - **Grade 13** (a real NCES code for extra-year HS programs) is part of the high band — 222 open schools
   nationally use `GSHI=13`; omitting it silently mapped them to zero bands.
 - **Cross-band overlap minimization:** process a district's bands **most-constrained-first** (ascending by
@@ -235,6 +237,21 @@ surface: `POST /api/queue/create` (synchronous stratified draw — `build_batch`
 
 ---
 
+### 6e. Console view — user stories (APGA, seed; migrated 2026-06-27 from the retired apga doc)
+- Start a new batch of districts — **✅ built** (`create`).
+- gate@1 (was CP-A) review: look at proposed districts + schools — **✅**; reject districts — **✅**; reject
+  schools — **✅**; add schools to a district that has more to queue — **✅** (§6c, APGA stories 28–31).
+- Manually construct a batch from hand-picked untouched NCES districts — **DEFERRED** (story 32; a second
+  creation mode beyond the stratified draw — also the home for "add district").
+- Re-queue districts already in the pipeline (action Stage-5 `none-found`/`insufficient-coverage`); a
+  district can exist in multiple batches with different school sets; select schools already-submitted vs
+  not-yet-submitted to discovery — **DEFERRED** (stories 33–35 = follow-up batches, REQ-109; needs the
+  Stage-8 per-band satisfaction signal).
+- Create multiple batches that only advance when approved — **✅** (per-batch `status`, independent approval).
+- All batches capped at ≤ 12 districts — **✅** (§2g).
+
+---
+
 ## 7. Decision log (chronological — moved here from the flow diagram, 2026-06-27)
 
 _The turn-by-turn record of how Stage 1 was designed and hardened. Preserved verbatim; `gate@1` was
@@ -281,7 +298,7 @@ _The turn-by-turn record of how Stage 1 was designed and hardened. Preserved ver
 - Both fixes landed alongside adding `level`/`gslo`/`gshi` to the school JSON for human inspection — exactly the visibility that surfaced them. Also fixed a smaller inconsistency: `row.get("GSLO")`/`row.get("GSHI")` were missing the `""` default every other field in the dict uses.
 - 4 new tests added (27 total now passing); `REQUIREMENTS.yaml` REQ-065/REQ-066 updated in place to cover both extensions rather than adding new requirement IDs, since they're refinements of the same capability, not new capabilities.
 
-**2026-06-22 — the exactly-2-school tie-break replaced entirely with a general recursive rule, after profiling the full corpus.** The narrow 2-school scoping above didn't sit right (raised directly: "I don't want a case where the two districts we named are handled by specific exception" / "I don't like the rule of largest grade overlap wins... it seems better off for us to specify more explicit rules than an overly general one"). Resolution: build a markdown reference table of recognized grade-band shapes by hand (`docs/scratch-paper/Recognized Grade Bands for Fallback Scenarios.md`), then profile it against the full 2024-25 NCES corpus (17,265 eligible districts) instead of theorizing.
+**2026-06-22 — the exactly-2-school tie-break replaced entirely with a general recursive rule, after profiling the full corpus.** The narrow 2-school scoping above didn't sit right (raised directly: "I don't want a case where the two districts we named are handled by specific exception" / "I don't like the rule of largest grade overlap wins... it seems better off for us to specify more explicit rules than an overly general one"). Resolution: build a markdown reference table of recognized grade-band shapes by hand (now `METHODOLOGY.md` → "Grade-band classification — recognized partition shapes"), then profile it against the full 2024-25 NCES corpus (17,265 eligible districts) instead of theorizing.
 - **Corrected the N=2 threshold**: "does the lower segment's top grade reach 7?" (not 8, my earlier guess) — verified against every row of the reference table.
 - **Found the real general rule, no enumeration needed**: consecutive leading segments with top ≤6 collapse into elementary (1, 2, or 3+ sub-segments); what remains is middle alone, middle+high merged, or middle followed by one-or-more high segments (lower/upper-high splits). Validated against 1,114 real N=4 districts (1,053 matched cleanly), plus real N=5/N=6 examples (elementary split into 3 tiers — Albertville City AL; high split into two campuses — Aledo ISD TX, a 9th-grade campus + main high school).
 - **The "exactly 2 schools" scoping was itself the wrong dividing line**, confirmed by this profiling: Northern Tioga PA's 3 elementaries share an *identical* span and its 2 secondaries share an *identical* span — collapsed to distinct spans, structurally identical to Jasper Co.'s 2-school case. It should have gotten the same fix and previously did not; this was a real correction, not a refinement. Breathitt County/Chama Valley remain correctly different (genuinely non-identical, overlapping/redundant elementary spans — not a clean partition).
