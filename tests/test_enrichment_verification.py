@@ -21,6 +21,10 @@ from datetime import datetime, timedelta
 from unittest.mock import Mock, patch, MagicMock
 import json
 
+# These safeguards verify against the live LCT Postgres database, so they're `integration` — run locally,
+# excluded from CI (which has no DB). They were ERRORing in CI on "Postgres unavailable".
+pytestmark = pytest.mark.integration
+
 
 # =============================================================================
 # REQ-035: Enrichment Count Verification

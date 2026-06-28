@@ -14,6 +14,13 @@ from infrastructure.acquisition.common import discover as DISC
 from infrastructure.acquisition.stage3_capture import capture_stage3 as C3
 from infrastructure.acquisition.stage4_process import process_stage4 as P4
 
+# This module exercises the live acquisition pipeline against the local NCES CCD dataset (large raw data
+# NOT committed to the repo) and, for the CTC class, the LCT Postgres DB — both local-only resources. So
+# the whole module is `integration`: it runs locally (`pytest -q`) and is excluded from CI
+# (`-m "not integration"`), matching the workflow policy. (A later split could return the pure-logic
+# sampling/band-classifier tests to CI in a resource-free module.)
+pytestmark = pytest.mark.integration
+
 
 # ---------------------------------------------------------------- REQ-058 sampling
 class TestSampling:

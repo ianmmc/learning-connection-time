@@ -1,0 +1,6 @@
+[flake8]
+# Lint LIVE source only. Exclude data/ (raw datasets + superseded/archived code), build artifacts,
+# vendored deps, and virtualenvs. The retired Crawlee/GT code under data/archive/ was tripping the
+# critical check (F821/F824) and failing CI for code we deliberately archived.
+extend-exclude = data,node_modules,.venv,venv,build,dist,*.egg-info,__pycache__
+max-line-length = 127
