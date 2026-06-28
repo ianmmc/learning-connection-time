@@ -16,7 +16,10 @@
     <div class="brand">
       <img class="brand-logo" src="/static/assets/logo/mmm-logo.png" alt="McCullough Marketing &amp; Management" />
       <span class="brand-wm"><span class="brand-name">McCullough</span><span class="brand-tag">Marketing &amp; Management</span></span>
-      <span class="brand-app">Stage&nbsp;5 · Capture Review</span>
+      <select id="stageSelect" class="stage-select" aria-label="Console view">
+        <option value="stage1">Stage&nbsp;1 · Queue (gate@1)</option>
+        <option value="stage5" selected>Stage&nbsp;5 · Capture Review (gate@5)</option>
+      </select>
     </div>
     <div class="topbar-right">
       <span id="progress" class="progress">…</span>
@@ -24,11 +27,13 @@
     </div>
   </header>
 
-  <main class="cols">
+  <main id="stage5view" class="cols">
     <nav id="tree" class="col col-tree" aria-label="Districts and records"></nav>
     <section id="center" class="col col-center"><div class="empty">Select a record from the left to begin.</div></section>
     <aside id="panel" class="col col-panel"><div class="empty">No record selected.</div></aside>
   </main>
+
+  <main id="stage1view" class="cols gate1 hidden" aria-label="Stage 1 queue review"></main>
 
   <div id="glossary" class="modal hidden">
     <div class="modal-card">
@@ -38,5 +43,6 @@
   </div>
 
   <script src="/static/app.js"></script>
+  <script src="/static/gate1.js"></script>
 </body>
 </html>

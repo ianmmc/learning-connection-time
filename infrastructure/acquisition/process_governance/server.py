@@ -278,6 +278,13 @@ async def queue_edit(batch_id: str, payload: dict):
                 sid = payload["school_id"]
                 BSTORE.reject_school(con, batch_id, did, sid)
                 note = f"reject school {sid} ({did})"
+            elif op == "restore_district":
+                BSTORE.restore_district(con, batch_id, did)
+                note = f"restore district {did}"
+            elif op == "restore_school":
+                sid = payload["school_id"]
+                BSTORE.restore_school(con, batch_id, did, sid)
+                note = f"restore school {sid} ({did})"
             elif op == "add_school":
                 BSTORE.add_school(con, batch_id, did, payload["school"], payload["bands"])
                 note = f"add school {payload['school']['school_id']} -> {payload['bands']} ({did})"

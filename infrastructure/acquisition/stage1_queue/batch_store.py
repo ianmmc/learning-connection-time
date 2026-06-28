@@ -200,6 +200,29 @@ def reject_school(sess, batch_id: str, district_id: str, school_id: str) -> None
     sess.flush()
 
 
+def restore_district(sess, batch_id: str, district_id: str) -> None:
+    """Reverse a reject_district (set included back to True) — keeps gate@1 editing reversible during
+    draft so a mis-reject isn't a dead end."""
+    b = sess.get(Batch, batch_id)
+    _require_draft(b)
+    d = sess.get(BatchDistrict, (batch_id, district_id))
+    if d is None:
+        raise KeyError(district_id)
+    d.included = True
+    sess.flush()
+
+
+def restore_school(sess, batch_id: str, district_id: str, school_id: str) -> None:
+    """Reverse a reject_school. (A genuinely NEW school is added via add_school instead.)"""
+    b = sess.get(Batch, batch_id)
+    _require_draft(b)
+    s = sess.get(BatchSchool, (batch_id, district_id, school_id))
+    if s is None:
+        raise KeyError(school_id)
+    s.included = True
+    sess.flush()
+
+
 def add_school(sess, batch_id: str, district_id: str, school: dict, bands: list) -> None:
     """Add a school to a district's targeting (story 31). `school` carries the NCES fields
     (school_id/name/level/gslo/gshi/is_charter) the caller pulled from the eligible pool; `bands` is

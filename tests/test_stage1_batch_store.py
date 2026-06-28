@@ -104,6 +104,17 @@ class TestGate1Edits:
         assert d2["included"] is False
         assert view["n_included"] == 1
 
+    def test_reject_then_restore_is_reversible(self, sess):
+        BS.create_batch(sess, _doc(), actor="t")
+        BS.reject_school(sess, "batch_test_store", "D1", "S_E1")
+        BS.restore_school(sess, "batch_test_store", "D1", "S_E1")
+        BS.reject_district(sess, "batch_test_store", "D2")
+        BS.restore_district(sess, "batch_test_store", "D2")
+        rec = BS.to_receipt_doc(sess, "batch_test_store")
+        assert [d["district_id"] for d in rec["districts"]] == ["D1", "D2"]   # D2 back
+        elem = rec["districts"][0]["schools_by_band"]["elementary"]
+        assert {s["school_id"] for s in elem["schools"]} == {"S_E1", "S_E2"}  # S_E1 back
+
     def test_add_school_inserts_with_manual_source(self, sess):
         BS.create_batch(sess, _doc(), actor="t")
         BS.add_school(sess, "batch_test_store", "D2",
