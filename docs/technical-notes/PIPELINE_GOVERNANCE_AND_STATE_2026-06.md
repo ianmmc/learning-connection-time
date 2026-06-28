@@ -365,46 +365,78 @@ Claude Code CLI ships a background-session **supervisor** (`claude … --bg`, `c
 (`ian`, `auto:scheduler`, `auto:drift-detector`), not just `human|auto` — cheap insurance for the
 multi-user cloud future (Supabase path) so "who did this" is always captured.
 
-### Stage 2 discovery goes headless via the Claude Code CLI (not the Agent SDK)
+### Stage 2 discovery — UPDATED 2026-06-28: deterministic SERP cascade (claude -p demoted to Wave 2)
+
+**SUPERSEDED:** the "Stage 2 = headless `claude -p` Wave-1 per district" design below was BUILT, then a
+five-provider bake-off (53-school known-positive set, `data/acquisition/diagnostics/`) overturned the
+Wave-1 choice. The pluggable-provider layer was the right call; the *provider* was wrong. **Current
+architecture (authority: `STAGE2_DISCOVER_DESIGN_2026-06.md` §7):**
+- **Wave 1 = Bright Data SERP** (`discover.brightdata_search`) — real Google, `site:`-scoped, 5,000/mo
+  **recurring** free tier (98% recall) — with **Serper failover** (`serper_search`, banked credits, 100%)
+  ONLY on a Bright Data API failure. Same Google index, so Serper is uptime backup, not recall.
+- **Wave 2 = Claude WebSearch** (`claude -p`, the headless helpers below) on the genuine residual — a
+  *different* index, speculative; degrades to manual_flag.
+- **Stage 2 is now fully DETERMINISTIC** — no agent in the Wave-1 loop, no structured-output flake.
+- **Cost reframe:** Stage 2 is no longer "≈free subscription quota." Bright Data/Serper are cheap REAL
+  cash (~$0.001–0.0015/query, ~$21 per full 17k pass); only the residual Claude tier is subscription.
+- **Index lesson:** raw Google wins; own-index providers (Perplexity 43%) crater on long-tail K-12.
+- **Run live** through the console on batch_00002 + batch_00003 (2026-06-28).
+
+The `claude -p` design below is **retained because Claude is now the Wave-2 residual provider** (and the
+`scripts/stage2_cli_reliability.py` diagnostic harness). The cost/auth reasoning still applies to that tier:
 
 The "subagent requires a chat (Claude) open" framing is **dissolved**. Each `claude -p` invocation is a
-*full headless agent*; we don't need the subagent abstraction. **Stage 2's orchestrator shells out to
-`claude -p` per district**, each doing one district's WebSearch and returning JSON; the orchestrator
-collects them and runs the existing deterministic Wave-2/gating/flatten logic. No chat, no human-in-loop,
-**schedulable overnight**.
+*full headless agent*; we don't need the subagent abstraction. The Wave-2 residual orchestrator shells out
+to `claude -p` (one call over a district's residual schools), returning JSON; the deterministic
+gating/flatten logic is unchanged. No chat, no human-in-loop, **schedulable overnight**.
 
 **Search providers are a pluggable layer (extensibility — explicit requirement).** Each provider sits
-behind one contract — *given a school, return candidate URLs as JSON* — so providers can be added,
-reordered, or swapped without touching gating/flatten/dedup. Today: **Wave 1 = Claude CLI WebSearch**
-(subscription), **Wave 2 = OpenRouter `gpt-4o-mini-search`** (paid). Designed-for future providers:
-**Bright Data, the Brave Search API, or a new cheap web-search model on OpenRouter** — the CLI is *one*
-provider, not the architecture. Whether to cascade (stop at first wave that satisfies) or run several
-unconditionally is a separate, still-open tuning question (ACQUISITION_PIPELINE Open-decision #7).
+behind one contract — *given a school, return candidate URLs* — so providers can be added, reordered, or
+swapped without touching gating/flatten/dedup. **This is exactly what let Bright Data/Serper replace the
+Claude/OpenRouter waves** with no change to the deterministic tail.
 
 **Why CLI, not the Agent SDK (decisive — cost):** the CLI uses **subscription auth** (Pro/Max quota) when
 logged in; the **Agent SDK requires `ANTHROPIC_API_KEY` = per-token billing** (its overview explicitly
 disallows claude.ai login for SDK-built products). The whole point is leveraging the existing
 subscription, so CLI wins. *Verified clean:* no Claude API account exists → no `ANTHROPIC_API_KEY` to
-shadow the subscription (the only keys present are OpenRouter / Perplexity / Gemini, none of which is
-Claude Code auth).
+shadow the subscription (the only keys present are OpenRouter / Perplexity / Gemini / Serper / Bright Data,
+none of which is Claude Code auth).
 
-**The call (real flags, corrected from the guessed ones):**
+**The call (VERIFIED against CLI 2.1.71 + a live smoke test, 2026-06-27 — the earlier `--bare`/
+`--max-turns` were guessed and DO NOT EXIST; this is what's actually built in `stage2_discover/headless.py`):**
 ```bash
-claude -p "<stage2 search prompt>" --model haiku --effort low \
-  --output-format json --allowedTools "WebSearch" --bare --max-turns 4
+# prompt is piped on STDIN (robust to long rosters), not passed as an argv positional
+printf '%s' "<stage2 search prompt>" | claude -p --model haiku --effort low \
+  --output-format json --allowedTools "WebSearch" \
+  --json-schema '<WAVE1_SCHEMA>' --strict-mcp-config --disable-slash-commands
 ```
 - `--allowedTools "WebSearch"` is **required** in headless (print mode can't answer a permission prompt).
-- `--effort low` (not `--effortlevel`); `--bare` skips skill/hook/MCP/CLAUDE.md auto-discovery for a fast
-  scripted start — so the **full search prompt is passed in**, not invoked as the `stage2-discover` skill.
-- `--json-schema <file>` (print mode) can force the candidate output into our exact shape.
+  Confirmed live: WebSearch fires (`modelUsage[*].webSearchRequests` ≥ 1 — note the top-level
+  `usage.server_tool_use.web_search_requests` can read 0; the per-model counter is the accurate one).
+- `--effort <low|medium|high>` (NOT `--effortlevel`).
+- **`--bare` and `--max-turns` do not exist.** The lean-scripted-start intent is served by
+  `--strict-mcp-config` (ignore MCP) + `--disable-slash-commands` (no skills); the full search prompt is
+  passed in, not invoked as the `stage2-discover` skill. (CLAUDE.md still auto-loads from cwd — minor.)
+- **`--json-schema '<schema>'`** forces structured output. CONFIRMED: with `--output-format json` it
+  lands on a dedicated **`structured_output`** envelope key (the `result` field is only the agent's prose
+  summary) — `headless._extract_result_payload` reads `structured_output`.
+- **Reliability caveat (measured):** Haiku intermittently returns subtype
+  `error_max_structured_output_retries` (exit 1 *with* a valid JSON error envelope) — a non-deterministic
+  flake, NOT a hard failure. `run_claude_cli` parses-stdout-first and bounded-retries it; the effort×schema
+  recall/flake tradeoff is being measured (`scripts/stage2_cli_reliability.py` → `data/acquisition/diagnostics/`).
+- A denied WebSearch is caught explicitly (would otherwise look like a genuine empty result — the
+  batch_00001 Wave-1 under-report failure class).
 - Background option: `--bg` + `claude agents --json` / `claude logs <id>` (ties to choice C).
 
-**Per-stage cost model** (feeds the cost estimates in `filtered.json`/`handoff`): **Stage 2 discovery →
-subscription (≈free quota) via CLI**; **Stage 7 extraction → paid OpenRouter API**. The expensive stage is
-7 — which *argues for aggressive Stage-2 recall*, since discovery is essentially free to run overnight.
+**Per-stage cost model** (REVISED 2026-06-28, feeds `filtered.json`/`handoff` estimates): **Stage 2
+discovery → cheap REAL cash via Bright Data/Serper SERP** (~$0.001–0.0015/query; ~$17–21 per full 17k
+pass; Bright Data's 5,000/mo free tier covers batch-scale), only the residual Claude tier is subscription;
+**Stage 7 extraction → paid OpenRouter API** (still the expensive stage). Recall is still cheap relative to
+extraction, so *aggressive Stage-2 recall* remains the right posture.
 
-**Still to verify before building the Stage-2 conversion:** WebSearch behavior + subscription rate limits
-at overnight-17k-district volume. Pre-registered as its own step (REQ-104).
+**REQ-104 BUILT 2026-06-28** (run live on batch_00002/batch_00003). The original open item (claude -p
+WebSearch rate limits at 17k overnight volume) is moot — Claude is no longer the Wave-1 provider; Bright
+Data offers unlimited concurrency. Detail: `STAGE2_DISCOVER_DESIGN_2026-06.md` §7.
 
 ---
 
@@ -712,5 +744,11 @@ reframe and the batch_00002-forcing-function plan (the batch-of-record advances 
   end-to-end: **`batch_00002` created → edited → approved through the UI**, all surfaces consistent.
   *(A CWD-independence fix landed with it: NCES + `.env` reads anchored to the repo, not the launch dir —
   a server-robustness lesson for every later stage's file reads.)*
-- **Next:** advance `batch_00002` into Stage 2; then REQ-100/101. Per-stage detail authority:
-  `STAGE1_QUEUE_DESIGN_2026-06.md` §6.
+- **Stage 2 console view BUILT + RUN LIVE 2026-06-28** (`static/stage2.js` + `/api/discover/*`): the
+  ungated status/observability view + the "Run Discovery" trigger (background job, events-as-log feed).
+  `batch_00002` (11) and `batch_00003` (12, with add/reject-school edits) both ran through the UI end to
+  end — the second console stage view, following the gate@1 build pattern. (A switcher refactor to add it
+  briefly broke the Stage-1 view via a deleted `v1` var — fixed; a reminder that the static JS has no
+  lint/`no-undef` gate, unlike the Python side.)
+- **Next:** REQ-100 (staleness) / REQ-101 (Stage 6 + gate@6). Per-stage detail: `STAGE1_QUEUE_DESIGN`
+  §6 (gate@1), `STAGE2_DISCOVER_DESIGN` §7 (the SERP cascade).

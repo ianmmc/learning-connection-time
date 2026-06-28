@@ -23,17 +23,17 @@ Part of "Reducing the Ratio" educational equity initiative. Currently implementi
 
 ---
 
-## Current Status (2026-06-27)
+## Current Status (2026-06-28)
 
 Building the **per-school acquisition pipeline** stage-by-stage with **human-in-the-loop checkpoints**. The GT/benchmark exploration concluded and was archived; the validated design is now the active build. Canonical pipeline doc: **`docs/ACQUISITION_PIPELINE.md`** (9 stages + failure-modes→checkpoints table + reader-routing spec). Live code: **`infrastructure/acquisition/`** (promoted out of the retired `scripts/benchmark/`). Council research: `docs/technical-notes/LLM_COUNCIL_RESEARCH_2026-06.md`. Leaderboard/costs: `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.
 
-**Build progress (2026-06-28):** Stages **1–4 built + run live** on `batch_00001` (each with a code-verified `STAGE*_DESIGN_*.md` note); **Stage 5 CONCLUDED** (review/label app + signals + de-chrome + clustering + labeled topology + tuning loop + the **event-driven `filtered.json` release generator**). Governance/state/Postgres **BUILT**: REQ-098 (installable package — **`pip install -e .`**), REQ-103 (isolated `governance` Postgres + cross-stage cache), REQ-099 (`state_event` log + `current_state` view), REQ-094 (event-driven `filtered.json`). **The console build is underway — gate@1 FULLY built (REQ-102), backend + frontend:** the batch is a **first-class entity in the governance DB (the working store)** — normalized PRECIOUS tables `batch`/`batch_district`/`batch_school`, with `batch_NNNNN.json` regenerated from the rows as the (gitignored, regenerable) **receipt**; gate@1 is an **in-band batch-level approval** with soft/reversible/audited editing; the **queue-review UI** (first console stage view, on the **MMM Design System** via the **DesignSync** tool) is live. **`batch_00002` was created → edited → approved entirely through the console** (the forcing-function milestone) and is approved, awaiting Stage 2. Read-first authority: **`PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`** (§11 gates/console, §11h gate@1) + the per-stage `STAGE*_DESIGN_*.md` (Stage 1 = §6, incl. §6e-ui/§6f); slim *map* = `ACQUISITION_PIPELINE.md`; history → `PROJECT_HISTORY.md`.
+**Build progress (2026-06-28):** Stages **1–4 built + run live** on `batch_00001` (each with a code-verified `STAGE*_DESIGN_*.md` note); **Stage 5 CONCLUDED** (review/label app + signals + de-chrome + clustering + labeled topology + tuning loop + the **event-driven `filtered.json` release generator**). Governance/state/Postgres **BUILT**: REQ-098 (installable package — **`pip install -e .`**), REQ-103 (isolated `governance` Postgres + cross-stage cache), REQ-099 (`state_event` log + `current_state` view), REQ-094 (event-driven `filtered.json`). **The console build is underway — gate@1 FULLY built (REQ-102), backend + frontend:** the batch is a **first-class entity in the governance DB (the working store)** — normalized PRECIOUS tables `batch`/`batch_district`/`batch_school`, with `batch_NNNNN.json` regenerated from the rows as the (gitignored, regenerable) **receipt**; gate@1 is an **in-band batch-level approval** with soft/reversible/audited editing; the **queue-review UI** (first console stage view, on the **MMM Design System** via the **DesignSync** tool) is live. **`batch_00002` created → edited → approved through the console** (the forcing-function milestone). **Stage 2 (Discover) then re-architected to a deterministic SERP cascade + the Stage-2 console view BUILT + RUN LIVE (REQ-104, 2026-06-28):** **Wave 1 = Bright Data SERP** (real Google, recurring-free, 98% recall) + **Serper failover** on API failure → **Wave 2 = Claude WebSearch** on the residual (different index, speculative). `batch_00002` (Bright Data found 28/30 schools) + `batch_00003` both ran end-to-end through the UI. Read-first authority: **`STAGE2_DISCOVER_DESIGN_2026-06.md` §7** (the SERP cascade) + **`PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`** (§7a Stage 2, §11/§11h console); slim *map* = `ACQUISITION_PIPELINE.md` §2; history → `PROJECT_HISTORY.md`.
 
 **Metric = GROSS bell-to-bell minutes (end − start), NOT net.** No lunch/passing/recess deduction, no *assumed* deductions. Existing GT is already gross; gross needs only two reliably-published numbers (↑accuracy). Net is a deferred enhancement. Labeled `gross_bell_to_bell`. Plausibility gate 240–510 min. (REQ-055; supersedes net in REQ-042/046.)
 
 **INVARIANT — extractors read TIMES; deterministic code computes MINUTES + the MODE.** Council models return only per-school `{start_time,end_time,grade_level,school_name}` facts; Python does `gross=end−start` and the per-band exact-mode. Never ask a model to compute minutes or pick a "typical" schedule. (REQ-054.)
 
-**Extraction = COUNCIL (correctness); Discovery = WAVES (recall).** Council: **consensus is on the per-school (start,end) pair, cross-family, ±15 min** — same-family agreement is NOT consensus (REQ-056). Candidate set = 6 non-reasoning models (Gemini 2.5 Flash, Mistral Large 2512, DeepSeek V3.2, Mistral Small 24B, Gemini 2.5 Flash-Lite, Qwen3-235B-2507); Grok 4.3 & Qwen3.7-Max **removed** (reasoning-token cost 4–70×). **Open: exact council composition** — Path-1 cheap-trio vs Path-2 accuracy-pair vs Path-1-minus-Mistral, decided by measured escalation rate. Discovery waves: **Claude WebSearch (Haiku subagent) → OpenRouter `gpt-4o-mini-search` → flag manual; Perplexity dropped.** Domain-scoped; ~90% page-find on full-41.
+**Extraction = COUNCIL (correctness); Discovery = WAVES (recall).** Council: **consensus is on the per-school (start,end) pair, cross-family, ±15 min** — same-family agreement is NOT consensus (REQ-056). Candidate set = 6 non-reasoning models (Gemini 2.5 Flash, Mistral Large 2512, DeepSeek V3.2, Mistral Small 24B, Gemini 2.5 Flash-Lite, Qwen3-235B-2507); Grok 4.3 & Qwen3.7-Max **removed** (reasoning-token cost 4–70×). **Open: exact council composition** — Path-1 cheap-trio vs Path-2 accuracy-pair vs Path-1-minus-Mistral, decided by measured escalation rate. Discovery (re-architected 2026-06-28, REQ-104; design note §7) = a **deterministic SERP cascade**, NOT agent waves: **Wave 1 = Bright Data SERP** (real Google, `site:`-scoped, recurring-free) + **Serper failover** on API failure (same index = uptime backup) → **Wave 2 = Claude WebSearch** on the residual (a *different* index, speculative). Decided by a measured 5-provider bake-off (`data/acquisition/diagnostics/`): **the index predicts recall** — raw Google wins (Bright Data 98% / Serper 100%), own-index Perplexity craters (43%, zero long-tail coverage). Retired: Claude-as-Wave-1 (66%), OpenRouter ($27/1K), Perplexity.
 
 **Reader-routing (format-route the reader, outcome-based):** Tier 1 plain text → Tier 2 `page.pdf()`+`pdftotext -layout` (multi-column) → Tier 2.5 OCR a clean image → Tier 3 **vision** (Gemini Flash / Mistral Large read JS/image/scan pages all text paths miss — proven). Trigger is "did the cheap reader recover usable content," not format. (Tier-1→2 structure-loss trigger is the one OPEN gate.)
 
@@ -46,41 +46,42 @@ Building the **per-school acquisition pipeline** stage-by-stage with **human-in-
 > **SEA central-data harvest is a dead end for daily minutes** (verified) — states publish only statutory minimums / day-counts, not actual daily minutes. Web discovery + extraction is the primary acquisition path. See `docs/INSTRUCTIONAL_TIME_HARVEST.md`.
 
 ### Next session (RESUME HERE — 2026-06-28)
-**gate@1 is DONE and validated; `batch_00002` is APPROVED, awaiting Stage 2.** The full gate@1 console
-(backend + the queue-review **frontend**) is built; `batch_00002` was created → edited (1 reject) →
-approved through the UI, all surfaces (the `batch` row, the `state_event` log, the regenerated receipt)
-consistent. Code: `stage1_queue/{queue_batch (build_batch/persist_batch), batch_store, models}.py` +
-`/api/queue/*` in `process_governance/server.py` + `process_governance/static/{index.html,gate1.js,app.css}`
-(on the MMM Design System via DesignSync). Detail: `STAGE1_QUEUE_DESIGN_2026-06.md` §6 + governance §11h.
+**gate@1 + Stage 2 console are DONE; discovery RAN LIVE on `batch_00002` + `batch_00003`.** Stage 2 is now
+a **deterministic SERP cascade** — `discover.brightdata_search` (Wave 1, real Google, recurring-free) +
+`serper_search` failover on API failure → `headless._wave2_claude` (Wave 2, Claude WebSearch on the
+residual). Code: `common/discover.py` (the 3 search fns + gate), `stage2_discover/discover_stage2.py`
+(`run_wave1`/`run_wave2(search_fn)`, gate/residual/flatten/write), `stage2_discover/headless.py`
+(`brightdata_then_serper`, `_wave2_claude`, `discover_district`, sequential `run_batch`), console
+`/api/discover/*` in `server.py` + `static/stage2.js`. Bake-off harnesses: `scripts/stage2_*` →
+reports in `data/acquisition/diagnostics/`. **Authority: `STAGE2_DISCOVER_DESIGN_2026-06.md` §7.**
 
-**→ NEXT: Stage 2 (Discover) for `batch_00002`** — building stage-by-stage as before. The **console
-stage-view build pattern** to reuse is captured in `STAGE2_DISCOVER_DESIGN_2026-06.md` §4a (frontend:
-stage selector + a per-stage JS module like `gate1.js` lazy-loaded via the switcher, styled on the MMM
-tokens via DesignSync; backend: thin `/api/<area>/*` on `server.py`; **every file read via
-`paths.DATA_ROOT`, never CWD** — the gate@1 500 lesson). Stage 2 input = `batch_00002`'s receipt (the
-existing `discover_stage2.py` `reconcile`/`roster`/`finish` contract); add a Stage-2 status view + an
-orchestration "run discovery" trigger. Headless `claude -p` discovery is REQ-104 (designed, not built).
-**Stages 3 & 4 console views likely follow quickly.** Then REQ-100 (staleness) / REQ-101 (Stage 6 + gate@6);
-scope ends at gate@6 approval — **no paid dispatch**.
+**→ NEXT: REQ-100 (staleness view) / REQ-101 (Stage 6 handoff + gate@6).** Scope ends at gate@6 approval —
+**no paid dispatch.** Open Stage-2 *watch-items* to revisit with more data (design note §7d), not blockers:
+(a) is the **Claude Wave-2 tier** worth its latency — it recovered 0/2 on batch_00002 and its `claude -p`
+timeout (420s) is too long for the sequential run (lower to ~60–90s); (b) **Serper-on-Bright-Data-misses**
+(beyond failover) once real-batch misses accumulate; (c) Stages 3 & 4 console views likely follow.
 
 **Fresh-session essentials:** `/catchup` → `pip install -e .` → **Docker up** → `lint-imports` (3 kept/0
-broken) + `pytest -q` (resource-dependent tests are marked `integration` + skip/excluded without their DB/
-NCES data — CI runs `-m "not integration"`). Launch the console **from the repo root**:
-`python3 -m infrastructure.acquisition.process_governance.server` (→ :8005) — the create path is now
-CWD-independent, but repo-root is the convention. Rebuild the Stage-5 cache + `filtered.json`:
-`python3 -m infrastructure.acquisition.stage5_filter.build_signals`. Batch tables auto-create at server
-startup (`gdb.init_precious_schema()`). **UI design:** pull components from the MMM Design System via the
-`DesignSync` tool (`list_projects` → "MMM Design System"). **Checkpoint at session end with `/checkpoint`.**
+broken) + `pytest -q -m "not integration"` (567 pass; resource-dependent tests are `integration`-marked,
+excluded in CI). Launch the console **from the repo root**:
+`python3 -m infrastructure.acquisition.process_governance.server` (→ :8005). Stage 2 needs SERP keys in
+gitignored `config/secrets.local.json`: `BRIGHTDATA_API_KEY` + `BRIGHTDATA_SERP_ZONE` (must be a **SERP-API**
+zone, not residential-proxy), `SERPER_API_KEY` (+ existing OPENROUTER/PERPLEXITY/GEMINI). `claude -p` (Wave 2)
+runs headlessly from the server but is **blocked inside a Claude Code session** (CLAUDECODE set) — diagnostics
+run in a plain terminal. Rebuild Stage-5 cache: `python3 -m infrastructure.acquisition.stage5_filter.build_signals`.
+**UI design:** MMM Design System via the `DesignSync` tool. **Caveat:** static JS has **no lint/`no-undef` gate**
+(a switcher refactor briefly broke Stage 1 via a deleted var) — diff `static/*.js` carefully; `node --check`
+catches syntax only.
 
-**Registered REQ#s** (status `accepted`): **REQ-102** gate@1 (DONE — backend + frontend), **REQ-100**
-staleness view, **REQ-101** Stage 6 handoff + gate@6 (OPEN #1 = council-config grain), **REQ-104** Stage 2
-headless. Currency/recency = **REQ-044** (a Stage-5 enhancement, NOT REQ-104). Batch receipts
-(`batch_*.json`) are **gitignored/regenerable**; the git-durable lifecycle record is `district_status.json`.
+**Registered REQ#s:** **REQ-102** gate@1 DONE, **REQ-104** Stage 2 SERP cascade + console **DONE**, **REQ-100**
+staleness view (next), **REQ-101** Stage 6 handoff + gate@6 (next; OPEN #1 = council-config grain).
+Currency/recency = **REQ-044** (a Stage-5 enhancement). Batch receipts (`batch_*.json`) gitignored/regenerable;
+git-durable lifecycle record = `district_status.json`.
 
 **Watch-items:** (a) docs rationalization not-yet-done: GETTING_STARTED's stale "Run Scraper Service" task
-(retired Express :3000), DATA_SOURCES dangling `data-dictionaries/` refs, `docs/technical-notes/refactor-20260123/`
-(obsolete); (b) `.claude/skills/per-school-acquire*` skills are stale — not the runbook; (c) `create` is
-synchronous (heavy full-NCES draw) — fine for now, revisit if it becomes a UX problem.
+(retired Express :3000), DATA_SOURCES dangling `data-dictionaries/` refs; (b) `.claude/skills/per-school-acquire*`
+**and `stage2-discover`** skills are now **obsolete** (drove the retired agent Wave-1) — not the runbook; (c)
+`create` is synchronous (heavy full-NCES draw) — fine for now.
 
 ---
 

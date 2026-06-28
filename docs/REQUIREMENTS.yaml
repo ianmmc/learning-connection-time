@@ -2501,10 +2501,10 @@ requirements:
       dev/test batches only, never the batch-of-record. This is the FIRST console deliverable."
 
   - id: REQ-104
-    description: Stage 2 discovery goes headless — orchestrator shells out to `claude -p` per district (subscription-billed), retiring the chat-bound subagent; search providers a pluggable layer
+    description: "Stage 2 discovery goes headless + pluggable-provider — DONE 2026-06-28 as a deterministic SERP cascade (NOT claude -p Wave 1). The pluggable-provider layer was the right call; a measured 5-provider bake-off (data/acquisition/diagnostics/) replaced the provider: Wave 1 = Bright Data SERP (real Google, recurring-free, 98%) + Serper failover on API failure; Wave 2 = Claude WebSearch on the residual (different index). Index predicts recall — own-index Perplexity cratered (43%). Run live on batch_00002/00003 via the console. Authority: STAGE2_DISCOVER_DESIGN_2026-06.md §7."
     type: functional
     priority: should
-    status: accepted
+    status: tested
     acceptance_criteria:
       - Each district's Wave 1 runs as a headless `claude -p ... --model haiku --allowedTools WebSearch --output-format json` agent; the orchestrator collects the JSON and runs the existing deterministic Wave-2 / gating / flatten unchanged
       - Search providers sit behind one contract — given a school, return candidate URLs as JSON — so providers can be added/reordered/swapped (Claude CLI, OpenRouter gpt-4o-mini-search, future Bright Data / Brave) without touching gating/flatten/dedup

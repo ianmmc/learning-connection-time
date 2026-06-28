@@ -21,15 +21,15 @@ flowchart TD
     end
     CPA{{"gate@1 — IN-BAND console approval (was Checkpoint A) — BUILT (UI + API)<br/>BATCH-level: batch.status draft -> approved + per-district gate@1 events<br/>soft + REVERSIBLE + audited edits: reject/restore district & school, add school<br/>(included flips / row inserts; locked once approved, reopen to edit)<br/>batch-of-record created + advanced ONLY via the console (CLI = dev/test)"}}
 
-    subgraph STAGE2 ["Stage 2 — Discover (built + run live 2026-06-23, 12/12 found_all)"]
+    subgraph STAGE2 ["Stage 2 — Discover (deterministic SERP cascade; re-architected + run live via console 2026-06-28, REQ-104)"]
         direction TB
         D_RECON["Reconciliation pass (BEFORE any searching)<br/>per district: does data/raw/lea-website-captures/&lt;id&gt;_&lt;slug&gt;/discovery.json exist?"]
         D_SKIP["Exists, registry behind -> reconcile registry UP, skip<br/>(already done, don't redo)"]
         D_HALT{{"Registry says done, disk doesn't have it -><br/>STOP ENTIRE RUN, fail loudly (control failure)"}}
-        D_W1["Wave 1 - Claude WebSearch, HEADLESS claude -p PER DISTRICT<br/>(full headless agent, NOT a subagent; subscription-billed)<br/>loops its schools; domain-scoped via batch's domain field<br/>returns STRICT machine-parseable JSON only<br/>[pluggable provider: Wave 1 of an extensible search layer]"]
+        D_W1["Wave 1 - BRIGHT DATA SERP (real Google, site:-scoped, recurring-free, 98% recall)<br/>per school; deterministic HTTP, NO agent<br/>+ SERPER FAILOVER (banked credits, 100%) ONLY on Bright Data API failure<br/>(same Google index = uptime backup, not recall)"]
         D_GATE["Deterministic script: gate Wave-1 URLs<br/>(reject news/aggregator, off-domain)"]
         D_RESIDUAL{{"Any school with zero kept<br/>candidates after gating?"}}
-        D_W2["Wave 2 - OpenRouter gpt-4o-mini-search<br/>(script-driven, paid) scoped ONLY to residual schools<br/>[+future providers: Bright Data / Brave / new OR models]"]
+        D_W2["Wave 2 - CLAUDE WEBSEARCH on residual schools<br/>(a DIFFERENT index than Google; speculative why-not-try)<br/>degrades to manual_flag, never halts<br/>[retired: Claude-as-Wave-1 66%, OpenRouter $27/1K, Perplexity 43%]"]
         D_FLATTEN["Flatten + dedup candidates across schools<br/>(by normalized URL - collapses hub pages for free)"]
         D_OUT["Write ONCE, atomically, per district (never by subagent):<br/>discovery.json (full audit trail, every school)<br/>candidates.json (capture-ready, deduped)<br/>-> data/raw/lea-website-captures/&lt;id&gt;_&lt;slug&gt;/<br/>(never overwrite - redo = new versioned file, manual only)"]
         D_REG["Registry write-back (orchestrating script ONLY)<br/>outcome: found_all / found_partial / manual_flag_all"]
@@ -179,3 +179,5 @@ _(running notes on what each diagram change reflects, added as we go)_
 - **filtered.json will carry alternate target-flagged representations** (not just the winner) so gate@6 can offer representation-override — un-defers the §4 "representation override deferred" lean. A small REQ-094 follow-up.
 
 **2026-06-27 — gate@1 console backend built + the batch becomes a first-class DB entity (REQ-102) → detail in `STAGE1_QUEUE_DESIGN_2026-06.md` §6 + `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11h; Stage-1 subgraph updated below.** (Per-stage build logs live in the stage note, not here.)
+
+**2026-06-28 — Stage 2 re-architected to a deterministic SERP cascade + Stage-2 console view built + run live (REQ-104) → detail in `STAGE2_DISCOVER_DESIGN_2026-06.md` §7; STAGE2 subgraph (D_W1/D_W2) updated above.** The headless `claude -p` Wave-1 runner was built, then a smoke test exposed Claude's `--json-schema` structured-output flake (fixed by no-schema free-text parsing), which prompted a **five-provider bake-off** on a 53-school known-positive set (`data/acquisition/diagnostics/`). Result — **the underlying INDEX predicts recall:** raw-Google providers (Bright Data 98%, Serper 100%, OpenRouter 100% but $27/1K) win; own-index Perplexity craters at 43% (all misses = zero coverage on long-tail K-12). New architecture: **Wave 1 = Bright Data SERP** (recurring-free) + **Serper failover** (banked credits) on API failure only — same Google index, uptime backup not recall (user insight); **Wave 2 = Claude WebSearch** on the residual (a *different* index, speculative). Stage 2 is now fully deterministic (no agent in the Wave-1 loop); `stage2-discover` SKILL obsolete. The **Stage-2 console view** (`static/stage2.js` + `/api/discover/*`, ungated status + Run-Discovery background job) ran `batch_00002` (Bright Data found 28/30 schools; 2 residuals → Claude → recovered 0, genuine no-page cases) and `batch_00003` end-to-end through the UI. Cost reframe: cheap REAL cash (~$0.001–0.0015/query), not subscription quota. Watch-items (§7d): Claude-Wave-2 worth-it (0/2 + latency); Serper-on-misses; Claude timeout 420s→~60–90s.

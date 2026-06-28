@@ -1,25 +1,41 @@
 # Stage 2 — Discover: design & decision log
 
-> **Status: BUILT + run live (2026-06-23)** against all 12 `batch_00001` districts (12/12 `found_all`);
-> billing/auth failure handling hardened the same day. Produces, per district,
-> `data/raw/lea-website-captures/<id>_<slug>/discovery.json` (audit trail) + `candidates.json`
+> **Status: BUILT + RUN LIVE via the console (batch_00002 + batch_00003, 2026-06-28).** Produces, per
+> district, `data/raw/lea-website-captures/<id>_<slug>/discovery.json` (audit trail) + `candidates.json`
 > (capture-ready URL list) — the input Stage 3 (Capture) consumes.
 >
-> **What this note is:** for the already-built Stages 1–4 the **code is authoritative**; this note is a
-> **narrative of what the code currently does — to inform the console**, not a redesign. §1–§5 describe
-> current behavior (verified against the script 2026-06-27); §6 is the historical decision log.
+> ## ⚠ ARCHITECTURE CHANGED 2026-06-28 — deterministic SERP cascade (supersedes the agent waves below)
+> After a **five-provider bake-off** on a 53-school known-positive set (`data/acquisition/diagnostics/`),
+> Stage 2 is now **fully deterministic — NO agent in the Wave-1 loop.** The original "Wave 1 = Claude
+> WebSearch subagent / `claude -p`, Wave 2 = OpenRouter" design (§1–§3, §6 below) is **retired**:
+> - **Wave 1 = Bright Data SERP** (`discover.brightdata_search`) — real Google, `site:`-scoped,
+>   5,000/mo **recurring** free tier. Measured **98%** recall / 4.5s. PRIMARY.
+> - **Serper failover** (`discover.serper_search`) — fires ONLY on a Bright Data API failure (out of
+>   credits / auth). Same Google index, so it is an **uptime backup, NOT residual recall.** 100% / 0.9s.
+> - **Wave 2 = Claude WebSearch** (`headless._wave2_claude`, the retained `claude -p` helpers) on the
+>   **genuine residual** — a *different* index, a speculative "why-not-try" tier for schools Google's
+>   `site:` returned nothing for. Degrades to `manual_flag`, never halts.
 >
-> **Code (grimp-confirmed dependency set, 2026-06-27):** `stage2_discover/discover_stage2.py` imports
-> exactly `common.district_status` (the registry / `state_event` cache) and `common.discover`
-> (`host_of`, `gate`, `openrouter_search`; `discover.py` in turn pulls `cms_hosts` from
-> `common.config_loader`). **It does NOT import the LCT database layer** — Stage 2 is one of the ungated,
-> DB-free middle stages (contrast Stage 1, which reads the LCT DB). Nothing imports `discover_stage2`
-> back — it is a CLI entrypoint, driven by the orchestration **skill**, not a library.
+> **Why:** the underlying INDEX predicts recall — raw Google (Bright Data 98% / Serper 100% / OpenRouter
+> 100% but $27/1K) wins; own-index providers crater (Perplexity 43%, all misses = zero coverage on
+> long-tail K-12 domains). Claude WebSearch was 66% as a Wave-1 and slow (17.6s), so it dropped to the
+> residual-only tier. Live on batch_00002: **Bright Data Wave-1 found 28/30 schools (93%)**; the 2
+> residuals went to Claude and recovered 0 (genuine no-page cases). **Precision is NOT judged here** —
+> that's Stage 5's learning loop over captured content (`TERMINOLOGY.md` §5). Decision detail: §7 below.
+>
+> **Code (authoritative):** `common/discover.py` (`brightdata_search`, `serper_search`, the gate);
+> `stage2_discover/discover_stage2.py` (`build_roster`, `run_wave1(search_fn)`, `run_wave2(search_fn)`,
+> gate/residual/flatten/write/registry — reused verbatim); `stage2_discover/headless.py`
+> (`brightdata_then_serper` Wave-1+failover, `_wave2_claude`, `discover_district`, sequential `run_batch`;
+> the `claude -p` helpers are retained for Wave 2 + the `scripts/stage2_cli_reliability.py` diagnostic
+> harness). The console drives it via `process_governance/server.py` `/api/discover/*` + `static/stage2.js`.
+> **Still DB-free** (no LCT-DB import). The `stage2-discover` SKILL is now **OBSOLETE** (it drove the agent
+> Wave-1 that no longer exists).
 
-**Companions:** `ACQUISITION_PIPELINE.md` §2 (the slim map), `acquisition_pipeline_flow.md` (the visual),
-`.claude/skills/stage2-discover/SKILL.md` (the executable orchestration procedure — Wave 1 dispatch),
-`PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (§3 state_event, §7a discovery-is-≈free cost framing,
-§11 gates / batch types). Stage 1's note for the upstream contract; Stage 3's for the downstream one.
+**Companions:** `ACQUISITION_PIPELINE.md` §2 (the slim map), `docs/diagrams/acquisition_pipeline_flow.md`
+(the mermaid flow), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (§3 state_event, §7a cost framing, §11
+gates / console). Stage 1's note for the upstream contract; Stage 3's for the downstream one. **§1–§6 below
+describe the now-retired agent-wave design (kept as history); §7 is the current SERP architecture.**
 
 ---
 
@@ -249,3 +265,71 @@ reflect the original location._
 **2026-06-23 — billing/auth failure fix: `discover.openrouter_search()` was silently treating an exhausted OpenRouter pre-paid balance the same as "found nothing."** Raised by the user as a general principle for any metered API call in production ("does Ian's account carry a sufficient pre-pay balance" — the same model as how OpenRouter billing actually works): `run_wave2`'s `except Exception` caught *any* failure, including an HTTP 402, and degraded it to `urls=[]` — indistinguishable from a genuine empty search result, and silently repeatable for every remaining residual school once the balance ran out. **Fix:** `openrouter_search()` now raises `SystemExit` (not a plain `Exception`, so `run_wave2`'s except clause doesn't swallow it) for HTTP 401/402/429 specifically (`discover.BILLING_AUTH_STATUS_CODES`) — a control failure that halts the whole run, same treatment as the reconcile()-stage disk/registry mismatch. Other status-carrying errors (e.g. transient 5xx) still propagate as the original exception, not a halt. 3 new tests; REQ-070 updated in place. 889 tests passing.
 
 **2026-06-26 — headless + pluggable-provider reframe (designed, not built; REQ-104).** A design-first architecture session retired the "Python can't spawn the subagent, so an agent must be in the loop" framing: Stage 2 will shell out to `claude -p` per district (a full headless agent, subscription-billed, schedulable overnight), with search providers as a pluggable layer behind a common candidate-URL contract. The wave/gate/residual logic is unchanged. Authority: `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §7a. See §3 of this note — the live stage remains the skill+subagent model until this is built.
+
+---
+
+## 7. The deterministic SERP architecture — DECIDED + BUILT + RUN LIVE 2026-06-28 (REQ-104)
+
+This section is the **current** Stage 2. §1–§6 above are the retired agent-wave design (history).
+
+### 7a. How we got here — the five-provider bake-off
+The `claude -p` headless runner (§3) was built first, then a smoke test surfaced that Claude's
+`--json-schema` structured-output mode **flakes** (`error_max_structured_output_retries` — Haiku
+intermittently can't emit schema-valid output; *more* effort made it worse). Dropping `--json-schema`
+and parsing the free-text response fixed it (the no-schema mode is reliable). That detour prompted a
+real **provider bake-off** on a known-positive corpus (batch_00001's 53 schools, all `found_all` in the
+validated run), each provider's URLs gated exactly as the pipeline does and scored vs the 47% subagent
+Wave-1 baseline. Reports live in `data/acquisition/diagnostics/`. Measured (recall / schedule-keyword
+precision / latency / cost-per-53):
+
+| Provider | Index | Recall | Sched-prec | Latency | $/53 | Verdict |
+|---|---|---|---|---|---|---|
+| **Serper** | raw Google | 100% | 75.5% | 0.87s | $0.05 | **Wave-1 failover** |
+| **Bright Data** | raw Google | 98.1% | 77.4% | 4.46s | $0.08 | **Wave-1 primary** |
+| OpenRouter gpt-4o-mini-search | OpenAI/Google | 100% | 75% | 3.6s | $1.43 | retired ($27/1K wraps Google) |
+| Claude CLI WebSearch (no-schema/low) | Claude | 66% | 60% | 17.6s | quota | → **Wave-2 residual only** |
+| subagent Wave-1 (baseline) | Claude | 47% | — | — | quota | retired |
+| Perplexity Search | own index | 43% | 15% | 0.47s | $0.27 | retired (zero coverage on long-tail) |
+
+**Load-bearing lesson: the underlying INDEX predicts recall.** Raw-Google providers cluster at the top;
+own-index providers (Perplexity, and by extension Exa/Brave/Tavily/LangSearch) crater — Perplexity's 30
+misses ALL had `raw_urls=0` (its index simply has no entry for small district domains). Provider survey +
+two Perplexity Deep Research reports: `docs/technical-notes/SERP API Provider Comparison*.md`. Google's own
+Custom Search API is a dead end (shutting down Jan 2027, 50-domain cap).
+
+### 7b. The cascade (current code)
+- **Wave 1 = Bright Data SERP** primary, **Serper failover** — `headless.brightdata_then_serper(query,
+  domain)`: try `brightdata_search`; on its billing/auth `SystemExit` (out of credits / down), fall back
+  to `serper_search` for that school. Both hit the SAME Google index, so Serper is **uptime redundancy,
+  not recall** (user insight: don't run Serper on Bright Data's *empty* results — same index = same
+  emptiness). If Serper ALSO billing-fails, that `SystemExit` halts the run (both Google providers gone).
+  Chosen order — Bright Data first — because its 5,000/mo free tier is **recurring** while Serper's 2,500
+  credits are a one-time bank: ride the renewable tier, keep the bank as backup.
+- **Wave 2 = Claude WebSearch on the genuine residual** — `headless._wave2_claude(district, residual,
+  domain)`: ONE `claude -p` WebSearch call over the residual schools (a *different* index than Google),
+  mapped per `school_id` and gated normally. Speculative "why-not-try" tier; a Claude failure/timeout
+  degrades the residual to `manual_flag`, never halts. Uses the retained `claude -p` helpers (no-schema).
+- **Deterministic tail unchanged:** `gate → residual → Wave 2 → flatten/dedup → atomic write → one
+  registry record`, reused from `discover_stage2` verbatim (`run_wave1`/`run_wave2` now take an injectable
+  `search_fn`). `run_batch` processes districts **sequentially** (one registry writer, no race; providers
+  fast enough at batch scale — parallelize at 17k via Bright Data's unlimited concurrency later).
+
+### 7c. Console + live result
+The Stage 2 console view (`static/stage2.js`, ungated → status/observability + the run trigger) is BUILT
+and drives `run_batch` as a background job (events-as-log feed). **batch_00002 (11 districts) + batch_00003
+(12, incl. add/reject-school edits) ran end-to-end through the UI.** batch_00002: Bright Data Wave-1 found
+**28/30 schools**; 8 `found_all`, 1 `found_partial` (THREE WAY), 1 `manual_flag_all` (East Chicago charter,
+genuinely no page). The 2 residuals invoked the Claude Wave-2 tier and recovered **0** — both genuine
+no-page cases (a different index can't conjure a page that doesn't exist).
+
+### 7d. Open / watch-items (deferred — gather data first)
+1. **Is Claude Wave-2 worth it?** On batch_00002 it recovered 0/2 and caused the visible latency pauses
+   (the `claude -p` timeout is 420s — too long for a sequential run). Leaning toward **opt-in and/or a
+   60–90s timeout**, but one batch isn't conclusive (Claude might recover a page Google merely
+   *deprioritized*). Watch-item, not yet changed.
+2. **Serper-on-Bright-Data-misses.** Bright Data's lone miss (Monkton) WAS recovered by Serper — same
+   index, ~99% overlap, not byte-identical (proxy/parse variance). Once real-batch misses accumulate
+   (every `discovery.json` records the per-school Wave-1 result), test whether Serper-on-misses earns a
+   Wave-1.5 residual-recall role vs. its current failover-only role.
+3. **Bing via Bright Data** is available (`--engine`) but returned empty on our Google-tuned zone; ~1–3%
+   marginal per the research — filed under "available if needed."
