@@ -243,6 +243,25 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
   border-top-color: var(--action-primary); animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ===================== Stage 2 (Discover) status view — REQ-104 ===================== */
+.s2-note { font-size: var(--fs-sm); color: var(--text-secondary); }
+.s2-table { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
+.s2-table th { text-align: left; font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: var(--ls-wide);
+  color: var(--text-secondary); font-weight: var(--fw-semibold); padding: var(--space-2) var(--space-3);
+  border-bottom: var(--border-hair) solid var(--border-subtle); }
+.s2-table td { padding: var(--space-2) var(--space-3); border-bottom: var(--border-hair) solid var(--border-subtle);
+  vertical-align: middle; }
+.s2-table tr:hover td { background: var(--surface-alt); }
+.s2-dname { font-weight: var(--fw-semibold); }
+.s2-job { background: var(--surface-card); border: var(--border-hair) solid var(--border-subtle);
+  border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4);
+  box-shadow: var(--shadow-xs); }
+.s2-job-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); }
+.s2-job-sum { font-size: var(--fs-sm); color: var(--text-primary); margin-bottom: var(--space-2); }
+.s2-ev { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px;
+  max-height: 220px; overflow-y: auto; font-size: var(--fs-xs); color: var(--text-secondary); }
+.s2-ev-kind { display: inline-block; min-width: 78px; font-weight: var(--fw-semibold); color: var(--text-brand); }
+
 /* add-school modal */
 .modal-foot { padding: var(--space-3) var(--space-5); border-top: var(--border-hair) solid var(--border-subtle);
   display: flex; justify-content: flex-end; }

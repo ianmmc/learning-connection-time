@@ -1,0 +1,1043 @@
+{
+  "meta": {
+    "generated_at": "2026-06-28T07:02:37Z",
+    "batch": "batch_00001",
+    "provider": "serper"
+  },
+  "baseline_ref": {
+    "n": 53,
+    "w1_found": 25,
+    "w1_pct": 47.2
+  },
+  "stats": {
+    "n": 53,
+    "ok": 53,
+    "ok_pct": 100.0,
+    "errors": 0,
+    "recall_found": 53,
+    "recall_pct": 100.0,
+    "sched_kw": 40,
+    "sched_pct": 75.5,
+    "mean_dur_s": 0.872,
+    "est_cost_usd": 0.053
+  },
+  "rows": [
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.bluewatermiddlecollege.org/",
+        "https://www.bluewatermiddlecollege.org/o/bwmc/page/academic-calendar",
+        "https://www.bluewatermiddlecollege.org/o/bwmc/page/faqs",
+        "https://www.bluewatermiddlecollege.org/o/bwmc/page/about-bwmc",
+        "https://www.bluewatermiddlecollege.org/o/bwmc/article/2836706",
+        "https://www.bluewatermiddlecollege.org/o/bwmc/page/home",
+        "https://www.bluewatermiddlecollege.org/o/bwmc/live_feeds/11231964",
+        "https://www.bluewatermiddlecollege.org/o/bwmc/page/applying-to-colleges",
+        "https://www.bluewatermiddlecollege.org/staff",
+        "https://www.bluewatermiddlecollege.org/o/bwmc/live_feeds/11388074"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.9,
+      "outcome": "ok",
+      "district_id": "2600992",
+      "school": "Blue Water Middle College Academy"
+    },
+    {
+      "raw_urls": 1,
+      "found": true,
+      "gated_urls": [
+        "https://www.hlakc.org/"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.6,
+      "outcome": "ok",
+      "district_id": "2900601",
+      "school": "HOPE LEADERSHIP ACADEMY"
+    },
+    {
+      "raw_urls": 1,
+      "found": true,
+      "gated_urls": [
+        "https://www.royschools.org/calendar"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.6,
+      "outcome": "ok",
+      "district_id": "3502280",
+      "school": "ROY ELEMENTARY"
+    },
+    {
+      "raw_urls": 1,
+      "found": true,
+      "gated_urls": [
+        "https://www.royschools.org/calendar"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.6,
+      "outcome": "ok",
+      "district_id": "3502280",
+      "school": "ROY HIGH"
+    },
+    {
+      "raw_urls": 7,
+      "found": true,
+      "gated_urls": [
+        "https://holahoboken.org/",
+        "https://holahoboken.org/about",
+        "https://www.holahoboken.org/news",
+        "https://www.holahoboken.org/admissions",
+        "https://www.holahoboken.org/admins",
+        "https://www.holahoboken.org/trustees",
+        "https://holahoboken.org/life"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.7,
+      "outcome": "ok",
+      "district_id": "3400734",
+      "school": "Hoboken Dual Language Charter Scho"
+    },
+    {
+      "raw_urls": 1,
+      "found": true,
+      "gated_urls": [
+        "https://sojournertruthacademy.org/"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.6,
+      "outcome": "ok",
+      "district_id": "2700159",
+      "school": "Sojourner Truth Academy"
+    },
+    {
+      "raw_urls": 4,
+      "found": true,
+      "gated_urls": [
+        "https://www.dunseith.k12.nd.us/",
+        "https://www.dunseith.k12.nd.us/page/2025-2026-school-year-calendar",
+        "https://www.dunseith.k12.nd.us/live-feed?page_no=7",
+        "https://www.dunseith.k12.nd.us/article/307180"
+      ],
+      "sched_kw": true,
+      "dur_s": 1.3,
+      "outcome": "ok",
+      "district_id": "3805460",
+      "school": "DUNSEITH ELEMENTARY SCHOOL"
+    },
+    {
+      "raw_urls": 4,
+      "found": true,
+      "gated_urls": [
+        "https://www.dunseith.k12.nd.us/",
+        "https://www.dunseith.k12.nd.us/page/2025-2026-school-year-calendar",
+        "https://www.dunseith.k12.nd.us/live-feed?page_no=7",
+        "https://www.dunseith.k12.nd.us/article/307180"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.8,
+      "outcome": "ok",
+      "district_id": "3805460",
+      "school": "DUNSEITH HIGH SCHOOL"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.marion-isd.org/o/francis-marion",
+        "https://www.marion-isd.org/o/francis-marion/page/school-hours",
+        "https://www.marion-isd.org/",
+        "https://www.marion-isd.org/o/mhs/documents/bell-schedule/16534727",
+        "https://www.marion-isd.org/o/vms/documents/vms-bell-schedule/177774",
+        "https://www.marion-isd.org/o/francis-marion/events",
+        "https://www.marion-isd.org/o/mhsap",
+        "https://www.marion-isd.org/o/vms",
+        "https://www.marion-isd.org/browse/173255",
+        "https://www.marion-isd.org/o/mhs"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.5,
+      "outcome": "ok",
+      "district_id": "1918690",
+      "school": "Francis Marion Intermediate School"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.marion-isd.org/o/parkview",
+        "https://www.marion-isd.org/o/parkview/page/school-hours",
+        "https://www.marion-isd.org/",
+        "https://www.marion-isd.org/o/vms",
+        "https://www.marion-isd.org/o/francis-marion",
+        "https://www.marion-isd.org/o/mhs/news",
+        "https://www.marion-isd.org/o/mhsap",
+        "https://www.marion-isd.org/o/mhs/documents/bell-schedule/16534727",
+        "https://www.marion-isd.org/o/vms/documents/vms-bell-schedule/177774",
+        "https://www.marion-isd.org/o/parkview/live-feed?page_no=4"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.8,
+      "outcome": "ok",
+      "district_id": "1918690",
+      "school": "Parkview Elementary School"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.marion-isd.org/o/longfellow",
+        "https://www.marion-isd.org/o/vms/documents/vms-bell-schedule/177774",
+        "https://www.marion-isd.org/o/longfellow/news",
+        "https://www.marion-isd.org/o/mhs/documents/bell-schedule/16534727",
+        "https://www.marion-isd.org/o/vms",
+        "https://www.marion-isd.org/",
+        "https://www.marion-isd.org/o/mhs/news",
+        "https://www.marion-isd.org/o/francis-marion",
+        "https://www.marion-isd.org/o/mhs",
+        "https://www.marion-isd.org/o/parkview"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.6,
+      "outcome": "ok",
+      "district_id": "1918690",
+      "school": "Longfellow Elementary"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.marion-isd.org/o/vms/documents/vms-bell-schedule/177774",
+        "https://www.marion-isd.org/o/vms",
+        "https://www.marion-isd.org/",
+        "https://www.marion-isd.org/o/vms/live-feed?page_no=4",
+        "https://www.marion-isd.org/o/mhs/documents/bell-schedule/16534727",
+        "https://www.marion-isd.org/o/mhs",
+        "https://www.marion-isd.org/o/mhsap",
+        "https://www.marion-isd.org/o/francis-marion",
+        "https://www.marion-isd.org/browse/173255",
+        "https://www.marion-isd.org/o/parkview"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.7,
+      "outcome": "ok",
+      "district_id": "1918690",
+      "school": "Vernon Middle School"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.marion-isd.org/o/mhs/documents/bell-schedule/16534727",
+        "https://www.marion-isd.org/",
+        "https://www.marion-isd.org/o/mhs",
+        "https://www.marion-isd.org/browse/173255",
+        "https://www.marion-isd.org/o/vms/documents/vms-bell-schedule/177774",
+        "https://www.marion-isd.org/o/mhs/live-feed?page_no=6",
+        "https://www.marion-isd.org/o/mhsap",
+        "https://www.marion-isd.org/o/francis-marion",
+        "https://www.marion-isd.org/o/mhs/article/832078",
+        "https://www.marion-isd.org/o/vms"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.8,
+      "outcome": "ok",
+      "district_id": "1918690",
+      "school": "Marion High School"
+    },
+    {
+      "raw_urls": 1,
+      "found": true,
+      "gated_urls": [
+        "https://www.anesu.org/"
+      ],
+      "sched_kw": false,
+      "dur_s": 1.6,
+      "outcome": "ok",
+      "district_id": "5000425",
+      "school": "Monkton Central School"
+    },
+    {
+      "raw_urls": 1,
+      "found": true,
+      "gated_urls": [
+        "https://www.anesu.org/"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.8,
+      "outcome": "ok",
+      "district_id": "5000425",
+      "school": "Beeman Elementary School"
+    },
+    {
+      "raw_urls": 1,
+      "found": true,
+      "gated_urls": [
+        "https://www.anesu.org/"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.7,
+      "outcome": "ok",
+      "district_id": "5000425",
+      "school": "Robinson School"
+    },
+    {
+      "raw_urls": 1,
+      "found": true,
+      "gated_urls": [
+        "https://www.anesu.org/"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.6,
+      "outcome": "ok",
+      "district_id": "5000425",
+      "school": "Bristol Elementary School"
+    },
+    {
+      "raw_urls": 1,
+      "found": true,
+      "gated_urls": [
+        "https://www.anesu.org/"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.8,
+      "outcome": "ok",
+      "district_id": "5000425",
+      "school": "Mt. Abraham Union High School"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.usd234.org/o/eware",
+        "https://www.usd234.org/",
+        "https://www.usd234.org/documents/59377",
+        "https://www.usd234.org/o/fshs/news?page_no=13",
+        "https://www.usd234.org/o/wscott",
+        "https://www.usd234.org/o/fshs/live_feeds/12012216",
+        "https://www.usd234.org/o/fsms",
+        "https://www.usd234.org/o/wscott/live-feed?page_no=6",
+        "https://www.usd234.org/o/fsms/live-feed?page_no=4",
+        "https://www.usd234.org/o/fshs/live-feed?page_no=9"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.7,
+      "outcome": "ok",
+      "district_id": "2006180",
+      "school": "Eugene Ware Elem"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.usd234.org/o/wscott",
+        "https://www.usd234.org/",
+        "https://www.usd234.org/documents/59377",
+        "https://www.usd234.org/o/wscott/live-feed?page_no=4",
+        "https://www.usd234.org/o/eware",
+        "https://www.usd234.org/o/fshs/news?page_no=13",
+        "https://www.usd234.org/o/fshs/article/2595217",
+        "https://www.usd234.org/o/fshs",
+        "https://www.usd234.org/o/fshs/live_feeds/12012216",
+        "https://www.usd234.org/o/fsms"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.6,
+      "outcome": "ok",
+      "district_id": "2006180",
+      "school": "Winfield Scott Elem"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.usd234.org/o/fsms",
+        "https://www.usd234.org/",
+        "https://www.usd234.org/documents/59377",
+        "https://www.usd234.org/o/fsms/live-feed?page_no=4",
+        "https://www.usd234.org/o/fshs/news",
+        "https://www.usd234.org/o/eware",
+        "https://www.usd234.org/o/fshs/article/2595217",
+        "https://www.usd234.org/o/fshs/live_feeds/12012216",
+        "https://www.usd234.org/o/wscott",
+        "https://www.usd234.org/o/fspc"
+      ],
+      "sched_kw": false,
+      "dur_s": 1.2,
+      "outcome": "ok",
+      "district_id": "2006180",
+      "school": "Fort Scott Middle School"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.usd234.org/o/fshs",
+        "https://www.usd234.org/o/fshs/news",
+        "https://www.usd234.org/o/fshs/article/1755161",
+        "https://www.usd234.org/o/fshs/live_feeds/12012216",
+        "https://www.usd234.org/o/fshs/live-feed?page_no=5",
+        "https://www.usd234.org/o/fshs/article/2595217",
+        "https://www.usd234.org/o/fshs/news?lang=en&page_no=17",
+        "https://www.usd234.org/o/fshs/article/2827434",
+        "https://www.usd234.org/o/fshs/article/2719572",
+        "https://www.usd234.org/o/fshs/article/2760213"
+      ],
+      "sched_kw": false,
+      "dur_s": 1.7,
+      "outcome": "ok",
+      "district_id": "2006180",
+      "school": "Fort Scott Sr High"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.sburg.org/apps3/bell_schedules/",
+        "https://morey.sburg.org/",
+        "https://morey.sburg.org/apps/events/",
+        "https://www.sburg.org/",
+        "https://middle.sburg.org/apps/bell_schedules/",
+        "https://sburg.org/apps/pages/index.jsp?uREC_ID=412066&type=d&termREC_ID=&pREC_ID=1150004",
+        "https://www.sburg.org/apps/pages/index.jsp?uREC_ID=412061&type=d",
+        "https://www.sburg.org/apps/pages/index.jsp?uREC_ID=606525&type=d&termREC_ID=&pREC_ID=1164097",
+        "https://morey.sburg.org/apps/pages/index.jsp?uREC_ID=412230&type=d",
+        "https://high.sburg.org/apps/bell_schedules/"
+      ],
+      "sched_kw": true,
+      "dur_s": 1.4,
+      "outcome": "ok",
+      "district_id": "4222860",
+      "school": "B F Morey El Sch"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://chipperfield.sburg.org/",
+        "https://www.sburg.org/apps3/bell_schedules/",
+        "https://www.sburg.org/",
+        "https://www.sburg.org/apps/pages/index.jsp?uREC_ID=606525&type=d&termREC_ID=&pREC_ID=1164097",
+        "https://chipperfield.sburg.org/apps/events/",
+        "https://middle.sburg.org/apps/bell_schedules/",
+        "https://high.sburg.org/apps/bell_schedules/",
+        "https://jhs.sburg.org/apps/news/index.jsp?id=0",
+        "https://hamilton.sburg.org/",
+        "https://www.sburg.org/apps/pages/index.jsp?uREC_ID=412061&type=d"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.7,
+      "outcome": "ok",
+      "district_id": "4222860",
+      "school": "Chipperfield El Sch"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://arlington.sburg.org/",
+        "https://www.sburg.org/apps3/bell_schedules/",
+        "https://www.sburg.org/",
+        "https://www.sburg.org/apps/pages/index.jsp?uREC_ID=606525&type=d&termREC_ID=&pREC_ID=1164097",
+        "https://middle.sburg.org/apps/bell_schedules/",
+        "https://high.sburg.org/apps/bell_schedules/",
+        "https://chipperfield.sburg.org/",
+        "https://hamilton.sburg.org/",
+        "https://jhs.sburg.org/apps/news/index.jsp?id=0",
+        "https://www.sburg.org/apps/pages/index.jsp?uREC_ID=412061&type=d"
+      ],
+      "sched_kw": true,
+      "dur_s": 1.0,
+      "outcome": "ok",
+      "district_id": "4222860",
+      "school": "Arlington Heights El Sch"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://hamilton.sburg.org/",
+        "https://hamilton.sburg.org/apps/events/",
+        "https://chipperfield.sburg.org/",
+        "https://middle.sburg.org/apps/bell_schedules/",
+        "https://www.sburg.org/",
+        "https://arlington.sburg.org/",
+        "https://high.sburg.org/apps/bell_schedules/",
+        "https://high.sburg.org/",
+        "https://jhs.sburg.org/apps/news/index.jsp?id=0",
+        "https://morey.sburg.org/"
+      ],
+      "sched_kw": true,
+      "dur_s": 1.1,
+      "outcome": "ok",
+      "district_id": "4222860",
+      "school": "Hamilton Twp El Sch"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.sburg.org/apps3/bell_schedules/",
+        "https://middle.sburg.org/apps/bell_schedules/",
+        "https://middle.sburg.org/apps/bell_schedules/printerfriendly.jsp",
+        "https://www.sburg.org/apps/pages/index.jsp?uREC_ID=606525&type=d&termREC_ID=&pREC_ID=1164097",
+        "https://www.sburg.org/",
+        "https://high.sburg.org/apps/bell_schedules/",
+        "https://middle.sburg.org/",
+        "https://high.sburg.org/",
+        "https://www.sburg.org/apps/pages/index.jsp?uREC_ID=412061&type=d",
+        "https://middle.sburg.org/apps/events/"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.9,
+      "outcome": "ok",
+      "district_id": "4222860",
+      "school": "Stroudsburg MS"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.sburg.org/apps3/bell_schedules/",
+        "https://www.sburg.org/apps/pages/index.jsp?uREC_ID=606525&type=d&termREC_ID=&pREC_ID=1164097",
+        "https://www.sburg.org/",
+        "https://middle.sburg.org/apps/bell_schedules/",
+        "https://jhs.sburg.org/",
+        "https://high.sburg.org/apps/bell_schedules/",
+        "https://www.sburg.org/apps/pages/index.jsp?uREC_ID=412061&type=d",
+        "https://high.sburg.org/",
+        "https://jhs.sburg.org/apps/news/index.jsp?id=0",
+        "https://middle.sburg.org/"
+      ],
+      "sched_kw": true,
+      "dur_s": 1.0,
+      "outcome": "ok",
+      "district_id": "4222860",
+      "school": "Stroudsburg JHS"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.sburg.org/apps3/bell_schedules/",
+        "https://high.sburg.org/",
+        "https://middle.sburg.org/apps/bell_schedules/",
+        "https://high.sburg.org/apps/bell_schedules/",
+        "https://www.sburg.org/",
+        "https://www.sburg.org/apps/pages/index.jsp?uREC_ID=606525&type=d&termREC_ID=&pREC_ID=1164097",
+        "https://www.sburg.org/apps/pages/index.jsp?uREC_ID=412061&type=d",
+        "https://www.sburg.org/apps/events/?m=3&y=2025&id=0",
+        "https://jhs.sburg.org/",
+        "https://jhs.sburg.org/apps/news/index.jsp?id=0"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.9,
+      "outcome": "ok",
+      "district_id": "4222860",
+      "school": "Stroudsburg HS"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://leal.usd116.org/",
+        "https://usd116.org/schools/",
+        "https://usd116.org/wp-content/uploads/2025/06/Leal-Student-Handbook-2025-26-.pdf",
+        "https://usd116.org/back-to-school/",
+        "https://usd116.org/calendar/",
+        "https://usd116.org/first-day-ready/",
+        "https://yridge.usd116.org/wp-content/uploads/2021/06/YR-PARENT-HANDBOOK-2021-22.pdf",
+        "https://usd116.org/",
+        "https://usd116.org/6th-grade-center/",
+        "https://yridge.usd116.org/wp-content/uploads/2020/07/YR-Ridge-Student-Parent-Handbook-2020-21.pdf"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.8,
+      "outcome": "ok",
+      "district_id": "1739960",
+      "school": "Leal Elem School"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://drking.usd116.org/",
+        "http://www.usd116.org/files/ParentHandbooks/2018-19%20Handbooks/2018-19DrKing-ENG.pdf",
+        "https://usd116.org/calendar/",
+        "https://yridge.usd116.org/wp-content/uploads/2021/06/YR-PARENT-HANDBOOK-2021-22.pdf",
+        "https://usd116.org/",
+        "https://usd116.org/wp-content/uploads/2025/07/King-Handbook-2025-26.pdf",
+        "https://usd116.org/wp-content/uploads/2023/07/10.3-Final-EA-Report-Urbana-SD-116.pdf",
+        "https://drwilliams.usd116.org/wp-content/uploads/2022/07/22-23-English-Handbook-Calendar.pdf",
+        "https://www.usd116.org/files/boardmin0809/090602title1.pdf",
+        "https://usd116.org/wp-content/uploads/2025/06/Leal-Student-Handbook-2025-26-.pdf"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.8,
+      "outcome": "ok",
+      "district_id": "1739960",
+      "school": "M L King Jr Elem School"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://usd116.org/schools/dpw/",
+        "https://drwilliams.usd116.org/wp-content/uploads/2021/06/DPW-Handbook-2021-2022.pdf",
+        "https://drwilliams.usd116.org/wp-content/uploads/2020/07/Student-Handbook-2020-2021-1.pdf",
+        "https://usd116.org/wp-content/uploads/2025/06/25-26-DPW-New-Student-Handbook.pdf",
+        "https://usd116.org/wp-content/uploads/2023/07/10.3-Final-EA-Report-Urbana-SD-116.pdf",
+        "https://usd116.org/",
+        "http://usd116.org/files/BOE/boardmin1011/100817boardpacket.pdf",
+        "http://usd116.org/files/BOE/USD116BoardPolicyManual9-12-18.pdf",
+        "https://usd116.org/wp-content/uploads/2025/06/UMS-2025-26-Family-Student-Handbook-.pdf",
+        "https://usd116.org/wp-content/uploads/2025/06/UHS-student-handbook-2025-2026.pdf"
+      ],
+      "sched_kw": false,
+      "dur_s": 1.2,
+      "outcome": "ok",
+      "district_id": "1739960",
+      "school": "Dr Preston L Williams Jr Elem Sch"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://tmspaine.usd116.org/",
+        "https://usd116.org/usd-summer-programs-2026/",
+        "https://usd116.org/calendar/",
+        "https://usd116.org/first-day-ready/",
+        "https://usd116.org/",
+        "https://usd116.org/wp-content/uploads/2025/06/Leal-Student-Handbook-2025-26-.pdf",
+        "https://usd116.org/wp-content/uploads/2025/06/UMS-2025-26-Family-Student-Handbook-.pdf",
+        "https://usd116.org/wp-content/uploads/2023/07/10.3-Final-EA-Report-Urbana-SD-116.pdf",
+        "http://usd116.org/files/BOE/boardmin1011/100817boardpacket.pdf",
+        "https://usd116.org/wp-content/uploads/2025/06/UHS-student-handbook-2025-2026.pdf"
+      ],
+      "sched_kw": true,
+      "dur_s": 1.2,
+      "outcome": "ok",
+      "district_id": "1739960",
+      "school": "Thomas Paine Elem School"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://ums.usd116.org/",
+        "https://ums.usd116.org/ums-bell-schedule/",
+        "https://usd116.org/calendar/",
+        "https://usd116.org/schools/sgc/",
+        "https://usd116.org/",
+        "https://usd116.org/back-to-school/",
+        "https://usd116.org/first-day-ready/",
+        "https://usd116.org/wp-content/uploads/2023/07/10.3-Final-EA-Report-Urbana-SD-116.pdf",
+        "https://usd116.org/wp-content/uploads/2025/06/UMS-2025-26-Family-Student-Handbook-.pdf",
+        "https://usd116.org/6th-grade-center/"
+      ],
+      "sched_kw": true,
+      "dur_s": 1.4,
+      "outcome": "ok",
+      "district_id": "1739960",
+      "school": "Urbana Middle School"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://usd116.org/schools/",
+        "https://usd116.org/back-to-school/",
+        "https://usd116.org/",
+        "https://usd116.org/calendar/",
+        "https://ums.usd116.org/ums-bell-schedule/",
+        "https://ums.usd116.org/",
+        "https://usd116.org/schools/sgc/",
+        "https://usd116.org/first-day-ready/",
+        "https://www.usd116.org/files/05distpolhbk.pdf",
+        "https://usd116.org/wp-content/uploads/2023/07/10.3-Final-EA-Report-Urbana-SD-116.pdf"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.7,
+      "outcome": "ok",
+      "district_id": "1739960",
+      "school": "Urbana High School"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/departments/instruction/piedmont_summer_regional_governor_s_school/class_schedule",
+        "https://www.pcs.k12.va.us/parents/calendars/2025-2026_calendar",
+        "https://www.pcs.k12.va.us/parents/calendars/2022-2023_calendar",
+        "https://cms.pcs.k12.va.us/about_us/calendar",
+        "https://www.pcs.k12.va.us/closings",
+        "https://www.pcs.k12.va.us/news/archived_news/2020-2021/summer_school_schedule",
+        "https://www.pcs.k12.va.us/parents/calendars",
+        "https://www.pcs.k12.va.us/news/archived_news/2023-2024/2024_-_2025_approved_calendar",
+        "https://www.pcs.k12.va.us/school_board/school_board_info"
+      ],
+      "sched_kw": true,
+      "dur_s": 1.0,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Chatham Elementary"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/departments/instruction/piedmont_summer_regional_governor_s_school/class_schedule",
+        "https://www.pcs.k12.va.us/parents/calendars/2025-2026_calendar",
+        "https://www.pcs.k12.va.us/parents/calendars",
+        "https://ghs.pcs.k12.va.us/parents__students/calendar",
+        "https://www.pcs.k12.va.us/parents/calendars/2026-2027_calendar",
+        "https://www.pcs.k12.va.us/parents/calendars/2024-2025_calendar",
+        "https://www.pcs.k12.va.us/parents/calendars/2022-2023_calendar",
+        "https://www.pcs.k12.va.us/departments/instruction/elementary",
+        "https://www.pcs.k12.va.us/jobs/substitutes_needed"
+      ],
+      "sched_kw": true,
+      "dur_s": 1.0,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Gretna Elementary"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.pcs.k12.va.us/parents/calendars/2025-2026_calendar",
+        "https://www.pcs.k12.va.us/departments/instruction/piedmont_summer_regional_governor_s_school/class_schedule",
+        "https://www.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/parents/calendars/2022-2023_calendar",
+        "https://www.pcs.k12.va.us/news/archived_news/2020-2021/summer_school_schedule",
+        "https://www.pcs.k12.va.us/parents/calendars",
+        "https://www.pcs.k12.va.us/closings",
+        "https://www.pcs.k12.va.us/news/whats_new",
+        "https://www.pcs.k12.va.us/jobs",
+        "https://www.pcs.k12.va.us/news/whats_new/davenport_energy_awards_local_school_grants"
+      ],
+      "sched_kw": true,
+      "dur_s": 1.1,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "John L. Hurt Elementary"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/departments/instruction/piedmont_summer_regional_governor_s_school/class_schedule",
+        "https://www.pcs.k12.va.us/parents/calendars/2025-2026_calendar",
+        "https://www.pcs.k12.va.us/parents/calendars",
+        "https://www.pcs.k12.va.us/departments/school_nutrition/menus",
+        "https://www.pcs.k12.va.us/parents/calendars/2026-2027_calendar",
+        "https://www.pcs.k12.va.us/news/archived_news/2020-2021/summer_school_schedule",
+        "https://drms.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/calendar",
+        "https://www.pcs.k12.va.us/parents/calendars/2024-2025_calendar"
+      ],
+      "sched_kw": true,
+      "dur_s": 1.6,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Kentuck Elementary"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/departments/instruction/piedmont_summer_regional_governor_s_school/class_schedule",
+        "https://www.pcs.k12.va.us/parents/calendars/2025-2026_calendar",
+        "https://www.pcs.k12.va.us/parents/calendars/2024-2025_calendar",
+        "https://www.pcs.k12.va.us/parents/calendars",
+        "https://www.pcs.k12.va.us/news/archived_news/2020-2021/summer_school_schedule",
+        "https://www.pcs.k12.va.us/parents/calendars/2026-2027_calendar",
+        "https://www.pcs.k12.va.us/parents/calendars/2022-2023_calendar",
+        "https://www.pcs.k12.va.us/closings",
+        "https://www.pcs.k12.va.us/departments/school_nutrition/menus"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.8,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Mount Airy Elementary"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/parents/calendars/2025-2026_calendar",
+        "https://www.pcs.k12.va.us/departments/instruction/piedmont_summer_regional_governor_s_school/class_schedule",
+        "https://www.pcs.k12.va.us/parents/calendars",
+        "https://www.pcs.k12.va.us/news/archived_news/2020-2021/summer_school_schedule",
+        "https://www.pcs.k12.va.us/parents/calendars/2026-2027_calendar",
+        "https://www.pcs.k12.va.us/news/whats_new",
+        "https://www.pcs.k12.va.us/departments/school_nutrition/menus",
+        "https://www.pcs.k12.va.us/closings",
+        "https://www.pcs.k12.va.us/news/archived_news/2023-2024/2023_national_blue_ribbon_schools"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.6,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Southside Elementary"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/parents/calendars/2025-2026_calendar",
+        "https://www.pcs.k12.va.us/departments/instruction/piedmont_summer_regional_governor_s_school/class_schedule",
+        "https://www.pcs.k12.va.us/parents/calendars",
+        "https://www.pcs.k12.va.us/news/archived_news/2020-2021/summer_school_schedule",
+        "https://www.pcs.k12.va.us/parents/calendars/2026-2027_calendar",
+        "https://www.pcs.k12.va.us/departments/school_nutrition/menus",
+        "https://www.pcs.k12.va.us/calendar",
+        "https://www.pcs.k12.va.us/parents/calendars/2024-2025_calendar",
+        "https://www.pcs.k12.va.us/parents/calendars/2022-2023_calendar"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.8,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Stony Mill Elementary"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.pcs.k12.va.us/parents/calendars/2025-2026_calendar",
+        "https://www.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/departments/instruction/piedmont_summer_regional_governor_s_school/class_schedule",
+        "https://www.pcs.k12.va.us/parents/calendars/2022-2023_calendar",
+        "https://www.pcs.k12.va.us/news/archived_news/2023-2024/2023_national_blue_ribbon_schools",
+        "https://www.pcs.k12.va.us/parents/calendars",
+        "https://www.pcs.k12.va.us/closings",
+        "https://www.pcs.k12.va.us/news/archived_news/2020-2021/summer_school_schedule",
+        "https://cms.pcs.k12.va.us/about_us/calendar",
+        "https://www.pcs.k12.va.us/departments/operations___i_t__maintenance___transportation_/transportation"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.6,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Union Hall Elementary"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://tse.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/parents/calendars/2025-2026_calendar",
+        "https://www.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/departments/instruction/piedmont_summer_regional_governor_s_school/class_schedule",
+        "https://www.pcs.k12.va.us/parents/calendars/2026-2027_calendar",
+        "https://www.pcs.k12.va.us/departments/instruction/elementary",
+        "https://www.pcs.k12.va.us/parents/calendars",
+        "https://www.pcs.k12.va.us/departments/school_nutrition/menus",
+        "https://tms.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/news/archived_news/2020-2021/summer_school_schedule"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.7,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Twin Springs Elementary"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.pcs.k12.va.us/departments/instruction/piedmont_summer_regional_governor_s_school/class_schedule",
+        "https://www.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/parents/calendars/2025-2026_calendar",
+        "https://www.pcs.k12.va.us/parents/calendars",
+        "https://www.pcs.k12.va.us/news/archived_news/2020-2021/summer_school_schedule",
+        "https://www.pcs.k12.va.us/parents/calendars/2026-2027_calendar",
+        "https://www.pcs.k12.va.us/parents/calendars/2024-2025_calendar",
+        "https://www.pcs.k12.va.us/departments/school_nutrition/menus",
+        "https://www.pcs.k12.va.us/closings",
+        "https://www.pcs.k12.va.us/parents/calendars/2022-2023_calendar"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.8,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Brosville Elementary"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://tms.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/departments/instruction/piedmont_summer_regional_governor_s_school/class_schedule",
+        "https://ths.pcs.k12.va.us/Calendar",
+        "https://www.pcs.k12.va.us/parents/calendars/2022-2023_calendar",
+        "https://www.pcs.k12.va.us/news/archived_news/2020-2021/summer_school_schedule",
+        "https://ths.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/parents/calendars/2025-2026_calendar",
+        "https://www.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/closings",
+        "https://www.pcs.k12.va.us/parents/calendars"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.7,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Tunstall Middle"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.pcs.k12.va.us/departments/instruction/piedmont_summer_regional_governor_s_school/class_schedule",
+        "https://cms.pcs.k12.va.us/about_us/calendar",
+        "https://www.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/parents/calendars/2025-2026_calendar",
+        "https://www.pcs.k12.va.us/parents/calendars/2022-2023_calendar",
+        "https://www.pcs.k12.va.us/parents/calendars",
+        "https://www.pcs.k12.va.us/news/archived_news/2020-2021/summer_school_schedule",
+        "https://www.pcs.k12.va.us/closings",
+        "https://www.pcs.k12.va.us/parents/calendars/2024-2025_calendar",
+        "https://www.pcs.k12.va.us/news/archived_news/2023-2024/2024_-_2025_approved_calendar"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.8,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Chatham Middle"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.pcs.k12.va.us/",
+        "https://drms.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/departments/instruction/piedmont_summer_regional_governor_s_school/class_schedule",
+        "https://www.pcs.k12.va.us/news/archived_news/2020-2021/summer_school_schedule",
+        "https://www.pcs.k12.va.us/parents/calendars/2025-2026_calendar",
+        "https://www.pcs.k12.va.us/closings",
+        "https://www.pcs.k12.va.us/news/whats_new",
+        "https://www.pcs.k12.va.us/parents/calendars",
+        "https://www.pcs.k12.va.us/parents/calendars/2022-2023_calendar",
+        "https://www.pcs.k12.va.us/news/whats_new/free_summer_meals_for_students"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.7,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Dan River Middle"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://gms.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/parents/calendars/2025-2026_calendar",
+        "https://www.pcs.k12.va.us/departments/instruction/piedmont_summer_regional_governor_s_school/class_schedule",
+        "https://www.pcs.k12.va.us/parents/calendars",
+        "https://www.pcs.k12.va.us/parents/calendars/2024-2025_calendar",
+        "https://www.pcs.k12.va.us/parents/calendars/2022-2023_calendar",
+        "https://www.pcs.k12.va.us/parents/calendars/2026-2027_calendar",
+        "https://www.pcs.k12.va.us/calendar",
+        "https://www.pcs.k12.va.us/news/archived_news/2020-2021/summer_school_schedule"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.9,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Gretna Middle"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.pcs.k12.va.us/departments/instruction/piedmont_summer_regional_governor_s_school/class_schedule",
+        "https://chs.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/parents/calendars/2025-2026_calendar",
+        "https://www.pcs.k12.va.us/parents/calendars/2022-2023_calendar",
+        "https://cms.pcs.k12.va.us/about_us/calendar",
+        "https://chs.pcs.k12.va.us/UserFiles/Servers/Server_87407/File/For%20Students/Student%20Handbook/CHS%20Student%20Handbook%202025-26%20Rev%2007.09-2025.pdf",
+        "https://www.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/news/archived_news/2020-2021/summer_school_schedule",
+        "https://www.pcs.k12.va.us/closings",
+        "https://www.pcs.k12.va.us/parents/calendars"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.6,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Chatham High"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.pcs.k12.va.us/departments/instruction/piedmont_summer_regional_governor_s_school/class_schedule",
+        "https://www.pcs.k12.va.us/",
+        "https://drms.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/parents/calendars/2025-2026_calendar",
+        "https://chs.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/parents/calendars",
+        "https://www.pcs.k12.va.us/news/archived_news/2020-2021/summer_school_schedule",
+        "https://www.pcs.k12.va.us/news/employees_of_the_week/2022-2023/employee_of_the_week__cynthia_stephens_",
+        "https://www.pcs.k12.va.us/news/whats_new",
+        "https://www.pcs.k12.va.us/parents/calendars/2026-2027_calendar"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.7,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Dan River High"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://ghs.pcs.k12.va.us/parents__students/calendar",
+        "https://www.pcs.k12.va.us/parents/calendars/2025-2026_calendar",
+        "https://www.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/departments/instruction/piedmont_summer_regional_governor_s_school/class_schedule",
+        "https://www.pcs.k12.va.us/parents/calendars",
+        "https://www.pcs.k12.va.us/parents/calendars/2024-2025_calendar",
+        "https://www.pcs.k12.va.us/parents/calendars/2022-2023_calendar",
+        "https://ths.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/parents/calendars/2026-2027_calendar",
+        "https://www.pcs.k12.va.us/news/archived_news/2020-2021/summer_school_schedule"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.8,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Gretna High"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://ths.pcs.k12.va.us/",
+        "https://ths.pcs.k12.va.us/Calendar",
+        "https://www.pcs.k12.va.us/departments/instruction/piedmont_summer_regional_governor_s_school/class_schedule",
+        "https://www.pcs.k12.va.us/parents/calendars/2022-2023_calendar",
+        "https://www.pcs.k12.va.us/parents/calendars/2025-2026_calendar",
+        "https://www.pcs.k12.va.us/news/archived_news/2020-2021/summer_school_schedule",
+        "https://www.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/parents/calendars",
+        "https://tms.pcs.k12.va.us/",
+        "https://www.pcs.k12.va.us/closings"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.7,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Tunstall High"
+    }
+  ]
+}

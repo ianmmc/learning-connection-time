@@ -23,22 +23,27 @@
     return `<span class="badge ${tone}">${esc(s)}</span>`;
   }
 
-  // ----------------------------- view switching -----------------------------
-  const sel = $g("#stageSelect"), v1 = $g("#stage1view"), v5 = $g("#stage5view"), prog = $g("#progress");
-  let loaded = false;
+  // ----------------------------- view switching (the shared stage switcher) -----------------------------
+  // gate1.js hosts the one console switcher (per STAGE2 §4a). Each stage view is its own <main> + JS
+  // module, lazily initialized on first show. stage2.js registers window.initStage2; future stages
+  // follow the same convention (a container id + an init hook by name) — no second #stageSelect listener.
+  const sel = $g("#stageSelect"), prog = $g("#progress");
+  const VIEWS = { stage1: $g("#stage1view"), stage2: $g("#stage2view"), stage5: $g("#stage5view") };
+  let loaded1 = false;
   function applyView() {
-    const s1 = sel.value === "stage1";
-    v1.classList.toggle("hidden", !s1);
-    v5.classList.toggle("hidden", s1);
-    if (prog) prog.style.display = s1 ? "none" : "";
-    if (s1 && !loaded) { loaded = true; renderShell(); loadBatches(); }
+    const which = sel.value;
+    Object.entries(VIEWS).forEach(([k, el]) => { if (el) el.classList.toggle("hidden", k !== which); });
+    if (prog) prog.style.display = which === "stage5" ? "" : "none";   // the labeled-count is Stage-5 only
+    if (which === "stage1" && !loaded1) { loaded1 = true; renderShell(); loadBatches(); }
+    if (which === "stage2" && window.initStage2) window.initStage2();  // stage2.js guards its own re-init
   }
   sel.addEventListener("change", applyView);
+  window.__applyStageView = applyView;   // so stage2.js can self-show if it loads while already selected
   applyView();   // honor whatever option is initially selected
 
   // ----------------------------- shell -----------------------------
   function renderShell() {
-    v1.innerHTML = `
+    VIEWS.stage1.innerHTML = `
       <nav class="col col-tree q-left" aria-label="Batches">
         <div class="q-left-head"><h3>Batches</h3><button id="q-create" class="btn btn-secondary">+ Create batch</button></div>
         <div id="q-list" class="q-list"><div class="empty">Loading…</div></div>

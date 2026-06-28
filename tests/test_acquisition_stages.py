@@ -534,6 +534,15 @@ class TestSlugAndDir:
         assert D2.lea_dir("2600992", "Blue Water Middle College") == \
             D2.RAW_DIR / "2600992_blue_water_middle_college"
 
+    def test_raw_dir_is_repo_anchored_not_cwd_relative(self):
+        """RAW_DIR must be an absolute, repo-anchored path -- the governance server reads the
+        same discovery.json/candidates.json and must agree on the location regardless of the
+        launch directory (the gate@1 create 500'd on exactly this CWD-relative bug class).
+        Asserts the STRUCTURE (absolute + the data/raw/lea-website-captures suffix) rather than
+        identity with paths.RAW_CAPTURES, which other tests legitimately repoint to a tmp DATA_ROOT."""
+        assert D2.RAW_DIR.is_absolute()
+        assert D2.RAW_DIR.parts[-3:] == ("data", "raw", "lea-website-captures")
+
 
 class TestRosterBuilding:
     def test_multi_band_school_dedups_to_one_row_with_both_bands(self):

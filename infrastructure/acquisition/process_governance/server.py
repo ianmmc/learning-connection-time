@@ -25,6 +25,7 @@ from infrastructure.acquisition.common import school_sampling as SS         # no
 from infrastructure.acquisition.stage1_queue import queue_batch as Q1       # noqa: E402  (build/persist a batch — REQ-102)
 from infrastructure.acquisition.stage1_queue import batch_store as BSTORE   # noqa: E402  (the batch working store)
 from infrastructure.acquisition.stage1_queue.models import Batch, BatchDistrict, BatchSchool  # noqa: E402
+from infrastructure.acquisition.stage2_discover import headless as H2       # noqa: E402  (Stage 2 headless runner — REQ-104)
 
 
 def _refresh_filtered(con, district_id: str) -> None:
@@ -351,6 +352,86 @@ def queue_candidates(batch_id: str, district_id: str):
     out = {b: avail for b, cands in idx.items()
            if (avail := [c for c in cands if c["school_id"] not in selected])}
     return {"batch_id": batch_id, "district_id": district_id, "candidates_by_band": out}
+
+
+# ---------------------------------------------------------------- Stage 2 (Discover) console — REQ-104
+# Stage 2 is UNGATED, so the console surfaces it as STATUS/observability + an orchestration trigger
+# (headless `claude -p` Wave 1, subscription-billed). The run is a background job; its status is the
+# state_event log + the on-disk discovery.json (the filesystem is authoritative), projected here.
+# In-process job board (single-user localhost): batch_id -> live run state. Ephemeral by design —
+# the DURABLE record is the state_event log + discovery.json; this is just the live progress feed.
+_DISCOVER_JOBS: dict = {}
+
+
+def _job_view(batch_id: str) -> dict | None:
+    j = _DISCOVER_JOBS.get(batch_id)
+    if not j:
+        return None
+    return {"state": j["state"], "started_at": j["started_at"], "finished_at": j.get("finished_at"),
+            "actor": j["actor"], "events": j["events"][-50:], "summary": j.get("summary"),
+            "error": j.get("error")}
+
+
+@app.get("/api/discover/{batch_id}")
+def discover_status(batch_id: str):
+    """Read-only Stage 2 status for a batch: lifecycle (must be gate@1-approved to run) + per-district
+    discovery outcome read straight from disk + the live job feed (if a run is in flight)."""
+    try:
+        batch = H2.load_batch_any(batch_id)
+    except SystemExit as e:
+        raise HTTPException(404, str(e))
+    with gdb.session_scope() as con:
+        try:
+            batch_status = BSTORE.to_view(con, batch_id)["status"]
+        except KeyError:
+            batch_status = None
+    districts = H2.status_for_batch(batch)
+    return {"batch_id": batch_id, "batch_status": batch_status, "districts": districts,
+            "rollup": H2.rollup(districts), "job": _job_view(batch_id)}
+
+
+@app.post("/api/discover/{batch_id}/run")
+async def discover_run(batch_id: str, payload: dict):
+    """Trigger headless Stage 2 discovery for an approved batch as a BACKGROUND job (12 × `claude -p`
+    WebSearch agents at cap-2 concurrency can't block a request). Guards: batch must be gate@1-approved,
+    and no run already in flight. Live progress streams into _DISCOVER_JOBS; durable truth is the
+    state_event log + discovery.json that run_batch writes."""
+    actor = payload.get("actor", "ian")
+    with gdb.session_scope() as con:
+        try:
+            view = BSTORE.to_view(con, batch_id)
+        except KeyError:
+            raise HTTPException(404, f"no such batch {batch_id}")
+    if view["status"] != "approved":
+        raise HTTPException(409, f"batch {batch_id} is '{view['status']}' — gate@1 approval is required "
+                                 f"before discovery")
+    existing = _DISCOVER_JOBS.get(batch_id)
+    if existing and existing["state"] == "running":
+        raise HTTPException(409, f"discovery already running for {batch_id}")
+
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    job = {"state": "running", "started_at": now, "actor": actor, "events": [],
+           "summary": None, "error": None, "finished_at": None}
+    _DISCOVER_JOBS[batch_id] = job
+
+    def _on_event(kind, p):
+        job["events"].append({"kind": kind, **p})
+
+    def _work():
+        try:
+            job["summary"] = H2.run_batch(batch_id, actor=actor, on_event=_on_event)
+            job["state"] = "done"
+        except SystemExit as e:   # reconcile CONTROL FAILURE / billing-auth halt — surface, don't hide
+            job["state"], job["error"] = "halted", f"CONTROL FAILURE: {e}"
+        except Exception as e:
+            job["state"], job["error"] = "error", f"{type(e).__name__}: {e}"
+        finally:
+            job["finished_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    import threading
+    threading.Thread(target=_work, name=f"discover-{batch_id}", daemon=True).start()
+    return {"started": True, "batch_id": batch_id}
 
 
 @app.get("/")

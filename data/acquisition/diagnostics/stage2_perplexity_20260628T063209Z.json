@@ -1,0 +1,761 @@
+{
+  "meta": {
+    "generated_at": "2026-06-28T06:32:09Z",
+    "batch": "batch_00001",
+    "provider": "perplexity"
+  },
+  "baseline_ref": {
+    "n": 53,
+    "w1_found": 25,
+    "w1_pct": 47.2
+  },
+  "stats": {
+    "n": 53,
+    "ok": 53,
+    "ok_pct": 100.0,
+    "errors": 0,
+    "recall_found": 23,
+    "recall_pct": 43.4,
+    "sched_kw": 8,
+    "sched_pct": 15.1,
+    "mean_dur_s": 0.466,
+    "est_cost_usd": 0.265
+  },
+  "rows": [
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.bluewatermiddlecollege.org/about-bwmc/academic-calendar",
+        "https://www.bluewatermiddlecollege.org/o/bwmc/live-feed",
+        "https://www.bluewatermiddlecollege.org/o/bwmc",
+        "https://www.bluewatermiddlecollege.org/enrollment",
+        "https://www.bluewatermiddlecollege.org/o/scctec/page/academic-and-college-credit",
+        "https://www.bluewatermiddlecollege.org/about-bwmc",
+        "https://www.bluewatermiddlecollege.org/staff",
+        "https://www.bluewatermiddlecollege.org/beyond-the-bwmc/applying-to-colleges",
+        "https://www.bluewatermiddlecollege.org/students13/canvas-and-online-learning-at-sc4",
+        "https://www.bluewatermiddlecollege.org/beyond-the-bwmc/request-transcripts"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.4,
+      "outcome": "ok",
+      "district_id": "2600992",
+      "school": "Blue Water Middle College Academy"
+    },
+    {
+      "raw_urls": 8,
+      "found": true,
+      "gated_urls": [
+        "https://www.hlakc.org",
+        "https://www.hlakc.org/enrollment",
+        "https://www.hlakc.org/events/enrollment-fair",
+        "https://www.hlakc.org/profile/hopeleadershipacademykc94849/events",
+        "https://www.hlakc.org/meet-the-staff",
+        "https://www.hlakc.org/post/enrollment",
+        "https://www.hlakc.org/our-school",
+        "https://www.hlakc.org/boardofdirectors"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "2900601",
+      "school": "HOPE LEADERSHIP ACADEMY"
+    },
+    {
+      "raw_urls": 8,
+      "found": true,
+      "gated_urls": [
+        "https://www.royschools.org/calendar",
+        "https://www.royschools.org/studentandparentinfo",
+        "https://www.royschools.org",
+        "https://www.royschools.org/boardmeetingnotesanddocuments",
+        "https://www.royschools.org/athletics",
+        "https://www.royschools.org/ourboard",
+        "https://www.royschools.org/about",
+        "https://www.royschools.org/administrativeforms"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "3502280",
+      "school": "ROY ELEMENTARY"
+    },
+    {
+      "raw_urls": 8,
+      "found": true,
+      "gated_urls": [
+        "https://www.royschools.org/studentandparentinfo",
+        "https://www.royschools.org/calendar",
+        "https://www.royschools.org",
+        "https://www.royschools.org/boardmeetingnotesanddocuments",
+        "https://www.royschools.org/athletics",
+        "https://www.royschools.org/ourboard",
+        "https://www.royschools.org/about",
+        "https://www.royschools.org/administrativeforms"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "3502280",
+      "school": "ROY HIGH"
+    },
+    {
+      "raw_urls": 2,
+      "found": true,
+      "gated_urls": [
+        "https://www.holahoboken.org/admissions",
+        "https://www.holahoboken.org/news"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "3400734",
+      "school": "Hoboken Dual Language Charter Scho"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://sojournertruthacademy.org/resources",
+        "https://sojournertruthacademy.org",
+        "https://sojournertruthacademy.org/announcements",
+        "https://sojournertruthacademy.org/about-us",
+        "https://sojournertruthacademy.org/enroll",
+        "https://sojournertruthacademy.org/contact-us/requests-for-proposals",
+        "https://sojournertruthacademy.org/about-us/curriculum",
+        "https://sojournertruthacademy.org/contact-us/donate",
+        "https://sojournertruthacademy.org/about-us/staff",
+        "https://sojournertruthacademy.org/about-us/awards-and-recognition"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.4,
+      "outcome": "ok",
+      "district_id": "2700159",
+      "school": "Sojourner Truth Academy"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.dunseith.k12.nd.us/page/home",
+        "https://www.dunseith.k12.nd.us/live-feed?page_no=8",
+        "https://www.dunseith.k12.nd.us/live-feed?page_no=13",
+        "https://www.dunseith.k12.nd.us/live_feeds/11791460",
+        "https://www.dunseith.k12.nd.us/page/elementary",
+        "https://www.dunseith.k12.nd.us/page/contact-us",
+        "https://www.dunseith.k12.nd.us/page/elementary-school-class-links",
+        "https://www.dunseith.k12.nd.us/live-feed?page_no=17",
+        "https://www.dunseith.k12.nd.us",
+        "https://www.dunseith.k12.nd.us/staff"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "3805460",
+      "school": "DUNSEITH ELEMENTARY SCHOOL"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.dunseith.k12.nd.us/page/student-handbook",
+        "https://www.dunseith.k12.nd.us/page/home",
+        "https://www.dunseith.k12.nd.us/live-feed?page_no=8",
+        "https://www.dunseith.k12.nd.us/live-feed?page_no=13",
+        "https://www.dunseith.k12.nd.us/page/contact-us",
+        "https://www.dunseith.k12.nd.us/live-feed?page_no=2",
+        "https://www.dunseith.k12.nd.us/page/athletics",
+        "https://www.dunseith.k12.nd.us",
+        "https://www.dunseith.k12.nd.us/live-feed?page_no=17",
+        "https://www.dunseith.k12.nd.us/staff"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.5,
+      "outcome": "ok",
+      "district_id": "3805460",
+      "school": "DUNSEITH HIGH SCHOOL"
+    },
+    {
+      "raw_urls": 3,
+      "found": true,
+      "gated_urls": [
+        "https://www.marion-isd.org/o/francis-marion",
+        "https://www.marion-isd.org/o/francis-marion/page/school-hours",
+        "https://www.marion-isd.org"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.9,
+      "outcome": "ok",
+      "district_id": "1918690",
+      "school": "Francis Marion Intermediate School"
+    },
+    {
+      "raw_urls": 4,
+      "found": true,
+      "gated_urls": [
+        "https://www.marion-isd.org/o/parkview",
+        "https://www.marion-isd.org",
+        "https://www.marion-isd.org/o/vms",
+        "https://www.marion-isd.org/o/francis-marion"
+      ],
+      "sched_kw": false,
+      "dur_s": 1.0,
+      "outcome": "ok",
+      "district_id": "1918690",
+      "school": "Parkview Elementary School"
+    },
+    {
+      "raw_urls": 3,
+      "found": true,
+      "gated_urls": [
+        "https://www.marion-isd.org/o/longfellow",
+        "https://www.marion-isd.org/o/longfellow/news",
+        "https://www.marion-isd.org/o/francis-marion"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.9,
+      "outcome": "ok",
+      "district_id": "1918690",
+      "school": "Longfellow Elementary"
+    },
+    {
+      "raw_urls": 2,
+      "found": true,
+      "gated_urls": [
+        "https://www.marion-isd.org/o/vms",
+        "https://www.marion-isd.org"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.7,
+      "outcome": "ok",
+      "district_id": "1918690",
+      "school": "Vernon Middle School"
+    },
+    {
+      "raw_urls": 4,
+      "found": true,
+      "gated_urls": [
+        "https://www.marion-isd.org",
+        "https://www.marion-isd.org/o/mhs",
+        "https://www.marion-isd.org/browse/173255",
+        "https://www.marion-isd.org/o/francis-marion"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.7,
+      "outcome": "ok",
+      "district_id": "1918690",
+      "school": "Marion High School"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.7,
+      "outcome": "ok",
+      "district_id": "5000425",
+      "school": "Monkton Central School"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.8,
+      "outcome": "ok",
+      "district_id": "5000425",
+      "school": "Beeman Elementary School"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.6,
+      "outcome": "ok",
+      "district_id": "5000425",
+      "school": "Robinson School"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.8,
+      "outcome": "ok",
+      "district_id": "5000425",
+      "school": "Bristol Elementary School"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 1.3,
+      "outcome": "ok",
+      "district_id": "5000425",
+      "school": "Mt. Abraham Union High School"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.usd234.org/o/eware/live-feed?page_no=2",
+        "https://www.usd234.org/o/eware",
+        "https://www.usd234.org/o/eware/news",
+        "https://www.usd234.org/o/eware/events?id=45351481",
+        "https://www.usd234.org/o/eware/article/856217",
+        "https://www.usd234.org/o/fshs/article/1106322",
+        "https://www.usd234.org/o/eware/staff?page_no=3",
+        "https://www.usd234.org/live-feed?page_no=10",
+        "https://www.usd234.org/o/fshs/article/2357507",
+        "https://www.usd234.org/o/fshs/article/2603859"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.5,
+      "outcome": "ok",
+      "district_id": "2006180",
+      "school": "Eugene Ware Elem"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.usd234.org/o/wscott/live-feed?page_no=5",
+        "https://www.usd234.org/o/fspc/article/1711424",
+        "https://www.usd234.org/o/wscott/events",
+        "https://www.usd234.org/o/eware/news",
+        "https://www.usd234.org/o/fshs/article/1106322",
+        "https://www.usd234.org/o/wscott/staff?page_no=4",
+        "https://www.usd234.org/o/fshs/article/2357507",
+        "https://www.usd234.org/o/wscott/staff",
+        "https://www.usd234.org/o/eware/article/796355",
+        "https://www.usd234.org/news"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.4,
+      "outcome": "ok",
+      "district_id": "2006180",
+      "school": "Winfield Scott Elem"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.usd234.org/o/fshs/article/2719572",
+        "https://www.usd234.org/o/fshs/article/2357507",
+        "https://www.usd234.org/o/fsms/live-feed?page_no=4",
+        "https://www.usd234.org",
+        "https://www.usd234.org/o/fshs/news?page_no=29",
+        "https://www.usd234.org/o/fsms/news",
+        "https://www.usd234.org/o/fshs/article/2603859",
+        "https://www.usd234.org/o/fsms/events",
+        "https://www.usd234.org/o/fshs/article/2577284",
+        "https://www.usd234.org/o/fshs/article/1106322"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.4,
+      "outcome": "ok",
+      "district_id": "2006180",
+      "school": "Fort Scott Middle School"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://www.usd234.org/o/fshs/article/2357507",
+        "https://www.usd234.org/o/fshs/news?page_no=4",
+        "https://www.usd234.org/o/fshs/article/2719572",
+        "https://www.usd234.org/o/fshs/news?page_no=29",
+        "https://www.usd234.org/o/fshs/article/2577284",
+        "https://www.usd234.org/o/fshs/article/2603859",
+        "https://www.usd234.org",
+        "https://www.usd234.org/live-feed?page_no=4",
+        "https://www.usd234.org/o/fshs/live-feed",
+        "https://www.usd234.org/o/fshs/article/2760213"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.4,
+      "outcome": "ok",
+      "district_id": "2006180",
+      "school": "Fort Scott Sr High"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "4222860",
+      "school": "B F Morey El Sch"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "4222860",
+      "school": "Chipperfield El Sch"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "4222860",
+      "school": "Arlington Heights El Sch"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.4,
+      "outcome": "ok",
+      "district_id": "4222860",
+      "school": "Hamilton Twp El Sch"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "4222860",
+      "school": "Stroudsburg MS"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "4222860",
+      "school": "Stroudsburg JHS"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.4,
+      "outcome": "ok",
+      "district_id": "4222860",
+      "school": "Stroudsburg HS"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://usd116.org/schools/",
+        "https://usd116.org/wp-content/uploads/2025/06/Leal-Student-Handbook-2025-26-.pdf",
+        "https://leal.usd116.org/wp-content/uploads/2021/06/Leal-Student-Parent-Handbook-21-22-English.pdf",
+        "https://yridge.usd116.org/wp-content/uploads/2022/08/FINAL-student-parent-handbook-2022-23.pdf",
+        "https://leal.usd116.org/about/",
+        "https://usd116.org/wp-content/uploads/2026/05/Spanish-2025-26-Policy-and-Procedure-Manual-.pdf",
+        "https://usd116.org/wp-content/uploads/2024/06/King-Handbook-2024-25-SY-1.pdf",
+        "https://usd116.org/beforeafterschool/",
+        "https://drwilliams.usd116.org",
+        "https://usd116.org/wp-content/uploads/2022/08/FINAL-UrbanaSchoolDistrict116.Booklet8.31.2022.pdf"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.6,
+      "outcome": "ok",
+      "district_id": "1739960",
+      "school": "Leal Elem School"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://usd116.org/schools/",
+        "https://usd116.org/wp-content/uploads/2024/06/King-Handbook-2024-25-SY-1.pdf",
+        "http://www.usd116.org/files/ParentHandbooks/2018-19%20Handbooks/2018-19DrKing-ENG.pdf",
+        "https://drking.usd116.org/about/",
+        "https://usd116.org/wp-content/uploads/2025/06/YRM-student-parent-handbook-2025-26.pdf",
+        "https://usd116.org/kindergarten/",
+        "https://ums.usd116.org/wp-content/uploads/2020/07/20-21-UMS-Handbook.pdf",
+        "https://usd116.org/wp-content/uploads/2024/06/2024-2025-UMS-Student-Handbook-.pdf",
+        "https://tmspaine.usd116.org",
+        "https://usd116.org/calendar/"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.6,
+      "outcome": "ok",
+      "district_id": "1739960",
+      "school": "M L King Jr Elem School"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://drwilliams.usd116.org/about/",
+        "https://drwilliams.usd116.org/wp-content/uploads/2020/07/Student-Handbook-2020-2021-1.pdf",
+        "https://usd116.org/schools/",
+        "https://usd116.org/kindergarten/",
+        "http://usd116.org/files/2014-15BoardDocs/2015-6-2/2015-6-2-StudySessionAgenda.pdf",
+        "https://usd116.org/wp-content/uploads/2022/08/FINAL-UrbanaSchoolDistrict116.Booklet8.31.2022.pdf",
+        "https://drwilliams.usd116.org/wp-content/uploads/2021/06/DPW-Spanish-Handbook-2021-2022.pdf",
+        "https://usd116.org/page/37/",
+        "https://usd116.org/wp-content/uploads/2025/10/2025-2026-Non-Union-Employee-Handbook.pdf",
+        "https://usd116.org/wp-content/uploads/2026/05/Spanish-2025-26-Policy-and-Procedure-Manual-.pdf"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.6,
+      "outcome": "ok",
+      "district_id": "1739960",
+      "school": "Dr Preston L Williams Jr Elem Sch"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://tmspaine.usd116.org",
+        "https://usd116.org/schools/",
+        "https://usd116.org/usd-summer-programs-2026/",
+        "https://tmspaine.usd116.org/wp-content/uploads/2019/11/ThomasPaineCompact19web.pdf",
+        "https://usd116.org/redistricting2024/",
+        "https://tmspaine.usd116.org/about/",
+        "https://usd116.org/kindergarten/",
+        "https://usd116.org/wp-content/uploads/2024/06/2024-2025-UMS-Student-Handbook-.pdf",
+        "https://ums.usd116.org/wp-content/uploads/2020/07/20-21-UMS-Handbook.pdf",
+        "http://usd116.org/files/2013-14-BoardDocs/2013-11-19/11-19-13BusinessMeetingAgenda.pdf"
+      ],
+      "sched_kw": false,
+      "dur_s": 0.4,
+      "outcome": "ok",
+      "district_id": "1739960",
+      "school": "Thomas Paine Elem School"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://ums.usd116.org/ums-bell-schedule/",
+        "https://usd116.org/schools/",
+        "https://usd116.org/wp-content/uploads/2024/06/2024-2025-UMS-Student-Handbook-.pdf",
+        "https://www.usd116.org/files/2013-14-StudentGuidebook.pdf",
+        "https://usd116.org/wp-content/uploads/2025/06/UHS-student-handbook-2025-2026.pdf",
+        "https://ums.usd116.org/wp-content/uploads/2020/07/20-21-UMS-Handbook.pdf",
+        "https://usd116.org/boe041525/",
+        "https://yridge.usd116.org",
+        "https://usd116.org/calendar/",
+        "https://usd116.org/page/37/"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.6,
+      "outcome": "ok",
+      "district_id": "1739960",
+      "school": "Urbana Middle School"
+    },
+    {
+      "raw_urls": 10,
+      "found": true,
+      "gated_urls": [
+        "https://usd116.org/wp-content/uploads/2024/07/Final-UHS-Student-Handbook-SY24-25-1.pdf",
+        "http://www.usd116.org/files/StudentHandbook.pdf",
+        "https://usd116.org/schools/",
+        "https://usd116.org/wp-content/uploads/2025/09/2025-26-USD-Calendar-Board-approved-March-4-2025.pdf",
+        "https://usd116.org/wp-content/uploads/2024/06/2024-2025-UMS-Student-Handbook-.pdf",
+        "https://usd116.org/calendar/",
+        "https://yridge.usd116.org",
+        "https://ums.usd116.org/ums-bell-schedule/",
+        "https://ums.usd116.org/wp-content/uploads/2020/07/20-21-UMS-Handbook.pdf",
+        "https://usd116.org/boe100725/"
+      ],
+      "sched_kw": true,
+      "dur_s": 0.5,
+      "outcome": "ok",
+      "district_id": "1739960",
+      "school": "Urbana High School"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Chatham Elementary"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Gretna Elementary"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.4,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "John L. Hurt Elementary"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Kentuck Elementary"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Mount Airy Elementary"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Southside Elementary"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.4,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Stony Mill Elementary"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Union Hall Elementary"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Twin Springs Elementary"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.5,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Brosville Elementary"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Tunstall Middle"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Chatham Middle"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.5,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Dan River Middle"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Gretna Middle"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.4,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Chatham High"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Dan River High"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.3,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Gretna High"
+    },
+    {
+      "raw_urls": 0,
+      "found": false,
+      "gated_urls": [],
+      "sched_kw": false,
+      "dur_s": 0.4,
+      "outcome": "ok",
+      "district_id": "5102940",
+      "school": "Tunstall High"
+    }
+  ]
+}

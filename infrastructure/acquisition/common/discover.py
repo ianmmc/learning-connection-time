@@ -98,6 +98,59 @@ def openrouter_search(q, dhost, k=10):
         if u: out.append(u)
     return out[:k]
 
+def _secret(name):
+    """A secret from env or the gitignored secrets file (same fallback rationale as _openrouter_key)."""
+    return os.getenv(name) or (json.loads(SECRETS_FILE.read_text()).get(name)
+                               if SECRETS_FILE.exists() else None)
+
+
+def serper_search(q, dhost, k=10):
+    """Serper.dev Google SERP -- domain-scoped via `site:`, returns organic result URLs. The Stage 2
+    WAVE-2 fallback (banked credits; ~$0.001/query). Measured 100% recall on the 53-school
+    known-positive set. Billing/auth/rate (401/402/429) -> SystemExit halt, same control-failure
+    stance as openrouter_search (every later call would fail identically)."""
+    import requests
+    qq = f"{q} site:{dhost}" if dhost else q
+    r = requests.post("https://google.serper.dev/search",
+                      headers={"X-API-KEY": _secret("SERPER_API_KEY"), "Content-Type": "application/json"},
+                      json={"q": qq, "num": k, "gl": "us"}, timeout=30)
+    if r.status_code in BILLING_AUTH_STATUS_CODES:
+        raise SystemExit(f"CONTROL FAILURE: Serper HTTP {r.status_code} (billing/auth/rate-limit) -- "
+                         f"halting the run. {r.text[:160]}")
+    r.raise_for_status()
+    return [o["link"] for o in r.json().get("organic", []) if o.get("link")][:k]
+
+
+def brightdata_search(q, dhost, k=10):
+    """Bright Data SERP API (Google) -- domain-scoped via `site:`, structured JSON via brd_json. The
+    Stage 2 PRIMARY Wave-1 provider (5,000/mo RECURRING free tier; ~$0.0015/query above it). Measured
+    98% recall on the 53-school set. Needs BRIGHTDATA_API_KEY + a SERP-API-type zone in
+    BRIGHTDATA_SERP_ZONE (a residential-proxy zone returns HTML/empty -> the RuntimeError below).
+    Billing/auth -> SystemExit, same control-failure stance as the others."""
+    import requests
+    from urllib.parse import quote_plus
+    qq = f"{q} site:{dhost}" if dhost else q
+    gurl = f"https://www.google.com/search?q={quote_plus(qq)}&hl=en&gl=us&brd_json=1"
+    r = requests.post("https://api.brightdata.com/request",
+                      headers={"Authorization": f"Bearer {_secret('BRIGHTDATA_API_KEY')}",
+                               "Content-Type": "application/json"},
+                      json={"zone": _secret("BRIGHTDATA_SERP_ZONE"), "url": gurl, "format": "raw"},
+                      timeout=60)
+    if r.status_code in BILLING_AUTH_STATUS_CODES:
+        raise SystemExit(f"CONTROL FAILURE: Bright Data HTTP {r.status_code} (billing/auth/rate-limit) -- "
+                         f"halting the run. {r.text[:160]}")
+    r.raise_for_status()
+    try:
+        body = r.json()
+        if isinstance(body, str):
+            body = json.loads(body)
+    except (json.JSONDecodeError, ValueError):
+        raise RuntimeError(f"Bright Data returned non-JSON (is BRIGHTDATA_SERP_ZONE a SERP API zone? "
+                           f"got: {r.text[:120]!r})")
+    org = body.get("organic") or body.get("organic_results") or []
+    return [(o.get("link") or o.get("url")) for o in org if (o.get("link") or o.get("url"))][:k]
+
+
 def rank_key(c):
     return (any(k in c["url"].lower() for k in SCHED_KW), len(c["tools"]))
 

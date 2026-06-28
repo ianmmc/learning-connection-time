@@ -26,10 +26,14 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from infrastructure.acquisition.common import district_status as DS
+from infrastructure.acquisition.common import paths
 
 from infrastructure.acquisition.common.discover import host_of, gate, openrouter_search
 
-RAW_DIR = Path("data/raw/lea-website-captures")
+# Anchored to the repo (paths.RAW_CAPTURES), never a CWD-relative literal -- this script and the
+# governance server (which reads the same discovery.json/candidates.json) must agree on the location
+# regardless of launch directory. (The gate@1 create 500'd on exactly this CWD-relative class of bug.)
+RAW_DIR = paths.RAW_CAPTURES
 BANDS = ("elementary", "middle", "high")
 
 
@@ -161,18 +165,43 @@ def residual_schools(roster: list) -> list:
     return [r for r in roster if not any(g["kept"] for g in r["wave1_gated"])]
 
 
-def run_wave2(residual: list, domain: str) -> None:
-    """Mutates each residual row in place. Script-driven, never a subagent -- OpenRouter is
-    a deterministic API call, not agent judgment (same principle that already kept Wave 2
-    out of the subagent's hands; Wave 1's own handoff is held to the same standard via
-    validate_wave1_result())."""
+def run_wave1(roster: list, domain: str, search_fn) -> list:
+    """Deterministic Wave 1 for the SERP architecture: call search_fn(query, domain) per school (a
+    SERP provider -- brightdata_search primary, serper_search/openrouter_search alternates), gate the
+    URLs, init the Wave-2 fields empty. There is NO agent result to validate here (the provider
+    returns URLs directly), so this replaces the merge_wave1/validate_wave1_result handoff of the
+    retired agent-in-the-loop model. A billing/auth SystemExit propagates (halts the run, like a
+    reconcile CONTROL FAILURE); any other per-school error degrades to zero URLs (logged)."""
+    for r in roster:
+        try:
+            urls = search_fn(r["query"], domain)
+        except SystemExit:
+            raise
+        except Exception as e:
+            urls = []
+            print(f"   [w1/{r['school'][:24]}] ERR {str(e)[:60]}")
+        r["wave1_raw_urls"] = urls
+        r["wave1_gated"] = gate_urls(urls, domain)
+        r["wave2_invoked"] = False
+        r["wave2_raw_urls"] = []
+        r["wave2_gated"] = []
+    return roster
+
+
+def run_wave2(residual: list, domain: str, search_fn=openrouter_search) -> None:
+    """Mutates each residual row in place. Script-driven, never a subagent -- a SERP/API call, not
+    agent judgment. `search_fn` is the provider (default openrouter_search for back-compat; the SERP
+    runner passes serper_search). A billing/auth SystemExit propagates; other errors degrade to zero
+    URLs for that school."""
     for r in residual:
         r["wave2_invoked"] = True
         try:
-            urls = openrouter_search(r["query"], domain)
+            urls = search_fn(r["query"], domain)
+        except SystemExit:
+            raise
         except Exception as e:
             urls = []
-            print(f"   [or/{r['school'][:24]}] ERR {str(e)[:60]}")
+            print(f"   [w2/{r['school'][:24]}] ERR {str(e)[:60]}")
         r["wave2_raw_urls"] = urls
         r["wave2_gated"] = gate_urls(urls, domain)
 

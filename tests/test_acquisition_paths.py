@@ -11,11 +11,15 @@ _PATHS_MOD = "infrastructure.acquisition.common.paths"
 
 @pytest.fixture
 def fresh_paths(monkeypatch):
-    """Import (or re-import) paths.py with the current environment applied."""
+    """Import (or re-import) paths.py with the current environment applied. At teardown, drop the
+    (possibly DATA_ROOT-overridden) module from sys.modules so it never LEAKS a tmp-rooted paths into
+    later tests/code that read paths.RAW_CAPTURES/DATA_ROOT — it gets lazily re-imported with the
+    real (env-reverted) environment on next use."""
     def _load():
         monkeypatch.delitem(sys.modules, _PATHS_MOD, raising=False)
         return importlib.import_module(_PATHS_MOD)
-    return _load
+    yield _load
+    sys.modules.pop(_PATHS_MOD, None)
 
 
 def test_default_data_root_is_repo_data(monkeypatch, fresh_paths):

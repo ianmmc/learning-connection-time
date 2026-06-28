@@ -18,6 +18,7 @@
       <span class="brand-wm"><span class="brand-name">McCullough</span><span class="brand-tag">Marketing &amp; Management</span></span>
       <select id="stageSelect" class="stage-select" aria-label="Console view">
         <option value="stage1">Stage&nbsp;1 · Queue (gate@1)</option>
+        <option value="stage2">Stage&nbsp;2 · Discover</option>
         <option value="stage5" selected>Stage&nbsp;5 · Capture Review (gate@5)</option>
       </select>
     </div>
@@ -35,6 +36,8 @@
 
   <main id="stage1view" class="cols gate1 hidden" aria-label="Stage 1 queue review"></main>
 
+  <main id="stage2view" class="cols gate1 hidden" aria-label="Stage 2 discovery status"></main>
+
   <div id="glossary" class="modal hidden">
     <div class="modal-card">
       <div class="modal-head"><h2>Glossary &amp; Instructions</h2><button id="glossaryClose" class="btn btn-ghost">Close</button></div>
@@ -44,5 +47,6 @@
 
   <script src="/static/app.js"></script>
   <script src="/static/gate1.js"></script>
+  <script src="/static/stage2.js"></script>
 </body>
 </html>
