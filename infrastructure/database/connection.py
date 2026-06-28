@@ -18,10 +18,14 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
-# Load environment variables from .env file if present
+# Load environment variables from the repo-root .env if present. Anchored to an ABSOLUTE path (this
+# file's parents[2] == repo root), not load_dotenv()'s default CWD-upward search — so the DB credentials
+# resolve no matter what directory the server/CLI is launched from (a CWD-relative load left the password
+# unset and 500'd when the app ran from a non-repo-root dir).
 try:
     from dotenv import load_dotenv
-    load_dotenv()
+    from pathlib import Path as _Path
+    load_dotenv(_Path(__file__).resolve().parents[2] / ".env")
 except ImportError:
     # dotenv not installed, will use system environment variables only
     pass

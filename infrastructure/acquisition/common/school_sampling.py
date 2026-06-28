@@ -17,6 +17,13 @@ import csv, sys, math, json, argparse
 from pathlib import Path
 from collections import defaultdict
 
+from infrastructure.acquisition.common import paths   # DATA_ROOT-anchored NCES reads (CWD-independent)
+
+# NCES CCD raw data lives under DATA_ROOT (= <repo>/data by default), NOT the process CWD. Resolving it
+# absolutely means the server/CLI find it regardless of where they're launched from — a CWD-relative
+# version of these paths 500'd build_batch whenever the server ran from a non-repo-root directory.
+_NCES_DIR = paths.DATA_ROOT / "raw" / "federal" / "nces-ccd"
+
 GRADE_ORD = {g:i for i,g in enumerate(
     ["PK","KG","01","02","03","04","05","06","07","08","09","10","11","12","13"])}
 # "13" is a real, sanctioned NCES grade code (some states use it for a continuation/
@@ -162,21 +169,23 @@ def sample_size(N, z=1.96, e=0.05, p=0.5):
 OPEN = {"1","Open","open"}  # SY_STATUS 1 = open (filter closed/inactive)
 
 def _sch_file(year):
-    f = Path(f"data/raw/federal/nces-ccd/{year}/ccd_sch_029_{year[2:4]}{year[7:9]}_w_1a_073025.csv")
+    d = _NCES_DIR / year
+    f = d / f"ccd_sch_029_{year[2:4]}{year[7:9]}_w_1a_073025.csv"
     if not f.exists():  # fall back to glob
-        f = next(Path(f"data/raw/federal/nces-ccd/{year}").glob("ccd_sch_029_*_w_1a_*.csv"))
+        f = next(d.glob("ccd_sch_029_*_w_1a_*.csv"))
     return f
 
 def _lea_file(year):
-    matches = sorted(Path(f"data/raw/federal/nces-ccd/{year}").glob("ccd_lea_029_*.csv"))
+    matches = sorted((_NCES_DIR / year).glob("ccd_lea_029_*.csv"))
     if len(matches) != 1:
-        raise SystemExit(f"expected exactly one ccd_lea_029_*.csv in data/raw/federal/nces-ccd/{year}, found {matches}")
+        raise SystemExit(f"expected exactly one ccd_lea_029_*.csv in {_NCES_DIR / year}, found {matches}")
     return matches[0]
 
 def _virtual_file(year):
-    f = Path(f"data/raw/federal/nces-ccd/{year}/ccd_sch_129_{year[2:4]}{year[7:9]}_w_1a_073025.csv")
+    d = _NCES_DIR / year
+    f = d / f"ccd_sch_129_{year[2:4]}{year[7:9]}_w_1a_073025.csv"
     if not f.exists():  # fall back to glob
-        f = next(Path(f"data/raw/federal/nces-ccd/{year}").glob("ccd_sch_129_*_w_1a_*.csv"))
+        f = next(d.glob("ccd_sch_129_*_w_1a_*.csv"))
     return f
 
 # NCES VIRTUAL_TEXT enum: No virtual instruction / Supplemental Virtual / Primarily virtual /
@@ -403,7 +412,8 @@ def main():
     counts = load(a.year)
 
     if a.ids:
-        man = {d["district_id"]: d for d in json.load(open("data/benchmark/ground_truth_manifest.json"))["districts"]} if Path("data/benchmark/ground_truth_manifest.json").exists() else {}
+        _gt = paths.DATA_ROOT / "benchmark" / "ground_truth_manifest.json"
+        man = {d["district_id"]: d for d in json.load(open(_gt))["districts"]} if _gt.exists() else {}
         for did in a.ids.split(","):
             did = did.zfill(7); c = counts.get(did, {})
             name = man.get(did,{}).get("district_name","?")
