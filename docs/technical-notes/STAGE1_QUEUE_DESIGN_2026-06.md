@@ -1,10 +1,13 @@
 # Stage 1 — Queue: design & decision log
 
-> **Status: BUILT + run live (2026-06-22); the gate@1 CONSOLE + batch working store BUILT 2026-06-27
-> (REQ-102, backend).** Produces the batch as a first-class entity in the governance DB (the working
-> store) with `data/acquisition/queue/batch_NNNNN.json` regenerated from the rows as the auditable
-> receipt. gate@1 is now an **in-band console approval** (a batch-row lifecycle transition + per-district
-> events), no longer an out-of-band go-ahead (§4, §7). Frontend (the queue view) is step 3, not yet built.
+> **Status: BUILT + run live (2026-06-22); the gate@1 CONSOLE — backend AND frontend — BUILT + validated
+> end-to-end 2026-06-28 (REQ-102).** The batch is a first-class entity in the governance DB (the working
+> store) with `data/acquisition/queue/batch_NNNNN.json` regenerated from the rows as the auditable receipt.
+> gate@1 is an **in-band console approval** (a batch-row lifecycle transition + per-district events), no
+> longer an out-of-band go-ahead (§4, §6). **`batch_00002` was created, edited (1 reject), and approved
+> entirely through the console UI** — the forcing-function milestone — with the `batch` row, the
+> `state_event` log, and the receipt all consistent. The gate@1 queue view (the first console stage view)
+> is live; edits are reversible (reject/restore).
 >
 > **What this note is:** the code is authoritative; this note is a **narrative of what the code currently
 > does**. §1–§6 describe current behavior (verified against the scripts 2026-06-27); §7 is the decision log.
@@ -183,13 +186,12 @@ auto not yet wired). The frontend queue view is step 3; this section + §6 descr
 ---
 
 ## 5. Open decisions
-- **gate@1 frontend (step 3)** — the queue view (batch list, the district→band→school tree with edit
-  controls, a Create button with a loading affordance, Approve/Reopen). Backend done; UI pending.
 - **Manual batch construction** (hand-pick untouched NCES districts; APGA story 32) and **follow-up /
   re-queue batches** (stories 33–35; need the Stage-8 per-band satisfaction signal, not built) — deferred.
   First-run stratified draw + soft edits is what's built.
 - **gate@1 auto mode** — confidence-escalating auto-approve (governance §11b); manual-only today.
 - **Extraction-time early-exit** — §3, deferred to Stage 7.
+- *(gate@1 frontend — DONE 2026-06-28, §6d/§6f; no longer open.)*
 
 ---
 
@@ -220,20 +222,42 @@ the cross-batch queries the user stories need (a district in multiple batches; p
 - **`write_receipt(sess, id)`** — regenerate `batch_NNNNN.json` from the rows (the receipt always mirrors
   the working store). Every function takes a Session and does **not** commit — the caller owns the txn.
 
-### 6c. gate@1 edit operations (soft, audited — APGA stories 29–31)
+### 6c. gate@1 edit operations (soft, audited, REVERSIBLE — APGA stories 29–31)
 - **`reject_district`** / **`reject_school`** → flip `included = False` (never a delete — the full
-  proposed batch stays auditable). **`add_school`** → insert a `BatchSchool` (`source="manual_add"`), or
-  re-include a previously-rejected row. All blocked when `status="approved"` (`BatchLocked`); `reopen_batch`
-  returns to draft. Each edit re-emits the receipt **and** records a per-district `gate@1 "edited"` event
-  (transparency/auditability — the standing principle).
+  proposed batch stays auditable). **`restore_district`** / **`restore_school`** → flip it back, so a
+  mis-reject during draft isn't a dead end (added 2026-06-28). **`add_school`** → insert a `BatchSchool`
+  (`source="manual_add"`), or re-include a previously-rejected row. All blocked when `status="approved"`
+  (`BatchLocked`); `reopen_batch` returns to draft. Each edit re-emits the receipt **and** records a
+  per-district `gate@1 "edited"` event (transparency/auditability — the standing principle).
 
 ### 6d. The console API (`process_governance/server.py`)
 The Stage-5 review app grows into the stage-selectable governance console; gate@1 is the first added
 surface: `POST /api/queue/create` (synchronous stratified draw — `build_batch` reads the full NCES corpus
 + DB, ~10–20s; the UI shows a progress affordance), `GET /api/queue` (list), `GET /api/queue/{id}` (review),
-`POST /api/queue/{id}/edit` (the three ops), `POST .../approve` + `.../reopen`,
+`POST /api/queue/{id}/edit` (reject/restore district+school, add_school), `POST .../approve` + `.../reopen`,
 `GET .../district/{did}/candidates` (remaining eligible schools for "add school"). Tests:
-`tests/test_stage1_batch_store.py` (9, the working store) + `tests/test_gate1_api.py` (6, the HTTP wiring).
+`tests/test_stage1_batch_store.py` (10, the working store) + `tests/test_gate1_api.py` (6, the HTTP wiring).
+
+### 6e-ui. The console frontend (BUILT 2026-06-28 — `process_governance/static/`)
+The first stage view, built on the **MMM Design System** (imported via the **DesignSync** tool from the
+`claude.ai/design` project — Badge status pills, Select, Card, Button + the shared `tokens/`/`app.css`):
+- **`index.html`** — a **stage selector** in the topbar (gate@1 queue ↔ the existing Stage-5 review) + a
+  `stage1view` container; **`gate1.js`** — the view (batch list, the district→band→school tree with
+  `included` flags + each school's LEVEL/grade-range surfaced for classification review, the soft edit
+  controls, a **loading overlay** for the synchronous ~10–20s create, Approve/Reopen); **`app.css`** —
+  gate@1 styles (badges, the selector, the two-pane layout, the overlay/spinner).
+- **CWD-independence (fixed 2026-06-28, load-bearing for the server):** the create path reads the NCES CSVs
+  (`school_sampling`) and the LCT DB password (`.env`) — both were CWD-relative and 500'd when the server
+  ran from a non-repo-root dir. Now anchored to `paths.DATA_ROOT` / the repo-root `.env`, so the console
+  works regardless of launch directory. *(Lesson for every later stage: read data via `paths.DATA_ROOT`,
+  never a CWD-relative literal.)*
+
+### 6f. End-to-end validation (`batch_00002`, 2026-06-28)
+`batch_00002` was **created → edited (1 district rejected) → approved entirely through the console UI** —
+the forcing-function milestone. Confirmed consistent across all three surfaces: `batch.status='approved'`
+(by `ian`), **11/12 districts** in the receipt (canonical = included-only, regenerated from rows), and the
+`state_event` log carrying **11 `gate@1 "approved"` + 1 `gate@1 "edited"`**. The rejected district stayed at
+`furthest_stage=1` — *not* disqualified from future draws (only Stage-3+ capture disqualifies; §2a).
 
 ---
 

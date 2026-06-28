@@ -7,7 +7,7 @@
 
 ```mermaid
 flowchart TD
-    subgraph STAGE1 ["Stage 1 — Queue (gate@1 console backend built 2026-06-27, REQ-102)"]
+    subgraph STAGE1 ["Stage 1 — Queue (gate@1 console BUILT — backend + frontend — 2026-06-28, REQ-102; batch_00002 created→edited→approved via the UI)"]
         direction TB
         Q_SRC["NCES LEA + school-level data (2024-25)<br/>+ DB enrollment/staff (multi-year)"]
         Q_EXCL1["Exclude: not operating<br/>LEA SY_STATUS != Open"]
@@ -19,7 +19,7 @@ flowchart TD
         Q_OUT["persist_batch: write the batch WORKING STORE in the governance DB<br/>(batch / batch_district / batch_school — normalized, PRECIOUS;<br/>included flag = soft-reject, source = stratified/manual_add)<br/>+ regenerate batch_NNNNN.json FROM the rows as the RECEIPT<br/>(structured params only, no prompts; + nces_school_counts {total, by_level})<br/>+ stage=1 'queued' state_events"]
         Q_SRC --> Q_EXCL1 --> Q_EXCL2 --> Q_EXCL3 --> Q_EXCL4 --> Q_STRAT --> Q_SCHOOLS --> Q_OUT
     end
-    CPA{{"gate@1 — IN-BAND console approval (was Checkpoint A)<br/>BATCH-level: batch.status draft -> approved + per-district gate@1 events<br/>soft + audited edits: reject district / reject school / add school<br/>(included flips / row inserts; locked once approved, reopen to edit)<br/>batch-of-record created + advanced ONLY via the console (CLI = dev/test)"}}
+    CPA{{"gate@1 — IN-BAND console approval (was Checkpoint A) — BUILT (UI + API)<br/>BATCH-level: batch.status draft -> approved + per-district gate@1 events<br/>soft + REVERSIBLE + audited edits: reject/restore district & school, add school<br/>(included flips / row inserts; locked once approved, reopen to edit)<br/>batch-of-record created + advanced ONLY via the console (CLI = dev/test)"}}
 
     subgraph STAGE2 ["Stage 2 — Discover (built + run live 2026-06-23, 12/12 found_all)"]
         direction TB

@@ -171,6 +171,25 @@ processing.
   bell-schedule representations by the end of Stage 5** — the measurement-harness pattern extended upstream
   (attribute each target-labeled record back to its discovery tool via `candidate_tools_json`; governance §11f).
 
+### 4a. Console-view build pattern — REUSE from gate@1 (forward note, 2026-06-28)
+gate@1 (STAGE1 §6e-ui) established the reusable console-stage-view pattern; the Stage-2 view should follow
+it rather than reinventing:
+- **Frontend** lives in `process_governance/static/`: `index.html` has a **stage selector** in the topbar +
+  one `<main id="stageNview" class="cols … hidden">` container per stage; each stage view is its **own JS
+  module** (`gate1.js` is the template) loaded after `app.js`, wired via an `applyView()` switcher (toggle
+  `hidden`, **lazy-init on first show**); styles are appended to `app.css` on the **MMM design tokens** +
+  components (Badge/Card/Button/Select). Pull components from the **MMM Design System via the `DesignSync`
+  tool** (`list_projects`/`get_file` on the "MMM Design System" project) — don't invent visual styles.
+- **Backend**: per-stage `/api/<area>/*` endpoints on `server.py`, thin — they delegate to the stage's
+  logic module and use `gdb.session_scope`. Long/synchronous work (a discovery run) wants the same
+  **loading affordance** gate@1's create uses; per governance §7a-C, status is an event-log projection.
+- **CWD rule (load-bearing):** any file read (discovery.json/candidates.json, NCES, `.env`) must resolve via
+  `paths.DATA_ROOT` / repo-anchored paths, **never a CWD-relative literal** — the gate@1 create 500'd on
+  exactly this (STAGE1 §6e-ui). `discover_stage2.py` already uses `paths`/`RAW_DIR`; keep new reads on that.
+- **Stage-2 input is the approved batch:** `batch_00002` is approved and waiting; Stage 2 consumes its
+  `batch_NNNNN.json` receipt (the existing `reconcile`/`roster`/`finish` contract). The orchestration
+  trigger (run discovery for an approved batch) is the new console action to add alongside the status view.
+
 ---
 
 ## 5. Open decisions

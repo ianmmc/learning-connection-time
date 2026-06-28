@@ -503,9 +503,11 @@ no paid dispatch** (Stage 7 out of scope this pass). The four steps 5–8 REQs a
 headless). **Correction:** the *currency/recency* gate is **REQ-044** (a Stage-5 filter enhancement), not
 REQ-104 — REQ-104 is the Stage 2 headless conversion.
 
-> **BUILD PROGRESS (2026-06-27): gate@1 backend done (REQ-102).** The batch is now a first-class
-> governance-DB entity (the working store) + the gate@1 console API; see **§11h** for the built detail.
-> Remaining on the gate@1 step: the frontend (queue view). Then REQ-100 (staleness), REQ-101 (Stage 6).
+> **BUILD PROGRESS (updated 2026-06-28): gate@1 FULLY built — backend + frontend (REQ-102), §9 step 7
+> DONE.** The batch is a first-class governance-DB entity (the working store) + the gate@1 console API +
+> the queue-review UI; **`batch_00002` was created, edited, and approved end-to-end through the console**
+> (the forcing-function milestone). See **§11h**. Next on the data path: walk `batch_00002` into Stage 2,
+> then REQ-100 (staleness view), REQ-101 (Stage 6 handoff).
 
 ---
 
@@ -703,8 +705,12 @@ reframe and the batch_00002-forcing-function plan (the batch-of-record advances 
   (`reopen` to edit again).
 - **Orchestration = functions** (§7a-B): `queue_batch.build_batch()` (pure) + `persist_batch()` (DB write +
   receipt + events), shared by the CLI and the console `POST /api/queue/create` (synchronous draw, ~10–20s).
-- **API** on `process_governance/server.py`: `create` · `list` · `get` · `edit` · `approve`/`reopen` ·
-  `district/{id}/candidates`. Tests: `test_stage1_batch_store.py` (9) + `test_gate1_api.py` (6).
-- **Still to build:** the gate@1 **frontend** (queue view + stage selector + the create progress
-  affordance), then the rest of the §9 sequence. Authority for the per-stage detail:
+- **API** on `process_governance/server.py`: `create` · `list` · `get` · `edit` (reject/restore/add) ·
+  `approve`/`reopen` · `district/{id}/candidates`. Tests: `test_stage1_batch_store.py` (10) + `test_gate1_api.py` (6).
+- **Frontend BUILT 2026-06-28** (`process_governance/static/` — stage selector + the queue view, on the
+  **MMM Design System** imported via **DesignSync**). Edits are reversible (reject/restore). Validated
+  end-to-end: **`batch_00002` created → edited → approved through the UI**, all surfaces consistent.
+  *(A CWD-independence fix landed with it: NCES + `.env` reads anchored to the repo, not the launch dir —
+  a server-robustness lesson for every later stage's file reads.)*
+- **Next:** advance `batch_00002` into Stage 2; then REQ-100/101. Per-stage detail authority:
   `STAGE1_QUEUE_DESIGN_2026-06.md` §6.

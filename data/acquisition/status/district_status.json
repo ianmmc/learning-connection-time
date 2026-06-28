@@ -1,7 +1,34 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-06-27T01:22:04Z",
+  "last_updated": "2026-06-28T02:49:37Z",
   "districts": {
+    "0101410": {
+      "name": "Eufaula City",
+      "state": "AL",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00002",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-28T02:41:13Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-28T02:49:37Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00002"
+    },
     "0405820": {
       "name": "Page Unified School District #8  (4196)",
       "state": "AZ",
@@ -19,6 +46,33 @@
         }
       ],
       "notes": ""
+    },
+    "0602095": {
+      "name": "Aspire Summit Charter Academy District",
+      "state": "CA",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00002",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-28T02:41:13Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-28T02:49:37Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00002"
     },
     "0616080": {
       "name": "Greenfield Union Elementary",
@@ -110,6 +164,33 @@
       ],
       "notes": ""
     },
+    "1737350": {
+      "name": "Triad CUSD 2",
+      "state": "IL",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00002",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-28T02:41:13Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-28T02:49:37Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00002"
+    },
     "1739960": {
       "name": "Urbana SD 116",
       "state": "IL",
@@ -152,6 +233,33 @@
       ],
       "notes": ""
     },
+    "1800048": {
+      "name": "East Chicago Urban Enterprise Academy",
+      "state": "IN",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00002",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-28T02:41:13Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-28T02:49:37Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00002"
+    },
     "1810380": {
       "name": "South Henry School Corp",
       "state": "IN",
@@ -169,6 +277,33 @@
         }
       ],
       "notes": ""
+    },
+    "1915840": {
+      "name": "Knoxville Comm School District",
+      "state": "IA",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00002",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-28T02:41:13Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-28T02:49:37Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00002"
     },
     "1918690": {
       "name": "Marion Independent School District",
@@ -290,6 +425,33 @@
       ],
       "notes": ""
     },
+    "2506900": {
+      "name": "Lincoln",
+      "state": "MA",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00002",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-28T02:41:13Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-28T02:49:37Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00002"
+    },
     "2600992": {
       "name": "Blue Water Middle College",
       "state": "MI",
@@ -331,6 +493,33 @@
         }
       ],
       "notes": ""
+    },
+    "2607470": {
+      "name": "Burt Township School District",
+      "state": "MI",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00002",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-28T02:41:13Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-28T02:49:37Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00002"
     },
     "2610230": {
       "name": "Colfax Township S/D #1F",
@@ -409,6 +598,33 @@
         }
       ],
       "notes": ""
+    },
+    "2700361": {
+      "name": "ACADEMIC ARTS HIGH SCHOOL",
+      "state": "MN",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00002",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-28T02:41:13Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-28T02:49:27Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
+        }
+      ],
+      "notes": "reject district 2700361"
     },
     "2900601": {
       "name": "HOPE LEADERSHIP ACADEMY",
@@ -608,6 +824,60 @@
       ],
       "notes": ""
     },
+    "3609330": {
+      "name": "DRYDEN CENTRAL SCHOOL DISTRICT",
+      "state": "NY",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00002",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-28T02:41:13Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-28T02:49:37Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00002"
+    },
+    "3700385": {
+      "name": "KIPP Durham College Preparatory",
+      "state": "NC",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00002",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-28T02:41:13Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-28T02:49:37Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00002"
+    },
     "3700660": {
       "name": "Caswell County Schools",
       "state": "NC",
@@ -782,6 +1052,33 @@
       ],
       "notes": ""
     },
+    "4842720": {
+      "name": "THREE WAY ISD",
+      "state": "TX",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00002",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-28T02:41:13Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-28T02:49:37Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00002"
+    },
     "5000425": {
       "name": "Mt. Abraham Unified School District #61",
       "state": "VT",
@@ -901,6 +1198,33 @@
         }
       ],
       "notes": ""
+    },
+    "5501770": {
+      "name": "Elmbrook School District",
+      "state": "WI",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00002",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-06-28T02:41:13Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-28T02:49:37Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 approved batch_00002"
     },
     "5510380": {
       "name": "Nekoosa School District",
