@@ -147,6 +147,45 @@ class TestPreQueueExclusion:
         assert "0200600" not in pool
 
 
+# ---------------------------------------------------------------- REQ-102 build_batch callable (gate@1 console + CLI share it)
+class TestBuildBatch:
+    """build_batch() is the pure batch-construction callable the gate@1 console 'create'
+    action and the CLI both invoke (the §7a-B 'orchestration = functions' model). It must
+    assemble a well-formed batch_doc and do NO I/O (no file write, no registry mutation) --
+    persist_batch() is the only place side effects happen."""
+
+    BAND_KEYS = {"district_id", "name", "state", "domain", "enrollment_k12",
+                 "lea_claimed_bands", "nces_school_counts", "band_processing_order", "schools_by_band"}
+
+    def test_assembles_valid_doc_without_io(self):
+        registry = {"districts": {}}
+        bid = "batch_test_build_batch"
+        batch_doc, gap_excluded, n_eligible = Q.build_batch("2024_25", n=6, batch_id=bid, registry=registry)
+
+        # shape
+        assert batch_doc["batch_id"] == bid
+        assert batch_doc["nces_year"] == "2024_25"
+        assert batch_doc["school_cap_per_band"] == Q.CAP
+        assert 0 < batch_doc["n"] == len(batch_doc["districts"]) <= 6
+        for d in batch_doc["districts"]:
+            assert self.BAND_KEYS <= set(d), f"missing keys: {self.BAND_KEYS - set(d)}"
+            assert set(d["schools_by_band"]) <= set(Q.BANDS)
+        assert isinstance(gap_excluded, list)
+        assert n_eligible > 0
+
+        # purity: no batch file written, registry untouched (build_batch only READS the registry)
+        assert not (Q.OUT_DIR / f"{bid}.json").exists(), "build_batch must not write the batch file"
+        assert registry == {"districts": {}}, "build_batch must not mutate the registry"
+
+    def test_reproducible_district_selection(self):
+        """Same batch_id + same registry must select the identical districts (seeded) --
+        batches are logged and repeatable, not silently random."""
+        reg = {"districts": {}}
+        a, _, _ = Q.build_batch("2024_25", n=6, batch_id="batch_test_bb_repro", registry=reg)
+        b, _, _ = Q.build_batch("2024_25", n=6, batch_id="batch_test_bb_repro", registry=reg)
+        assert [d["district_id"] for d in a["districts"]] == [d["district_id"] for d in b["districts"]]
+
+
 # ---------------------------------------------------------------- REQ-063 enrollment-quartile sampling
 class TestStratifiedSampling:
     def test_spans_enrollment_range_no_duplicates(self):

@@ -14,12 +14,17 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy import text
+from sqlalchemy import select, text
 
 HERE = Path(__file__).resolve().parent
 from infrastructure.acquisition.stage5_filter import build_signals as BS    # noqa: E402  (export_labels lives here, shared with ingest)
 from infrastructure.acquisition.stage5_filter import release as REL         # noqa: E402  (filtered.json projection — REQ-094)
 from infrastructure.acquisition.common import db as gdb                     # noqa: E402  (isolated governance Postgres — REQ-103)
+from infrastructure.acquisition.common import district_status as DS         # noqa: E402  (state_event log — gate@1 audit events)
+from infrastructure.acquisition.common import school_sampling as SS         # noqa: E402  (add-school candidate lookup)
+from infrastructure.acquisition.stage1_queue import queue_batch as Q1       # noqa: E402  (build/persist a batch — REQ-102)
+from infrastructure.acquisition.stage1_queue import batch_store as BSTORE   # noqa: E402  (the batch working store)
+from infrastructure.acquisition.stage1_queue.models import Batch, BatchDistrict, BatchSchool  # noqa: E402
 
 
 def _refresh_filtered(con, district_id: str) -> None:
@@ -194,6 +199,151 @@ def serve_file(district_dir: str, rec_hash: str, filename: str):
     if not str(target).startswith(str(base)) or not target.is_file():
         raise HTTPException(404, "not found")
     return FileResponse(target)
+
+
+# ---------------------------------------------------------------- gate@1 (Stage 1 Queue) console — REQ-102
+# The governance DB is the working store for a batch; batch_NNNNN.json is the receipt regenerated from
+# the rows. Edits are SOFT (included flags / row inserts) so the full proposed batch stays auditable.
+# Batch-level lifecycle (draft -> approved) lives on the `batch` row; per-district gate@1 events are the
+# auditable timeline.
+
+@app.on_event("startup")
+def _ensure_batch_tables():
+    """Create the PRECIOUS batch tables if absent (idempotent). Best-effort so the app still boots when
+    Docker is down — DB calls then fail with the same clear error the Stage-5 path already gives."""
+    try:
+        gdb.init_precious_schema()
+    except Exception as e:
+        print(f"[warn] could not init batch schema at startup ({type(e).__name__}: {e}); "
+              f"start Docker (lct_postgres) — queue endpoints will error until then")
+
+
+def _record_gate1(district_rows, *, event_type: str, actor: str, note: str = "") -> None:
+    """Record a per-district gate@1 event (approved/edited/reopened) — the auditable timeline that
+    complements the batch-row lifecycle. `district_rows`: iterable of (district_id, name, state).
+    A pure checkpoint event (no `stage`), so it never moves furthest_stage."""
+    registry = DS.load()
+    for did, name, state in district_rows:
+        DS.record_stage(registry, did, name, state, stage_name="queue",
+                        checkpoint="gate@1", event_type=event_type, actor=actor, notes=note)
+    DS.save(registry)
+
+
+@app.get("/api/queue")
+def queue_list():
+    with gdb.session_scope() as con:
+        return BSTORE.list_batches(con)
+
+
+@app.post("/api/queue/create")
+async def queue_create(payload: dict):
+    """Stratified auto-draw a new batch (synchronous — build_batch reads the full NCES corpus + DB, so
+    this blocks ~10-20s; the UI shows a progress affordance). Writes the working store + receipt +
+    stage=1 'queued' events, then returns the review payload."""
+    year = payload.get("nces_year", "2024_25")
+    n = int(payload.get("n", 12))
+    batch_type = payload.get("batch_type", "first-run")
+    actor = payload.get("actor", "ian")
+    with gdb.session_scope() as con:
+        batch_id = f"batch_{BSTORE.next_batch_number(con):05d}"
+    registry = DS.load()
+    batch_doc, _gap, _n_elig = Q1.build_batch(year, n, batch_id, registry)
+    Q1.persist_batch(batch_doc, registry, batch_type=batch_type, actor=actor)
+    with gdb.session_scope() as con:
+        return BSTORE.to_view(con, batch_id)
+
+
+@app.get("/api/queue/{batch_id}")
+def queue_get(batch_id: str):
+    with gdb.session_scope() as con:
+        try:
+            return BSTORE.to_view(con, batch_id)
+        except KeyError:
+            raise HTTPException(404, f"no such batch {batch_id}")
+
+
+@app.post("/api/queue/{batch_id}/edit")
+async def queue_edit(batch_id: str, payload: dict):
+    """gate@1 soft edit: reject_district | reject_school | add_school. Mutates the working store,
+    regenerates the receipt, and records a per-district gate@1 'edited' audit event."""
+    op = payload.get("op")
+    actor = payload.get("actor", "ian")
+    did = payload.get("district_id")
+    try:
+        with gdb.session_scope() as con:
+            if op == "reject_district":
+                BSTORE.reject_district(con, batch_id, did)
+                note = f"reject district {did}"
+            elif op == "reject_school":
+                sid = payload["school_id"]
+                BSTORE.reject_school(con, batch_id, did, sid)
+                note = f"reject school {sid} ({did})"
+            elif op == "add_school":
+                BSTORE.add_school(con, batch_id, did, payload["school"], payload["bands"])
+                note = f"add school {payload['school']['school_id']} -> {payload['bands']} ({did})"
+            else:
+                raise HTTPException(400, f"unknown edit op {op!r}")
+            drow = con.get(BatchDistrict, (batch_id, did))
+            dname, dstate = (drow.name, drow.state) if drow else (did, "")
+            BSTORE.write_receipt(con, batch_id)
+    except BSTORE.BatchLocked as e:
+        raise HTTPException(409, str(e))
+    except KeyError as e:
+        raise HTTPException(404, str(e))
+    _record_gate1([(did, dname, dstate)], event_type="edited", actor=actor, note=note)
+    with gdb.session_scope() as con:
+        return BSTORE.to_view(con, batch_id)
+
+
+@app.post("/api/queue/{batch_id}/approve")
+async def queue_approve(batch_id: str, payload: dict):
+    """gate@1 approval — the batch-level transition + a gate@1 'approved' event per included district."""
+    actor = payload.get("actor", "ian")
+    try:
+        with gdb.session_scope() as con:
+            BSTORE.approve_batch(con, batch_id, actor)
+            included = [(d.district_id, d.name, d.state) for d in con.scalars(
+                select(BatchDistrict).where(BatchDistrict.batch_id == batch_id,
+                                            BatchDistrict.included.is_(True)))]
+    except BSTORE.BatchLocked as e:
+        raise HTTPException(409, str(e))
+    except KeyError:
+        raise HTTPException(404, f"no such batch {batch_id}")
+    _record_gate1(included, event_type="approved", actor=actor, note=f"gate@1 approved {batch_id}")
+    with gdb.session_scope() as con:
+        return BSTORE.to_view(con, batch_id)
+
+
+@app.post("/api/queue/{batch_id}/reopen")
+async def queue_reopen(batch_id: str, payload: dict):
+    actor = payload.get("actor", "ian")
+    with gdb.session_scope() as con:
+        try:
+            BSTORE.reopen_batch(con, batch_id, actor)
+        except KeyError:
+            raise HTTPException(404, f"no such batch {batch_id}")
+        view = BSTORE.to_view(con, batch_id)
+    _record_gate1([(d["district_id"], d["name"], d["state"]) for d in view["districts"] if d["included"]],
+                  event_type="reopened", actor=actor, note=f"gate@1 reopened {batch_id}")
+    return view
+
+
+@app.get("/api/queue/{batch_id}/district/{district_id}/candidates")
+def queue_candidates(batch_id: str, district_id: str):
+    """The district's remaining eligible NCES schools (per band) not already selected — the pick-list
+    for 'add school'. Reads the full NCES index for the batch's year (heavy; a rare action)."""
+    with gdb.session_scope() as con:
+        b = con.get(Batch, batch_id)
+        if b is None:
+            raise HTTPException(404, f"no such batch {batch_id}")
+        year = b.nces_year
+        selected = {s.school_id for s in con.scalars(select(BatchSchool).where(
+            BatchSchool.batch_id == batch_id, BatchSchool.district_id == district_id,
+            BatchSchool.included.is_(True)))}
+    idx = SS.school_index(year).get(district_id, {})   # {band: [school dicts]}
+    out = {b: avail for b, cands in idx.items()
+           if (avail := [c for c in cands if c["school_id"] not in selected])}
+    return {"batch_id": batch_id, "district_id": district_id, "candidates_by_band": out}
 
 
 @app.get("/")

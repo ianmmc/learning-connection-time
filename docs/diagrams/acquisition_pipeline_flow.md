@@ -2,24 +2,24 @@
 
 > Built incrementally during stage-walkthrough sessions, not transcribed from `ACQUISITION_PIPELINE.md`. Reflects what we've actually decided/confirmed in conversation. May confirm, refine, or diverge from the written doc — if it diverges, that's signal to reconcile the doc afterward, not a mistake here. As of 2026-06-23 the two docs are reconciled: everything below matches `ACQUISITION_PIPELINE.md`'s Stage 1 through Stage 4 sections.
 
-**Status:** Stage 1 (Queue) designed, built, tested, and CP-A-approved. Stage 2 (Discover) designed, built, and run live against all 12 `batch_00001` districts (12/12 `found_all`). Stage 3 (Capture) designed, built, and run live against all 12 districts (150/150 URLs captured, 0 failures, all `captured_all`). Drive Tier 2 (OAuth) deliberately deferred, not built. Stage 4 (Local processing) designed, built, and run live 2026-06-23 — tool roster resolved via a real spike against all 150 captured PDFs (keep pdftotext/pdfplumber-lines/camelot-stream/camelot-hybrid/tesseract; heavy ML tools Docling/EasyOCR/PaddleOCR installed, timed, and deliberately rejected/uninstalled); production run against all 12 districts: 150/150 records processed, 0 crashes, 10 `processed_all` + 2 `processed_partial`. Stages 5-9 still skeleton boxes — not yet walked.
-**Last updated:** 2026-06-26 (architecture: governance app + Postgres state model + headless Stage 2 — see decision log + `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`)
+**Status:** Stage 1 (Queue) designed, built, tested, and CP-A-approved. Stage 2 (Discover) designed, built, and run live against all 12 `batch_00001` districts (12/12 `found_all`). Stage 3 (Capture) designed, built, and run live against all 12 districts (150/150 URLs captured, 0 failures, all `captured_all`). Drive Tier 2 (OAuth) deliberately deferred, not built. Stage 4 (Local processing) designed, built, and run live 2026-06-23 — tool roster resolved via a real spike against all 150 captured PDFs (keep pdftotext/pdfplumber-lines/camelot-stream/camelot-hybrid/tesseract; heavy ML tools Docling/EasyOCR/PaddleOCR installed, timed, and deliberately rejected/uninstalled); production run against all 12 districts: 150/150 records processed, 0 crashes, 10 `processed_all` + 2 `processed_partial`. Stage 5 (Filter) built (review app + signals + de-chrome + `filtered.json`). **gate@1 console backend built 2026-06-27 (REQ-102):** the batch is now a first-class governance-DB entity (the working store) + the gate@1 API; frontend next. Stages 6-9 still skeleton boxes.
+**Last updated:** 2026-06-27 (gate@1 console backend + batch working store, REQ-102 — see the decision log + `docs/technical-notes/STAGE1_QUEUE_DESIGN_2026-06.md` §6 / `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11h)
 
 ```mermaid
 flowchart TD
-    subgraph STAGE1 ["Stage 1 — Queue"]
+    subgraph STAGE1 ["Stage 1 — Queue (gate@1 console backend built 2026-06-27, REQ-102)"]
         direction TB
         Q_SRC["NCES LEA + school-level data (2024-25)<br/>+ DB enrollment/staff (multi-year)"]
         Q_EXCL1["Exclude: not operating<br/>LEA SY_STATUS != Open"]
         Q_EXCL2["Exclude: CTC / shared-service entity<br/>name pattern AND LEA_TYPE_TEXT not charter"]
         Q_EXCL3["Exclude (FIRST-RUN batches only): district reached Stage 3+ (Capture)<br/>any outcome — state_event log (was district_status.json, REQ-099)<br/>FOLLOW-UP batches re-include by design, targeting<br/>not-yet-satisfied BANDS (completion grain = district×band;<br/>schools are instrumental — raw material for queries/sampling)"]
         Q_EXCL4["Exclude + flag: grade-span gap<br/>LEA span claims a band, school union shows 0<br/>ERR_GRADE_SPAN_GAP (name TBD)"]
-        Q_STRAT["Stratified batch of 12 districts<br/>priority: enrollment spread, then state diversity"]
+        Q_STRAT["build_batch (PURE): stratified batch of 12 districts<br/>priority: enrollment spread, then state diversity"]
         Q_SCHOOLS["Per district: select schools per band<br/>(elem/middle/high) up to 12 or full set;<br/>0 schools OK if band not claimed by LEA span"]
-        Q_OUT["Write batch JSON<br/>data/acquisition/queue/ (structured params only —<br/>no prompts; prompt construction is Stage 2's job)<br/>+ nces_school_counts {total, by_level} per district<br/>(our-criteria, by raw ccd_sch LEVEL — the topology denominator)"]
+        Q_OUT["persist_batch: write the batch WORKING STORE in the governance DB<br/>(batch / batch_district / batch_school — normalized, PRECIOUS;<br/>included flag = soft-reject, source = stratified/manual_add)<br/>+ regenerate batch_NNNNN.json FROM the rows as the RECEIPT<br/>(structured params only, no prompts; + nces_school_counts {total, by_level})<br/>+ stage=1 'queued' state_events"]
         Q_SRC --> Q_EXCL1 --> Q_EXCL2 --> Q_EXCL3 --> Q_EXCL4 --> Q_STRAT --> Q_SCHOOLS --> Q_OUT
     end
-    CPA{{"gate@1 — human review (was Checkpoint A)<br/>right schools/bands targeted"}}
+    CPA{{"gate@1 — IN-BAND console approval (was Checkpoint A)<br/>BATCH-level: batch.status draft -> approved + per-district gate@1 events<br/>soft + audited edits: reject district / reject school / add school<br/>(included flips / row inserts; locked once approved, reopen to edit)<br/>batch-of-record created + advanced ONLY via the console (CLI = dev/test)"}}
 
     subgraph STAGE2 ["Stage 2 — Discover (built + run live 2026-06-23, 12/12 found_all)"]
         direction TB
@@ -177,3 +177,5 @@ _(running notes on what each diagram change reflects, added as we go)_
 - **Two batch types:** **first-run** (cold-start stratified draw; excludes already-attempted districts — the original `already_attempted` intent) and **follow-up** (re-discovery/gap-fill; deliberately re-includes attempted districts, targeting unsatisfied bands). A district can recur across batches. **12-district hard cap on BOTH types** — a blast-radius control for stages 1-4 (representations don't exist yet at queue time; a break shouldn't spiral) and a natural ceiling that stops automated follow-up creation running away; spillover starts the next batch. (The *cost/representation* ceiling is a separate, later control at Stage 6 dispatch, where representations exist.) `Q_EXCL3` scoped to first-run batches.
 - **Pipeline Overview = a visualization of the event log** ("what just happened / needs attention," a durable projection) **plus a thin ephemeral run-status layer** ("what's processing right now") — kept separate, since the durable `state_event` log is deliberately completion-only (no interim markers). **Start control** kicks off full-auto advance; **safe-stop** lets in-flight work complete (with a progress bar); pause dropped as not worth the complexity. Auto-advance through the paid stages (6/7) is **cost-gated** (budget governor, REQ-051).
 - **filtered.json will carry alternate target-flagged representations** (not just the winner) so gate@6 can offer representation-override — un-defers the §4 "representation override deferred" lean. A small REQ-094 follow-up.
+
+**2026-06-27 — gate@1 console backend built + the batch becomes a first-class DB entity (REQ-102) → detail in `STAGE1_QUEUE_DESIGN_2026-06.md` §6 + `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11h; Stage-1 subgraph updated below.** (Per-stage build logs live in the stage note, not here.)

@@ -503,6 +503,10 @@ no paid dispatch** (Stage 7 out of scope this pass). The four steps 5–8 REQs a
 headless). **Correction:** the *currency/recency* gate is **REQ-044** (a Stage-5 filter enhancement), not
 REQ-104 — REQ-104 is the Stage 2 headless conversion.
 
+> **BUILD PROGRESS (2026-06-27): gate@1 backend done (REQ-102).** The batch is now a first-class
+> governance-DB entity (the working store) + the gate@1 console API; see **§11h** for the built detail.
+> Remaining on the gate@1 step: the frontend (queue view). Then REQ-100 (staleness), REQ-101 (Stage 6).
+
 ---
 
 ## 9a. REQ-098 execution plan — package + code move + tooling (drafted & approved 2026-06-26)
@@ -676,7 +680,30 @@ Stage-6 handoff freeze is what keeps "what we sent" recoverable across these loo
 ### 11g. Implications for what's built
 - `state_event.checkpoint` vocabulary: **`gate@1` | `gate@5` | `gate@6` | `gate@7` | `gate@8`** (was
   CP-A/B/C). Free-string column → no schema change; update recorded values + docs as gates get wired.
+  **`gate@1` is now live** (an in-band console approval — see 11h).
 - `filtered.json` carries **alternate target-flagged reps** (the winner + alternates) so gate@6 can offer
   representation override (REQ-094 follow-up; un-defers §4's "representation override deferred" lean).
 - The **console UI build needs its own design pass** (stage-by-stage, as we designed the pipeline) before
   coding — Overview, Settings, the stage selector, and the Stage-1–4 views are principle-set, not designed.
+
+### 11h. gate@1 console + the batch as a first-class DB entity — BUILT 2026-06-27 (REQ-102, backend)
+The first stage view's **backend** is built; it's also the first concrete instance of the §7a-A receipts
+reframe and the batch_00002-forcing-function plan (the batch-of-record advances only through the console).
+- **The batch is now a first-class entity in the governance DB — the working store.** New normalized
+  PRECIOUS tables (`stage1_queue/models.py`): **`batch`** (lifecycle `draft → approved` + actor/timestamps
+  + prose meta), **`batch_district`** (`included` soft-reject + `ord` for a stable receipt), **`batch_school`**
+  (`bands`, `included`, `source` = stratified|manual_add). Normalized, **not a JSON blob** — so edits are
+  real row ops and the cross-batch queries the user stories need fall out. **PRECIOUS** = never in the
+  Stage-5 `REBUILD_DDL` drop list (a re-ingest can't wipe a queued/approved batch). `batch_NNNNN.json` is
+  the **receipt regenerated from the rows** (`batch_store.write_receipt`), not the working store.
+- **Approval is BATCH-level** (the unit that advances): a `batch` row transition, plus per-district
+  `gate@1` `state_event`s for the auditable timeline. Editing (reject district/school, add school) is
+  **soft + audited** (`included` flips / inserts; a `gate@1 "edited"` event each), **locked when approved**
+  (`reopen` to edit again).
+- **Orchestration = functions** (§7a-B): `queue_batch.build_batch()` (pure) + `persist_batch()` (DB write +
+  receipt + events), shared by the CLI and the console `POST /api/queue/create` (synchronous draw, ~10–20s).
+- **API** on `process_governance/server.py`: `create` · `list` · `get` · `edit` · `approve`/`reopen` ·
+  `district/{id}/candidates`. Tests: `test_stage1_batch_store.py` (9) + `test_gate1_api.py` (6).
+- **Still to build:** the gate@1 **frontend** (queue view + stage selector + the create progress
+  affordance), then the rest of the §9 sequence. Authority for the per-stage detail:
+  `STAGE1_QUEUE_DESIGN_2026-06.md` §6.

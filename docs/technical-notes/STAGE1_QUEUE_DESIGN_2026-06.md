@@ -1,16 +1,22 @@
 # Stage 1 — Queue: design & decision log
 
-> **Status: BUILT + run live (2026-06-22).** Produces `data/acquisition/queue/batch_NNNNN.json` — the
-> `gate@1`-reviewed targeting input for Stage 2.
+> **Status: BUILT + run live (2026-06-22); the gate@1 CONSOLE + batch working store BUILT 2026-06-27
+> (REQ-102, backend).** Produces the batch as a first-class entity in the governance DB (the working
+> store) with `data/acquisition/queue/batch_NNNNN.json` regenerated from the rows as the auditable
+> receipt. gate@1 is now an **in-band console approval** (a batch-row lifecycle transition + per-district
+> events), no longer an out-of-band go-ahead (§4, §7). Frontend (the queue view) is step 3, not yet built.
 >
-> **What this note is:** for the already-built Stages 1–4 the **code is authoritative**; this note is a
-> **narrative of what the code currently does — to inform the console**, not a redesign. §1–§5 describe
-> current behavior (verified against the scripts 2026-06-27); §6 is the historical decision log.
+> **What this note is:** the code is authoritative; this note is a **narrative of what the code currently
+> does**. §1–§6 describe current behavior (verified against the scripts 2026-06-27); §7 is the decision log.
 >
 > **Code (grimp-confirmed dependency set, 2026-06-27):** `stage1_queue/queue_batch.py` imports
-> `common.{school_sampling, district_status, paths, discover}` + `infrastructure.database.{connection, models}`
-> (`District`, `EnrollmentByGrade`) — i.e. it reads both NCES CSVs **and** the LCT Postgres DB (§1).
-> `ACQUISITION_PIPELINE.md` carries the one-paragraph canonical summary that points here.
+> `common.{school_sampling, district_status, paths, discover, db}` + `stage1_queue.batch_store` +
+> `infrastructure.database.{connection, models}` (`District`, `EnrollmentByGrade`) — it reads both NCES
+> CSVs **and** the LCT Postgres DB (§1), and now writes the **governance** DB batch working store (§7).
+> The batch logic is split into pure/IO callables: **`build_batch()`** (pure construction) and
+> **`persist_batch()`** (DB write + receipt + state events), shared by the CLI and the gate@1 console.
+> The store + models live in `stage1_queue/batch_store.py` + `stage1_queue/models.py`; the console
+> endpoints in `process_governance/server.py`. `ACQUISITION_PIPELINE.md` carries the slim summary.
 
 **Companions:** `ACQUISITION_PIPELINE.md` (the 9-stage map), `acquisition_pipeline_flow.md` (the visual),
 `METHODOLOGY.md` (Rule 6 CTC / Rule 7 grade-span-gap), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
@@ -32,10 +38,14 @@ input Stage 2 (Discover) and Stage 3 (Capture) consume.
   + the `District` / `EnrollmentByGrade` models): `load_ctc_ids()` reads **`districts.is_shared_service_entity`**
   (the CTC / shared-service exclusion), and `load_enrollment()` reads **`enrollment_by_grade.enrollment_k12`**
   (the most recent non-null/non-zero source year — the stratification axis).
-- **Output:** `data/acquisition/queue/batch_NNNNN.json` (5-digit zero-padded), structured targeting
-  parameters only — **no prompt text** (prompt construction belongs to Stage 2; baking it in would couple
-  queue review to discovery-prompt wording). Schema reference: `data/acquisition/queue/batch.example.json`.
-- **Gate:** `gate@1` (human review of the right districts/schools/bands) — see §4.
+- **Output — working store + receipt (2026-06-27).** The batch is now a first-class entity in the
+  **governance DB** (`batch` / `batch_district` / `batch_school` — the working store, §6), with
+  `data/acquisition/queue/batch_NNNNN.json` (5-digit zero-padded) **regenerated from those rows as the
+  auditable receipt** (the receipts reframe, governance §7a-A). Both still carry structured targeting
+  only — **no prompt text** (prompt construction belongs to Stage 2; baking it in would couple queue
+  review to discovery-prompt wording). Receipt schema: `data/acquisition/queue/batch.example.json`.
+- **Gate:** `gate@1` — now an **in-band console approval** (batch-row `draft → approved` transition +
+  per-district `gate@1` events), see §4 + §6.
 
 ---
 
@@ -158,25 +168,74 @@ The companion **extraction-time mode-stability early-exit** is a Stage-7 decisio
 
 ---
 
-## 4. `gate@1` — the queue-review console surface
+## 4. `gate@1` — the in-band console approval (BUILT 2026-06-27, backend)
 
-`gate@1` (human review, was Checkpoint A) is **out-of-band today** — no `approved`/`reviewed_by` fields in
-the batch JSON; the reviewer reads the batch file, confirms the districts/bands/schools are sensible, and
-gives a go-ahead before Stage 2. The governance console will make it an **in-band approval event** (a
-`gate@1` `state_event`), with manual/auto per Settings. The console-view design lives in the forthcoming
-console design note; the per-stage data shown here (the batch, the denominator, the funnel) is Stage 1's.
+`gate@1` (human review, was Checkpoint A) is now **in-band**: approval is a **batch-row lifecycle
+transition** (`status: draft → approved`, stamping `approved_at`/`approved_by`) plus a **per-district
+`gate@1 "approved"` `state_event`** for the auditable timeline. The reviewer no longer just eyeballs a
+file and says "go" out of band — they act in the console, and the action is recorded. The unit of approval
+is the **batch** (the thing that advances to discovery), not the individual district; rejecting
+districts/schools happens *before* approval via editing (§6). Manual/auto is per Settings (governance §11b;
+auto not yet wired). The frontend queue view is step 3; this section + §6 describe the built backend.
 
 ---
 
 ## 5. Open decisions
-- **In-band `gate@1` approval** — move from out-of-band go-ahead to a recorded approval event (console).
-- **Follow-up batch mechanics** — creating a follow-up batch targeting unsatisfied *bands* needs the
-  per-band satisfaction signal, which depends on Stage 8 results (not built). First-run behavior is current.
+- **gate@1 frontend (step 3)** — the queue view (batch list, the district→band→school tree with edit
+  controls, a Create button with a loading affordance, Approve/Reopen). Backend done; UI pending.
+- **Manual batch construction** (hand-pick untouched NCES districts; APGA story 32) and **follow-up /
+  re-queue batches** (stories 33–35; need the Stage-8 per-band satisfaction signal, not built) — deferred.
+  First-run stratified draw + soft edits is what's built.
+- **gate@1 auto mode** — confidence-escalating auto-approve (governance §11b); manual-only today.
 - **Extraction-time early-exit** — §3, deferred to Stage 7.
 
 ---
 
-## 6. Decision log (chronological — moved here from the flow diagram, 2026-06-27)
+## 6. The batch working store + gate@1 console (REQ-102, built 2026-06-27)
+
+The batch is a first-class entity in the **governance DB** (the working store); `batch_NNNNN.json` is the
+receipt regenerated from the rows on every change (governance §7a-A — the JSON shifted from a
+data-transmission vehicle to an auditable receipt).
+
+### 6a. Schema (normalized, PRECIOUS — `stage1_queue/models.py`)
+Created by `gdb.init_precious_schema()`, **never** in the Stage-5 ingest's `REBUILD_DDL` drop list, so a
+re-ingest can't wipe a queued/approved batch. Normalized (not a JSON blob) so edits are real row ops and
+the cross-batch queries the user stories need (a district in multiple batches; per-batch yields) fall out.
+- **`batch`** — lifecycle: `batch_id` (PK), `batch_type` (`first-run`|`follow-up`), `status`
+  (`draft`|`approved`), `nces_year`, `created_at`/`_by`, `approved_at`/`_by`, `meta_json` (the batch-level
+  prose carried to the receipt: stratification method, denominator criteria, cap, over-cap rule).
+- **`batch_district`** — one row per district; `ord` (stratified-pick order, for a stable receipt),
+  the denominators + per-band selection-time counts (`band_meta`), and `included` (the soft-reject flag).
+- **`batch_school`** — one row per (district, school); `bands` lists every band it's selected into (a
+  multi-band school is ONE row), `included` (soft-reject), `source` (`stratified`|`manual_add`).
+
+### 6b. doc ↔ rows (`stage1_queue/batch_store.py`)
+- **`create_batch(sess, batch_doc, …)`** — write a freshly-built batch_doc into rows.
+- **`to_receipt_doc(sess, id)`** — the canonical batch_doc (INCLUDED rows only, original shape) for the
+  receipt + Stage 2; `n_selected` is **recomputed live** from included rows (counts stay honest after edits).
+- **`to_view(sess, id)`** — the gate@1 review payload: lifecycle fields + ALL rows (included *and*
+  soft-rejected) with their flags, so the human sees what was proposed and what they dropped.
+- **`write_receipt(sess, id)`** — regenerate `batch_NNNNN.json` from the rows (the receipt always mirrors
+  the working store). Every function takes a Session and does **not** commit — the caller owns the txn.
+
+### 6c. gate@1 edit operations (soft, audited — APGA stories 29–31)
+- **`reject_district`** / **`reject_school`** → flip `included = False` (never a delete — the full
+  proposed batch stays auditable). **`add_school`** → insert a `BatchSchool` (`source="manual_add"`), or
+  re-include a previously-rejected row. All blocked when `status="approved"` (`BatchLocked`); `reopen_batch`
+  returns to draft. Each edit re-emits the receipt **and** records a per-district `gate@1 "edited"` event
+  (transparency/auditability — the standing principle).
+
+### 6d. The console API (`process_governance/server.py`)
+The Stage-5 review app grows into the stage-selectable governance console; gate@1 is the first added
+surface: `POST /api/queue/create` (synchronous stratified draw — `build_batch` reads the full NCES corpus
++ DB, ~10–20s; the UI shows a progress affordance), `GET /api/queue` (list), `GET /api/queue/{id}` (review),
+`POST /api/queue/{id}/edit` (the three ops), `POST .../approve` + `.../reopen`,
+`GET .../district/{did}/candidates` (remaining eligible schools for "add school"). Tests:
+`tests/test_stage1_batch_store.py` (9, the working store) + `tests/test_gate1_api.py` (6, the HTTP wiring).
+
+---
+
+## 7. Decision log (chronological — moved here from the flow diagram, 2026-06-27)
 
 _The turn-by-turn record of how Stage 1 was designed and hardened. Preserved verbatim; `gate@1` was
 "Checkpoint A / CP-A" at the time of writing (see governance §11 for the current gate model)._

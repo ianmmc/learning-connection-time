@@ -36,7 +36,9 @@ from infrastructure.acquisition.common import school_sampling as S
 from infrastructure.acquisition.common import district_status as DS
 
 from infrastructure.acquisition.common import paths  # noqa: E402  (single source of truth for runtime-state locations — REQ-087)
+from infrastructure.acquisition.common import db as gdb  # noqa: E402  (governance DB = the batch working store — REQ-102/103)
 from infrastructure.acquisition.common.discover import host_of
+from infrastructure.acquisition.stage1_queue import batch_store as BSTORE
 
 project_root = Path(__file__).parent.parent.parent.parent
 from infrastructure.database.connection import session_scope
@@ -169,28 +171,16 @@ def select_schools(batch_id: str, district_id: str, district_school_index: dict,
     return order, result
 
 
-def main():
-    ap = argparse.ArgumentParser(description="Stage 1 (Queue): build a batch for the acquisition pipeline")
-    ap.add_argument("batch", type=int)
-    ap.add_argument("--n", type=int, default=12)
-    ap.add_argument("--year", default="2024_25")
-    ap.add_argument("--dry-run", action="store_true")
-    a = ap.parse_args()
+def build_batch(year: str, n: int, batch_id: str, registry: dict) -> tuple[dict, list, int]:
+    """Pure batch construction: apply the pre-queue exclusions, stratified-pick, select per-band
+    schools, and assemble the batch_doc. Does NO I/O -- no file write, no registry mutation, no
+    printing (it only READS the registry, via eligible_pool's already-attempted filter). The caller
+    (CLI main() or the gate@1 console 'create' action) persists via persist_batch().
 
-    batch_id = f"batch_{a.batch:05d}"
-    registry = DS.load()
-
-    pool, sch_idx, gap_excluded = eligible_pool(a.year, registry)
-    level_counts = S.school_level_counts(a.year)   # did -> {total, by_level} (the topology denominator)
-    print(f"Eligible pool: {len(pool):,} districts (excluded {len(gap_excluded)} for grade-span gap)")
-    if gap_excluded:
-        for g in gap_excluded[:10]:
-            print(f"  grade-span gap: [{g['state']}] {g['name']} ({g['district_id']}) -- missing {g['gap_bands']}")
-        if len(gap_excluded) > 10:
-            print(f"  ... and {len(gap_excluded) - 10} more")
-
-    picked_ids = stratified_pick(pool, batch_id, n=a.n)
-    print(f"{batch_id}: picked {len(picked_ids)} districts")
+    Returns (batch_doc, gap_excluded, n_eligible)."""
+    pool, sch_idx, gap_excluded = eligible_pool(year, registry)
+    level_counts = S.school_level_counts(year)   # did -> {total, by_level} (the topology denominator)
+    picked_ids = stratified_pick(pool, batch_id, n=n)
 
     districts_out = []
     for did in picked_ids:
@@ -209,14 +199,12 @@ def main():
             "band_processing_order": order,
             "schools_by_band": schools_by_band,
         })
-        print(f"  [{info['state']}] {info['name'][:40]:40} enr={info['enrollment_k12']:>7,} "
-              + " ".join(f"{b[:4]}={schools_by_band[b]['n_selected']}/{schools_by_band[b]['n_candidates']}" for b in order))
 
     batch_doc = {
         "batch_id": batch_id,
         "created": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "n": len(districts_out),
-        "nces_year": a.year,
+        "nces_year": year,
         "nces_school_counts_criteria": ("count of ccd_sch schools meeting our eligibility (open, "
             "regular, non-virtual, not standalone-preschool), grouped by the RAW ccd_sch LEVEL "
             "field. The topology denominator -- NOT ccd_lea's reported figure. total == the distinct "
@@ -235,23 +223,63 @@ def main():
         ),
         "districts": districts_out,
     }
+    return batch_doc, gap_excluded, len(pool)
 
-    if a.dry_run:
-        print("\nDRY RUN -- not written, status registry not updated")
-        return
 
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    out_path = OUT_DIR / f"{batch_id}.json"
-    out_path.write_text(json.dumps(batch_doc, indent=2))
-    print(f"\nWrote {out_path}")
-
-    for d in districts_out:
+def persist_batch(batch_doc: dict, registry: dict, *, batch_type: str = "first-run",
+                  actor: str = "cli") -> Path:
+    """Persist a freshly-built batch: write the DB WORKING STORE (batch_store rows) + regenerate the
+    receipt batch_NNNNN.json from those rows + record one stage=1 'queued' state_event per district.
+    Shared by the CLI and the gate@1 console 'create' action -- the single place a batch becomes
+    durable + tracked. Requires the governance DB (Docker), same precondition as DS.save(). Mutates
+    `registry` (caller loaded it via DS.load())."""
+    batch_id = batch_doc["batch_id"]
+    gdb.init_precious_schema()   # ensure the batch tables exist (idempotent; never drops)
+    with gdb.session_scope() as sess:
+        BSTORE.create_batch(sess, batch_doc, batch_type=batch_type, actor=actor)
+        out_path = BSTORE.write_receipt(sess, batch_id)   # receipt regenerated FROM the rows
+    for d in batch_doc["districts"]:
         DS.record_stage(
             registry, d["district_id"], d["name"], d["state"],
             stage=1, stage_name="queue", outcome="queued", batch_id=batch_id,
         )
     DS.save(registry)
-    print(f"Recorded {len(districts_out)} districts in {DS.STATUS_FILE}")
+    return out_path
+
+
+def main():
+    ap = argparse.ArgumentParser(description="Stage 1 (Queue): build a batch for the acquisition pipeline")
+    ap.add_argument("batch", type=int)
+    ap.add_argument("--n", type=int, default=12)
+    ap.add_argument("--year", default="2024_25")
+    ap.add_argument("--dry-run", action="store_true")
+    a = ap.parse_args()
+
+    batch_id = f"batch_{a.batch:05d}"
+    registry = DS.load()
+
+    batch_doc, gap_excluded, n_eligible = build_batch(a.year, a.n, batch_id, registry)
+
+    print(f"Eligible pool: {n_eligible:,} districts (excluded {len(gap_excluded)} for grade-span gap)")
+    if gap_excluded:
+        for g in gap_excluded[:10]:
+            print(f"  grade-span gap: [{g['state']}] {g['name']} ({g['district_id']}) -- missing {g['gap_bands']}")
+        if len(gap_excluded) > 10:
+            print(f"  ... and {len(gap_excluded) - 10} more")
+
+    print(f"{batch_id}: picked {len(batch_doc['districts'])} districts")
+    for d in batch_doc["districts"]:
+        sbb = d["schools_by_band"]
+        print(f"  [{d['state']}] {d['name'][:40]:40} enr={d['enrollment_k12']:>7,} "
+              + " ".join(f"{b[:4]}={sbb[b]['n_selected']}/{sbb[b]['n_candidates']}" for b in d["band_processing_order"]))
+
+    if a.dry_run:
+        print("\nDRY RUN -- not written, status registry not updated")
+        return
+
+    out_path = persist_batch(batch_doc, registry)
+    print(f"\nWrote {out_path}")
+    print(f"Recorded {len(batch_doc['districts'])} districts in {DS.STATUS_FILE}")
 
 
 if __name__ == "__main__":

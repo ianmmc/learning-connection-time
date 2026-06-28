@@ -27,7 +27,7 @@ Part of "Reducing the Ratio" educational equity initiative. Currently implementi
 
 Building the **per-school acquisition pipeline** stage-by-stage with **human-in-the-loop checkpoints**. The GT/benchmark exploration concluded and was archived; the validated design is now the active build. Canonical pipeline doc: **`docs/ACQUISITION_PIPELINE.md`** (9 stages + failure-modes→checkpoints table + reader-routing spec). Live code: **`infrastructure/acquisition/`** (promoted out of the retired `scripts/benchmark/`). Council research: `docs/technical-notes/LLM_COUNCIL_RESEARCH_2026-06.md`. Leaderboard/costs: `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.
 
-**Build progress (2026-06-27):** Stages **1–4 built + run live** on `batch_00001`; **Stage 5 CONCLUDED** (review/label app + deterministic signals + de-chrome + clustering + labeled topology + the tuning learning-loop + the **event-driven `filtered.json` release generator**). The **governance/state/Postgres re-architecture is BUILT**: **REQ-098** (installable package — run **`pip install -e .`**; import-linter/grimp/vulture/dependency-cruiser enforce layering), **REQ-103** (isolated `governance` Postgres + cross-stage cache), **REQ-099** (`state_event` append-log + `current_state` view, replacing the `district_status.json` registry), **REQ-094** (event-driven `filtered.json`, governance §6). **Console & gate model + a per-stage documentation architecture decided 2026-06-27.** Read-first authority: **`docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`** (§11 = gates/console) + the per-stage `STAGE*_DESIGN_*.md`; the slim *map* is `ACQUISITION_PIPELINE.md`; history → `PROJECT_HISTORY.md` (2026-06-27 entry).
+**Build progress (2026-06-27):** Stages **1–4 built + run live** on `batch_00001` (each with a code-verified `STAGE*_DESIGN_*.md` note); **Stage 5 CONCLUDED** (review/label app + signals + de-chrome + clustering + labeled topology + tuning loop + the **event-driven `filtered.json` release generator**). Governance/state/Postgres **BUILT**: REQ-098 (installable package — **`pip install -e .`**), REQ-103 (isolated `governance` Postgres + cross-stage cache), REQ-099 (`state_event` log + `current_state` view), REQ-094 (event-driven `filtered.json`). **The console build has STARTED — gate@1 BACKEND built (REQ-102):** the batch is now a **first-class entity in the governance DB (the working store)** — normalized PRECIOUS tables `batch`/`batch_district`/`batch_school`, with `batch_NNNNN.json` regenerated from the rows as the **receipt**; gate@1 is an **in-band batch-level approval** with soft+audited editing; 7 console endpoints + `build_batch()`/`persist_batch()`. Read-first authority: **`PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`** (§11 gates/console, §11h gate@1 build) + the per-stage `STAGE*_DESIGN_*.md` (Stage 1 = §6 for the working store); slim *map* = `ACQUISITION_PIPELINE.md`; history → `PROJECT_HISTORY.md`.
 
 **Metric = GROSS bell-to-bell minutes (end − start), NOT net.** No lunch/passing/recess deduction, no *assumed* deductions. Existing GT is already gross; gross needs only two reliably-published numbers (↑accuracy). Net is a deferred enhancement. Labeled `gross_bell_to_bell`. Plausibility gate 240–510 min. (REQ-055; supersedes net in REQ-042/046.)
 
@@ -46,36 +46,41 @@ Building the **per-school acquisition pipeline** stage-by-stage with **human-in-
 > **SEA central-data harvest is a dead end for daily minutes** (verified) — states publish only statutory minimums / day-counts, not actual daily minutes. Web discovery + extraction is the primary acquisition path. See `docs/INSTRUCTIONAL_TIME_HARVEST.md`.
 
 ### Next session (RESUME HERE — 2026-06-27)
-**Stage 5 concluded; the governance/state/Postgres re-architecture is built (REQ-103/099/094).** Currently
-in a **documentation restructure** — each pipeline stage gets a design note; `ACQUISITION_PIPELINE.md` is the
-slim *map*. Gate/console model, district×band grain, cyclic pipeline, two batch types: governance §11 +
-`PROJECT_HISTORY.md` 2026-06-27 entry.
+**The console build has started; gate@1 BACKEND is built (REQ-102).** The batch is now a first-class entity
+in the governance DB (the working store: `batch`/`batch_district`/`batch_school`, PRECIOUS), with
+`batch_NNNNN.json` regenerated from the rows as the receipt. gate@1 = an in-band **batch-level** approval
+(`batch.status: draft → approved` + per-district `gate@1` events); editing is **soft + audited** (reject
+district/school, add school; locked once approved, `reopen` to edit). Code: `stage1_queue/{queue_batch
+(build_batch/persist_batch), batch_store, models}.py` + the `/api/queue/*` endpoints in
+`process_governance/server.py`. Detail: `STAGE1_QUEUE_DESIGN_2026-06.md` §6 + governance §11h. The Stages
+1–4 design notes + the 5-doc sync are done.
 
-**The plan (approved sequence):**
-1. **Verify Stages 1–4 narratives against the code** (code is ground truth for built stages — use `grimp` +
-   read the scripts). **Stage 1 DONE** = `STAGE1_QUEUE_DESIGN_2026-06.md` (the template). **→ Stage 2 NEXT**,
-   then 3, 4, + a `CONSOLE_DESIGN` note. Per-stage template: code-verify → write the narrative (to inform the
-   console) → move its decision log out of the flow diagram into the note → slim the map section → route
-   methodology to `METHODOLOGY.md`.
-2. **Stage 6 design** — `STAGE6_HANDOFF_DESIGN_2026-06.md` (council-config object, signals→routing; OPEN #1 =
-   config grain per-district vs per-rep).
-3. **Console BUILD** — first deliverable = the `gate@1` queue view; **create `batch_00002` *via the console***
-   (a recorded `gate@1` action), **not** by triggering scripts directly for the batch-of-record — then walk it
-   stage-by-stage as views land. (Dev/test runs by hand are fine.)
+**→ NEXT: the gate@1 FRONTEND (step 3).** Build the queue view in `process_governance/static/`: a **stage
+selector** (the wordmark — gate@1 queue ↔ the existing Stage-5 review), the **batch list**, a **Create
+batch** button **with a loading/progress affordance** (create is synchronous, ~10–20s — the user asked for
+this), the **district→band→school tree** (denominators + `n_*` counts + `included` flags), the **edit
+controls** (reject district/school, add school via `GET …/district/{did}/candidates`), and **Approve/Reopen**.
+**Then create `batch_00002` THROUGH the console** (the forcing-function milestone — never via scripts for the
+batch-of-record; hand-run `queue_batch.py` = dev/test only). After that, walk batch_00002 stage-by-stage,
+building each view; then REQ-100 (staleness) / REQ-101 (Stage 6 + gate@6). **Scope ends at gate@6 approval —
+no paid dispatch.**
 
-**Fresh-session essentials:** `/catchup` → `pip install -e .` (REQ-098) → `lint-imports` (3 kept/0 broken) +
-`pytest -q`; **Docker up** (governance-DB tests skip without it). Architecture/code-exploration tools
-(`grimp`/`lint-imports`/`vulture`/dependency-cruiser) are in **Essential Commands**. Rebuild the governance
-DB + `filtered.json`: `python3 -m infrastructure.acquisition.stage5_filter.build_signals`. Launch the console:
-`python3 -m infrastructure.acquisition.process_governance.server` (→ :8005). **Save state at session end with `/checkpoint`.**
+**Fresh-session essentials:** `/catchup` → `pip install -e .` → **Docker up** → `lint-imports` (3 kept/0
+broken) + `pytest -q` (governance-DB tests skip without Docker). Launch the console:
+`python3 -m infrastructure.acquisition.process_governance.server` (→ :8005). Rebuild the Stage-5 governance
+cache + `filtered.json`: `python3 -m infrastructure.acquisition.stage5_filter.build_signals`. The batch
+working store is created by `gdb.init_precious_schema()` (server does this at startup). Tests:
+`tests/test_stage1_batch_store.py` (working store) + `tests/test_gate1_api.py` (endpoints). **Checkpoint at
+session end with `/checkpoint`.**
 
-**Registered REQ#s for the console build** (written 2026-06-27, status `accepted`): **REQ-102** gate@1 console view (the first deliverable), **REQ-100** filtered.json staleness view, **REQ-101** Stage 6 handoff + gate@6 (+ council-config; OPEN #1 = config grain), **REQ-104** Stage 2 headless. The **currency/recency** gate is **REQ-044** (a Stage 5 filter enhancement — NOT REQ-104). **`batch_00002` is the forcing function:** it is created + advanced ONLY through the console, stage view by stage view (hand-run `queue_batch.py` is dev/test only); scope ends at **gate@6 approval — no paid dispatch**. Authority: `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §9 (2026-06-27 "SHARPENED" note).
+**Registered REQ#s** (status `accepted`): **REQ-102** gate@1 (backend done; frontend next), **REQ-100**
+staleness view, **REQ-101** Stage 6 handoff + gate@6 (OPEN #1 = council-config grain), **REQ-104** Stage 2
+headless. Currency/recency = **REQ-044** (a Stage-5 enhancement, NOT REQ-104).
 
-**Watch-items:** (a) docs rationalization continues — flagged not-yet-done: GETTING_STARTED's stale "Run
-Scraper Service" task (retired Express :3000), DATA_SOURCES dangling `data-dictionaries/` refs,
-`docs/technical-notes/refactor-20260123/` (obsolete — designed the just-archived appendix system); (b) the
-`.claude/skills/per-school-acquire*` skills are **premature/stale** — don't treat as the runbook; (c)
-Wave-1 discovery moving to headless `claude -p` (REQ-104, not built).
+**Watch-items:** (a) docs rationalization not-yet-done: GETTING_STARTED's stale "Run Scraper Service" task
+(retired Express :3000), DATA_SOURCES dangling `data-dictionaries/` refs, `docs/technical-notes/refactor-20260123/`
+(obsolete); (b) `.claude/skills/per-school-acquire*` skills are stale — not the runbook; (c) `create` is
+synchronous (heavy full-NCES draw) — fine for now, revisit if it becomes a UX problem.
 
 ---
 
