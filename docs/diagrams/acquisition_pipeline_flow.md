@@ -2,8 +2,8 @@
 
 > Built incrementally during stage-walkthrough sessions, not transcribed from `ACQUISITION_PIPELINE.md`. Reflects what we've actually decided/confirmed in conversation. May confirm, refine, or diverge from the written doc — if it diverges, that's signal to reconcile the doc afterward, not a mistake here. As of 2026-06-23 the two docs are reconciled: everything below matches `ACQUISITION_PIPELINE.md`'s Stage 1 through Stage 4 sections.
 
-**Status:** Stage 1 (Queue) designed, built, tested, and CP-A-approved. Stage 2 (Discover) designed, built, and run live against all 12 `batch_00001` districts (12/12 `found_all`). Stage 3 (Capture) designed, built, and run live against all 12 districts (150/150 URLs captured, 0 failures, all `captured_all`). Drive Tier 2 (OAuth) deliberately deferred, not built. Stage 4 (Local processing) designed, built, and run live 2026-06-23 — tool roster resolved via a real spike against all 150 captured PDFs (keep pdftotext/pdfplumber-lines/camelot-stream/camelot-hybrid/tesseract; heavy ML tools Docling/EasyOCR/PaddleOCR installed, timed, and deliberately rejected/uninstalled); production run against all 12 districts: 150/150 records processed, 0 crashes, 10 `processed_all` + 2 `processed_partial`. Stage 5 (Filter) built (review app + signals + de-chrome + `filtered.json`). **gate@1 console backend built 2026-06-27 (REQ-102):** the batch is now a first-class governance-DB entity (the working store) + the gate@1 API; frontend next. Stages 6-9 still skeleton boxes.
-**Last updated:** 2026-06-27 (gate@1 console backend + batch working store, REQ-102 — see the decision log + `docs/technical-notes/STAGE1_QUEUE_DESIGN_2026-06.md` §6 / `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11h)
+**Status:** Stage 1 (Queue) designed, built, tested, and CP-A-approved. Stage 2 (Discover) designed, built, and run live against all 12 `batch_00001` districts (12/12 `found_all`). Stage 3 (Capture) designed, built, and run live against all 12 districts (150/150 URLs captured, 0 failures, all `captured_all`). Drive Tier 2 (OAuth) deliberately deferred, not built. Stage 4 (Local processing) designed, built, and run live 2026-06-23 — tool roster resolved via a real spike against all 150 captured PDFs (keep pdftotext/pdfplumber-lines/camelot-stream/camelot-hybrid/tesseract; heavy ML tools Docling/EasyOCR/PaddleOCR installed, timed, and deliberately rejected/uninstalled); production run against all 12 districts: 150/150 records processed, 0 crashes, 10 `processed_all` + 2 `processed_partial`. Stage 5 (Filter) built (review app + signals + de-chrome + `filtered.json`). **Console: gate@1 (REQ-102) + Stage 2 (REQ-104) + Stage 3 (REQ-110) views all BUILT (2026-06-28).** Stage 3's view turned on the load-bearing infra change: the **cross-stage DB cache graduated to a live working store** maintained by each stage's finish hook (`common/cache_ingest.py`), so the console reads fresh DB rows for an in-flight batch (Stage 2's view repointed to the cache too). Stages 6-9 still skeleton boxes.
+**Last updated:** 2026-06-28 (Stage 3 capture console + cross-stage cache as a live working store, REQ-110 — see `docs/technical-notes/STAGE3_CAPTURE_DESIGN_2026-06.md` §3 / `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §7a-A/§11f/§11h)
 
 ```mermaid
 flowchart TD
@@ -41,7 +41,7 @@ flowchart TD
         D_RECON -->|registry ahead, disk empty| D_HALT
     end
 
-    subgraph STAGE3 ["Stage 3 — Capture (built + run live 2026-06-23, 150/150 captured)"]
+    subgraph STAGE3 ["Stage 3 — Capture (built + run live 2026-06-23, 150/150 captured; console view BUILT 2026-06-28, REQ-110 — DB-cache readout + per-district run trigger)"]
         direction TB
         C_RECON["Reconciliation pass (BEFORE any fetching)<br/>per district: does .../captures.json exist?"]
         C_SKIP["Exists, registry behind -> reconcile UP, skip"]

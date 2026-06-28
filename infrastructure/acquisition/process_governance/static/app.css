@@ -262,6 +262,13 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
   max-height: 220px; overflow-y: auto; font-size: var(--fs-xs); color: var(--text-secondary); }
 .s2-ev-kind { display: inline-block; min-width: 78px; font-weight: var(--fw-semibold); color: var(--text-brand); }
 
+/* Stage 3 capture: failure reasons + the CMS/host distribution panel */
+.s3-errs { color: var(--text-secondary); font-size: var(--fs-xs); }
+.s3-hosts { margin-top: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
+.s3-host-grp { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.s3-host-grp .q-smeta { width: 100%; }
+.s3-host b { margin-left: 4px; color: var(--text-primary); }
+
 /* add-school modal */
 .modal-foot { padding: var(--space-3) var(--space-5); border-top: var(--border-hair) solid var(--border-subtle);
   display: flex; justify-content: flex-end; }

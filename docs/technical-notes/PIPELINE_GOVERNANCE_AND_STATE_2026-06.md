@@ -350,6 +350,18 @@ DB caches all stages (regenerable), as it caches Stage 5 today. **Reframe (user)
 files shift role from *data carriers through a transformation* to **auditable receipts** — the DB is the
 working store, the JSON is the on-disk audit trail.
 
+> **UPDATE 2026-06-28 (REQ-110) — the cross-stage cache became a LIVE working store, not a
+> dropped-each-ingest cache.** As first built (103c), the cache was populated *only* by the monolithic
+> Stage-5 `build_signals.ingest()` (`DROP`+rebuild over every district with all of discovery+captures+
+> processed), so for an in-flight batch the console had nothing fresh to read — Stage 2's console fell back
+> to parsing `discovery.json` off disk, leaving the cache unused for its stated "surfaces 1/2/5 need it"
+> purpose. The fix made the cache match this section's intent: schema + per-district UPSERTs moved to
+> **`common/cache_ingest.py`** (stages are independent siblings — the ingest can't live in `stage5_filter`);
+> the four tables are `CREATE IF NOT EXISTS` + **never dropped** (still rebuildable from disk, the
+> authoritative source); and **each stage's `finish` hook** projects its district's slice in. The console
+> now reads the DB working store (Stage 3 from the start; Stage 2 repointed, self-healing for pre-hook
+> batches). Disk stays authoritative for DATA (§1); the DB is the queryable projection, now kept live.
+
 **B. Orchestration = callable functions, polyglot.** Triggers invoke stage logic as **functions** so the
 app *and* a future scheduler share one path (`actor` flips human→auto, no code change). Stages 2–3 are
 Node → the orchestration layer manages subprocesses across languages. Goal: maximize deterministic
@@ -705,7 +717,9 @@ Stage-6 handoff freeze is what keeps "what we sent" recoverable across these loo
 ### 11f. Per-stage console notes
 - **Stage 3** — a thin **health / emergent readout**: emergent URLs, capture failures (WAF/security
   blocks), and the **CMS/host distribution** from the `capture` table's `final_host`/`fingerprint_json`
-  (REQ-103c). NOT a live PNG feed (cute, low governance value).
+  (REQ-103c). NOT a live PNG feed (cute, low governance value). **BUILT 2026-06-28 (REQ-110)** — reads the
+  DB cache (incl. the new `capture.err` for the failure breakdown), + a per-district Node-capture run
+  trigger. See `STAGE3_CAPTURE_DESIGN_2026-06.md` §3.
 - **Stages 2 & 4 effectiveness** — the **measurement-harness pattern extended upstream**: attribute each
   target-labeled record back to its discovery tool (`candidate_tools_json`) and its winning representation's
   source (`representation.source`). Same fingerprinted-scorecard discipline as Stage 5, applied to discovery
@@ -750,5 +764,12 @@ reframe and the batch_00002-forcing-function plan (the batch-of-record advances 
   end — the second console stage view, following the gate@1 build pattern. (A switcher refactor to add it
   briefly broke the Stage-1 view via a deleted `v1` var — fixed; a reminder that the static JS has no
   lint/`no-undef` gate, unlike the Python side.)
+- **Stage 3 console view BUILT 2026-06-28 (REQ-110)** (`static/stage3.js` + `/api/capture/*` +
+  `stage3_capture/headless.py`): the ungated health/emergent readout (read from the DB cross-stage cache)
+  + a per-district Node-Playwright capture run trigger (background job). The load-bearing infra change
+  underneath it: the **cross-stage cache graduated to a live working store** maintained by each stage's
+  finish hook (`common/cache_ingest.py`), so the console reads fresh DB rows for an in-flight batch (§7a-A
+  update). Stage 2's console was repointed to the `discovery_school` cache too (self-healing). The batch is
+  resolved from the DB working store, not the receipt. The Stage 2/3/4 finish hooks now keep the cache live.
 - **Next:** REQ-100 (staleness) / REQ-101 (Stage 6 + gate@6). Per-stage detail: `STAGE1_QUEUE_DESIGN`
-  §6 (gate@1), `STAGE2_DISCOVER_DESIGN` §7 (the SERP cascade).
+  §6 (gate@1), `STAGE2_DISCOVER_DESIGN` §7 (the SERP cascade), `STAGE3_CAPTURE_DESIGN` §3 (the console).

@@ -28,7 +28,8 @@
   // module, lazily initialized on first show. stage2.js registers window.initStage2; future stages
   // follow the same convention (a container id + an init hook by name) — no second #stageSelect listener.
   const sel = $g("#stageSelect"), prog = $g("#progress");
-  const VIEWS = { stage1: $g("#stage1view"), stage2: $g("#stage2view"), stage5: $g("#stage5view") };
+  const VIEWS = { stage1: $g("#stage1view"), stage2: $g("#stage2view"),
+                  stage3: $g("#stage3view"), stage5: $g("#stage5view") };
   let loaded1 = false;
   function applyView() {
     const which = sel.value;
@@ -36,6 +37,7 @@
     if (prog) prog.style.display = which === "stage5" ? "" : "none";   // the labeled-count is Stage-5 only
     if (which === "stage1" && !loaded1) { loaded1 = true; renderShell(); loadBatches(); }
     if (which === "stage2" && window.initStage2) window.initStage2();  // stage2.js guards its own re-init
+    if (which === "stage3" && window.initStage3) window.initStage3();  // stage3.js guards its own re-init
   }
   sel.addEventListener("change", applyView);
   window.__applyStageView = applyView;   // so stage2.js can self-show if it loads while already selected

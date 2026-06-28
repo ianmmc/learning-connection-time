@@ -21,6 +21,7 @@ import json
 from collections import Counter
 from pathlib import Path
 
+from infrastructure.acquisition.common import cache_ingest as CI
 from infrastructure.acquisition.common import district_status as DS
 
 
@@ -108,6 +109,9 @@ def finish_district(district: dict, registry: dict) -> str:
         registry, district["district_id"], district["name"], district["state"],
         stage=3, stage_name="capture", outcome=outcome, notes=notes,
     )
+    # Project this district's capture receipts into the live DB cache (the console's Stage-3 surface
+    # reads them). Best-effort: captures.json on disk + the state_event are the durable record.
+    CI.cache_capture(district["dir"], district["district_id"])
     return outcome
 
 

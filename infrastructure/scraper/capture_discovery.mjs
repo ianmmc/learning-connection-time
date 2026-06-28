@@ -18,7 +18,9 @@
 // decide downstream" invariant as the rest of the pipeline.
 //
 // Modes:
-//   node capture_discovery.mjs <ROOT> [CONC]                       -- normal capture
+//   node capture_discovery.mjs <ROOT> [CONC]                       -- capture every district under ROOT
+//   node capture_discovery.mjs district <ROOT> <DISTRICT_DIR> [CONC] -- capture ONE district dir
+//       (the console's batch-scoped, per-district runner -- never re-captures the rest of ROOT)
 //   node capture_discovery.mjs backfill-fingerprints <ROOT> [CONC] -- re-visit existing
 //       records and patch in `fingerprint` only (does NOT re-render/re-save page.* or touch
 //       Stage 4 outputs -- additive, keeps processed.json valid). For parity on pre-2026-06-24
@@ -326,8 +328,12 @@ async function htmlFingerprintFor(ctx, url) {
 }
 
 // ============================ NORMAL CAPTURE ============================
-async function runCapture(ROOT, CONC) {
-  const dirs = readdirSync(ROOT).filter((d) => existsSync(path.join(ROOT, d, 'candidates.json')));
+async function runCapture(ROOT, CONC, only = null) {
+  // `only` (a Set of district-dir basenames) scopes the run to specific districts -- the console's
+  // batch-scoped, per-district runner uses it so a capture run touches only the batch in flight, never
+  // re-captures every district already under ROOT. null = capture every dir with a candidates.json.
+  let dirs = readdirSync(ROOT).filter((d) => existsSync(path.join(ROOT, d, 'candidates.json')));
+  if (only) dirs = dirs.filter((d) => only.has(d));
   const byDistrict = {};
   const tasks = [];
   for (const did of dirs) {
@@ -660,6 +666,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     await runBackfillSegments(argv[1], parseInt(argv[2] || '5', 10));
   } else if (argv[0] === 'recompute-cms-hint') {
     runRecomputeCmsHint(argv[1]);
+  } else if (argv[0] === 'district') {
+    // Capture ONE district dir under ROOT (the console's per-district runner):
+    //   node capture_discovery.mjs district <ROOT> <DISTRICT_DIR> [CONC]
+    await runCapture(argv[1], parseInt(argv[3] || '5', 10), new Set([argv[2]]));
   } else {
     await runCapture(argv[0], parseInt(argv[1] || '5', 10));
   }

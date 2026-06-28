@@ -41,6 +41,7 @@ import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
+from infrastructure.acquisition.common import cache_ingest as CI
 from infrastructure.acquisition.common import district_status as DS
 
 
@@ -350,6 +351,9 @@ def finish_district(district: dict, registry: dict) -> str:
     outcome = compute_outcome(records)
     DS.record_stage(registry, district["district_id"], district["name"], district["state"],
                      stage=4, stage_name="process", outcome=outcome)
+    # Project this district's processed-doc rows into the live DB cache. Best-effort: processed.json
+    # on disk + the state_event are the durable record.
+    CI.cache_processed(district["dir"], district["district_id"])
     return outcome
 
 

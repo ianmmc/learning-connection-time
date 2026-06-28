@@ -2516,3 +2516,34 @@ requirements:
       the current stage2-discover skill (subagent, concurrency cap 2) works for this batch; the headless
       conversion is an efficiency/scale upgrade, not a blocker. Retires the 'subagent requires a chat open'
       framing throughout the Stage 2 docs."
+
+  - id: REQ-110
+    description: "Stage 3 (Capture) console + the cross-stage cache as a LIVE working store — DONE 2026-06-28.
+      Two coupled pieces. (1) INFRASTRUCTURE: the cross-stage DB cache (discovery_school/candidate/capture/
+      processed_doc, REQ-103c) graduated from 'dropped+rebuilt only by the monolithic Stage-5 build_signals
+      ingest' to a LIVE, incrementally-UPSERTed working store — its schema + UPSERTs moved to
+      common/cache_ingest.py (stages are independent siblings; the ingest can't live in stage5), and each
+      stage's finish hook (Stage 2/3/4) projects its district's slice into the cache so the console reads
+      fresh rows for an in-flight batch without waiting for a Stage-5 ingest. The four tables are CREATE IF
+      NOT EXISTS + never dropped (still rebuildable from disk, the authoritative source). Added capture.err
+      so the failure-reason breakdown is queryable. (2) CONSOLE: the Stage 3 view (ungated → health/emergent
+      readout from the DB cache + a per-district Node-Playwright capture run trigger, a background job).
+      Stage 2's console repointed to read the discovery_school cache too (self-healing for pre-hook batches).
+      Also lowered the Wave-2 claude -p timeout 420s→75s (STAGE2 §7d-1). Authority: STAGE3_CAPTURE_DESIGN_2026-06.md
+      §3, PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §1/§7a/§11f/§11h."
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - The cross-stage cache schema + per-district UPSERTs live in common/cache_ingest.py; build_signals imports them and no longer drops those four tables on re-ingest
+      - Stage 2/3/4 finish hooks upsert their district's cache slice best-effort (a cache hiccup logs + is swallowed; disk JSON + state_event stay the durable record)
+      - GET /api/capture/{batch_id} returns per-district capture outcome/counts + the CMS/host distribution read from the DB cache; POST /api/capture/{batch_id}/run runs a per-district Node capture subprocess as a background job (reconcile-aware, sequential, one registry writer)
+      - capture_discovery.mjs has a `district <ROOT> <DISTRICT_DIR>` mode so a run is batch-scoped (never re-captures the rest of RAW_DIR)
+      - Stage 2 console status reads the discovery_school cache, self-healing (ingesting discovery.json) for districts discovered before the cache hook existed
+      - The batch is resolved from the DB working store (not the on-disk receipt) by the console endpoints
+    created: "2026-06-28T00:00:00Z"
+    updated: "2026-06-28T00:00:00Z"
+    notes: "Tests: test_cache_ingest.py (UPSERT idempotency + err + emergent/failure queryability),
+      test_stage3_headless.py (run_batch reconcile/sequential/error-isolation + rollup), test_capture_api.py
+      (status + run guards). Full suite 572 pass / 0 fail; lint-imports 3 kept/0 broken; a live build_signals
+      ingest + a live console smoke (batch_00002 capture=todo×11, discover self-heal) both verified."

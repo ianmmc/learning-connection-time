@@ -172,10 +172,18 @@ Until built, the live stage is the §2 skill+subagent model.
 ## 4. Console surface
 
 Stage 2 is **ungated** — there is no `gate@2`, so the console surfaces Stage 2 as **status/observability**
-only: per-district outcome (`found_all`/`found_partial`/`manual_flag_all`), Wave-1-only vs. Wave-2-invoked
-counts, and the list of `manual_flag` schools needing eventual human follow-up. The reviewer's first
-real decision point on this batch's discovery output is `gate@5` (Filter), after Capture + Local
-processing.
+only: per-district outcome (`found_all`/`found_partial`/`manual_flag_all`), Wave-1 vs. Wave-2 found
+counts, the deduped candidate count, and the `manual_flag` schools needing eventual human follow-up. The
+reviewer's first real decision point on this batch's discovery output is `gate@5` (Filter), after Capture
++ Local processing.
+
+**Reads the DB `discovery_school` cache, not `discovery.json` (REPOINTED 2026-06-28, REQ-110).** The
+console originally parsed `discovery.json` off disk — a workaround for the cross-stage cache being stale
+between Stage-5 ingests. Now that the cross-stage cache is a **live working store** (the Stage-2 finish
+hook `common.cache_ingest.cache_discovery` upserts each district's funnel on completion), `status_for_batch`
+reads `discovery_school`/`candidate` instead, with lifecycle (done/todo) still from disk (the authoritative
+DATA source). It is **self-healing**: a district discovered *before* the cache hook existed (batch_00002/
+00003) has its `discovery.json` ingested on first console view. See STAGE3 §3 + governance §7a-A/§11f.
 
 **User stories (APGA, seed; migrated 2026-06-27):**
 - As a user, I want to **review search-query templates** and **propose new ones.**
@@ -323,10 +331,11 @@ genuinely no page). The 2 residuals invoked the Claude Wave-2 tier and recovered
 no-page cases (a different index can't conjure a page that doesn't exist).
 
 ### 7d. Open / watch-items (deferred — gather data first)
-1. **Is Claude Wave-2 worth it?** On batch_00002 it recovered 0/2 and caused the visible latency pauses
-   (the `claude -p` timeout is 420s — too long for a sequential run). Leaning toward **opt-in and/or a
-   60–90s timeout**, but one batch isn't conclusive (Claude might recover a page Google merely
-   *deprioritized*). Watch-item, not yet changed.
+1. **Is Claude Wave-2 worth it?** On batch_00002 it recovered 0/2 and caused the visible latency pauses.
+   **Timeout lowered 420s → 75s (`WAVE2_TIMEOUT_S`, 2026-06-28, REQ-110)** — the diagnostic harness keeps
+   the 420s `CLI_TIMEOUT_S`; only the live sequential Wave-2 was over-budgeted. Still **open** whether the
+   tier earns its keep at all (one batch isn't conclusive — Claude might recover a page Google merely
+   *deprioritized*); leaning toward opt-in. Watch-item.
 2. **Serper-on-Bright-Data-misses.** Bright Data's lone miss (Monkton) WAS recovered by Serper — same
    index, ~99% overlap, not byte-identical (proxy/parse variance). Once real-batch misses accumulate
    (every `discovery.json` records the per-school Wave-1 result), test whether Serper-on-misses earns a

@@ -6,18 +6,29 @@
 > Tier 2 (OAuth) deliberately deferred, not built. Produces, per district,
 > `captures/<hash>/` directories + `captures.json` — the input Stage 4 (Local processing) consumes.
 >
+> **Console view BUILT 2026-06-28 (REQ-110).** The ungated health/emergent readout + a **per-district
+> Node-Playwright capture run trigger** (a background job) — `static/stage3.js` + `/api/capture/*` in
+> `process_governance/server.py`, driven by `stage3_capture/headless.py` (`run_batch` reconcile/sequential/
+> events; `status_for_batch` reads the **DB cross-stage cache**). The console reads the DB, NOT
+> captures.json — the cross-stage cache graduated to a **live working store** (§3 below). The Node capture
+> gained a `district <ROOT> <DISTRICT_DIR>` mode so a run is batch-scoped. The batch is resolved from the
+> DB working store (not the receipt). Not yet run live on a real batch through the UI (batch_00002 is
+> `todo`×11, ready).
+>
 > **What this note is:** for the already-built Stages 1–4 the **code is authoritative**; this note is a
 > **narrative of what the code currently does — to inform the console**, not a redesign. §1–§5 describe
 > current behavior (verified against the scripts 2026-06-27); §6 is the historical decision log.
 >
-> **Code (grimp-confirmed, 2026-06-27):** the Python orchestration `stage3_capture/capture_stage3.py`
-> imports exactly `common.district_status` (no LCT DB — ungated middle stage). The actual browser work is
-> Node: `infrastructure/scraper/capture_discovery.mjs` (active; `segmentChrome`/`dismissModals`/
-> `stripFragment`/`buildHtmlFingerprint`/`runCapture`/`runBackfill*`) + `capture_drive.mjs` (Tier 1 Drive
-> export-URL logic, `node:test`-tested). The Python↔Node split mirrors Stage 2: **Python orchestrates and
-> owns the registry; a separate process does the risky/external work.** *(Note: the Python code was
-> promoted from `infrastructure/acquisition/discovery/` to `stage3_capture/`; the decision log below
-> reflects the original paths.)*
+> **Code (2026-06-28):** `stage3_capture/capture_stage3.py` (reconcile/outcome/`finish_district`) imports
+> `common.district_status` (state events) + `common.cache_ingest` (the Stage-3 cache hook — governance DB,
+> but only the regenerable cross-stage cache, never the LCT DB). `stage3_capture/headless.py` (NEW, REQ-110)
+> is the batch runner the console drives. The actual browser work is Node:
+> `infrastructure/scraper/capture_discovery.mjs` (active; `segmentChrome`/`dismissModals`/`stripFragment`/
+> `buildHtmlFingerprint`/`runCapture(ROOT, CONC, only?)` + the new `district` mode/`runBackfill*`) +
+> `capture_drive.mjs` (Tier 1 Drive export-URL logic, `node:test`-tested). The Python↔Node split mirrors
+> Stage 2: **Python orchestrates and owns the registry; a separate process does the risky/external work.**
+> *(Note: the Python code was promoted from `infrastructure/acquisition/discovery/` to `stage3_capture/`;
+> the decision log below reflects the original paths.)*
 
 **Companions:** `ACQUISITION_PIPELINE.md` §3 (the slim map), `acquisition_pipeline_flow.md` (the visual),
 Stage 2's note (upstream `candidates.json` contract), Stage 4's + Stage 5's notes (downstream — de-chrome
@@ -108,16 +119,40 @@ scanning `captures.json` for an `err` string. One `record_stage()` write per dis
 
 ---
 
-## 3. Console surface
-Stage 3 is **ungated** — surface as status/observability: per-district outcome, per-candidate `ok`/`err`
-(esp. `needs_oauth_reauth`), emergent-candidate counts, and the fingerprint/`cms_hint` landscape (useful
-context for the `cms_hosts` human-in-the-loop refinement loop). The next human gate is `gate@5`.
+## 3. Console surface — BUILT 2026-06-28 (REQ-110)
+Stage 3 is **ungated**, so the console is **status/observability + a run trigger** (next human gate =
+`gate@5`). Built following the gate@1/Stage-2 pattern (`STAGE2_DISCOVER_DESIGN` §4a): a stage selector
+view (`static/stage3.js`) + thin `/api/capture/*` endpoints delegating to `stage3_capture/headless.py`.
 
-**User stories (APGA, seed; migrated 2026-06-27):** the user was unsure Stage 3 carries much console value
-— candidates were a possible **emergent-URL readout** and a **PNG-capture flow** to watch for unexpected
-patterns (or leave it a grayed-out option). Resolved direction (governance §11f): a thin **health/emergent
-readout** — emergent URLs, capture failures (WAF/security blocks), and the **CMS/host distribution** from
-the `capture` table's `final_host`/`fingerprint_json` — NOT a live PNG feed (low governance value).
+**Reads the DB cross-stage cache, not captures.json** (the deliberate decision this build turned on —
+see "the cross-stage cache is a live working store" below). The readout (governance §11f): per-district
+outcome (`captured_all`/`partial`/`failed`), per-district capture/ok/failed/**emergent** counts, the
+**failure-reason breakdown** (`err` — incl. `needs_oauth_reauth`/WAF blocks), and the batch-level
+**CMS/host distribution** (`capture.final_host` + `cms_hint` from `fingerprint_json`). NOT a live PNG feed
+(low governance value). A `done`-on-disk-but-not-in-cache district is flagged `uncached`.
+
+**Run trigger** — `POST /api/capture/{batch_id}/run` kicks off `headless.run_batch` as a background job:
+reconcile (filesystem-authoritative; registry-ahead-of-disk = CONTROL FAILURE halt), then **one Node
+Playwright subprocess per district** (`capture_discovery.mjs district <ROOT> <DISTRICT_DIR>` — a new
+batch-scoped mode, so a run never re-captures the rest of `RAW_DIR`), sequential (one registry writer),
+`dispatched`/`completed`/`failed` events feeding the job board. After each district, `finish_district`
+records the state_event AND upserts the capture slice into the cache. The batch's districts are resolved
+from the **DB working store** (`batch_store.to_view`, included-only), not the on-disk receipt.
+
+### The cross-stage cache is a LIVE working store (the infrastructure this build turned on — REQ-110)
+REQ-103c built the cross-stage cache (`discovery_school`/`candidate`/`capture`/`processed_doc`) so the
+console's stage surfaces could query the funnel — but it was populated **only** by the monolithic Stage-5
+`build_signals.ingest()` (a `DROP`+rebuild over *every* district with all of discovery+captures+processed).
+So for an in-flight batch (Stage 2 done, Stage 3 pending) the cache was empty, and the Stage-2 console fell
+back to parsing `discovery.json` off disk. To make the DB the working store the console reads (§7a-A), the
+cache **graduated**: its schema + per-district UPSERTs moved to **`common/cache_ingest.py`** (stages are
+independent siblings — the ingest can't live in `stage5_filter`), the four tables are `CREATE IF NOT EXISTS`
+and **never dropped** (still rebuildable from disk, the authoritative source), and **each stage's finish
+hook** (`cache_discovery`/`cache_capture`/`cache_processed`) projects its district's slice in — best-effort
+(a cache hiccup logs + is swallowed; disk JSON + the state_event log stay the durable record). `build_signals`
+now imports the same module and re-upserts on a full pass. Added `capture.err` so the failure breakdown is
+queryable. **User stories (APGA, seed; migrated 2026-06-27):** the user was unsure Stage 3 carried console
+value — a possible emergent-URL readout / PNG flow; resolved to this health/emergent readout.
 
 ## 4. Tool/code provenance
 Active: `capture_discovery.mjs` (+ `capture_drive.mjs`). The modal-dismissal + `page.pdf()` logic was

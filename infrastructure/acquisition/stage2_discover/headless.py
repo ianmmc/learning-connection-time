@@ -25,12 +25,21 @@ import json
 import subprocess
 from pathlib import Path
 
+from sqlalchemy import text
+
+from infrastructure.acquisition.common import cache_ingest as CI
+from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import discover as DISC
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import paths
 from infrastructure.acquisition.stage2_discover import discover_stage2 as D2
 
 CLI_TIMEOUT_S = 420   # diagnostic-only: per-district `claude -p` budget for the cli_reliability harness
+# Wave-2 residual budget (the LIVE sequential run). Lower than the diagnostic budget on purpose: Wave 2
+# is the speculative "why-not-try" tier on the few schools Google's `site:` missed; a long hang stalls
+# the whole sequential batch (the 420s budget caused the visible latency pauses on batch_00002), and the
+# tier degrades to manual_flag anyway, so cap it tight. (STAGE2 §7d-1 watch-item.)
+WAVE2_TIMEOUT_S = 75
 
 # The strict Wave-1 output contract, enforced by `claude --json-schema`. Mirrors exactly what
 # validate_wave1_result() checks: the NCES seed (district_id + domain) must travel back with the
@@ -230,7 +239,7 @@ def _wave2_claude(district: dict, residual: list, domain: str, *, _run=subproces
     per school_id and gated normally. A claude failure degrades the residual to zero (-> manual_flag),
     it never halts the run -- this is the speculative 'why not try' tier, not load-bearing."""
     try:
-        raw = ClaudeCLIProvider(_run=_run).search(district, residual)
+        raw = ClaudeCLIProvider(timeout=WAVE2_TIMEOUT_S, _run=_run).search(district, residual)
     except Exception as e:
         print(f"   [w2-claude] ERR {str(e)[:80]} -- residual stays manual_flag")
         raw = {"schools": []}
@@ -272,54 +281,71 @@ def load_batch_any(batch_ref: str) -> dict:
     return D2.load_batch(p)
 
 
+def _district_outcome_from_school_outcomes(outcomes: list) -> str:
+    """Derive the per-district outcome from the per-school discovery outcomes in the cache
+    (`found` / `manual_flag`): all found -> found_all, all flagged -> manual_flag_all, else partial."""
+    if not outcomes:
+        return "manual_flag_all"
+    if all(o == "found" for o in outcomes):
+        return "found_all"
+    if all(o != "found" for o in outcomes):
+        return "manual_flag_all"
+    return "found_partial"
+
+
 def status_for_batch(batch: dict) -> list:
-    """Read-only Stage 2 observability for a batch: per-district discovery status straight from disk
-    (the filesystem is authoritative). A district is `done` iff its discovery.json exists; we then
-    surface its outcome, Wave-1-vs-Wave-2 found counts, the manual_flag schools needing follow-up,
-    and the deduped candidate-URL count. `todo` districts haven't been discovered yet. Reads via the
-    repo-anchored D2.lea_dir (paths.RAW_CAPTURES), never a CWD-relative path."""
+    """Read-only Stage 2 observability for a batch, FROM THE DB cross-stage cache (the working store the
+    Stage-2 finish hook keeps fresh — governance §7a-A). Lifecycle from disk (a district is `done` iff
+    its discovery.json exists, `todo` otherwise — the filesystem is the authoritative DATA source); the
+    metrics (Wave-1/Wave-2 found counts, manual_flag schools, deduped candidate count, outcome) come
+    from `discovery_school`/`candidate`. SELF-HEALING: a district discovered BEFORE this cache hook
+    existed (e.g. batch_00002/00003) has no rows yet, so its discovery.json is ingested on first view."""
+    ids = [d["district_id"] for d in batch["districts"]]
+    ddirs = {d["district_id"]: D2.lea_dir(d["district_id"], d["name"]) for d in batch["districts"]}
+    done_ids = [did for did in ids if (ddirs[did] / "discovery.json").exists()]
+
+    with gdb.session_scope() as con:
+        CI.ensure_cache_schema(con)
+        cached = {r[0] for r in con.execute(
+            text("SELECT DISTINCT district_id FROM discovery_school WHERE district_id = ANY(:ids)"),
+            {"ids": done_ids or [""]})}
+    # Lazy self-heal: backfill the cache for any done-on-disk district missing from it (best-effort).
+    for did in done_ids:
+        if did not in cached:
+            CI.cache_discovery(ddirs[did])
+
+    schools_by_did: dict = {}
+    cand_count: dict = {}
+    with gdb.session_scope() as con:
+        for r in con.execute(text(
+                "SELECT district_id, school, outcome, wave1_n_kept, wave2_n_kept "
+                "FROM discovery_school WHERE district_id = ANY(:ids)"),
+                {"ids": done_ids or [""]}).mappings():
+            schools_by_did.setdefault(r["district_id"], []).append(dict(r))
+        for did, n in con.execute(text(
+                "SELECT district_id, COUNT(*) FROM candidate WHERE district_id = ANY(:ids) "
+                "GROUP BY district_id"), {"ids": done_ids or [""]}):
+            cand_count[did] = n
+
     out = []
     for d in batch["districts"]:
         did, name = d["district_id"], d["name"]
-        ddir = D2.lea_dir(did, name)
-        disc_path, cand_path = ddir / "discovery.json", ddir / "candidates.json"
         row = {"district_id": did, "name": name, "state": d.get("state", ""),
                "domain": d.get("domain", "")}
-        if not disc_path.exists():
+        if did not in done_ids:
             row.update(status="todo", outcome=None, n_schools=None, wave1_found=0,
-                       wave2_found=0, manual_flags=[], n_candidates=None, generated_at=None)
+                       wave2_found=0, manual_flags=[], n_candidates=None)
             out.append(row)
             continue
-        try:
-            disc = json.loads(disc_path.read_text())
-        except (json.JSONDecodeError, OSError):
-            row.update(status="error", outcome="unreadable", n_schools=None, wave1_found=0,
-                       wave2_found=0, manual_flags=[], n_candidates=None, generated_at=None)
-            out.append(row)
-            continue
-        schools = disc.get("schools", [])
-        w1 = sum(1 for s in schools if any(g.get("kept") for g in s.get("wave1_gated", [])))
-        w2 = sum(1 for s in schools if any(g.get("kept") for g in s.get("wave2_gated", [])))
-        flags = [s.get("school") for s in schools if s.get("outcome") == "manual_flag"]
-        n_cand = None
-        if cand_path.exists():
-            try:
-                n_cand = len(json.loads(cand_path.read_text()).get("candidates", []))
-            except (json.JSONDecodeError, OSError):
-                n_cand = None
-        row.update(status="done", outcome=D2.district_outcome(_roster_from_discovery(schools)),
-                   n_schools=len(schools), wave1_found=w1, wave2_found=w2, manual_flags=flags,
-                   n_candidates=n_cand, generated_at=disc.get("generated_at"))
-        out.append(row)
+        schools = schools_by_did.get(did, [])
+        w1 = sum(1 for s in schools if (s["wave1_n_kept"] or 0) > 0)
+        w2 = sum(1 for s in schools if (s["wave2_n_kept"] or 0) > 0)
+        flags = [s["school"] for s in schools if s["outcome"] == "manual_flag"]
+        out.append({**row, "status": "done",
+                    "outcome": _district_outcome_from_school_outcomes([s["outcome"] for s in schools]),
+                    "n_schools": len(schools), "wave1_found": w1, "wave2_found": w2,
+                    "manual_flags": flags, "n_candidates": cand_count.get(did)})
     return out
-
-
-def _roster_from_discovery(schools: list) -> list:
-    """Adapt persisted discovery.json school records back to the shape district_outcome() reads
-    (it only inspects wave1_gated/wave2_gated), so the outcome is recomputed from the audit trail
-    rather than trusting a possibly-absent stored field."""
-    return [{"wave1_gated": s.get("wave1_gated", []), "wave2_gated": s.get("wave2_gated", [])}
-            for s in schools]
 
 
 def rollup(districts: list) -> dict:

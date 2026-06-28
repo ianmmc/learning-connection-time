@@ -8,18 +8,17 @@ can't drift from the production schema.
 """
 from sqlalchemy import text
 
+from infrastructure.acquisition.common import cache_ingest as CI  # noqa: E402  (cache schema + UPSERTs now live here)
 from infrastructure.acquisition.stage5_filter import build_signals as BS  # noqa: E402
 
 CACHE_TABLES = ("discovery_school", "candidate", "capture", "processed_doc")
 
 
 def _create_cache_temp(sess):
-    """Stand up the 4 cross-stage tables as TEMP, lifted verbatim from REBUILD_DDL (CREATE TABLE ->
-    CREATE TEMP TABLE) so the columns always match what ingest_cross_stage_cache writes."""
-    for ddl in BS.REBUILD_DDL:
-        d = ddl.strip()
-        if d.startswith("CREATE TABLE") and any(f"CREATE TABLE {t} " in d for t in CACHE_TABLES):
-            sess.execute(text(d.replace("CREATE TABLE ", "CREATE TEMP TABLE ", 1)))
+    """Stand up the 4 cross-stage tables as TEMP, lifted verbatim from CI.CACHE_DDL (CREATE TABLE IF
+    NOT EXISTS -> CREATE TEMP TABLE) so the columns always match what the UPSERTs write."""
+    for ddl in CI.CACHE_DDL:
+        sess.execute(text(ddl.strip().replace("CREATE TABLE IF NOT EXISTS ", "CREATE TEMP TABLE ", 1)))
 
 
 def _fixtures():

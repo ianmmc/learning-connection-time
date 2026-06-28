@@ -26,6 +26,7 @@ from infrastructure.acquisition.stage1_queue import queue_batch as Q1       # no
 from infrastructure.acquisition.stage1_queue import batch_store as BSTORE   # noqa: E402  (the batch working store)
 from infrastructure.acquisition.stage1_queue.models import Batch, BatchDistrict, BatchSchool  # noqa: E402
 from infrastructure.acquisition.stage2_discover import headless as H2       # noqa: E402  (Stage 2 headless runner — REQ-104)
+from infrastructure.acquisition.stage3_capture import headless as H3       # noqa: E402  (Stage 3 capture runner + DB-cache status)
 
 
 def _refresh_filtered(con, district_id: str) -> None:
@@ -431,6 +432,85 @@ async def discover_run(batch_id: str, payload: dict):
 
     import threading
     threading.Thread(target=_work, name=f"discover-{batch_id}", daemon=True).start()
+    return {"started": True, "batch_id": batch_id}
+
+
+# ---------------------------------------------------------------- Stage 3 (Capture) console — REQ-110
+# Stage 3 is UNGATED -> status/observability (a health/emergent readout read FROM THE DB cross-stage
+# cache, the working store the Stage-3 finish hook keeps fresh) + an orchestration trigger (per-district
+# Node Playwright capture, a background job). Durable truth = captures.json on disk + the state_event log.
+_CAPTURE_JOBS: dict = {}
+
+
+def _capture_job_view(batch_id: str) -> dict | None:
+    j = _CAPTURE_JOBS.get(batch_id)
+    if not j:
+        return None
+    return {"state": j["state"], "started_at": j["started_at"], "finished_at": j.get("finished_at"),
+            "actor": j["actor"], "events": j["events"][-50:], "summary": j.get("summary"),
+            "error": j.get("error")}
+
+
+def _capture_batch_from_db(batch_id: str) -> dict | None:
+    """Resolve the batch's INCLUDED districts straight from the governance DB working store (not the
+    on-disk receipt) — the DB is the source of truth for the batch (§7a-A / §11h). None if no such batch."""
+    with gdb.session_scope() as con:
+        try:
+            view = BSTORE.to_view(con, batch_id)
+        except KeyError:
+            return None
+    districts = [d for d in view["districts"] if d.get("included", True)]
+    return {"batch_id": batch_id, "batch_status": view["status"], "districts": districts}
+
+
+@app.get("/api/capture/{batch_id}")
+def capture_status(batch_id: str):
+    """Read-only Stage 3 status for a batch: per-district capture outcome + the CMS/host distribution,
+    read from the DB cross-stage cache, plus the live job feed (if a run is in flight)."""
+    batch = _capture_batch_from_db(batch_id)
+    if batch is None:
+        raise HTTPException(404, f"no such batch {batch_id}")
+    st = H3.status_for_batch(batch)
+    return {"batch_id": batch_id, "batch_status": batch["batch_status"], **st,
+            "job": _capture_job_view(batch_id)}
+
+
+@app.post("/api/capture/{batch_id}/run")
+async def capture_run(batch_id: str, payload: dict):
+    """Trigger Stage 3 capture for a discovered batch as a BACKGROUND job (per-district Node Playwright
+    subprocesses can't block a request). Guard: no run already in flight. Live progress streams into
+    _CAPTURE_JOBS; durable truth is captures.json + the state_event log + the DB cache that run_batch
+    writes."""
+    actor = payload.get("actor", "ian")
+    batch = _capture_batch_from_db(batch_id)
+    if batch is None:
+        raise HTTPException(404, f"no such batch {batch_id}")
+    existing = _CAPTURE_JOBS.get(batch_id)
+    if existing and existing["state"] == "running":
+        raise HTTPException(409, f"capture already running for {batch_id}")
+
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    job = {"state": "running", "started_at": now, "actor": actor, "events": [],
+           "summary": None, "error": None, "finished_at": None}
+    _CAPTURE_JOBS[batch_id] = job
+
+    def _on_event(kind, p):
+        job["events"].append({"kind": kind, **p})
+
+    def _work():
+        try:
+            job["summary"] = H3.run_batch(batch, actor=actor, on_event=_on_event)
+            job["state"] = "done"
+        except SystemExit as e:   # reconcile CONTROL FAILURE — surface, don't hide
+            job["state"], job["error"] = "halted", f"CONTROL FAILURE: {e}"
+        except Exception as e:
+            job["state"], job["error"] = "error", f"{type(e).__name__}: {e}"
+        finally:
+            job["finished_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    import threading
+    threading.Thread(target=_work, name=f"capture-{batch_id}", daemon=True).start()
     return {"started": True, "batch_id": batch_id}
 
 

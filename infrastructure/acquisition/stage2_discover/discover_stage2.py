@@ -25,6 +25,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
+from infrastructure.acquisition.common import cache_ingest as CI
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import paths
 
@@ -299,12 +300,15 @@ def finish_district(district: dict, roster: list, batch_id: str, registry: dict)
     """Single registry write per district, at actual completion -- never from a subagent,
     never an interim 'started' marker (there's nothing meaningful to reconcile against a
     half-finished state, since the file write only happens once everything is assembled)."""
-    write_discovery(district, roster, batch_id)
+    ddir = write_discovery(district, roster, batch_id)
     outcome = district_outcome(roster)
     DS.record_stage(
         registry, district["district_id"], district["name"], district["state"],
         stage=2, stage_name="discover", outcome=outcome, batch_id=batch_id,
     )
+    # Project this district's funnel into the live DB cache so the console reads fresh rows without
+    # waiting for a Stage-5 ingest. Best-effort: the disk JSON + state_event are the durable record.
+    CI.cache_discovery(ddir)
     return outcome
 
 
