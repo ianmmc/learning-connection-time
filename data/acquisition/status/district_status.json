@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-06-29T05:13:23Z",
+  "last_updated": "2026-06-29T06:00:02Z",
   "districts": {
     "0100810": {
       "name": "Coffee County",
@@ -590,11 +590,11 @@
     "1716950": {
       "name": "Brookwood SD 167",
       "state": "IL",
-      "furthest_stage": 2,
-      "stage_name": "discover",
-      "outcome": "found_all",
+      "furthest_stage": 3,
+      "stage_name": "capture",
+      "outcome": "captured_partial",
       "topology": null,
-      "batch_id": "batch_00004",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -656,9 +656,15 @@
           "at": "2026-06-29T04:16:51Z",
           "event_type": "failed",
           "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_partial",
+          "at": "2026-06-29T06:00:01Z"
         }
       ],
-      "notes": "TimeoutExpired: Command '['node', '/Users/ianmmc/Development/learning-connection-time/infrastructure/scraper/capture_discovery.mjs', 'district', '/Users/ianmmc/Development/learning-connection-time/data/raw/lea-websit"
+      "notes": "10 not_recovered (capture interrupted before completion)"
     },
     "1724390": {
       "name": "Manteno CUSD 5",
@@ -888,11 +894,11 @@
     "1803700": {
       "name": "Franklin County Community Sch Corp",
       "state": "IN",
-      "furthest_stage": 2,
-      "stage_name": "discover",
-      "outcome": "found_all",
+      "furthest_stage": 3,
+      "stage_name": "capture",
+      "outcome": "captured_all",
       "topology": null,
-      "batch_id": "batch_00005",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -930,6 +936,12 @@
           "at": "2026-06-29T05:10:26Z",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-06-29T05:15:14Z"
         }
       ],
       "notes": "gate@1 approved batch_00005"
@@ -1130,11 +1142,11 @@
     "2200283": {
       "name": "Einstein Charter School at Village De L'Est",
       "state": "LA",
-      "furthest_stage": 2,
-      "stage_name": "discover",
-      "outcome": "found_all",
+      "furthest_stage": 3,
+      "stage_name": "capture",
+      "outcome": "captured_partial",
       "topology": null,
-      "batch_id": "batch_00005",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -1172,9 +1184,15 @@
           "at": "2026-06-29T05:10:26Z",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_partial",
+          "at": "2026-06-29T05:17:13Z"
         }
       ],
-      "notes": "gate@1 approved batch_00005"
+      "notes": "3 needs_oauth_reauth"
     },
     "2500587": {
       "name": "Old Sturbridge Academy Charter Public School",
@@ -1505,11 +1523,11 @@
     "2700187": {
       "name": "AVALON SCHOOL",
       "state": "MN",
-      "furthest_stage": 2,
-      "stage_name": "discover",
-      "outcome": "found_all",
+      "furthest_stage": 3,
+      "stage_name": "capture",
+      "outcome": "captured_all",
       "topology": null,
-      "batch_id": "batch_00005",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -1556,6 +1574,12 @@
           "at": "2026-06-29T05:10:26Z",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-06-29T05:18:10Z"
         }
       ],
       "notes": "gate@1 approved batch_00005"
@@ -1857,11 +1881,11 @@
     "3405040": {
       "name": "Fairfield Township School District",
       "state": "NJ",
-      "furthest_stage": 2,
-      "stage_name": "discover",
-      "outcome": "found_all",
+      "furthest_stage": 3,
+      "stage_name": "capture",
+      "outcome": "captured_partial",
       "topology": null,
-      "batch_id": "batch_00005",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -1899,9 +1923,23 @@
           "at": "2026-06-29T05:10:26Z",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-06-29T05:28:10Z",
+          "event_type": "failed",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_partial",
+          "at": "2026-06-29T06:00:02Z"
         }
       ],
-      "notes": "gate@1 approved batch_00005"
+      "notes": "1 not_recovered (capture interrupted before completion)"
     },
     "3410890": {
       "name": "Mt. Ephraim School District",
@@ -1924,11 +1962,11 @@
     "3501500": {
       "name": "LAS CRUCES",
       "state": "NM",
-      "furthest_stage": 2,
-      "stage_name": "discover",
-      "outcome": "found_partial",
+      "furthest_stage": 3,
+      "stage_name": "capture",
+      "outcome": "captured_partial",
       "topology": null,
-      "batch_id": "batch_00005",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -1966,9 +2004,23 @@
           "at": "2026-06-29T05:10:26Z",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-06-29T05:38:11Z",
+          "event_type": "failed",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_partial",
+          "at": "2026-06-29T06:00:02Z"
         }
       ],
-      "notes": "gate@1 approved batch_00005"
+      "notes": "50 not_recovered (capture interrupted before completion)"
     },
     "3502280": {
       "name": "ROY",
@@ -2541,11 +2593,11 @@
     "3904817": {
       "name": "Midview Local",
       "state": "OH",
-      "furthest_stage": 2,
-      "stage_name": "discover",
-      "outcome": "found_all",
+      "furthest_stage": 3,
+      "stage_name": "capture",
+      "outcome": "captured_all",
       "topology": null,
-      "batch_id": "batch_00005",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -2583,6 +2635,12 @@
           "at": "2026-06-29T05:10:26Z",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-06-29T05:41:22Z"
         }
       ],
       "notes": "gate@1 approved batch_00005"
@@ -2773,11 +2831,11 @@
     "4220130": {
       "name": "Redbank Valley SD",
       "state": "PA",
-      "furthest_stage": 2,
-      "stage_name": "discover",
-      "outcome": "found_all",
+      "furthest_stage": 3,
+      "stage_name": "capture",
+      "outcome": "captured_all",
       "topology": null,
-      "batch_id": "batch_00005",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -2815,6 +2873,12 @@
           "at": "2026-06-29T05:10:26Z",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-06-29T05:42:25Z"
         }
       ],
       "notes": "gate@1 approved batch_00005"
@@ -3473,11 +3537,11 @@
     "5510620": {
       "name": "New Richmond School District",
       "state": "WI",
-      "furthest_stage": 2,
-      "stage_name": "discover",
-      "outcome": "found_all",
+      "furthest_stage": 3,
+      "stage_name": "capture",
+      "outcome": "captured_all",
       "topology": null,
-      "batch_id": "batch_00005",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -3515,6 +3579,12 @@
           "at": "2026-06-29T05:10:26Z",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-06-29T05:44:17Z"
         }
       ],
       "notes": "gate@1 approved batch_00005"

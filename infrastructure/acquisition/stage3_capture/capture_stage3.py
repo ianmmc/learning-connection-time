@@ -17,12 +17,16 @@ Usage:
   capture_stage3.py finish    <district_id> [--root data/raw/lea-website-captures]
 """
 import argparse
+import hashlib
 import json
+import shutil
 from collections import Counter
 from pathlib import Path
 
 from infrastructure.acquisition.common import cache_ingest as CI
 from infrastructure.acquisition.common import district_status as DS
+
+IMAGE_EXTS = ("png", "jpg", "jpeg", "gif", "webp", "bmp", "tiff")
 
 
 RAW_DIR = Path("data/raw/lea-website-captures")
@@ -97,6 +101,105 @@ def compute_outcome(captures: list) -> tuple[str, str]:
     return outcome, notes
 
 
+# ---------------------------------------------------------------- manifest recovery (REQ-110 follow-up)
+# A Node capture run that is SIGKILLed mid-run (e.g. a transient stall hitting the per-district timeout)
+# leaves the per-URL folders on disk but NEVER writes captures.json (the manifest is end-of-run), so the
+# completed work is orphaned (no manifest -> invisible to Stage 4 + the cache, the district reads as a
+# total failure). These helpers REBUILD a manifest from disk. RECOVERY ONLY: they refuse to overwrite an
+# existing captures.json, and the records are DEGRADED vs a live capture (fingerprint / final_url /
+# text_times aren't recoverable from disk). The going-forward fix is Node-owns-shutdown (write a partial
+# manifest on its own deadline); this is for the already-orphaned districts.
+
+def _strip_fragment(url: str) -> str:
+    return url.split("#", 1)[0]
+
+
+def _url_hash(url: str) -> str:
+    """md5(stripFragment(url))[:10] — identical to capture_discovery.mjs's per-URL folder naming."""
+    return hashlib.md5(_strip_fragment(url).encode()).hexdigest()[:10]
+
+
+def _record_from_folder(folder: Path, url: str, *, tools, source, found_on) -> dict | None:
+    """Build a capture record from the files present in a per-URL folder. Returns None for an empty
+    (in-flight-at-kill) folder. Carries everything Stage 4 + the cache read (files/kind/ok/url/hash)."""
+    if not folder.is_dir():
+        return None
+    files = sorted(f.name for f in folder.iterdir() if f.is_file())
+    if not files:
+        return None
+    rec = {"url": url, "tools": list(tools or []), "source": source, "found_on": found_on,
+           "hash": folder.name, "ok": True, "files": {}, "final_url": url,
+           "fingerprint": None, "reconstructed": True}
+    if "page.txt" in files:
+        rec["kind"] = "html"
+        rec["files"]["txt"] = "page.txt"
+        if "page.png" in files:
+            rec["files"]["png"] = "page.png"
+        if "page.pdf" in files:
+            rec["files"]["pdf"] = "page.pdf"
+        rec["segmented"] = (folder / "page.main.txt").exists()
+    elif (orig := next((f for f in files if f.startswith("original.")), None)):
+        ext = orig.rsplit(".", 1)[-1].lower()
+        rec["kind"] = "image" if ext in IMAGE_EXTS else ("pdf" if ext == "pdf" else "binary")
+        rec["files"]["bin"] = orig
+    else:   # a Drive export (file.pdf / pdf.pdf / csv.csv / markdown.md ...) — map by stem
+        rec["kind"] = "drive_export"
+        for f in files:
+            rec["files"][f.split(".")[0]] = f
+    return rec
+
+
+def reconstruct_captures(district: dict) -> list:
+    """RECOVERY ONLY: rebuild the captures.json record list from the on-disk per-URL folders. EVERY
+    candidate appears (completeness is the audit bar): a recovered candidate is ok=True with its files;
+    a candidate whose folder is empty/absent (capture interrupted before it finished) is ok=False with a
+    `not_recovered` err -> the district honestly resolves `captured_partial`. Refuses if captures.json
+    already exists. Emergent folders (a captured URL not in candidates.json) can't be reconstructed —
+    md5 is one-way, so their URL is unrecoverable — and are left on disk, out of the manifest."""
+    ddir = district["dir"]
+    if (ddir / "captures.json").exists():
+        raise SystemExit(f"{ddir / 'captures.json'} exists — refusing to overwrite "
+                         f"(reconstruction is recovery-only)")
+    cand = json.loads((ddir / "candidates.json").read_text()).get("candidates", [])
+    capdir = ddir / "captures"
+    records = []
+    for c in cand:
+        h = _url_hash(c["url"])
+        rec = _record_from_folder(capdir / h, c["url"], tools=c.get("tools", []),
+                                  source="discovered", found_on=None)
+        if rec is None:
+            rec = {"url": c["url"], "tools": list(c.get("tools", [])), "source": "discovered",
+                   "found_on": None, "hash": h, "ok": False, "files": {},
+                   "err": "not_recovered (capture interrupted before completion)"}
+        records.append(rec)
+    return records
+
+
+def manual_capture_record(district: dict, *, url: str, src_file: Path, found_on: str | None = None) -> dict:
+    """Drop a human-sourced file into the captures tree as a normal `source:"manual"` capture record
+    (manual follow-up — no formal mechanism yet). Copies src_file to captures/<md5(url)>/original.<ext>;
+    returns the record for the caller to fold into the manifest."""
+    h = _url_hash(url)
+    folder = district["dir"] / "captures" / h
+    folder.mkdir(parents=True, exist_ok=True)
+    ext = (src_file.suffix.lstrip(".") or "bin").lower()
+    shutil.copy2(src_file, folder / f"original.{ext}")
+    return {"url": url, "tools": [], "source": "manual", "found_on": found_on, "hash": h, "ok": True,
+            "files": {"bin": f"original.{ext}"},
+            "kind": "image" if ext in IMAGE_EXTS else ("pdf" if ext == "pdf" else "binary"),
+            "final_url": url, "fingerprint": None, "reconstructed": True}
+
+
+def write_manifest(district: dict, records: list) -> None:
+    """Atomic write of a reconstructed captures.json (recovery path; refuses to clobber)."""
+    path = district["dir"] / "captures.json"
+    if path.exists():
+        raise SystemExit(f"{path} exists — refusing to overwrite (reconstruction is recovery-only)")
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(json.dumps(records, indent=2))
+    tmp.replace(path)
+
+
 def finish_district(district: dict, registry: dict) -> str:
     """Single registry write per district, at actual completion -- never an interim
     'started' marker, same principle as Stage 2: there's nothing meaningful to reconcile
@@ -125,6 +228,12 @@ def main():
     p = sub.add_parser("finish")
     p.add_argument("district_id")
 
+    # Recovery: rebuild captures.json from disk for a district orphaned by a mid-run SIGKILL.
+    pr = sub.add_parser("reconstruct", help="rebuild captures.json from on-disk capture folders (recovery)")
+    pr.add_argument("district_id")
+    pr.add_argument("--manual-file", help="a human-sourced file to add as a source:manual capture record")
+    pr.add_argument("--manual-url", help="the origin URL/page for --manual-file (hashed to the folder name)")
+
     a = ap.parse_args()
     root = Path(a.root)
     districts = find_districts(root)
@@ -147,6 +256,25 @@ def main():
         outcome = finish_district(district, registry)
         DS.save(registry)
         print(f"{district['district_id']} {district['name']}: {outcome}")
+
+    elif a.cmd == "reconstruct":
+        district = next((d for d in districts if d["district_id"] == a.district_id), None)
+        if district is None:
+            raise SystemExit(f"district {a.district_id} not found under {root} (needs discovery.json + candidates.json)")
+        records = reconstruct_captures(district)
+        if a.manual_file:
+            if not a.manual_url:
+                raise SystemExit("--manual-file requires --manual-url (the origin page, hashed to the folder)")
+            records.append(manual_capture_record(district, url=a.manual_url, src_file=Path(a.manual_file),
+                                                 found_on=a.manual_url))
+            print(f"  + manual capture: {a.manual_file} -> {a.manual_url}")
+        n_ok = sum(1 for r in records if r.get("ok"))
+        write_manifest(district, records)
+        registry = DS.load()
+        outcome = finish_district(district, registry)   # records state_event + upserts the DB cache
+        DS.save(registry)
+        print(f"{district['district_id']} {district['name']}: reconstructed "
+              f"{n_ok}/{len(records)} ok -> {outcome}")
 
 
 if __name__ == "__main__":

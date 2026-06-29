@@ -30,10 +30,16 @@ from infrastructure.acquisition.stage3_capture import capture_stage3 as C3
 
 RAW_DIR = paths.RAW_CAPTURES
 CAPTURE_MJS = paths.REPO_ROOT / "infrastructure" / "scraper" / "capture_discovery.mjs"
-CAPTURE_TIMEOUT_S = 600    # per-district Node capture budget (backstop). With the Node per-op timeouts
-                           # (screenshot/pdf, 45s) + the emergent cap (25/district), a healthy district
-                           # finishes well under this; a district that can't is a real problem to surface,
-                           # not wait 30 min on (Brookwood SD 167 hit the old 1800s budget — REQ-110).
+CAPTURE_DEADLINE_S = 600   # the Node-owns-shutdown budget passed to the capture: once it passes, Node
+                           # stops pulling new pages, records the rest `not_attempted`, and writes a
+                           # PARTIAL captures.json (captured_partial) instead of being killed with its
+                           # work orphaned. A large district (LAS CRUCES, 128 candidates) captures what
+                           # fits and cleanly reports the remainder, retriable later.
+DRAIN_BUFFER_S = 240       # headroom for in-flight pages to finish + the manifest write after the
+                           # deadline (each page is bounded by the per-op timeouts: goto 30 / fetch 20 /
+                           # screenshot+pdf 45 each). The Python subprocess timeout is the BACKSTOP —
+                           # it only fires if Node itself hangs; then reconstruct-from-disk recovers it.
+CAPTURE_TIMEOUT_S = CAPTURE_DEADLINE_S + DRAIN_BUFFER_S   # subprocess backstop (> Node's own deadline)
 CONCURRENCY = 5            # within-district page concurrency passed to the Node script
 
 
@@ -71,7 +77,8 @@ def _capture_one(district: dict, *, _run=subprocess.run) -> None:
     """Run the Node Playwright capture for ONE district dir (a fresh subprocess). Raises on a non-zero
     exit or a missing captures.json, so run_batch records the district `failed` rather than silently
     advancing it."""
-    cmd = ["node", str(CAPTURE_MJS), "district", str(RAW_DIR), district["dir"].name, str(CONCURRENCY)]
+    cmd = ["node", str(CAPTURE_MJS), "district", str(RAW_DIR), district["dir"].name,
+           str(CONCURRENCY), str(CAPTURE_DEADLINE_S)]   # Node owns its deadline; the subprocess timeout is a backstop
     proc = _run(cmd, capture_output=True, text=True, timeout=CAPTURE_TIMEOUT_S, cwd=str(paths.REPO_ROOT))
     if proc.returncode != 0:
         raise RuntimeError(f"node capture exit {proc.returncode}: {(proc.stderr or proc.stdout)[:300]}")

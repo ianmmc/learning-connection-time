@@ -19,8 +19,9 @@
 //
 // Modes:
 //   node capture_discovery.mjs <ROOT> [CONC]                       -- capture every district under ROOT
-//   node capture_discovery.mjs district <ROOT> <DISTRICT_DIR> [CONC] -- capture ONE district dir
-//       (the console's batch-scoped, per-district runner -- never re-captures the rest of ROOT)
+//   node capture_discovery.mjs district <ROOT> <DISTRICT_DIR> [CONC] [DEADLINE_S] -- capture ONE
+//       district dir (the console's batch-scoped, per-district runner -- never re-captures the rest of
+//       ROOT). DEADLINE_S>0 = node-owns-shutdown: write a partial manifest on the deadline, never orphan.
 //   node capture_discovery.mjs backfill-fingerprints <ROOT> [CONC] -- re-visit existing
 //       records and patch in `fingerprint` only (does NOT re-render/re-save page.* or touch
 //       Stage 4 outputs -- additive, keeps processed.json valid). For parity on pre-2026-06-24
@@ -338,10 +339,16 @@ async function htmlFingerprintFor(ctx, url) {
 }
 
 // ============================ NORMAL CAPTURE ============================
-async function runCapture(ROOT, CONC, only = null) {
+async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
   // `only` (a Set of district-dir basenames) scopes the run to specific districts -- the console's
   // batch-scoped, per-district runner uses it so a capture run touches only the batch in flight, never
   // re-captures every district already under ROOT. null = capture every dir with a candidates.json.
+  // `deadlineMs` (>0) = NODE-OWNS-SHUTDOWN: once it passes, workers stop pulling NEW tasks, in-flight
+  // pages finish (each bounded by the per-op timeouts), the un-started candidates are recorded
+  // `not_attempted`, and captures.json is written REGARDLESS -- so a slow/stalled district yields a
+  // PARTIAL manifest (captured_partial) instead of being SIGKILLed with its work orphaned. The Python
+  // runner sets deadlineMs below its own subprocess backstop, so Node shuts itself down cleanly first.
+  const deadline = deadlineMs > 0 ? Date.now() + deadlineMs : Infinity;
   let dirs = readdirSync(ROOT).filter((d) => existsSync(path.join(ROOT, d, 'candidates.json')));
   if (only) dirs = dirs.filter((d) => only.has(d));
   const byDistrict = {};
@@ -510,7 +517,10 @@ async function runCapture(ROOT, CONC, only = null) {
   let idx = 0;
   let done = 0;
   async function worker() {
+    // Deadline is checked BETWEEN tasks (an in-flight page always finishes — bounded by the per-op
+    // timeouts). On break, tasks[idx..] are un-started -> recorded not_attempted below.
     while (idx < tasks.length) {
+      if (Date.now() > deadline) break;
       const t = tasks[idx++];
       await processTask(t);
       if (++done % 25 === 0) console.log(`  ...${done}/${tasks.length} captured`);
@@ -519,11 +529,21 @@ async function runCapture(ROOT, CONC, only = null) {
   console.log(`capturing ${tasks.length} candidate URLs across ${dirs.length} districts (concurrency ${CONC})`);
   await Promise.all(Array.from({ length: CONC }, () => worker()));
 
+  // Un-started tasks (deadline reached) -> a not_attempted record each, so the manifest lists EVERY
+  // candidate (completeness) and the district resolves captured_partial rather than vanishing.
+  const notAttempted = tasks.slice(idx);
+  for (const t of notAttempted) {
+    const h = createHash('md5').update(t.url).digest('hex').slice(0, 10);
+    byDistrict[t.did].records.push({ url: t.url, tools: t.tools || [], source: t.source,
+      found_on: t.found_on, hash: h, ok: false, files: {}, err: 'not_attempted (capture deadline reached)' });
+  }
+
   for (const did of Object.keys(byDistrict)) {
     writeVersioned(path.join(ROOT, did, 'captures.json'), JSON.stringify(byDistrict[did].records, null, 2));
   }
   await browser.close();
-  console.log(`CAPTURE DONE — ${done} URLs (incl. emergent), ${dirs.length} districts`);
+  const tag = notAttempted.length ? ` — ${notAttempted.length} not attempted (deadline)` : '';
+  console.log(`CAPTURE DONE — ${done} URLs captured, ${dirs.length} districts${tag}`);
 }
 
 // ============================ FINGERPRINT BACKFILL ============================
@@ -685,8 +705,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     runRecomputeCmsHint(argv[1]);
   } else if (argv[0] === 'district') {
     // Capture ONE district dir under ROOT (the console's per-district runner):
-    //   node capture_discovery.mjs district <ROOT> <DISTRICT_DIR> [CONC]
-    await runCapture(argv[1], parseInt(argv[3] || '5', 10), new Set([argv[2]]));
+    //   node capture_discovery.mjs district <ROOT> <DISTRICT_DIR> [CONC] [DEADLINE_S]
+    // DEADLINE_S>0 enables node-owns-shutdown (partial manifest on deadline) — the console passes it.
+    await runCapture(argv[1], parseInt(argv[3] || '5', 10), new Set([argv[2]]),
+      parseInt(argv[4] || '0', 10) * 1000);
   } else {
     await runCapture(argv[0], parseInt(argv[1] || '5', 10));
   }
