@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-06-28T22:52:51Z",
+  "last_updated": "2026-06-29T05:13:23Z",
   "districts": {
     "0100810": {
       "name": "Coffee County",
@@ -298,20 +298,57 @@
     "0601869": {
       "name": "Learning Works District",
       "state": "CA",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 3,
+      "stage_name": "capture",
+      "outcome": "captured_all",
       "topology": null,
-      "batch_id": "batch_00005",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-06-28T22:28:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-29T04:10:10Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-06-29T04:13:16Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-29T04:15:06Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-06-29T05:10:26Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-06-29T05:11:28Z"
         }
       ],
-      "notes": ""
+      "notes": "gate@1 approved batch_00005"
     },
     "0602057": {
       "name": "STREAM Charter District",
@@ -603,6 +640,22 @@
           "at": "2026-06-28T22:44:49Z",
           "event_type": "failed",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-06-29T04:06:51Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-06-29T04:16:51Z",
+          "event_type": "failed",
+          "actor": "ian"
         }
       ],
       "notes": "TimeoutExpired: Command '['node', '/Users/ianmmc/Development/learning-connection-time/infrastructure/scraper/capture_discovery.mjs', 'district', '/Users/ianmmc/Development/learning-connection-time/data/raw/lea-websit"
@@ -628,20 +681,57 @@
     "1725260": {
       "name": "McClellan CCSD 12",
       "state": "IL",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 3,
+      "stage_name": "capture",
+      "outcome": "captured_all",
       "topology": null,
-      "batch_id": "batch_00005",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-06-28T22:28:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-29T04:10:10Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-06-29T04:13:16Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-29T04:15:03Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-06-29T05:10:26Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-06-29T05:13:23Z"
         }
       ],
-      "notes": ""
+      "notes": "gate@1 approved batch_00005"
     },
     "1737350": {
       "name": "Triad CUSD 2",
@@ -798,9 +888,9 @@
     "1803700": {
       "name": "Franklin County Community Sch Corp",
       "state": "IN",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "found_all",
       "topology": null,
       "batch_id": "batch_00005",
       "history": [
@@ -809,9 +899,40 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-06-28T22:28:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-29T04:10:10Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-06-29T04:13:16Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-29T04:16:02Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-06-29T05:10:26Z",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": ""
+      "notes": "gate@1 approved batch_00005"
     },
     "1810380": {
       "name": "South Henry School Corp",
@@ -1009,9 +1130,9 @@
     "2200283": {
       "name": "Einstein Charter School at Village De L'Est",
       "state": "LA",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "found_all",
       "topology": null,
       "batch_id": "batch_00005",
       "history": [
@@ -1020,9 +1141,40 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-06-28T22:28:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-29T04:10:10Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-06-29T04:13:16Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-29T04:15:48Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-06-29T05:10:26Z",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": ""
+      "notes": "gate@1 approved batch_00005"
     },
     "2500587": {
       "name": "Old Sturbridge Academy Charter Public School",
@@ -1137,9 +1289,9 @@
     "2600209": {
       "name": "Chandler Woods Charter Academy",
       "state": "MI",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "manual_flag_all",
       "topology": null,
       "batch_id": "batch_00005",
       "history": [
@@ -1148,9 +1300,32 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-06-28T22:28:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-29T04:10:10Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-06-29T04:13:16Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "manual_flag_all",
+          "at": "2026-06-29T04:15:36Z"
         }
       ],
-      "notes": ""
+      "notes": "gate@1 approved batch_00005"
     },
     "2600992": {
       "name": "Blue Water Middle College",
@@ -1330,9 +1505,9 @@
     "2700187": {
       "name": "AVALON SCHOOL",
       "state": "MN",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "found_all",
       "topology": null,
       "batch_id": "batch_00005",
       "history": [
@@ -1341,9 +1516,49 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-06-28T22:28:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-29T04:07:40Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-29T04:10:10Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-06-29T04:13:16Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-29T04:15:01Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-06-29T05:10:26Z",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": ""
+      "notes": "gate@1 approved batch_00005"
     },
     "2700361": {
       "name": "ACADEMIC ARTS HIGH SCHOOL",
@@ -1642,9 +1857,9 @@
     "3405040": {
       "name": "Fairfield Township School District",
       "state": "NJ",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "found_all",
       "topology": null,
       "batch_id": "batch_00005",
       "history": [
@@ -1653,9 +1868,40 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-06-28T22:28:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-29T04:10:10Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-06-29T04:13:16Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-29T04:15:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-06-29T05:10:26Z",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": ""
+      "notes": "gate@1 approved batch_00005"
     },
     "3410890": {
       "name": "Mt. Ephraim School District",
@@ -1678,9 +1924,9 @@
     "3501500": {
       "name": "LAS CRUCES",
       "state": "NM",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "found_partial",
       "topology": null,
       "batch_id": "batch_00005",
       "history": [
@@ -1689,9 +1935,40 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-06-28T22:28:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-29T04:10:10Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-06-29T04:13:16Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_partial",
+          "at": "2026-06-29T04:21:20Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-06-29T05:10:26Z",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": ""
+      "notes": "gate@1 approved batch_00005"
     },
     "3502280": {
       "name": "ROY",
@@ -2264,9 +2541,9 @@
     "3904817": {
       "name": "Midview Local",
       "state": "OH",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "found_all",
       "topology": null,
       "batch_id": "batch_00005",
       "history": [
@@ -2275,9 +2552,40 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-06-28T22:28:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-29T04:10:10Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-06-29T04:13:16Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-29T04:18:11Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-06-29T05:10:26Z",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": ""
+      "notes": "gate@1 approved batch_00005"
     },
     "4000766": {
       "name": "KIPP OKC COLLEGE PREP CHARTER",
@@ -2465,9 +2773,9 @@
     "4220130": {
       "name": "Redbank Valley SD",
       "state": "PA",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "found_all",
       "topology": null,
       "batch_id": "batch_00005",
       "history": [
@@ -2476,9 +2784,40 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-06-28T22:28:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-29T04:10:10Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-06-29T04:13:16Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-29T04:17:43Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-06-29T05:10:26Z",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": ""
+      "notes": "gate@1 approved batch_00005"
     },
     "4222860": {
       "name": "Stroudsburg Area SD",
@@ -2598,9 +2937,9 @@
     "4821810": {
       "name": "GROESBECK ISD",
       "state": "TX",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "manual_flag_all",
       "topology": null,
       "batch_id": "batch_00005",
       "history": [
@@ -2609,9 +2948,41 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-06-28T22:28:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-29T04:09:10Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-29T04:10:10Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-06-29T04:13:16Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "manual_flag_all",
+          "at": "2026-06-29T04:17:34Z"
         }
       ],
-      "notes": ""
+      "notes": "gate@1 approved batch_00005"
     },
     "4824000": {
       "name": "HUNTINGTON ISD",
@@ -3102,9 +3473,9 @@
     "5510620": {
       "name": "New Richmond School District",
       "state": "WI",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "found_all",
       "topology": null,
       "batch_id": "batch_00005",
       "history": [
@@ -3113,9 +3484,40 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-06-28T22:28:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-06-29T04:10:10Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-06-29T04:13:16Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-06-29T04:17:58Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-06-29T05:10:26Z",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": ""
+      "notes": "gate@1 approved batch_00005"
     },
     "5900038": {
       "name": "Circle of Life Academy",

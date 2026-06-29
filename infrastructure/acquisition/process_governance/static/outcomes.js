@@ -42,17 +42,22 @@
   // stage is COMPLETE when every district is resolved — captured/processed OR terminally `flagged`
   // (no-link). Shows "not started" / "X/Y <verb>" / "✓ <verb> · N flagged".
   window.progressBadge = function (progress, stage) {
-    if (!progress) return `<span class="badge badge-neutral">—</span>`;
+    const chip = (label, tone) => `<span class="badge ${tone}">${label}</span>`;
+    if (!progress) return chip("—", "badge-neutral");
     const total = progress.total || 0;
-    const flagged = progress.flagged || 0;
-    let done, verb;
-    if (stage === "stage2") { done = progress.discovered || 0; verb = "discovered"; }
-    else if (stage === "stage3") { done = (progress.captured || 0) + flagged; verb = "captured"; }
-    else if (stage === "stage4") { done = (progress.processed || 0) + flagged; verb = "processed"; }
-    else return `<span class="badge badge-neutral">—</span>`;
-    if (total === 0 || done === 0) return `<span class="badge badge-neutral">not started</span>`;
-    const flagNote = flagged ? ` · ${flagged} flagged` : "";
-    if (done >= total) return `<span class="badge badge-success">✓ ${verb}${flagNote}</span>`;
-    return `<span class="badge badge-lavender">${done}/${total} ${verb}${flagNote}</span>`;
+    const flagged = progress.flagged || 0;   // no-link (manual_flag_all) districts — terminal at Stage 2
+    let done, denom, verb;
+    if (stage === "stage2")      { done = progress.discovered || 0; denom = total;           verb = "discovered"; }
+    else if (stage === "stage3") { done = progress.captured   || 0; denom = total - flagged; verb = "captured"; }
+    else if (stage === "stage4") { done = progress.processed  || 0; denom = total - flagged; verb = "processed"; }
+    else return chip("—", "badge-neutral");
+    // The flagged (no-link) districts are reported SEPARATELY, never folded into the verb count — we don't
+    // claim captures that didn't happen. Capture/process exclude them from the denominator (never
+    // capturable); discovery counts the whole batch (a no-link district WAS discovered).
+    const flagNote = flagged ? ` · ${flagged} no-links` : "";
+    if (denom <= 0) return chip(`${flagged} no-links`, "badge-neutral");        // nothing capturable
+    if (done === 0 && flagged === 0) return chip("not started", "badge-neutral");
+    if (done >= denom) return chip(`✓ ${verb}${flagNote}`, "badge-success");
+    return chip(`${done}/${denom} ${verb}${flagNote}`, "badge-lavender");
   };
 })();

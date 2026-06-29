@@ -86,13 +86,19 @@
     if (retriable === 0 && r.awaiting_discovery > 0 && !running)
       actionHtml = `<span class="s2-note">${r.awaiting_discovery} district${r.awaiting_discovery === 1 ? "" : "s"} await Stage&nbsp;2 discovery before capture.</span>`;
     else if (retriable === 0 && !running) actionHtml = `<span class="s2-note">All capturable districts captured.</span>`;
-    else actionHtml = `<button id="s3-run" class="btn btn-primary"${canRun ? "" : " disabled"}>${running ? "Capture running…" : (r.failed ? "Run / retry capture ▶" : "Run capture ▶")}</button>`;
+    else actionHtml = `<button id="s3-run" class="btn btn-primary${running ? " run-anim" : ""}"${canRun ? "" : " disabled"}>${running ? "Capture running…" : (r.failed ? "Run / retry capture ▶" : "Run capture ▶")}</button>`;
 
-    const flagNote = r.manual_flag_all ? ` · ${r.manual_flag_all} manual_flag_all (no links)` : "";
-    const failNote = r.failed ? ` · <span class="s3-fail">${r.failed} failed (capture error — retriable)</span>` : "";
+    // Header badge = the SAME stage-contextual progress badge as the left pane (not the stale gate@1
+    // "approved"); a draft still shows as a blocker.
+    const headBadge = s.batch_status === "approved"
+      ? window.progressBadge({ total: r.total, captured: r.done, flagged: r.manual_flag_all }, "stage3")
+      : `<span class="badge badge-neutral">${esc(s.batch_status || "—")}</span>`;
+    const capturable = r.total - r.manual_flag_all;
+    const flagNote = r.manual_flag_all ? ` · ${r.manual_flag_all} no-links` : "";
+    const failNote = r.failed ? ` · <span class="s3-fail">${r.failed} failed (retriable)</span>` : "";
     let html = `<div class="q-detail-head">
-        <div><h2>${esc(s.batch_id)} <span class="badge ${s.batch_status === "approved" ? "badge-success" : "badge-neutral"}">${esc(s.batch_status || "—")}</span></h2>
-          <div class="q-sub">Stage&nbsp;3 · Capture (ungated) · <b>${r.resolved}/${r.total}</b> resolved (${r.done} captured${flagNote})${failNote}
+        <div><h2>${esc(s.batch_id)} ${headBadge}</h2>
+          <div class="q-sub">Stage&nbsp;3 · Capture (ungated) · <b>${r.done}/${capturable} captured</b>${flagNote}${failNote}
             ${r.done ? ` · ${r.captured_all} all · ${r.captured_partial} partial · ${r.capture_failed_all} all-URLs-failed · ${r.n_captures} captures · ${r.n_failed} failed URLs · ${r.n_emergent} emergent` : ""}</div></div>
         <div class="q-actions">${actionHtml}</div></div>`;
 

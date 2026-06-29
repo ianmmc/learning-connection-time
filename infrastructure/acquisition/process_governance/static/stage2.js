@@ -85,10 +85,15 @@
     let actionHtml;
     if (!approved) actionHtml = `<span class="s2-note">Approve this batch at gate@1 (Stage&nbsp;1) before discovery.</span>`;
     else if (r.todo === 0 && !running) actionHtml = `<span class="s2-note">All districts discovered.</span>`;
-    else actionHtml = `<button id="s2-run" class="btn btn-primary"${canRun ? "" : " disabled"}>${running ? "Discovery running…" : "Run discovery ▶"}</button>`;
+    else actionHtml = `<button id="s2-run" class="btn btn-primary${running ? " run-anim" : ""}"${canRun ? "" : " disabled"}>${running ? "Discovery running…" : "Run discovery ▶"}</button>`;
 
+    // Header badge = the SAME stage-contextual progress badge as the left pane (not the stale gate@1
+    // "approved"); an unapproved batch still shows its lifecycle status as a blocker.
+    const headBadge = approved
+      ? window.progressBadge({ total: r.total, discovered: r.done, flagged: r.manual_flag_all }, "stage2")
+      : `<span class="badge badge-neutral">${esc(s.batch_status || "—")}</span>`;
     let html = `<div class="q-detail-head">
-        <div><h2>${esc(s.batch_id)} <span class="badge ${approved ? "badge-success" : "badge-neutral"}">${esc(s.batch_status || "—")}</span></h2>
+        <div><h2>${esc(s.batch_id)} ${headBadge}</h2>
           <div class="q-sub">Stage&nbsp;2 · Discover (ungated) · <b>${r.done}/${r.total}</b> districts discovered
             ${r.done ? ` · ${r.found_all} found-all · ${r.found_partial} partial · ${r.manual_flag_all} flag-all · ${r.manual_flag_schools} flagged schools` : ""}</div></div>
         <div class="q-actions">${actionHtml}</div></div>`;

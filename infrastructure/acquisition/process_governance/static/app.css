@@ -265,6 +265,19 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 /* Stage 3 capture: failure reasons + the CMS/host distribution panel */
 .s3-errs { color: var(--text-secondary); font-size: var(--fs-xs); }
 .s3-fail { color: var(--color-danger, #b00020); font-weight: var(--fw-semibold); }
+
+/* Run-button "process is working" sheen (Stages 2/3/4). Pure CSS, added to the in-flight (disabled)
+   run button — a soft golden-yellow highlight sweeps across the purple button. No layout change, no JS
+   state (rules out the modal-reuse headache). Honors prefers-reduced-motion. */
+.btn.run-anim {
+  background-image: linear-gradient(100deg, transparent 35%, rgba(255, 193, 68, 0.55) 50%, transparent 65%);
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
+  opacity: 1;
+  animation: run-sheen 2.1s linear infinite;
+}
+@keyframes run-sheen { from { background-position: 150% 0; } to { background-position: -50% 0; } }
+@media (prefers-reduced-motion: reduce) { .btn.run-anim { animation: none; } }
 .s3-hosts { margin-top: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
 .s3-host-grp { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
 .s3-host-grp .q-smeta { width: 100%; }
