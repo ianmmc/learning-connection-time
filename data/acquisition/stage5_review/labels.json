@@ -1,5 +1,461 @@
 [
   {
+    "rec_key": "0101410:0303ad5d5d",
+    "primary_label": "community_calendar",
+    "flags_json": "[]",
+    "note": "Sports are contained in this schedule",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:49:51Z"
+  },
+  {
+    "rec_key": "0101410:0b90f8b02d",
+    "primary_label": "transportation_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:50:32Z"
+  },
+  {
+    "rec_key": "0101410:714f1b24a5",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:50:04Z"
+  },
+  {
+    "rec_key": "0101410:97c0b1afd4",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:50:44Z"
+  },
+  {
+    "rec_key": "0101410:edff136170",
+    "primary_label": "transportation_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:50:32Z"
+  },
+  {
+    "rec_key": "0602095:1e84861a7a",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "In an academic calendar \u2014 small \"Bell Schedule\" table in lower-right corner, one up from the bottom in the rightmost column.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:45:46Z"
+  },
+  {
+    "rec_key": "0602095:30f02b3149",
+    "primary_label": "academic_calendar",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:51:09Z"
+  },
+  {
+    "rec_key": "0602095:42b78e0992",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:46:52Z"
+  },
+  {
+    "rec_key": "0602095:571aaeec0e",
+    "primary_label": "academic_calendar",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:51:26Z"
+  },
+  {
+    "rec_key": "0602095:6e8db3e114",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[\"buried_in_long_doc\"]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:43:27Z"
+  },
+  {
+    "rec_key": "0602095:85a814e8d4",
+    "primary_label": "unusable",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:46:01Z"
+  },
+  {
+    "rec_key": "0602095:9ff95a560b",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:41:32Z"
+  },
+  {
+    "rec_key": "0602095:a27038f430",
+    "primary_label": "academic_calendar",
+    "flags_json": "[]",
+    "note": "Actually a school profile page, but has academic calendar information in a list.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:50:31Z"
+  },
+  {
+    "rec_key": "0602095:b84b0c0608",
+    "primary_label": "academic_calendar",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:51:17Z"
+  },
+  {
+    "rec_key": "0602095:c70a5f57fb",
+    "primary_label": "academic_calendar",
+    "flags_json": "[]",
+    "note": "Actually a school profile page, but has academic calendar information in a list.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:50:53Z"
+  },
+  {
+    "rec_key": "0602095:d11a779fad",
+    "primary_label": "academic_calendar",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:51:32Z"
+  },
+  {
+    "rec_key": "0602095:ee9c660da1",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:41:18Z"
+  },
+  {
+    "rec_key": "0602095:f1a5e2f08d",
+    "primary_label": "academic_calendar",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:51:36Z"
+  },
+  {
+    "rec_key": "0602095:f2a9ac1042",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:40:54Z"
+  },
+  {
+    "rec_key": "0602095:ffff20a692",
+    "primary_label": "academic_calendar",
+    "flags_json": "[]",
+    "note": "Links to bell schedule. Has key dates in a list form rather than tabular / monthly calendar presentation.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:48:42Z"
+  },
+  {
+    "rec_key": "1737350:09030084bb",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:19:55Z"
+  },
+  {
+    "rec_key": "1737350:0bc533f850",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Has schedule for online learning during weather events, but that does not appear to be a regular school day.\n\n\"TMS/THS Remote Learning/Weather Event Bell Schedule (Times are slightly different from the regular schedule, so please pay close attention.\"",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:13:44Z"
+  },
+  {
+    "rec_key": "1737350:1933f4dcfe",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Has schedule for online learning during weather events, but that does not appear to be a regular school day.\n\n\"TMS/THS Remote Learning/Weather Event Bell Schedule (Times are slightly different from the regular schedule, so please pay close attention.\"",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:14:00Z"
+  },
+  {
+    "rec_key": "1737350:1938fe1ce8",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Schedule of student fees \u2014 not a time schedule.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:22:46Z"
+  },
+  {
+    "rec_key": "1737350:1f12618033",
+    "primary_label": "academic_calendar",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:21:03Z"
+  },
+  {
+    "rec_key": "1737350:224086427d",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:19:20Z"
+  },
+  {
+    "rec_key": "1737350:27b9780cd5",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Back to school information",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:17:08Z"
+  },
+  {
+    "rec_key": "1737350:29af69f4c2",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:20:42Z"
+  },
+  {
+    "rec_key": "1737350:327e8c5fde",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Back to school information",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:16:50Z"
+  },
+  {
+    "rec_key": "1737350:346742e4c4",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:18:12Z"
+  },
+  {
+    "rec_key": "1737350:3b047650ea",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Back to school information",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:16:50Z"
+  },
+  {
+    "rec_key": "1737350:4a420ba54f",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Has schedule for online learning during weather events, but that does not appear to be a regular school day.\n\n\"TMS/THS Remote Learning/Weather Event Bell Schedule (Times are slightly different from the regular schedule, so please pay close attention.\"",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:14:08Z"
+  },
+  {
+    "rec_key": "1737350:4c8d299160",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Has schedule for online learning during weather events, but that does not appear to be a regular school day.\n\n\"TMS/THS Remote Learning/Weather Event Bell Schedule (Times are slightly different from the regular schedule, so please pay close attention.\"",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:13:39Z"
+  },
+  {
+    "rec_key": "1737350:4f92b24f01",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Back to school information",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:16:50Z"
+  },
+  {
+    "rec_key": "1737350:502ae220f1",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Has schedule for online learning during weather events, but that does not appear to be a regular school day.\n\n\"TMS/THS Remote Learning/Weather Event Bell Schedule (Times are slightly different from the regular schedule, so please pay close attention.\"",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:13:44Z"
+  },
+  {
+    "rec_key": "1737350:682c422e7f",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:18:36Z"
+  },
+  {
+    "rec_key": "1737350:790fbb8dde",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Has schedule for online learning during weather events, but that does not appear to be a regular school day.\n\n\"TMS/THS Remote Learning/Weather Event Bell Schedule (Times are slightly different from the regular schedule, so please pay close attention.\"",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:13:49Z"
+  },
+  {
+    "rec_key": "1737350:7b346408b9",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Schedule of student fees \u2014 not a time schedule.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:22:22Z"
+  },
+  {
+    "rec_key": "1737350:7da8c2aa90",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "This is a borderline case. There is an eLearning schedule in the text. It says it's different times and appears short.\n---\nTMS Remote Learning/Weather Event Bell Schedule (Times are slightly different from the\nregular schedule, so please pay close attention.)\n\n\u00a2 Early Bird - 7:20 AM\n\ne Period 1- 8:00 AM\n\ne Period 2 - 8:40 AM\n\ne Period 3 - 9:20 AM\n\ne Period 4 - 10:00 AM\n\ne Period 5 - 10:40 AM\n\n\u00a2 Period 6 - 11:20 AM\n\ne Period 7 - 12:00 PM\n\ne Teacher Office Hours - 12:40-1:00 PM\n---\n\nThere is also prose text with drop off information, but no end-of-day information. Drop-off time is from 7:00 - 7:30. Tardy arrivals begin at\n---\n7:30 a.m. We have been very flexible, but would like to get back\nto our routine and start time. I'm sure many of you would also\nappreciate a shorter drop-off in the morning.\n---\n\nLots of other event information in here too. Very noisy.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:09:50Z"
+  },
+  {
+    "rec_key": "1737350:8105414824",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "2024-2025 Bell Schedule:\n\nSchool doors open 7:00am\n\nHomeroom begins 7:30am\n\nStudent Dismissal 1:55pm",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:15:44Z"
+  },
+  {
+    "rec_key": "1737350:827ad129fe",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:22:32Z"
+  },
+  {
+    "rec_key": "1737350:82e7a1a0f7",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:19:28Z"
+  },
+  {
+    "rec_key": "1737350:8366903893",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:18:53Z"
+  },
+  {
+    "rec_key": "1737350:8594de5dcf",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:20:19Z"
+  },
+  {
+    "rec_key": "1737350:90247ed7a6",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:19:02Z"
+  },
+  {
+    "rec_key": "1737350:9e29340e94",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "School Hours Classes Begin 8:50 AM\n\nSchool Dismissed 3:00 PM",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:17:43Z"
+  },
+  {
+    "rec_key": "1737350:a54cfe59b0",
+    "primary_label": "unusable",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:20:49Z"
+  },
+  {
+    "rec_key": "1737350:a64e2a9cfe",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Back to school information",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:17:08Z"
+  },
+  {
+    "rec_key": "1737350:bde6c29ae6",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Information about \"Beyond the Bell\" after school program.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:21:44Z"
+  },
+  {
+    "rec_key": "1737350:be916d8b68",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:19:41Z"
+  },
+  {
+    "rec_key": "1737350:c09c08e49a",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "2024-2025 Bell Schedule:\n\nSchool doors open 7:00am\n\nHomeroom begins 7:30am\n\nStudent Dismissal 1:55pm\n",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:15:22Z"
+  },
+  {
+    "rec_key": "1737350:c6f378d599",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Has schedule for online learning during weather events, but that does not appear to be a regular school day.\n\n\"TMS/THS Remote Learning/Weather Event Bell Schedule (Times are slightly different from the regular schedule, so please pay close attention.\"",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:13:39Z"
+  },
+  {
+    "rec_key": "1737350:c78d78ffa1",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:19:10Z"
+  },
+  {
+    "rec_key": "1737350:cb193a6deb",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "2025-2026 Bell Schedule:\n\nSchool doors open 7:00am\n\nHomeroom begins 7:30am\n\nStudent Dismissal 1:55pm",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:14:52Z"
+  },
+  {
+    "rec_key": "1737350:dcc5acc6c3",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Has schedule for online learning during weather events, but that does not appear to be a regular school day.\n\n\"TMS/THS Remote Learning/Weather Event Bell Schedule (Times are slightly different from the regular schedule, so please pay close attention.\"",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:13:39Z"
+  },
+  {
+    "rec_key": "1737350:e14fe28ea6",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Back to school information",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:16:50Z"
+  },
+  {
+    "rec_key": "1737350:e542d1f63c",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Back to school information",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:16:50Z"
+  },
+  {
     "rec_key": "1739960:03aba1b1c1",
     "primary_label": "none",
     "flags_json": "[\"building_hours_visible\"]",
@@ -128,6 +584,46 @@
     "updated_at": "2026-06-25T04:16:54Z"
   },
   {
+    "rec_key": "1915840:0b3310fd15",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "List of extracurricular clubs and organizations.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:57:42Z"
+  },
+  {
+    "rec_key": "1915840:0d3b782be5",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:57:07Z"
+  },
+  {
+    "rec_key": "1915840:67e7d6268a",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:55:07Z"
+  },
+  {
+    "rec_key": "1915840:b2207c6c65",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Should we be seeing the linked Academic Calendars downloaded from Google Drive? Are these not part of Playwright's emergent link discovery list?",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:56:56Z"
+  },
+  {
+    "rec_key": "1915840:f357777d89",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:54:44Z"
+  },
+  {
     "rec_key": "1918690:1c693ea3aa",
     "primary_label": "school_bell_schedule",
     "flags_json": "[\"duplicate\"]",
@@ -248,6 +744,46 @@
     "updated_at": "2026-06-25T06:23:17Z"
   },
   {
+    "rec_key": "2506900:057095fab4",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "School Hours\n\nMonday, Tuesday, Thursday, Friday \u2013 8:00-2:50",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:00:33Z"
+  },
+  {
+    "rec_key": "2506900:2813ea8af3",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:00:57Z"
+  },
+  {
+    "rec_key": "2506900:31b776595b",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "Schools Hours are listed in the \"Our Schools\" block at the bottom.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:59:16Z"
+  },
+  {
+    "rec_key": "2506900:ae5cbc2d52",
+    "primary_label": "sports_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:01:40Z"
+  },
+  {
+    "rec_key": "2506900:dbbc210748",
+    "primary_label": "community_calendar",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:01:30Z"
+  },
+  {
     "rec_key": "2600992:0ead93f5b2",
     "primary_label": "unusable",
     "flags_json": "[]",
@@ -278,6 +814,62 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-06-25T00:14:49Z"
+  },
+  {
+    "rec_key": "2607470:269f63b311",
+    "primary_label": "community_calendar",
+    "flags_json": "[]",
+    "note": "This actually has a number of different components: community events, school board, a news feed, and event a recycling schedule.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:57:47Z"
+  },
+  {
+    "rec_key": "2607470:3d73357c3c",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:59:08Z"
+  },
+  {
+    "rec_key": "2607470:5d9d6fd472",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:57:55Z"
+  },
+  {
+    "rec_key": "2607470:af3338cc50",
+    "primary_label": "unusable",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:58:36Z"
+  },
+  {
+    "rec_key": "2607470:b586eaed2b",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:58:20Z"
+  },
+  {
+    "rec_key": "2607470:bab3d3937a",
+    "primary_label": "sports_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:55:51Z"
+  },
+  {
+    "rec_key": "2607470:e3e7e60fc0",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T07:58:50Z"
   },
   {
     "rec_key": "2700159:01c390fa72",
@@ -398,6 +990,230 @@
     "note": "It's not actually a sports schedule per se; it's a documents list that includes links to FY26 FOOTBALL.pdf, FY26 VOLLEYBALL.pdf, 2025 XC Schedule 6-11-2025.pdf.",
     "status": "labeled",
     "updated_at": "2026-06-25T02:17:10Z"
+  },
+  {
+    "rec_key": "3609330:0f5a649b86",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:02:21Z"
+  },
+  {
+    "rec_key": "3609330:12f8c4604f",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:01:52Z"
+  },
+  {
+    "rec_key": "3609330:3fae2568a4",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:01:28Z"
+  },
+  {
+    "rec_key": "3609330:4c62f60d70",
+    "primary_label": "academic_calendar",
+    "flags_json": "[]",
+    "note": "Has link to calendar for Athletic Events called out.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:08:24Z"
+  },
+  {
+    "rec_key": "3609330:68637939c3",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:04:32Z"
+  },
+  {
+    "rec_key": "3609330:731793647a",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "Also has community calendar at bottom.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:06:11Z"
+  },
+  {
+    "rec_key": "3609330:8100ed45ce",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:06:37Z"
+  },
+  {
+    "rec_key": "3609330:92adf1502c",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "Also has community calendar at bottom.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:06:27Z"
+  },
+  {
+    "rec_key": "3609330:9b00329367",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "Also has community calendar at bottom.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:06:01Z"
+  },
+  {
+    "rec_key": "3609330:b4937edfc9",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "Also has community calendar at bottom.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:06:11Z"
+  },
+  {
+    "rec_key": "3609330:b9dad2f254",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:02:07Z"
+  },
+  {
+    "rec_key": "3609330:b9f97f552c",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "Also has community calendar at bottom.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:05:47Z"
+  },
+  {
+    "rec_key": "3609330:bdab485a63",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Has information about cell phone policies and acceptable times for use.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:04:15Z"
+  },
+  {
+    "rec_key": "3609330:bf9b8ecd30",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:03:29Z"
+  },
+  {
+    "rec_key": "3609330:c8ba4c439a",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "Also has community calendar at bottom.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:05:36Z"
+  },
+  {
+    "rec_key": "3609330:cabf9b8c43",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:07:03Z"
+  },
+  {
+    "rec_key": "3609330:d48a9179d2",
+    "primary_label": "school_start_end_prose",
+    "flags_json": "[]",
+    "note": "Attendance section: \"Our school day begins at 9:00 AM and ends at 3:22 PM\"",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:03:21Z"
+  },
+  {
+    "rec_key": "3609330:d91335ea30",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:04:32Z"
+  },
+  {
+    "rec_key": "3609330:e66134866b",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:07:20Z"
+  },
+  {
+    "rec_key": "3609330:e8026b5e7d",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:04:32Z"
+  },
+  {
+    "rec_key": "3609330:febabd7885",
+    "primary_label": "sports_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:05:19Z"
+  },
+  {
+    "rec_key": "3700385:0b57e9d898",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:50:56Z"
+  },
+  {
+    "rec_key": "3700385:172b4a0fa0",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:52:45Z"
+  },
+  {
+    "rec_key": "3700385:3ad68b77c4",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:51:32Z"
+  },
+  {
+    "rec_key": "3700385:5f11423a08",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:52:52Z"
+  },
+  {
+    "rec_key": "3700385:68a2963fee",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:51:52Z"
+  },
+  {
+    "rec_key": "3700385:89efcf79e9",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:51:42Z"
+  },
+  {
+    "rec_key": "3700385:9eaadbd9dc",
+    "primary_label": "unusable",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:51:12Z"
   },
   {
     "rec_key": "3805460:574a093366",
@@ -686,6 +1502,14 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-06-25T03:41:29Z"
+  },
+  {
+    "rec_key": "4842720:8e07018c31",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T09:02:17Z"
   },
   {
     "rec_key": "5000425:88e7b7e0ef",
@@ -1198,5 +2022,285 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-06-25T02:03:37Z"
+  },
+  {
+    "rec_key": "5501770:065e50a7d7",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "The phrase \"Schedule a Tour\" may be creating a false signal.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:45:45Z"
+  },
+  {
+    "rec_key": "5501770:08995bf67a",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:30:02Z"
+  },
+  {
+    "rec_key": "5501770:142574a8bd",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "The phrase \"Schedule a Tour\" may be creating a false signal.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:47:13Z"
+  },
+  {
+    "rec_key": "5501770:242614fc21",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Contains links to schedule, but no actual schedule.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:42:19Z"
+  },
+  {
+    "rec_key": "5501770:37d42e434c",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Contains links to schedule, but no actual schedule.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:42:14Z"
+  },
+  {
+    "rec_key": "5501770:4413437eec",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:29:08Z"
+  },
+  {
+    "rec_key": "5501770:46c9d5ecb6",
+    "primary_label": "sports_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:46:56Z"
+  },
+  {
+    "rec_key": "5501770:4dee30825d",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "The phrase \"Schedule a Tour\" may be creating a false signal.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:44:47Z"
+  },
+  {
+    "rec_key": "5501770:526bad74e8",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:29:01Z"
+  },
+  {
+    "rec_key": "5501770:55cfd1b998",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "Appears to be on a school specific website, but contains districtwide info,\n\nSCHOOL START & END TIMES\n\nElementary Schools: 8:50 - 3:43\n4K AM Session: 8:50 - 11:35\n4K PM Session: 12:55 - 3:43\nMiddle Schools: 7:18 - 2:31\nHigh Schools: 7:55 - 3:09",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:34:41Z"
+  },
+  {
+    "rec_key": "5501770:61a75c2d65",
+    "primary_label": "sports_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:46:28Z"
+  },
+  {
+    "rec_key": "5501770:63543d9fbf",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "Appears to be on a school specific website, but contains districtwide info,\n\nSCHOOL START & END TIMES\n\nElementary Schools: 8:50 - 3:43\n4K AM Session: 8:50 - 11:35\n4K PM Session: 12:55 - 3:43\nMiddle Schools: 7:18 - 2:31\nHigh Schools: 7:55 - 3:09",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:34:25Z"
+  },
+  {
+    "rec_key": "5501770:701d3aa394",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:45:58Z"
+  },
+  {
+    "rec_key": "5501770:77fb0f075e",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "The phrase \"Schedule a Tour\" may be creating a false signal.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:45:34Z"
+  },
+  {
+    "rec_key": "5501770:79bd417034",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:28:47Z"
+  },
+  {
+    "rec_key": "5501770:7b5982fec4",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:41:04Z"
+  },
+  {
+    "rec_key": "5501770:8c548e1d03",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "Appears to be on a school specific website, but contains districtwide info,\n\nSCHOOL START & END TIMES\n\nElementary Schools: 8:50 - 3:43\n4K AM Session: 8:50 - 11:35\n4K PM Session: 12:55 - 3:43\nMiddle Schools: 7:18 - 2:31\nHigh Schools: 7:55 - 3:09",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:34:32Z"
+  },
+  {
+    "rec_key": "5501770:8de749d287",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "Appears to be on a school specific website, but contains districtwide info,\n\nSCHOOL START & END TIMES\n\nElementary Schools: 8:50 - 3:43\n4K AM Session: 8:50 - 11:35\n4K PM Session: 12:55 - 3:43\nMiddle Schools: 7:18 - 2:31\nHigh Schools: 7:55 - 3:09",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:33:55Z"
+  },
+  {
+    "rec_key": "5501770:96bba5deeb",
+    "primary_label": "school_start_end_prose",
+    "flags_json": "[\"buried_in_long_doc\"]",
+    "note": "SCHOOL DAY\nOur school day is from 7:18 a.m. to 2:31 p.m",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:31:40Z"
+  },
+  {
+    "rec_key": "5501770:a0aad7409d",
+    "primary_label": "unusable",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:43:50Z"
+  },
+  {
+    "rec_key": "5501770:a72830aba3",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "The phrase \"Schedule a Tour\" may be creating a false signal.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:47:47Z"
+  },
+  {
+    "rec_key": "5501770:b58c9479bd",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "Appears to be on a school specific website, but contains districtwide info,\n\nSCHOOL START & END TIMES\n\nElementary Schools: 8:50 - 3:43\n4K AM Session: 8:50 - 11:35\n4K PM Session: 12:55 - 3:43\nMiddle Schools: 7:18 - 2:31\nHigh Schools: 7:55 - 3:09",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:34:55Z"
+  },
+  {
+    "rec_key": "5501770:ba367e9037",
+    "primary_label": "school_start_end_prose",
+    "flags_json": "[]",
+    "note": "This is indeed school board news, but it contains the target information.\n\nThe new three-tier busing schedule for the 2027-2028 school year will be:\nHigh School (Tier 1): Start time at 7:35 AM and end time at 2:41 PM. The approved high school\nschedule maintains the standard 84-minute course periods and 34-minute resource period. While the\ntotal school day is shortened by eight minutes, this time is reclaimed by slightly reducing the passing\nperiods for the third block and lunch, ensuring no loss of instructional time.\nMiddle School (Tier 2): Start time at 8:10 AM and end time at 3:23 PM. This preserves the current\nmiddle school length of day.\nElementary School (Tier 3): Start time at 9:00 AM and end time at 3:58 PM. The elementary schedule\ndelays the start time by 10 minutes and lengthens the school day by 5 minutes. Options to return the\nschool day to its current length will be considered as implementation plans are developed.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:36:49Z"
+  },
+  {
+    "rec_key": "5501770:bd46f37869",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:40:57Z"
+  },
+  {
+    "rec_key": "5501770:be547edc7b",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "The phrase \"Schedule a Tour\" may be creating a false signal.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:46:53Z"
+  },
+  {
+    "rec_key": "5501770:c0372af94f",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "The phrase \"Schedule a Tour\" may be creating a false signal.",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:45:25Z"
+  },
+  {
+    "rec_key": "5501770:c31836cd98",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:41:00Z"
+  },
+  {
+    "rec_key": "5501770:cf2e5a94e8",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "Appears to be on a school specific website, but contains districtwide info,\n\nSCHOOL START & END TIMES\n\nElementary Schools: 8:50 - 3:43\n4K AM Session: 8:50 - 11:35\n4K PM Session: 12:55 - 3:43\nMiddle Schools: 7:18 - 2:31\nHigh Schools: 7:55 - 3:09",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:35:00Z"
+  },
+  {
+    "rec_key": "5501770:d332f8d942",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[\"buried_in_long_doc\"]",
+    "note": "On page 1",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:29:50Z"
+  },
+  {
+    "rec_key": "5501770:d7b01a095a",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "Appears to be on a school specific website, but contains districtwide info,\n\nSCHOOL START & END TIMES\n\nElementary Schools: 8:50 - 3:43\n4K AM Session: 8:50 - 11:35\n4K PM Session: 12:55 - 3:43\nMiddle Schools: 7:18 - 2:31\nHigh Schools: 7:55 - 3:09",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:34:48Z"
+  },
+  {
+    "rec_key": "5501770:df97c70aa2",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Attendance policy information",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:41:42Z"
+  },
+  {
+    "rec_key": "5501770:e1f6ecf97a",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "Appears to be on a school specific website, but contains districtwide info,\n\nSCHOOL START & END TIMES\n\nElementary Schools: 8:50 - 3:43\n4K AM Session: 8:50 - 11:35\n4K PM Session: 12:55 - 3:43\nMiddle Schools: 7:18 - 2:31\nHigh Schools: 7:55 - 3:09",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:34:02Z"
+  },
+  {
+    "rec_key": "5501770:eb1ca61f81",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "Appears to be on a school specific website, but contains districtwide info,\n\nSCHOOL START & END TIMES\n\nElementary Schools: 8:50 - 3:43\n4K AM Session: 8:50 - 11:35\n4K PM Session: 12:55 - 3:43\nMiddle Schools: 7:18 - 2:31\nHigh Schools: 7:55 - 3:09",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:35:06Z"
+  },
+  {
+    "rec_key": "5501770:ed2a423605",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "Appears to be on a school specific website, but contains districtwide info,\n\nSCHOOL START & END TIMES\n\nElementary Schools: 8:50 - 3:43\n4K AM Session: 8:50 - 11:35\n4K PM Session: 12:55 - 3:43\nMiddle Schools: 7:18 - 2:31\nHigh Schools: 7:55 - 3:09",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:34:18Z"
+  },
+  {
+    "rec_key": "5501770:f7b0f0cd4e",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "News stories contain an array of schedule-related information, including first day of school, registration, athletics, and extracurricular activities",
+    "status": "labeled",
+    "updated_at": "2026-06-29T08:39:09Z"
   }
 ]
