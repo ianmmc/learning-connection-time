@@ -16,11 +16,16 @@
     captured_all:       { label: "captured_all", tone: "badge-success" },
     captured_partial:   { label: "captured_partial", tone: "badge-lavender" },
     capture_failed_all: { label: "capture_failed_all", tone: "badge-red" },
-    // Stage 4 — process outcomes (used when the Stage 4 view lands)
+    // Stage 4 — process outcomes
     processed_all:      { label: "processed_all", tone: "badge-success" },
     processed_partial:  { label: "processed_partial", tone: "badge-lavender" },
+    // Processed, but no representation cleared the usable-text bar — honest, NOT a failure (the captures
+    // were genuinely empty / image-only; Stage 4 reports it rather than papering over it).
+    no_usable_text_any: { label: "no_usable_text", tone: "badge-red" },
     // Generic per-stage lifecycle
     awaiting_discovery: { label: "awaiting discovery", tone: "badge-neutral" },
+    // captured but not processed yet — the upstream gate for Stage 4 (Stage 3 still owes this district)
+    awaiting_capture:   { label: "awaiting capture", tone: "badge-neutral" },
     todo:               { label: "queued", tone: "badge-neutral" },
     // district-level stage failures (retriable, distinct from a per-URL fail). timed_out is called out
     // separately so the cause is apparent at a glance.

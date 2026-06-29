@@ -27,6 +27,7 @@ from infrastructure.acquisition.stage1_queue import batch_store as BSTORE   # no
 from infrastructure.acquisition.stage1_queue.models import Batch, BatchDistrict, BatchSchool  # noqa: E402
 from infrastructure.acquisition.stage2_discover import headless as H2       # noqa: E402  (Stage 2 headless runner — REQ-104)
 from infrastructure.acquisition.stage3_capture import headless as H3       # noqa: E402  (Stage 3 capture runner + DB-cache status)
+from infrastructure.acquisition.stage4_process import headless as H4       # noqa: E402  (Stage 4 process runner + DB-cache status)
 
 
 def _refresh_filtered(con, district_id: str) -> None:
@@ -451,9 +452,10 @@ def _capture_job_view(batch_id: str) -> dict | None:
             "error": j.get("error")}
 
 
-def _capture_batch_from_db(batch_id: str) -> dict | None:
+def _batch_from_db(batch_id: str) -> dict | None:
     """Resolve the batch's INCLUDED districts straight from the governance DB working store (not the
-    on-disk receipt) — the DB is the source of truth for the batch (§7a-A / §11h). None if no such batch."""
+    on-disk receipt) — the DB is the source of truth for the batch (§7a-A / §11h). Shared by every
+    ungated stage view (capture, process). None if no such batch."""
     with gdb.session_scope() as con:
         try:
             view = BSTORE.to_view(con, batch_id)
@@ -467,7 +469,7 @@ def _capture_batch_from_db(batch_id: str) -> dict | None:
 def capture_status(batch_id: str):
     """Read-only Stage 3 status for a batch: per-district capture outcome + the CMS/host distribution,
     read from the DB cross-stage cache, plus the live job feed (if a run is in flight)."""
-    batch = _capture_batch_from_db(batch_id)
+    batch = _batch_from_db(batch_id)
     if batch is None:
         raise HTTPException(404, f"no such batch {batch_id}")
     st = H3.status_for_batch(batch)
@@ -482,7 +484,7 @@ async def capture_run(batch_id: str, payload: dict):
     _CAPTURE_JOBS; durable truth is captures.json + the state_event log + the DB cache that run_batch
     writes."""
     actor = payload.get("actor", "ian")
-    batch = _capture_batch_from_db(batch_id)
+    batch = _batch_from_db(batch_id)
     if batch is None:
         raise HTTPException(404, f"no such batch {batch_id}")
     existing = _CAPTURE_JOBS.get(batch_id)
@@ -512,6 +514,110 @@ async def capture_run(batch_id: str, payload: dict):
     import threading
     threading.Thread(target=_work, name=f"capture-{batch_id}", daemon=True).start()
     return {"started": True, "batch_id": batch_id}
+
+
+# ---------------------------------------------------------------- Stage 4 (Process) console — REQ-111
+# Stage 4 is UNGATED -> status/observability (a processing-health + tool-effectiveness readout read FROM
+# THE DB cross-stage cache, the working store the Stage-4 finish hook keeps fresh) + an orchestration
+# trigger (the local harvesters, run IN-PROCESS as a background job). Unlike Stage 2/3 the work is plain
+# Python, not a subprocess. Durable truth = processed.json on disk + the state_event log.
+_PROCESS_JOBS: dict = {}
+
+
+def _process_job_view(batch_id: str) -> dict | None:
+    j = _PROCESS_JOBS.get(batch_id)
+    if not j:
+        return None
+    return {"state": j["state"], "started_at": j["started_at"], "finished_at": j.get("finished_at"),
+            "actor": j["actor"], "events": j["events"][-50:], "summary": j.get("summary"),
+            "error": j.get("error")}
+
+
+@app.get("/api/process/{batch_id}")
+def process_status(batch_id: str):
+    """Read-only Stage 4 status for a batch: per-district process outcome + usable-doc counts + the
+    usable-representations-by-tool distribution, read from the DB cross-stage cache, plus the live job
+    feed (if a run is in flight)."""
+    batch = _batch_from_db(batch_id)
+    if batch is None:
+        raise HTTPException(404, f"no such batch {batch_id}")
+    st = H4.status_for_batch(batch)
+    return {"batch_id": batch_id, "batch_status": batch["batch_status"], **st,
+            "job": _process_job_view(batch_id)}
+
+
+@app.post("/api/process/{batch_id}/run")
+async def process_run(batch_id: str, payload: dict):
+    """Trigger Stage 4 processing for a captured batch as a BACKGROUND job (the per-district local
+    harvesters run sequentially and can't block a request). Guard: no run already in flight. Live
+    progress streams into _PROCESS_JOBS; durable truth is processed.json + the state_event log + the DB
+    cache that run_batch writes."""
+    actor = payload.get("actor", "ian")
+    batch = _batch_from_db(batch_id)
+    if batch is None:
+        raise HTTPException(404, f"no such batch {batch_id}")
+    existing = _PROCESS_JOBS.get(batch_id)
+    if existing and existing["state"] == "running":
+        raise HTTPException(409, f"processing already running for {batch_id}")
+
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    job = {"state": "running", "started_at": now, "actor": actor, "events": [],
+           "summary": None, "error": None, "finished_at": None}
+    _PROCESS_JOBS[batch_id] = job
+
+    def _on_event(kind, p):
+        job["events"].append({"kind": kind, **p})
+
+    def _work():
+        try:
+            summary = H4.run_batch(batch, actor=actor, on_event=_on_event)
+            job["summary"] = summary
+            job["state"] = "done"
+            # Stage 4 -> Stage 5 handoff: when THIS run actually processed districts (todo>0), check
+            # whether the batch is now fully resolved and, if so, incrementally ingest just this batch
+            # into the Stage 5 signal tables (+ regenerate filtered.json). Precomputing here means
+            # switching to the Stage 5 view is instant — no full-corpus rebuild, no perceived lag.
+            if summary.get("todo"):
+                _ingest_stage5_if_complete(batch, _on_event)
+        except SystemExit as e:   # reconcile / file-existence CONTROL FAILURE — surface, don't hide
+            job["state"], job["error"] = "halted", f"CONTROL FAILURE: {e}"
+        except Exception as e:
+            job["state"], job["error"] = "error", f"{type(e).__name__}: {e}"
+        finally:
+            job["finished_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    import threading
+    threading.Thread(target=_work, name=f"process-{batch_id}", daemon=True).start()
+    return {"started": True, "batch_id": batch_id}
+
+
+def _ingest_stage5_if_complete(batch: dict, on_event) -> None:
+    """The Stage-4 -> Stage-5 handoff. If every district in `batch` is now resolved (processed or
+    terminally no-link), run the INCREMENTAL Stage-5 ingest for just this batch (BS.ingest_batch —
+    leaves prior batches untouched) and record a Stage-5 progression event per ingested district
+    (furthest_stage -> 5), so the batch is durably "done through Stage 4 / in Stage 5". Best-effort:
+    Stage 4's processed.json is already the durable record, so an ingest hiccup is surfaced as an
+    event (and re-runnable via build_signals) but never fails the successful Stage-4 job."""
+    rollup = H4.status_for_batch(batch)["rollup"]
+    if rollup["resolved"] < rollup["total"]:
+        return   # not fully processed yet (failures awaiting retry) — defer the ingest to a later run
+    try:
+        ids = [d["district_id"] for d in batch["districts"]]
+        summary = BS.ingest_batch(ids)
+        registry = DS.load()
+        for did in summary["districts"]:
+            d = next((x for x in batch["districts"] if x["district_id"] == did), {})
+            DS.record_stage(registry, did, d.get("name", ""), d.get("state", ""), stage=5,
+                            stage_name="filter", outcome="ingested", actor="auto:stage5",
+                            batch_id=batch["batch_id"])
+        DS.save(registry)
+        on_event("stage5_ingested", {"batch_id": batch["batch_id"], "n_districts": summary["n_districts"],
+                                     "n_records": summary["n_records"], "n_send": summary["n_send"]})
+    except Exception as e:
+        on_event("stage5_ingest_failed", {"batch_id": batch["batch_id"], "error": str(e)[:200]})
+        print(f"[warn] Stage 5 ingest for {batch['batch_id']} failed ({type(e).__name__}: {e}); "
+              f"re-run `python3 -m infrastructure.acquisition.stage5_filter.build_signals` manually")
 
 
 @app.get("/")
