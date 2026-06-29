@@ -51,10 +51,12 @@ loguru>=0.7.0
 # Fast/deterministic methods only -- Docling/EasyOCR/PaddleOCR deliberately excluded:
 # any case needing heavy-model-level understanding goes to the paid vision council
 # (Stage 7), not a slow local model, same tradeoff that already retired local Ollama.
+# NOTE: Stage 4 ALSO shells out to system binaries that pip cannot install --
+# poppler (pdftotext/pdftoppm), tesseract, ghostscript (camelot's backend). See the
+# "System dependencies" section of docs/GETTING_STARTED.md.
 pdfplumber>=0.11.0
-pymupdf>=1.27.0
-camelot-py>=2.0.0
-img2table>=1.4.0
+pymupdf>=1.27.0          # not used in production (dropped in the spike); kept for the Stage 4 test fixtures
+camelot-py>=2.0.0        # pulls opencv-python-headless + pillow + pypdfium2 transitively
 
 # Development
 black>=23.0.0

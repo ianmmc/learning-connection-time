@@ -40,6 +40,31 @@ pip install -e .
 > finds dead code, and `cd infrastructure/scraper && npm run lint:deps` checks the Node
 > capture layer. See `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §10.
 
+### 1a. System dependencies (NOT pip-installable)
+
+Stage 4 (Process) shells out to several **system binaries** that `requirements.txt` cannot
+install — pip only covers the Python wrappers (`pdfplumber`, `camelot-py`). Without these, Stage 4
+fails per-district with `FileNotFoundError` (the run isolates the district as `failed`, retriable,
+rather than crashing — but no text is harvested). Stage 3 (Capture) additionally needs Node.
+
+| Binary | Stage 4 use | macOS (brew) | Debian/Ubuntu (apt) |
+|--------|-------------|--------------|---------------------|
+| `pdftotext`, `pdftoppm` | Tier-1 text extract + rasterize-for-OCR | `poppler` | `poppler-utils` |
+| `tesseract` | OCR (invoked directly, no `pytesseract`) | `tesseract` | `tesseract-ocr` |
+| `gs` (ghostscript) | camelot's PDF backend | `ghostscript` | `ghostscript` |
+| `node` | Stage 3 Playwright capture (`.mjs`) | `node` | see nodejs.org |
+
+```bash
+# macOS
+brew install poppler tesseract ghostscript node
+
+# Debian / Ubuntu
+sudo apt-get install -y poppler-utils tesseract-ocr ghostscript nodejs
+
+# Verify all are on PATH
+for b in pdftotext pdftoppm tesseract gs node; do command -v "$b" || echo "MISSING: $b"; done
+```
+
 ### 2. Database Connection
 
 The project uses PostgreSQL running in Docker. Start the database container **before any database operation**:
