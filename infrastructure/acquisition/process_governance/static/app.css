@@ -291,3 +291,54 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
   border-radius: var(--radius-sm); cursor: pointer; font-size: var(--fs-sm); }
 .add-item:hover { background: var(--surface-alt); }
 .add-item input { accent-color: var(--action-primary); width: 16px; height: 16px; }
+
+/* ============================ Stage 5 rework: faceted, attention-first left pane ============================ */
+.s5-bar { position: sticky; top: 0; z-index: 2; background: var(--surface-card);
+  border-bottom: var(--border-hair) solid var(--border-subtle); padding: var(--space-2) var(--space-1) var(--space-3);
+  margin: calc(-1 * var(--space-3)) calc(-1 * var(--space-3)) var(--space-2); padding-left: var(--space-3); padding-right: var(--space-3); }
+.s5-row { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
+.s5-row label { font-size: var(--fs-xs); color: var(--text-secondary); }
+.s5-bar select { font-size: var(--fs-xs); padding: 2px 4px; border-radius: var(--radius-sm);
+  border: var(--border-hair) solid var(--border-subtle); background: var(--surface-page); color: var(--text-primary); max-width: 11rem; }
+.s5-icon { font-size: var(--fs-sm); background: var(--surface-alt); border: var(--border-hair) solid var(--border-subtle);
+  border-radius: var(--radius-sm); cursor: pointer; padding: 1px 7px; }
+.s5-flabel { font-size: var(--fs-xs); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--ls-wide); }
+.s5-chip { font-size: var(--fs-xs); padding: 2px 8px; border-radius: var(--radius-pill); cursor: pointer;
+  border: var(--border-hair) solid var(--border-subtle); background: var(--surface-page); color: var(--text-secondary); }
+.s5-chip.on { background: var(--action-primary); color: #fff; border-color: var(--action-primary); }
+.s5-toggle { display: flex; align-items: center; gap: 3px; font-size: var(--fs-xs); color: var(--text-secondary); cursor: pointer; }
+.s5-views { justify-content: space-between; }
+.s5-mini { font-size: var(--fs-xs); padding: 2px 8px; }
+.s5-count { font-size: var(--fs-xs); color: var(--text-secondary); margin-left: auto; }
+
+.s5-group { margin-bottom: var(--space-2); }
+.s5-group-head { display: flex; align-items: center; gap: var(--space-2); cursor: pointer; padding: var(--space-2);
+  border-radius: var(--radius-sm); background: var(--surface-alt); position: sticky; top: 0; }
+.s5-group-head:hover { background: var(--mmm-purple-50); }
+.s5-caret { font-size: var(--fs-xs); color: var(--text-secondary); width: 0.8rem; }
+.s5-gtitle { font-weight: var(--fw-semibold); font-size: var(--fs-sm); }
+.s5-gcount { margin-left: auto; font-size: var(--fs-xs); color: var(--text-secondary); }
+.s5-gcount b { color: var(--text-primary); }
+.s5-group-body.hidden { display: none; }
+
+.district-main { flex: 1; min-width: 0; }
+.attn-row { display: flex; align-items: center; gap: 4px; margin-top: 3px; flex-wrap: wrap; }
+.attn-score { font-size: var(--fs-xs); font-weight: var(--fw-bold); color: var(--text-secondary);
+  min-width: 1.5rem; text-align: right; }
+.attn-chip { font-size: 10px; padding: 1px 6px; border-radius: var(--radius-pill); white-space: nowrap; }
+.dist-flag { font-size: var(--fs-xs); color: var(--mmm-red, #c0392b); }
+.dist-flagbtn, .rec-flagbtn { background: transparent; border: none; cursor: pointer; opacity: 0; font-size: var(--fs-xs);
+  color: var(--text-secondary); padding: 0 3px; transition: opacity .1s; }
+.district-head:hover .dist-flagbtn, .rec-row:hover .rec-flagbtn { opacity: .6; }
+.dist-flagbtn:hover, .rec-flagbtn:hover { opacity: 1; color: var(--mmm-red, #c0392b); }
+.rec-attn { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex: none; }
+
+/* attention reason tones — warm = needs you, cool/muted = handled */
+.r-flag    { background: #c0392b; color: #fff; }
+.r-image   { background: #e67e22; color: #fff; }
+.r-disagree{ background: #d98324; color: #fff; }
+.r-buried  { background: #b8860b; color: #fff; }
+.r-amb     { background: var(--mmm-purple-50, #ede9fe); color: var(--text-brand, #5b21b6); }
+.r-clean   { background: #e8f5e9; color: #2e7d32; }
+.r-low     { background: var(--surface-alt); color: var(--text-secondary); }
+.r-done    { background: var(--surface-alt); color: var(--text-secondary); }
