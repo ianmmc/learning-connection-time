@@ -124,6 +124,14 @@
 
     $g("#s3-detail").innerHTML = html;
     const run = $g("#s3-run"); if (run && canRun) run.onclick = runCapture;
+
+    // Keep THIS batch's left-pane chip in sync with the header during a live run: the list is only
+    // re-fetched on view-show, but the detail polls — so push the header's (disk-accurate) badge onto
+    // the chip. Same badge, same source; no extra /api/queue fetch.
+    if (s.batch_status === "approved") {
+      const chip = document.querySelector(`#s3-list .q-batch[data-id="${CSS.escape(s.batch_id)}"] .q-batch-top .badge`);
+      if (chip) chip.outerHTML = headBadge;
+    }
   }
 
   function hostPanel(hosts, cms) {

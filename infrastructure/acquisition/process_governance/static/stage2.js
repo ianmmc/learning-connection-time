@@ -115,6 +115,13 @@
 
     $g("#s2-detail").innerHTML = html;
     const run = $g("#s2-run"); if (run && canRun) run.onclick = runDiscovery;
+
+    // Keep THIS batch's left-pane chip in sync with the header during a live run (the list is only
+    // re-fetched on view-show; the detail polls). Same badge, same source; no extra /api/queue fetch.
+    if (approved) {
+      const chip = document.querySelector(`#s2-list .q-batch[data-id="${CSS.escape(s.batch_id)}"] .q-batch-top .badge`);
+      if (chip) chip.outerHTML = headBadge;
+    }
   }
 
   function jobFeed(job) {
