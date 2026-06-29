@@ -685,17 +685,18 @@ class TestOpenRouterBillingFailure:
         with pytest.raises(openai_module.APIStatusError):
             DISC.openrouter_search("query", "example.org")
 
-    def test_run_wave2_does_not_swallow_a_billing_system_exit(self, monkeypatch):
+    def test_run_wave2_does_not_swallow_a_billing_system_exit(self):
         """run_wave2's `except Exception` must not catch a billing-failure SystemExit --
-        SystemExit isn't an Exception subclass, so this should hold without any change to
-        run_wave2 itself, but confirm the real call chain actually behaves that way."""
+        SystemExit isn't an Exception subclass, so it propagates. The provider is injected via the
+        `search_fn` parameter (the SERP-cascade refactor, REQ-104, made it a parameter): a default-arg
+        is bound at import time, so monkeypatching the module-level openrouter_search would NOT reach
+        run_wave2's already-bound default -- passing search_fn explicitly is the correct injection."""
         def fake_openrouter_search(q, dhost, k=10):
             raise SystemExit("CONTROL FAILURE: simulated billing failure")
-        monkeypatch.setattr(D2, "openrouter_search", fake_openrouter_search)
         residual = [{"school": "A", "query": "q", "wave1_gated": [], "wave2_invoked": False,
                      "wave2_raw_urls": [], "wave2_gated": []}]
         with pytest.raises(SystemExit, match="CONTROL FAILURE"):
-            D2.run_wave2(residual, "example.org")
+            D2.run_wave2(residual, "example.org", search_fn=fake_openrouter_search)
 
 
 class TestDiscoveryGate:
