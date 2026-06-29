@@ -4,6 +4,11 @@
 > district, `data/raw/lea-website-captures/<id>_<slug>/discovery.json` (audit trail) + `candidates.json`
 > (capture-ready URL list) — the input Stage 3 (Capture) consumes.
 >
+> **Downstream now built (2026-06-29):** the whole pipeline runs through Stage 3 (Capture, REQ-110) →
+> Stage 4 (Process + console, REQ-111) → the **Stage 4→5 incremental handoff** into the Stage-5 review.
+> The pluggable-provider contract this note established (a provider = "given a school, return candidate
+> URLs") is what let Bright Data/Serper replace the Claude/OpenRouter waves with no change downstream.
+>
 > ## ⚠ ARCHITECTURE CHANGED 2026-06-28 — deterministic SERP cascade (supersedes the agent waves below)
 > After a **five-provider bake-off** on a 53-school known-positive set (`data/acquisition/diagnostics/`),
 > Stage 2 is now **fully deterministic — NO agent in the Wave-1 loop.** The original "Wave 1 = Claude

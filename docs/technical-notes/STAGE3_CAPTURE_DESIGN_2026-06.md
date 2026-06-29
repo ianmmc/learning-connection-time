@@ -17,6 +17,11 @@
 > timeout writes a PARTIAL manifest, never orphans work); a **manifest-recovery** tool for the
 > already-orphaned districts; shared status labels (`static/outcomes.js`) + left-pane progress fractions.
 >
+> **Downstream now built (REQ-111, 2026-06-29):** the Stage 4 console view + the **Stage 4→5 incremental
+> handoff** ship — a process run that resolves a whole batch ingests just that batch into Stage 5 (see
+> `STAGE4_PROCESS_DESIGN` §4a/§4b). The shared scaffolding this note's console pioneered (`outcomes.js`,
+> `progressBadge`, the DB working store) is now used by Stage 2/3/4 alike.
+>
 > **What this note is:** for the already-built Stages 1–4 the **code is authoritative**; this note is a
 > **narrative of what the code currently does**, not a redesign. §1–§5 describe the core capture behavior;
 > **§7 is the current console + resilience layer (2026-06-28/29)**; §6 is the historical decision log.
@@ -256,7 +261,8 @@ flagged`; the batch's Stage-3 is **complete** when `resolved == total`).
 
 ### 7d. Shared labels + left-pane progress (UI)
 `static/outcomes.js` is the ONE source of truth: `outcomeBadge(key)` (per-district status, used by
-Stage 2/3 and Stage 4 later — rename `manual_flag_all` in one place) + `progressBadge(progress, stage)`
+Stage 2/3/4 — rename `manual_flag_all` in one place; Stage 4 added `no_usable_text_any`/`awaiting_capture`)
++ `progressBadge(progress, stage)`
 (left-pane stage-contextual fraction). **Honest counts:** no-link districts are reported SEPARATELY, never
 folded into the captured count — `0/10 captured · 2 no-links` → `✓ captured · 2 no-links`; capture/process
 denominators **exclude** no-links (never capturable), discovery counts the whole batch. The detail header

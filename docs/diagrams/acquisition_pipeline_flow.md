@@ -2,8 +2,8 @@
 
 > Built incrementally during stage-walkthrough sessions, not transcribed from `ACQUISITION_PIPELINE.md`. Reflects what we've actually decided/confirmed in conversation. May confirm, refine, or diverge from the written doc — if it diverges, that's signal to reconcile the doc afterward, not a mistake here. As of 2026-06-23 the two docs are reconciled: everything below matches `ACQUISITION_PIPELINE.md`'s Stage 1 through Stage 4 sections.
 
-**Status:** Stage 1 (Queue) designed, built, tested, and CP-A-approved. Stage 2 (Discover) designed, built, and run live against all 12 `batch_00001` districts (12/12 `found_all`). Stage 3 (Capture) designed, built, and run live against all 12 districts (150/150 URLs captured, 0 failures, all `captured_all`). Drive Tier 2 (OAuth) deliberately deferred, not built. Stage 4 (Local processing) designed, built, and run live 2026-06-23 — tool roster resolved via a real spike against all 150 captured PDFs (keep pdftotext/pdfplumber-lines/camelot-stream/camelot-hybrid/tesseract; heavy ML tools Docling/EasyOCR/PaddleOCR installed, timed, and deliberately rejected/uninstalled); production run against all 12 districts: 150/150 records processed, 0 crashes, 10 `processed_all` + 2 `processed_partial`. Stage 5 (Filter) built (review app + signals + de-chrome + `filtered.json`). **Console: gate@1 (REQ-102) + Stage 2 (REQ-104) + Stage 3 (REQ-110) views all BUILT + run live (2026-06-28/29).** Stage 3's view turned on the load-bearing infra change: the **cross-stage DB cache graduated to a live working store** maintained by each stage's finish hook (`common/cache_ingest.py`), so the console reads fresh DB rows for an in-flight batch (Stage 2 repointed too). Stage 3 hardened over live runs (batch_00002–00005): no-link skip, failure/timeout visibility + retry, shared labels + honest progress fractions, **node-owns-shutdown** (timeout → partial manifest, never orphans) + a reconstruct-from-disk recovery tool. **Stage 4 console is next** (forward notes: `STAGE4_PROCESS_DESIGN` §4a). Stages 6-9 still skeleton boxes.
-**Last updated:** 2026-06-29 (Stage 3 console hardening + capture resilience, REQ-110 — see `STAGE3_CAPTURE_DESIGN_2026-06.md` §7 / `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11f/§11h)
+**Status:** Stage 1 (Queue) designed, built, tested, and CP-A-approved. Stage 2 (Discover) designed, built, and run live against all 12 `batch_00001` districts (12/12 `found_all`). Stage 3 (Capture) designed, built, and run live against all 12 districts (150/150 URLs captured, 0 failures, all `captured_all`). Drive Tier 2 (OAuth) deliberately deferred, not built. Stage 4 (Local processing) designed, built, and run live 2026-06-23 — tool roster resolved via a real spike against all 150 captured PDFs (keep pdftotext/pdfplumber-lines/camelot-stream/camelot-hybrid/tesseract; heavy ML tools Docling/EasyOCR/PaddleOCR installed, timed, and deliberately rejected/uninstalled); production run against all 12 districts: 150/150 records processed, 0 crashes, 10 `processed_all` + 2 `processed_partial`. Stage 5 (Filter) built (review app + signals + de-chrome + `filtered.json`). **Console: gate@1 (REQ-102) + Stage 2 (REQ-104) + Stage 3 (REQ-110) + Stage 4 (REQ-111) views all BUILT + run live (2026-06-28/29).** Stage 3's view turned on the load-bearing infra change: the **cross-stage DB cache graduated to a live working store** maintained by each stage's finish hook (`common/cache_ingest.py`), so the console reads fresh DB rows for an in-flight batch (Stage 2 repointed too). Stage 3 hardened over live runs (batch_00002–00005): no-link skip, failure/timeout visibility + retry, shared labels + honest progress fractions, **node-owns-shutdown** (timeout → partial manifest, never orphans) + a reconstruct-from-disk recovery tool. **Stage 4 (Process) console view + the Stage 4→5 incremental handoff BUILT 2026-06-29 (REQ-111):** a process run that resolves a whole batch runs `build_signals.ingest_batch()` (batch-scoped Stage-5 ingest, no full-corpus rebuild) so the Stage-5 view loads with no lag — **the seam where the batch dissolves and Stage 5's district-driven world begins** (the console was *born* as a Stage-5 tool; governance §12). **Next: the Stage-5 console rework** + REQ-100 (staleness) / REQ-101 (Stage 6 + gate@6). Stages 6-9 still skeleton boxes.
+**Last updated:** 2026-06-29 (Stage 4 console view + the Stage 4→5 incremental handoff, REQ-111 — see `STAGE4_PROCESS_DESIGN_2026-06.md` §4a/§4b / `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §12)
 
 ```mermaid
 flowchart TD
@@ -81,7 +81,7 @@ flowchart TD
         C_OUT --> C_REG
     end
 
-    subgraph STAGE4 ["Stage 4 — Local processing (built + run live 2026-06-23, 150/150 records processed)"]
+    subgraph STAGE4 ["Stage 4 — Local processing (built 2026-06-23; console view + Stage 4→5 handoff BUILT 2026-06-29, REQ-111 — in-process, no node-owns-shutdown)"]
         direction TB
         P_RECON["Reconciliation pass (BEFORE any per-district processing)<br/>per district: does .../processed.json exist?<br/>+ file-existence check: every files{} entry in captures.json<br/>actually exists in its captures/&lt;hash&gt;/ directory"]
         P_SKIP["Exists, registry behind -> reconcile UP, skip"]
@@ -107,7 +107,7 @@ flowchart TD
         P_OUT --> P_REG
     end
 
-    S5["5. Local filter<br/>per-URL representation scoring + human labels<br/> -> filtered.json (event-driven projection)"]
+    S5["5. Local filter — DISTRICT-DRIVEN (batch dissolved; the console's origin)<br/>per-URL/per-representation scoring + human labels<br/> -> filtered.json (event-driven projection)"]
     CPB{{"gate@5 — per-URL review (was Checkpoint B)<br/>legible, relevant input; the critical gate before paid extraction"}}
     S6[6. Handoff<br/>route representations -> council config;<br/>immutable handoff_&lt;hash&gt;_&lt;ts&gt;.json freeze]
     G6{{"gate@6 — handoff / dispatch approval<br/>which package -> which council config (cost-gated in auto mode)"}}
@@ -122,7 +122,7 @@ flowchart TD
     D_SKIP --> C_RECON
     C_REG --> P_RECON
     C_SKIP --> P_RECON
-    P_REG --> S5
+    P_REG -->|"batch FULLY resolved -> Stage 4→5 handoff (REQ-111):<br/>build_signals.ingest_batch() — batch-scoped Stage-5 ingest<br/>(no full-corpus rebuild) + filtered.json + furthest_stage→5 event.<br/>THE BATCH DISSOLVES HERE; the district becomes the unit"| S5
     P_SKIP --> S5
     S5 --> CPB --> S6 --> G6 --> S7 --> G7 --> S8 --> G8 --> S9
 

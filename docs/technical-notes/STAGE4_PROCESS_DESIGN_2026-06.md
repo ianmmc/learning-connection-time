@@ -1,13 +1,19 @@
 # Stage 4 — Local processing: design & decision log
 
-> **Status: BUILT + run live (2026-06-23)** against all 12 `batch_00001` districts: 150/150 records
-> processed, 0 crashes, 10 `processed_all` + 2 `processed_partial`. Produces, per district,
+> **Status: processing BUILT + run live (2026-06-23)** against all 12 `batch_00001` districts: 150/150
+> records processed, 0 crashes, 10 `processed_all` + 2 `processed_partial`. Produces, per district,
 > `processed.json` + per-record `extracted.txt`/`<tool>.txt`/`raster_p-<N>.png` in each
 > `captures/<hash>/` — the local-text layer Stage 5 (Local filtering) consumes.
 >
+> **Console view + Stage 4→5 handoff BUILT (REQ-111, 2026-06-29).** The Stage 4 console view (status +
+> run trigger + tool-effectiveness readout) is live, and a process run that resolves a whole batch now
+> **incrementally ingests just that batch into Stage 5** so the Stage-5 view loads with no lag. Details:
+> §4 (console) + §4a (as-built) + §4b (the handoff).
+>
 > **What this note is:** for the already-built Stages 1–4 the **code is authoritative**; this note is a
-> **narrative of what the code currently does — to inform the console**, not a redesign. §1–§5 describe
-> current behavior (verified against the script 2026-06-27); §6 is the historical decision log.
+> **narrative of what the code currently does**, not a redesign. §1–§3 describe the processing behavior
+> (verified 2026-06-27); §4–§4b describe the console + handoff (as built 2026-06-29); §6 is the
+> historical decision log.
 >
 > **Code (grimp-confirmed, 2026-06-27):** `stage4_process/process_stage4.py` imports exactly
 > `common.district_status` (no LCT DB — ungated middle stage). **Unlike Stages 2/3 it does the real
@@ -118,48 +124,78 @@ PDF text-harvesters and OCR tools are at yielding bell-schedule representations 
 i.e. the measurement-harness pattern extended upstream: attribute each target-labeled record back to its
 winning representation's `source` (governance §11f). Same fingerprinted-scorecard discipline as Stage 5.
 
-### 4a. RESUME HERE — building the Stage 4 console (forward notes, 2026-06-29; not built yet)
-The Stage 4 console view is the **next** console build. The Stage 2 + 3 views established a reusable
-pattern — **copy Stage 3 almost verbatim**; Stage 4 is the simplest case (no external worker, no browser,
-no timeouts). Concrete plan for future-me:
+### 4a. The Stage 4 console — AS BUILT (REQ-111, 2026-06-29)
+Built by copying the Stage 3 view; Stage 4 was the simplest case (no external worker, no browser, no
+timeouts). What landed (code is authoritative — this records the shape + the decisions):
 
-- **Infra already in place.** Stage 4's finish hook already upserts the **`processed_doc`** cross-stage
-  cache (`common.cache_ingest.cache_processed`, wired in `process_stage4.finish_district`). `list_batches`
-  already returns `progress.processed` (furthest_stage ≥ 4). `static/outcomes.js` already has
-  `processed_all`/`processed_partial` labels and `progressBadge(progress,"stage4")`. So most of the
-  scaffolding the Stage-3 build added is **stage-agnostic and ready**.
-- **Build `stage4_process/headless.py`** mirroring `stage3_capture/headless.py`: `run_batch(batch, …)`
-  (reconcile → SEQUENTIAL per-district → `dispatched`/`completed`/`failed` events) + `status_for_batch`
-  (reads the `processed_doc` cache; self-heal; rollup). **Key difference from Stage 3:** Stage 4 does the
-  work *in-process* (pdftotext/pdfplumber/camelot/tesseract — fast local subprocess calls with per-tool
-  timeouts), NOT via a separate Node process. So there's **no node-owns-shutdown / no per-district SIGKILL
-  budget** to design — a district is processed by a Python function call. (If you ever want a hard
-  per-district wall, it'd be a different mechanism; the Stage-3 deadline pattern does NOT transfer.)
-- **`server.py`**: add `/api/process/{batch_id}` (status) + `/api/process/{batch_id}/run` (background job),
-  copy the `_CAPTURE_JOBS` pattern → `_PROCESS_JOBS`; resolve the batch from the **DB working store**
-  (`_capture_batch_from_db` → make a shared `_batch_from_db`), not the receipt.
+- **`stage4_process/headless.py`** — `run_batch(batch, …)` (reconcile → SEQUENTIAL per-district →
+  `dispatched`/`completed`/`failed` events) + `status_for_batch` (reads the `processed_doc` cache;
+  self-heal; rollup) + `_rollup`. **The structural difference from Stage 3: the work is IN-PROCESS** —
+  `run_batch` calls `process_stage4.finish_district` directly (pdftotext/pdfplumber/camelot/tesseract are
+  fast local subprocess calls), NOT a separate long-lived worker. So there is **no node-owns-shutdown / no
+  per-district SIGKILL budget** and **no injectable `_run`** — a district is a Python function call; a
+  crash mid-district just leaves `processed.json` unwritten so reconcile re-runs it (idempotent). The
+  Stage-3 deadline/partial-manifest pattern deliberately does NOT transfer.
+- **`stage2_complete(root)` is a LOCAL helper, not an import of Stage 3.** The status view needs the
+  Stage-2-complete universe (discovery + candidates on disk) to classify `awaiting_capture` vs
+  `manual_flag_all`, which is what `stage3_capture.find_districts` returns — but importing it broke the
+  import-linter independence contract (stages must not import each other). So `headless.stage2_complete`
+  re-scans for `discovery.json`+`candidates.json` locally. **Lesson for every future stage view: copy the
+  small disk-scan helper, don't reach across stages.**
+- **The status view reads the DB working store, never parses captures.json.** Per-district outcome +
+  usable/not-usable doc counts come from `processed_doc` (self-healing, like Stage 3's `capture` read).
+  captures.json/processed.json get only an `.exists()` stat to separate `awaiting_capture`/`todo`/`done`;
+  the *only* disk **parse** is `processed.json` for the **tool-effectiveness panel** (the per-text
+  `source` is not in the live cache — only `n_texts`/`usable` per doc are). The actual processing WORK
+  (process_stage4) of course reads captures.json + the binaries off disk — that's its input.
+- **`server.py`** — `GET /api/process/{batch_id}` (status) + `POST /api/process/{batch_id}/run`
+  (background job, `_PROCESS_JOBS`); the batch is resolved from the **DB working store** via the shared
+  **`_batch_from_db`** (renamed from `_capture_batch_from_db`; now used by capture + process).
 - **`static/stage4.js`** + the `index.html` selector option + the `gate1.js` switcher hook
-  (`if (which==="stage4" && window.initStage4) …`) — copy `stage3.js`: shared `outcomeBadge`/`progressBadge`,
-  the **left-pane chip live-sync** to the header during a run, the `.run-anim` button, list re-fetch on
-  view-show. The readout: per-district `processed_all`/`processed_partial` outcome + per-record usable vs
-  `no_usable_text` (and *why*), and a tool-effectiveness view is the natural Stage-4-specific extra.
-- **Per-district status classification** (mirror Stage 3): `awaiting_capture` (no captures.json / nothing
-  captured) · `todo` (captured, not processed) · `done` (processed.json) · `failed`. **Terminal states
-  flow through:** a `manual_flag_all` (no-link) district never captures and never processes — show it
-  `manual_flag_all`, the SAME label, denominator-excluded (capturable/processable = total − no-links).
-  A `captured_partial` district processes only its `ok` records (`process_district` already skips
-  `ok:false`/`not_attempted`/`not_recovered`), so partials flow naturally.
-- **Resilience parity (smaller concern).** Stage 4 writes `processed.json` at end-of-district (like
-  Stage 3's old manifest). A crash mid-district leaves it unwritten → reconcile re-runs that district
-  (idempotent, fine). It is NOT subprocess-killed the way Stage 3 was, so the orphaning class is far less
-  acute — but if you ever batch-kill it, the same **reconstruct-from-disk** philosophy applies (the
-  per-record `<tool>.txt` files are on disk). Don't over-build this now; note it and move on.
-- **Watch the static-JS no-lint caveat** (a deleted var once broke a sibling view) — diff `static/*.js`
-  carefully; `node --check` catches syntax only.
+  (`if (which==="stage4" && window.initStage4) …`) — copied `stage3.js` (shared
+  `outcomeBadge`/`progressBadge`, left-pane chip live-sync, `.run-anim` button, list re-fetch on
+  view-show). Columns: District · Status · Docs · Usable · Not usable, plus the **"Usable representations
+  by tool"** panel (the Stage-4-specific extra — the §4 user story). `outcomes.js` gained two badges:
+  `no_usable_text_any` (honest "processed, nothing cleared the usable bar" — NOT a failure) and
+  `awaiting_capture`.
+- **Per-district status:** `awaiting_discovery` · `manual_flag_all` (no-link, terminal, denominator-
+  excluded: processable = total − no-links) · `awaiting_capture` (Stage 3 still owes it) · `todo` ·
+  `failed` (a process error left no processed.json; retriable) · `done` (→ `processed_all` /
+  `processed_partial` / `no_usable_text_any`). A `captured_partial` district processes only its `ok`
+  records, so partials flow naturally.
+- **Static-JS caveat still applies** (no lint/`no-undef` gate; `node --check` catches syntax only).
+  A reverse-the-event-feed pass (`slice(-12).reverse()` → newest-first) landed across stage 2/3/4 here too.
+
+### 4b. The Stage 4 → Stage 5 handoff — incremental, batch-scoped (REQ-111, 2026-06-29)
+**The seam where the batch hands off to Stage 5.** When a Stage 4 process run **resolves the whole batch**
+(every district processed or terminally no-link), the server's `_ingest_stage5_if_complete` runs the
+**incremental** Stage-5 ingest for just that batch and records the transition — so switching to the Stage 5
+view is instant, with no full-corpus rebuild and no perceived lag (the design goal).
+
+- **`build_signals.ingest_batch(district_ids)`** (new, beside the unchanged full `ingest()`): ensures the
+  signal-table schema (CREATE IF NOT EXISTS — never drops) and re-ingests ONLY the batch's districts via a
+  per-district DELETE+INSERT (`delete_district_signal_rows` + the extracted `ingest_district`), resolving
+  dirs in O(batch) (`root.glob("<did>_*")`). **Prior batches are untouched; cost is proportional to the
+  batch, not the corpus** — this is why the full DROP+rebuild was unacceptable as the routine handoff (it
+  would re-relocate and *grow* the very lag we're killing). PRECIOUS `label`/`cluster_split` survive
+  (rec_key is stable; the delete never touches them). Then it regenerates `filtered.json` for just those
+  districts.
+- **Trigger placement = the orchestration layer, not Stage 4.** `_ingest_stage5_if_complete` lives in
+  `process_governance/server.py` (the app layer that may import every stage); `stage4_process` importing
+  `stage5_filter` would break the independence contract. It fires only when `run_batch` did work
+  (`todo>0`) AND `status_for_batch` rollup shows `resolved == total`. **Best-effort:** an ingest hiccup is
+  emitted as a `stage5_ingest_failed` event and logged, but never fails the (already-durable) Stage-4 job.
+- **The transition is recorded as a Stage-5 progression event per district** (`stage=5`,
+  `stage_name="filter"`, `outcome="ingested"`, `actor="auto:stage5"`) → `furthest_stage` advances to 5
+  ("done through Stage 4 / in Stage 5"), and a `stage5_ingested` job event surfaces it in the feed.
+- **Still manual elsewhere:** the full `python3 -m …stage5_filter.build_signals` remains the all-districts
+  rebuild (schema changes, recovery). The console handoff is the batch-scoped fast path.
 
 ## 5. Open decisions
 - None blocking. Tier roster and the always-run model are settled by the spike (§3); the
-  duplicate-PDF-dedup and vision-escalation non-goals (§2d) are deliberate, not deferred work.
+  duplicate-PDF-dedup and vision-escalation non-goals (§2d) are deliberate, not deferred work. The Stage
+  4→5 handoff (§4b) is built; the broader Stage-5 console rework (district-driven, batch dissolves) is the
+  next focus — see `PIPELINE_GOVERNANCE_AND_STATE` §11/§12 and `PROJECT_HISTORY`.
 
 ---
 

@@ -6,9 +6,11 @@
 > functionally COMPLETE** — 103a (foundation) + **103b–f** (ingest + readers + tests migrated
 > SQLite→Postgres, committed `bbd0f66`) + **103c** (cross-stage cache) + **103g** (these docs) all done;
 > see §1b. **REQ-099 (state event-log) COMPLETE** (§3) and **REQ-094 (`filtered.json` release generator)
-> COMPLETE** — event-driven projection (§6). **Console & gate model decided 2026-06-27 (§11); Stage 6
-> design started (`STAGE6_HANDOFF_DESIGN_2026-06.md`).** Next: design the console UI, then Stage 6
-> council-config/routing; Stage 2 headless (REQ-104) still pending. This note is the architecture for three coupled decisions that outgrew
+> COMPLETE** — event-driven projection (§6). **Console & gate model decided 2026-06-27 (§11).** The
+> stage-selectable console is BUILT through Stage 4: **gate@1** (REQ-102), **Stage 2** (REQ-104),
+> **Stage 3** (REQ-110), **Stage 4 + the Stage 4→5 incremental handoff** (REQ-111, §12) — all run live on
+> batch_00002–00005. **Next: the Stage-5 console rework** (the app's origin; §12c) + REQ-100 (staleness) /
+> REQ-101 (Stage 6 + gate@6, `STAGE6_HANDOFF_DESIGN_2026-06.md`). This note is the architecture for three coupled decisions that outgrew
 > `STAGE5_FILTER_DESIGN_2026-06.md`:
 > 1. **STATE vs DATA** — migrate the cross-stage *registry* (`district_status.json`) into the DB;
 >    keep the per-stage *data* artifacts as JSON on disk.
@@ -289,9 +291,10 @@ events at all times.
 **What generates / updates `filtered.json` (all events — built REQ-094):**
 | event | mechanism | covers |
 |---|---|---|
-| **first scoring pass** over `processed.json` | Stage 5 ingest (`build_signals`) runs `release.generate()` after committing | the initial determination — every canonical record gets a send/reject decision |
+| **a Stage-4 batch completes (the handoff)** | `build_signals.ingest_batch(district_ids)` runs the **incremental** ingest + `release.generate(district_id=…)` for just that batch (§12) | the first scoring pass for a freshly-processed batch — batch-scoped, no full-corpus rebuild |
 | **a human label is applied / a cluster is split** | `server.save_label` / `split` call `release.generate(district)` for that district | CP-B per-URL judgments flow into the projection immediately |
 | **new URLs/representations from more discovery** | a re-ingest (capture→process→`build_signals`) regenerates | additional evidence changes the canonical set |
+| **a full rebuild** | `python3 -m …stage5_filter.build_signals` (`ingest()` then `release.generate()` over all) | schema changes / recovery — the all-districts drop+rebuild |
 
 `release.generate()` is the **single shared code path** (the function the ingest hook, the label hook, and
 a future `state_event` projector all call); `python3 -m …stage5_filter.release` remains as a manual
@@ -721,9 +724,11 @@ Stage-6 handoff freeze is what keeps "what we sent" recoverable across these loo
   — reads the DB cache (incl. `capture.err` for the failure breakdown + per-district `manual_flag_all` /
   `failed` / `timed_out` / `captured_partial` states), + a per-district Node-capture run trigger.
   See `STAGE3_CAPTURE_DESIGN_2026-06.md` §7.
-- **Stage 4** — same shape (ungated status + run trigger); **NOT built yet — forward notes in
-  `STAGE4_PROCESS_DESIGN_2026-06.md` §4a** (the cross-stage cache hook, `progressBadge("stage4")`, and
-  `list_batches.progress.processed` are already in place; copy Stage 3's `stage4.js`/`headless.py`).
+- **Stage 4** — same shape (ungated status + run trigger); **BUILT + RUN LIVE 2026-06-29 (REQ-111)**.
+  In-process (no node-owns-shutdown); reads the `processed_doc` cache; per-district usable/not-usable doc
+  counts + a **usable-representations-by-tool** readout; `no_usable_text_any`/`awaiting_capture` badges.
+  A process run that **resolves the whole batch** then runs the **Stage 4→5 incremental handoff** (§12).
+  See `STAGE4_PROCESS_DESIGN_2026-06.md` §4a/§4b.
 - **Stages 2 & 4 effectiveness** — the **measurement-harness pattern extended upstream**: attribute each
   target-labeled record back to its discovery tool (`candidate_tools_json`) and its winning representation's
   source (`representation.source`). Same fingerprinted-scorecard discipline as Stage 5, applied to discovery
@@ -786,8 +791,58 @@ reframe and the batch_00002-forcing-function plan (the batch-of-record advances 
   districts (also the interim manual-follow-up path — it can fold in a human-sourced file as a
   `source:"manual"` record). The general rule for any external-worker stage: **the worker owns its
   shutdown and always writes a complete manifest; a timeout is a partial outcome, not a failure.**
-- **Stage 4 console is NEXT** — forward build notes in `STAGE4_PROCESS_DESIGN` §4a (the infra — cache hook,
-  `progressBadge("stage4")`, `list_batches.progress.processed` — is already in place; copy `stage3.js`/
-  `headless.py`; Stage 4 is in-process so there's no node-owns-shutdown to design).
-- **Then:** REQ-100 (staleness) / REQ-101 (Stage 6 + gate@6). Per-stage detail: `STAGE1_QUEUE_DESIGN`
-  §6 (gate@1), `STAGE2_DISCOVER_DESIGN` §7 (the SERP cascade), `STAGE3_CAPTURE_DESIGN` §7 (the console + resilience).
+- **Stage 4 console view BUILT + RUN LIVE 2026-06-29 (REQ-111)** (`static/stage4.js` + `/api/process/*` +
+  `stage4_process/headless.py`): the ungated status readout (per-district usable/not-usable doc counts +
+  the usable-reps-by-tool panel, read from the DB `processed_doc` cache) + an in-process run trigger. The
+  batch resolves from the DB working store via the shared `_batch_from_db`. **No node-owns-shutdown** (the
+  work is a Python call; a crash just leaves `processed.json` unwritten → reconcile re-runs). A local
+  `stage2_complete` disk-scan replaced an import of Stage 3's `find_districts` (the independence contract).
+- **Stage 4→5 incremental handoff BUILT (REQ-111)** — the seam where the batch hands to Stage 5. See **§12**.
+- **Then:** REQ-100 (staleness) / REQ-101 (Stage 6 + gate@6) — **and the Stage-5 console rework** (the app
+  began as a Stage-5 tool; §12). Per-stage detail: `STAGE1_QUEUE_DESIGN` §6 (gate@1), `STAGE2_DISCOVER_DESIGN`
+  §7 (the SERP cascade), `STAGE3_CAPTURE_DESIGN` §7, `STAGE4_PROCESS_DESIGN` §4a/§4b.
+
+---
+
+## 12. The Stage 4 → Stage 5 seam: where the batch dissolves and the district takes over — BUILT (REQ-111, 2026-06-29)
+
+This is the most important structural fact for whoever picks up Stage 5. **The console was BORN as a
+Stage-5 review tool** (the labeling surface for the deterministic signals) and only *later* grew upward
+into the stage-selectable governance console for Stages 1–4. Stages 1–4 are all **batch-shaped**: a batch
+is the unit that's queued (gate@1), discovered, captured, processed — and the left pane of each of those
+views is a *list of batches*. **Stage 5 is deliberately NOT batch-shaped.** At Stage 5 the work is
+per-URL/per-representation, the driving entity is the **district** (and below it, the record/representation),
+and the batch **dissolves as a meaningful unit** (§6 already records this: "at Stage 5 the batch dissolves;
+CP-B is the per-URL review"). The Stage-5 view's left pane is districts→records, not batches. **This
+difference is on purpose — do not try to make Stage 5 look like Stages 1–4.**
+
+**§12a — The handoff mechanism (what fires the transition).** When a Stage-4 process run resolves the whole
+batch (`status_for_batch` rollup `resolved == total`, and the run did work `todo>0`), the orchestration
+layer's `process_governance/server._ingest_stage5_if_complete`:
+1. runs **`build_signals.ingest_batch(district_ids)`** — the **incremental, batch-scoped** Stage-5 ingest
+   (ensures the signal schema, re-ingests ONLY this batch's districts via per-district DELETE+INSERT,
+   regenerates their `filtered.json`). Prior batches untouched; **cost ∝ batch, not corpus** — the reason
+   the full `ingest()` DROP+rebuild was rejected as the routine handoff (it would re-grow the very lag we
+   removed). PRECIOUS `label`/`cluster_split` survive (rec_key stable).
+2. records a **Stage-5 progression `state_event` per district** (`stage=5`, `stage_name="filter"`,
+   `outcome="ingested"`, `actor="auto:stage5"`) → `furthest_stage` → 5 ("done through Stage 4 / in Stage 5").
+3. emits a `stage5_ingested` job event (or `stage5_ingest_failed`, logged — best-effort, never fails the
+   already-durable Stage-4 job).
+The trigger lives in the **app layer, not `stage4_process`** — `stage4_process`→`stage5_filter` would break
+the import-linter independence contract; `process_governance` may import every stage.
+
+**§12b — Why this design (the choice we made, for future-me).** The user's instinct was "precompute the
+Stage-5 ingest at batch completion so the Stage-5 view loads with no lag." Correct — but a *full-corpus*
+rebuild at batch completion just relocates the lag and makes it grow with history. So the build is
+**incremental** (Option B in the design discussion): `ingest()` was refactored to share an `ingest_district()`
+unit with the new `ingest_batch()`; the signal-table DDL split into drop + `CREATE IF NOT EXISTS`. This is
+the **first piece of the Stage-5 rework** — the signal tables moved (for the batch path) from drop+rebuild
+to per-district UPSERT, exactly mirroring what the cross-stage cache (REQ-110) already did. The full
+`python3 -m …stage5_filter.build_signals` remains for schema changes / recovery.
+
+**§12c — What the Stage-5 console rework still owes (forward).** The handoff makes districts *appear* in
+Stage 5 instantly; it does **not** restructure the Stage-5 console itself. Open, for the dedicated Stage-5
+pass: the district-driven attention queue (§7b) as the home view; the gate@5 per-URL review integrated into
+the stage selector; the recency gate (REQ-044); a `state_event`-subscription projector generalizing the two
+inline `release.generate` hooks (§6). The Stage-5 review surface that exists today predates the governance
+re-architecture — read it as the *origin* of the console, not its current-architecture exemplar.

@@ -9,6 +9,12 @@
 > `state_event` log, and the receipt all consistent. The gate@1 queue view (the first console stage view)
 > is live; edits are reversible (reject/restore).
 >
+> **The batch as a unit now runs end-to-end (2026-06-29):** gate@1 (Queue) → Stage 2 (Discover) → Stage 3
+> (Capture) → Stage 4 (Process) → the **Stage 4→5 handoff**, all console-driven. **This is where the batch
+> ends its life:** at the Stage-4→5 handoff the work hands off to Stage 5, where the batch *dissolves* as a
+> unit and the **district** becomes the driving grain (governance §11d, §12). So Stage 1 is the batch's
+> birth and Stage 4 is its last batch-shaped checkpoint; Stage 5's console is district-driven on purpose.
+>
 > **What this note is:** the code is authoritative; this note is a **narrative of what the code currently
 > does**. §1–§6 describe current behavior (verified against the scripts 2026-06-27); §7 is the decision log.
 >
