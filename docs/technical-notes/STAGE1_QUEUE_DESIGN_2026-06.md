@@ -221,6 +221,12 @@ the cross-batch queries the user stories need (a district in multiple batches; p
   soft-rejected) with their flags, so the human sees what was proposed and what they dropped.
 - **`write_receipt(sess, id)`** — regenerate `batch_NNNNN.json` from the rows (the receipt always mirrors
   the working store). Every function takes a Session and does **not** commit — the caller owns the txn.
+- **`list_batches(sess)`** — the queue-list rows. Each carries a **`progress`** block (REQ-110): per-batch
+  district counts `{total, discovered, captured, processed, flagged}` from a cheap `current_state`
+  aggregate (`furthest_stage` ≥ 2/3/4; `flagged` = latest stage outcome `manual_flag_all`), so every stage
+  view's left pane can render a stage-contextual fraction (Stage 2/3/4) instead of the stale gate@1 status.
+  Best-effort (degrades to `null` if `current_state` isn't present). The shared frontend `progressBadge`
+  (`static/outcomes.js`) consumes it.
 
 ### 6c. gate@1 edit operations (soft, audited, REVERSIBLE — APGA stories 29–31)
 - **`reject_district`** / **`reject_school`** → flip `included = False` (never a delete — the full

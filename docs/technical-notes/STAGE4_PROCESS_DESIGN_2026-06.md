@@ -118,6 +118,45 @@ PDF text-harvesters and OCR tools are at yielding bell-schedule representations 
 i.e. the measurement-harness pattern extended upstream: attribute each target-labeled record back to its
 winning representation's `source` (governance §11f). Same fingerprinted-scorecard discipline as Stage 5.
 
+### 4a. RESUME HERE — building the Stage 4 console (forward notes, 2026-06-29; not built yet)
+The Stage 4 console view is the **next** console build. The Stage 2 + 3 views established a reusable
+pattern — **copy Stage 3 almost verbatim**; Stage 4 is the simplest case (no external worker, no browser,
+no timeouts). Concrete plan for future-me:
+
+- **Infra already in place.** Stage 4's finish hook already upserts the **`processed_doc`** cross-stage
+  cache (`common.cache_ingest.cache_processed`, wired in `process_stage4.finish_district`). `list_batches`
+  already returns `progress.processed` (furthest_stage ≥ 4). `static/outcomes.js` already has
+  `processed_all`/`processed_partial` labels and `progressBadge(progress,"stage4")`. So most of the
+  scaffolding the Stage-3 build added is **stage-agnostic and ready**.
+- **Build `stage4_process/headless.py`** mirroring `stage3_capture/headless.py`: `run_batch(batch, …)`
+  (reconcile → SEQUENTIAL per-district → `dispatched`/`completed`/`failed` events) + `status_for_batch`
+  (reads the `processed_doc` cache; self-heal; rollup). **Key difference from Stage 3:** Stage 4 does the
+  work *in-process* (pdftotext/pdfplumber/camelot/tesseract — fast local subprocess calls with per-tool
+  timeouts), NOT via a separate Node process. So there's **no node-owns-shutdown / no per-district SIGKILL
+  budget** to design — a district is processed by a Python function call. (If you ever want a hard
+  per-district wall, it'd be a different mechanism; the Stage-3 deadline pattern does NOT transfer.)
+- **`server.py`**: add `/api/process/{batch_id}` (status) + `/api/process/{batch_id}/run` (background job),
+  copy the `_CAPTURE_JOBS` pattern → `_PROCESS_JOBS`; resolve the batch from the **DB working store**
+  (`_capture_batch_from_db` → make a shared `_batch_from_db`), not the receipt.
+- **`static/stage4.js`** + the `index.html` selector option + the `gate1.js` switcher hook
+  (`if (which==="stage4" && window.initStage4) …`) — copy `stage3.js`: shared `outcomeBadge`/`progressBadge`,
+  the **left-pane chip live-sync** to the header during a run, the `.run-anim` button, list re-fetch on
+  view-show. The readout: per-district `processed_all`/`processed_partial` outcome + per-record usable vs
+  `no_usable_text` (and *why*), and a tool-effectiveness view is the natural Stage-4-specific extra.
+- **Per-district status classification** (mirror Stage 3): `awaiting_capture` (no captures.json / nothing
+  captured) · `todo` (captured, not processed) · `done` (processed.json) · `failed`. **Terminal states
+  flow through:** a `manual_flag_all` (no-link) district never captures and never processes — show it
+  `manual_flag_all`, the SAME label, denominator-excluded (capturable/processable = total − no-links).
+  A `captured_partial` district processes only its `ok` records (`process_district` already skips
+  `ok:false`/`not_attempted`/`not_recovered`), so partials flow naturally.
+- **Resilience parity (smaller concern).** Stage 4 writes `processed.json` at end-of-district (like
+  Stage 3's old manifest). A crash mid-district leaves it unwritten → reconcile re-runs that district
+  (idempotent, fine). It is NOT subprocess-killed the way Stage 3 was, so the orphaning class is far less
+  acute — but if you ever batch-kill it, the same **reconstruct-from-disk** philosophy applies (the
+  per-record `<tool>.txt` files are on disk). Don't over-build this now; note it and move on.
+- **Watch the static-JS no-lint caveat** (a deleted var once broke a sibling view) — diff `static/*.js`
+  carefully; `node --check` catches syntax only.
+
 ## 5. Open decisions
 - None blocking. Tier roster and the always-run model are settled by the spike (§3); the
   duplicate-PDF-dedup and vision-escalation non-goals (§2d) are deliberate, not deferred work.

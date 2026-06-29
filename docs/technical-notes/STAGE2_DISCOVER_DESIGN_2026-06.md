@@ -185,6 +185,15 @@ reads `discovery_school`/`candidate` instead, with lifecycle (done/todo) still f
 DATA source). It is **self-healing**: a district discovered *before* the cache hook existed (batch_00002/
 00003) has its `discovery.json` ingested on first console view. See STAGE3 §3 + governance §7a-A/§11f.
 
+**Shared UI labels + left-pane progress (REQ-110, 2026-06-28).** Stage 2 uses the shared
+`static/outcomes.js` (`outcomeBadge` for per-district status, `progressBadge(progress,"stage2")` for the
+left-pane fraction) — the SAME elements Stage 3 (and Stage 4) use, so a label rename is one edit. The
+left-pane chip shows a stage-contextual fraction (`✓ discovered · N no-links`) instead of the stale gate@1
+"approved"; the detail header shows the same badge; and the active batch's chip is **live-synced** to the
+header during a run (the chip otherwise froze, since `/api/queue` only re-fetches on view-show while the
+detail polls). `list_batches` carries the per-stage counts via a `current_state` aggregate. The "Run
+discovery" button gets the `.run-anim` sheen while a job is in flight.
+
 **User stories (APGA, seed; migrated 2026-06-27):**
 - As a user, I want to **review search-query templates** and **propose new ones.**
 - As a user, I want to see **what a given search service is processing right now** — which district + query
@@ -331,11 +340,13 @@ genuinely no page). The 2 residuals invoked the Claude Wave-2 tier and recovered
 no-page cases (a different index can't conjure a page that doesn't exist).
 
 ### 7d. Open / watch-items (deferred — gather data first)
-1. **Is Claude Wave-2 worth it?** On batch_00002 it recovered 0/2 and caused the visible latency pauses.
-   **Timeout lowered 420s → 75s (`WAVE2_TIMEOUT_S`, 2026-06-28, REQ-110)** — the diagnostic harness keeps
-   the 420s `CLI_TIMEOUT_S`; only the live sequential Wave-2 was over-budgeted. Still **open** whether the
-   tier earns its keep at all (one batch isn't conclusive — Claude might recover a page Google merely
-   *deprioritized*); leaning toward opt-in. Watch-item.
+1. **Is Claude Wave-2 worth it? — first YES (lean now: keep it).** On batch_00002 it recovered 0/2;
+   but on **batch_00005 the Claude WebSearch Wave-2 recovered a page Bright Data/Serper (Google index)
+   did NOT find** — the first live proof that the *different index* earns its keep, exactly the
+   "speculative residual on a different index" rationale (§7b). Timeout lowered 420s → 75s
+   (`WAVE2_TIMEOUT_S`, 2026-06-28) — the diagnostic harness keeps the 420s `CLI_TIMEOUT_S`; only the live
+   sequential Wave-2 was over-budgeted. Watch for the pattern to recur across more batches to firm
+   "speculative" → "load-bearing."
 2. **Serper-on-Bright-Data-misses.** Bright Data's lone miss (Monkton) WAS recovered by Serper — same
    index, ~99% overlap, not byte-identical (proxy/parse variance). Once real-batch misses accumulate
    (every `discovery.json` records the per-school Wave-1 result), test whether Serper-on-misses earns a

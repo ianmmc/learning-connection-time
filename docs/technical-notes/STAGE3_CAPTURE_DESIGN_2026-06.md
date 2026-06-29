@@ -6,18 +6,20 @@
 > Tier 2 (OAuth) deliberately deferred, not built. Produces, per district,
 > `captures/<hash>/` directories + `captures.json` — the input Stage 4 (Local processing) consumes.
 >
-> **Console view BUILT 2026-06-28 (REQ-110).** The ungated health/emergent readout + a **per-district
-> Node-Playwright capture run trigger** (a background job) — `static/stage3.js` + `/api/capture/*` in
-> `process_governance/server.py`, driven by `stage3_capture/headless.py` (`run_batch` reconcile/sequential/
-> events; `status_for_batch` reads the **DB cross-stage cache**). The console reads the DB, NOT
-> captures.json — the cross-stage cache graduated to a **live working store** (§3 below). The Node capture
-> gained a `district <ROOT> <DISTRICT_DIR>` mode so a run is batch-scoped. The batch is resolved from the
-> DB working store (not the receipt). Not yet run live on a real batch through the UI (batch_00002 is
-> `todo`×11, ready).
+> **Console view BUILT + RUN LIVE 2026-06-28/29 (REQ-110).** Ungated health/emergent readout + a
+> **per-district Node-Playwright capture run trigger** — `static/stage3.js` + `/api/capture/*` in
+> `process_governance/server.py`, driven by `stage3_capture/headless.py`. Run live on
+> batch_00002–00005. The console reads the **DB cross-stage cache** (the live working store, §3), NOT
+> captures.json; the batch is resolved from the **DB working store**, not the receipt. The Node capture
+> gained a batch-scoped `district <ROOT> <DIR> [CONC] [DEADLINE_S]` mode. **Several hardenings landed from
+> live runs (§7 — read this first for current behavior):** no-link districts skip Playwright;
+> failures/timeouts are surfaced + retriable; per-op timeouts + emergent cap; **node-owns-shutdown** (a
+> timeout writes a PARTIAL manifest, never orphans work); a **manifest-recovery** tool for the
+> already-orphaned districts; shared status labels (`static/outcomes.js`) + left-pane progress fractions.
 >
 > **What this note is:** for the already-built Stages 1–4 the **code is authoritative**; this note is a
-> **narrative of what the code currently does — to inform the console**, not a redesign. §1–§5 describe
-> current behavior (verified against the scripts 2026-06-27); §6 is the historical decision log.
+> **narrative of what the code currently does**, not a redesign. §1–§5 describe the core capture behavior;
+> **§7 is the current console + resilience layer (2026-06-28/29)**; §6 is the historical decision log.
 >
 > **Code (2026-06-28):** `stage3_capture/capture_stage3.py` (reconcile/outcome/`finish_district`) imports
 > `common.district_status` (state events) + `common.cache_ingest` (the Stage-3 cache hook — governance DB,
@@ -222,3 +224,82 @@ before the package promotion._
 - **Raw segments, not classification** (same invariant as fingerprinting): Stage 5 computes signals per representation, **tiers on `main` only** (chrome can't contaminate the verdict), and **screens chrome separately** — a footer start/end pair + `office hours`/`building hours` ⇒ the existing `building_hours_visible` flag; + `school hours`/`dismissal` and not in a board/sports nav ⇒ a candidate school-hours signal.
 - **Graceful degradation + `backfill-segments`** (a no-Stage-4-touch re-visit, exactly like `backfill-fingerprints`) for the already-captured batch_00001; free on future captures. When no landmarks exist (`<div class="footer">` CMSs), `main` = full page, chrome reps empty — never worse than today.
 - **Built + measured** (`config/de_chrome_landmarks.json`, `segmentChrome()` + `backfill-segments`, `build_signals.compute_signals(main_text=…)`): the live backfill on batch_00001 (140/140 html, 123/150 de-chromed) measured **category-guess 0.43→0.60 (+17pts), topology 0.6→0.8** (Marion `hub→per_school`), **tier A unchanged**. Side-effect: footer-negative stripping floated 24 non-targets C→B (A+B precision 0.75→0.53) — the tier-C `neg_dominant` retune is the next Tier-0 follow-up. Two bugs caught by validating on Marion first: `textContent`-on-detached-clone (98KB hidden cruft → live-DOM `innerText`); `goto` missing the capture path's `.catch(()=>null)`. The measurement detail lives in `STAGE5_FILTER_DESIGN_2026-06.md`.
+
+---
+
+## 7. The console + capture-resilience layer — BUILT + RUN LIVE 2026-06-28/29 (REQ-110)
+
+This is the **current** Stage 3 surface and the authoritative description of timeout/failure handling.
+§1–§6 describe the core capture; this section supersedes them where they differ on outcomes/console.
+
+### 7a. Console view (ungated → status/observability + run trigger)
+`static/stage3.js` + `/api/capture/{batch_id}` (status) + `/api/capture/{batch_id}/run` (background job),
+driven by `stage3_capture/headless.py` (`run_batch` reconcile→sequential per-district→events;
+`status_for_batch` reads the DB cross-stage cache). Follows the gate@1/Stage-2 console pattern. The batch
+is resolved from the **DB working store** (`batch_store.to_view`, included-only), never the on-disk receipt.
+Per-district readout: outcome + capture/ok/failed/**emergent** counts + the **err breakdown** + the
+batch-level **CMS/host distribution** (`capture.final_host` + `cms_hint`). Run live on batch_00002–00005.
+
+### 7b. No-link districts skip Playwright (pre-capture)
+A district whose Stage-2 outcome is `manual_flag_all` (empty `candidates.json`) is **dropped before
+dispatch** in `run_batch` (`candidate_count(ddir)==0`) — no Node subprocess, no empty Stage-3 artifact;
+it stays terminal at Stage 2 and surfaces as `manual_flag_all` in status (sourced from the candidate
+count, the SAME label Stage 2 uses). Cheap, and matters at continuous-running scale.
+
+### 7c. Per-district status — four+ states (`status_for_batch`)
+`awaiting_discovery` (no candidates.json) · `manual_flag_all` (discovered, zero links — terminal) ·
+`todo` (links, not captured) · `done` (captured; outcome from cache) · **`failed`/`timed_out`** (a capture
+error/timeout with no captures.json — read from the latest `capture` event in the state log, NOT a
+captures.json artifact; retriable). SELF-HEALING like Stage 2 (ingests a captured district whose rows
+aren't in the cache yet). The rollup adds `manual_flag_all`/`failed`/`resolved` (`resolved = done +
+flagged`; the batch's Stage-3 is **complete** when `resolved == total`).
+
+### 7d. Shared labels + left-pane progress (UI)
+`static/outcomes.js` is the ONE source of truth: `outcomeBadge(key)` (per-district status, used by
+Stage 2/3 and Stage 4 later — rename `manual_flag_all` in one place) + `progressBadge(progress, stage)`
+(left-pane stage-contextual fraction). **Honest counts:** no-link districts are reported SEPARATELY, never
+folded into the captured count — `0/10 captured · 2 no-links` → `✓ captured · 2 no-links`; capture/process
+denominators **exclude** no-links (never capturable), discovery counts the whole batch. The detail header
+shows the SAME badge as the left pane (not the stale gate@1 "approved"), and the active batch's chip is
+**live-synced** to the header during a run (`list_batches` carries per-stage progress counts via a
+`current_state` aggregate; the chip is refreshed from the polled detail so it doesn't freeze). The run
+button gets a CSS sheen (`.run-anim`) while a job is in flight.
+
+### 7e. Capture hardening (per-page bounds + emergent cap)
+`page.pdf()` (no native timeout) and the full-page `screenshot()` are wrapped in a 45s `withTimeout`
+race; the direct fetch is `AbortSignal.timeout(20000)`; `goto` is 30s. Emergent (one-hop) candidates are
+capped at **25/district** so a link-dense page can't explode the task queue. *Finding (2026-06-29):* the
+batch_00004 Brookwood double-timeout was **transient** (run-time slowness / likely rate-limiting from a
+5-concurrent burst on a small district) — every page captures in 1–3s on probing. The site isn't the
+problem; resilience to transient stalls is.
+
+### 7f. Node-owns-shutdown — a timeout writes a PARTIAL manifest, never orphans (the core fix)
+**Root cause we hit:** `captures.json` is written once at end-of-run, so Python's `subprocess.run(timeout=)`
+SIGKILLing Node mid-run discarded the manifest for ALL completed work — the per-URL folders were on disk
+but invisible/unused (Brookwood, Fairfield, **LAS CRUCES 534 files** all read as total failures).
+**Fix:** `runCapture(ROOT, CONC, only, deadlineMs)` — once the deadline passes, workers stop pulling new
+pages, in-flight pages finish (bounded by §7e), un-started candidates are recorded **`not_attempted`**,
+and `captures.json` is **always written**. A timeout is now `captured_partial` with the work preserved.
+Budgets (`headless.py`): Node deadline `CAPTURE_DEADLINE_S=600`; Python subprocess timeout =
+`600 + DRAIN_BUFFER_S(240) = 840` is now a **backstop** that only fires on a true Node hang (and that case
+is recoverable — §7g). Large districts (LAS CRUCES, 128 candidates) capture what fits and report the rest.
+
+### 7g. Manifest recovery (for the already-orphaned districts)
+`capture_stage3.py reconstruct <district_id> [--manual-file PATH --manual-url URL]` rebuilds
+`captures.json` from the on-disk per-URL folders. **Recovery-only:** refuses to overwrite an existing
+manifest; skips empty (in-flight-at-kill) folders; **emergent folders are unrecoverable** (md5 is one-way,
+their URL was in-memory) and are left on disk, out of the manifest. Records are **degraded** (no
+fingerprint/final_url). Every candidate appears (recovered `ok` / `not_recovered`) → `captured_partial`.
+`--manual-*` drops a human-sourced file in as a `source:"manual"` record (used to add Brookwood's parent
+handbook — pp. 32–33 carry the bell schedule — which Stage 3 could never reach on its own). Ran live:
+Brookwood 5/15, Fairfield 8/9, LAS CRUCES 78/128; cache + event log updated. This is the interim
+"manual follow-up" mechanism until a formal one exists.
+
+### 7h. Open / watch-items
+- **Partial-retry.** A recovered/partial district has a `captures.json`, so reconcile treats it as done —
+  its `not_attempted`/`not_recovered` candidates don't auto-retry. A reconcile enhancement (re-dispatch a
+  district that still has unfinished candidates) is the natural follow-up. Not blocking.
+- **Politeness / rate-limiting.** The 5-concurrent burst likely triggered the Brookwood stall; consider a
+  small per-request delay or lower per-district concurrency.
+- **Emergent recovery.** Reconstruction can't recover emergent captures (no URL); a future capture could
+  write an incremental per-task line (JSONL) so even a hard kill preserves emergent URLs.

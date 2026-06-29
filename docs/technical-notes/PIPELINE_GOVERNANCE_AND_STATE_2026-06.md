@@ -717,9 +717,13 @@ Stage-6 handoff freeze is what keeps "what we sent" recoverable across these loo
 ### 11f. Per-stage console notes
 - **Stage 3** — a thin **health / emergent readout**: emergent URLs, capture failures (WAF/security
   blocks), and the **CMS/host distribution** from the `capture` table's `final_host`/`fingerprint_json`
-  (REQ-103c). NOT a live PNG feed (cute, low governance value). **BUILT 2026-06-28 (REQ-110)** — reads the
-  DB cache (incl. the new `capture.err` for the failure breakdown), + a per-district Node-capture run
-  trigger. See `STAGE3_CAPTURE_DESIGN_2026-06.md` §3.
+  (REQ-103c). NOT a live PNG feed (cute, low governance value). **BUILT + RUN LIVE 2026-06-28/29 (REQ-110)**
+  — reads the DB cache (incl. `capture.err` for the failure breakdown + per-district `manual_flag_all` /
+  `failed` / `timed_out` / `captured_partial` states), + a per-district Node-capture run trigger.
+  See `STAGE3_CAPTURE_DESIGN_2026-06.md` §7.
+- **Stage 4** — same shape (ungated status + run trigger); **NOT built yet — forward notes in
+  `STAGE4_PROCESS_DESIGN_2026-06.md` §4a** (the cross-stage cache hook, `progressBadge("stage4")`, and
+  `list_batches.progress.processed` are already in place; copy Stage 3's `stage4.js`/`headless.py`).
 - **Stages 2 & 4 effectiveness** — the **measurement-harness pattern extended upstream**: attribute each
   target-labeled record back to its discovery tool (`candidate_tools_json`) and its winning representation's
   source (`representation.source`). Same fingerprinted-scorecard discipline as Stage 5, applied to discovery
@@ -764,12 +768,26 @@ reframe and the batch_00002-forcing-function plan (the batch-of-record advances 
   end — the second console stage view, following the gate@1 build pattern. (A switcher refactor to add it
   briefly broke the Stage-1 view via a deleted `v1` var — fixed; a reminder that the static JS has no
   lint/`no-undef` gate, unlike the Python side.)
-- **Stage 3 console view BUILT 2026-06-28 (REQ-110)** (`static/stage3.js` + `/api/capture/*` +
+- **Stage 3 console view BUILT + RUN LIVE 2026-06-28/29 (REQ-110)** (`static/stage3.js` + `/api/capture/*` +
   `stage3_capture/headless.py`): the ungated health/emergent readout (read from the DB cross-stage cache)
-  + a per-district Node-Playwright capture run trigger (background job). The load-bearing infra change
-  underneath it: the **cross-stage cache graduated to a live working store** maintained by each stage's
-  finish hook (`common/cache_ingest.py`), so the console reads fresh DB rows for an in-flight batch (§7a-A
-  update). Stage 2's console was repointed to the `discovery_school` cache too (self-healing). The batch is
-  resolved from the DB working store, not the receipt. The Stage 2/3/4 finish hooks now keep the cache live.
-- **Next:** REQ-100 (staleness) / REQ-101 (Stage 6 + gate@6). Per-stage detail: `STAGE1_QUEUE_DESIGN`
-  §6 (gate@1), `STAGE2_DISCOVER_DESIGN` §7 (the SERP cascade), `STAGE3_CAPTURE_DESIGN` §3 (the console).
+  + a per-district Node-Playwright capture run trigger. Load-bearing infra change underneath it: the
+  **cross-stage cache graduated to a live working store** maintained by each stage's finish hook
+  (`common/cache_ingest.py`), so the console reads fresh DB rows for an in-flight batch (§7a-A). Stage 2's
+  console was repointed to the cache too (self-healing). Batch resolved from the DB working store, not the
+  receipt. **Hardened over live runs (batch_00002–00005) — detail in `STAGE3_CAPTURE_DESIGN` §7:** no-link
+  districts skip Playwright; failures/timeouts surface + are retriable; **shared status labels +
+  left-pane progress fractions** (`static/outcomes.js` — one rename point; honest "0/10 captured · 2
+  no-links" counts; chip live-synced to the header during a run; `list_batches` carries per-stage
+  progress); and the capture-resilience principle below.
+- **Resilience principle — a partial run preserves work, never orphans it (REQ-110).** A capture timeout
+  used to SIGKILL Node before it wrote its end-of-run manifest, orphaning all completed per-URL captures.
+  Fix: **node-owns-shutdown** (Node writes a PARTIAL `captures.json` on its own deadline → `captured_partial`;
+  Python's subprocess timeout is a backstop) + a **reconstruct-from-disk** recovery tool for already-orphaned
+  districts (also the interim manual-follow-up path — it can fold in a human-sourced file as a
+  `source:"manual"` record). The general rule for any external-worker stage: **the worker owns its
+  shutdown and always writes a complete manifest; a timeout is a partial outcome, not a failure.**
+- **Stage 4 console is NEXT** — forward build notes in `STAGE4_PROCESS_DESIGN` §4a (the infra — cache hook,
+  `progressBadge("stage4")`, `list_batches.progress.processed` — is already in place; copy `stage3.js`/
+  `headless.py`; Stage 4 is in-process so there's no node-owns-shutdown to design).
+- **Then:** REQ-100 (staleness) / REQ-101 (Stage 6 + gate@6). Per-stage detail: `STAGE1_QUEUE_DESIGN`
+  §6 (gate@1), `STAGE2_DISCOVER_DESIGN` §7 (the SERP cascade), `STAGE3_CAPTURE_DESIGN` §7 (the console + resilience).
