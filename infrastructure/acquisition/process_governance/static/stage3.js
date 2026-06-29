@@ -20,10 +20,8 @@
   }
 
   window.initStage3 = function () {
-    if (inited) return;
-    inited = true;
-    renderShell();
-    loadBatches();
+    if (!inited) { inited = true; renderShell(); }
+    loadBatches();   // re-fetch on every show, so a batch approved later in Stage 1 appears here
   };
 
   function renderShell() {
@@ -51,9 +49,12 @@
     const el = document.createElement("div");
     el.className = "q-batch" + (b.batch_id === CURRENT ? " active" : "");
     el.dataset.id = b.batch_id;
-    const tone = b.status === "approved" ? "badge-success" : "badge-neutral";
-    el.innerHTML = `<div class="q-batch-top"><span class="q-batch-id">${esc(b.batch_id)}</span>
-        <span class="badge ${tone}">${esc(b.status)}</span></div>
+    // Stage-contextual badge: this batch's Stage-3 progress (captured + flagged / total), not the
+    // stale gate@1 "approved". A draft shows as a blocker.
+    const badge = b.status === "approved"
+      ? window.progressBadge(b.progress, "stage3")
+      : `<span class="badge badge-neutral">${esc(b.status)}</span>`;
+    el.innerHTML = `<div class="q-batch-top"><span class="q-batch-id">${esc(b.batch_id)}</span>${badge}</div>
       <div class="q-batch-meta">${esc(b.batch_type)} · ${b.n_districts} district${b.n_districts === 1 ? "" : "s"} · ${esc(b.nces_year)}</div>`;
     el.onclick = () => loadStatus(b.batch_id);
     return el;
@@ -70,45 +71,46 @@
     if (s.job && s.job.state === "running") startPoll(); else stopPoll();
   }
 
-  function outcomeBadge(d) {
-    if (d.status === "awaiting_discovery") return `<span class="badge badge-neutral">awaiting discovery</span>`;
-    if (d.status === "todo") return `<span class="badge badge-neutral">queued</span>`;
-    const tone = d.outcome === "captured_all" ? "badge-success"
-      : d.outcome === "capture_failed_all" ? "badge-red" : "badge-lavender";
-    return `<span class="badge ${tone}">${esc(d.outcome || "?")}</span>`;
-  }
+  // Per-district badge via the shared label map (outcomes.js): `done` shows the capture outcome,
+  // otherwise the lifecycle status (awaiting_discovery / manual_flag_all / todo) — the SAME
+  // manual_flag_all badge Stage 2 uses (replaces the old, misleading "uncached").
+  const outcomeBadge = (d) => window.outcomeBadge(d.status === "done" ? d.outcome : d.status);
 
   function renderDetail(s) {
     const r = s.rollup;
     const running = s.job && s.job.state === "running";
-    const canRun = r.todo > 0 && !running;
+    const retriable = (r.todo || 0) + (r.failed || 0);   // failed districts re-dispatch on the next run
+    const canRun = retriable > 0 && !running;
 
     let actionHtml;
-    if (r.todo === 0 && r.awaiting_discovery > 0 && !running)
+    if (retriable === 0 && r.awaiting_discovery > 0 && !running)
       actionHtml = `<span class="s2-note">${r.awaiting_discovery} district${r.awaiting_discovery === 1 ? "" : "s"} await Stage&nbsp;2 discovery before capture.</span>`;
-    else if (r.todo === 0 && !running) actionHtml = `<span class="s2-note">All discovered districts captured.</span>`;
-    else actionHtml = `<button id="s3-run" class="btn btn-primary"${canRun ? "" : " disabled"}>${running ? "Capture running…" : "Run capture ▶"}</button>`;
+    else if (retriable === 0 && !running) actionHtml = `<span class="s2-note">All capturable districts captured.</span>`;
+    else actionHtml = `<button id="s3-run" class="btn btn-primary"${canRun ? "" : " disabled"}>${running ? "Capture running…" : (r.failed ? "Run / retry capture ▶" : "Run capture ▶")}</button>`;
 
+    const flagNote = r.manual_flag_all ? ` · ${r.manual_flag_all} manual_flag_all (no links)` : "";
+    const failNote = r.failed ? ` · <span class="s3-fail">${r.failed} failed (capture error — retriable)</span>` : "";
     let html = `<div class="q-detail-head">
         <div><h2>${esc(s.batch_id)} <span class="badge ${s.batch_status === "approved" ? "badge-success" : "badge-neutral"}">${esc(s.batch_status || "—")}</span></h2>
-          <div class="q-sub">Stage&nbsp;3 · Capture (ungated) · <b>${r.done}/${r.total}</b> districts captured
-            ${r.done ? ` · ${r.captured_all} all · ${r.captured_partial} partial · ${r.capture_failed_all} failed · ${r.n_captures} captures · ${r.n_failed} failed · ${r.n_emergent} emergent` : ""}</div></div>
+          <div class="q-sub">Stage&nbsp;3 · Capture (ungated) · <b>${r.resolved}/${r.total}</b> resolved (${r.done} captured${flagNote})${failNote}
+            ${r.done ? ` · ${r.captured_all} all · ${r.captured_partial} partial · ${r.capture_failed_all} all-URLs-failed · ${r.n_captures} captures · ${r.n_failed} failed URLs · ${r.n_emergent} emergent` : ""}</div></div>
         <div class="q-actions">${actionHtml}</div></div>`;
 
     if (s.job) html += jobFeed(s.job);
 
     html += `<table class="s2-table"><thead><tr>
         <th>District</th><th>Status</th><th>Captures</th><th>OK</th><th>Failed</th><th>Emergent</th><th>Errors</th></tr></thead><tbody>`;
+    const isFail = (st) => st === "failed" || st === "timed_out";
     html += s.districts.map((d) => {
-      const errStr = d.errs && Object.keys(d.errs).length
-        ? Object.entries(d.errs).map(([k, v]) => `${v}&nbsp;${esc(k)}`).join(", ") : "—";
+      const errStr = isFail(d.status) && d.error
+        ? `<span title="${esc(d.error)}">${esc(d.error.slice(0, 80))}…</span>`
+        : (d.errs && Object.keys(d.errs).length
+            ? Object.entries(d.errs).map(([k, v]) => `${v}&nbsp;${esc(k)}`).join(", ") : "—");
       const cells = d.status === "done"
         ? `<td>${d.n_captures}</td><td>${d.n_ok}</td><td>${d.n_failed}</td><td>${d.n_emergent}</td><td class="s3-errs">${errStr}</td>`
-        : `<td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>`;
-      const stale = d.status === "done" && d.cached === false
-        ? ` <span class="badge badge-neutral" title="captures.json on disk but not yet in the DB cache — re-run capture or a Stage-5 ingest">uncached</span>` : "";
+        : `<td>—</td><td>—</td><td>—</td><td>—</td><td class="s3-errs">${isFail(d.status) ? errStr : "—"}</td>`;
       return `<tr><td class="s2-dname">${esc(d.name)} <span class="q-smeta">${esc(d.state)}${d.domain ? " · " + esc(d.domain) : ""}</span></td>
-        <td>${outcomeBadge(d)}${stale}</td>${cells}</tr>`;
+        <td>${outcomeBadge(d)}</td>${cells}</tr>`;
     }).join("");
     html += `</tbody></table>`;
 

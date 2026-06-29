@@ -20,10 +20,8 @@
 
   // lazy-init from the shared switcher (gate1.js) on first show; guard re-entry
   window.initStage2 = function () {
-    if (inited) return;
-    inited = true;
-    renderShell();
-    loadBatches();
+    if (!inited) { inited = true; renderShell(); }
+    loadBatches();   // re-fetch on every show, so a batch approved later in Stage 1 appears here
   };
 
   function renderShell() {
@@ -51,9 +49,12 @@
     const el = document.createElement("div");
     el.className = "q-batch" + (b.batch_id === CURRENT ? " active" : "");
     el.dataset.id = b.batch_id;
-    const tone = b.status === "approved" ? "badge-success" : "badge-neutral";
-    el.innerHTML = `<div class="q-batch-top"><span class="q-batch-id">${esc(b.batch_id)}</span>
-        <span class="badge ${tone}">${esc(b.status)}</span></div>
+    // Stage-contextual badge: a draft can't be discovered (show it as a blocker); else this batch's
+    // Stage-2 progress fraction — not the stale gate@1 "approved".
+    const badge = b.status === "approved"
+      ? window.progressBadge(b.progress, "stage2")
+      : `<span class="badge badge-neutral">${esc(b.status)}</span>`;
+    el.innerHTML = `<div class="q-batch-top"><span class="q-batch-id">${esc(b.batch_id)}</span>${badge}</div>
       <div class="q-batch-meta">${esc(b.batch_type)} · ${b.n_districts} district${b.n_districts === 1 ? "" : "s"} · ${esc(b.nces_year)}</div>`;
     el.onclick = () => loadStatus(b.batch_id);
     return el;
@@ -71,13 +72,9 @@
     if (s.job && s.job.state === "running") startPoll(); else stopPoll();
   }
 
-  function outcomeBadge(d) {
-    if (d.status === "todo") return `<span class="badge badge-neutral">queued</span>`;
-    if (d.status === "error") return `<span class="badge badge-red">error</span>`;
-    const tone = d.outcome === "found_all" ? "badge-success"
-      : d.outcome === "manual_flag_all" ? "badge-red" : "badge-lavender";
-    return `<span class="badge ${tone}">${esc(d.outcome || "?")}</span>`;
-  }
+  // Per-district badge via the shared label map (outcomes.js) — `done` shows the discovery outcome,
+  // otherwise the lifecycle status. One source of truth across stages.
+  const outcomeBadge = (d) => window.outcomeBadge(d.status === "done" ? d.outcome : d.status);
 
   function renderDetail(s) {
     const r = s.rollup;

@@ -30,7 +30,10 @@ from infrastructure.acquisition.stage3_capture import capture_stage3 as C3
 
 RAW_DIR = paths.RAW_CAPTURES
 CAPTURE_MJS = paths.REPO_ROOT / "infrastructure" / "scraper" / "capture_discovery.mjs"
-CAPTURE_TIMEOUT_S = 1800   # per-district Node capture budget (a large district's pages + emergent hops)
+CAPTURE_TIMEOUT_S = 600    # per-district Node capture budget (backstop). With the Node per-op timeouts
+                           # (screenshot/pdf, 45s) + the emergent cap (25/district), a healthy district
+                           # finishes well under this; a district that can't is a real problem to surface,
+                           # not wait 30 min on (Brookwood SD 167 hit the old 1800s budget — REQ-110).
 CONCURRENCY = 5            # within-district page concurrency passed to the Node script
 
 
@@ -52,6 +55,18 @@ def find_batch_districts(batch: dict) -> list:
     return [d for d in C3.find_districts(RAW_DIR) if d["district_id"] in ids]
 
 
+def candidate_count(ddir: Path) -> int:
+    """Number of capture-plan URLs in a district's candidates.json (0 if empty/absent/unreadable).
+    Zero == Stage 2 found no links (district_outcome `manual_flag_all`) == nothing for Playwright to
+    capture. The authoritative pre-capture signal: a no-link district is terminal at Stage 2 and is
+    never dispatched (we know it has no links before sending it into the process)."""
+    cf = ddir / "candidates.json"
+    try:
+        return len(json.loads(cf.read_text()).get("candidates", []))
+    except (json.JSONDecodeError, OSError, AttributeError, TypeError):
+        return 0
+
+
 def _capture_one(district: dict, *, _run=subprocess.run) -> None:
     """Run the Node Playwright capture for ONE district dir (a fresh subprocess). Raises on a non-zero
     exit or a missing captures.json, so run_batch records the district `failed` rather than silently
@@ -67,36 +82,70 @@ def _capture_one(district: dict, *, _run=subprocess.run) -> None:
 # ----------------------------------------------------------------- status / observability (reads the DB)
 def status_for_batch(batch: dict) -> dict:
     """Read-only Stage-3 observability for a batch, FROM THE DB cross-stage cache (the working store the
-    Stage-3 finish hook keeps fresh). Per district: lifecycle status (awaiting_discovery / todo / done),
-    capture outcome + counts (ok / failed / emergent), and the failure-reason breakdown. Batch-level:
-    a rollup + the CMS/host distribution (governance §11f). Disk is consulted ONLY to tell
-    awaiting_discovery (no candidates.json) from todo (candidates.json, no captures.json) from done."""
-    ondisk = {d["district_id"]: d for d in C3.find_districts(RAW_DIR)}   # id -> {dir, name, ...}
+    Stage-3 finish hook keeps fresh). Per district, one of four states:
+      - `awaiting_discovery` — no discovery yet (no candidates.json on disk)
+      - `manual_flag_all`    — discovered but ZERO links (terminal at Stage 2; never captured) — the
+                               SAME label Stage 2 uses, sourced from the candidate count, NOT a Stage-3
+                               artifact (so it's correct even for the empty-capture districts the old
+                               pre-skip runs left behind)
+      - `todo`               — has links, not captured yet
+      - `done`               — captured; outcome + counts (ok/failed/emergent) + the err breakdown
+    Batch-level: a rollup + the CMS/host distribution (governance §11f). SELF-HEALING like Stage 2: a
+    captured district whose rows aren't in the cache yet (pre-hook / DB-down run) is ingested on view."""
     ids = [d["district_id"] for d in batch["districts"]]
-    rows_by_did: dict = {}
+    ondisk = {d["district_id"]: d for d in C3.find_districts(RAW_DIR)}   # id -> {dir, name, ...}
+    cand_n = {did: candidate_count(dk["dir"]) for did, dk in ondisk.items()}
+    captured_on_disk = {did for did, dk in ondisk.items() if (dk["dir"] / "captures.json").exists()}
+    # `done` = discovered, HAD links, and captured. (No-link districts never capture -> manual_flag_all.)
+    done_ids = [d["district_id"] for d in batch["districts"]
+                if d["district_id"] in captured_on_disk and cand_n.get(d["district_id"], 0) > 0]
+
+    # Capture FAILURES (timeout / Node crash) leave NO captures.json and write a `failed` capture event
+    # with no stage number -- so without this they read as `todo`, indistinguishable from "not attempted"
+    # (the Brookwood bug: the failure showed only in the run log). Surface the latest capture event per
+    # district; if it's `failed` and there's no captures.json, the district is `failed`, not `todo`.
+    failed_caps: dict = {}
     with gdb.session_scope() as con:
         CI.ensure_cache_schema(con)
         for r in con.execute(text(
+                """SELECT DISTINCT ON (district_id) district_id, event_type, note
+                   FROM state_event WHERE stage_name = 'capture' AND district_id = ANY(:ids)
+                   ORDER BY district_id, event_id DESC"""), {"ids": ids or [""]}).mappings():
+            if r["event_type"] == "failed":
+                failed_caps[r["district_id"]] = r["note"]
+        cached_ids = {r[0] for r in con.execute(text(
+            "SELECT DISTINCT district_id FROM capture WHERE district_id = ANY(:ids)"),
+            {"ids": done_ids or [""]})}
+    for did in done_ids:                     # self-heal: ingest captures the cache is missing
+        if did not in cached_ids:
+            CI.cache_capture(ondisk[did]["dir"], did)
+
+    rows_by_did: dict = {}
+    with gdb.session_scope() as con:
+        for r in con.execute(text(
                 """SELECT district_id, ok, source, err, final_host, fingerprint_json
-                   FROM capture WHERE district_id = ANY(:ids)"""), {"ids": ids}).mappings():
+                   FROM capture WHERE district_id = ANY(:ids)"""), {"ids": done_ids or [""]}).mappings():
             rows_by_did.setdefault(r["district_id"], []).append(dict(r))
 
     districts, hosts, cmss = [], Counter(), Counter()
     for d in batch["districts"]:
         did = d["district_id"]
         row = {"district_id": did, "name": d["name"], "state": d.get("state", ""),
-               "domain": d.get("domain", "")}
-        disk = ondisk.get(did)
-        captured = bool(disk) and (disk["dir"] / "captures.json").exists()
-        if not disk:
-            row.update(status="awaiting_discovery", outcome=None, n_captures=0, n_ok=0,
-                       n_failed=0, n_emergent=0, errs={}, cached=True)
-            districts.append(row)
+               "domain": d.get("domain", ""), "outcome": None, "n_captures": 0, "n_ok": 0,
+               "n_failed": 0, "n_emergent": 0, "errs": {}}
+        if did not in ondisk:
+            districts.append({**row, "status": "awaiting_discovery"})
             continue
-        if not captured:
-            row.update(status="todo", outcome=None, n_captures=0, n_ok=0, n_failed=0,
-                       n_emergent=0, errs={}, cached=True)
-            districts.append(row)
+        if cand_n.get(did, 0) == 0:          # discovered, no links -> terminal manual_flag_all
+            districts.append({**row, "status": "manual_flag_all", "outcome": "manual_flag_all"})
+            continue
+        if did not in captured_on_disk:
+            if did in failed_caps:           # capture errored/timed out -> failed (retriable), not todo
+                note = failed_caps[did] or ""
+                st = "timed_out" if note.startswith("TimeoutExpired") else "failed"
+                districts.append({**row, "status": st, "outcome": st, "error": note[:300]})
+            else:
+                districts.append({**row, "status": "todo"})
             continue
         caps = rows_by_did.get(did, [])
         n_ok = sum(1 for c in caps if c["ok"])
@@ -111,25 +160,36 @@ def status_for_batch(batch: dict) -> dict:
                     hint = None
                 if hint:
                     cmss[hint] += 1
-        outcome = (None if not caps else
-                   "captured_all" if n_failed == 0 else
+        outcome = ("captured_all" if n_failed == 0 else
                    "capture_failed_all" if n_ok == 0 else "captured_partial")
-        row.update(status="done", outcome=outcome, n_captures=len(caps), n_ok=n_ok,
-                   n_failed=n_failed, n_emergent=sum(1 for c in caps if c["source"] == "emergent"),
-                   errs=dict(errs), cached=bool(caps))   # captured-but-uncached -> cached=False (DB stale)
-        districts.append(row)
+        districts.append({**row, "status": "done", "outcome": outcome, "n_captures": len(caps),
+                          "n_ok": n_ok, "n_failed": n_failed,
+                          "n_emergent": sum(1 for c in caps if c["source"] == "emergent"),
+                          "errs": dict(errs)})
 
     return {"districts": districts, "rollup": _rollup(districts),
             "hosts": hosts.most_common(), "cms": cmss.most_common()}
 
 
+# District-level capture failures (retriable, NOT resolved): a generic error or a timeout. Both count
+# as `failed` in the rollup; the per-district status distinguishes `timed_out` for the UI.
+FAILED_STATUSES = ("failed", "timed_out")
+
+
 def _rollup(districts: list) -> dict:
     done = [d for d in districts if d["status"] == "done"]
+    flagged = sum(1 for d in districts if d["status"] == "manual_flag_all")
+    total = len(districts)
     return {
-        "total": len(districts),
+        "total": total,
         "done": len(done),
+        "manual_flag_all": flagged,
         "todo": sum(1 for d in districts if d["status"] == "todo"),
+        # district-level capture failures (timeout / crash) — retriable; NOT counted as resolved
+        "failed": sum(1 for d in districts if d["status"] in FAILED_STATUSES),
         "awaiting_discovery": sum(1 for d in districts if d["status"] == "awaiting_discovery"),
+        # resolved = captured OR terminally flagged; the batch's Stage-3 is complete when resolved==total
+        "resolved": len(done) + flagged,
         "captured_all": sum(1 for d in done if d["outcome"] == "captured_all"),
         "captured_partial": sum(1 for d in done if d["outcome"] == "captured_partial"),
         "capture_failed_all": sum(1 for d in done if d["outcome"] == "capture_failed_all"),
@@ -160,10 +220,19 @@ def run_batch(batch: dict, *, actor: str = "auto:stage3", on_event=None, _run=su
     registry = DS.load()
     todo, skipped = C3.reconcile(districts, registry)
     DS.save(registry)
+    # Drop no-link districts (Stage 2 manual_flag_all -> empty candidates.json) BEFORE dispatch: they
+    # have nothing for Playwright, are terminal at Stage 2, and get no Stage-3 artifact/event (they
+    # surface as `manual_flag_all` in status, sourced from the discovery state). Cheap pre-capture skip
+    # that matters at continuous-running scale.
+    no_link = [d for d in todo if candidate_count(d["dir"]) == 0]
+    todo = [d for d in todo if candidate_count(d["dir"]) > 0]
+    for d in no_link:
+        emit("skipped_no_links", district_id=d["district_id"], name=d["name"])
     emit("reconciled", todo=[d["district_id"] for d in todo],
-         skipped=[d["district_id"] for d in skipped])
+         skipped=[d["district_id"] for d in skipped], no_links=[d["district_id"] for d in no_link])
     if not todo:
-        return {"batch_id": batch_id, "todo": 0, "skipped": len(skipped), "results": []}
+        return {"batch_id": batch_id, "todo": 0, "skipped": len(skipped),
+                "no_links": len(no_link), "results": []}
 
     registry = DS.load()
     for d in todo:
@@ -193,7 +262,8 @@ def run_batch(batch: dict, *, actor: str = "auto:stage3", on_event=None, _run=su
             results.append({"district_id": did, "name": d["name"], "outcome": "error",
                             "error": f"{type(e).__name__}: {str(e)[:200]}"})
             emit("failed", district_id=did, name=d["name"], error=str(e)[:200])
-    return {"batch_id": batch_id, "todo": len(todo), "skipped": len(skipped), "results": results}
+    return {"batch_id": batch_id, "todo": len(todo), "skipped": len(skipped),
+            "no_links": len(no_link), "results": results}
 
 
 def main():

@@ -61,6 +61,16 @@ const TIME = /\b\d{1,2}:\d{2}\s*(?:[AaPp]\.?[Mm]\.?)?/g;
 // reused here, not duplicated, so "what counts as a schedule link" stays one source of truth.
 const SCHED_KW = ['bell', 'schedule', 'hours', 'start-time', 'start_time', 'daily-schedule', 'times', 'school-day', 'schoolday'];
 
+// Bound operations that lack an effective native timeout: page.pdf() has NONE, and a full-page
+// screenshot can crawl on infinite-scroll pages. One hung page must not consume the whole per-district
+// budget (Brookwood SD 167 burned 1800s this way). The lingering op is aborted by the page.close() in
+// the per-task finally. The per-district budget (stage3 headless CAPTURE_TIMEOUT_S) is the backstop.
+const OP_TIMEOUT_MS = 45000;
+const withTimeout = (p, ms, label) =>
+  Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(`${label} timed out after ${ms}ms`)), ms))]);
+// Cap emergent (one-hop) candidates per district so a link-dense page can't explode the task queue.
+const EMERGENT_CAP = 25;
+
 // CMS_HOSTS is the shared config-as-data knob `cms_hosts` -- the SAME JSON file discover.py reads,
 // so the two can no longer drift (REQ-089, ending the prior hand-synced duplication). Domain
 // SUFFIXES signalling a known K-12 CMS / content host, matched via endsWith. Governance +
@@ -340,7 +350,7 @@ async function runCapture(ROOT, CONC, only = null) {
     const meta = JSON.parse(readFileSync(path.join(ROOT, did, 'candidates.json')));
     const capDir = path.join(ROOT, did, 'captures');
     mkdirSync(capDir, { recursive: true });
-    byDistrict[did] = { capDir, records: [], seen: new Set() };
+    byDistrict[did] = { capDir, records: [], seen: new Set(), emergent: 0 };
     for (const c of meta.candidates) {
       const u = stripFragment(c.url);
       byDistrict[did].seen.add(u);
@@ -433,17 +443,22 @@ async function runCapture(ROOT, CONC, only = null) {
             try { text += `\n${(await fr.evaluate(() => (document.body ? document.body.innerText : ''))) || ''}`; } catch { /* cross-origin frame */ }
           }
           writeFileSync(path.join(recDir, 'page.txt'), text);
-          await page.screenshot({ path: path.join(recDir, 'page.png'), fullPage: true }).catch(() => {});
+          await withTimeout(
+            page.screenshot({ path: path.join(recDir, 'page.png'), fullPage: true }),
+            OP_TIMEOUT_MS, 'screenshot',
+          ).catch(() => {});
           // Unconditional -- no multi-column-detection trigger. Local compute is free; the
           // decision of which representation to actually use moves downstream to Stage 4/7.
-          await page
-            .pdf({
+          await withTimeout(
+            page.pdf({
               path: path.join(recDir, 'page.pdf'),
               format: 'Letter',
               scale: 0.9,
               margin: { top: '0.5in', bottom: '0.5in', left: '0.5in', right: '0.5in' },
               printBackground: true,
-            })
+            }),
+            OP_TIMEOUT_MS, 'pdf',
+          )
             .then(() => { rec.files.pdf = 'page.pdf'; })
             .catch((e) => { rec.pdf_err = String(e).slice(0, 80); });
 
@@ -474,8 +489,10 @@ async function runCapture(ROOT, CONC, only = null) {
               .evaluate(() => Array.from(document.querySelectorAll('a[href]')).map((a) => ({ text: a.innerText || '', href: a.href })))
               .catch(() => []);
             for (const eu of findEmergentLinks(anchors)) {
+              if (byDistrict[did].emergent >= EMERGENT_CAP) break;
               if (byDistrict[did].seen.has(eu)) continue;
               byDistrict[did].seen.add(eu);
+              byDistrict[did].emergent += 1;
               tasks.push({ did, url: eu, tools: [], source: 'emergent', found_on: rec.final_url, capDir });
             }
           }

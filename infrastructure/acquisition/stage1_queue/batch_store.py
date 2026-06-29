@@ -8,7 +8,7 @@ is ever destroyed — the full proposed batch stays auditable.
 """
 import json
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import paths
@@ -145,15 +145,44 @@ def to_view(sess, batch_id: str) -> dict:
     }
 
 
+def _batch_progress(sess) -> dict:
+    """Per-batch district-progress counts for the stage-contextual left-pane fraction. Derived purely
+    from `current_state` (the always-populated state-event projection), NOT the regenerable cache, so it
+    can't be skewed by an un-ingested cache: `discovered/captured/processed` = districts whose
+    furthest_stage reached 2/3/4; `flagged` = districts whose latest stage outcome is `manual_flag_all`
+    (no links — terminal at Stage 2, never captured). Best-effort → {} if the view isn't present yet."""
+    try:
+        rows = sess.execute(text("""
+            SELECT bd.batch_id,
+                   COUNT(*) AS total,
+                   COUNT(*) FILTER (WHERE cs.furthest_stage >= 2) AS discovered,
+                   COUNT(*) FILTER (WHERE cs.furthest_stage >= 3) AS captured,
+                   COUNT(*) FILTER (WHERE cs.furthest_stage >= 4) AS processed,
+                   COUNT(*) FILTER (WHERE cs.outcome = 'manual_flag_all') AS flagged
+            FROM batch_district bd
+            LEFT JOIN current_state cs ON cs.district_id = bd.district_id
+            WHERE bd.included IS TRUE
+            GROUP BY bd.batch_id""")).mappings()
+        return {r["batch_id"]: {"total": r["total"], "discovered": r["discovered"],
+                                "captured": r["captured"], "processed": r["processed"],
+                                "flagged": r["flagged"]} for r in rows}
+    except Exception:
+        return {}
+
+
 def list_batches(sess) -> list:
-    """Batch lifecycle rows for the queue list (n_districts = currently-included count)."""
+    """Batch lifecycle rows for the queue list (n_districts = currently-included count). Each row also
+    carries per-stage PROGRESS counts (`progress`) so each stage view's left pane can show a
+    stage-contextual fraction (e.g. captured+flagged / total) instead of the stale gate@1 status."""
+    progress = _batch_progress(sess)
     out = []
     for b in sess.scalars(select(Batch).order_by(Batch.batch_id)):
         n = len(list(sess.scalars(select(BatchDistrict.district_id).where(
             BatchDistrict.batch_id == b.batch_id, BatchDistrict.included.is_(True)))))
         out.append({"batch_id": b.batch_id, "batch_type": b.batch_type, "status": b.status,
                     "nces_year": b.nces_year, "n_districts": n, "created_at": b.created_at,
-                    "created_by": b.created_by, "approved_at": b.approved_at, "approved_by": b.approved_by})
+                    "created_by": b.created_by, "approved_at": b.approved_at, "approved_by": b.approved_by,
+                    "progress": progress.get(b.batch_id)})
     return out
 
 

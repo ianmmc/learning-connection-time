@@ -109,9 +109,36 @@ def test_rollup_counts():
     districts = [
         {"status": "done", "outcome": "captured_all", "n_captures": 5, "n_failed": 0, "n_emergent": 1},
         {"status": "done", "outcome": "captured_partial", "n_captures": 3, "n_failed": 1, "n_emergent": 0},
+        {"status": "manual_flag_all", "outcome": "manual_flag_all", "n_captures": 0, "n_failed": 0, "n_emergent": 0},
+        {"status": "failed", "outcome": "failed", "n_captures": 0, "n_failed": 0, "n_emergent": 0},
+        {"status": "timed_out", "outcome": "timed_out", "n_captures": 0, "n_failed": 0, "n_emergent": 0},
         {"status": "todo", "outcome": None, "n_captures": 0, "n_failed": 0, "n_emergent": 0},
         {"status": "awaiting_discovery", "outcome": None, "n_captures": 0, "n_failed": 0, "n_emergent": 0},
     ]
     r = H3._rollup(districts)
-    assert r == {"total": 4, "done": 2, "todo": 1, "awaiting_discovery": 1, "captured_all": 1,
-                 "captured_partial": 1, "capture_failed_all": 0, "n_captures": 8, "n_failed": 1, "n_emergent": 1}
+    # resolved = captured (2) + flagged (1); failed + timed_out are retriable, NOT resolved/todo
+    assert r == {"total": 7, "done": 2, "manual_flag_all": 1, "todo": 1, "failed": 2,
+                 "awaiting_discovery": 1, "resolved": 3, "captured_all": 1, "captured_partial": 1,
+                 "capture_failed_all": 0, "n_captures": 8, "n_failed": 1, "n_emergent": 1}
+
+
+def test_no_link_districts_are_skipped_before_playwright(tmp_path, monkeypatch, inmem_registry):
+    """A district whose candidates.json is empty (Stage 2 manual_flag_all) must NOT be dispatched to
+    the Node capture — we know it has no links before sending it in. It gets no Stage-3 artifact/event."""
+    monkeypatch.setattr(C3, "RAW_DIR", tmp_path)
+    monkeypatch.setattr(H3, "RAW_DIR", tmp_path)
+    _seed_district(tmp_path, "111", "D111")
+    d2 = _seed_district(tmp_path, "222", "D222")
+    (d2 / "candidates.json").write_text(json.dumps({"candidates": []}))   # no-link district
+    ran = []
+
+    def run(cmd, **kw):
+        ran.append(cmd[4])   # the district dir the Node capture was invoked on
+        from pathlib import Path
+        Path(cmd[3], cmd[4], "captures.json").write_text(json.dumps([{"hash": "a", "ok": True}]))
+        return types.SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    summary = H3.run_batch(_batch("111", "222"), _run=run)
+    assert summary["todo"] == 1 and summary["no_links"] == 1
+    assert ran == ["111_d111"]                        # only the with-links district hit Playwright
+    assert not (d2 / "captures.json").exists()         # no Stage-3 artifact for the no-link district
