@@ -65,6 +65,22 @@ sudo apt-get install -y poppler-utils tesseract-ocr ghostscript nodejs
 for b in pdftotext pdftoppm tesseract gs node; do command -v "$b" || echo "MISSING: $b"; done
 ```
 
+### 1b. Git hooks (one-time)
+
+The repo ships a **tracked** pre-commit hook in `.githooks/`. Git can't auto-enable a hook on clone
+(by design — security), so point git at it once:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+What it does: (1) sweeps the **precious-state JSON backups** — `data/acquisition/stage5_review/labels.json`
+(the `label` table) and `data/acquisition/status/district_status.json` (the `state_event` log) — into
+every commit so they never drift behind the governance DB (both are written automatically on save/ingest;
+this guarantees they reach version control, managed **symmetrically**); (2) verifies any enrichment counts
+in staged docs against the DB (Rule #6 — no hallucinated counts). Editing `.githooks/pre-commit` is the
+single source of truth; a stale local `.git/hooks/pre-commit` is ignored once `core.hooksPath` is set.
+
 ### 2. Database Connection
 
 The project uses PostgreSQL running in Docker. Start the database container **before any database operation**:
