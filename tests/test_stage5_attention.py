@@ -92,6 +92,8 @@ def _temp_schema(s):
         signals_json text, duplicate_of text, is_cluster_rep integer, cluster_id text,
         attention_score double precision, attention_reasons_json text)"""))
     s.execute(text("CREATE TEMP TABLE label (rec_key text PRIMARY KEY, status text DEFAULT 'unlabeled')"))
+    s.execute(text("""CREATE TEMP TABLE followup_flag (id serial PRIMARY KEY, scope text, target_id text,
+        district_id text, directive text, actor text, created_at text, resolved_at text)"""))
 
 
 def _add_record(s, did, rk, tier, sig, status="unlabeled"):
@@ -127,3 +129,19 @@ def test_recompute_attention_all_labeled_is_complete(gov_session):
     BS.recompute_attention(gov_session, "d2")
     drow = gov_session.execute(text("SELECT attention_score, pipeline_state, n_unlabeled FROM district WHERE district_id='d2'")).first()
     assert drow[0] == 0 and drow[1] == "complete" and drow[2] == 0
+
+
+def test_recompute_attention_honors_unresolved_followup_flag(gov_session):
+    """An unresolved record flag floors that record (and so the district) at the manual-flag weight —
+    even though its signals are a clean tier-A that would otherwise score low."""
+    _temp_schema(gov_session)
+    gov_session.execute(text("INSERT INTO district (district_id) VALUES ('d3')"))
+    _add_record(gov_session, "d3", "d3:a", "A", CLEAN, "unlabeled")   # would be clean_target (10)
+    gov_session.execute(text("INSERT INTO followup_flag (scope, target_id, district_id, resolved_at) "
+                             "VALUES ('record','d3:a','d3', NULL)"))
+    from infrastructure.acquisition.stage5_filter import build_signals as BS
+    BS.recompute_attention(gov_session, "d3")
+    rec = gov_session.execute(text("SELECT attention_score, attention_reasons_json FROM record WHERE rec_key='d3:a'")).first()
+    assert rec[0] == 100 and "manual_flag" in json.loads(rec[1])
+    nf = gov_session.execute(text("SELECT n_flagged FROM district WHERE district_id='d3'")).scalar()
+    assert nf == 1

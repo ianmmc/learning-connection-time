@@ -302,6 +302,13 @@ def recompute_attention(s, district_id: str, cfg: dict = None) -> dict:
     gets its own score (for record-level filtering). `s` is a governance Session/Connection. Returns the
     district {score, reasons}."""
     cfg = cfg or AT.load_config()
+    # Unresolved follow-up flags (the top attention tier): per-record + a district-level directive.
+    flagged = {r[0] for r in s.execute(text(
+        "SELECT target_id FROM followup_flag WHERE district_id=:did AND scope='record' AND resolved_at IS NULL"),
+        {"did": district_id})}
+    district_flagged = (s.execute(text(
+        "SELECT COUNT(*) FROM followup_flag WHERE district_id=:did AND scope='district' AND resolved_at IS NULL"),
+        {"did": district_id}).scalar() or 0) > 0
     rows = s.execute(text(
         """SELECT r.rec_key, r.tier, r.signals_json, r.duplicate_of, r.is_cluster_rep, r.cluster_id,
                   COALESCE(l.status, 'unlabeled') AS status
@@ -313,7 +320,7 @@ def recompute_attention(s, district_id: str, cfg: dict = None) -> dict:
             sig = json.loads(r["signals_json"]) if r["signals_json"] else {}
         except (json.JSONDecodeError, TypeError):
             sig = {}
-        att = AT.record_attention(sig, r["tier"], r["status"], cfg)   # has_flag wired in Phase 2
+        att = AT.record_attention(sig, r["tier"], r["status"], cfg, has_flag=r["rec_key"] in flagged)
         s.execute(text("UPDATE record SET attention_score=:sc, attention_reasons_json=:rj WHERE rec_key=:rk"),
                   {"sc": att["score"], "rj": json.dumps(att["reasons"]), "rk": r["rec_key"]})
         if r["duplicate_of"] is None and (r["is_cluster_rep"] == 1 or r["cluster_id"] is None):
@@ -322,12 +329,12 @@ def recompute_attention(s, district_id: str, cfg: dict = None) -> dict:
                 n_unlabeled += 1
     n_labeled = len(canon_atts) - n_unlabeled
     pipeline_state = "untouched" if n_labeled == 0 else "complete" if n_unlabeled == 0 else "partial"
-    dist = AT.district_attention(canon_atts, cfg)                      # has_district_flag wired in Phase 2
+    dist = AT.district_attention(canon_atts, cfg, has_district_flag=district_flagged)
     s.execute(text(
         """UPDATE district SET attention_score=:sc, attention_reasons_json=:rj, pipeline_state=:ps,
               n_unlabeled=:nu, n_flagged=:nf WHERE district_id=:did"""),
         {"sc": dist["score"], "rj": json.dumps(dist["reasons"]), "ps": pipeline_state,
-         "nu": n_unlabeled, "nf": 0, "did": district_id})
+         "nu": n_unlabeled, "nf": len(flagged) + (1 if district_flagged else 0), "did": district_id})
     return dist
 
 
