@@ -141,6 +141,7 @@ async def save_label(rec_key: str, payload: dict):
                 con.execute(UPSERT_LABEL, {"rec_key": m, **vals})
                 cascaded += 1
         BS.recompute_labeled_topology(con, rec["district_id"])
+        BS.recompute_attention(con, rec["district_id"])   # label/split changed canonical/resolved state -> refresh attention
         con.commit()   # persist before exporting, so the JSON backup only reflects committed state
         # Export-on-save: the precious label is backed up to the tracked JSON before we return,
         # so it survives DB loss with zero action from the user (no reliance on remembering).
@@ -180,6 +181,7 @@ async def split_record(rec_key: str):
                     con.execute(text("UPDATE record SET is_cluster_rep=:rep, cluster_size=:sz WHERE rec_key=:rk"),
                                 {"rep": 1 if i == 0 else 0, "sz": len(rest), "rk": rk})
         BS.recompute_labeled_topology(con, rec["district_id"])
+        BS.recompute_attention(con, rec["district_id"])   # label/split changed canonical/resolved state -> refresh attention
         con.commit()   # persist before exporting, so the JSON backup only reflects committed state
         BS.export_splits(con, CLUSTER_SPLITS_JSON)
         _refresh_filtered(con, rec["district_id"])   # split changes the canonical set -> refresh filtered.json

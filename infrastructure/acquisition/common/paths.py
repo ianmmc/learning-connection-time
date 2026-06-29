@@ -31,7 +31,8 @@ STATUS_DIR = ACQUISITION / "status"
 STATUS_FILE = STATUS_DIR / "district_status.json"       # cross-stage registry
 
 STAGE5_DIR = ACQUISITION / "stage5_review"
-REVIEW_DB = STAGE5_DIR / "review.db"                     # regenerable SQLite cache
+# (The retired SQLite review.db cache lived here pre-REQ-103; the working store is now the isolated
+# governance Postgres DB — see common/db.py. The precious JSON backups below remain.)
 LABELS_JSON = STAGE5_DIR / "labels.json"                # precious, version-controlled
 CLUSTER_SPLITS_JSON = STAGE5_DIR / "cluster_splits.json"  # precious, version-controlled
 SCORECARDS_DIR = STAGE5_DIR / "scorecards"              # harness output (config-vs-labels metrics)
