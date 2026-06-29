@@ -144,7 +144,7 @@
 
   function jobFeed(job) {
     const stateTone = { running: "badge-lavender", done: "badge-success", error: "badge-red", halted: "badge-red" }[job.state] || "badge-neutral";
-    const evs = (job.events || []).slice(-12).map((e) => {
+    const evs = (job.events || []).slice(-12).reverse().map((e) => {   // newest first
       const who = e.name || e.district_id || "";
       const extra = e.outcome ? ` → ${esc(e.outcome)}` : e.error ? ` → ${esc(e.error)}` : "";
       return `<li><span class="s2-ev-kind">${esc(e.kind)}</span> ${esc(who)}${extra}</li>`;
