@@ -55,10 +55,9 @@ forward" score (NOT target-likelihood; a clean tier-A is LOW) — `stage5_filter
 collapsible mini-dashboards, follow-up flags, DB-backed saved views, re-fetch-on-show) reads `/api/stage5/*`.
 SQLite vestige retired. Detail: `STAGE5_FILTER_DESIGN_2026-06.md` §A–D.
 
-**⚠ ON A BRANCH, NOT MERGED:** REQ-111's handoff + all of REQ-112 are on **`stage5-attention-console`**
-(5 commits, not merged to main, not pushed). **First: `git checkout stage5-attention-console`.** The user is
-reviewing the live Stage 5 console before merge; merge once they okay it (then clean up the now-unused
-`/api/tree` + old `app.js` helpers).
+**MERGED to main** (`642a809`, 2026-06-29) — the rework (REQ-111 handoff + REQ-112) is on **main**; just work
+on main. Post-merge cleanup still pending (safe now that the new pane is confirmed): the now-unused `/api/tree`
+endpoint + a few old `app.js` helpers it fed.
 
 **→ NEXT: Stage 6 (routing/release) + gate@6 → Stage 7 (the paid council).** Decide which reps → which
 OpenRouter council config; emit the immutable `handoff_<hash>_<timestamp>.json`. **READ FIRST: the Stage 6/7
@@ -68,7 +67,7 @@ routing signal**: `image_only`→a vision council member, `buried_long_doc`→th
 Open: council composition (Path-1/2/-Mistral, by **measured** escalation rate) + config grain (per-district vs
 per-rep). Cost-gate auto-advance through the paid stages (budget governor, REQ-051).
 
-**Fresh-session essentials:** `/catchup` → `git checkout stage5-attention-console` → `pip install -e .` →
+**Fresh-session essentials:** `/catchup` → `pip install -e .` →
 **Docker up** → `lint-imports` (3 kept/0 broken) + `pytest -q -m "not integration"` (**599 pass**;
 resource-dependent tests are `integration`-marked). Launch from the repo root:
 `python3 -m infrastructure.acquisition.process_governance.server` (→ :8005); **Stage 5 is the default view.**
