@@ -1352,6 +1352,102 @@
     "updated_at": "2026-06-29T08:51:12Z"
   },
   {
+    "rec_key": "3800038:01c0ba51f8",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[\"buried_in_long_doc\"]",
+    "note": "Bottom of page 5. Elementary schools only.",
+    "status": "labeled",
+    "updated_at": "2026-06-30T07:29:04Z"
+  },
+  {
+    "rec_key": "3800038:2f2fefcf8f",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-30T07:32:01Z"
+  },
+  {
+    "rec_key": "3800038:427c3830a3",
+    "primary_label": "unusable",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-30T07:20:28Z"
+  },
+  {
+    "rec_key": "3800038:52f238c987",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-30T07:31:40Z"
+  },
+  {
+    "rec_key": "3800038:a8941eea87",
+    "primary_label": "school_start_end_prose",
+    "flags_json": "[\"buried_in_long_doc\"]",
+    "note": "Page 2. Schools doors are locked from 8:20 AM to 3:20 PM during our school day",
+    "status": "labeled",
+    "updated_at": "2026-06-30T07:30:43Z"
+  },
+  {
+    "rec_key": "3800038:caaaaec3e1",
+    "primary_label": "school_start_end_prose",
+    "flags_json": "[\"buried_in_long_doc\"]",
+    "note": "On page 4.\nAttendance \u2013 School hours are from 7:30 \u2013 3:30",
+    "status": "labeled",
+    "updated_at": "2026-06-30T07:28:18Z"
+  },
+  {
+    "rec_key": "3800038:d287a1eaa2",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-30T07:31:51Z"
+  },
+  {
+    "rec_key": "3800038:e06b0e317b",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "It's in the footer: Hours: 8:24 AM \u2013 3:30 PM. This is an ambiguous case where these could be either building hours or school hours. They're not labeled.",
+    "status": "labeled",
+    "updated_at": "2026-06-30T07:24:01Z"
+  },
+  {
+    "rec_key": "3800038:e8832a517f",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Contains links to calendars, but no bell schedule content.",
+    "status": "labeled",
+    "updated_at": "2026-06-30T07:21:11Z"
+  },
+  {
+    "rec_key": "3800038:f78241f3fe",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[\"buried_in_long_doc\"]",
+    "note": "Bottom of page 4. Elementary schools only.",
+    "status": "labeled",
+    "updated_at": "2026-06-30T07:31:25Z"
+  },
+  {
+    "rec_key": "3800038:f9232441cf",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-30T07:24:10Z"
+  },
+  {
+    "rec_key": "3800038:f962d4236d",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[\"buried_in_long_doc\"]",
+    "note": "At the top of page 5 in the PDF",
+    "status": "labeled",
+    "updated_at": "2026-06-30T07:26:13Z"
+  },
+  {
     "rec_key": "3805460:574a093366",
     "primary_label": "none",
     "flags_json": "[]",
