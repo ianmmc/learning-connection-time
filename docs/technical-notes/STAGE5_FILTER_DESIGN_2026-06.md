@@ -13,6 +13,56 @@
 
 ---
 
+## ⚑ UPDATE 2026-06-29 — the Stage-5 console REWORKED: district-driven, attention-first (REQ-112)
+
+The Stage-5 view was the console's *origin* (the standalone 3-column review app) and the last surface still
+on the pre-governance pattern. This pass brought it into alignment with Stages 1–4 (Postgres working store +
+re-fetch-on-show + shared conventions) **while keeping it deliberately district-driven** — the batch dissolves
+here, so Stage 5 is NOT batch-shaped (governance §12). **Code is authoritative;** this records the as-built
+shape + the decisions. The signal/tier/category/clustering/topology content below is unchanged and still authoritative.
+
+**§A — The ATTENTION model (the spine).** New `stage5_filter/attention.py` + `common/config/stage5_attention.json`.
+Attention = **"where does my judgment move us forward?"** — the *inverse* of automatable-confidence, **NOT
+target-likelihood** (a clean tier-A is a swift yes → LOW attention). Per record a `{score, reasons[]}`, rolled
+up per district (the neediest canonical record drives it + a capped volume nudge; a district-level flag floors
+it). Reason codes, high→low: `manual_flag` · `image_only` (visual_text_gap) · `signal_text_disagree` (a positive
+schedule signal but a weak/negative tier) · `buried_long_doc` (handbook + harvest pages) · `ambiguous` ·
+`clean_target` · `low_signal` · `resolved` (labeled → 0). The reasons are the UI's rationale chips. **Config-as-data
++ frontier-compatible** — the weights live in the config knob, so the REQ-096 tuning frontier can later *fit* them
+to labels (the ML on-ramp; §C of PROJECT_HISTORY's forward note). Stored on `record`/`district`
+(`attention_score`, `attention_reasons_json`) + district rollups (`pipeline_state`, `n_unlabeled`, `n_flagged`),
+via **`build_signals.recompute_attention()`** called at ingest (full + incremental) AND on every label/split save —
+so the working store stays live. **Open (deferred):** the harness *attention-ordering metric* — a naive
+precision@N is wrong (attention ≠ target-precision); the right metric (a reason×label-outcome cross-tab) is a
+separate small definition, best done once batches are tagged.
+
+**§B — The FACETED console (server-side, scales to ~5M reps).** `GET /api/stage5/districts`: **group by district
+facets** (pipeline_state / US state / topology), **filter by record facets** (label status / tier / attention
+reason — the *district stays visible*, you filter URLs) + a `hide_resolved` toggle, **sort** (attention / name /
+enrollment / schools / recent / first_seen) asc|desc, paginated, all SQL on the stored columns. `recent` =
+`GREATEST(state_event, label.updated_at)`; `first_seen` = the first gate@5 event — **the batch is gone, the
+district is the unit.** Companions: `GET /api/stage5/facets` (vocab + counts → the mini-dashboards),
+`/api/followup` (the top attention tier — a precious `FollowupFlag` on a district|record + a directive, JSON-backed
+like labels; flagging floors attention, resolving releases it), `/api/views` (DB-backed `SavedView` presets). The
+left pane (`static/app.js`) is reworked onto these — collapsible group headers (count + "N need attention"),
+attention chips, per-district/URL flag affordance, saved views, **re-fetch-on-show** (gate1.js `window.loadStage5`
+— closes the stale-list gap), deep-linkable `?group_by=…`. The **center/right record-detail + labeling panes are
+unchanged** (URL/representation focus, per the user). New precious models in `stage5_filter/models.py`.
+
+**§C — Plumbing cleanup.** Retired the SQLite vestige (`paths.REVIEW_DB` + the on-disk `review.db` + stale harness
+docstrings — the working store has been Postgres since REQ-103). `build_signals` vocabulary sharpened:
+`ingest()` = full drop+rebuild (schema/recovery), `ingest_batch()` = the live incremental path. **NCES locale
+DESCOPED** — it is NOT in our CCD files (`ccd_lea`/`ccd_sch` carry no `ULOCALE`); a real locale facet needs a
+separate NCES EDGE geographic file. The facet model leaves a clean slot; `LEA_TYPE`/charter is an available
+categorical if wanted.
+
+**§D — No per-label state_event** (the governance log is completion-only, §11c) — per-URL judgments live in
+`label.updated_at`, which the `recent` sort reads. **Lesson (process):** pass-1 of the UI shipped visually
+unfinished and was hedged as "v1 to iterate"; the durable fix is **self-verifying visuals with Playwright**
+(`playwright screenshot --wait-for-selector … URL out.png`) before handing back — not shipping blind.
+
+---
+
 ## Path to filtered.json (RESUME HERE — the final push to Stage 6)
 
 Everything up to now built and *validated the ingredients*. The remaining work is the **operational

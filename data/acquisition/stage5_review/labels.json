@@ -40,6 +40,46 @@
     "updated_at": "2026-06-29T08:50:32Z"
   },
   {
+    "rec_key": "0400023:3dac653d13",
+    "primary_label": "none",
+    "flags_json": "[\"building_hours_visible\"]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-30T01:21:58Z"
+  },
+  {
+    "rec_key": "0400023:6bf73f0c99",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-30T01:21:36Z"
+  },
+  {
+    "rec_key": "0400023:8d223f792f",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-30T01:22:23Z"
+  },
+  {
+    "rec_key": "0400023:b172fe7c99",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-30T01:22:10Z"
+  },
+  {
+    "rec_key": "0400023:eb50c7ad15",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-30T01:22:48Z"
+  },
+  {
     "rec_key": "0602095:1e84861a7a",
     "primary_label": "school_bell_schedule",
     "flags_json": "[]",
@@ -742,6 +782,62 @@
     "note": "Events calendar is a page element",
     "status": "labeled",
     "updated_at": "2026-06-25T06:23:17Z"
+  },
+  {
+    "rec_key": "2506750:07bd9533e3",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-30T01:21:13Z"
+  },
+  {
+    "rec_key": "2506750:3d57c372c6",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-30T01:21:01Z"
+  },
+  {
+    "rec_key": "2506750:506432825f",
+    "primary_label": "academic_calendar",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-30T01:20:43Z"
+  },
+  {
+    "rec_key": "2506750:800987aeb0",
+    "primary_label": "community_calendar",
+    "flags_json": "[]",
+    "note": "Also has social media and news feeds.",
+    "status": "labeled",
+    "updated_at": "2026-06-30T01:19:48Z"
+  },
+  {
+    "rec_key": "2506750:98f5a7ba66",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-30T01:20:31Z"
+  },
+  {
+    "rec_key": "2506750:9ac0326833",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "Also has events calendar",
+    "status": "labeled",
+    "updated_at": "2026-06-30T01:20:20Z"
+  },
+  {
+    "rec_key": "2506750:f5bde7c77f",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-30T01:18:23Z"
   },
   {
     "rec_key": "2506900:057095fab4",
