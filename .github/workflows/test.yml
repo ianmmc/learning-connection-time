@@ -6,10 +6,13 @@ on:
   pull_request:
     branches: [main]
 
-# Runs the DB-free test suite only. Integration tests (marked `integration`) require a Postgres
-# DB built from migrations and are run locally, not in CI. The previous CI built the DB from the
-# obsolete schema.sql (see docs/PROJECT_HISTORY.md Part 5 — stale) and failed; the non-integration
-# suite needs no DB at all (480 passed / 0 failed with no database, 2026-06-22).
+# Two jobs:
+#   test          — the DB-free suite (`-m "not integration"`), no database at all.
+#   governance-db — integration tests that need ONLY the isolated governance Postgres (`-m govdb`), run
+#                   against a Postgres SERVICE CONTAINER. They self-bootstrap their schema (their fixtures
+#                   call init_precious_schema + ensure_signal_schema/ensure_cache_schema), so no migrations
+#                   step is needed. The LCT-DB / NCES integration tests still run only locally (they need
+#                   data CI can't provide) — they're `integration` but NOT `govdb`.
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -32,5 +35,49 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: |
-          # Integration tests (require a migrations-built Postgres) are excluded; run locally.
           pytest tests/ -v --tb=short -m "not integration"
+
+  governance-db:
+    runs-on: ubuntu-latest
+
+    # Postgres service container. The image creates the DB + role from these env vars, reachable at
+    # localhost:5432 — matching common/db.py's GOVERNANCE_DB_* defaults (governance / governance_user).
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: governance_user
+          POSTGRES_PASSWORD: governance_pw
+          POSTGRES_DB: governance
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run governance-DB integration tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          GOVERNANCE_DB_HOST: localhost
+          GOVERNANCE_DB_PORT: "5432"
+          GOVERNANCE_DB_NAME: governance
+          GOVERNANCE_DB_USER: governance_user
+          GOVERNANCE_DB_PASSWORD: governance_pw
+        run: |
+          pytest tests/ -v --tb=short -m govdb

@@ -9,7 +9,7 @@ from sqlalchemy import text
 
 from infrastructure.acquisition.common import cache_ingest as CI
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.govdb]
 
 
 def _create_cache_temp(sess):
