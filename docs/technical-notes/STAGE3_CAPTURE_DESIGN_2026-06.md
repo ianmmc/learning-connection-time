@@ -37,7 +37,7 @@
 > *(Note: the Python code was promoted from `infrastructure/acquisition/discovery/` to `stage3_capture/`;
 > the decision log below reflects the original paths.)*
 
-**Companions:** `ACQUISITION_PIPELINE.md` §3 (the slim map), `acquisition_pipeline_flow.md` (the visual),
+**Companions:** `ACQUISITION_PIPELINE.md` §3 (the slim map + the flow diagram),
 Stage 2's note (upstream `candidates.json` contract), Stage 4's + Stage 5's notes (downstream — de-chrome
 *measurement* lives in `STAGE5_FILTER_DESIGN_2026-06.md`). `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
 (§3 state_event, §11 gates).
@@ -181,7 +181,7 @@ carried forward into `capture_drive.mjs`).
 
 ## 6. Decision log (chronological — moved here from the flow diagram, 2026-06-27)
 
-_Preserved verbatim from `acquisition_pipeline_flow.md`'s decision log; `gate@5` was "CP-B" at the time of
+_Preserved verbatim from the retired flow diagram's decision log (now in `ACQUISITION_PIPELINE.md`); `gate@5` was "CP-B" at the time of
 writing (governance §11). Paths reflect the original `infrastructure/acquisition/discovery/` location
 before the package promotion._
 

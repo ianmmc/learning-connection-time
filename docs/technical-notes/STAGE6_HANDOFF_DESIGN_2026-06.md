@@ -1,15 +1,45 @@
-# Stage 6 — Handoff: routing representations to extraction councils (DESIGN, started 2026-06-27)
+# Stage 6 — Handoff: routing representations to extraction councils (REQ-101)
 
-> **Status: DESIGN STARTING.** This is a living design note (same role `STAGE5_FILTER_DESIGN_2026-06.md`
-> played for Stage 5) — a place to work through Stage 6 before any code. Sections marked **DECIDED**
-> are settled (don't relitigate); **OPEN** sections are the working agenda. Authority for cross-stage
-> architecture remains `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`; this note will feed back into it +
-> `ACQUISITION_PIPELINE.md` + `REQUIREMENTS.yaml` once decisions settle.
+> **Status: BUILT to the Stage 6→7 seam — merged to main (PR #2, 2026-06-30).** Stage 6 reads the Stage-5
+> release decision from the DB, routes each representation to a council, prices it, freezes an immutable
+> handoff, records the dispatch, and assembles the OpenRouter requests — **stopping *before* the paid call**
+> (that's Stage 7). `gate@6` is live in the console (manual approve). This note is now **as-built**: §0 maps
+> the code (the ground truth); the design rationale in §1–§4 stands, with the items still genuinely open
+> flagged there (chiefly council **composition**, which awaits the measurement lab). Authority for
+> cross-stage architecture remains `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11/§12.
 
 **Companions / inputs:** the Stage-6 **user stories are inline in §4** (migrated 2026-06-27 from the retired
 `apga_console_application_stage_view.md`); `docs/technical-notes/LLM_COUNCIL_RESEARCH_2026-06.md` (council research:
 diversity > count, cross-family consensus, judge > voter, cost cascades); `docs/EXTRACTION_BENCHMARK_FINDINGS.md`
 (model leaderboard + measured costs); `STAGE5_FILTER_DESIGN_2026-06.md` (the upstream `filtered.json`).
+
+---
+
+## 0. As-built (code is ground truth)
+
+The Stage 6 package is `infrastructure/acquisition/stage6_handoff/` (pure, `common`-only imports — independent
+of the other stages, enforced by import-linter) + the app-layer bridge in `process_governance/`. Built
+slice-by-slice; **~63 tests** (incl. govdb Postgres) + a live end-to-end dispatch.
+
+| piece | code | what it does |
+|---|---|---|
+| council registry + validator | `stage6_handoff/councils.py` + `common/config/council_configs.json` | config-as-data councils; a HARD diversity rule (2 voters / 2 families → 3rd-family judge) **and** a prompt-resolution check, validated on load. Seeds: `low-cost-text`, `image` |
+| routing | `stage6_handoff/routing.py` | per-rep → council(s), **data-driven off each config's `input_kinds`**; the capture-fidelity gate (`visual_text_gap` → vision council, `fidelity_suspect=True`, never auto-accept on agreement — the New Haven lesson) |
+| cost estimator | `stage6_handoff/cost.py` + `common/config/council_cost_model.json` | per-council $ = voters + escalation·judge; reads a config-as-data cost model with `provenance`. Ships a labeled **bootstrap** (flat per-call); the token×**live-OpenRouter-price** split is designed (§3C), not yet wired |
+| package assembly | `stage6_handoff/package.py` | release decision → routed + priced in-memory handoff package (pure) |
+| release→routing bridge | `process_governance/stage6_dispatch.py` | reads the DB release decision (`release.load_district_records`/`decide`), enriches reps with size signals, assembles; the one module that imports **both** stage5 + stage6 (the §12 independence contract) |
+| immutable artifact | `stage6_handoff/handoff.py` | `handoff_<hash>_<ts>.json` under `data/acquisition/handoffs/`; a **price-independent** content-identity hash; `write()` refuses to overwrite |
+| dispatch record | `stage6_handoff/models.py` (precious `handoff` table) + `stage6_dispatch.record_dispatch` | the index row + a per-district `dispatched` gate@6 `state_event`, recorded **atomically on one session** (current_state is a view); the file is written **last** so a DB failure rolls back cleanly |
+| request assembly (the seam) | `stage6_handoff/prompts.py` + `requests.py` | the ported extraction prompt (reads TIMES only, REQ-054) + a vision variant; `plan_requests` (the first-pass voter calls; judge deferred to Stage 7) + `build_request` (materialize) — **stops here; the paid POST is Stage 7** |
+| gate@6 console | `process_governance/server.py` (`/api/handoff/{candidates,preview,dispatch}`, `/api/handoffs`) + `static/stage6.js` | pick send-eligible districts → preview the routed/priced package → **Approve & freeze (gate@6)** + a recent-handoffs list |
+
+**The seam:** everything needed to POST is assembled here; **Stage 7** makes the paid call, runs the
+judge-on-disagreement loop, and the "request more evidence" back-edges (§3F). **Deferred (own tracks):**
+the **council lab** (`cost_benchmark` — replaces the bootstrap with measured token rates + live OpenRouter
+pricing, and re-benchmarks council **composition** on clean data; §3A/§3C — *designed, not run*); gate@6
+**auto** mode + the budget-governor cost-gate (REQ-051) — the console does *manual* approve today; the
+cross-config **cascade** lever (§3B); and (Stage 7) the request-more-evidence loop + OpenRouter session
+persistence (§3F).
 
 ---
 
@@ -116,7 +146,14 @@ runtime path changes to enable it.
 
 ---
 
-## 3. OPEN — the working agenda (what we're here to decide)
+## 3. Design rationale + what remains open
+
+> **Most of this section is now BUILT (see §0).** It's kept as the rationale behind the as-built code;
+> the items still genuinely open are flagged inline. Quick status: **§3A** council config = BUILT
+> (config-as-data + validator); *composition* OPEN (the lab). **§3B** routing = BUILT (data-driven off
+> `input_kinds` + the fidelity gate); the *cross-config cascade* OPEN. **§3C** cost = BUILT on a bootstrap;
+> the *measured token×live-price* model DESIGNED. **§3D** handoff schema = BUILT. **§3E** gate@6 = *manual*
+> BUILT (console); *auto* DEFERRED. **§3F** request-more-evidence = Stage 7 (deferred).
 
 ### A. What *is* a council configuration? (the heart of Stage 6)
 A first-class, registered object (stories 62–66: view/create/assign/override; default assignment). The

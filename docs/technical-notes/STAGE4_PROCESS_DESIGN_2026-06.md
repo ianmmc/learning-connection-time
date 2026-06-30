@@ -22,7 +22,7 @@
 > `infrastructure/acquisition/discovery/process_stage4.py` to `stage4_process/`; the decision log below
 > reflects the original path.)*
 
-**Companions:** `ACQUISITION_PIPELINE.md` §4 (the slim map), `acquisition_pipeline_flow.md` (the visual),
+**Companions:** `ACQUISITION_PIPELINE.md` §4 (the slim map + the flow diagram),
 Stage 3's note (upstream `captures.json` + per-`captures/<hash>/` directory contract), Stage 5's note
 (downstream — the relevance/tiering layer this stage feeds). `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
 (§3 state_event, §11 gates).
@@ -201,7 +201,7 @@ view is instant, with no full-corpus rebuild and no perceived lag (the design go
 
 ## 6. Decision log (chronological — moved here from the flow diagram, 2026-06-27)
 
-_Preserved verbatim from `acquisition_pipeline_flow.md`'s decision log; `gate@5` was "CP-B" at the time of
+_Preserved verbatim from the retired flow diagram's decision log (now in `ACQUISITION_PIPELINE.md`); `gate@5` was "CP-B" at the time of
 writing (governance §11). The original code path was `infrastructure/acquisition/discovery/process_stage4.py`
 before the package promotion._
 

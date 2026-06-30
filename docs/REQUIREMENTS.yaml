@@ -1627,7 +1627,7 @@ requirements:
       are evidence pulled from the outside world (same category as the NCES downloads already under
       data/raw/), not our own pipeline process state, so CLAUDE.md's 'never modify files in data/raw/' rule
       applies: discovery.json is write-once (see REQ-071). See ACQUISITION_PIPELINE.md Stage 2 and
-      docs/diagrams/acquisition_pipeline_flow.md for the full design-session trail."
+      docs/technical-notes/STAGE2_DISCOVER_DESIGN_2026-06.md §6 for the full design-session trail."
 
   - id: REQ-070
     description: "Stage 2 wave dispatch - Wave 1 (Claude WebSearch subagent) with a strict handoff contract, Wave 2 (OpenRouter) conditional on a residual"
@@ -1771,7 +1771,7 @@ requirements:
       - page.pdf() is captured unconditionally for every HTML page, alongside innerText (all frames) and a full-page screenshot - no multi-column-detection trigger, removing the need to ever define the Reader-Routing spec's previously-unsolved Tier 1->2 escalation trigger
       - A URL that is already a PDF (direct fetch branch) never goes through page.pdf() - that would be a lossy, pointless re-render of a PDF viewer's own rendering
     tests:
-      - (verified via local fixture + real-network smoke test during implementation - see docs/diagrams/acquisition_pipeline_flow.md decision log; no automated test harness exists yet for capture_discovery.mjs, which has no test framework wired up - REQ-079 watch-item)
+      - (verified via local fixture + real-network smoke test during implementation - see docs/technical-notes/STAGE3_CAPTURE_DESIGN_2026-06.md §6 decision log; no automated test harness exists yet for capture_discovery.mjs, which has no test framework wired up - REQ-079 watch-item)
     created: "2026-06-23T00:00:00Z"
     updated: "2026-06-23T00:00:00Z"
     notes: "infrastructure/scraper/capture_discovery.mjs::dismissModals, setupPageDialogHandler, processTask.
@@ -1791,7 +1791,7 @@ requirements:
       - This path is explicitly intended to catch CDN-hosted materials (Finalsite, BoardDocs, SchoolWires/Blackboard, S3, etc. - discover.py's existing CMS_HOSTS set) that Discovery's domain-scoped search would never surface directly, not only Drive/Docs links - this must be reflected in test coverage, not left as an incidental side effect of Drive/Docs-focused cases
       - A duplicate URL already seen for a district (whether originally discovered or already-emergent) is never re-queued
     tests:
-      - (verified via local fixture during implementation: a 'Bell Schedule' link was correctly captured as emergent with source/found_on populated, while an unrelated 'About Us' link on the same page was correctly NOT picked up - see docs/diagrams/acquisition_pipeline_flow.md decision log; no automated test harness exists yet for capture_discovery.mjs - REQ-079 watch-item)
+      - (verified via local fixture during implementation: a 'Bell Schedule' link was correctly captured as emergent with source/found_on populated, while an unrelated 'About Us' link on the same page was correctly NOT picked up - see docs/technical-notes/STAGE3_CAPTURE_DESIGN_2026-06.md §6 decision log; no automated test harness exists yet for capture_discovery.mjs - REQ-079 watch-item)
     created: "2026-06-23T00:00:00Z"
     updated: "2026-06-23T00:00:00Z"
     notes: "infrastructure/scraper/capture_discovery.mjs::findEmergentLinks, processTask. The CDN-hosted-

@@ -128,7 +128,7 @@ def recursive_band_groups(spans):
     This is a per-segment overlap check, not position-based guessing -- it supersedes the
     old exactly-2-school "largest overlap" tie-break entirely, and several earlier,
     narrower versions of this same function that got the boundary cases wrong (see
-    docs/diagrams/acquisition_pipeline_flow.md for the full trail).
+    docs/ACQUISITION_PIPELINE.md (the flow diagram) for the full trail).
     """
     ordered = _clean_ascending_partition(spans)
     if not ordered:  # None (not a clean partition) or [] (no parseable spans at all)

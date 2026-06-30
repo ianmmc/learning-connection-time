@@ -7,7 +7,7 @@
 > has MEASURED a strong win** (category-guess 0.43→0.60, topology agreement 0.6→0.8, tier A intact).
 > What remains is the **operational Stage 5 filter that emits `filtered.json` for Stage 6** — see
 > **"Path to filtered.json (RESUME HERE)"** immediately below. Companion to
-> `docs/ACQUISITION_PIPELINE.md` (Stage 5) and `docs/diagrams/acquisition_pipeline_flow.md`.
+> `docs/ACQUISITION_PIPELINE.md` (Stage 5 + the flow diagram).
 
 > **⚑ Superseded-in-part by the 2026-06-26 architecture (authority: `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`).** This remains the authority for Stage 5's *signal/tier/category/clustering/topology/tuning* content. But three things here are now superseded — read the governance note for the current design: **(1)** the **"CP-B review app" is becoming the cross-stage *Acquisition Pipeline Governance App*** (stage selector spanning CP-A/B/C), moving the review app → `infrastructure/acquisition/process_governance/` and `build_signals.py` → `stage5_filter/`. **(2)** the **SQLite decision** (see "Architecture — DECIDED & BUILT 2026-06-24: SQLite…" below) is replaced by **Postgres in an isolated `governance` database** (cross-stage cache); the labels/splits JSON-backup pattern carries over. **(3)** **`filtered.json` is a regenerable *export* of the DB release decision**, not the primary store, and the review app *is* CP-B (so `filtered.json` is the post-review release, not a pre-review candidate list). The "Path to filtered.json" section below predates these decisions; the release generator now lands DB-backed per the governance note's sequencing (§9).
 

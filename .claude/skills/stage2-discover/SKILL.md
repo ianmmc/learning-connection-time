@@ -5,7 +5,7 @@ description: Run Stage 2 (Discover) of the bell-schedule acquisition pipeline ag
 
 # /stage2-discover — Stage 2 (Discover)
 
-Written explicitly so the procedure survives across sessions without relying on conversational nuance (the full design was negotiated in detail on 2026-06-23 — see `docs/ACQUISITION_PIPELINE.md` Stage 2 and `docs/diagrams/acquisition_pipeline_flow.md` for the decision trail; this skill is the executable form of that design, not a paraphrase of it).
+Written explicitly so the procedure survives across sessions without relying on conversational nuance (the full design was negotiated in detail on 2026-06-23 — see `docs/ACQUISITION_PIPELINE.md` Stage 2 and `docs/technical-notes/STAGE2_DISCOVER_DESIGN_2026-06.md` §6 for the decision trail; this skill is the executable form of that design, not a paraphrase of it).
 
 **Supersedes** `.claude/skills/per-school-acquire/` and `per-school-acquire-training/` — both obsolete, see their headers.
 

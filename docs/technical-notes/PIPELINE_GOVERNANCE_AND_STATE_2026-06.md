@@ -11,8 +11,12 @@
 > **Stage 3** (REQ-110), **Stage 4 + the Stage 4→5 incremental handoff** (REQ-111, §12) — all run live on
 > batch_00002–00005. **The Stage-5 console rework (REQ-112, 2026-06-29) is BUILT** — the district-driven,
 > attention-first faceted console (the app's origin, finally on the current architecture; §12c +
-> `STAGE5_FILTER_DESIGN` §A–D). **Next: Stage 6 + gate@6 routing** (`STAGE6_HANDOFF_DESIGN_2026-06.md`,
-> REQ-101) + REQ-100 (staleness). This note is the architecture for three coupled decisions that outgrew
+> `STAGE5_FILTER_DESIGN` §A–D). **Stage 6 + gate@6 routing is BUILT to the Stage 6→7 seam (REQ-101, merged
+> PR #2, 2026-06-30)** — the `stage6_handoff/` package (routing/cost/freeze/request-assembly) + the gate@6
+> console (preview → Approve & freeze); the immutable `handoff_<hash>_<ts>.json` + a precious `handoff` index
+> row + a `dispatched` state_event. Stops before the paid call (Stage 7). Authority: `STAGE6_HANDOFF_DESIGN_2026-06.md`
+> §0. **Next: Stage 7 (the paid council) + the council lab (`cost_benchmark`)**; still open: REQ-100 (staleness),
+> gate@6 auto mode. This note is the architecture for three coupled decisions that outgrew
 > `STAGE5_FILTER_DESIGN_2026-06.md`:
 > 1. **The DB is the working store; disk holds binaries + receipts** — the cross-stage registry *and*
 >    every stage's data live in the DB (what the next stage reads); the per-stage JSON files are
@@ -678,7 +682,7 @@ publication now.** Flag the moment it's earned its generality.
 
 Formalizes the console-design session that worked through the APGA console user-stories review (those
 stories were migrated 2026-06-27 into the per-stage `STAGE*_DESIGN_*.md` notes + `OVERVIEW_AND_SETTINGS_DESIGN_2026-06.md`,
-and the source doc retired). The flow diagram (`acquisition_pipeline_flow.md`) already reflects the
+and the source doc retired). The flow diagram (now in `ACQUISITION_PIPELINE.md`) already reflects the
 structural pieces (gates, back-edges, batch types); this is the authoritative prose. The console UI
 itself (stage selector, Overview, Settings, Stages 1–4 views) is **principle-set here, not yet
 wireframed — it needs its own design pass before build.**
@@ -730,7 +734,7 @@ progress bar). **Pause dropped** (not worth the complexity).
   Stage 1 (7→6 re-extract via a different config; 8→6 add an existing-rep URL to a new handoff).
 
 ### 11e. The pipeline is CYCLIC (back-edges) — detail in the flow diagram
-Four back-edges: **7→6**, **7→1**, **8→1**, **8→6** (see `acquisition_pipeline_flow.md`). The immutable
+Four back-edges: **7→6**, **7→1**, **8→1**, **8→6** (see the flow diagram in `ACQUISITION_PIPELINE.md`). The immutable
 Stage-6 handoff freeze is what keeps "what we sent" recoverable across these loops.
 
 ### 11f. Per-stage console notes
@@ -749,12 +753,16 @@ Stage-6 handoff freeze is what keeps "what we sent" recoverable across these loo
   target-labeled record back to its discovery tool (`candidate_tools_json`) and its winning representation's
   source (`representation.source`). Same fingerprinted-scorecard discipline as Stage 5, applied to discovery
   and processing.
-- **Stage 6** — routing / release; see `STAGE6_HANDOFF_DESIGN_2026-06.md`.
+- **Stage 6** — routing / release; **BUILT to the seam (REQ-101, merged 2026-06-30)**: the gate@6 console
+  (preview the routed/priced package → Approve & freeze) → the immutable handoff + a precious `handoff` index
+  row + a per-district `dispatched` state_event; manual approve today (auto mode deferred). See
+  `STAGE6_HANDOFF_DESIGN_2026-06.md` §0.
 
 ### 11g. Implications for what's built
 - `state_event.checkpoint` vocabulary: **`gate@1` | `gate@5` | `gate@6` | `gate@7` | `gate@8`** (was
   CP-A/B/C). Free-string column → no schema change; update recorded values + docs as gates get wired.
-  **`gate@1` is now live** (an in-band console approval — see 11h).
+  **`gate@1` and `gate@6` are now live** (in-band console approvals — gate@6 records a `dispatched` event
+  referencing the immutable handoff hash; see 11h).
 - `filtered.json` carries **alternate target-flagged reps** (the winner + alternates) so gate@6 can offer
   representation override (REQ-094 follow-up; un-defers §4's "representation override deferred" lean).
 - The **console UI build needs its own design pass** (stage-by-stage, as we designed the pipeline) before
@@ -816,9 +824,17 @@ reframe and the batch_00002-forcing-function plan (the batch-of-record advances 
 - **Stage 4→5 incremental handoff BUILT (REQ-111)** — the seam where the batch hands to Stage 5. See **§12**.
 - **Stage-5 console rework BUILT (REQ-112, 2026-06-29)** — the district-driven, attention-first faceted
   console; the app's origin, finally on the current architecture. See **§12c** + `STAGE5_FILTER_DESIGN` §A–D.
-- **Then:** **Stage 6 + gate@6 routing** (`STAGE6_HANDOFF_DESIGN_2026-06.md`, REQ-101) + REQ-100 (staleness).
+- **Stage 6 + gate@6 routing BUILT to the seam (REQ-101, merged PR #2, 2026-06-30)** — the `stage6_handoff/`
+  package (per-rep routing data-driven off `input_kinds` + the capture-fidelity gate; cost estimator on a
+  bootstrap model; immutable handoff with a price-independent hash; OpenRouter request assembly) + the gate@6
+  console view (`static/stage6.js` + `/api/handoff/*`: preview the routed/priced package → Approve & freeze).
+  Approval records the index row + a per-district `dispatched` state_event **atomically**, freezes the
+  immutable artifact, and **stops at the seam — no paid call** (Stage 7). Manual approve today; auto mode +
+  the budget-governor cost-gate (REQ-051) deferred. See `STAGE6_HANDOFF_DESIGN_2026-06.md` §0.
+- **Then:** **Stage 7 (the paid council + judge loop)** + the **council lab** (`cost_benchmark` — measured
+  token rates + live OpenRouter pricing; composition re-benchmark) + REQ-100 (staleness).
   Per-stage detail: `STAGE1_QUEUE_DESIGN` §6 (gate@1), `STAGE2_DISCOVER_DESIGN` §7 (the SERP cascade),
-  `STAGE3_CAPTURE_DESIGN` §7, `STAGE4_PROCESS_DESIGN` §4a/§4b, `STAGE5_FILTER_DESIGN` §A–D.
+  `STAGE3_CAPTURE_DESIGN` §7, `STAGE4_PROCESS_DESIGN` §4a/§4b, `STAGE5_FILTER_DESIGN` §A–D, `STAGE6_HANDOFF_DESIGN` §0.
 
 ---
 

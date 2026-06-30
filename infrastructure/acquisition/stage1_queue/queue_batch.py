@@ -2,7 +2,7 @@
 
 Builds a batch of districts plus, per district, the per-band school lists to target --
 the structured input Stage 2 (Discover) and Stage 3 (Capture) consume. See
-docs/ACQUISITION_PIPELINE.md (Stage 1 section) and docs/diagrams/acquisition_pipeline_flow.md
+docs/ACQUISITION_PIPELINE.md (Stage 1 section, incl. the flow diagram)
 for the full design and rationale; this docstring covers usage only.
 
 Pre-queue exclusion filters (live, recomputed every run -- never a frozen list):

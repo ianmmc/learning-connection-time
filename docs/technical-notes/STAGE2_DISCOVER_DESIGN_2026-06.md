@@ -37,8 +37,7 @@
 > **Still DB-free** (no LCT-DB import). The `stage2-discover` SKILL is now **OBSOLETE** (it drove the agent
 > Wave-1 that no longer exists).
 
-**Companions:** `ACQUISITION_PIPELINE.md` §2 (the slim map), `docs/diagrams/acquisition_pipeline_flow.md`
-(the mermaid flow), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (§3 state_event, §7a cost framing, §11
+**Companions:** `ACQUISITION_PIPELINE.md` §2 (the slim map + the mermaid flow diagram), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (§3 state_event, §7a cost framing, §11
 gates / console). Stage 1's note for the upstream contract; Stage 3's for the downstream one. **§1–§6 below
 describe the now-retired agent-wave design (kept as history); §7 is the current SERP architecture.**
 
@@ -248,7 +247,7 @@ it rather than reinventing:
 ## 6. Decision log (chronological — moved here from the flow diagram, 2026-06-27)
 
 _The turn-by-turn record of how Stage 2 was designed, built, and hardened. Preserved verbatim from
-`acquisition_pipeline_flow.md`'s decision log; `gate@1` was "CP-A", `gate@5` "CP-B" at the time of
+the retired flow diagram's decision log; `gate@1` was "CP-A", `gate@5` "CP-B" at the time of
 writing (see governance §11 for the current gate model). Note: the code has since been promoted from
 `infrastructure/acquisition/discovery/` to `infrastructure/acquisition/stage2_discover/` — paths below
 reflect the original location._

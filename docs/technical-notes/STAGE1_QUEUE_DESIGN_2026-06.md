@@ -27,7 +27,7 @@
 > The store + models live in `stage1_queue/batch_store.py` + `stage1_queue/models.py`; the console
 > endpoints in `process_governance/server.py`. `ACQUISITION_PIPELINE.md` carries the slim summary.
 
-**Companions:** `ACQUISITION_PIPELINE.md` (the 9-stage map), `acquisition_pipeline_flow.md` (the visual),
+**Companions:** `ACQUISITION_PIPELINE.md` (the 9-stage map + the flow diagram),
 `METHODOLOGY.md` (Rule 6 CTC / Rule 7 grade-span-gap), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
 (§3 state_event, §11 gates / batch types / district×band grain).
 
