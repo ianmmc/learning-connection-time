@@ -10,8 +10,9 @@ from sqlalchemy import text
 
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.stage5_filter import models  # noqa: F401  (registers precious tables)
+from infrastructure.acquisition.stage5_filter import build_signals as BS  # ensure_signal_schema
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.govdb]
 
 DH, DL = "ZZFACETH", "ZZFACETL"   # high-attention (untouched) + low (complete) synthetic districts
 
@@ -54,8 +55,9 @@ def client():
         pytest.skip(f"governance Postgres unavailable: {type(e).__name__}: {e}")
     from fastapi.testclient import TestClient
     from infrastructure.acquisition.process_governance import server
-    gdb.init_precious_schema()
+    gdb.init_precious_schema()                 # precious model tables (label/followup_flag/saved_view/…)
     with gdb.session_scope() as con:
+        BS.ensure_signal_schema(con)           # district/record/… signal tables (not models) — fresh-DB safe
         _seed(con)
     try:
         yield TestClient(server.app)

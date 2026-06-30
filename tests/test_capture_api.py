@@ -13,7 +13,7 @@ from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.stage1_queue import batch_store as BS
 from infrastructure.acquisition.stage1_queue import models  # noqa: F401  (registers tables)
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.govdb]
 
 BID = "batch_test_capture_api"
 
