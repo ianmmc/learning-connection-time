@@ -22,6 +22,7 @@
         <option value="stage3">Stage&nbsp;3 · Capture</option>
         <option value="stage4">Stage&nbsp;4 · Process</option>
         <option value="stage5" selected>Stage&nbsp;5 · Capture Review (gate@5)</option>
+        <option value="stage6">Stage&nbsp;6 · Handoff (gate@6)</option>
       </select>
     </div>
     <div class="topbar-right">
@@ -44,6 +45,8 @@
 
   <main id="stage4view" class="cols gate1 hidden" aria-label="Stage 4 processing status"></main>
 
+  <main id="stage6view" class="cols gate1 hidden" aria-label="Stage 6 handoff routing"></main>
+
   <div id="glossary" class="modal hidden">
     <div class="modal-card">
       <div class="modal-head"><h2>Glossary &amp; Instructions</h2><button id="glossaryClose" class="btn btn-ghost">Close</button></div>
@@ -57,5 +60,6 @@
   <script src="/static/stage2.js"></script>
   <script src="/static/stage3.js"></script>
   <script src="/static/stage4.js"></script>
+  <script src="/static/stage6.js"></script>
 </body>
 </html>
