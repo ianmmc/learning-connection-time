@@ -39,6 +39,7 @@
     if (which === "stage2" && window.initStage2) window.initStage2();  // stage2.js guards its own re-init
     if (which === "stage3" && window.initStage3) window.initStage3();  // stage3.js guards its own re-init
     if (which === "stage4" && window.initStage4) window.initStage4();  // stage4.js guards its own re-init
+    if (which === "stage5" && window.loadStage5) window.loadStage5();  // re-fetch the faceted list on show
   }
   sel.addEventListener("change", applyView);
   window.__applyStageView = applyView;   // so stage2.js can self-show if it loads while already selected

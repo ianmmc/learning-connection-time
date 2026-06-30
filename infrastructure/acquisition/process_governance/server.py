@@ -11,7 +11,7 @@ Run:  uvicorn server:app --reload --port 8005   (from this directory)
 import json
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import select, text
@@ -141,6 +141,7 @@ async def save_label(rec_key: str, payload: dict):
                 con.execute(UPSERT_LABEL, {"rec_key": m, **vals})
                 cascaded += 1
         BS.recompute_labeled_topology(con, rec["district_id"])
+        BS.recompute_attention(con, rec["district_id"])   # label/split changed canonical/resolved state -> refresh attention
         con.commit()   # persist before exporting, so the JSON backup only reflects committed state
         # Export-on-save: the precious label is backed up to the tracked JSON before we return,
         # so it survives DB loss with zero action from the user (no reliance on remembering).
@@ -180,6 +181,7 @@ async def split_record(rec_key: str):
                     con.execute(text("UPDATE record SET is_cluster_rep=:rep, cluster_size=:sz WHERE rec_key=:rk"),
                                 {"rep": 1 if i == 0 else 0, "sz": len(rest), "rk": rk})
         BS.recompute_labeled_topology(con, rec["district_id"])
+        BS.recompute_attention(con, rec["district_id"])   # label/split changed canonical/resolved state -> refresh attention
         con.commit()   # persist before exporting, so the JSON backup only reflects committed state
         BS.export_splits(con, CLUSTER_SPLITS_JSON)
         _refresh_filtered(con, rec["district_id"])   # split changes the canonical set -> refresh filtered.json
@@ -192,6 +194,247 @@ def progress():
         total = con.execute(text("SELECT COUNT(*) FROM record")).scalar()
         done = con.execute(text("SELECT COUNT(*) FROM label WHERE status!='unlabeled'")).scalar()
     return {"total": total, "labeled": done}
+
+
+# ---------------------------------------------------------------- Stage 5 faceted console (the rework)
+# District-driven, attention-first left pane. Group by DISTRICT facets; filter by RECORD facets (the
+# district stays visible) + a hide-resolved district toggle; sort by district fields (incl. continuous)
+# asc/desc. Server-side on the stored attention/facet columns so it scales to ~5M reps. The batch is
+# gone here — "first_seen_at" (the first gate@5 event) replaces it; the district is the canonical unit.
+_GROUP_COLS = {"none": None, "pipeline_state": "d.pipeline_state", "state": "d.state",
+               "topology": "COALESCE(d.labeled_topology, d.guessed_topology)"}
+# "recent" = the latest activity of ANY kind: stage progression OR a label edit (the completion log is
+# coarse, so label.updated_at carries the per-URL judgments the user wants reflected). GREATEST ignores NULLs.
+_RECENT = "GREATEST(ev.last_event, lbl.last_label)"
+_SORT_COLS = {"attention": "d.attention_score", "name": "d.name", "enrollment": "dt.enrollment_k12",
+              "schools": "d.nces_school_count", "recent": _RECENT, "first_seen": "ev.first_seen"}
+
+
+@app.get("/api/stage5/districts")
+def stage5_districts(
+    group_by: str = "none", sort: str = "attention", dir: str = "desc",
+    label: str | None = None,                          # 'labeled' | 'unlabeled' record filter
+    tier: list[str] = Query(default=[]),               # record tier filter (repeatable)
+    reason: list[str] = Query(default=[]),             # attention-reason record filter (repeatable)
+    hide_resolved: bool = False,                       # district toggle: drop pipeline_state='complete'
+    limit: int = 500, offset: int = 0,
+):
+    """The faceted district list + each district's (filtered) records. Sort/filter/paginate run in SQL
+    on the stored attention/facet columns; grouping is applied over the returned page."""
+    gcol = _GROUP_COLS.get(group_by, None)
+    scol = _SORT_COLS.get(sort, "d.attention_score")
+    order = "ASC" if dir == "asc" else "DESC"
+    nulls = "NULLS LAST" if order == "DESC" else "NULLS FIRST"
+    where, params = ["1=1"], {"lim": limit, "off": offset}
+    if hide_resolved:
+        where.append("(d.pipeline_state IS DISTINCT FROM 'complete')")
+    with gdb.session_scope() as con:
+        # 1) districts: stored columns + first/last event from the log, filtered + sorted + paginated.
+        drows = con.execute(text(f"""
+            SELECT d.district_id, d.name, d.state, d.attention_score, d.attention_reasons_json,
+                   d.pipeline_state, d.n_unlabeled, d.n_flagged, d.n_records,
+                   d.guessed_topology, d.labeled_topology, d.nces_school_count,
+                   dt.enrollment_k12, ev.first_seen, {_RECENT} AS last_event
+            FROM district d
+            LEFT JOIN district_target dt ON dt.district_id = d.district_id
+            LEFT JOIN (SELECT district_id, MIN(created_at) FILTER (WHERE stage=5) AS first_seen,
+                              MAX(created_at) AS last_event FROM state_event GROUP BY district_id) ev
+                   ON ev.district_id = d.district_id
+            LEFT JOIN (SELECT r.district_id, MAX(l.updated_at) AS last_label FROM record r
+                              JOIN label l ON l.rec_key=r.rec_key WHERE l.status!='unlabeled'
+                              GROUP BY r.district_id) lbl ON lbl.district_id = d.district_id
+            WHERE {' AND '.join(where)}
+            ORDER BY {scol} {order} {nulls}, d.name ASC
+            LIMIT :lim OFFSET :off"""), params).mappings().all()
+        dids = [r["district_id"] for r in drows]
+
+        # 2) records for the returned page, filtered by the record facets (district stays visible even
+        #    if all its records are filtered out — the user's rule: filter URLs, not districts).
+        rwhere, rparams = ["r.district_id = ANY(:ids)"], {"ids": dids or [""]}
+        if label == "labeled":
+            rwhere.append("l.status IS NOT NULL AND l.status != 'unlabeled'")
+        elif label == "unlabeled":
+            rwhere.append("(l.status IS NULL OR l.status = 'unlabeled')")
+        if tier:
+            rwhere.append("r.tier = ANY(:tiers)"); rparams["tiers"] = tier
+        if reason:   # the DOMINANT reason (reasons[0]) is element 0 of the JSON array text
+            rwhere.append("(r.attention_reasons_json::jsonb ->> 0) = ANY(:reasons)"); rparams["reasons"] = reason
+        recs_by_did: dict = {}
+        for r in con.execute(text(f"""
+            SELECT r.rec_key, r.district_id, r.url, r.tier, r.attention_score, r.attention_reasons_json,
+                   r.is_cluster_rep, r.cluster_id, r.cluster_size, r.is_emergent,
+                   COALESCE(l.status,'unlabeled') AS label_status, l.primary_label
+            FROM record r LEFT JOIN label l ON l.rec_key=r.rec_key
+            WHERE {' AND '.join(rwhere)}
+            ORDER BY r.attention_score DESC NULLS LAST, r.tier"""), rparams).mappings():
+            recs_by_did.setdefault(r["district_id"], []).append({
+                **{k: r[k] for k in ("rec_key", "url", "tier", "attention_score", "is_cluster_rep",
+                                     "cluster_id", "cluster_size", "is_emergent", "label_status", "primary_label")},
+                "attention_reasons": json.loads(r["attention_reasons_json"]) if r["attention_reasons_json"] else []})
+
+        total = con.execute(text(f"SELECT COUNT(*) FROM district d WHERE {' AND '.join(where)}")).scalar()
+
+    # 3) assemble districts, then group over the page (order preserved from the SQL sort).
+    districts = []
+    for r in drows:
+        districts.append({
+            "district_id": r["district_id"], "name": r["name"], "state": r["state"],
+            "attention_score": r["attention_score"] or 0,
+            "attention_reasons": json.loads(r["attention_reasons_json"]) if r["attention_reasons_json"] else [],
+            "pipeline_state": r["pipeline_state"], "n_unlabeled": r["n_unlabeled"] or 0,
+            "n_flagged": r["n_flagged"] or 0, "n_records": r["n_records"] or 0,
+            "guessed_topology": r["guessed_topology"], "labeled_topology": r["labeled_topology"],
+            "nces_school_count": r["nces_school_count"], "enrollment_k12": r["enrollment_k12"],
+            "first_seen_at": r["first_seen"], "last_event_at": r["last_event"],
+            "records": recs_by_did.get(r["district_id"], [])})
+
+    def group_key(d):
+        if group_by == "state":          return d["state"] or "—"
+        if group_by == "pipeline_state": return d["pipeline_state"] or "untouched"
+        if group_by == "topology":       return d["labeled_topology"] or d["guessed_topology"] or "unknown"
+        return "all"
+    groups: list = []
+    seen: dict = {}
+    for d in districts:
+        k = group_key(d)
+        if k not in seen:
+            seen[k] = {"key": k, "n_districts": 0, "n_attention": 0, "districts": []}
+            groups.append(seen[k])
+        g = seen[k]
+        g["districts"].append(d)
+        g["n_districts"] += 1
+        g["n_attention"] += 1 if (d["attention_score"] or 0) > 0 else 0
+    return {"group_by": group_by, "sort": {"field": sort, "dir": order.lower()},
+            "total_districts": total, "shown": len(districts), "groups": groups}
+
+
+@app.get("/api/stage5/facets")
+def stage5_facets():
+    """The available group/filter options + their district/record counts — feeds the mini-dashboards
+    and the filter menu so the UI never hardcodes the vocabulary."""
+    with gdb.session_scope() as con:
+        def counts(sql):
+            return [{"value": r[0], "count": r[1]} for r in con.execute(text(sql)) if r[0] is not None]
+        return {
+            "group_by": list(_GROUP_COLS.keys()),
+            "sort": list(_SORT_COLS.keys()),
+            "pipeline_state": counts("SELECT pipeline_state, COUNT(*) FROM district GROUP BY pipeline_state ORDER BY 2 DESC"),
+            "state": counts("SELECT state, COUNT(*) FROM district GROUP BY state ORDER BY 1"),
+            "topology": counts("SELECT COALESCE(labeled_topology,guessed_topology), COUNT(*) FROM district GROUP BY 1 ORDER BY 2 DESC"),
+            "tier": counts("SELECT tier, COUNT(*) FROM record GROUP BY tier ORDER BY 1"),
+            "reason": counts("SELECT attention_reasons_json::jsonb->>0, COUNT(*) FROM record GROUP BY 1 ORDER BY 2 DESC"),
+        }
+
+
+# ---- follow-up flags (the top attention tier — a directive on a district or a record) ----
+def _backup_followups(con) -> int:
+    """Back the precious follow-up flags to a tracked JSON (the labels.json pattern), so a human
+    directive survives a DB wipe. Atomic write."""
+    rows = con.execute(text("SELECT scope, target_id, district_id, directive, actor, created_at, resolved_at "
+                            "FROM followup_flag ORDER BY id")).mappings().all()
+    data = [dict(r) for r in rows]
+    out = BS.LABELS_JSON.parent / "followup_flags.json"
+    tmp = out.with_name(out.name + ".tmp")
+    tmp.write_text(json.dumps(data, indent=2))
+    tmp.replace(out)
+    return len(data)
+
+
+@app.get("/api/followup")
+def followup_list(district_id: str | None = None, include_resolved: bool = False):
+    where = ["1=1"]
+    params: dict = {}
+    if district_id:
+        where.append("district_id=:did"); params["did"] = district_id
+    if not include_resolved:
+        where.append("resolved_at IS NULL")
+    with gdb.session_scope() as con:
+        rows = con.execute(text(f"SELECT id, scope, target_id, district_id, directive, actor, created_at, "
+                                f"resolved_at FROM followup_flag WHERE {' AND '.join(where)} ORDER BY id DESC"),
+                           params).mappings().all()
+    return [dict(r) for r in rows]
+
+
+@app.post("/api/followup")
+async def followup_create(payload: dict):
+    """Flag a district or a record for follow-up with a directive (the top attention tier). Records a
+    gate@5 state_event and refreshes the affected district's attention."""
+    scope = payload.get("scope")
+    target_id = payload.get("target_id")
+    if scope not in ("district", "record") or not target_id:
+        raise HTTPException(400, "scope must be 'district'|'record' and target_id is required")
+    actor = payload.get("actor", "ian")
+    from datetime import datetime, timezone
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    with gdb.session_scope() as con:
+        did = target_id if scope == "district" else con.execute(
+            text("SELECT district_id FROM record WHERE rec_key=:rk"), {"rk": target_id}).scalar()
+        if not did:
+            raise HTTPException(404, f"no such {scope} {target_id}")
+        con.execute(text("""INSERT INTO followup_flag (scope, target_id, district_id, directive, actor, created_at)
+                            VALUES (:s,:t,:d,:dir,:a,:ts)"""),
+                    {"s": scope, "t": target_id, "d": did, "dir": payload.get("directive", ""), "a": actor, "ts": ts})
+        BS.recompute_attention(con, did)
+        con.commit()
+        _backup_followups(con)
+    # No state_event: the governance log is completion-only (§11c). The flag IS its own audit row
+    # (followup_flag, timestamped) and feeds the "recent change" sort alongside label.updated_at.
+    return {"ok": True, "district_id": did}
+
+
+@app.post("/api/followup/{flag_id}/resolve")
+async def followup_resolve(flag_id: int, payload: dict):
+    from datetime import datetime, timezone
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    with gdb.session_scope() as con:
+        did = con.execute(text("SELECT district_id FROM followup_flag WHERE id=:i"), {"i": flag_id}).scalar()
+        if not did:
+            raise HTTPException(404, f"no such flag {flag_id}")
+        con.execute(text("UPDATE followup_flag SET resolved_at=:ts WHERE id=:i"), {"ts": ts, "i": flag_id})
+        BS.recompute_attention(con, did)
+        con.commit()
+        _backup_followups(con)
+    return {"ok": True, "district_id": did}
+
+
+# ---- saved views (named left-pane presets; persistent UI convenience) ----
+@app.get("/api/views")
+def views_list(actor: str = "ian"):
+    with gdb.session_scope() as con:
+        rows = con.execute(text("SELECT id, name, config_json, created_at FROM saved_view "
+                                "WHERE actor=:a ORDER BY name"), {"a": actor}).mappings().all()
+    return [{"id": r["id"], "name": r["name"], "config": json.loads(r["config_json"] or "{}"),
+             "created_at": r["created_at"]} for r in rows]
+
+
+@app.post("/api/views")
+async def views_save(payload: dict):
+    """Create or overwrite (by name+actor) a named left-pane preset."""
+    name = (payload.get("name") or "").strip()
+    if not name:
+        raise HTTPException(400, "name is required")
+    actor = payload.get("actor", "ian")
+    cfg = json.dumps(payload.get("config", {}))
+    from datetime import datetime, timezone
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    with gdb.session_scope() as con:
+        existing = con.execute(text("SELECT id FROM saved_view WHERE actor=:a AND name=:n"),
+                               {"a": actor, "n": name}).scalar()
+        if existing:
+            con.execute(text("UPDATE saved_view SET config_json=:c WHERE id=:i"), {"c": cfg, "i": existing})
+            vid = existing
+        else:
+            vid = con.execute(text("INSERT INTO saved_view (actor, name, config_json, created_at) "
+                                   "VALUES (:a,:n,:c,:ts) RETURNING id"),
+                              {"a": actor, "n": name, "c": cfg, "ts": ts}).scalar()
+    return {"ok": True, "id": vid}
+
+
+@app.delete("/api/views/{view_id}")
+async def views_delete(view_id: int):
+    with gdb.session_scope() as con:
+        con.execute(text("DELETE FROM saved_view WHERE id=:i"), {"i": view_id})
+    return {"ok": True}
 
 
 @app.get("/files/{district_dir}/{rec_hash}/{filename}")

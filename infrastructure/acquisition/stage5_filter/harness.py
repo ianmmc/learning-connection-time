@@ -4,10 +4,10 @@ human labels, emitting a reproducible SCORECARD.
 
 A score is only meaningful as the tuple (config x label-set x data) -> metrics, so every scorecard
 stamps three fingerprints (config version, label-set hash, data/ingest snapshot) and is therefore
-re-derivable/auditable. Read-only over review.db. Run ON DEMAND or at batch completion — never
-per-label-write.
+re-derivable/auditable. Read-only over the governance Postgres signal tables (common/db.py). Run ON
+DEMAND or at batch completion — never per-label-write.
 
-v1 scores the CURRENTLY-INGESTED state (the config that produced the live review.db). To compare
+v1 scores the CURRENTLY-INGESTED state (the config that produced the live signal tables). To compare
 config A vs B: re-ingest under B (cheap, Tier-0) and re-run the harness — the two scorecards are
 comparable via their stamped fingerprints. (In-memory candidate-config scoring without re-ingest is
 a later enhancement.)

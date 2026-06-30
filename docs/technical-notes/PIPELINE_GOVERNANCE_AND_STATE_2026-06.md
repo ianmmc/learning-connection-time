@@ -9,8 +9,10 @@
 > COMPLETE** — event-driven projection (§6). **Console & gate model decided 2026-06-27 (§11).** The
 > stage-selectable console is BUILT through Stage 4: **gate@1** (REQ-102), **Stage 2** (REQ-104),
 > **Stage 3** (REQ-110), **Stage 4 + the Stage 4→5 incremental handoff** (REQ-111, §12) — all run live on
-> batch_00002–00005. **Next: the Stage-5 console rework** (the app's origin; §12c) + REQ-100 (staleness) /
-> REQ-101 (Stage 6 + gate@6, `STAGE6_HANDOFF_DESIGN_2026-06.md`). This note is the architecture for three coupled decisions that outgrew
+> batch_00002–00005. **The Stage-5 console rework (REQ-112, 2026-06-29) is BUILT** — the district-driven,
+> attention-first faceted console (the app's origin, finally on the current architecture; §12c +
+> `STAGE5_FILTER_DESIGN` §A–D). **Next: Stage 6 + gate@6 routing** (`STAGE6_HANDOFF_DESIGN_2026-06.md`,
+> REQ-101) + REQ-100 (staleness). This note is the architecture for three coupled decisions that outgrew
 > `STAGE5_FILTER_DESIGN_2026-06.md`:
 > 1. **STATE vs DATA** — migrate the cross-stage *registry* (`district_status.json`) into the DB;
 >    keep the per-stage *data* artifacts as JSON on disk.
@@ -322,8 +324,10 @@ view/controls. Once cross-stage STATE is in the DB, the app is the governance co
 (see §11 for the full gate model):
 
 - **Stage 1 / gate@1** — review & approve queued `batch_*.json` (today out-of-band); an approval event.
-- **Stage 5 / gate@5** — the current review/label surface (per-URL representation review). `filtered.json`
-  is now an event-driven projection, not a Generate button (§6).
+- **Stage 5 / gate@5** — the **district-driven, attention-first** review/label console (REWORKED REQ-112,
+  2026-06-29). District-driven on purpose (the batch dissolved); per-URL representation review unchanged in
+  the center/right panes. `filtered.json` is an event-driven projection, not a Generate button (§6). Detail:
+  `STAGE5_FILTER_DESIGN` §A–D.
 - **Stage 6 / gate@6** — approve the handoff/dispatch (which reps → which council config).
 - **Stage 7 / gate@7** — review the council's requests/recommendations.
 - **(later) Stage 8 / gate@8** — review per-band results before the mechanical Stage-9 DB write (the effective old "CP-C").
@@ -464,9 +468,10 @@ recorded as they surface:
 - **Data source flips SQLite→Postgres** (REQ-103): the console reads/writes via `session_scope` against the
   isolated `governance` DB, not a local SQLite file. The "open a file, no Docker" ergonomic of the old
   review app goes away — the console now requires the container up (already a project precondition).
-- **Home view = a projection over the event log** (REQ-099): "what needs my attention" (districts awaiting
-  CP-A approval / CP-B release / re-discovery) is a query over `state_event` current-state, not a static
-  list. The UI's primary surface is this attention queue, not a stage tree.
+- **Home view = a projection over the event log** (REQ-099): "what needs my attention" is a query, not a
+  static list. **REALIZED for Stage 5 (REQ-112):** the left pane is an **attention queue** — districts
+  sorted by the inverted-confidence attention score (`STAGE5_FILTER_DESIGN` §A), not a stage tree. (A
+  cross-stage Overview attention queue is still the Overview's job.)
 - **Stage selector** (the wordmark combo box) swaps views per stage; CP-A (queue), CP-B (release), later
   CP-C (write). Open: which stages get a *read* view vs an *action* surface.
 - **Generate/Release trigger + staleness** (REQ-100/§6): each district shows new/current/stale from the
@@ -798,9 +803,11 @@ reframe and the batch_00002-forcing-function plan (the batch-of-record advances 
   work is a Python call; a crash just leaves `processed.json` unwritten → reconcile re-runs). A local
   `stage2_complete` disk-scan replaced an import of Stage 3's `find_districts` (the independence contract).
 - **Stage 4→5 incremental handoff BUILT (REQ-111)** — the seam where the batch hands to Stage 5. See **§12**.
-- **Then:** REQ-100 (staleness) / REQ-101 (Stage 6 + gate@6) — **and the Stage-5 console rework** (the app
-  began as a Stage-5 tool; §12). Per-stage detail: `STAGE1_QUEUE_DESIGN` §6 (gate@1), `STAGE2_DISCOVER_DESIGN`
-  §7 (the SERP cascade), `STAGE3_CAPTURE_DESIGN` §7, `STAGE4_PROCESS_DESIGN` §4a/§4b.
+- **Stage-5 console rework BUILT (REQ-112, 2026-06-29)** — the district-driven, attention-first faceted
+  console; the app's origin, finally on the current architecture. See **§12c** + `STAGE5_FILTER_DESIGN` §A–D.
+- **Then:** **Stage 6 + gate@6 routing** (`STAGE6_HANDOFF_DESIGN_2026-06.md`, REQ-101) + REQ-100 (staleness).
+  Per-stage detail: `STAGE1_QUEUE_DESIGN` §6 (gate@1), `STAGE2_DISCOVER_DESIGN` §7 (the SERP cascade),
+  `STAGE3_CAPTURE_DESIGN` §7, `STAGE4_PROCESS_DESIGN` §4a/§4b, `STAGE5_FILTER_DESIGN` §A–D.
 
 ---
 
@@ -840,9 +847,16 @@ the **first piece of the Stage-5 rework** — the signal tables moved (for the b
 to per-district UPSERT, exactly mirroring what the cross-stage cache (REQ-110) already did. The full
 `python3 -m …stage5_filter.build_signals` remains for schema changes / recovery.
 
-**§12c — What the Stage-5 console rework still owes (forward).** The handoff makes districts *appear* in
-Stage 5 instantly; it does **not** restructure the Stage-5 console itself. Open, for the dedicated Stage-5
-pass: the district-driven attention queue (§7b) as the home view; the gate@5 per-URL review integrated into
-the stage selector; the recency gate (REQ-044); a `state_event`-subscription projector generalizing the two
-inline `release.generate` hooks (§6). The Stage-5 review surface that exists today predates the governance
-re-architecture — read it as the *origin* of the console, not its current-architecture exemplar.
+**§12c — The Stage-5 console rework — BUILT (REQ-112, 2026-06-29).** The dedicated Stage-5 pass landed. **Done:**
+the **district-driven attention queue is the home view** (§7b realized) — the default is no-grouping, districts
+sorted **attention-first** (the inverted-confidence "needs my judgment" score, `STAGE5_FILTER_DESIGN` §A), with
+**facet grouping** (pipeline_state / state / topology, collapsible mini-dashboard headers), **record-facet
+filtering** (label/tier/reason — district stays visible), **multi-key sort** asc/desc, a **follow-up-flag**
+action (top attention tier), **DB-backed saved views**, and **re-fetch-on-show**. The gate@5 per-URL review is
+the (unchanged) center/right panes, now reached through this list. The plumbing finished too (SQLite vestige
+retired; signal tables a never-dropped live working store on the incremental path). **Still open (carried):**
+the **recency gate (REQ-044)**; a full **`state_event`-subscription projector** generalizing the two inline
+`release.generate` hooks (§6); the **harness attention-ordering metric** (deferred — attention ≠ target-precision;
+needs a reason×label cross-tab); the **"District Investigator"** holistic-journey view (the data model — `district_id`
++ the event log — already supports it; out of scope here). NCES **locale** facet descoped (not in our CCD data).
+Authority for the as-built: `STAGE5_FILTER_DESIGN` §A–D.

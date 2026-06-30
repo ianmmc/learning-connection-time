@@ -32,7 +32,7 @@ def test_default_data_root_is_repo_data(monkeypatch, fresh_paths):
 def test_runtime_state_lives_under_data_root(monkeypatch, fresh_paths):
     monkeypatch.delenv("LCT_DATA_ROOT", raising=False)
     p = fresh_paths()
-    for loc in (p.RAW_CAPTURES, p.QUEUE_DIR, p.STATUS_FILE, p.REVIEW_DB,
+    for loc in (p.RAW_CAPTURES, p.QUEUE_DIR, p.STATUS_FILE,
                 p.LABELS_JSON, p.CLUSTER_SPLITS_JSON):
         assert str(loc).startswith(str(p.DATA_ROOT)), f"{loc} not under DATA_ROOT"
 
@@ -42,7 +42,6 @@ def test_runtime_paths_match_current_layout(monkeypatch, fresh_paths):
     monkeypatch.delenv("LCT_DATA_ROOT", raising=False)
     p = fresh_paths()
     rel = lambda x: str(x.relative_to(p.REPO_ROOT))
-    assert rel(p.REVIEW_DB) == "data/acquisition/stage5_review/review.db"
     assert rel(p.LABELS_JSON) == "data/acquisition/stage5_review/labels.json"
     assert rel(p.CLUSTER_SPLITS_JSON) == "data/acquisition/stage5_review/cluster_splits.json"
     assert rel(p.QUEUE_DIR) == "data/acquisition/queue"
@@ -64,7 +63,6 @@ def test_data_root_env_override_relocates_everything(monkeypatch, tmp_path, fres
     p = fresh_paths()
     assert p.DATA_ROOT == tmp_path
     assert p.data_root_is_default() is False
-    assert p.REVIEW_DB == tmp_path / "acquisition" / "stage5_review" / "review.db"
     assert p.RAW_CAPTURES == tmp_path / "raw" / "lea-website-captures"
     # config does NOT follow DATA_ROOT
     assert not str(p.CONFIG_DIR).startswith(str(tmp_path))

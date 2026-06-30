@@ -27,6 +27,7 @@ from infrastructure.acquisition.common import config_loader  # noqa: E402  (Stag
 from infrastructure.acquisition.common import db as gdb  # noqa: E402  (isolated governance Postgres engine/session — REQ-103)
 from infrastructure.acquisition.common import cache_ingest as CI  # noqa: E402  (shared cross-stage cache schema + UPSERTs — REQ-103c, now common/)
 from infrastructure.acquisition.stage5_filter import models  # noqa: F401,E402  (registers PRECIOUS Label/ClusterSplit on gdb.Base)
+from infrastructure.acquisition.stage5_filter import attention as AT  # noqa: E402  (the district-driven attention score)
 
 RAW_DIR = paths.RAW_CAPTURES
 QUEUE_DIR = paths.QUEUE_DIR                   # Stage 1 batch_*.json (targeting + NCES denominator)
@@ -293,6 +294,50 @@ def recompute_labeled_topology(s, district_id: str) -> str:
     return topo
 
 
+def recompute_attention(s, district_id: str, cfg: dict = None) -> dict:
+    """Recompute + persist the ATTENTION score for one district's records AND the district rollup, from
+    the live signals + label state (attention.py). Called at ingest and on every label save, so the
+    console's working store stays current. Canonical records (non-duplicate cluster reps / singletons —
+    mirroring recompute_labeled_topology) drive the district rollup + pipeline_state; every record still
+    gets its own score (for record-level filtering). `s` is a governance Session/Connection. Returns the
+    district {score, reasons}."""
+    cfg = cfg or AT.load_config()
+    # Unresolved follow-up flags (the top attention tier): per-record + a district-level directive.
+    flagged = {r[0] for r in s.execute(text(
+        "SELECT target_id FROM followup_flag WHERE district_id=:did AND scope='record' AND resolved_at IS NULL"),
+        {"did": district_id})}
+    district_flagged = (s.execute(text(
+        "SELECT COUNT(*) FROM followup_flag WHERE district_id=:did AND scope='district' AND resolved_at IS NULL"),
+        {"did": district_id}).scalar() or 0) > 0
+    rows = s.execute(text(
+        """SELECT r.rec_key, r.tier, r.signals_json, r.duplicate_of, r.is_cluster_rep, r.cluster_id,
+                  COALESCE(l.status, 'unlabeled') AS status
+           FROM record r LEFT JOIN label l ON l.rec_key=r.rec_key
+           WHERE r.district_id=:did"""), {"did": district_id}).mappings().all()
+    canon_atts, n_unlabeled = [], 0
+    for r in rows:
+        try:
+            sig = json.loads(r["signals_json"]) if r["signals_json"] else {}
+        except (json.JSONDecodeError, TypeError):
+            sig = {}
+        att = AT.record_attention(sig, r["tier"], r["status"], cfg, has_flag=r["rec_key"] in flagged)
+        s.execute(text("UPDATE record SET attention_score=:sc, attention_reasons_json=:rj WHERE rec_key=:rk"),
+                  {"sc": att["score"], "rj": json.dumps(att["reasons"]), "rk": r["rec_key"]})
+        if r["duplicate_of"] is None and (r["is_cluster_rep"] == 1 or r["cluster_id"] is None):
+            canon_atts.append(att)
+            if r["status"] == "unlabeled":
+                n_unlabeled += 1
+    n_labeled = len(canon_atts) - n_unlabeled
+    pipeline_state = "untouched" if n_labeled == 0 else "complete" if n_unlabeled == 0 else "partial"
+    dist = AT.district_attention(canon_atts, cfg, has_district_flag=district_flagged)
+    s.execute(text(
+        """UPDATE district SET attention_score=:sc, attention_reasons_json=:rj, pipeline_state=:ps,
+              n_unlabeled=:nu, n_flagged=:nf WHERE district_id=:did"""),
+        {"sc": dist["score"], "rj": json.dumps(dist["reasons"]), "ps": pipeline_state,
+         "nu": n_unlabeled, "nf": len(flagged) + (1 if district_flagged else 0), "did": district_id})
+    return dist
+
+
 # ----------------------------- signal computation -----------------------------
 # ----------------------------- handbook page-harvesting (REQ-092) -----------------------------
 HANDBOOK_HARVEST_MIN = 6   # a PDF page with >= this many clock times is a likely schedule page
@@ -488,16 +533,21 @@ _SIGNAL_DROP_DDL = [
     "DROP TABLE IF EXISTS district_target CASCADE",
 ]
 _SIGNAL_CREATE_DDL = [
+    # `attention_*` (REQ-111 follow-on, the district-driven console): the inverted-confidence "needs my
+    # judgment" score + its reason codes, computed by recompute_attention() — see attention.py. On
+    # `district`: the rollup + the label-coverage `pipeline_state` + counts the left pane sorts/groups on.
     """CREATE TABLE IF NOT EXISTS district (
         district_id text PRIMARY KEY, name text, state text, district_dir text,
         batch_id text, guessed_topology text, labeled_topology text, nces_school_count integer,
-        n_records integer)""",
+        n_records integer, attention_score double precision, attention_reasons_json text,
+        pipeline_state text, n_unlabeled integer, n_flagged integer)""",
     """CREATE TABLE IF NOT EXISTS record (
         rec_key text PRIMARY KEY, district_id text, district_dir text, url text, hash text,
         kind text, final_url text, content_hash text, duplicate_of text,
         tier text, sort_score double precision, category_hypothesis text, signals_json text,
         cluster_id text, is_cluster_rep integer, cluster_size integer,
-        intended_schools_json text, candidate_tools_json text, is_emergent integer)""",
+        intended_schools_json text, candidate_tools_json text, is_emergent integer,
+        attention_score double precision, attention_reasons_json text)""",
     """CREATE TABLE IF NOT EXISTS representation (
         rec_key text, source text, filename text, file_kind text,
         n_chars integer, n_times integer, usable integer)""",
@@ -509,14 +559,28 @@ _SIGNAL_CREATE_DDL = [
         nces_by_level_json text, enrollment_k12 integer, lea_claimed_bands_json text,
         schools_by_band_json text)""",
 ]
+# Additive column migrations for the never-dropped incremental path: a table created before a column
+# existed won't pick it up from CREATE IF NOT EXISTS, so ensure_signal_schema applies these too. (The
+# full ingest() drops+recreates, so it gets the columns from the CREATE above; this is for ingest_batch.)
+_SIGNAL_ALTERS = [
+    "ALTER TABLE district ADD COLUMN IF NOT EXISTS attention_score double precision",
+    "ALTER TABLE district ADD COLUMN IF NOT EXISTS attention_reasons_json text",
+    "ALTER TABLE district ADD COLUMN IF NOT EXISTS pipeline_state text",
+    "ALTER TABLE district ADD COLUMN IF NOT EXISTS n_unlabeled integer",
+    "ALTER TABLE district ADD COLUMN IF NOT EXISTS n_flagged integer",
+    "ALTER TABLE record ADD COLUMN IF NOT EXISTS attention_score double precision",
+    "ALTER TABLE record ADD COLUMN IF NOT EXISTS attention_reasons_json text",
+]
 # Backwards-compatible alias: the full drop+rebuild list (what ingest() runs).
 REBUILD_DDL = _SIGNAL_DROP_DDL + _SIGNAL_CREATE_DDL
 
 
 def ensure_signal_schema(sess) -> None:
-    """Create the derived signal tables if absent (the incremental path — never drops). Caller owns
-    the session."""
+    """Create the derived signal tables if absent + apply additive column migrations (the incremental
+    path — never drops). Caller owns the session."""
     for ddl in _SIGNAL_CREATE_DDL:
+        sess.execute(text(ddl))
+    for ddl in _SIGNAL_ALTERS:
         sess.execute(text(ddl))
 
 
@@ -810,8 +874,10 @@ def ingest_batch(district_ids: list, root: Path = RAW_DIR, *, regenerate_filtere
             for ddir in sorted(p for p in root.glob(f"{did}_*") if p.is_dir()):
                 if ingest_district(sess, ddir, splits=splits, batches=batches, nces=nces):
                     ingested.append(did)
+        att_cfg = AT.load_config()
         for did in set(ingested):
             recompute_labeled_topology(sess, did)
+            recompute_attention(sess, did, att_cfg)
         export_labels(sess)              # keep the JSON backups in sync with the DB
         export_splits(sess)
         n_rec = sess.execute(text("SELECT COUNT(*) FROM record WHERE district_id = ANY(:ids)"),
@@ -850,9 +916,11 @@ def ingest(root: Path):
         # Restore any labels the DB is missing from the JSON source of truth (no-op on a normal
         # re-ingest where the label table was preserved; the recovery path after a DB wipe).
         restored = import_labels(sess)
-        # labeled_topology is derived from the (now-restored) human labels + the stored NCES count.
+        # labeled_topology + attention are derived from the (now-restored) human labels + stored signals.
+        att_cfg = AT.load_config()
         for did in ingested:
             recompute_labeled_topology(sess, did)
+            recompute_attention(sess, did, att_cfg)
         n_rec = sess.execute(text("SELECT COUNT(*) FROM record")).scalar()
         n_lab = sess.execute(text("SELECT COUNT(*) FROM label WHERE status!='unlabeled'")).scalar()
         n_dist = sess.execute(text("SELECT COUNT(*) FROM district")).scalar()

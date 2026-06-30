@@ -62,44 +62,164 @@ let DATA = null;      // record detail
 function fileUrl(d, fn) { return `/files/${d.district_dir}/${d.hash}/${encodeURIComponent(fn)}`; }
 const short = (u) => (u || "").replace(/^https?:\/\//, "").slice(0, 40);
 
-// ----------------------------- tree -----------------------------
-async function loadTree() {
-  const districts = await (await fetch("/api/tree")).json();
-  const byBatch = {};
-  districts.forEach((d) => { (byBatch[d.batch_id || "—"] ||= []).push(d); });
+// ----------------------------- left pane: faceted, attention-first, district-driven -----------------------------
+// The Stage-5 rework. Group by DISTRICT facets, filter by RECORD facets (the district stays visible),
+// sort by district fields (incl. continuous) asc/desc — all server-side (/api/stage5/districts). Default:
+// no grouping, attention-first. View-state persists across stage switches + reloads (localStorage), and
+// can be saved as named presets (DB-backed). The batch is gone here; the district is the unit.
+const ATTN_REASON = {   // dominant reason -> {label, tone} for the rationale chips
+  manual_flag: ["⚑ flagged", "r-flag"], image_only: ["image-only", "r-image"],
+  signal_text_disagree: ["signal≠text", "r-disagree"], buried_long_doc: ["buried in doc", "r-buried"],
+  ambiguous: ["ambiguous", "r-amb"], clean_target: ["clean yes", "r-clean"],
+  low_signal: ["low signal", "r-low"], resolved: ["done", "r-done"],
+};
+const GROUP_LABEL = { none: "No grouping", pipeline_state: "Pipeline state (label+guess)",
+  state: "US state", topology: "Topology" };
+const SORT_LABEL = { attention: "Need for attention", name: "Name (A–Z)", enrollment: "Enrollment",
+  schools: "# schools (NCES)", recent: "Most recent change", first_seen: "First seen at gate@5" };
+const DEFAULT_VIEW = { group_by: "none", sort: "attention", dir: "desc", label: "",
+  tiers: [], reasons: [], hide_resolved: false };
+let VIEW = loadView();
+let FACETS = null;
+
+function loadView() {
+  let v;
+  try { v = { ...DEFAULT_VIEW, ...JSON.parse(localStorage.getItem("s5_view") || "{}") }; }
+  catch (_) { v = { ...DEFAULT_VIEW }; }
+  // Deep-linkable: ?group_by=…&sort=…&dir=… overrides (bookmarkable/shareable views).
+  const q = new URLSearchParams(location.search);
+  ["group_by", "sort", "dir", "label"].forEach((k) => { if (q.has(k)) v[k] = q.get(k); });
+  return v;
+}
+function persistView() { localStorage.setItem("s5_view", JSON.stringify(VIEW)); }
+
+function viewQuery() {
+  const p = new URLSearchParams();
+  p.set("group_by", VIEW.group_by); p.set("sort", VIEW.sort); p.set("dir", VIEW.dir);
+  if (VIEW.label) p.set("label", VIEW.label);
+  (VIEW.tiers || []).forEach((t) => p.append("tier", t));
+  (VIEW.reasons || []).forEach((r) => p.append("reason", r));
+  if (VIEW.hide_resolved) p.set("hide_resolved", "true");
+  return p.toString();
+}
+
+async function loadTree() {   // (name kept: splitRecord + initial boot call it)
+  if (!FACETS) { try { FACETS = await (await fetch("/api/stage5/facets")).json(); } catch (_) { FACETS = {}; } }
+  let data;
+  try { data = await (await fetch(`/api/stage5/districts?${viewQuery()}`)).json(); }
+  catch (e) { $("#tree").innerHTML = `<div class="empty err">Couldn't load: ${e.message}</div>`; return; }
   const tree = $("#tree");
   tree.innerHTML = "";
-  for (const [batch, ds] of Object.entries(byBatch)) {
-    const g = document.createElement("div"); g.className = "batch-group";
-    g.innerHTML = `<div class="batch-label">${batch}</div>`;
-    ds.forEach((d) => g.appendChild(renderDistrict(d)));
-    tree.appendChild(g);
-  }
+  tree.appendChild(renderControls(data));
+  const list = document.createElement("div"); list.id = "s5-list";
+  data.groups.forEach((g) => list.appendChild(renderGroup(g, data.group_by)));
+  if (!data.groups.length) list.innerHTML = `<div class="empty">No districts match.</div>`;
+  tree.appendChild(list);
   refreshProgress();
 }
+window.loadStage5 = loadTree;   // gate1.js re-fetches on view-show
 
-function topoBadge(kind, val) {
-  const v = val || "unknown";
-  const title = kind === "guessed"
-    ? "guessed topology — from signals (noisy; measures the heuristic)"
-    : "labeled topology — derived from your labels + NCES (the truth)";
-  return `<span class="topo ${kind} ${v}" title="${title}">${kind === "guessed" ? "guess" : "labeled"}: ${v}</span>`;
+// ----------------------------- controls -----------------------------
+function renderControls(data) {
+  const bar = document.createElement("div"); bar.className = "s5-bar";
+  const selectFor = (id, map, cur) => `<select id="${id}" class="s5-select">` +
+    Object.keys(map).map((k) => `<option value="${k}" ${k === cur ? "selected" : ""}>${map[k]}</option>`).join("") + `</select>`;
+  const labelSeg = [["", "All"], ["unlabeled", "Unlabeled"], ["labeled", "Labeled"]].map(([v, t]) =>
+    `<button class="seg-btn ${VIEW.label === v ? "on" : ""}" data-label="${v}">${t}</button>`).join("");
+  const tierBtns = ["A", "B", "C", "D"].map((t) =>
+    `<button class="tier-btn t-${t} ${VIEW.tiers.includes(t) ? "on" : ""}" data-tier="${t}">${t}</button>`).join("");
+  const reasonChips = ((FACETS && FACETS.reason) || []).filter((r) => r.value).map((r) => {
+    const [lab, tone] = ATTN_REASON[r.value] || [r.value, "r-low"];
+    return `<button class="rsn-chip ${tone} ${VIEW.reasons.includes(r.value) ? "on" : ""}" data-reason="${r.value}" title="${r.count} records">${lab}</button>`;
+  }).join("");
+  const grouped = VIEW.group_by !== "none";
+
+  bar.innerHTML = `
+    <div class="s5-field"><span class="s5-lbl">Group</span>${selectFor("s5-group", GROUP_LABEL, VIEW.group_by)}</div>
+    <div class="s5-field"><span class="s5-lbl">Sort</span>${selectFor("s5-sort", SORT_LABEL, VIEW.sort)}
+      <button id="s5-dir" class="s5-iconbtn" title="ascending / descending">${VIEW.dir === "asc" ? "↑" : "↓"}</button></div>
+    <div class="s5-filtrow">
+      <div class="seg" role="group" aria-label="label status">${labelSeg}</div>
+      <div class="tiers" role="group" aria-label="tier">${tierBtns}</div>
+    </div>
+    <div class="s5-filtrow s5-secondary">
+      <label class="s5-toggle"><input type="checkbox" id="s5-hideres" ${VIEW.hide_resolved ? "checked" : ""}/> Hide resolved</label>
+      ${grouped ? `<span class="s5-spacer"></span>
+        <button id="s5-collapse" class="s5-link">Collapse all</button>
+        <button id="s5-expand" class="s5-link">Expand all</button>` : ""}
+    </div>
+    ${reasonChips ? `<div class="s5-reasons">${reasonChips}</div>` : ""}
+    <div class="s5-actions">
+      <select id="s5-viewsel" class="s5-select s5-viewsel"><option value="">Saved views…</option></select>
+      <button id="s5-viewsave" class="s5-btn">Save view</button>
+      <span class="s5-count">${data.total_districts} district${data.total_districts === 1 ? "" : "s"}</span>
+    </div>`;
+
+  bar.querySelector("#s5-group").onchange = (e) => { VIEW.group_by = e.target.value; commitView(); };
+  bar.querySelector("#s5-sort").onchange = (e) => { VIEW.sort = e.target.value; commitView(); };
+  bar.querySelector("#s5-dir").onclick = () => { VIEW.dir = VIEW.dir === "asc" ? "desc" : "asc"; commitView(); };
+  bar.querySelector("#s5-hideres").onchange = (e) => { VIEW.hide_resolved = e.target.checked; commitView(); };
+  bar.querySelectorAll("[data-label]").forEach((b) => b.onclick = () => { VIEW.label = b.dataset.label; commitView(); });
+  bar.querySelectorAll("[data-tier]").forEach((b) => b.onclick = () => { toggle(VIEW.tiers, b.dataset.tier); commitView(); });
+  bar.querySelectorAll("[data-reason]").forEach((b) => b.onclick = () => { toggle(VIEW.reasons, b.dataset.reason); commitView(); });
+  bar.querySelector("#s5-viewsave").onclick = saveCurrentView;
+  if (grouped) {
+    bar.querySelector("#s5-collapse").onclick = () => setAllGroups(true);
+    bar.querySelector("#s5-expand").onclick = () => setAllGroups(false);
+  }
+  populateViewSelect(bar.querySelector("#s5-viewsel"));
+  return bar;
+}
+function toggle(arr, v) { const i = arr.indexOf(v); if (i < 0) arr.push(v); else arr.splice(i, 1); }
+function commitView() { persistView(); loadTree(); }
+function setAllGroups(collapsed) {
+  document.querySelectorAll("#s5-list .s5-group-body").forEach((b) => b.classList.toggle("hidden", collapsed));
+  document.querySelectorAll("#s5-list .s5-caret").forEach((c) => c.textContent = collapsed ? "▸" : "▾");
 }
 
-function byLevelStr(bl) { return bl ? Object.entries(bl).map(([k, v]) => `${k}: ${v}`).join(", ") : ""; }
+// ----------------------------- groups + districts -----------------------------
+function groupTitle(key, group_by) {
+  if (group_by === "none") return "All districts";
+  if (group_by === "pipeline_state") return ({ untouched: "Untouched", partial: "In progress", complete: "Resolved" }[key] || key);
+  return key;
+}
+function renderGroup(g, group_by) {
+  const wrap = document.createElement("div"); wrap.className = "s5-group";
+  if (group_by !== "none") {
+    const head = document.createElement("div"); head.className = "s5-group-head";
+    head.innerHTML = `<span class="s5-caret">▾</span><span class="s5-gtitle">${groupTitle(g.key, group_by)}</span>
+      <span class="s5-gcount">${g.n_districts} · <b>${g.n_attention}</b> need attention</span>`;
+    const body = document.createElement("div"); body.className = "s5-group-body";
+    g.districts.forEach((d) => body.appendChild(renderDistrict(d)));
+    head.onclick = () => { body.classList.toggle("hidden"); head.querySelector(".s5-caret").textContent = body.classList.contains("hidden") ? "▸" : "▾"; };
+    wrap.append(head, body);
+  } else {
+    g.districts.forEach((d) => wrap.appendChild(renderDistrict(d)));
+  }
+  return wrap;
+}
+
+function attnChips(reasons, score) {
+  const top = (reasons || []).slice(0, 2).map((r) => {
+    const [label, tone] = ATTN_REASON[r] || [r, "r-low"];
+    return `<span class="attn-chip ${tone}">${label}</span>`;
+  }).join("");
+  return `<span class="attn-score" title="attention: where your judgment moves us forward">${Math.round(score || 0)}</span>${top}`;
+}
 
 function renderDistrict(d) {
   const wrap = document.createElement("div"); wrap.className = "district";
   const head = document.createElement("div"); head.className = "district-head";
-  const nces = d.nces_school_count != null ? ` · ${d.nces_school_count} NCES school${d.nces_school_count === 1 ? "" : "s"}` : "";
-  const blTitle = d.nces_by_level ? ` (${byLevelStr(d.nces_by_level)})` : "";
-  head.innerHTML = `<div><div class="district-name">${d.name}</div>
-      <div class="district-meta" title="NCES schools by level${blTitle}">${d.state} · ${d.records.length} records${nces}</div></div>
-    <div class="topos">${topoBadge("labeled", d.labeled_topology)}${topoBadge("guessed", d.guessed_topology)}</div>`;
+  const nces = d.nces_school_count != null ? ` · ${d.nces_school_count} sch` : "";
+  const enr = d.enrollment_k12 ? ` · ${d.enrollment_k12.toLocaleString()} enr` : "";
+  const flagged = d.n_flagged ? ` <span class="dist-flag" title="${d.n_flagged} open follow-up flag(s)">⚑${d.n_flagged}</span>` : "";
+  head.innerHTML = `<div class="district-main">
+      <div class="district-name">${d.name}${flagged}</div>
+      <div class="district-meta">${d.state} · ${d.n_unlabeled}/${d.n_records} unlabeled${nces}${enr}</div>
+      <div class="attn-row">${attnChips(d.attention_reasons, d.attention_score)}</div></div>
+    <button class="dist-flagbtn btn btn-ghost" title="flag this district for follow-up">⚑</button>`;
   const ul = document.createElement("ul"); ul.className = "rec-list";
 
-  // Group records into near-duplicate clusters. A cluster renders as its representative row
-  // (with a "+N" badge that expands the members); standalone records render directly.
   const clusters = {};
   d.records.forEach((r) => {
     if (!r.cluster_id) return;
@@ -115,6 +235,7 @@ function renderDistrict(d) {
     ul.appendChild(renderCluster(clusters[r.cluster_id]));
   });
 
+  head.querySelector(".dist-flagbtn").onclick = (e) => { e.stopPropagation(); flagTarget("district", d.district_id, d.name); };
   head.onclick = () => ul.classList.toggle("hidden");
   wrap.append(head, ul);
   return wrap;
@@ -133,17 +254,60 @@ function renderCluster(c) {
 
 function renderRecRow(r, clusterSize) {
   const li = document.createElement("li");
-  li.className = "rec-row" + (r.duplicate_of ? " dup" : "") + (clusterSize > 1 ? " cluster-rep" : "");
+  const status = r.label_status || r.status || "unlabeled";   // faceted endpoint -> label_status
+  li.className = "rec-row" + (clusterSize > 1 ? " cluster-rep" : "");
   li.dataset.recKey = r.rec_key;
-  const tail = (r.url || "").replace(/^https?:\/\//, "").slice(0, 34);
+  // Favor the DISTINGUISHING tail (path/page) over the shared domain prefix — records within a
+  // district otherwise all read identically. Full URL stays on hover (title).
+  const u = (r.url || "").replace(/^https?:\/\//, "").replace(/^www\./, "");
+  const tail = u.length > 34 ? "…" + u.slice(-33) : u;
   const badge = clusterSize > 1
     ? `<span class="cluster-badge" title="${clusterSize - 1} near-duplicate(s) — click to expand">+${clusterSize - 1}</span>` : "";
   const emergent = r.is_emergent ? `<span class="emergent-dot" title="emergent — captured but not a planned candidate">⚡</span>` : "";
+  // the record's dominant attention reason as a tiny dot-chip (the per-URL rationale)
+  const reason = (r.attention_reasons || [])[0];
+  const rchip = reason && reason !== "resolved" && reason !== "low_signal"
+    ? `<span class="rec-attn ${(ATTN_REASON[reason] || ["", "r-low"])[1]}" title="${(ATTN_REASON[reason] || [reason])[0]}"></span>` : "";
   li.innerHTML = `<span class="tier ${r.tier}">${r.tier}</span>
-    <span class="rec-label" title="${r.url}">${tail}${r.duplicate_of ? " · dup" : ""}</span>
-    ${emergent}${badge}<span class="status-dot ${r.status || "unlabeled"}"></span>`;
+    <span class="rec-label" title="${r.url}">${tail}</span>
+    ${emergent}${rchip}${badge}<span class="status-dot ${status}"></span>
+    <button class="rec-flagbtn" title="flag this URL for follow-up">⚑</button>`;
   li.onclick = (e) => { e.stopPropagation(); selectRecord(r.rec_key, li); };
+  li.querySelector(".rec-flagbtn").onclick = (e) => { e.stopPropagation(); flagTarget("record", r.rec_key, tail); };
   return li;
+}
+
+// ----------------------------- follow-up flag + saved views -----------------------------
+async function flagTarget(scope, target_id, label) {
+  const directive = prompt(`Flag this ${scope} for follow-up — what should be done?\n(${label})`, "");
+  if (directive === null) return;   // cancelled
+  try {
+    await fetch("/api/followup", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ scope, target_id, directive, actor: "ian" }) });
+  } catch (e) { alert("Couldn't flag: " + e.message); return; }
+  loadTree();   // attention changed server-side -> the flagged item jumps to the top
+}
+
+async function populateViewSelect(sel) {
+  if (!sel) return;
+  let views = [];
+  try { views = await (await fetch("/api/views?actor=ian")).json(); } catch (_) {}
+  views.forEach((v) => { const o = document.createElement("option"); o.value = v.id; o.textContent = v.name; o.dataset.config = JSON.stringify(v.config); sel.appendChild(o); });
+  sel.onchange = () => {
+    const opt = sel.selectedOptions[0];
+    if (!opt || !opt.value) return;
+    VIEW = { ...DEFAULT_VIEW, ...JSON.parse(opt.dataset.config || "{}") };
+    persistView(); loadTree();
+  };
+}
+async function saveCurrentView() {
+  const name = prompt("Save this view as:", "");
+  if (!name) return;
+  try {
+    await fetch("/api/views", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, config: VIEW, actor: "ian" }) });
+  } catch (e) { alert("Couldn't save view: " + e.message); return; }
+  loadTree();
 }
 
 // ----------------------------- center: representations -----------------------------
@@ -381,4 +545,6 @@ $("#glossaryClose").onclick = () => $("#glossary").classList.add("hidden");
 $("#glossary").onclick = (e) => { if (e.target.id === "glossary") $("#glossary").classList.add("hidden"); };
 
 buildGlossary();
-loadTree();
+// Initial Stage-5 load is driven by gate1.js's applyView() (it calls window.loadStage5 on show),
+// so the tree re-fetches every time you switch back to Stage 5 — no stale list (the batch_00007
+// gap). If Stage 5 isn't the initially-selected view, applyView loads it on first show.
