@@ -212,13 +212,80 @@ the models, which family diversity cannot rescue). Two implications Stage 6 carr
   signal alongside its routed council. (Calibrated escalation thresholds — UCCI — are a later refinement;
   the binary "fidelity-suspect → don't auto-accept" gate is the version we build first.)
 
-### C. Cost estimation (story 67–68)
-- **v1:** OpenRouter price/1M × token estimate (input ≈ rep size; output small/bounded). Per config × per rep.
-- **Actuals:** OpenRouter returns a `usage` object on each response → capture post-hoc actuals to refine
-  the estimator over time. **RESEARCH (story 68):** does the OpenRouter API expose *historical* per-request
-  logs/usage beyond the per-response `usage`? (Worth a probe — needed for retroactive accuracy.)
-- Feeds: the handoff cost summary, the `gate@6` go/no-go, and the budget governor (REQ-051).
-- **OPEN:** token-estimation method (char/4 heuristic vs a real tokenizer per model).
+### C. Cost estimation (story 67–68) — GROUNDED BY MEASUREMENT, not a heuristic (Ian, 2026-06-30)
+
+**Decision: don't guess the estimator and don't reverse-engineer it from old logs — *measure it* against
+representations we already have.** A `chars/4` heuristic is wrong per-model (every model tokenizes
+differently; vision input tokens depend on image size, not chars) and old OpenRouter logs were produced on
+a polluted, pre-Stage-1..5 input mix. Instead, run a small, stratified **cost-measurement benchmark** over
+our existing captured/processed reps, record the real token+cost telemetry OpenRouter returns, and fit a
+per-model cost model. The estimator then reads *measured* rates. **Feeds:** the handoff cost summary, the
+`gate@6` go/no-go, the budget governor (REQ-051).
+
+> **STATUS: DESIGNED, NOT YET RUN.** This is the test design only (per Ian — design, don't execute yet).
+> **Cost and accuracy are DECOUPLED (Ian, 2026-06-30):** cost needs no ground truth — it is tokens × price
+> over *any* real representations — so this benchmark runs **cost-only on current clean reps now**. The
+> clean-data **accuracy/composition** re-benchmark (§3A, "membership open") is a *separate, later* effort,
+> blocked on aligning GT into the current pipeline (see C.6). The harness is built so the same runner can
+> later emit an accuracy read-out, but we do **not** wire accuracy now. Single-model calls here = the
+> **benchmark/testing mode** of §1 (in production we dispatch to councils, not lone models).
+
+**C.1 — The harness.** `stage6_handoff/cost_benchmark.py` (a script, *not* CI — gated on `OPENROUTER_API_KEY`,
+like the Stage-2 reliability harness). For each (model × representation) it issues one chat completion with
+the **real extraction prompt** (the archived `LEAN_SYSTEM_PROMPT` — reads TIMES only, returns
+`{schedules:[{grade_level,start_time,end_time,school_name,confidence}]}`; honors the REQ-054 invariant), then
+records the telemetry below. Reuses the OpenRouter chat-client shape from the archived `council_extract.py`.
+Output → `data/acquisition/diagnostics/stage6_cost/` (raw per-call JSONL) + a fitted
+`common/config/council_cost_model.json` (config-as-data the estimator reads).
+
+**C.2 — What we capture per call** (the real numbers, not estimates):
+- `model`, `rec_key`, `source`, `file_kind`, `content_type`, `n_chars`, `n_times` (school-count proxy);
+- **`prompt_tokens` / `completion_tokens`** — from the response `usage` object (native counts);
+- **`total_cost` ($)** — from OpenRouter's per-generation telemetry (`GET /api/v1/generation?id=…`, or
+  `usage:{include:true}` on the request). *Verify the exact field against OpenRouter docs at build time.*
+- `latency_ms`; `parsed_ok` (did it return valid schedule JSON); `n_schedules`.
+
+**C.3 — The representation sample** (stratified, seeded, drawn from the DB `representation`/`record` tables
++ the files on disk — our existing batch_00001+ corpus, 73 district dirs, with labels). Cells to cover:
+
+| dimension | strata | why it matters to cost |
+|---|---|---|
+| `file_kind` | text · pdf · **image** | vision tokens price differently from text tokens |
+| content type | school page · district **hub** table · **handbook** (`is_handbook`) · **image-only** (`visual_text_gap`) | drives input size + which council |
+| size (`n_chars`) | S <2k · M 2–8k · L 8–16k · XL >16k | input tokens ≈ f(size); XL is the Orange-truncation zone |
+| school count (`n_times`) | low · high | **output** tokens scale with schools returned (per-school facts) |
+
+Target ~3–5 reps per non-empty cell (seeded sample over the labeled canonical reps), ≈ 40–60 reps to start.
+
+**C.4 — The models.** The candidate-6 on text reps (`google/gemini-2.5-flash`,
+`google/gemini-2.5-flash-lite`, `mistralai/mistral-small-24b-instruct-2501`,
+`mistralai/mistral-large-2512`, `deepseek/deepseek-v3.2`, `qwen/qwen3-235b-a22b-2507`); the **vision-capable
+subset** (Gemini Flash, Mistral Large) additionally on image reps. **Volume:** ~60 reps × 6 models (text) +
+image-reps × 2 ≈ **300–400 calls**; at sub-cent/call this is **a few dollars total** to run — cheap enough
+to repeat as the corpus grows.
+
+**C.5 — The cost model it produces** (what grounds the estimator). Per model, fit from the measured points:
+- **input:** `prompt_tokens ≈ α + β·n_chars` (text — the per-model tokenizer slope) / `≈ f(image dims)` (vision);
+- **output:** `completion_tokens ≈ γ·n_schools + δ` (output scales with schools on the page);
+- → `cost(rep, council) = Σ_voters (price_in·in + price_out·out) + escalation_rate · judge_cost`.
+The **escalation_rate** (how often the judge fires) is an *accuracy/agreement* quantity, NOT measured by
+this cost-only pass — until the accuracy benchmark exists, the estimator uses a conservative assumed rate,
+flagged as such.
+
+**C.6 — Accuracy/composition is a SEPARATE later effort (GT must first be aligned into the pipeline).**
+The existing GT (`data/benchmark/gt_curation_20260621T060008Z`, 27 curated hard-case districts) has
+**human-confirmed numbers but ZERO district overlap with the current pipeline** (verified 2026-06-30), and
+its representations are old/messy-pipeline artifacts — so it does **not** pair with current clean reps for
+scoring. **Decision (Ian, deferred):** when we do accuracy, *align the prior GT work into the current
+pipeline* rather than scoring against a parallel data island — e.g. a large **`batch_00000`** that runs the
+27 GT districts through Stages 1–5 so the confirmed numbers pair with current-format reps (re-*process* the
+retained raw captures where possible — no re-capture, no site drift; check whether those raw files survive).
+Only then does the shared harness emit an accuracy/escalation read-out.
+
+**C.6b — Cost-pass open knobs (decide after a first run):** exact per-cell sample size (~3–5 default,
+confirmed OK); how often to re-measure (corpus drift). The estimator's *consumption* of
+`council_cost_model.json` is built in slice 3; this benchmark *populates/calibrates* it (slice 3 ships a
+clearly-labeled bootstrap until then).
 
 ### D. The handoff artifact schema (mostly designed — pin it)
 `handoff_<hash>_<timestamp>.json` (immutable), organized by district for review but **assigned per
