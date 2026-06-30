@@ -14,8 +14,9 @@
 > `STAGE5_FILTER_DESIGN` §A–D). **Next: Stage 6 + gate@6 routing** (`STAGE6_HANDOFF_DESIGN_2026-06.md`,
 > REQ-101) + REQ-100 (staleness). This note is the architecture for three coupled decisions that outgrew
 > `STAGE5_FILTER_DESIGN_2026-06.md`:
-> 1. **STATE vs DATA** — migrate the cross-stage *registry* (`district_status.json`) into the DB;
->    keep the per-stage *data* artifacts as JSON on disk.
+> 1. **The DB is the working store; disk holds binaries + receipts** — the cross-stage registry *and*
+>    every stage's data live in the DB (what the next stage reads); the per-stage JSON files are
+>    auditable receipts, not transmitters (§1, as built through REQ-110/111/112).
 > 2. **The Stage 5→6 release** — `filtered.json` as a generated **export** of the DB's release state
 >    (not the primary store), + the Stage 6 `handoff_<hash>_<timestamp>.json` immutable dispatch record.
 > 3. **The app's scope** — the Stage-5-only review app → a **stage-selectable governance console**
@@ -29,26 +30,31 @@
 
 ---
 
-## 1. The organizing principle: STATE vs DATA
+## 1. The organizing principle: the DB is the working store; disk holds binaries + receipts
 
-The registry currently blurs two different things. Separating them resolves the whole design:
+**The governance DB is the working store and the pipeline's reflection of state.** Each stage projects its
+slice into the DB, and the next stage (and the console) reads it from there — **data flows DB→DB, not
+file→file.** Disk holds two things the DB deliberately does not: the **capture binaries** (too large for a
+DB, regenerable from the web) and the **regenerable JSON files** the stages emit. Those JSON files are
+**auditable receipts** — for state-confirmation, human inspection, and recovery — **not** the medium that
+carries data between stages. (That file-as-transmitter model was the original 2026-06-26 framing; it was
+retired when the cross-stage cache became a live working store — REQ-110/111/112; build history in §7a-A / §12.)
 
-| | what it is | authoritative home | properties |
+| class | what it is | home | properties |
 |---|---|---|---|
-| **DATA** | `discovery.json`, `candidates.json`, `captures.json`, `processed.json`, `batch_*.json` + the capture binaries | **JSON on disk**, next to captures | content; **regenerable from the web**; read natively by the Node capture half; relocatable as one tree (REQ-087) |
-| **STATE** | where each district is in the pipeline; what's approved at gate@1; what's released at gate@5; the re-discovery loop | **the DB** | small, queryable, concurrently-updated, *not* a linear listing; **precious** (human decisions, not rebuildable from DATA) |
-| **SIGNALS** | tiers, categories, signal vectors, clusters | the DB | **regenerable cache** — dropped + rebuilt each ingest (today's behavior) |
-| **LABELS / SPLITS** | the human ground truth + cluster-split overrides | the DB | **precious** — already backed to `labels.json` / `cluster_splits.json` |
+| **STATE** | pipeline position; gate@1 approvals; gate@5 release; the re-discovery loop | **DB** (working store) | the `state_event` append-log + `current_state` view (§3); **precious** — JSON-backed, re-importable |
+| **SIGNALS** | tiers, categories, signal vectors, clusters, attention | **DB** (working store) | regenerable; a **never-dropped live store on the incremental path** (REQ-110/111/112) — full drop+rebuild only for schema changes / recovery |
+| **CROSS-STAGE DATA** | the queryable projection of every stage's output — `discovery_school` / `candidate` / `capture` / `processed_doc` (`common/cache_ingest.py`) + `record` / `representation` / `district_target` (Stage 5) | **DB** (working store) | regenerable from disk; **what each stage reads to drive the next**, kept fresh by each stage's finish hook |
+| **LABELS / SPLITS / BATCHES / FLAGS** | human ground truth, cluster-split overrides, the queued/approved batch, follow-up flags | **DB** | **precious** — never in the ingest drop list; JSON-backed |
+| **CAPTURE BINARIES** | the captured PDFs / PNGs / extracted text files | **disk**, authoritative | regenerable from the **web** (not the DB); referenced by `filename` from `representation`; relocatable as one tree (REQ-087) |
+| **JSON RECEIPTS** | `discovery.json` / `candidates.json` / `captures.json` / `processed.json` / `filtered.json` / `batch_*.json` | **disk** | regenerable; the auditable record of each stage's output + the DB-recovery source (`batch_*.json` / `filtered.json` are generated *from* the DB); **NOT stage-to-stage transmitters** |
 
-**The claim is narrow and safe:** move *STATE* into the DB, keep *DATA* authoritative on disk. We are **not**
-making the DB authoritative for everything — it is a single binary blob (not git-diffable, not Node-native,
-corruptible). DATA stays on disk; the DB owns STATE + the precious human signals + the regenerable cache.
-
-**Consequence — the "DB is purely a regenerable cache" framing officially ends.** The DB now holds two
-precious things (labels, *and* checkpoint/lifecycle state) beside the regenerable signal cache. Both
-precious classes get the **established backup pattern**: export to a version-controlled JSON, re-importable
-after a DB wipe (exactly as `labels.json` / `cluster_splits.json` work today). We extend that pattern; we
-do not invent one.
+**Precious vs regenerable is the load-bearing line — not DB vs disk.** The DB holds precious things (labels,
+lifecycle state, batches, flags) *and* the regenerable working store (signals + the cross-stage data
+projection). Every **precious** class gets the **established backup pattern**: export to a version-controlled
+JSON, re-importable after a DB wipe (exactly as `labels.json` / `cluster_splits.json` work today). Every
+**regenerable** class can be rebuilt from disk (the binaries + the receipts) at any time. We extend that
+pattern; we do not invent one. The DB is not a blob store: binaries stay on disk and are referenced by path.
 
 ---
 
@@ -263,9 +269,13 @@ on regenerate. Stamped with `(config,labels,data)` fingerprints so staleness is 
   records:[ { rec_key, url, tier, category, emergent, intended_schools,
               send:[ {representation_file, kind, page?} ], harvest_pages? } ] }
 ```
-Serves **two consumers**: Stage 7 (the files to extract) **and** Stage 6 (district-level go/no-go needs the
-topology/completeness/cost summary). District-level metadata lives **inside** each `filtered.json`
-(self-contained); a thin generated **Stage-6 index** avoids re-scanning thousands of dirs at scale.
+It is the human-auditable **receipt** of the release decision, not a stage-to-stage transmitter — Stage 6
+reads the working data (records / representations / the release decision) from the DB, with the binaries on
+disk by path; `filtered.json` mirrors that decision for inspection and carries the district-level
+**go/no-go summary** (topology / completeness / cost) Stage 6 needs. District-level metadata lives
+**inside** each `filtered.json` (self-contained); a thin generated **Stage-6 index** avoids re-scanning
+thousands of dirs at scale. *(Stage 6's exact read-path + the handoff freeze are settled in
+`STAGE6_HANDOFF_DESIGN_2026-06.md`.)*
 
 ### `handoff_<hash>_<timestamp>.json` — Stage 6, IMMUTABLE dispatch record
 "Which districts we sent to the council in *this* run, and exactly what." **Immutable snapshot** — a new
@@ -352,10 +362,11 @@ choices its shape forces, all decided:
 
 **A. Cross-stage cache — YES.** The DB ingests *all* stages' artifacts (discovery/candidates/capture/
 process) as queryable tables, not just Stage 5 — surfaces 1/2/5 need it. This **scopes REQ-103**: the
-Postgres migration builds the cross-stage cache now. The per-stage JSON stays authoritative on disk; the
-DB caches all stages (regenerable), as it caches Stage 5 today. **Reframe (user):** the district-dir JSON
-files shift role from *data carriers through a transformation* to **auditable receipts** — the DB is the
-working store, the JSON is the on-disk audit trail.
+Postgres migration builds the cross-stage cache now. The DB holds the working store for all stages
+(regenerable from disk), as it does for Stage 5 today; the per-stage JSON + binaries on disk are the
+regenerable receipt/recovery layer. **Reframe (user):** the district-dir JSON files shift role from *data
+carriers through a transformation* to **auditable receipts** — the DB is the working store, the JSON is the
+on-disk audit trail.
 
 > **UPDATE 2026-06-28 (REQ-110) — the cross-stage cache became a LIVE working store, not a
 > dropped-each-ingest cache.** As first built (103c), the cache was populated *only* by the monolithic
