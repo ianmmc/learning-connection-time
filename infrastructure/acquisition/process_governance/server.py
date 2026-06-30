@@ -28,6 +28,9 @@ from infrastructure.acquisition.stage1_queue.models import Batch, BatchDistrict,
 from infrastructure.acquisition.stage2_discover import headless as H2       # noqa: E402  (Stage 2 headless runner — REQ-104)
 from infrastructure.acquisition.stage3_capture import headless as H3       # noqa: E402  (Stage 3 capture runner + DB-cache status)
 from infrastructure.acquisition.stage4_process import headless as H4       # noqa: E402  (Stage 4 process runner + DB-cache status)
+from infrastructure.acquisition.process_governance import stage6_dispatch as H6  # noqa: E402  (Stage 6 routing/release bridge — REQ-101)
+from infrastructure.acquisition.stage6_handoff import handoff as HND6       # noqa: E402  (immutable handoff filename helper)
+from infrastructure.acquisition.stage6_handoff.models import Handoff        # noqa: E402  (precious handoff index row)
 
 
 def _refresh_filtered(con, district_id: str) -> None:
@@ -861,6 +864,75 @@ def _ingest_stage5_if_complete(batch: dict, on_event) -> None:
         on_event("stage5_ingest_failed", {"batch_id": batch["batch_id"], "error": str(e)[:200]})
         print(f"[warn] Stage 5 ingest for {batch['batch_id']} failed ({type(e).__name__}: {e}); "
               f"re-run `python3 -m infrastructure.acquisition.stage5_filter.build_signals` manually")
+
+
+# ----------------------------- Stage 6 — Handoff routing/release (gate@6, REQ-101) -----------------------------
+# Build a handoff package from the Stage-5 release decision, review routed councils + estimated cost,
+# then APPROVE & FREEZE (gate@6) — writes the immutable handoff_<hash>.json + records the dispatch.
+# Stops at the seam: NO paid Stage-7 calls here.
+_TARGET_IN = "','".join(sorted(BS.TARGET_LABELS))
+
+
+@app.get("/api/handoff/candidates")
+def handoff_candidates():
+    """Stage-5 districts available to hand off, each with its count of canonical SEND-ELIGIBLE records
+    — matching release.decide's send DECISION (target-labeled OR unlabeled non-tier-D, the recall-bias
+    auto-filter), so the badge reflects what dispatch will actually send, not just labeled targets.
+    Reuses release.CANONICAL_RECORD_WHERE (one definition of "canonical"). Preview stays authoritative
+    for the exact representation count + cost."""
+    with gdb.session_scope() as con:
+        rows = con.execute(text(
+            f"""SELECT d.district_id, d.name, d.labeled_topology, COALESCE(t.n_send, 0) AS n_send
+                FROM district d
+                LEFT JOIN (
+                    SELECT r.district_id, COUNT(*) AS n_send
+                    FROM record r LEFT JOIN label l ON l.rec_key = r.rec_key
+                    WHERE {REL.CANONICAL_RECORD_WHERE}
+                      AND ( l.primary_label IN ('{_TARGET_IN}')
+                            OR (l.primary_label IS NULL AND r.tier <> 'D') )
+                    GROUP BY r.district_id
+                ) t ON t.district_id = d.district_id
+                ORDER BY n_send DESC, d.district_id""")).mappings().all()
+        return [dict(r) for r in rows]
+
+
+@app.post("/api/handoff/preview")
+async def handoff_preview(payload: dict):
+    """Build the in-memory handoff package for the selected districts (routed + priced) — no persist."""
+    ids = payload.get("district_ids") or []
+    with gdb.session_scope() as con:
+        return H6.build_handoff_package(con, ids)
+
+
+@app.post("/api/handoff/dispatch")
+async def handoff_dispatch(payload: dict):
+    """gate@6 approve: freeze the immutable handoff + record the dispatch (the index row + per-district
+    `dispatched` state_events). Stops at the seam — no paid OpenRouter calls (that's Stage 7)."""
+    ids = payload.get("district_ids") or []
+    actor = payload.get("actor", "ian")
+    if not ids:
+        raise HTTPException(400, "no districts selected")
+    try:
+        with gdb.session_scope() as con:
+            doc, path = H6.dispatch_handoff(con, ids, created_by=actor)
+    except FileExistsError:
+        raise HTTPException(409, "an identical handoff was just dispatched (same content within the "
+                                 "same second) — the prior one stands; retry in a moment if intended")
+    cost = doc.get("cost") or {}
+    return {"handoff_id": HND6.handoff_filename(doc)[:-5], "handoff_hash": doc["handoff_hash"],
+            "n_districts": len(doc.get("districts", [])), "n_reps": cost.get("n_reps", 0),
+            "total_usd": cost.get("total_usd", 0.0), "provenance": cost.get("provenance", "unknown"),
+            "path": str(path)}
+
+
+@app.get("/api/handoffs")
+def handoff_list():
+    """The dispatched handoffs index (newest first)."""
+    with gdb.session_scope() as con:
+        rows = con.execute(text(
+            "SELECT handoff_id, created_at, created_by, status, n_districts, n_reps, total_usd, "
+            "cost_provenance FROM handoff ORDER BY created_at DESC")).mappings().all()
+        return [dict(r) for r in rows]
 
 
 @app.get("/")

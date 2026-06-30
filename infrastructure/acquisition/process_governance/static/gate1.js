@@ -29,7 +29,8 @@
   // follow the same convention (a container id + an init hook by name) — no second #stageSelect listener.
   const sel = $g("#stageSelect"), prog = $g("#progress");
   const VIEWS = { stage1: $g("#stage1view"), stage2: $g("#stage2view"),
-                  stage3: $g("#stage3view"), stage4: $g("#stage4view"), stage5: $g("#stage5view") };
+                  stage3: $g("#stage3view"), stage4: $g("#stage4view"), stage5: $g("#stage5view"),
+                  stage6: $g("#stage6view") };
   let loaded1 = false;
   function applyView() {
     const which = sel.value;
@@ -40,6 +41,7 @@
     if (which === "stage3" && window.initStage3) window.initStage3();  // stage3.js guards its own re-init
     if (which === "stage4" && window.initStage4) window.initStage4();  // stage4.js guards its own re-init
     if (which === "stage5" && window.loadStage5) window.loadStage5();  // re-fetch the faceted list on show
+    if (which === "stage6" && window.initStage6) window.initStage6();  // stage6.js guards its own re-init
   }
   sel.addEventListener("change", applyView);
   window.__applyStageView = applyView;   // so stage2.js can self-show if it loads while already selected

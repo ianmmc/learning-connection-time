@@ -1,0 +1,27 @@
+{
+  "knob": "council_configs",
+  "description": "Stage 6 extraction COUNCIL configs (REQ-101) — the unit Stage 7 dispatches representations to. Each config is the cascade template (council research §2-4): 2 cross-family VOTERS that agree-or-escalate, plus 1 third-family JUDGE that re-reads the page on a voter disagreement (judge > extra voter). `input_kinds` = which representation kinds this council reads (text | image); `prompts` = per-model prompt-template ids (per-model variation is a planned Stage 6 feature — `default` applies until a model-specific override is added). Config-as-data so the Node half can read the same file; the ASSIGNMENT (which rep -> which council) + COST + DISPATCH are DB/runtime, not here. Authority: STAGE6_HANDOFF_DESIGN_2026-06.md §3A.",
+  "governance": "The DIVERSITY CONSTRAINT is a hard validation rule (stage6_handoff/councils.py): the 2 voters MUST be different model families and the judge MUST be a third family (council research §2/§3/§6 — same-family agreement is false-consensus-prone). Every config is validated on load; an invalid config fails fast. Model MEMBERSHIP here is a STARTING point seeded from the candidate-6 roster against a (then) polluted input pool — it is to be RE-BENCHMARKED on clean Stage-1..5 data before Stage 7 composition hardens. Adding/altering a council is a human-in-the-loop decision.",
+  "entries": [
+    {"value": {
+        "id": "low-cost-text",
+        "name": "Low-cost text council",
+        "input_kinds": ["text"],
+        "voters": ["google/gemini-2.5-flash-lite", "mistralai/mistral-small-24b-instruct-2501"],
+        "judge": "qwen/qwen3-235b-a22b-2507",
+        "consensus_rule": {"cross_family": true, "tolerance_min": 15, "unit": "per_school_start_end_pair"},
+        "prompts": {"default": "stage6.extract.v1"}
+      },
+      "added": "2026-06-29", "rationale": "Default text council: two cross-family voters (Google Flash-Lite + Mistral Small 24B) -> Qwen judge. The cheap path for clean digital text.", "evidence": "candidate-6 non-reasoning roster; pair+judge template (Ian, council research)", "approved_by": "ian", "loop_tier": 0},
+    {"value": {
+        "id": "image",
+        "name": "Image / vision council",
+        "input_kinds": ["image"],
+        "voters": ["google/gemini-2.5-flash", "mistralai/mistral-large-2512"],
+        "judge": "deepseek/deepseek-v3.2",
+        "consensus_rule": {"cross_family": true, "tolerance_min": 15, "unit": "per_school_start_end_pair"},
+        "prompts": {"default": "stage6.extract.vision.v1"}
+      },
+      "added": "2026-06-29", "rationale": "Vision council for PNG/scan reps + low-fidelity captures routed off the text path (the New Haven false-consensus fix): two cross-family voters (Google Flash + Mistral Large) -> DeepSeek judge.", "evidence": "vision spike read multi-column scans spatially-correct; candidate-6 roster", "approved_by": "ian", "loop_tier": 0}
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-06-29T17:49:20Z",
+  "last_updated": "2026-06-30T20:57:53Z",
   "districts": {
     "0100810": {
       "name": "Coffee County",
@@ -5102,9 +5102,18 @@
           "stage_name": "process",
           "outcome": "processed_partial",
           "at": "2026-06-29T07:24:22Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-06-30T20:57:53Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "verify"
         }
       ],
-      "notes": "gate@1 approved batch_00002"
+      "notes": "bd6dd5a3e783"
     },
     "5505100": {
       "name": "Geneva J4 School District",

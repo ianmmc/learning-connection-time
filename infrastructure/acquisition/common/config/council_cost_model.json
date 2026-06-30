@@ -1,0 +1,20 @@
+{
+  "knob": "council_cost_model",
+  "description": "Per-model cost rates the Stage 6 estimator reads to price a handoff (REQ-101). Two per-model shapes are supported: a size-scaled TOKEN model (price_in/out_per_mtok + input_tokens_per_char/input_base_tokens + output_tokens_per_school/output_base_tokens) OR a flat per_call_usd. `assumptions.escalation_rate` = the assumed fraction of reps whose voters disagree and invoke the judge. Authority: STAGE6_HANDOFF_DESIGN_2026-06.md §3C.",
+  "governance": "This ships as a BOOTSTRAP and is SUPERSEDED by measurement: stage6_handoff/cost_benchmark.py fits per-model input/output token models on CURRENT clean reps and rewrites this file with provenance='measured'. The bootstrap values below are the project's own prior per-call measurements (EXTRACTION_BENCHMARK_FINDINGS Update 4) taken on OLD polluted inputs — real numbers, but FLAT (no size scaling) and not on clean data, hence provisional. escalation_rate is a conservative assumption (overestimate spend) pending the accuracy/agreement benchmark.",
+  "provenance": "bootstrap",
+  "assumptions": {
+    "escalation_rate": 0.5,
+    "escalation_rate_note": "conservative placeholder; measured by the accuracy/agreement benchmark (deferred, §3C C.6)",
+    "default_n_schools": 1,
+    "default_n_schools_note": "school-count floor for output-token scaling when a rep carries no n_schools/n_times (only used on the measured token path; the bridge should populate a real count)"
+  },
+  "models": {
+    "mistralai/mistral-small-24b-instruct-2501": {"per_call_usd": 0.00022, "source": "extraction-benchmark-update4 (old inputs; flat)"},
+    "google/gemini-2.5-flash-lite":              {"per_call_usd": 0.00050, "source": "extraction-benchmark-update4 (old inputs; flat)"},
+    "qwen/qwen3-235b-a22b-2507":                 {"per_call_usd": 0.00060, "source": "extraction-benchmark-update4 (old inputs; flat)"},
+    "deepseek/deepseek-v3.2":                    {"per_call_usd": 0.00102, "source": "extraction-benchmark-update4 (old inputs; flat)"},
+    "google/gemini-2.5-flash":                   {"per_call_usd": 0.00168, "source": "extraction-benchmark-update4 (old inputs; flat)"},
+    "mistralai/mistral-large-2512":              {"per_call_usd": 0.00265, "source": "extraction-benchmark-update4 (old inputs; flat)"}
+  }
+}

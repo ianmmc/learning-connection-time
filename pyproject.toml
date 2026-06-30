@@ -22,7 +22,7 @@ name = "Layering: process_governance (app) > stages (independent) > common (base
 type = "layers"
 layers = [
     "process_governance",
-    "stage1_queue | stage2_discover | stage3_capture | stage4_process | stage5_filter | stage8_aggregate",
+    "stage1_queue | stage2_discover | stage3_capture | stage4_process | stage5_filter | stage6_handoff | stage8_aggregate",
     "common",
 ]
 containers = ["infrastructure.acquisition"]

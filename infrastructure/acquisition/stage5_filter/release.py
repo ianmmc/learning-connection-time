@@ -33,6 +33,11 @@ RAW_DIR = paths.RAW_CAPTURES
 TARGET_LABELS = BS.TARGET_LABELS
 HONEST_LABEL = "gross_bell_to_bell"   # REQ-055 — what the council's start/end numbers mean
 
+# The CANONICAL-record predicate (cluster representative or singleton, non-duplicate) — the population
+# the release rule runs over. Exported as a single source of truth so Stage 6's candidate count keys off
+# the SAME definition instead of re-inlining it (avoids drift if "canonical" ever changes). `r` = record.
+CANONICAL_RECORD_WHERE = "r.duplicate_of IS NULL AND (r.is_cluster_rep = 1 OR r.cluster_id IS NULL)"
+
 
 def _now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -169,11 +174,10 @@ def load_district_records(session, district_id: str) -> list:
     """The district's CANONICAL records (non-dup; cluster rep or singleton) with label, signals,
     flags, and representation rows — the population the release rule runs over."""
     recs = session.execute(text(
-        """SELECT r.rec_key, r.url, r.tier, r.category_hypothesis, r.signals_json, r.is_emergent,
+        f"""SELECT r.rec_key, r.url, r.tier, r.category_hypothesis, r.signals_json, r.is_emergent,
                   r.intended_schools_json, l.primary_label, l.flags_json
            FROM record r LEFT JOIN label l ON l.rec_key = r.rec_key
-           WHERE r.district_id = :d AND r.duplicate_of IS NULL
-             AND (r.is_cluster_rep = 1 OR r.cluster_id IS NULL)
+           WHERE r.district_id = :d AND {CANONICAL_RECORD_WHERE}
            ORDER BY r.tier, r.sort_score DESC"""), {"d": district_id}).mappings().all()
     out = []
     for r in recs:
