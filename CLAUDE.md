@@ -23,17 +23,17 @@ Part of "Reducing the Ratio" educational equity initiative. Currently implementi
 
 ---
 
-## Current Status (2026-06-29)
+## Current Status (2026-06-30)
 
 Building the **per-school acquisition pipeline** stage-by-stage with **human-in-the-loop checkpoints**. The GT/benchmark exploration concluded and was archived; the validated design is now the active build. Canonical pipeline doc: **`docs/ACQUISITION_PIPELINE.md`** (9 stages + failure-modes→checkpoints table + reader-routing spec). Live code: **`infrastructure/acquisition/`** (promoted out of the retired `scripts/benchmark/`). Council research: `docs/technical-notes/LLM_COUNCIL_RESEARCH_2026-06.md`. Leaderboard/costs: `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.
 
-**Build progress (2026-06-29):** The console is **stage-selectable and built through Stage 5; the whole pipeline runs console-driven.** The governance re-architecture is complete (REQ-098 installable package — **`pip install -e .`**; REQ-103 isolated `governance` Postgres + cross-stage cache; REQ-099 `state_event` log + `current_state` view; REQ-094 event-driven `filtered.json`). Console stage views, all BUILT + run live on batch_00002–00007: **gate@1** queue (REQ-102), **Stage 2** deterministic SERP cascade (REQ-104), **Stage 3** capture + resilience (REQ-110), **Stage 4** process + the **Stage 4→5 incremental handoff** (REQ-111), and the **Stage 5 rework — district-driven, attention-first** (REQ-112). The architecture is settled: **the DB is the working store** (`common/cache_ingest.py` live cross-stage cache + the Stage-5 signal tables on the incremental `ingest_batch` path), **JSON files are receipts** (regenerable, for state-confirmation + district-level human inspection); the batch is a first-class PRECIOUS DB entity that **dissolves at the Stage 4→5 seam** (Stage 5 is district-driven on purpose). Authority: per-stage `STAGE*_DESIGN_*.md` (Stage 5 = §A–D) + `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (§11 gates, §12 the seam); map = `ACQUISITION_PIPELINE.md`; decisions + the **Stage 6/7 forward note** = `PROJECT_HISTORY.md`.
+**Build progress (2026-06-29):** The console is **stage-selectable and built through Stage 5; the whole pipeline runs console-driven.** The governance re-architecture is complete (REQ-098 installable package — **`pip install -e .`**; REQ-103 isolated `governance` Postgres + cross-stage cache; REQ-099 `state_event` log + `current_state` view; REQ-094 event-driven `filtered.json`). Console stage views, all BUILT + run live on batch_00002–00007: **gate@1** queue (REQ-102), **Stage 2** deterministic SERP cascade (REQ-104), **Stage 3** capture + resilience (REQ-110), **Stage 4** process + the **Stage 4→5 incremental handoff** (REQ-111), and the **Stage 5 rework — district-driven, attention-first** (REQ-112). The architecture is settled: **the DB is the working store** (`common/cache_ingest.py` live cross-stage cache + the Stage-5 signal tables on the incremental `ingest_batch` path), **JSON files are receipts** (regenerable, for state-confirmation + district-level human inspection); the batch is a first-class PRECIOUS DB entity that **dissolves at the Stage 4→5 seam** (Stage 5 is district-driven on purpose). **Stage 6 (routing/release) is now BUILT to the Stage 6→7 seam (REQ-101, merged PR #2, 2026-06-30)** — the `stage6_handoff/` package + the **gate@6** console (preview routed/priced package → Approve & freeze) → immutable `handoff_<hash>_<ts>.json` + a precious `handoff` index row + a `dispatched` state_event; **stops before the paid call** (Stage 7). The standalone flow diagram was retired into the map (`ACQUISITION_PIPELINE.md` § Flow diagram). Authority: per-stage `STAGE*_DESIGN_*.md` (Stage 5 = §A–D, **Stage 6 = §0 as-built**) + `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (§11 gates, §12 the seam); map = `ACQUISITION_PIPELINE.md`; decisions = `PROJECT_HISTORY.md`.
 
 **Metric = GROSS bell-to-bell minutes (end − start), NOT net.** No lunch/passing/recess deduction, no *assumed* deductions. Existing GT is already gross; gross needs only two reliably-published numbers (↑accuracy). Net is a deferred enhancement. Labeled `gross_bell_to_bell`. Plausibility gate 240–510 min. (REQ-055; supersedes net in REQ-042/046.)
 
 **INVARIANT — extractors read TIMES; deterministic code computes MINUTES + the MODE.** Council models return only per-school `{start_time,end_time,grade_level,school_name}` facts; Python does `gross=end−start` and the per-band exact-mode. Never ask a model to compute minutes or pick a "typical" schedule. (REQ-054.)
 
-**Extraction = COUNCIL (correctness); Discovery = WAVES (recall).** Council: **consensus is on the per-school (start,end) pair, cross-family, ±15 min** — same-family agreement is NOT consensus (REQ-056). Candidate set = 6 non-reasoning models (Gemini 2.5 Flash, Mistral Large 2512, DeepSeek V3.2, Mistral Small 24B, Gemini 2.5 Flash-Lite, Qwen3-235B-2507); Grok 4.3 & Qwen3.7-Max **removed** (reasoning-token cost 4–70×). **Open: exact council composition** — Path-1 cheap-trio vs Path-2 accuracy-pair vs Path-1-minus-Mistral, decided by measured escalation rate. Discovery (re-architected 2026-06-28, REQ-104; design note §7) = a **deterministic SERP cascade**, NOT agent waves: **Wave 1 = Bright Data SERP** (real Google, `site:`-scoped, recurring-free) + **Serper failover** on API failure (same index = uptime backup) → **Wave 2 = Claude WebSearch** on the residual (a *different* index, speculative). Decided by a measured 5-provider bake-off (`data/acquisition/diagnostics/`): **the index predicts recall** — raw Google wins (Bright Data 98% / Serper 100%), own-index Perplexity craters (43%, zero long-tail coverage). Retired: Claude-as-Wave-1 (66%), OpenRouter ($27/1K), Perplexity.
+**Extraction = COUNCIL (correctness); Discovery = WAVES (recall).** Council: **consensus is on the per-school (start,end) pair, cross-family, ±15 min** — same-family agreement is NOT consensus (REQ-056). Candidate set = 6 non-reasoning models (Gemini 2.5 Flash, Mistral Large 2512, DeepSeek V3.2, Mistral Small 24B, Gemini 2.5 Flash-Lite, Qwen3-235B-2507); Grok 4.3 & Qwen3.7-Max **removed** (reasoning-token cost 4–70×). **Council template DECIDED (Stage 6): 2 cross-family voters → a 3rd-family judge** on disagreement (pair+judge cascade; judge>voter) — enforced in `councils.validate()`; seeds `low-cost-text`/`image`. **Composition (which models) is deferred to the council lab** (`cost_benchmark`, re-benchmarked on clean data), NOT guessed (the old Path-1/2 question collapsed into the template). Discovery (re-architected 2026-06-28, REQ-104; design note §7) = a **deterministic SERP cascade**, NOT agent waves: **Wave 1 = Bright Data SERP** (real Google, `site:`-scoped, recurring-free) + **Serper failover** on API failure (same index = uptime backup) → **Wave 2 = Claude WebSearch** on the residual (a *different* index, speculative). Decided by a measured 5-provider bake-off (`data/acquisition/diagnostics/`): **the index predicts recall** — raw Google wins (Bright Data 98% / Serper 100%), own-index Perplexity craters (43%, zero long-tail coverage). Retired: Claude-as-Wave-1 (66%), OpenRouter ($27/1K), Perplexity.
 
 **Reader-routing (format-route the reader, outcome-based):** Tier 1 plain text → Tier 2 `page.pdf()`+`pdftotext -layout` (multi-column) → Tier 2.5 OCR a clean image → Tier 3 **vision** (Gemini Flash / Mistral Large read JS/image/scan pages all text paths miss — proven). Trigger is "did the cheap reader recover usable content," not format. (Tier-1→2 structure-loss trigger is the one OPEN gate.)
 
@@ -45,57 +45,57 @@ Building the **per-school acquisition pipeline** stage-by-stage with **human-in-
 
 > **SEA central-data harvest is a dead end for daily minutes** (verified) — states publish only statutory minimums / day-counts, not actual daily minutes. Web discovery + extraction is the primary acquisition path. See `docs/INSTRUCTIONAL_TIME_HARVEST.md`.
 
-### Next session (RESUME HERE — 2026-06-29)
-**The Stage-5 console rework is DONE (REQ-112) — district-driven, attention-first.** The console is built
-through Stage 5; the whole pipeline runs console-driven (gate@1 → Stage 2 → 3 → 4 → the Stage 4→5 handoff →
-the Stage-5 attention-first review). **Attention** = the INVERTED-confidence "where my judgment moves us
-forward" score (NOT target-likelihood; a clean tier-A is LOW) — `stage5_filter/attention.py` +
-`config/stage5_attention.json` (frontier-tunable), computed by `build_signals.recompute_attention()` at ingest
-+ every label/split save. The faceted left pane (group by district facets / filter by record facets / sort,
-collapsible mini-dashboards, follow-up flags, DB-backed saved views, re-fetch-on-show) reads `/api/stage5/*`.
-SQLite vestige retired. Detail: `STAGE5_FILTER_DESIGN_2026-06.md` §A–D.
+### Next session (RESUME HERE — 2026-06-30)
+**Stage 6 (routing/release) is BUILT to the Stage 6→7 seam and MERGED to main** (PR #2, `5f05d31`; docs
+brought to as-built + the flow diagram retired into the map, `2200f48`). The `stage6_handoff/` package
+(councils/routing/cost/package/handoff/models/prompts/requests — all pure, `common`-only) + the app-layer
+bridge (`process_governance/stage6_dispatch.py`) + the **gate@6 console** (`static/stage6.js` +
+`/api/handoff/*`): pick send-eligible districts → preview the routed/priced package → **Approve & freeze**
+→ immutable `handoff_<hash>_<ts>.json` + a precious `handoff` index row + a `dispatched` state_event (atomic,
+file written last) → OpenRouter requests assembled — **STOP before the paid call.** Council template = 2
+cross-family voters → 3rd-family judge (validated in `councils.validate()`); routing is per-rep, data-driven
+off each config's `input_kinds` + the capture-fidelity gate; cost = a labeled **bootstrap** model. Authority:
+`STAGE6_HANDOFF_DESIGN_2026-06.md` **§0** (as-built code map).
 
-**MERGED to main** (`642a809`, 2026-06-29) — the rework (REQ-111 handoff + REQ-112) is on **main**; just work
-on main. Post-merge cleanup still pending (safe now that the new pane is confirmed): the now-unused `/api/tree`
-endpoint + a few old `app.js` helpers it fed.
+**→ NEXT (pick one): the council lab first, OR Stage 7.** READ FIRST: `STAGE6_HANDOFF_DESIGN` §0 (what's
+built) + §3C (the lab) + §3F (the "request more evidence" loop + the OpenRouter-session question — a Stage 7
+concern) + the `PROJECT_HISTORY.md` Stage 6 entry (the two-layers / tokens×live-price reframe) +
+`LLM_COUNCIL_RESEARCH_2026-06.md`.
+- **Council lab** (`cost_benchmark`, DESIGNED not built, §3C): run candidate models over current clean reps,
+  record OpenRouter token+cost telemetry, fit a per-model TOKEN model → rewrite `council_cost_model.json` as
+  `provenance:"measured"`; **pricing is fetched LIVE from OpenRouter `/api/v1/models`** (a separate cache), NOT
+  in the token model. Same harness re-benchmarks council COMPOSITION. Cost-only needs no GT; accuracy/composition
+  must first ALIGN the prior GT into the pipeline (a big `batch_00000` — `gt_curation` has ZERO overlap with the
+  current 59-district set). Ian's call: lower out-of-pocket by measuring, don't guess.
+- **Stage 7** = the paid POST + the judge-on-disagreement loop + the request-more-evidence back-edges (7→6 / 7→1),
+  cost-gated by the budget governor (REQ-051).
+- Also open: REQ-100 (staleness), **gate@6 auto mode** (console does manual approve today), REQ-044 (recency).
+- **Cadence: stage-sized work on a branch → PR** (Stage 6 was PR #2; draft-PR early for CI per push).
 
-**→ NEXT: Stage 6 (routing/release) + gate@6 → Stage 7 (the paid council).** Decide which reps → which
-OpenRouter council config; emit the immutable `handoff_<hash>_<timestamp>.json`. **READ FIRST, in order:**
-(1) **the user's own routing thoughts** — `docs/scratch-paper/STAGE6-Ian-thoughts-on-routing.md` (Ian wrote
-these for you to start from); (2) **the Stage 6/7 forward note in `PROJECT_HISTORY.md`** — the invariants + the
-NEW lever (the REQ-112 **attention reasons are a routing signal**: `image_only`→a vision council member,
-`buried_long_doc`→the harvest_pages slice, `signal_text_disagree`→the hard cross-family cases); (3)
-`STAGE6_HANDOFF_DESIGN_2026-06.md` (the design authority). Open: council composition (Path-1/2/-Mistral, by
-**measured** escalation rate) + config grain (per-district vs per-rep). Cost-gate auto-advance through the paid
-stages (budget governor, REQ-051). **Do Stage 6 on a branch → PR (the agreed cadence for stage-sized work).**
+**Fresh-session essentials:** `/catchup` → `pip install -e .` → **Docker up** → `lint-imports` (3 kept/0
+broken) + `pytest -q -m "not integration"` (**~654 pass**; resource-dependent tests are `integration`-marked).
+**CI = two jobs** (`.github/workflows/test.yml`): the DB-free suite + **`governance-db`** (`pytest -m govdb`
+against a Postgres service container — Stage 6 added a `handoff`-insert + a `/api/handoff` read there). Launch
+from the repo root: `python3 -m infrastructure.acquisition.process_governance.server` (→ :8005); the
+**Stage 6 · Handoff (gate@6)** view is in the stage selector (Stage 5 is the default). **Console changes are
+JS+Python: reload the browser for `static/*.js`, restart the server for Python.** **Self-verify UI with
+Playwright before shipping visuals** (python playwright isn't installed — drive the Node one in
+`infrastructure/scraper/node_modules`: set `#stageSelect`=stage6, wait `#s6-list .s6-cand`, screenshot). The
+council-config + cost-model knobs live in `common/config/council_configs.json` + `council_cost_model.json`
+(config-as-data). Stage 2 SERP keys + the `claude -p` "blocked inside a Claude Code session" caveat unchanged.
 
-**Fresh-session essentials:** `/catchup` → `pip install -e .` →
-**Docker up** → `lint-imports` (3 kept/0 broken) + `pytest -q -m "not integration"` (**599 pass**;
-resource-dependent tests are `integration`-marked). **CI = two jobs** (`.github/workflows/test.yml`): the
-DB-free suite + **`governance-db`** (runs `pytest -m govdb` — the 21 governance-Postgres tests — against a
-Postgres service container). Locally, `pytest -m govdb` needs Docker up; the LCT-DB/NCES `integration` tests
-stay local-only. (FastAPI/uvicorn/httpx are now pinned in `requirements.txt`.) Launch from the repo root:
-`python3 -m infrastructure.acquisition.process_governance.server` (→ :8005); **Stage 5 is the default view.**
-**Console changes are JS+Python: reload the browser for `static/*.js`, restart the server for Python.**
-**Self-verify UI with Playwright** — `playwright screenshot --wait-for-selector "#s5-list .district" <url> out.png`
-(+ `?group_by=pipeline_state` to view a grouped state) — don't ship visuals blind. Rebuild Stage-5 signals
-(full, schema/recovery): `python3 -m infrastructure.acquisition.stage5_filter.build_signals`; the batch-scoped
-path is `build_signals.ingest_batch()` (auto-fires on the Stage-4 handoff). Stage 2 SERP keys
-(`BRIGHTDATA_API_KEY`/`BRIGHTDATA_SERP_ZONE`/`SERPER_API_KEY` in `config/secrets.local.json`) + the `claude -p`
-"blocked inside a Claude Code session" caveat unchanged.
-
-**Precious state + backups:** `label`/`cluster_split`/`followup_flag` (governance DB + version-controlled JSON
-backups); `saved_view` (DB; UI prefs). The tracked **`.githooks/pre-commit`** sweeps `labels.json` +
+**Precious state + backups:** `label`/`cluster_split`/`followup_flag` + the new **`handoff`** index row
+(governance DB); the immutable `handoff_<hash>_<ts>.json` files under `data/acquisition/handoffs/` are the
+dispatch records. `saved_view` (DB; UI prefs). The tracked **`.githooks/pre-commit`** sweeps `labels.json` +
 `district_status.json` into every commit — on a fresh clone run `git config core.hooksPath .githooks`
 (GETTING_STARTED §1b). Stage 4 needs system binaries poppler/tesseract/ghostscript (GETTING_STARTED §1a).
 
-**Registered REQ#s:** REQ-001…112. **DONE this session:** REQ-111 (Stage 4 console + handoff), REQ-112
-(Stage 5 rework). **OPEN/next:** REQ-101 (Stage 6 + gate@6), REQ-100 (staleness), REQ-044 (recency gate).
-**Deferred (with reason):** the harness **attention-ordering metric** (attention ≠ target-precision → needs a
-reason×label cross-tab, best after batches are tagged); the **ML on-ramp** (frontier-optimize the attention
-weights → a simple sklearn classifier at scale — on the user's discussion list); the **"District Investigator"**
-holistic-journey view (data model already supports it); NCES **locale** facet (not in our CCD; needs an EDGE file).
-
+**Registered REQ#s:** REQ-001…112. **DONE this session:** REQ-101 (Stage 6 + gate@6, to the seam, merged PR #2).
+**OPEN/next:** the **council lab** (`cost_benchmark`) + **Stage 7**; REQ-100 (staleness), gate@6 auto, REQ-044
+(recency). **Deferred (with reason):** the lab is *designed not run* (§3C — do it when prepping Stage 7
+composition / to replace the bootstrap cost model); the **ML on-ramp** (sklearn on the attention weights at
+scale); the **"District Investigator"** holistic view; the harness **attention-ordering metric**; NCES
+**locale** facet (needs an EDGE file).
 ---
 
 ## Current Data Years
