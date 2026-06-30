@@ -40,12 +40,28 @@
     "updated_at": "2026-06-29T08:50:32Z"
   },
   {
+    "rec_key": "0400023:0ea687cc89",
+    "primary_label": "community_calendar",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-30T01:25:19Z"
+  },
+  {
     "rec_key": "0400023:3dac653d13",
     "primary_label": "none",
     "flags_json": "[\"building_hours_visible\"]",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-06-30T01:21:58Z"
+  },
+  {
+    "rec_key": "0400023:5f5773c0f5",
+    "primary_label": "academic_calendar",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-30T01:23:44Z"
   },
   {
     "rec_key": "0400023:6bf73f0c99",
@@ -56,12 +72,28 @@
     "updated_at": "2026-06-30T01:21:36Z"
   },
   {
+    "rec_key": "0400023:6c06078eb6",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Document list of academic calendars from multiple years.",
+    "status": "labeled",
+    "updated_at": "2026-06-30T01:24:23Z"
+  },
+  {
     "rec_key": "0400023:8d223f792f",
     "primary_label": "embedded_feed",
     "flags_json": "[]",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-06-30T01:22:23Z"
+  },
+  {
+    "rec_key": "0400023:a8477fa84c",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-06-30T01:25:05Z"
   },
   {
     "rec_key": "0400023:b172fe7c99",
@@ -72,12 +104,20 @@
     "updated_at": "2026-06-30T01:22:10Z"
   },
   {
+    "rec_key": "0400023:db84a2d5c9",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Employment listings",
+    "status": "labeled",
+    "updated_at": "2026-06-30T01:24:49Z"
+  },
+  {
     "rec_key": "0400023:eb50c7ad15",
     "primary_label": "other_schedule",
-    "flags_json": "[]",
-    "note": "",
+    "flags_json": "[\"building_hours_visible\"]",
+    "note": "This is summer hours for the district ",
     "status": "labeled",
-    "updated_at": "2026-06-30T01:22:48Z"
+    "updated_at": "2026-06-30T01:23:38Z"
   },
   {
     "rec_key": "0602095:1e84861a7a",

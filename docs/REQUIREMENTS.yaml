@@ -2547,3 +2547,66 @@ requirements:
       test_stage3_headless.py (run_batch reconcile/sequential/error-isolation + rollup), test_capture_api.py
       (status + run guards). Full suite 572 pass / 0 fail; lint-imports 3 kept/0 broken; a live build_signals
       ingest + a live console smoke (batch_00002 capture=todo×11, discover self-heal) both verified."
+
+  - id: REQ-111
+    description: "Stage 4 (Process) console view + the Stage 4→5 incremental handoff — DONE 2026-06-29.
+      (1) CONSOLE: the Stage 4 view (ungated → per-district usable/not-usable processed-doc counts + a
+      usable-representations-by-tool readout from the processed_doc DB cache; an IN-PROCESS run trigger —
+      no node-owns-shutdown, the harvesters are a Python call). A local stage2_complete disk-scan replaces
+      importing Stage 3's find_districts (independence contract). (2) HANDOFF: build_signals.ingest()
+      refactored to share ingest_district() with a new batch-scoped ingest_batch() (CREATE IF NOT EXISTS +
+      per-district DELETE+INSERT; prior batches + precious labels untouched; cost ∝ batch not corpus). A
+      process run that resolves a whole batch triggers _ingest_stage5_if_complete in the app layer →
+      ingest_batch + a per-district furthest_stage→5 event, so Stage 5 loads with no lag. Hygiene:
+      poppler/tesseract/ghostscript documented (not pip-installable); img2table dropped. Authority:
+      STAGE4_PROCESS_DESIGN_2026-06.md §4a/§4b, PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §12."
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - GET /api/process/{batch_id} returns per-district process outcome + usable/not-usable doc counts + a by-tool readout from the processed_doc cache; POST .../run runs the harvesters in-process as a background job
+      - build_signals exposes ingest_batch(district_ids) (never-dropped CREATE-IF-NOT-EXISTS + per-district DELETE+INSERT) beside the full ingest(); prior batches untouched
+      - On a Stage-4 run that resolves the whole batch the app layer (not stage4_process) runs ingest_batch + records a stage=5 'ingested' state_event per district; best-effort (never fails the durable Stage-4 job)
+      - Stage 4 system binaries (poppler/tesseract/ghostscript) documented in GETTING_STARTED; unused img2table removed
+    created: "2026-06-29T00:00:00Z"
+    updated: "2026-06-29T00:00:00Z"
+    notes: "Tests: test_stage4_headless.py (in-process run_batch), test_process_api.py (status/run/trigger),
+      test_stage5_incremental_ingest.py (isolation + idempotency via gov_session TEMP tables). Verified on
+      batch_00007 — the handoff fired end-to-end (stage=5 ingested events present). On branch
+      stage5-attention-console (the Stage-4 console parts landed earlier on main; the handoff + incremental
+      ingest are on the branch)."
+
+  - id: REQ-112
+    description: "Stage 5 console rework — district-driven, attention-first — DONE 2026-06-29. The Stage-5
+      view (the console's origin) brought onto the current architecture, kept deliberately district-driven
+      (the batch dissolves here). (1) ATTENTION ENGINE: stage5_filter/attention.py + config/stage5_attention.json
+      — attention = the INVERSE of automatable-confidence ('where my judgment moves us forward', NOT
+      target-likelihood; a clean tier-A is LOW). {score, reasons[]} per record (manual_flag / image_only /
+      signal_text_disagree / buried_long_doc / ambiguous / clean_target / low_signal / resolved), rolled up
+      per district by build_signals.recompute_attention() at ingest + every label/split save; stored on
+      record/district (+ pipeline_state / n_unlabeled / n_flagged). Config-as-data, frontier-compatible (the
+      ML on-ramp). (2) FACETED CONSOLE: /api/stage5/districts (group by district facets, filter by record
+      facets — district stays visible — sort incl. continuous asc/desc, server-side for ~5M-rep scale) +
+      /facets + /followup (precious FollowupFlag, the top attention tier, JSON-backed) + /views (DB-backed
+      SavedView). Left pane reworked (collapsible mini-dashboard groups, attention chips, follow-up flag,
+      saved views, re-fetch-on-show, deep-linkable views); center/right labeling panes unchanged.
+      (3) PLUMBING: SQLite vestige (paths.REVIEW_DB / review.db) retired; signal tables a never-dropped live
+      working store on the incremental path. No per-label state_event (completion-only log; recent-sort reads
+      label.updated_at). NCES locale facet descoped (not in our CCD data). Authority:
+      STAGE5_FILTER_DESIGN_2026-06.md §A-D, PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §12c."
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - attention.py scores a record {score, reasons[]} from signals+tier+label+flag (inverted-confidence: clean tier-A low, image_only/signal_text_disagree/buried high, resolved 0); district rollup uses a capped volume nudge + a district-flag floor
+      - recompute_attention() runs at ingest (full + incremental) AND on every label/split save; attention_score/reasons + pipeline_state/n_unlabeled/n_flagged are stored on record/district
+      - GET /api/stage5/districts groups by district facets, filters by record facets (district stays visible) + hide_resolved, sorts (attention/name/enrollment/schools/recent/first_seen) asc|desc, paginated — all SQL on stored columns
+      - Follow-up flags (FollowupFlag, precious + JSON-backed) floor a district/record's attention; saved views (SavedView) CRUD; the left pane re-fetches on view-show (window.loadStage5)
+      - SQLite review.db vestige removed (paths.REVIEW_DB gone); the attention weights live in config/stage5_attention.json (frontier-tunable)
+    created: "2026-06-29T00:00:00Z"
+    updated: "2026-06-29T00:00:00Z"
+    notes: "Tests: test_stage5_attention.py (band model + district rollup + recompute via gov_session TEMP
+      tables, 13), test_stage5_facets_api.py (faceted endpoint + flags + saved views, 6). 599 non-integration
+      pass; lint-imports 3 kept/0 broken. UI self-verified with Playwright (default + grouped). DEFERRED: the
+      harness attention-ordering metric (attention ≠ target-precision — needs a reason×label cross-tab). On
+      branch stage5-attention-console; not yet merged to main."
