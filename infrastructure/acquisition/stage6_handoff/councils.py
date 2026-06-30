@@ -1,0 +1,77 @@
+"""Stage 6 council-config registry + the diversity validator (REQ-101).
+
+A *council* is the unit Stage 7 dispatches a representation to: 2 cross-family **voters** that
+agree-or-escalate, plus 1 third-family **judge** that re-reads the page on a disagreement (the
+cascade template — council research §2-4: judge > extra voter; cross-family agreement only).
+
+Configs live in the versioned config-as-data layer (`common/config/council_configs.json`), read via
+the shared `config_loader` (so the Node half reads the same file). The **family-diversity constraint**
+is enforced HERE, on load (LLM_COUNCIL_RESEARCH_2026-06 §2/§3/§6, STAGE6_HANDOFF_DESIGN §3A): the two
+voters must be different families and the judge a third. An invalid config fails fast.
+
+This module imports only `common` — it stays independent of the other stages (import-linter contract).
+"""
+from infrastructure.acquisition.common import config_loader
+
+KNOB = "council_configs"
+
+# Model family buckets for our OpenRouter roster. The provider prefix IS the family for this set
+# (two Google Geminis are one family), so an uncatalogued id falls back to its provider prefix.
+FAMILY = {
+    "google/gemini-2.5-flash": "google",
+    "google/gemini-2.5-flash-lite": "google",
+    "mistralai/mistral-small-24b-instruct-2501": "mistral",
+    "mistralai/mistral-large-2512": "mistral",
+    "deepseek/deepseek-v3.2": "deepseek",
+    "qwen/qwen3-235b-a22b-2507": "qwen",
+}
+
+
+class ConfigError(ValueError):
+    """A council config violates the diversity constraint (or is malformed)."""
+
+
+def family_of(model_id: str) -> str:
+    """The model's family bucket — explicit map first, else the provider prefix as a proxy."""
+    if model_id in FAMILY:
+        return FAMILY[model_id]
+    return model_id.split("/", 1)[0]
+
+
+def validate(cfg: dict) -> None:
+    """Raise ConfigError unless `cfg` is a well-formed cross-family council (2 distinct-family
+    voters + a third-family judge). The first thing Stage 6 enforces; the spec lives in the tests."""
+    cid = cfg.get("id", "<no-id>")
+    voters = cfg.get("voters") or []
+    if len(voters) != 2:
+        raise ConfigError(f"council '{cid}': must have exactly two voters, got {len(voters)}")
+    judge = cfg.get("judge")
+    if not judge:
+        raise ConfigError(f"council '{cid}': a judge is required (the third family)")
+    vf = [family_of(v) for v in voters]
+    if vf[0] == vf[1]:
+        raise ConfigError(
+            f"council '{cid}': the two voters must be different families "
+            f"(both are '{vf[0]}': {voters[0]}, {voters[1]})")
+    jf = family_of(judge)
+    if jf in vf:
+        raise ConfigError(
+            f"council '{cid}': the judge must be a third family distinct from both voters "
+            f"(judge '{judge}' is '{jf}', which collides with a voter)")
+
+
+def load_configs() -> dict:
+    """All shipped council configs, keyed by id, each VALIDATED (raises ConfigError if any is invalid)."""
+    out = {}
+    for cfg in config_loader.values(KNOB):
+        validate(cfg)
+        cid = cfg["id"]
+        if cid in out:
+            raise ConfigError(f"duplicate council id '{cid}'")
+        out[cid] = cfg
+    return out
+
+
+def get(config_id: str) -> dict:
+    """One validated council config by id. Raises KeyError if absent."""
+    return load_configs()[config_id]

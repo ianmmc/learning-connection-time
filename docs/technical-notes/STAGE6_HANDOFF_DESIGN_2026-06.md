@@ -120,9 +120,22 @@ machinery exists to enable exactly this).
 model. `prompts` is therefore per-model within a config, not one shared prompt — design the dispatch so a
 config carries a prompt-template per voter/judge.
 
-**Storage:** a `council_config` table in the governance DB (CRUD via the console), or a versioned
-config-as-data JSON (like the Stage-5 knobs)? Lean: config-as-data JSON with provenance, mirroring the
-existing `common/config/` pattern — but the *assignment* and *cost* are DB/runtime.
+**Storage — DECIDED: config-as-data JSON** (approved 2026-06-29). A versioned `common/config/council_configs.json`
+with per-entry provenance, mirroring the existing Stage-5 knob pattern (`config_loader`) — these are *tunable
+config*, not data, so the config-as-data layer is the right home; git-diffable, and the Node half reads the
+same file natively. The **assignment + cost + dispatch** are the DB/runtime parts (a config is *referenced
+by id* from the immutable handoff; §3D).
+
+**Diversity is a HARD CONSTRAINT, enforced by the config loader (council research §2/§3/§6).** A config is
+*invalid* unless: (1) the **2 voters are different families**; (2) the **judge is a third family** (distinct
+from both voters). This is not stylistic — the research is unambiguous: two wrong models agree on the *same*
+wrong answer ~60% of the time (vs 33% chance), same-family far worse, and a judge that re-reads beats an
+extra voter (−35.9% hallucination vs +32.7% for majority vote). Family buckets for our roster: **Google**
+(Flash, Flash-Lite) · **Mistral** (Small 24B, Large 2512) · **DeepSeek** (V3.2) · **Qwen** (235B-2507). Both
+seed councils satisfy this (low-cost: Google+Mistral→Qwen; image: Google+Mistral→DeepSeek). *The first test
+in slice 1 is this validator.* (Why 2-and-a-judge, not a standing 3-voter panel: the research's "3>2" result
+is for a *fixed parallel* council; ours is a **cascade** — 2 voters on the easy majority, the third-family
+judge only on disagreement — which is the research's own preferred cost shape, §4.)
 
 ### B. Signals → routing (default assignment) — **the foundational question**
 
@@ -186,6 +199,18 @@ flowchart LR
 The open question is whether to also cascade *across* configs — start a rep on the cheap council, escalate
 to a stronger/specialized one only on no-consensus (FrugalGPT/UCCI) — vs. route straight to the right
 council by content type. Decided empirically by measured escalation + yield on real captured inputs.
+
+**Capture fidelity is a routing/accept signal, not just a content type (council research, the New Haven
+refinement).** Cross-family agreement is strong evidence *only when the input is clean*. When a rep is
+**known-garbled / low-fidelity** — multi-column scans OCR scrambles, `visual_text_gap`, OCR-sourced text —
+even cross-family voters make the *same* mis-read (false consensus from a shared **bad input**, upstream of
+the models, which family diversity cannot rescue). Two implications Stage 6 carries:
+- **Routing:** a low-fidelity text rep should route to the **image/vision council** (read the rendered PNG),
+  not a text council — the fix is a clean input, not more text voters.
+- **Accept (Stage 7's rule, but Stage 6 must carry the signal):** a low-fidelity rep must **not auto-accept
+  on 2-voter agreement** — force the judge or human-QC. So the handoff carries each rep's capture-fidelity
+  signal alongside its routed council. (Calibrated escalation thresholds — UCCI — are a later refinement;
+  the binary "fidelity-suspect → don't auto-accept" gate is the version we build first.)
 
 ### C. Cost estimation (story 67–68)
 - **v1:** OpenRouter price/1M × token estimate (input ≈ rep size; output small/bounded). Per config × per rep.
