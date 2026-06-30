@@ -83,8 +83,13 @@ let VIEW = loadView();
 let FACETS = null;
 
 function loadView() {
-  try { return { ...DEFAULT_VIEW, ...JSON.parse(localStorage.getItem("s5_view") || "{}") }; }
-  catch (_) { return { ...DEFAULT_VIEW }; }
+  let v;
+  try { v = { ...DEFAULT_VIEW, ...JSON.parse(localStorage.getItem("s5_view") || "{}") }; }
+  catch (_) { v = { ...DEFAULT_VIEW }; }
+  // Deep-linkable: ?group_by=…&sort=…&dir=… overrides (bookmarkable/shareable views).
+  const q = new URLSearchParams(location.search);
+  ["group_by", "sort", "dir", "label"].forEach((k) => { if (q.has(k)) v[k] = q.get(k); });
+  return v;
 }
 function persistView() { localStorage.setItem("s5_view", JSON.stringify(VIEW)); }
 
@@ -117,32 +122,37 @@ window.loadStage5 = loadTree;   // gate1.js re-fetches on view-show
 // ----------------------------- controls -----------------------------
 function renderControls(data) {
   const bar = document.createElement("div"); bar.className = "s5-bar";
-  const opt = (o, sel) => `<option value="${o}" ${o === sel ? "selected" : ""}>`;
-  const groupOpts = Object.keys(GROUP_LABEL).map((k) => `${opt(k, VIEW.group_by)}${GROUP_LABEL[k]}</option>`).join("");
-  const sortOpts = Object.keys(SORT_LABEL).map((k) => `${opt(k, VIEW.sort)}${SORT_LABEL[k]}</option>`).join("");
-  const arrow = VIEW.dir === "asc" ? "↑" : "↓";
-  const labelChip = (v, t) => `<button class="s5-chip ${VIEW.label === v ? "on" : ""}" data-label="${v}">${t}</button>`;
-  const reasonChips = ((FACETS && FACETS.reason) || []).map((r) =>
-    `<button class="s5-chip ${VIEW.reasons.includes(r.value) ? "on" : ""}" data-reason="${r.value}" title="${r.count} records">${(ATTN_REASON[r.value] || [r.value])[0]}</button>`).join("");
-  const tierChips = ["A", "B", "C", "D"].map((t) =>
-    `<button class="s5-chip ${VIEW.tiers.includes(t) ? "on" : ""}" data-tier="${t}">${t}</button>`).join("");
+  const selectFor = (id, map, cur) => `<select id="${id}" class="s5-select">` +
+    Object.keys(map).map((k) => `<option value="${k}" ${k === cur ? "selected" : ""}>${map[k]}</option>`).join("") + `</select>`;
+  const labelSeg = [["", "All"], ["unlabeled", "Unlabeled"], ["labeled", "Labeled"]].map(([v, t]) =>
+    `<button class="seg-btn ${VIEW.label === v ? "on" : ""}" data-label="${v}">${t}</button>`).join("");
+  const tierBtns = ["A", "B", "C", "D"].map((t) =>
+    `<button class="tier-btn t-${t} ${VIEW.tiers.includes(t) ? "on" : ""}" data-tier="${t}">${t}</button>`).join("");
+  const reasonChips = ((FACETS && FACETS.reason) || []).filter((r) => r.value).map((r) => {
+    const [lab, tone] = ATTN_REASON[r.value] || [r.value, "r-low"];
+    return `<button class="rsn-chip ${tone} ${VIEW.reasons.includes(r.value) ? "on" : ""}" data-reason="${r.value}" title="${r.count} records">${lab}</button>`;
+  }).join("");
+  const grouped = VIEW.group_by !== "none";
 
   bar.innerHTML = `
-    <div class="s5-row">
-      <label>Group</label><select id="s5-group">${groupOpts}</select>
-      <label>Sort</label><select id="s5-sort">${sortOpts}</select>
-      <button id="s5-dir" class="s5-icon" title="ascending / descending">${arrow}</button>
+    <div class="s5-field"><span class="s5-lbl">Group</span>${selectFor("s5-group", GROUP_LABEL, VIEW.group_by)}</div>
+    <div class="s5-field"><span class="s5-lbl">Sort</span>${selectFor("s5-sort", SORT_LABEL, VIEW.sort)}
+      <button id="s5-dir" class="s5-iconbtn" title="ascending / descending">${VIEW.dir === "asc" ? "↑" : "↓"}</button></div>
+    <div class="s5-filtrow">
+      <div class="seg" role="group" aria-label="label status">${labelSeg}</div>
+      <div class="tiers" role="group" aria-label="tier">${tierBtns}</div>
     </div>
-    <div class="s5-row s5-filters">
-      <span class="s5-flabel">labels</span>${labelChip("", "all")}${labelChip("unlabeled", "unlabeled")}${labelChip("labeled", "labeled")}
-      <span class="s5-flabel">tier</span>${tierChips}
-      <label class="s5-toggle"><input type="checkbox" id="s5-hideres" ${VIEW.hide_resolved ? "checked" : ""}/> hide resolved</label>
+    <div class="s5-filtrow s5-secondary">
+      <label class="s5-toggle"><input type="checkbox" id="s5-hideres" ${VIEW.hide_resolved ? "checked" : ""}/> Hide resolved</label>
+      ${grouped ? `<span class="s5-spacer"></span>
+        <button id="s5-collapse" class="s5-link">Collapse all</button>
+        <button id="s5-expand" class="s5-link">Expand all</button>` : ""}
     </div>
-    <div class="s5-row s5-reasons"><span class="s5-flabel">attention</span>${reasonChips || "<span class='q-smeta'>—</span>"}</div>
-    <div class="s5-row s5-views">
-      <select id="s5-viewsel"><option value="">Saved views…</option></select>
-      <button id="s5-viewsave" class="btn btn-ghost s5-mini">Save view</button>
-      <span class="s5-count">${data.shown}/${data.total_districts} districts</span>
+    ${reasonChips ? `<div class="s5-reasons">${reasonChips}</div>` : ""}
+    <div class="s5-actions">
+      <select id="s5-viewsel" class="s5-select s5-viewsel"><option value="">Saved views…</option></select>
+      <button id="s5-viewsave" class="s5-btn">Save view</button>
+      <span class="s5-count">${data.total_districts} district${data.total_districts === 1 ? "" : "s"}</span>
     </div>`;
 
   bar.querySelector("#s5-group").onchange = (e) => { VIEW.group_by = e.target.value; commitView(); };
@@ -153,11 +163,19 @@ function renderControls(data) {
   bar.querySelectorAll("[data-tier]").forEach((b) => b.onclick = () => { toggle(VIEW.tiers, b.dataset.tier); commitView(); });
   bar.querySelectorAll("[data-reason]").forEach((b) => b.onclick = () => { toggle(VIEW.reasons, b.dataset.reason); commitView(); });
   bar.querySelector("#s5-viewsave").onclick = saveCurrentView;
+  if (grouped) {
+    bar.querySelector("#s5-collapse").onclick = () => setAllGroups(true);
+    bar.querySelector("#s5-expand").onclick = () => setAllGroups(false);
+  }
   populateViewSelect(bar.querySelector("#s5-viewsel"));
   return bar;
 }
 function toggle(arr, v) { const i = arr.indexOf(v); if (i < 0) arr.push(v); else arr.splice(i, 1); }
 function commitView() { persistView(); loadTree(); }
+function setAllGroups(collapsed) {
+  document.querySelectorAll("#s5-list .s5-group-body").forEach((b) => b.classList.toggle("hidden", collapsed));
+  document.querySelectorAll("#s5-list .s5-caret").forEach((c) => c.textContent = collapsed ? "▸" : "▾");
+}
 
 // ----------------------------- groups + districts -----------------------------
 function groupTitle(key, group_by) {
@@ -239,7 +257,10 @@ function renderRecRow(r, clusterSize) {
   const status = r.label_status || r.status || "unlabeled";   // faceted endpoint -> label_status
   li.className = "rec-row" + (clusterSize > 1 ? " cluster-rep" : "");
   li.dataset.recKey = r.rec_key;
-  const tail = (r.url || "").replace(/^https?:\/\//, "").slice(0, 32);
+  // Favor the DISTINGUISHING tail (path/page) over the shared domain prefix — records within a
+  // district otherwise all read identically. Full URL stays on hover (title).
+  const u = (r.url || "").replace(/^https?:\/\//, "").replace(/^www\./, "");
+  const tail = u.length > 34 ? "…" + u.slice(-33) : u;
   const badge = clusterSize > 1
     ? `<span class="cluster-badge" title="${clusterSize - 1} near-duplicate(s) — click to expand">+${clusterSize - 1}</span>` : "";
   const emergent = r.is_emergent ? `<span class="emergent-dot" title="emergent — captured but not a planned candidate">⚡</span>` : "";
