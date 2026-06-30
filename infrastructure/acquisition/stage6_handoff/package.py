@@ -24,10 +24,9 @@ def assemble_record(rec: dict, councils: dict, cost_model: dict) -> dict:
            "decision": rec.get("decision"), "reason": rec.get("reason"), "reps": []}
     if rec.get("decision") != "send":
         return out
-    available = set(councils)
     signals = rec.get("signals") or {}
     for se in rec.get("send", []) or []:
-        r = routing.route(se, signals, available)
+        r = routing.route(se, signals, councils)   # councils = id->config registry (carries input_kinds)
         est = sum(cost.estimate_council_cost(se, councils[cid], cost_model)
                   for cid in r["councils"] if cid in councils)
         out["reps"].append({

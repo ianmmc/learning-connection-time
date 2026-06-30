@@ -875,20 +875,24 @@ _TARGET_IN = "','".join(sorted(BS.TARGET_LABELS))
 
 @app.get("/api/handoff/candidates")
 def handoff_candidates():
-    """Stage-5 districts available to hand off, each with its count of canonical target-labeled
-    (send-eligible) records — so the human knows which districts carry content to dispatch."""
+    """Stage-5 districts available to hand off, each with its count of canonical SEND-ELIGIBLE records
+    — matching release.decide's send DECISION (target-labeled OR unlabeled non-tier-D, the recall-bias
+    auto-filter), so the badge reflects what dispatch will actually send, not just labeled targets.
+    Reuses release.CANONICAL_RECORD_WHERE (one definition of "canonical"). Preview stays authoritative
+    for the exact representation count + cost."""
     with gdb.session_scope() as con:
         rows = con.execute(text(
-            f"""SELECT d.district_id, d.name, d.labeled_topology, COALESCE(t.n_target, 0) AS n_target
+            f"""SELECT d.district_id, d.name, d.labeled_topology, COALESCE(t.n_send, 0) AS n_send
                 FROM district d
                 LEFT JOIN (
-                    SELECT r.district_id, COUNT(*) AS n_target
-                    FROM record r JOIN label l ON l.rec_key = r.rec_key
-                    WHERE r.duplicate_of IS NULL AND (r.is_cluster_rep = 1 OR r.cluster_id IS NULL)
-                      AND l.primary_label IN ('{_TARGET_IN}')
+                    SELECT r.district_id, COUNT(*) AS n_send
+                    FROM record r LEFT JOIN label l ON l.rec_key = r.rec_key
+                    WHERE {REL.CANONICAL_RECORD_WHERE}
+                      AND ( l.primary_label IN ('{_TARGET_IN}')
+                            OR (l.primary_label IS NULL AND r.tier <> 'D') )
                     GROUP BY r.district_id
                 ) t ON t.district_id = d.district_id
-                ORDER BY n_target DESC, d.district_id""")).mappings().all()
+                ORDER BY n_send DESC, d.district_id""")).mappings().all()
         return [dict(r) for r in rows]
 
 
@@ -908,8 +912,12 @@ async def handoff_dispatch(payload: dict):
     actor = payload.get("actor", "ian")
     if not ids:
         raise HTTPException(400, "no districts selected")
-    with gdb.session_scope() as con:
-        doc, path = H6.dispatch_handoff(con, ids, created_by=actor)
+    try:
+        with gdb.session_scope() as con:
+            doc, path = H6.dispatch_handoff(con, ids, created_by=actor)
+    except FileExistsError:
+        raise HTTPException(409, "an identical handoff was just dispatched (same content within the "
+                                 "same second) — the prior one stands; retry in a moment if intended")
     cost = doc.get("cost") or {}
     return {"handoff_id": HND6.handoff_filename(doc)[:-5], "handoff_hash": doc["handoff_hash"],
             "n_districts": len(doc.get("districts", [])), "n_reps": cost.get("n_reps", 0),

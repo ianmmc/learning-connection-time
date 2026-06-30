@@ -25,9 +25,9 @@ def test_family_of_unknown_falls_back_to_provider_prefix():
 
 
 # --------------------------- the diversity validator ---------------------------
-def _cfg(voters, judge, cid="t"):
+def _cfg(voters, judge, cid="t", prompts={"default": "stage6.extract.v1"}):
     return {"id": cid, "name": cid, "voters": list(voters), "judge": judge,
-            "input_kinds": ["text"]}
+            "input_kinds": ["text"], "prompts": prompts}
 
 
 def test_valid_cross_family_config_passes():
@@ -62,6 +62,21 @@ def test_must_have_exactly_two_voters():
 def test_judge_required():
     cfg = _cfg(["google/gemini-2.5-flash-lite", "mistralai/mistral-small-24b-instruct-2501"], None)
     with pytest.raises(councils.ConfigError, match="judge"):
+        councils.validate(cfg)
+
+
+def test_missing_prompt_rejected():
+    # family-valid but no prompts -> would KeyError at request assembly (Stage 7); caught at load.
+    cfg = _cfg(["google/gemini-2.5-flash-lite", "mistralai/mistral-small-24b-instruct-2501"],
+               "qwen/qwen3-235b-a22b-2507", prompts={})
+    with pytest.raises(councils.ConfigError, match="prompt"):
+        councils.validate(cfg)
+
+
+def test_unknown_prompt_id_rejected():
+    cfg = _cfg(["google/gemini-2.5-flash-lite", "mistralai/mistral-small-24b-instruct-2501"],
+               "qwen/qwen3-235b-a22b-2507", prompts={"default": "no-such-prompt"})
+    with pytest.raises(councils.ConfigError, match="prompt"):
         councils.validate(cfg)
 
 

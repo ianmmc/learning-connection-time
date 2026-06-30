@@ -37,7 +37,7 @@ def test_dispatch_handoff_freezes_writes_and_records(tmp_path, monkeypatch):
 
     captured = {}
     monkeypatch.setattr(BR, "record_dispatch",
-                        lambda session, doc, path, actor="human": captured.update(doc=doc, path=path, actor=actor))
+                        lambda session, doc, path, actor="human", metas=None: captured.update(doc=doc, path=path, actor=actor))
 
     doc, path = BR.dispatch_handoff(session=None, district_ids=["0100810"],
                                     created_by="ian", root=tmp_path)

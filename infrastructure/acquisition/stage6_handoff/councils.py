@@ -12,6 +12,7 @@ voters must be different families and the judge a third. An invalid config fails
 This module imports only `common` — it stays independent of the other stages (import-linter contract).
 """
 from infrastructure.acquisition.common import config_loader
+from infrastructure.acquisition.stage6_handoff import prompts as P
 
 KNOB = "council_configs"
 
@@ -58,6 +59,14 @@ def validate(cfg: dict) -> None:
         raise ConfigError(
             f"council '{cid}': the judge must be a third family distinct from both voters "
             f"(judge '{judge}' is '{jf}', which collides with a voter)")
+    # Every voter AND the judge must resolve to a KNOWN prompt — else request assembly (Stage 7,
+    # the expensive moment) would KeyError on SYSTEM_PROMPTS[None]. Validate it here at config-load.
+    for m in voters + [judge]:
+        pid = P.select_prompt_id(cfg, m)
+        if pid not in P.SYSTEM_PROMPTS:
+            raise ConfigError(
+                f"council '{cid}': no usable prompt for model '{m}' (resolved prompt_id={pid!r}); "
+                f"add a `prompts.default` (or per-model entry) naming a known prompt")
 
 
 def load_configs() -> dict:

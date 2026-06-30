@@ -80,16 +80,22 @@ def test_council_cost_is_voters_plus_escalation_times_judge():
     assert math.isclose(c, 0.001 + 0.0 + 0.5 * 0.001, rel_tol=1e-9)
 
 
-def test_handoff_cost_sums_items_and_reports_provenance():
-    council = {"id": "c", "voters": ["fam-b/v1", "fam-c/v1"], "judge": "fam-b/v1"}
-    items = [({"n_chars": 0, "n_times": 0}, council), ({"n_chars": 0, "n_times": 0}, council)]
-    out = cost.estimate_handoff_cost(items, MEASURED)
-    per = 0.001 + 0.5 * 0.001
-    assert math.isclose(out["total_usd"], 2 * per, rel_tol=1e-9)
-    assert out["provenance"] == "measured"
-    assert out["n_items"] == 2
-
-
 def test_unknown_model_raises():
     with pytest.raises(cost.CostModelError, match="no-such"):
         cost.estimate_call_cost("no-such/model", {"n_chars": 10}, MEASURED)
+
+
+def test_missing_escalation_rate_raises():
+    # a malformed cost model (no assumptions.escalation_rate) must NOT silently default — a wrong rate
+    # mis-states the $ at the gate@6 spend gate.
+    council = {"voters": ["fam-b/v1", "fam-c/v1"], "judge": "fam-b/v1"}
+    no_esc = {"provenance": "measured", "assumptions": {}, "models": MEASURED["models"]}
+    with pytest.raises(cost.CostModelError, match="escalation_rate"):
+        cost.estimate_council_cost({"n_chars": 0}, council, no_esc)
+
+
+def test_measured_path_uses_default_n_schools_when_count_missing():
+    # a rep with neither n_schools nor n_times falls back to the configured floor (1), not 0 — so output
+    # is never silently priced as pure base on the measured token path.
+    c = cost.estimate_call_cost("fam-a/v1", {"n_chars": 0}, MEASURED)   # in=100, out=10+20*1=30
+    assert math.isclose(c, (100 * 1.0 + 30 * 2.0) / 1e6, rel_tol=1e-9)

@@ -5,7 +5,9 @@
   "provenance": "bootstrap",
   "assumptions": {
     "escalation_rate": 0.5,
-    "escalation_rate_note": "conservative placeholder; measured by the accuracy/agreement benchmark (deferred, §3C C.6)"
+    "escalation_rate_note": "conservative placeholder; measured by the accuracy/agreement benchmark (deferred, §3C C.6)",
+    "default_n_schools": 1,
+    "default_n_schools_note": "school-count floor for output-token scaling when a rep carries no n_schools/n_times (only used on the measured token path; the bridge should populate a real count)"
   },
   "models": {
     "mistralai/mistral-small-24b-instruct-2501": {"per_call_usd": 0.00022, "source": "extraction-benchmark-update4 (old inputs; flat)"},

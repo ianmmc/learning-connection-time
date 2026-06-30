@@ -57,6 +57,6 @@ def test_candidates_and_handoffs_lists():
     assert c.status_code == 200 and isinstance(c.json(), list)
     if c.json():
         row = c.json()[0]
-        assert "district_id" in row and "n_target" in row
+        assert "district_id" in row and "n_send" in row
     h = client.get("/api/handoffs")
     assert h.status_code == 200 and isinstance(h.json(), list)
