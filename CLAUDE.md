@@ -60,16 +60,21 @@ on main. Post-merge cleanup still pending (safe now that the new pane is confirm
 endpoint + a few old `app.js` helpers it fed.
 
 **→ NEXT: Stage 6 (routing/release) + gate@6 → Stage 7 (the paid council).** Decide which reps → which
-OpenRouter council config; emit the immutable `handoff_<hash>_<timestamp>.json`. **READ FIRST: the Stage 6/7
-forward note in `PROJECT_HISTORY.md`** — the invariants + the NEW lever (the REQ-112 **attention reasons are a
-routing signal**: `image_only`→a vision council member, `buried_long_doc`→the harvest_pages slice,
-`signal_text_disagree`→the hard cross-family cases) — then `STAGE6_HANDOFF_DESIGN_2026-06.md` (the authority).
-Open: council composition (Path-1/2/-Mistral, by **measured** escalation rate) + config grain (per-district vs
-per-rep). Cost-gate auto-advance through the paid stages (budget governor, REQ-051).
+OpenRouter council config; emit the immutable `handoff_<hash>_<timestamp>.json`. **READ FIRST, in order:**
+(1) **the user's own routing thoughts** — `docs/scratch-paper/STAGE6-Ian-thoughts-on-routing.md` (Ian wrote
+these for you to start from); (2) **the Stage 6/7 forward note in `PROJECT_HISTORY.md`** — the invariants + the
+NEW lever (the REQ-112 **attention reasons are a routing signal**: `image_only`→a vision council member,
+`buried_long_doc`→the harvest_pages slice, `signal_text_disagree`→the hard cross-family cases); (3)
+`STAGE6_HANDOFF_DESIGN_2026-06.md` (the design authority). Open: council composition (Path-1/2/-Mistral, by
+**measured** escalation rate) + config grain (per-district vs per-rep). Cost-gate auto-advance through the paid
+stages (budget governor, REQ-051). **Do Stage 6 on a branch → PR (the agreed cadence for stage-sized work).**
 
 **Fresh-session essentials:** `/catchup` → `pip install -e .` →
 **Docker up** → `lint-imports` (3 kept/0 broken) + `pytest -q -m "not integration"` (**599 pass**;
-resource-dependent tests are `integration`-marked). Launch from the repo root:
+resource-dependent tests are `integration`-marked). **CI = two jobs** (`.github/workflows/test.yml`): the
+DB-free suite + **`governance-db`** (runs `pytest -m govdb` — the 21 governance-Postgres tests — against a
+Postgres service container). Locally, `pytest -m govdb` needs Docker up; the LCT-DB/NCES `integration` tests
+stay local-only. (FastAPI/uvicorn/httpx are now pinned in `requirements.txt`.) Launch from the repo root:
 `python3 -m infrastructure.acquisition.process_governance.server` (→ :8005); **Stage 5 is the default view.**
 **Console changes are JS+Python: reload the browser for `static/*.js`, restart the server for Python.**
 **Self-verify UI with Playwright** — `playwright screenshot --wait-for-selector "#s5-list .district" <url> out.png`
