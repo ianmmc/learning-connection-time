@@ -1,8 +1,8 @@
-# Stage 6 — Handoff: routing representations to extraction councils (REQ-101)
+# Stage 6 — Dispatch: routing representations to extraction councils (REQ-101)
 
 > **Status: BUILT to the Stage 6→7 seam — merged to main (PR #2, 2026-06-30).** Stage 6 reads the Stage-5
 > release decision from the DB, routes each representation to a council, prices it, freezes an immutable
-> handoff, records the dispatch, and assembles the OpenRouter requests — **stopping *before* the paid call**
+> dispatch, records the dispatch, and assembles the OpenRouter requests — **stopping *before* the paid call**
 > (that's Stage 7). `gate@6` is live in the console (manual approve). This note is now **as-built**: §0 maps
 > the code (the ground truth); the design rationale in §1–§4 stands, with the items still genuinely open
 > flagged there (chiefly council **composition**, which awaits the measurement lab). Authority for
@@ -26,12 +26,12 @@ slice-by-slice; **~63 tests** (incl. govdb Postgres) + a live end-to-end dispatc
 | council registry + validator | `stage6_handoff/councils.py` + `common/config/council_configs.json` | config-as-data councils; a HARD diversity rule (2 voters / 2 families → 3rd-family judge) **and** a prompt-resolution check, validated on load. Seeds: `low-cost-text`, `image` |
 | routing | `stage6_handoff/routing.py` | per-rep → council(s), **data-driven off each config's `input_kinds`**; the capture-fidelity gate (`visual_text_gap` → vision council, `fidelity_suspect=True`, never auto-accept on agreement — the New Haven lesson) |
 | cost estimator | `stage6_handoff/cost.py` + `common/config/council_cost_model.json` | per-council $ = voters + escalation·judge; reads a config-as-data cost model with `provenance`. Ships a labeled **bootstrap** (flat per-call); the token×**live-OpenRouter-price** split is designed (§3C), not yet wired |
-| package assembly | `stage6_handoff/package.py` | release decision → routed + priced in-memory handoff package (pure) |
+| package assembly | `stage6_handoff/package.py` | release decision → routed + priced in-memory dispatch package (pure) |
 | release→routing bridge | `process_governance/stage6_dispatch.py` | reads the DB release decision (`release.load_district_records`/`decide`), enriches reps with size signals, assembles; the one module that imports **both** stage5 + stage6 (the §12 independence contract) |
 | immutable artifact | `stage6_handoff/handoff.py` | `handoff_<hash>_<ts>.json` under `data/acquisition/handoffs/`; a **price-independent** content-identity hash; `write()` refuses to overwrite |
 | dispatch record | `stage6_handoff/models.py` (precious `handoff` table) + `stage6_dispatch.record_dispatch` | the index row + a per-district `dispatched` gate@6 `state_event`, recorded **atomically on one session** (current_state is a view); the file is written **last** so a DB failure rolls back cleanly |
 | request assembly (the seam) | `stage6_handoff/prompts.py` + `requests.py` | the ported extraction prompt (reads TIMES only, REQ-054) + a vision variant; `plan_requests` (the first-pass voter calls; judge deferred to Stage 7) + `build_request` (materialize) — **stops here; the paid POST is Stage 7** |
-| gate@6 console | `process_governance/server.py` (`/api/handoff/{candidates,preview,dispatch}`, `/api/handoffs`) + `static/stage6.js` | pick send-eligible districts → preview the routed/priced package → **Approve & freeze (gate@6)** + a recent-handoffs list |
+| gate@6 console | `process_governance/server.py` (`/api/handoff/{candidates,preview,dispatch}`, `/api/handoffs`) + `static/stage6.js` | pick send-eligible districts → preview the routed/priced package → **Approve & freeze (gate@6)** + a recent-dispatches list |
 
 **The seam:** everything needed to POST is assembled here; **Stage 7** makes the paid call, runs the
 judge-on-disagreement loop, and the "request more evidence" back-edges (§3F). **Deferred (own tracks):**
@@ -55,7 +55,7 @@ release/dispatch.** It is **routing + release** — the gate is `gate@6`. It doe
   projection of the DB, governance §1), **not** the transport — Stage 6 reads the DB and the binaries on
   disk by path.
 - **Output:** an immutable **`handoff_<hash>_<timestamp>.json`** (the dispatch record) + the actual paid
-  OpenRouter calls that Stage 7 consumes. A `dispatched` `state_event` references the handoff hash.
+  OpenRouter calls that Stage 7 consumes. A `dispatched` `state_event` references the dispatch hash.
 
 **The unit Stage 7 receives is a COUNCIL, not a single model** — in production, representations are dispatched
 to councils. *Single-model dispatch exists only as a benchmark/testing mode* (to score models on clean data
@@ -70,7 +70,7 @@ must be expressible:
   (e.g. text → a text council, image → the image council);
 - all reps of a URL, or all URLs of a district → one or more councils.
 
-**Unit of work / review:** the **handoff package** — a set of representations (rolled up *by district/LEA*
+**Unit of work / review:** the **dispatch package** — a set of representations (rolled up *by district/LEA*
 for human review, story 61), each routed to its council, dispatched together. Multiple packages can exist
 concurrently, each advancing only when approved (story 70) — the same "approve-to-advance" shape as Stage 1.
 
@@ -91,7 +91,7 @@ concurrently, each advancing only when approved (story 70) — the same "approve
   at scale"; two cross-family voters agree-or-escalate, and a disagreement goes to a single judge that
   re-reads the page (research: judge > extra voter). This *is* the per-council mini-cascade; a separate
   cross-config cascade (cheap council → accuracy council) remains an open lever (§3B).
-- **The handoff artifact is immutable** — freezes each district's chosen reps + assigned config +
+- **The dispatch artifact is immutable** — freezes each district's chosen reps + assigned config +
   `(config,labels,data)` fingerprints at dispatch time; a new dispatch is a new file (governance §5).
   This is what makes "what did we send on date X" recoverable across the re-extract / request-more loops.
 - **`gate@6` is manual/auto** (Settings toggle). Auto = auto-assign config + dispatch **within budget**;
@@ -108,8 +108,8 @@ concurrently, each advancing only when approved (story 70) — the same "approve
   per-school (start,end) pair, ±15 min** (REQ-056) — same-family agreement is not consensus.
 - **The loops Stage 6 participates in** (see the flow diagram's back-edges):
   - **7→6** — re-extract existing reps via a *different* council config (story 58); also "select an
-    alternate representation" (story 59) → a new handoff, no new capture.
-  - **8→6** — add an existing-rep URL to a new handoff (story 80).
+    alternate representation" (story 59) → a new dispatch, no new capture.
+  - **8→6** — add an existing-rep URL to a new dispatch (story 80).
   - Anything needing **new** capture/discovery (recapture, re-discover, band-gap fill) routes back to
     **Stage 1** as a reviewable follow-up batch — **not** created by Stage 6/7/8 directly.
 - **Completion grain = district × BAND.** A district is "satisfied" when every claimed band has confident
@@ -126,7 +126,7 @@ over time** as the corpus grows, OpenRouter prices move, and new models/configs 
 
 | layer | pieces | cadence | role |
 |---|---|---|---|
-| **Runtime dispatch path** | `councils` registry · `routing` · `cost` estimator · `package` · `stage6_dispatch` bridge · handoff writer · dispatch · gate@6 | **per handoff** | the **consumer** — routes + prices + freezes + dispatches |
+| **Runtime dispatch path** | `councils` registry · `routing` · `cost` estimator · `package` · `stage6_dispatch` bridge · dispatch writer · dispatch · gate@6 | **per dispatch** | the **consumer** — routes + prices + freezes + dispatches |
 | **The council lab** | the model benchmark (`cost_benchmark`) · the measured **token model** · live **pricing** cache · a fingerprinted **run ledger** · later: accuracy/agreement scoring, routing-hypothesis tests | **periodic / on-demand** | the **producer** — measures, fits, and updates the config-as-data the runtime path reads |
 
 **The lab unifies three things the doc had as separate ideas** — §1's "benchmark/testing mode"
@@ -152,7 +152,7 @@ runtime path changes to enable it.
 > the items still genuinely open are flagged inline. Quick status: **§3A** council config = BUILT
 > (config-as-data + validator); *composition* OPEN (the lab). **§3B** routing = BUILT (data-driven off
 > `input_kinds` + the fidelity gate); the *cross-config cascade* OPEN. **§3C** cost = BUILT on a bootstrap;
-> the *measured token×live-price* model DESIGNED. **§3D** handoff schema = BUILT. **§3E** gate@6 = *manual*
+> the *measured token×live-price* model DESIGNED. **§3D** dispatch schema = BUILT. **§3E** gate@6 = *manual*
 > BUILT (console); *auto* DEFERRED. **§3F** request-more-evidence = Stage 7 (deferred).
 
 ### A. What *is* a council configuration? (the heart of Stage 6)
@@ -189,7 +189,7 @@ config carries a prompt-template per voter/judge.
 with per-entry provenance, mirroring the existing Stage-5 knob pattern (`config_loader`) — these are *tunable
 config*, not data, so the config-as-data layer is the right home; git-diffable, and the Node half reads the
 same file natively. The **assignment + cost + dispatch** are the DB/runtime parts (a config is *referenced
-by id* from the immutable handoff; §3D).
+by id* from the immutable dispatch; §3D).
 
 **Diversity is a HARD CONSTRAINT, enforced by the config loader (council research §2/§3/§6).** A config is
 *invalid* unless: (1) the **2 voters are different families**; (2) the **judge is a third family** (distinct
@@ -207,8 +207,8 @@ judge only on disagreement — which is the research's own preferred cost shape,
 > **OPEN #1 — RESOLVED: routing grain is per-representation.** A hard `hub` rep and an easy single-school
 > rep *in the same district* warrant different councils, and *different reps of the same URL* can go to
 > different councils (text→text council, image→image council). So assignment is **per-representation**; the
-> handoff is merely *organized by district* for human review (story 61). This closes the per-district /
-> per-handoff / per-representation question in favor of per-rep, and it shapes the artifact + cost model (§3D/§3C).
+> dispatch is merely *organized by district* for human review (story 61). This closes the per-district /
+> per-dispatch / per-representation question in favor of per-rep, and it shapes the artifact + cost model (§3D/§3C).
 
 What drives the council a representation gets (story 66, "default assignment criteria")? The routing key is
 **the representation's content type + capture/context signals**, all already in the governance DB. Ian's
@@ -273,7 +273,7 @@ the models, which family diversity cannot rescue). Two implications Stage 6 carr
 - **Routing:** a low-fidelity text rep should route to the **image/vision council** (read the rendered PNG),
   not a text council — the fix is a clean input, not more text voters.
 - **Accept (Stage 7's rule, but Stage 6 must carry the signal):** a low-fidelity rep must **not auto-accept
-  on 2-voter agreement** — force the judge or human-QC. So the handoff carries each rep's capture-fidelity
+  on 2-voter agreement** — force the judge or human-QC. So the dispatch carries each rep's capture-fidelity
   signal alongside its routed council. (Calibrated escalation thresholds — UCCI — are a later refinement;
   the binary "fidelity-suspect → don't auto-accept" gate is the version we build first.)
 
@@ -285,7 +285,7 @@ differently; vision input tokens depend on image size, not chars) and old OpenRo
 a polluted, pre-Stage-1..5 input mix. Instead, run a small, stratified **cost-measurement benchmark** over
 our existing captured/processed reps, record the real token+cost telemetry OpenRouter returns, and fit a
 per-model **token model**. The estimator then reads *measured* token rates × *live* prices. **Feeds:** the
-handoff cost summary, the `gate@6` go/no-go, the budget governor (REQ-051).
+dispatch cost summary, the `gate@6` go/no-go, the budget governor (REQ-051).
 
 **C.0 — The estimate decomposes into three inputs, by owner and volatility (Ian, 2026-06-30).** Keep them
 separate — conflating them (as slice 3's first cut did) bakes a price snapshot into a measured artifact:
@@ -379,7 +379,7 @@ confirmed OK); how often to re-measure (corpus drift). The estimator's *consumpt
 `council_cost_model.json` is built in slice 3; this benchmark *populates/calibrates* it (slice 3 ships a
 clearly-labeled bootstrap until then).
 
-### D. The handoff artifact schema (mostly designed — pin it)
+### D. The dispatch artifact schema (mostly designed — pin it)
 `handoff_<hash>_<timestamp>.json` (immutable), organized by district for review but **assigned per
 representation** (§3B): `districts[]` → per district its sent reps, **each rep carrying its routed council
 config** (a rep may name more than one council — the many-to-many mapping) + frozen `(config,labels,data)`
@@ -389,39 +389,39 @@ decision later regenerates.
 - **OPEN:** how to represent the rep→council fan-out compactly when several reps share a config (a config
   table + per-rep references vs. inlined configs).
 
-### E. `gate@6` manual/auto + re-handoff semantics
+### E. `gate@6` manual/auto + re-dispatch semantics
 - **manual:** review the package, assigned configs, cost; override config + representation; approve dispatch.
 - **auto:** auto-assign (cascade) + dispatch within budget; **auto-with-confidence-escalation** (escalate
   or flag on no-consensus — the same pattern confirmed for Stage 5 and Stage 8), never silent on low confidence.
-- **re-handoff (story 58):** a district/URL already extracted, re-sent to a *different* config → a new
-  immutable handoff file; the prior one is untouched (history preserved).
+- **re-dispatch (story 58):** a district/URL already extracted, re-sent to a *different* config → a new
+  immutable dispatch file; the prior one is untouched (history preserved).
 
 ### F. The council "request more evidence" loop (plan for it now — Ian)
 A council or judge in Stage 7 may decide it needs more than the one rep it was sent, and should be able to
 **request** it. Three request kinds, each a back-edge Stage 6 has to route:
 - **more text reps** — send additional text representations of the same URL beyond the highest-scoring one
-  (already in the DB → a new handoff, no new capture).
+  (already in the DB → a new dispatch, no new capture).
 - **the image** — escalate the Playwright-captured PNG to the **image council** (a *different* rep of the
   same URL → a different council; the 7→6 back-edge).
 - **more data** — trigger a **new Stage 2 discovery query** for the district (the 7→1 back-edge: new work
   routes through a reviewable follow-up batch, never created by Stage 7 directly — §2 / governance §11d).
 
-**This means Stage 7 can trigger prior-stage scripts**, and Stage 6 must equip the handoff with what a
+**This means Stage 7 can trigger prior-stage scripts**, and Stage 6 must equip the dispatch with what a
 follow-up needs to route correctly. **OPEN (research):** the OpenRouter **session/context** question — can
 we keep an API session open across the request round-trip, or must we re-pass frozen context (the immutable
-handoff is what makes this recoverable) into a fresh call with an appropriate follow-up prompt? Councils may
-or may not persist in the OpenRouter session; the handoff freeze + per-model prompts (§3A) are the
+dispatch is what makes this recoverable) into a fresh call with an appropriate follow-up prompt? Councils may
+or may not persist in the OpenRouter session; the dispatch freeze + per-model prompts (§3A) are the
 mechanisms for reconstituting context if they don't.
 
 ---
 
 ## 4. Requirements to capture (seed from the Stage 6 user stories — not yet numbered)
-- Initiate a handoff of not-yet-extracted district representations (57); re-handoff already-extracted reps
+- Initiate a dispatch of not-yet-extracted district representations (57); re-dispatch already-extracted reps
   to a different config (58); select an alternate target-flagged representation per URL (59–60).
-- Handoff organized by district/LEA (61); see + override the assigned council config (62–63).
+- Dispatch organized by district/LEA (61); see + override the assigned council config (62–63).
 - View available council configs; create new ones from OpenRouter models; see default assignment criteria (64–66).
-- Per-handoff cost estimate, refined with OpenRouter usage (67–68).
-- Approve a handoff for dispatch (69); multiple handoff packages, approve-to-advance (70).
+- Per-dispatch cost estimate, refined with OpenRouter usage (67–68).
+- Approve a dispatch for dispatch (69); multiple dispatch packages, approve-to-advance (70).
 
 **Added from the routing commentary (Ian):**
 - Council config follows the **2-voters-2-families → judge** template; hold **multiple swappable configs**,
@@ -437,7 +437,7 @@ mechanisms for reconstituting context if they don't.
 
 ## 5. References
 - Stage 6 user stories — now inline in §4 (migrated 2026-06-27 from the retired apga doc).
-- `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §4/§5 (release/handoff), §7a (council out-of-process).
+- `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §4/§5 (release/dispatch), §7a (council out-of-process).
 - `LLM_COUNCIL_RESEARCH_2026-06.md` — cross-family consensus, judge, cost cascade.
 - `EXTRACTION_BENCHMARK_FINDINGS.md` — model leaderboard + measured costs (the config candidates).
 - REQ-054 (read-times invariant), REQ-055 (gross metric), REQ-056 (cross-family consensus), REQ-051 (budget governor), REQ-094 (`filtered.json`).

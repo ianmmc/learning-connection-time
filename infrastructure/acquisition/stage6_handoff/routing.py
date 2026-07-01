@@ -7,7 +7,7 @@ content-typed council plugs in by adding a config entry, not by editing this cod
 
   * image rep                      -> a council that reads images (the vision council)
   * text/pdf on a LOW-FIDELITY capture (visual_text_gap) -> the vision council, fidelity_suspect=True
-    (STAGE6_HANDOFF_DESIGN §3B / the New Haven false-consensus lesson: cross-family agreement is
+    (STAGE6_DISPATCH_DESIGN §3B / the New Haven false-consensus lesson: cross-family agreement is
     trustworthy only on a clean input, so read the rendered picture and never auto-accept the text)
   * clean text/pdf                 -> a council that reads text
 

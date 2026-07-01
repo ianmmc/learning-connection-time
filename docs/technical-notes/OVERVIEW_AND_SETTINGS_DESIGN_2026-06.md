@@ -16,7 +16,7 @@ REQ-102). Build authority + sequencing: governance §9.
 
 ## 1. Console Views — the view selector
 - As a user, I want to **select different console views from a menu.** The wordmark becomes a **stage
-  selector**; each stage swaps its view/controls (gate@1 queue, gate@5 review, gate@6 handoff, …), and the
+  selector**; each stage swaps its view/controls (gate@1 queue, gate@5 review, gate@6 dispatch, …), and the
   cross-stage views below (Overview, Settings) are selectable too. **Open:** which stages get a *read*
   view vs an *action* surface (governance §7b).
 

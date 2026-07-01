@@ -6,7 +6,7 @@ cascade template — council research §2-4: judge > extra voter; cross-family a
 
 Configs live in the versioned config-as-data layer (`common/config/council_configs.json`), read via
 the shared `config_loader` (so the Node half reads the same file). The **family-diversity constraint**
-is enforced HERE, on load (LLM_COUNCIL_RESEARCH_2026-06 §2/§3/§6, STAGE6_HANDOFF_DESIGN §3A): the two
+is enforced HERE, on load (LLM_COUNCIL_RESEARCH_2026-06 §2/§3/§6, STAGE6_DISPATCH_DESIGN §3A): the two
 voters must be different families and the judge a third. An invalid config fails fast.
 
 This module imports only `common` — it stays independent of the other stages (import-linter contract).

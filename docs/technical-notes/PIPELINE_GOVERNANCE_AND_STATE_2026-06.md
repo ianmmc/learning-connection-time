@@ -14,7 +14,7 @@
 > `STAGE5_FILTER_DESIGN` §A–D). **Stage 6 + gate@6 routing is BUILT to the Stage 6→7 seam (REQ-101, merged
 > PR #2, 2026-06-30)** — the `stage6_handoff/` package (routing/cost/freeze/request-assembly) + the gate@6
 > console (preview → Approve & freeze); the immutable `handoff_<hash>_<ts>.json` + a precious `handoff` index
-> row + a `dispatched` state_event. Stops before the paid call (Stage 7). Authority: `STAGE6_HANDOFF_DESIGN_2026-06.md`
+> row + a `dispatched` state_event. Stops before the paid call (Stage 7). Authority: `STAGE6_DISPATCH_DESIGN_2026-06.md`
 > §0. **Next: Stage 7 (the paid council) + the council lab (`cost_benchmark`)**; still open: REQ-100 (staleness),
 > gate@6 auto mode. This note is the architecture for three coupled decisions that outgrew
 > `STAGE5_FILTER_DESIGN_2026-06.md`:
@@ -29,7 +29,7 @@
 > Companions: `ACQUISITION_PIPELINE.md` (the 9 stages + checkpoints), `STAGE5_FILTER_DESIGN_2026-06.md`
 > (Stage 5 signals/tiers/clustering/tuning — still authoritative for *that* content), `PROJECT_HISTORY.md`
 > (high-level ADR log). **Gates are now stage-numbered (§11, 2026-06-27): `gate@1` (queue) · `gate@5`
-> (per-URL review) · `gate@6` (handoff) · `gate@7` (council requests) · `gate@8` (results, the effective
+> (per-URL review) · `gate@6` (dispatch) · `gate@7` (council requests) · `gate@8` (results, the effective
 > CP-C)** — supersedes the old CP-A/B/C naming throughout this note.
 
 ---
@@ -278,8 +278,8 @@ reads the working data (records / representations / the release decision) from t
 disk by path; `filtered.json` mirrors that decision for inspection and carries the district-level
 **go/no-go summary** (topology / completeness / cost) Stage 6 needs. District-level metadata lives
 **inside** each `filtered.json` (self-contained); a thin generated **Stage-6 index** avoids re-scanning
-thousands of dirs at scale. *(Stage 6's exact read-path + the handoff freeze are settled in
-`STAGE6_HANDOFF_DESIGN_2026-06.md`.)*
+thousands of dirs at scale. *(Stage 6's exact read-path + the dispatch freeze are settled in
+`STAGE6_DISPATCH_DESIGN_2026-06.md`.)*
 
 ### `handoff_<hash>_<timestamp>.json` — Stage 6, IMMUTABLE dispatch record
 "Which districts we sent to the council in *this* run, and exactly what." **Immutable snapshot** — a new
@@ -319,7 +319,7 @@ full-regen utility. The descent is deterministic, no AI (governance §4).
 **Staleness is still a fact, for the console to surface — not a trigger.** Each `filtered.json` is stamped
 with **per-district `(config,labels,data)` fingerprints** (scoped to that district so a change elsewhere
 doesn't mark it stale). Because generation is event-driven, a district is normally never stale; the
-fingerprint stamp exists so the console (REQ-100) and the **Stage-6 handoff** can detect drift between
+fingerprint stamp exists so the console (REQ-100) and the **Stage-6 dispatch** can detect drift between
 *what was generated* and *what was last dispatched to the council* (the request-more-evidence loop). A
 fuller `state_event`-subscription projector (regenerate exactly the affected districts off the log) is the
 natural REQ-100 generalization of today's two inline hooks.
@@ -342,7 +342,7 @@ view/controls. Once cross-stage STATE is in the DB, the app is the governance co
   2026-06-29). District-driven on purpose (the batch dissolved); per-URL representation review unchanged in
   the center/right panes. `filtered.json` is an event-driven projection, not a Generate button (§6). Detail:
   `STAGE5_FILTER_DESIGN` §A–D.
-- **Stage 6 / gate@6** — approve the handoff/dispatch (which reps → which council config).
+- **Stage 6 / gate@6** — approve the dispatch (which reps → which council config).
 - **Stage 7 / gate@7** — review the council's requests/recommendations.
 - **(later) Stage 8 / gate@8** — review per-band results before the mechanical Stage-9 DB write (the effective old "CP-C").
 
@@ -549,7 +549,7 @@ staleness) — they can proceed while those settle. Steps 3+ need those rulings.
 the workflow. Drift detector (REQ-097) still waits for batch 2.
 
 **Confirmed build order (user, 2026-06-26):** install tools (step 1) → CP-B App → Governance App evolution
-(steps 3/5/7) → Stage 5→6 handoff (step 6). **Doc-update obligations attached to steps:**
+(steps 3/5/7) → Stage 5→6 dispatch (step 6). **Doc-update obligations attached to steps:**
 - *Now (this pass):* `docs/DATA_SOURCES.md` gains a reference to `docs/ACQUISITION_PIPELINE.md`; the toolchain
   is recorded here in §10 (user: keep it in this note for now, not a separate file — extract later if it grows).
 - *On REQ-103 completion (Postgres+Docker migration):* update `docs/DATABASE_SETUP.md` and
@@ -566,7 +566,7 @@ easing back later). Order from here: **gate@1 console view (REQ-102, first deliv
 `batch_00002` there → walk it: Stage 2/3/4 status + orchestration triggers → gate@5 (integrate the existing
 review surface) + the REQ-044 recency gate → Stage 6 + gate@6 (REQ-101).** Scope ends at **gate@6 approval —
 no paid dispatch** (Stage 7 out of scope this pass). The four steps 5–8 REQs are now registered (no longer
-"provisional"): REQ-100 (staleness view), REQ-101 (Stage 6 handoff), REQ-102 (gate@1 view), REQ-104 (Stage 2
+"provisional"): REQ-100 (staleness view), REQ-101 (Stage 6 dispatch), REQ-102 (gate@1 view), REQ-104 (Stage 2
 headless). **Correction:** the *currency/recency* gate is **REQ-044** (a Stage-5 filter enhancement), not
 REQ-104 — REQ-104 is the Stage 2 headless conversion.
 
@@ -574,7 +574,7 @@ REQ-104 — REQ-104 is the Stage 2 headless conversion.
 > DONE.** The batch is a first-class governance-DB entity (the working store) + the gate@1 console API +
 > the queue-review UI; **`batch_00002` was created, edited, and approved end-to-end through the console**
 > (the forcing-function milestone). See **§11h**. Next on the data path: walk `batch_00002` into Stage 2,
-> then REQ-100 (staleness view), REQ-101 (Stage 6 handoff).
+> then REQ-100 (staleness view), REQ-101 (Stage 6 dispatch).
 
 ---
 
@@ -653,7 +653,7 @@ would mostly surface `sys.path` noise; **package first, then the tools light up.
 |---|---|---|
 | **Intra-Python graph + contracts** | `import-linter` (contracts: layers/forbidden/independence) on `grimp` (queryable graph); `vulture` (dead code) | **now** (REQ-098) |
 | **Intra-Node graph + contracts** | `dependency-cruiser` (rule engine + schema-validated JSON; the import-linter analog for `.mjs`/TS) | **now** (REQ-098) |
-| **Cross-boundary edges** (Python→subprocess→Node/CLI · shared `config/*.json` read by both · file-based stage handoffs) | **no tool** → a hand-declared `arch-manifest.json` + **fitness-function tests** (AST scan of `subprocess.*` / config-path reads, asserted against the manifest); `datacontract-cli` for stage-handoff schema validation | **manifest+tests grown alongside the build; datacontract-cli when REQ-094/101 land** |
+| **Cross-boundary edges** (Python→subprocess→Node/CLI · shared `config/*.json` read by both · file-based stage dispatches) | **no tool** → a hand-declared `arch-manifest.json` + **fitness-function tests** (AST scan of `subprocess.*` / config-path reads, asserted against the manifest); `datacontract-cli` for stage-dispatch schema validation | **manifest+tests grown alongside the build; datacontract-cli when REQ-094/101 land** |
 
 **Concrete contracts to encode (import-linter), once packaged:** stage *layering* (1→…→9); *forbidden* —
 no stage imports the production LCT/database layer's internals (enforces the STATE-vs-DATA + DB isolation
@@ -670,7 +670,7 @@ to bet the architecture on; revisit as a separate spike. Browser visualization (
 
 **Possible open-source give-back (noted, not acted on — same build-for-us-first discipline).** The one
 genuinely underserved piece is the **cross-boundary layer**: auto-extracting + enforcing subprocess /
-shared-config / file-handoff edges as a *unified* graph reconciled against a declared manifest. Both the
+shared-config / file-dispatch edges as a *unified* graph reconciled against a declared manifest. Both the
 agent's and the research's conclusion is that no production tool closes this. If our `arch-manifest.json` +
 fitness-function generators prove out here (and ideally survive a second real project shape, not generalized
 from N=1), they're a candidate to extract and publish. **Architect it cleanly separable; do not design *for*
@@ -695,7 +695,7 @@ Stage-9 DB write are ungated:
 |---|---|---|---|
 | **gate@1** | 1 Queue | approve the batch (right districts/schools/bands) | CP-A |
 | **gate@5** | 5 Filter | per-URL representation review (labeling) | CP-B |
-| **gate@6** | 6 Handoff | approve routing/dispatch (which reps → which council config) | *new* |
+| **gate@6** | 6 Dispatch | approve routing/dispatch (which reps → which council config) | *new* |
 | **gate@7** | 7 Extract | review council requests/recommendations | *new* |
 | **gate@8** | 8 Aggregate | review per-band results; override needs a reason | *effective CP-C* |
 
@@ -731,11 +731,11 @@ progress bar). **Pause dropped** (not worth the complexity).
 - **Directions route through Stage 1.** Anything needing NEW capture/discovery (re-discover, recapture,
   band-gap fill) returns to Stage 1, where the follow-up `batch_*.json` is created and stays reviewable at
   gate@1 — 7/8 never create a batch straight to discovery. Only re-routing EXISTING representations bypasses
-  Stage 1 (7→6 re-extract via a different config; 8→6 add an existing-rep URL to a new handoff).
+  Stage 1 (7→6 re-extract via a different config; 8→6 add an existing-rep URL to a new dispatch).
 
 ### 11e. The pipeline is CYCLIC (back-edges) — detail in the flow diagram
 Four back-edges: **7→6**, **7→1**, **8→1**, **8→6** (see the flow diagram in `ACQUISITION_PIPELINE.md`). The immutable
-Stage-6 handoff freeze is what keeps "what we sent" recoverable across these loops.
+Stage-6 dispatch freeze is what keeps "what we sent" recoverable across these loops.
 
 ### 11f. Per-stage console notes
 - **Stage 3** — a thin **health / emergent readout**: emergent URLs, capture failures (WAF/security
@@ -754,15 +754,15 @@ Stage-6 handoff freeze is what keeps "what we sent" recoverable across these loo
   source (`representation.source`). Same fingerprinted-scorecard discipline as Stage 5, applied to discovery
   and processing.
 - **Stage 6** — routing / release; **BUILT to the seam (REQ-101, merged 2026-06-30)**: the gate@6 console
-  (preview the routed/priced package → Approve & freeze) → the immutable handoff + a precious `handoff` index
+  (preview the routed/priced package → Approve & freeze) → the immutable dispatch + a precious `handoff` index
   row + a per-district `dispatched` state_event; manual approve today (auto mode deferred). See
-  `STAGE6_HANDOFF_DESIGN_2026-06.md` §0.
+  `STAGE6_DISPATCH_DESIGN_2026-06.md` §0.
 
 ### 11g. Implications for what's built
 - `state_event.checkpoint` vocabulary: **`gate@1` | `gate@5` | `gate@6` | `gate@7` | `gate@8`** (was
   CP-A/B/C). Free-string column → no schema change; update recorded values + docs as gates get wired.
   **`gate@1` and `gate@6` are now live** (in-band console approvals — gate@6 records a `dispatched` event
-  referencing the immutable handoff hash; see 11h).
+  referencing the immutable dispatch hash; see 11h).
 - `filtered.json` carries **alternate target-flagged reps** (the winner + alternates) so gate@6 can offer
   representation override (REQ-094 follow-up; un-defers §4's "representation override deferred" lean).
 - The **console UI build needs its own design pass** (stage-by-stage, as we designed the pipeline) before
@@ -826,15 +826,15 @@ reframe and the batch_00002-forcing-function plan (the batch-of-record advances 
   console; the app's origin, finally on the current architecture. See **§12c** + `STAGE5_FILTER_DESIGN` §A–D.
 - **Stage 6 + gate@6 routing BUILT to the seam (REQ-101, merged PR #2, 2026-06-30)** — the `stage6_handoff/`
   package (per-rep routing data-driven off `input_kinds` + the capture-fidelity gate; cost estimator on a
-  bootstrap model; immutable handoff with a price-independent hash; OpenRouter request assembly) + the gate@6
+  bootstrap model; immutable dispatch with a price-independent hash; OpenRouter request assembly) + the gate@6
   console view (`static/stage6.js` + `/api/handoff/*`: preview the routed/priced package → Approve & freeze).
   Approval records the index row + a per-district `dispatched` state_event **atomically**, freezes the
   immutable artifact, and **stops at the seam — no paid call** (Stage 7). Manual approve today; auto mode +
-  the budget-governor cost-gate (REQ-051) deferred. See `STAGE6_HANDOFF_DESIGN_2026-06.md` §0.
+  the budget-governor cost-gate (REQ-051) deferred. See `STAGE6_DISPATCH_DESIGN_2026-06.md` §0.
 - **Then:** **Stage 7 (the paid council + judge loop)** + the **council lab** (`cost_benchmark` — measured
   token rates + live OpenRouter pricing; composition re-benchmark) + REQ-100 (staleness).
   Per-stage detail: `STAGE1_QUEUE_DESIGN` §6 (gate@1), `STAGE2_DISCOVER_DESIGN` §7 (the SERP cascade),
-  `STAGE3_CAPTURE_DESIGN` §7, `STAGE4_PROCESS_DESIGN` §4a/§4b, `STAGE5_FILTER_DESIGN` §A–D, `STAGE6_HANDOFF_DESIGN` §0.
+  `STAGE3_CAPTURE_DESIGN` §7, `STAGE4_PROCESS_DESIGN` §4a/§4b, `STAGE5_FILTER_DESIGN` §A–D, `STAGE6_DISPATCH_DESIGN` §0.
 
 ---
 
@@ -850,13 +850,13 @@ and the batch **dissolves as a meaningful unit** (§6 already records this: "at 
 CP-B is the per-URL review"). The Stage-5 view's left pane is districts→records, not batches. **This
 difference is on purpose — do not try to make Stage 5 look like Stages 1–4.**
 
-**§12a — The handoff mechanism (what fires the transition).** When a Stage-4 process run resolves the whole
+**§12a — The dispatch mechanism (what fires the transition).** When a Stage-4 process run resolves the whole
 batch (`status_for_batch` rollup `resolved == total`, and the run did work `todo>0`), the orchestration
 layer's `process_governance/server._ingest_stage5_if_complete`:
 1. runs **`build_signals.ingest_batch(district_ids)`** — the **incremental, batch-scoped** Stage-5 ingest
    (ensures the signal schema, re-ingests ONLY this batch's districts via per-district DELETE+INSERT,
    regenerates their `filtered.json`). Prior batches untouched; **cost ∝ batch, not corpus** — the reason
-   the full `ingest()` DROP+rebuild was rejected as the routine handoff (it would re-grow the very lag we
+   the full `ingest()` DROP+rebuild was rejected as the routine dispatch (it would re-grow the very lag we
    removed). PRECIOUS `label`/`cluster_split` survive (rec_key stable).
 2. records a **Stage-5 progression `state_event` per district** (`stage=5`, `stage_name="filter"`,
    `outcome="ingested"`, `actor="auto:stage5"`) → `furthest_stage` → 5 ("done through Stage 4 / in Stage 5").

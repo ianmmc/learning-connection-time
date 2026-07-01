@@ -866,7 +866,7 @@ def _ingest_stage5_if_complete(batch: dict, on_event) -> None:
               f"re-run `python3 -m infrastructure.acquisition.stage5_filter.build_signals` manually")
 
 
-# ----------------------------- Stage 6 — Handoff routing/release (gate@6, REQ-101) -----------------------------
+# ----------------------------- Stage 6 — Dispatch routing/release (gate@6, REQ-101) -----------------------------
 # Build a handoff package from the Stage-5 release decision, review routed councils + estimated cost,
 # then APPROVE & FREEZE (gate@6) — writes the immutable handoff_<hash>.json + records the dispatch.
 # Stops at the seam: NO paid Stage-7 calls here.

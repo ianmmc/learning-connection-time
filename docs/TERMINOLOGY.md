@@ -61,7 +61,7 @@ The thing the pipeline exists to replace with real data.
 ### Stage / the 9 stages
 The pipeline is built and walked **stage by stage** with human checkpoints. Canonical doc:
 `docs/ACQUISITION_PIPELINE.md`. Stages: **1 Queue · 2 Discover · 3 Capture · 4 Local processing ·
-5 Local filtering · 6 Handoff · 7 Council extraction · 8 Aggregate · 9 Write**.
+5 Local filtering · 6 Dispatch · 7 Council extraction · 8 Aggregate · 9 Write**.
 
 ### Checkpoints (CP-A / CP-B / CP-C) — human-in-the-loop
 Deliberate high-supervision gates: **CP-A (Queue)** — are the right schools/bands targeted? · **CP-B
@@ -160,7 +160,7 @@ outcome. `already_attempted()` excludes a district from re-queue once it has rea
 - **Building hours (red herring)** — a footer's *building/office* open hours mimic a student start/end
   pair but are **not** the student day; flagged `building_hours_visible`.
 
-### Stages 6–9 — Handoff, Council, Aggregate, Write
+### Stages 6–9 — Dispatch, Council, Aggregate, Write
 - **Council** (extraction = correctness) vs **waves** (discovery = recall). A small, **cross-family**
   set of non-reasoning models reads the *same* captured input. Candidate set: Gemini 2.5 Flash, Mistral
   Large 2512, DeepSeek V3.2, Mistral Small 24B, Gemini Flash-Lite, Qwen3-235B.

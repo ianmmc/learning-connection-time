@@ -819,7 +819,7 @@ requirements:
     acceptance_criteria:
       - get_verified_enrichment_count() queries database for actual enriched district count
       - Verified count matches SELECT COUNT(DISTINCT district_id) FROM bell_schedules
-      - Documentation claims (CLAUDE.md, handoff files) must use verified counts only
+      - Documentation claims (CLAUDE.md, dispatch files) must use verified counts only
       - Discrepancy detection compares documented vs actual counts
       - Alert triggered when documented count differs from database by >5%
       - Automated pre-commit hook validates enrichment claims against database
@@ -836,18 +836,18 @@ requirements:
     notes: "Added after 'The Case of the Missing Bell Schedules' investigation revealed AI hallucination of enrichment counts"
 
   - id: REQ-036
-    description: Session handoff documentation must reference verifiable database state
+    description: Session dispatch documentation must reference verifiable database state
     type: constraint
     priority: must
     status: tested
     acceptance_criteria:
-      - Handoff documents must include database snapshot timestamp
+      - Dispatch documents must include database snapshot timestamp
       - Claimed district additions must have corresponding bell_schedules records
       - Claimed record counts verified against DataLineage audit table
       - generate_handoff_report() pulls counts from database, not from AI memory
       - Each claimed district must have verifiable created_at timestamp
-      - Handoff validation script compares claims against database reality
-      - WARNING banner added to handoffs that fail validation
+      - Dispatch validation script compares claims against database reality
+      - WARNING banner added to dispatches that fail validation
     tests:
       - tests/test_enrichment_verification.py::TestHandoffValidation::test_handoff_includes_database_timestamp
       - tests/test_enrichment_verification.py::TestHandoffValidation::test_claimed_districts_have_bell_schedules
@@ -1053,7 +1053,7 @@ requirements:
       SCOPE (decided 2026-06-27): this is a STAGE 5 (Local filter) enhancement, not a separate stage —
       currency/recency is a relevance concern that belongs with the existing Stage-5 signals + gate@5
       review. Build it into stage5_filter (alongside build_signals / the de-chrome + signal work);
-      see STAGE5_FILTER_DESIGN_2026-06.md. Gates the filtered.json -> handoff boundary so stale/COVID-era
+      see STAGE5_FILTER_DESIGN_2026-06.md. Gates the filtered.json -> dispatch boundary so stale/COVID-era
       pages never reach the paid council (Stage 6/7)."
 
   - id: REQ-045
@@ -1630,7 +1630,7 @@ requirements:
       docs/technical-notes/STAGE2_DISCOVER_DESIGN_2026-06.md §6 for the full design-session trail."
 
   - id: REQ-070
-    description: "Stage 2 wave dispatch - Wave 1 (Claude WebSearch subagent) with a strict handoff contract, Wave 2 (OpenRouter) conditional on a residual"
+    description: "Stage 2 wave dispatch - Wave 1 (Claude WebSearch subagent) with a strict dispatch contract, Wave 2 (OpenRouter) conditional on a residual"
     type: functional
     priority: must
     status: tested
@@ -1668,7 +1668,7 @@ requirements:
       401/402/429 specifically via discover.BILLING_AUTH_STATUS_CODES.
       EXECUTION-MODEL UPDATE 2026-06-26: Wave 1 moves from an in-chat Haiku *subagent* to a HEADLESS
       `claude -p` invocation per district (full headless agent, subscription-billed, schedulable) — the
-      strict-JSON handoff contract and all gating/residual/Wave-2 logic are unchanged; only the execution
+      strict-JSON dispatch contract and all gating/residual/Wave-2 logic are unchanged; only the execution
       mechanism changes. Search providers become a pluggable layer (Claude CLI / OpenRouter / future
       Bright Data, Brave). Tracked as REQ-104; see PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §7a."
 
@@ -2280,7 +2280,7 @@ requirements:
       Packaging is the highest-leverage prerequisite: with the current sys.path pattern, static-analysis coverage of
       inter-stage deps is near zero, so package FIRST, then wire the tools. Tools chosen proven-over-novel for an agent
       driver (import-linter over Tach; dependency-cruiser over madge/skott). Cross-boundary edges (subprocess / shared
-      config / file handoffs) have NO tool -> covered by an arch-manifest.json + fitness-function tests, grown alongside
+      config / file dispatches) have NO tool -> covered by an arch-manifest.json + fitness-function tests, grown alongside
       the build (and a possible OSS give-back; build-for-us-first). MCP code-intelligence servers + datacontract-cli
       deferred. The full suite is the safety net.
       DONE 2026-06-26 (commits e37f6ed scaffold, 93f0fd4 package+move+deshim, 2590c1b tools+contracts, 3b4fdf3
@@ -2303,7 +2303,7 @@ requirements:
     created: "2026-06-26T00:00:00Z"
     updated: "2026-06-26T00:00:00Z"
     notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §1a/§9 (step 2). Supersedes the SQLite decision in
-      STAGE5_FILTER_DESIGN_2026-06.md. Later governance steps (REQ-100 trigger UI, REQ-101 handoff, REQ-102 CP-A view,
+      STAGE5_FILTER_DESIGN_2026-06.md. Later governance steps (REQ-100 trigger UI, REQ-101 dispatch, REQ-102 CP-A view,
       REQ-104 Stage 2 headless) are enumerated in §9 and will be registered tests-first at build time.
       DOC OBLIGATION (user 2026-06-26): on completion of this migration, update docs/DATABASE_SETUP.md and
       docs/GETTING_STARTED.md for the new isolated governance DB. Deferred until the migration lands.
@@ -2416,7 +2416,7 @@ requirements:
     priority: must
     status: accepted
     acceptance_criteria:
-      - Five stage-numbered gates — gate@1 (queue), gate@5 (per-URL review), gate@6 (handoff/dispatch), gate@7 (council requests), gate@8 (results, the effective old CP-C); stages 2/3/4 and the Stage-9 DB write are ungated
+      - Five stage-numbered gates — gate@1 (queue), gate@5 (per-URL review), gate@6 (dispatch), gate@7 (council requests), gate@8 (results, the effective old CP-C); stages 2/3/4 and the Stage-9 DB write are ungated
       - state_event.checkpoint records the gate value ('gate@1'|'gate@5'|'gate@6'|'gate@7'|'gate@8'|NULL); free-string column, no schema change
       - Settings exposes a per-gate manual/auto toggle as a global default + per-gate overrides
       - AUTO mode is confidence-escalating — auto-accept high-confidence, auto-escalate/flag low-confidence to manual; gate@8 never writes minutes to the LCT DB without confidence
@@ -2437,7 +2437,7 @@ requirements:
       - A district can recur across batches; both batch types are hard-capped at 12 districts (a stages-1-4 blast-radius control)
       - Completion grain is district x band (elem/middle/high) — a district is satisfied when every claimed band has confident minutes; schools are instrumental (query raw material + sampling units), not the unit of completion
       - Directions from gate@7/gate@8 route back to Stage 1 (the follow-up batch_*.json is created there, reviewable at gate@1) — 7/8 never mint a batch straight to discovery
-      - Only re-routing EXISTING representations bypasses Stage 1 (7->6 re-extract via a different council config; 8->6 add an existing-rep URL to a new handoff)
+      - Only re-routing EXISTING representations bypasses Stage 1 (7->6 re-extract via a different council config; 8->6 add an existing-rep URL to a new dispatch)
     created: "2026-06-27T00:00:00Z"
     updated: "2026-06-27T00:00:00Z"
     notes: "Decided 2026-06-27 (governance §11d, flow diagram). Not yet built — follow-up batches + per-band
@@ -2461,7 +2461,7 @@ requirements:
       Console-first build, driven stage-by-stage by batch_00002 as the forcing function (see REQ-102)."
 
   - id: REQ-101
-    description: Stage 6 Handoff — route filtered representations to an OpenRouter council config and emit an immutable handoff_<hash>_<ts>.json dispatch record; gate@6
+    description: Stage 6 Dispatch — route filtered representations to an OpenRouter council config and emit an immutable handoff_<hash>_<ts>.json dispatch record; gate@6
     type: functional
     priority: must
     status: accepted
@@ -2469,13 +2469,13 @@ requirements:
       - Input = each district's filtered.json (Stage 5 projection); does NO extraction itself (that is Stage 7) — it is routing + release only
       - A council_config is a first-class registered object (lean: config-as-data JSON with provenance, mirroring common/config/; assignment + cost are runtime/DB)
       - Default routing assigns a config, cascade-style (start cheap-trio; escalate to accuracy-pair on no-consensus per REQ-056), never silent on low confidence
-      - Output is an immutable handoff_<hash>_<timestamp>.json dispatch record; a 'dispatched' state_event references the handoff hash; re-handoff writes a NEW file, prior untouched
+      - Output is an immutable handoff_<hash>_<timestamp>.json dispatch record; a 'dispatched' state_event references the dispatch hash; re-dispatch writes a NEW file, prior untouched
       - Cost estimate per config x per rep (OpenRouter price/1M x token estimate) feeds the gate@6 go/no-go and the budget governor (REQ-051)
       - gate@6 manual/auto (auto = confidence-escalating, cost-gated)
     created: "2026-06-27T00:00:00Z"
     updated: "2026-06-27T00:00:00Z"
-    notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §5/§9 (step 6) + STAGE6_HANDOFF_DESIGN_2026-06.md.
-      OPEN #1 (settle before build): council-config grain — per-district vs per-handoff vs per-representation
+    notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §5/§9 (step 6) + STAGE6_DISPATCH_DESIGN_2026-06.md.
+      OPEN #1 (settle before build): council-config grain — per-district vs per-dispatch vs per-representation
       (shapes the artifact + cost model). Also open: seed config sets (the candidate 6 models), judge in-config
       vs fixed-stage, token-estimation method. For batch_00002 we STOP at gate@6 approval — no paid dispatch
       (Stage 7 out of scope this pass). Acceptance criteria firm up as the design note's OPEN sections resolve;
@@ -2487,7 +2487,7 @@ requirements:
     priority: must
     status: accepted
     acceptance_criteria:
-      - The wordmark becomes a stage selector that swaps per-stage views (gate@1 queue, gate@5 review, later gate@6 handoff)
+      - The wordmark becomes a stage selector that swaps per-stage views (gate@1 queue, gate@5 review, later gate@6 dispatch)
       - The gate@1 view presents the queued batch (districts / bands / per-band school selections + the NCES denominators) for human review
       - Approval is an in-band recorded gate@1 state_event (actor identity captured) — replaces today's out-of-band go-ahead
       - A 'create batch' console action invokes queue_batch.py as a callable (actor=human, the §7a-B orchestration model); the batch-of-record is created HERE
@@ -2572,7 +2572,7 @@ requirements:
     updated: "2026-06-29T00:00:00Z"
     notes: "Tests: test_stage4_headless.py (in-process run_batch), test_process_api.py (status/run/trigger),
       test_stage5_incremental_ingest.py (isolation + idempotency via gov_session TEMP tables). Verified on
-      batch_00007 — the handoff fired end-to-end (stage=5 ingested events present). On branch
+      batch_00007 — the dispatch fired end-to-end (stage=5 ingested events present). On branch
       stage5-attention-console (the Stage-4 console parts landed earlier on main; the handoff + incremental
       ingest are on the branch)."
 

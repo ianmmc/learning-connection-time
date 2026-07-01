@@ -39,7 +39,7 @@ Building the **per-school acquisition pipeline** stage-by-stage with **human-in-
 
 **Ground truth re-established by hand (gross, per-school).** `data/benchmark/gt_curation_*/gt_proposals.json` — **940/943 schools human-verified** (per-school start/end). Pending: fold into a new gross GT manifest. Process: council *proposes*, human *verifies* (REQ-059). Failure-mode taxonomy (8 modes → checkpoints) in `ACQUISITION_PIPELINE.md`.
 
-**Human-in-the-loop gates (stage-numbered, 2026-06-27; governance §11) = 5:** **gate@1** Queue (right districts/schools/bands), **gate@5** Filter (per-URL representation review — the critical gate), **gate@6** Handoff (which reps → which council config), **gate@7** Extract (review council requests), **gate@8** Aggregate (per-band results correct + honestly labeled — the effective old "CP-C"; Stage 9 then auto-writes). Stages 2/3/4 + the Stage-9 write are ungated. Each gate is manual/auto (Settings: global default + per-gate overrides; auto is confidence-escalating). Loosen later once confident.
+**Human-in-the-loop gates (stage-numbered, 2026-06-27; governance §11) = 5:** **gate@1** Queue (right districts/schools/bands), **gate@5** Filter (per-URL representation review — the critical gate), **gate@6** Dispatch (which reps → which council config), **gate@7** Extract (review council requests), **gate@8** Aggregate (per-band results correct + honestly labeled — the effective old "CP-C"; Stage 9 then auto-writes). Stages 2/3/4 + the Stage-9 write are ungated. Each gate is manual/auto (Settings: global default + per-gate overrides; auto is confidence-escalating). Loosen later once confident.
 
 **Notes:** Local Ollama deleted; paid-cloud extraction is cheap (~$0.05–0.30/1M). Granite 4.1 8B = self-host candidate (headless Ubuntu server, separate project). Keys in gitignored `config/secrets.local.json` + `.env`. Requirements: **REQ-001…112** (042/046/048/057 superseded; 028–031/033 retired with the Crawlee era). Restore point for the archived GT/benchmark exercise: git tag `gt-exercise-complete`.
 
@@ -55,9 +55,9 @@ bridge (`process_governance/stage6_dispatch.py`) + the **gate@6 console** (`stat
 file written last) → OpenRouter requests assembled — **STOP before the paid call.** Council template = 2
 cross-family voters → 3rd-family judge (validated in `councils.validate()`); routing is per-rep, data-driven
 off each config's `input_kinds` + the capture-fidelity gate; cost = a labeled **bootstrap** model. Authority:
-`STAGE6_HANDOFF_DESIGN_2026-06.md` **§0** (as-built code map).
+`STAGE6_DISPATCH_DESIGN_2026-06.md` **§0** (as-built code map).
 
-**→ NEXT (pick one): the council lab first, OR Stage 7.** READ FIRST: `STAGE6_HANDOFF_DESIGN` §0 (what's
+**→ NEXT (pick one): the council lab first, OR Stage 7.** READ FIRST: `STAGE6_DISPATCH_DESIGN` §0 (what's
 built) + §3C (the lab) + §3F (the "request more evidence" loop + the OpenRouter-session question — a Stage 7
 concern) + the `PROJECT_HISTORY.md` Stage 6 entry (the two-layers / tokens×live-price reframe) +
 `LLM_COUNCIL_RESEARCH_2026-06.md`.
@@ -77,7 +77,7 @@ broken) + `pytest -q -m "not integration"` (**~654 pass**; resource-dependent te
 **CI = two jobs** (`.github/workflows/test.yml`): the DB-free suite + **`governance-db`** (`pytest -m govdb`
 against a Postgres service container — Stage 6 added a `handoff`-insert + a `/api/handoff` read there). Launch
 from the repo root: `python3 -m infrastructure.acquisition.process_governance.server` (→ :8005); the
-**Stage 6 · Handoff (gate@6)** view is in the stage selector (Stage 5 is the default). **Console changes are
+**Stage 6 · Dispatch (gate@6)** view is in the stage selector (Stage 5 is the default). **Console changes are
 JS+Python: reload the browser for `static/*.js`, restart the server for Python.** **Self-verify UI with
 Playwright before shipping visuals** (python playwright isn't installed — drive the Node one in
 `infrastructure/scraper/node_modules`: set `#stageSelect`=stage6, wait `#s6-list .s6-cand`, screenshot). The
@@ -220,7 +220,7 @@ system was archived 2026-06-27 — superseded by these current homes):
 3. **Security Blocks**: ONE-attempt rule for Cloudflare/WAF-protected districts
 4. **Temporal Validation**: Data from multiple sources must span ≤3 years
 5. **Raw Data**: Never modify files in `data/raw/`
-6. **Data Verification**: ALWAYS verify data exists in database before claiming enrichment counts. Never trust handoff documentation without database verification.
+6. **Data Verification**: ALWAYS verify data exists in database before claiming enrichment counts. Never trust dispatch documentation without database verification.
 
 ---
 

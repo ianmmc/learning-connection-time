@@ -6,7 +6,7 @@
 
 **Companions / authority:** `ACQUISITION_PIPELINE.md` §7 (the slim map), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
 §11 (gates/console), `LLM_COUNCIL_RESEARCH_2026-06.md` (council research), `EXTRACTION_BENCHMARK_FINDINGS.md`
-(model leaderboard + costs). Upstream: `STAGE6_HANDOFF_DESIGN_2026-06.md` (the handoff package Stage 7 consumes).
+(model leaderboard + costs). Upstream: `STAGE6_DISPATCH_DESIGN_2026-06.md` (the dispatch package Stage 7 consumes).
 
 ---
 

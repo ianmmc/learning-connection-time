@@ -383,7 +383,7 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 .r-done    { background: var(--surface-alt); color: var(--text-secondary); }
 .rsn-chip.r-low, .rsn-chip.r-done { border-color: var(--border-subtle); }
 
-/* ----------------------------- Stage 6 (Handoff / gate@6) ----------------------------- */
+/* ----------------------------- Stage 6 (Dispatch / gate@6) ----------------------------- */
 .badge-warn { background: var(--color-amber-100, #fef3c7); color: var(--color-amber-800, #92400e); }
 .s6-cand { display: block; cursor: pointer; }
 .s6-cand-top { display: flex; align-items: center; gap: 8px; }

@@ -1,5 +1,5 @@
 "use strict";
-// Stage 6 (Handoff) console view — REQ-101, gate@6. Build a handoff package from Stage-5 release
+// Stage 6 (Dispatch) console view — REQ-101, gate@6. Build a dispatch package from Stage-5 release
 // decisions, review the per-representation routing (which council) + the estimated cost, then
 // APPROVE & FREEZE (gate@6): writes the immutable handoff_<hash>.json + records the dispatch
 // (the precious index row + per-district `dispatched` state_events). Stops at the seam — NO paid
@@ -28,12 +28,12 @@
   function renderShell() {
     $g("#stage6view").innerHTML = `
       <nav class="col col-tree q-left" aria-label="Dispatch candidates">
-        <div class="q-left-head"><h3>Handoff</h3><button id="s6-preview" class="btn btn-secondary">Preview →</button></div>
+        <div class="q-left-head"><h3>Dispatch</h3><button id="s6-preview" class="btn btn-secondary">Preview →</button></div>
         <div id="s6-list" class="q-list"><div class="empty">Loading…</div></div>
-        <div class="q-left-head"><h3>Recent handoffs</h3></div>
+        <div class="q-left-head"><h3>Recent dispatches</h3></div>
         <div id="s6-handoffs" class="q-list"><div class="empty">—</div></div>
       </nav>
-      <section id="s6-detail" class="col col-center"><div class="empty">Select districts on the left, then <b>Preview</b> to build a handoff package.</div></section>`;
+      <section id="s6-detail" class="col col-center"><div class="empty">Select districts on the left, then <b>Preview</b> to build a dispatch package.</div></section>`;
     $g("#s6-preview").onclick = preview;
   }
 
@@ -88,11 +88,11 @@
     });
     det.innerHTML = `
       <div class="s6-summary">
-        <h3>Handoff preview</h3>
+        <h3>Dispatch preview</h3>
         <p><b>${pkg.cost.n_reps}</b> representation(s) across <b>${pkg.districts.length}</b> district(s) ·
            estimated <b>${usd(pkg.cost.total_usd)}</b> <span class="badge badge-neutral">${esc(pkg.cost.provenance)}</span></p>
-        <button id="s6-dispatch" class="btn btn-primary"${pkg.cost.n_reps ? "" : " disabled"}>Approve &amp; freeze handoff (gate@6)</button>
-        <p class="muted s6-note">Freezes the immutable handoff + records the dispatch. <b>No paid extraction</b> — that's Stage&nbsp;7.</p>
+        <button id="s6-dispatch" class="btn btn-primary"${pkg.cost.n_reps ? "" : " disabled"}>Approve &amp; freeze dispatch (gate@6)</button>
+        <p class="muted s6-note">Freezes the immutable dispatch record + records it. <b>No paid extraction</b> — that's Stage&nbsp;7.</p>
       </div>
       ${blocks.join("")}`;
     const btn = $g("#s6-dispatch");
@@ -104,9 +104,9 @@
     btn.disabled = true; btn.textContent = "Freezing…";
     let res;
     try { res = await api("/api/handoff/dispatch", postJSON({ district_ids: ids, actor: "ian" })); }
-    catch (e) { btn.disabled = false; btn.textContent = "Approve & freeze handoff (gate@6)"; alert("Dispatch failed: " + e.message); return; }
+    catch (e) { btn.disabled = false; btn.textContent = "Approve & freeze dispatch (gate@6)"; alert("Dispatch failed: " + e.message); return; }
     $g("#s6-detail").innerHTML = `<div class="s6-summary">
-        <h3>✓ Handoff frozen &amp; recorded</h3>
+        <h3>✓ Dispatch frozen &amp; recorded</h3>
         <p><code>${esc(res.handoff_id)}</code></p>
         <p><b>${res.n_reps}</b> rep(s) · ${res.n_districts} district(s) · ${usd(res.total_usd)}
            <span class="badge badge-neutral">${esc(res.provenance)}</span></p>
@@ -118,7 +118,7 @@
     loadHandoffs();
   }
 
-  // ----------------------------- handoffs index -----------------------------
+  // ----------------------------- dispatches index -----------------------------
   async function loadHandoffs() {
     const el = $g("#s6-handoffs");
     let hs;
