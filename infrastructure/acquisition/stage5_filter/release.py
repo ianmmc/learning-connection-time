@@ -12,9 +12,11 @@ denominator / completeness / a coarse cost estimate for Stage 6's go/no-go.
 NO AI here — the descent is pure deterministic code (the Stage-5 binding constraint). This is the
 same function the console's "Generate / Release" button (and a future scheduler) will call.
 
-Release rule: a record labeled with a TARGET label → send; a labeled non-target → reject. Unlabeled
-records fall to a recall-biased auto-filter (reject only tier D / no-rep; else send) — a documented
-fallback, not exercised on a fully-labeled batch.
+Release rule (tier-gated, Ian 2026-06-30): a record labeled with a TARGET label → **send**; a labeled
+non-target → **reject**. Unlabeled records are gated by their Stage-5 likelihood **tier**: **A → send**
+(auto-dispatch the confident targets), **B/C → hold** (a third decision — a maybe-target awaiting a human
+label at gate@5; never auto-spent on), **D → reject**. So cost is committed only on labeled targets +
+confident (tier-A) targets; the uncertain middle waits for judgment.
 
 Usage:  python3 -m infrastructure.acquisition.stage5_filter.release [--district DID]
 """
@@ -60,11 +62,18 @@ def best_send(reps: list, signals: dict, flags: list) -> list:
     captured the content (visual_text_gap / human target_image_only flag); else the densest text."""
     flags = flags or []
     signals = signals or {}
-    usable_text = [r for r in reps if r.get("file_kind") == "text" and r.get("usable") and r.get("filename")]
+    # the harvest slice is a purpose-built handbook rep — never a general "densest text" candidate
+    usable_text = [r for r in reps if r.get("file_kind") == "text" and r.get("usable") and r.get("filename")
+                   and r.get("source") != "harvest_slice"]
     images = [r for r in reps if r.get("file_kind") == "image" and r.get("filename")]
     pdfs = [r for r in reps if r.get("file_kind") == "pdf" and r.get("filename")]
     harvest = signals.get("harvest_pages") or []
+    slice_rep = next((r for r in reps if r.get("source") == "harvest_slice" and r.get("filename")), None)
 
+    # handbook → the materialized harvest-pages SLICE (Q2.1: a ~1-4 page text doc, not the whole PDF);
+    # fall back to the PDF + a pages hint only when the slice wasn't materialized (older ingests).
+    if signals.get("is_handbook") and slice_rep:
+        return [{"file": slice_rep["filename"], "kind": "text", "pages": harvest}]
     if signals.get("is_handbook") and harvest and pdfs:
         return [{"file": pdfs[0]["filename"], "kind": "pdf", "pages": harvest}]
     if ("target_image_only" in flags or signals.get("visual_text_gap")) and images:
@@ -119,14 +128,21 @@ def decide(rec: dict) -> dict:
                 "alternates": alternates(reps, {s["file"] for s in send})}
     if label:                                   # labeled, non-target
         return {"decision": "reject", "reason": f"non-target:{label}", "send": [], "alternates": []}
-    # unlabeled → recall-biased auto-filter (documented fallback; not hit on a fully-labeled batch)
-    if rec.get("tier") == "D":
-        return {"decision": "reject", "reason": "auto:tier-D", "send": [], "alternates": []}
-    send = best_send(reps, sig, flags)
-    if send:
-        return {"decision": "send", "reason": "auto:recall-bias", "send": send,
-                "alternates": alternates(reps, {s["file"] for s in send})}
-    return {"decision": "reject", "reason": "auto:no-rep", "send": [], "alternates": []}
+    # unlabeled → TIER-GATED auto-dispatch (Ian, 2026-06-30): only tier **A** auto-sends to the paid
+    # council. **B/C are HELD pending a human label at gate@5** — the uncertain middle isn't spent on
+    # blindly; it waits for judgment (and the learning loop should turn more of it into confident A's).
+    # D is a confident reject. `hold` is a THIRD decision, distinct from `reject` (not-a-target): it means
+    # "a maybe-target awaiting your label," so the funnel + UI can surface it as the label queue.
+    tier = rec.get("tier")
+    if tier == "A":
+        send = best_send(reps, sig, flags)
+        if send:
+            return {"decision": "send", "reason": "auto:tier-A", "send": send,
+                    "alternates": alternates(reps, {s["file"] for s in send})}
+        return {"decision": "reject", "reason": "auto:tier-A;no-usable-rep", "send": [], "alternates": []}
+    if tier in ("B", "C"):
+        return {"decision": "hold", "reason": f"unlabeled-tier-{tier}", "send": [], "alternates": []}
+    return {"decision": "reject", "reason": f"auto:tier-{tier or '?'}", "send": [], "alternates": []}
 
 
 def build_doc(district: dict, records: list, fingerprints: dict) -> dict:
@@ -142,13 +158,15 @@ def build_doc(district: dict, records: list, fingerprints: dict) -> dict:
             "decision": d["decision"], "reason": d["reason"], "send": d["send"],
             "alternates": d["alternates"]})
     n_send = sum(1 for r in decided if r["decision"] == "send")
+    n_hold = sum(1 for r in decided if r["decision"] == "hold")
     n_files = sum(len(r["send"]) for r in decided)
     return {
         "district_id": district["district_id"], "district_dir": district.get("district_dir"),
         "generated_at": _now(), "label": HONEST_LABEL, "fingerprints": fingerprints,
         "topology": district.get("labeled_topology"),
         "nces_denominator": district.get("nces_denominator"),
-        "completeness": {"n_canonical": len(decided), "n_send": n_send, "n_reject": len(decided) - n_send},
+        "completeness": {"n_canonical": len(decided), "n_send": n_send,
+                         "n_reject": len(decided) - n_send - n_hold, "n_hold": n_hold},
         "cost_estimate": {"n_records": n_send, "n_files": n_files,
                           "note": "council $ is finalized at Stage 6 dispatch (depends on the model set)"},
         "records": decided,

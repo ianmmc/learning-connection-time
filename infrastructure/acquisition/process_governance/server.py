@@ -875,24 +875,26 @@ _TARGET_IN = "','".join(sorted(BS.TARGET_LABELS))
 
 @app.get("/api/handoff/candidates")
 def handoff_candidates():
-    """Stage-5 districts available to hand off, each with its count of canonical SEND-ELIGIBLE records
-    — matching release.decide's send DECISION (target-labeled OR unlabeled non-tier-D, the recall-bias
-    auto-filter), so the badge reflects what dispatch will actually send, not just labeled targets.
-    Reuses release.CANONICAL_RECORD_WHERE (one definition of "canonical"). Preview stays authoritative
+    """Stage-5 districts available to dispatch, each with `n_send` (canonical records `release.decide`
+    will SEND — labeled targets + unlabeled tier-A) and `n_hold` (unlabeled tier-B/C awaiting a gate@5
+    label). Matches the tier-gated release rule, so the badge reflects what dispatch actually sends, not
+    the whole recall-biased funnel. Reuses release.CANONICAL_RECORD_WHERE. Preview stays authoritative
     for the exact representation count + cost."""
     with gdb.session_scope() as con:
         rows = con.execute(text(
-            f"""SELECT d.district_id, d.name, d.labeled_topology, COALESCE(t.n_send, 0) AS n_send
+            f"""SELECT d.district_id, d.name, d.labeled_topology,
+                       COALESCE(t.n_send, 0) AS n_send, COALESCE(t.n_hold, 0) AS n_hold
                 FROM district d
                 LEFT JOIN (
-                    SELECT r.district_id, COUNT(*) AS n_send
+                    SELECT r.district_id,
+                      COUNT(*) FILTER (WHERE l.primary_label IN ('{_TARGET_IN}')
+                                          OR (l.primary_label IS NULL AND r.tier = 'A')) AS n_send,
+                      COUNT(*) FILTER (WHERE l.primary_label IS NULL AND r.tier IN ('B', 'C')) AS n_hold
                     FROM record r LEFT JOIN label l ON l.rec_key = r.rec_key
                     WHERE {REL.CANONICAL_RECORD_WHERE}
-                      AND ( l.primary_label IN ('{_TARGET_IN}')
-                            OR (l.primary_label IS NULL AND r.tier <> 'D') )
                     GROUP BY r.district_id
                 ) t ON t.district_id = d.district_id
-                ORDER BY n_send DESC, d.district_id""")).mappings().all()
+                ORDER BY n_send DESC, n_hold DESC, d.district_id""")).mappings().all()
         return [dict(r) for r in rows]
 
 

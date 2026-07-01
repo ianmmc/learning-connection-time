@@ -102,3 +102,22 @@ def test_dechrome_falls_back_when_main_too_thin(tmp_path):
     texts = [{"usable": True, "text_file": "page.txt", "n_chars": len(full), "n_times": 2}]
     sig, _ = BS.compute_signals(tmp_path, texts, [], {}, main_text="too short")  # below USABLE_MIN_CHARS
     assert sig["dechromed"] is False  # graceful fallback to the full page — never worse than today
+
+
+# ----------------------------- Q2.1: harvest-slice materialization -----------------------------
+def test_build_harvest_slice_concatenates_pages_and_counts_times():
+    pages = {4: "Lincoln High 08:00 to 14:30", 9: "Grant Middle 07:45 to 14:15"}
+    out = BS.build_harvest_slice([4, 9], lambda p: pages.get(p, ""))
+    assert out is not None
+    slice_text, rep = out
+    assert "Lincoln High" in slice_text and "Grant Middle" in slice_text
+    assert rep["source"] == "harvest_slice" and rep["filename"] == "harvest_slice.txt"
+    assert rep["file_kind"] == "text" and rep["usable"] == 1
+    assert rep["n_chars"] == len(slice_text)
+    assert rep["n_times"] == 4          # two start + two end times across the two pages
+
+
+def test_build_harvest_slice_returns_none_when_empty():
+    assert BS.build_harvest_slice([], lambda p: "") is None
+    assert BS.build_harvest_slice([1, 2], lambda p: "") is None
+    assert BS.build_harvest_slice([1, 2], lambda p: None) is None

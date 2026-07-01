@@ -46,7 +46,17 @@ def test_best_send_image_when_human_flags_target_image_only():
     assert R.best_send(reps, {}, ["target_image_only"]) == [{"file": "raster_p1.png", "kind": "image"}]
 
 
-def test_best_send_handbook_sends_pdf_with_harvest_pages():
+def test_best_send_handbook_prefers_the_materialized_slice():
+    # Q2.1: when the harvest_slice.txt rep exists, send THAT (a small text doc), not the whole PDF —
+    # and the slice is never chosen as a plain "densest text" for a non-handbook.
+    reps = [_text_rep("harvest_slice.txt", n_times=30, n_chars=900, source="harvest_slice"),
+            _text_rep("a.txt", n_times=4),
+            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
+    sig = {"is_handbook": True, "harvest_pages": [4, 9]}
+    assert R.best_send(reps, sig, []) == [{"file": "harvest_slice.txt", "kind": "text", "pages": [4, 9]}]
+
+
+def test_best_send_handbook_falls_back_to_pdf_when_no_slice():
     reps = [_text_rep("a.txt", n_times=4),
             {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
     sig = {"is_handbook": True, "harvest_pages": [2, 3]}
@@ -76,10 +86,20 @@ def test_decide_target_with_no_usable_rep_flags_it():
     assert d["decision"] == "send" and d["reason"].endswith(";no-usable-rep") and d["send"] == []
 
 
-def test_decide_unlabeled_tier_d_rejects_unlabeled_recall_bias_sends():
-    assert R.decide(_rec(label=None, tier="D"))["reason"] == "auto:tier-D"
-    keep = R.decide(_rec(label=None, tier="A", reps=[_text_rep("p.txt", n_times=2)]))
-    assert keep["decision"] == "send" and keep["reason"] == "auto:recall-bias"
+def test_decide_unlabeled_is_tier_gated():
+    # only tier A auto-dispatches; B/C are HELD pending a gate@5 label; D is a confident reject
+    a = R.decide(_rec(label=None, tier="A", reps=[_text_rep("p.txt", n_times=2)]))
+    assert a["decision"] == "send" and a["reason"] == "auto:tier-A"
+    for t in ("B", "C"):
+        h = R.decide(_rec(label=None, tier=t, reps=[_text_rep("p.txt", n_times=2)]))
+        assert h["decision"] == "hold" and h["reason"] == f"unlabeled-tier-{t}" and h["send"] == []
+    d = R.decide(_rec(label=None, tier="D"))
+    assert d["decision"] == "reject" and d["reason"] == "auto:tier-D"
+
+
+def test_decide_unlabeled_tier_a_with_no_usable_rep_rejects():
+    d = R.decide(_rec(label=None, tier="A", reps=[]))
+    assert d["decision"] == "reject" and "no-usable-rep" in d["reason"]
 
 
 # ----------------------------- alternates (gate@6 representation override) -----------------------------
@@ -124,7 +144,7 @@ def test_build_doc_is_traceable_with_completeness_and_header():
                _rec(rec_key="d:2", label="board_schedule", reps=[_text_rep("p2.txt", n_times=4)]),
                _rec(rec_key="d:3", label="none")]
     doc = R.build_doc(district, records, {"config": "c", "labels": "l", "data": "x"})
-    assert doc["completeness"] == {"n_canonical": 3, "n_send": 1, "n_reject": 2}
+    assert doc["completeness"] == {"n_canonical": 3, "n_send": 1, "n_reject": 2, "n_hold": 0}
     assert doc["topology"] == "per_school" and doc["label"] == "gross_bell_to_bell"
     assert doc["fingerprints"] == {"config": "c", "labels": "l", "data": "x"}
     # every canonical record present with a decision (traceable), only the target carries send[]
@@ -163,7 +183,7 @@ def test_generate_writes_traceable_filtered_json(gov_session, tmp_path):
 
     doc = json.loads((tmp_path / "reltest_dir" / "filtered.json").read_text())
     assert doc["district_id"] == did and doc["topology"] == "per_school"
-    assert doc["completeness"] == {"n_canonical": 1, "n_send": 1, "n_reject": 0}
+    assert doc["completeness"] == {"n_canonical": 1, "n_send": 1, "n_reject": 0, "n_hold": 0}
     assert set(doc["fingerprints"]) == {"config", "labels", "data"}
     rec = doc["records"][0]
     assert rec["decision"] == "send" and rec["send"] == [{"file": "page.txt", "kind": "text"}]

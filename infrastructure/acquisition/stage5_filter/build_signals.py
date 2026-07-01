@@ -675,6 +675,24 @@ def _rep(rec_key, source, filename, file_kind, n_chars, n_times, usable):
             "n_chars": n_chars, "n_times": n_times, "usable": usable}
 
 
+HARVEST_SLICE_SOURCE = "harvest_slice"
+HARVEST_SLICE_FILE = "harvest_slice.txt"
+
+
+def build_harvest_slice(harvest_pages: list, page_text_fn):
+    """Q2.1 (Ian 2026-06-30): materialize the high-signal HARVEST PAGES of a long doc (a handbook, or a
+    big district-hub listing) as a small standalone text slice, so Stage 6 dispatches just those ~1-4
+    pages — not the whole 60-100-page PDF (cost containment; the paid council reads the slice, and the
+    measured cost model prices the slice's tokens). `page_text_fn(page)->str` extracts one page's text.
+    Returns `(slice_text, rep_kwargs)` ready for INSERT_REP, or None when nothing usable extracts."""
+    slice_text = "\n\n".join((page_text_fn(p) or "") for p in (harvest_pages or []))
+    if not slice_text.strip():
+        return None
+    return slice_text, {"source": HARVEST_SLICE_SOURCE, "filename": HARVEST_SLICE_FILE,
+                        "file_kind": "text", "n_chars": len(slice_text),
+                        "n_times": len(time_positions(slice_text)), "usable": 1}
+
+
 # ---- cross-stage cache (REQ-103c): the queryable/auditable mirror of each stage's raw artifact,
 # alongside the Stage-5 `record` signal view. All REGENERABLE (dropped + rebuilt each ingest). ----
 # The cross-stage cache UPSERTs live in common/cache_ingest.py now (shared with the per-stage hooks);
@@ -770,6 +788,19 @@ def ingest_district(sess, ddir: Path, *, splits: set, batches: dict, nces: dict)
             sess.execute(INSERT_REP, _rep(rec_key, t["source"], t.get("text_file"), "text",
                                           t.get("n_chars", 0), t.get("n_times", 0),
                                           int(bool(t.get("usable")))))
+        # Q2.1: for a handbook (or any record carrying harvest_pages), materialize just those high-signal
+        # pages as a small `harvest_slice.txt` text rep — so Stage 6 dispatches the slice, not the whole PDF.
+        hp = sig.get("harvest_pages") or []
+        if sig.get("is_handbook") and hp:
+            pdf_name = files.get("pdf") or (files.get("bin")
+                       if str(files.get("bin", "")).lower().endswith(".pdf") else None)
+            pdf = rdir / pdf_name if pdf_name else None
+            if pdf and pdf.exists():
+                built = build_harvest_slice(hp, lambda p: pdf_page_text(pdf, p))
+                if built:
+                    slice_text, rep_kwargs = built
+                    (rdir / HARVEST_SLICE_FILE).write_text(slice_text)
+                    sess.execute(INSERT_REP, _rep(rec_key, **rep_kwargs))
         for key, fname in files.items():
             fk = BIN_KINDS.get(key)
             if not fk:

@@ -52,8 +52,8 @@
       el.innerHTML = `<div class="s6-cand-top">
           <input type="checkbox" data-id="${esc(c.district_id)}" ${SELECTED.has(c.district_id) ? "checked" : ""}/>
           <span class="q-batch-id">${esc(c.name || c.district_id)}</span>
-          <span class="badge ${tone}" title="canonical records that will be sent (preview shows exact reps + cost)">${c.n_send} send</span></div>
-        <div class="q-batch-meta">${esc(c.district_id)} · ${esc(c.labeled_topology || "?")}</div>`;
+          <span class="badge ${tone}" title="canonical records that will be sent — labeled targets + unlabeled tier-A (preview shows exact reps + cost)">${c.n_send} send</span></div>
+        <div class="q-batch-meta">${esc(c.district_id)} · ${esc(c.labeled_topology || "?")}${c.n_hold ? ` · <span title="unlabeled tier-B/C — label them in Stage 5 to dispatch">${c.n_hold} held for label</span>` : ""}</div>`;
       const cb = el.querySelector("input");
       cb.onchange = () => { cb.checked ? SELECTED.add(c.district_id) : SELECTED.delete(c.district_id); };
       list.appendChild(el);
