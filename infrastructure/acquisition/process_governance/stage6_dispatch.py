@@ -29,36 +29,48 @@ def _enrich_send(decision_send: list, reps: list) -> list:
     return out
 
 
-def district_release_input(session, district_id: str):
+def district_release_input(session, district_id: str, verified_only: bool = False):
     """Read one district's release decision from the DB, shaped for stage6 assembly:
-    `(district_meta, [records])`. Returns None if the district isn't present."""
+    `(district_meta, [records])`. Returns None if the district isn't present.
+
+    `verified_only` (gate@6 training-grade mode): dispatch ONLY human-labeled target sends. The
+    speculative unlabeled tier-A auto-sends (`reason == auto:tier-A`) are downgraded to `hold` — not
+    silently dropped — so they stay traceable and can be labeled later. Stage-5's `filtered.json` is
+    unaffected: this is a dispatch-time choice, not a change to the release rule."""
     district = REL.load_district(session, district_id)
     if not district:
         return None
     records = []
     for rec in REL.load_district_records(session, district_id):
         d = REL.decide(rec)
+        decision, reason, send = d["decision"], d["reason"], d["send"]
+        if verified_only and decision == "send" and rec.get("label") not in REL.TARGET_LABELS:
+            decision, reason, send = "hold", f"verified-only:held({reason})", []
         records.append({
             "rec_key": rec["rec_key"], "url": rec.get("url"),
-            "decision": d["decision"], "reason": d["reason"],
+            "decision": decision, "reason": reason,
             "signals": rec.get("signals") or {},
-            "send": _enrich_send(d["send"], rec.get("reps")),
+            "send": _enrich_send(send, rec.get("reps")),
         })
     return district, records
 
 
-def build_handoff_package(session, district_ids, councils=None, cost_model=None, overrides=None) -> dict:
+def build_handoff_package(session, district_ids, councils=None, cost_model=None, overrides=None,
+                          verified_only=False) -> dict:
     """Assemble the in-memory handoff package for `district_ids` from the DB release decision.
     Pure stage6 logic does the routing/pricing; this layer only supplies the data. `overrides` =
-    gate@6 per-rep council overrides ({"<rec_key>::<file>": council_id})."""
+    gate@6 per-rep council overrides ({"<rec_key>::<file>": council_id}). `verified_only` = gate@6
+    training-grade mode (labeled targets only); stamped onto the package so preview + freeze agree."""
     councils = councils or C6.load_configs()
     cost_model = cost_model or COST6.load_cost_model()
     districts = []
     for did in district_ids:
-        di = district_release_input(session, did)
+        di = district_release_input(session, did, verified_only=verified_only)
         if di:
             districts.append(di)
-    return PKG6.assemble_package(districts, councils, cost_model, overrides)
+    package = PKG6.assemble_package(districts, councils, cost_model, overrides)
+    package["verified_only"] = bool(verified_only)
+    return package
 
 
 # ----------------------------- recording a dispatch (DB index + state) -----------------------------
@@ -110,16 +122,17 @@ def record_dispatch(session, doc: dict, path, actor: str = "human", metas: dict 
 
 
 def dispatch_handoff(session, district_ids, created_by: str = "human", root=None,
-                     councils=None, cost_model=None, overrides=None):
+                     councils=None, cost_model=None, overrides=None, verified_only=False):
     """Freeze + record a dispatch (up to — not including — the paid Stage-7 calls): build the package
     from the DB release decision, freeze it, RECORD the index row + state events (atomic on `session`),
     then write the immutable file LAST — so any DB failure rolls back cleanly with no orphaned record,
-    and a same-identity collision (FileExistsError) leaves the prior dispatch intact. Returns (doc, path)."""
+    and a same-identity collision (FileExistsError) leaves the prior dispatch intact. `verified_only` =
+    gate@6 training-grade mode (labeled targets only), frozen into the doc's identity. Returns (doc, path)."""
     councils = councils or C6.load_configs()
     cost_model = cost_model or COST6.load_cost_model()
     districts_input, metas, fingerprints = [], {}, {}
     for did in district_ids:
-        di = district_release_input(session, did)
+        di = district_release_input(session, did, verified_only=verified_only)
         if not di:
             continue                     # unknown district — silently skipped from the package
         meta, _records = di
@@ -127,6 +140,7 @@ def dispatch_handoff(session, district_ids, created_by: str = "human", root=None
         metas[did] = meta
         fingerprints[did] = REL.district_fingerprints(session, did)
     package = PKG6.assemble_package(districts_input, councils, cost_model, overrides)
+    package["verified_only"] = bool(verified_only)
     doc = HND.freeze(package, councils, fingerprints, created_by=created_by)
     path = (Path(root) if root else HND.DEFAULT_ROOT) / HND.handoff_filename(doc)
     record_dispatch(session, doc, path, actor=created_by, metas=metas)

@@ -67,6 +67,17 @@ def test_hash_changes_when_what_we_send_changes():
     assert handoff.freeze(_pkg(), COUNCILS, fp2)["handoff_hash"] != base["handoff_hash"]
 
 
+def test_verified_only_is_carried_and_part_of_identity():
+    # the frozen doc records the mode, and a verified-only dispatch is a DISTINCT artifact from a
+    # default one over the same reps (no hash collision / no FileExistsError conflation)
+    default = handoff.freeze(_pkg(), COUNCILS, FPR)
+    assert default["verified_only"] is False
+    vpkg = _pkg(); vpkg["verified_only"] = True
+    verified = handoff.freeze(vpkg, COUNCILS, FPR)
+    assert verified["verified_only"] is True
+    assert verified["handoff_hash"] != default["handoff_hash"]
+
+
 def test_filename_format():
     doc = handoff.freeze(_pkg(), COUNCILS, FPR)
     fn = handoff.handoff_filename(doc)

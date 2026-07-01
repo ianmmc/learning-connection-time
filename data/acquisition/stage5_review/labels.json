@@ -1072,6 +1072,94 @@
     "updated_at": "2026-06-25T01:14:13Z"
   },
   {
+    "rec_key": "2905790:211613df06",
+    "primary_label": "unusable",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:52:10Z"
+  },
+  {
+    "rec_key": "2905790:3bf6571c0d",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[\"buried_in_long_doc\"]",
+    "note": "On pages 7-8 of the PDF",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:56:55Z"
+  },
+  {
+    "rec_key": "2905790:5045765901",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "Not actually social media feed. It's a newsletter.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:02:51Z"
+  },
+  {
+    "rec_key": "2905790:5c115eb32b",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[\"buried_in_long_doc\"]",
+    "note": "On pages 21-22 of the PDF",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:56:14Z"
+  },
+  {
+    "rec_key": "2905790:71b7c68ade",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "Not actually a social media feed. It's a newsletter document.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:01:12Z"
+  },
+  {
+    "rec_key": "2905790:c31d425ccb",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "Not actually a social media feed. It's a newsletter.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:01:59Z"
+  },
+  {
+    "rec_key": "2905790:cec5700763",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "Not technically a blog/news feed embedded in a web page. It's a newsletter document.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:58:05Z"
+  },
+  {
+    "rec_key": "2905790:d953e92385",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[\"buried_in_long_doc\"]",
+    "note": "On pages 18-19 of the PDF",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:55:34Z"
+  },
+  {
+    "rec_key": "2905790:e39555d45b",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[\"buried_in_long_doc\"]",
+    "note": "Pages 17-18",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:00:06Z"
+  },
+  {
+    "rec_key": "2905790:e91e43df1a",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:59:13Z"
+  },
+  {
+    "rec_key": "2905790:ed9a5234be",
+    "primary_label": "unusable",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:52:10Z"
+  },
+  {
     "rec_key": "3400734:10ebdb6c0c",
     "primary_label": "other_schedule",
     "flags_json": "[]",
@@ -1110,6 +1198,630 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-06-25T01:18:41Z"
+  },
+  {
+    "rec_key": "3501500:00909c6142",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:08:41Z"
+  },
+  {
+    "rec_key": "3501500:0184b9871d",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:10:42Z"
+  },
+  {
+    "rec_key": "3501500:01f9fbc92e",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:08:29Z"
+  },
+  {
+    "rec_key": "3501500:04108dbf4a",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "Full district information in a school specific website. Also printed in Spanish, not just English.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:32:47Z"
+  },
+  {
+    "rec_key": "3501500:0bec6d12e4",
+    "primary_label": "other_schedule",
+    "flags_json": "[]",
+    "note": "Very tricky. This is a human resources page with teacher workdays, not school start and school end for students. This is another potentially confounding case like building hours.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:16:26Z"
+  },
+  {
+    "rec_key": "3501500:0dc7ac12f0",
+    "primary_label": "unusable",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:07:33Z"
+  },
+  {
+    "rec_key": "3501500:0e808bc268",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:51:29Z"
+  },
+  {
+    "rec_key": "3501500:14b9b23a40",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:46:40Z"
+  },
+  {
+    "rec_key": "3501500:150971ab9a",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:08:22Z"
+  },
+  {
+    "rec_key": "3501500:17103002ed",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "Potentially confounding as both current year and next year are listed, and elementary schools have a school day 10 minutes longer.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:26:49Z"
+  },
+  {
+    "rec_key": "3501500:174ae1bce3",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "District information shared on school page. Two different years shared. ",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:34:18Z"
+  },
+  {
+    "rec_key": "3501500:188ab8fb32",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "District information in a specific school webpage. Potentially tricky as it has both current year and prior year start and stop times by band, but moot because it's the exact same day length even with shifted times.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:15:03Z"
+  },
+  {
+    "rec_key": "3501500:1cf9b136b7",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[\"target_image_only\"]",
+    "note": "Social media feed with a post that contains districtwide hours by band.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:43:13Z"
+  },
+  {
+    "rec_key": "3501500:1d776cf188",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:25:38Z"
+  },
+  {
+    "rec_key": "3501500:24ea4eb8b2",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[\"target_image_only\"]",
+    "note": "Post in social media feed contains districtwide hours by band",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:45:29Z"
+  },
+  {
+    "rec_key": "3501500:28e9711cdd",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:08:50Z"
+  },
+  {
+    "rec_key": "3501500:2ab392e72f",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:08:45Z"
+  },
+  {
+    "rec_key": "3501500:2d4399c57d",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:08:59Z"
+  },
+  {
+    "rec_key": "3501500:31d4bbb03d",
+    "primary_label": "school_start_end_prose",
+    "flags_json": "[]",
+    "note": "School hours in footer",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:31:03Z"
+  },
+  {
+    "rec_key": "3501500:31d827b978",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:46:57Z"
+  },
+  {
+    "rec_key": "3501500:3654d57452",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:49:47Z"
+  },
+  {
+    "rec_key": "3501500:36961fd995",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:25:29Z"
+  },
+  {
+    "rec_key": "3501500:3c4cae3139",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:49:37Z"
+  },
+  {
+    "rec_key": "3501500:44a7d40b50",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:50:19Z"
+  },
+  {
+    "rec_key": "3501500:45f24d476f",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:08:12Z"
+  },
+  {
+    "rec_key": "3501500:477a7ac26b",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:08:22Z"
+  },
+  {
+    "rec_key": "3501500:49848dd42e",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:48:14Z"
+  },
+  {
+    "rec_key": "3501500:49a2865b69",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:49:16Z"
+  },
+  {
+    "rec_key": "3501500:49effad7ad",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:09:11Z"
+  },
+  {
+    "rec_key": "3501500:4aefc9e7e1",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Dining information \u2014 links to menus.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:51:20Z"
+  },
+  {
+    "rec_key": "3501500:4ebd3d24bf",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "Full district information in a school specific website. Also printed in Spanish, not just English.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:32:47Z"
+  },
+  {
+    "rec_key": "3501500:4f2c52c69c",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:47:09Z"
+  },
+  {
+    "rec_key": "3501500:50200f0180",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "Social media feed with an image post that captures full district hours by band. School specific hours are in footer.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:42:03Z"
+  },
+  {
+    "rec_key": "3501500:52f8d810e8",
+    "primary_label": "school_start_end_prose",
+    "flags_json": "[]",
+    "note": "School hours in footer.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:29:03Z"
+  },
+  {
+    "rec_key": "3501500:53a29125f5",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:08:25Z"
+  },
+  {
+    "rec_key": "3501500:5669fffbe8",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:47:54Z"
+  },
+  {
+    "rec_key": "3501500:5de99d63c4",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:08:04Z"
+  },
+  {
+    "rec_key": "3501500:61746f054d",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:23:52Z"
+  },
+  {
+    "rec_key": "3501500:62591e6fc7",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "School specific page with district information. If the script is guessing that this is a transportation schedule, why is it graded A?",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:12:29Z"
+  },
+  {
+    "rec_key": "3501500:650175c225",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:10:11Z"
+  },
+  {
+    "rec_key": "3501500:6a20e53c62",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:09:39Z"
+  },
+  {
+    "rec_key": "3501500:83035af49a",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "District information in a social media post in an image that OCR doesn't seem to be getting. School specific hours in footer, so multiple sets of signals here.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:37:25Z"
+  },
+  {
+    "rec_key": "3501500:83da3e8de4",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:07:40Z"
+  },
+  {
+    "rec_key": "3501500:887139dcaf",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:09:04Z"
+  },
+  {
+    "rec_key": "3501500:8bff05137d",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:40:56Z"
+  },
+  {
+    "rec_key": "3501500:8e0f970166",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:40:56Z"
+  },
+  {
+    "rec_key": "3501500:8fd5302fc6",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:44:05Z"
+  },
+  {
+    "rec_key": "3501500:9361f876dd",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:07:59Z"
+  },
+  {
+    "rec_key": "3501500:9518f5f15d",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "Full district information in a school specific website. Also printed in Spanish, not just English.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:32:47Z"
+  },
+  {
+    "rec_key": "3501500:a1cbd8ca2d",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:40:56Z"
+  },
+  {
+    "rec_key": "3501500:a5c9e7b3ca",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[\"target_image_only\"]",
+    "note": "Start times in text. But start and end times are in a table that's only showing up in an image post.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:39:41Z"
+  },
+  {
+    "rec_key": "3501500:a60bee2cc9",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:10:20Z"
+  },
+  {
+    "rec_key": "3501500:ad4b6d60c9",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:48:36Z"
+  },
+  {
+    "rec_key": "3501500:af1632883d",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:47:09Z"
+  },
+  {
+    "rec_key": "3501500:affa224719",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:44:29Z"
+  },
+  {
+    "rec_key": "3501500:b0aa515a51",
+    "primary_label": "school_start_end_prose",
+    "flags_json": "[]",
+    "note": "School hours in footer",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:31:40Z"
+  },
+  {
+    "rec_key": "3501500:b87cc365a0",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:10:31Z"
+  },
+  {
+    "rec_key": "3501500:bbfa0ff1cb",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "School specific page with district information. If the script is guessing that this is a transportation schedule, why is it graded A?",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:12:29Z"
+  },
+  {
+    "rec_key": "3501500:bcb951acbc",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:08:35Z"
+  },
+  {
+    "rec_key": "3501500:be5f30bec3",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:43:36Z"
+  },
+  {
+    "rec_key": "3501500:bf3315525e",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[\"target_image_only\"]",
+    "note": "This is a social media feed, but the feed contains an image post that has \"New bell schedule for the 2025-26 school year.\n\nAnother post in the feed has start times, but not the full ranges.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:23:43Z"
+  },
+  {
+    "rec_key": "3501500:c0519a4973",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:49:29Z"
+  },
+  {
+    "rec_key": "3501500:c53a859fc8",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "School specific page with district information. If the script is guessing that this is a transportation schedule, why is it graded A?",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:12:29Z"
+  },
+  {
+    "rec_key": "3501500:c55121f4f9",
+    "primary_label": "school_start_end_prose",
+    "flags_json": "[]",
+    "note": "School hours in footer",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:50:12Z"
+  },
+  {
+    "rec_key": "3501500:c5c615fa69",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "Full district information in a school specific website. Also printed in Spanish, not just English.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:32:47Z"
+  },
+  {
+    "rec_key": "3501500:ca240a8646",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:08:17Z"
+  },
+  {
+    "rec_key": "3501500:cd6bd1c6cd",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "School specific page with district information. If the script is guessing that this is a transportation schedule, why is it graded A?",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:12:29Z"
+  },
+  {
+    "rec_key": "3501500:d25a9943bf",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:27:13Z"
+  },
+  {
+    "rec_key": "3501500:d404820119",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "Full district information in a school specific website. Also printed in Spanish, not just English.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:32:47Z"
+  },
+  {
+    "rec_key": "3501500:d522ace094",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:12:51Z"
+  },
+  {
+    "rec_key": "3501500:d9768df5d6",
+    "primary_label": "school_start_end_prose",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:35:09Z"
+  },
+  {
+    "rec_key": "3501500:e211abeb79",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:48:24Z"
+  },
+  {
+    "rec_key": "3501500:e43068ba77",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:48:54Z"
+  },
+  {
+    "rec_key": "3501500:e4dd3cd163",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "School specific page with district information. If the script is guessing that this is a transportation schedule, why is it graded A?",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:12:29Z"
+  },
+  {
+    "rec_key": "3501500:e708643448",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:12:42Z"
+  },
+  {
+    "rec_key": "3501500:e845870d0c",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:10:36Z"
+  },
+  {
+    "rec_key": "3501500:ffae6c8055",
+    "primary_label": "embedded_feed",
+    "flags_json": "[]",
+    "note": "Also has special camp day hours during Educator Planning Day or Parent/Teacher Conference Day.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:18:24Z"
+  },
+  {
+    "rec_key": "3501500:ffe9f09f00",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "School specific page with district information. If the script is guessing that this is a transportation schedule, why is it graded A?",
+    "status": "labeled",
+    "updated_at": "2026-07-01T05:12:29Z"
   },
   {
     "rec_key": "3502280:31170892b5",
@@ -1352,12 +2064,92 @@
     "updated_at": "2026-06-29T08:51:12Z"
   },
   {
+    "rec_key": "3800038:00673c20e7",
+    "primary_label": "community_calendar",
+    "flags_json": "[]",
+    "note": "Tricky one. This is back to school / registration information \u2014 not bell schedules. Understandable false postive.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:06:27Z"
+  },
+  {
     "rec_key": "3800038:01c0ba51f8",
     "primary_label": "district_hub_schedule",
     "flags_json": "[\"buried_in_long_doc\"]",
     "note": "Bottom of page 5. Elementary schools only.",
     "status": "labeled",
     "updated_at": "2026-06-30T07:29:04Z"
+  },
+  {
+    "rec_key": "3800038:08b330937e",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[\"buried_in_long_doc\"]",
+    "note": "Table on page 16",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:09:32Z"
+  },
+  {
+    "rec_key": "3800038:0d3bd88243",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[\"duplicate\"]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:05:18Z"
+  },
+  {
+    "rec_key": "3800038:10479d779d",
+    "primary_label": "none",
+    "flags_json": "[\"building_hours_visible\"]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:13:53Z"
+  },
+  {
+    "rec_key": "3800038:11403f71e2",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[\"duplicate\"]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:05:18Z"
+  },
+  {
+    "rec_key": "3800038:1191fd95c5",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "This is a landscape document presented as portrait. It's a construction schedule as a waterfall chart.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:16:01Z"
+  },
+  {
+    "rec_key": "3800038:1497f7f1cc",
+    "primary_label": "none",
+    "flags_json": "[\"building_hours_visible\"]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:16:25Z"
+  },
+  {
+    "rec_key": "3800038:1569c6f853",
+    "primary_label": "academic_calendar",
+    "flags_json": "[\"building_hours_visible\"]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:14:01Z"
+  },
+  {
+    "rec_key": "3800038:17bbc5d63e",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:11:20Z"
+  },
+  {
+    "rec_key": "3800038:21e7bef4d3",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:14:15Z"
   },
   {
     "rec_key": "3800038:2f2fefcf8f",
@@ -1376,6 +2168,22 @@
     "updated_at": "2026-06-30T07:20:28Z"
   },
   {
+    "rec_key": "3800038:4b1ee90df7",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:12:41Z"
+  },
+  {
+    "rec_key": "3800038:5273bd19bb",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "Tricky one. This is back to school / registration information \u2014 not bell schedules. Understandable false postive.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:04:12Z"
+  },
+  {
     "rec_key": "3800038:52f238c987",
     "primary_label": "board_schedule",
     "flags_json": "[]",
@@ -1384,12 +2192,116 @@
     "updated_at": "2026-06-30T07:31:40Z"
   },
   {
+    "rec_key": "3800038:57cc183802",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "School start stop hours in footer.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:06:07Z"
+  },
+  {
+    "rec_key": "3800038:62a54394f8",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:12:31Z"
+  },
+  {
+    "rec_key": "3800038:63141082a1",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "School hours in footer",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:17:46Z"
+  },
+  {
+    "rec_key": "3800038:7f7d3dda0c",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:07:41Z"
+  },
+  {
+    "rec_key": "3800038:8199ee8c7a",
+    "primary_label": "community_calendar",
+    "flags_json": "[]",
+    "note": "Tricky one. This is back to school / registration information \u2014 not bell schedules. Understandable false postive.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:04:35Z"
+  },
+  {
+    "rec_key": "3800038:89ecf8451b",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:16:12Z"
+  },
+  {
+    "rec_key": "3800038:8d5af06450",
+    "primary_label": "community_calendar",
+    "flags_json": "[]",
+    "note": "Tricky one. This is back to school / registration information \u2014 not bell schedules. Understandable false postive.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:06:14Z"
+  },
+  {
+    "rec_key": "3800038:8eb716b896",
+    "primary_label": "academic_calendar",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:11:11Z"
+  },
+  {
     "rec_key": "3800038:a8941eea87",
     "primary_label": "school_start_end_prose",
     "flags_json": "[\"buried_in_long_doc\"]",
     "note": "Page 2. Schools doors are locked from 8:20 AM to 3:20 PM during our school day",
     "status": "labeled",
     "updated_at": "2026-06-30T07:30:43Z"
+  },
+  {
+    "rec_key": "3800038:a97e7de385",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "School hours in footer",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:13:06Z"
+  },
+  {
+    "rec_key": "3800038:acbbfd24a1",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "School hours in footer.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:18:15Z"
+  },
+  {
+    "rec_key": "3800038:af5756eb79",
+    "primary_label": "district_hub_schedule",
+    "flags_json": "[]",
+    "note": "New school times by band in post.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:07:24Z"
+  },
+  {
+    "rec_key": "3800038:b6cc7604ec",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:05:06Z"
+  },
+  {
+    "rec_key": "3800038:c1a0d26caa",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "School hours in footer.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:17:15Z"
   },
   {
     "rec_key": "3800038:caaaaec3e1",
@@ -1408,12 +2320,44 @@
     "updated_at": "2026-06-30T07:31:51Z"
   },
   {
+    "rec_key": "3800038:d9504fd1cc",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:17:49Z"
+  },
+  {
+    "rec_key": "3800038:dea8788ce2",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:10:02Z"
+  },
+  {
+    "rec_key": "3800038:df6bcfc4b7",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "School hours in footer",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:17:30Z"
+  },
+  {
     "rec_key": "3800038:e06b0e317b",
     "primary_label": "school_bell_schedule",
     "flags_json": "[]",
     "note": "It's in the footer: Hours: 8:24 AM \u2013 3:30 PM. This is an ambiguous case where these could be either building hours or school hours. They're not labeled.",
     "status": "labeled",
     "updated_at": "2026-06-30T07:24:01Z"
+  },
+  {
+    "rec_key": "3800038:e7544b01cf",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "Start and stop times in footer",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:12:10Z"
   },
   {
     "rec_key": "3800038:e8832a517f",
@@ -1424,12 +2368,44 @@
     "updated_at": "2026-06-30T07:21:11Z"
   },
   {
+    "rec_key": "3800038:ef517c384e",
+    "primary_label": "community_calendar",
+    "flags_json": "[]",
+    "note": "Tricky one. This is back to school / registration information \u2014 not bell schedules. Understandable false postive.",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:04:43Z"
+  },
+  {
+    "rec_key": "3800038:f0e5513f9f",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:12:25Z"
+  },
+  {
+    "rec_key": "3800038:f578be20a3",
+    "primary_label": "school_bell_schedule",
+    "flags_json": "[]",
+    "note": "School hours in footer",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:16:48Z"
+  },
+  {
     "rec_key": "3800038:f78241f3fe",
     "primary_label": "district_hub_schedule",
     "flags_json": "[\"buried_in_long_doc\"]",
     "note": "Bottom of page 4. Elementary schools only.",
     "status": "labeled",
     "updated_at": "2026-06-30T07:31:25Z"
+  },
+  {
+    "rec_key": "3800038:f7c9e6cc9f",
+    "primary_label": "none",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:07:32Z"
   },
   {
     "rec_key": "3800038:f9232441cf",
@@ -1446,6 +2422,14 @@
     "note": "At the top of page 5 in the PDF",
     "status": "labeled",
     "updated_at": "2026-06-30T07:26:13Z"
+  },
+  {
+    "rec_key": "3800038:fb3dc640a1",
+    "primary_label": "board_schedule",
+    "flags_json": "[]",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-01T06:10:35Z"
   },
   {
     "rec_key": "3805460:574a093366",

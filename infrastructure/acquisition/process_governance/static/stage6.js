@@ -14,8 +14,10 @@
   const SELECTED = new Set();
   let CANDIDATES = [];                                   // all loaded candidates (client-side filtering)
   const FILTER = { q: "", topology: "", sendOnly: false, heldOnly: false };
+  let VERIFIED_ONLY = false;                             // gate@6 training-grade mode: labeled targets only
   let COUNCILS = [];                                     // council registry (override <select> options)
   const OVERRIDES = {};                                  // "<rec_key>::<file>" -> council_id (gate@6 manual override)
+  const effSend = (c) => (VERIFIED_ONLY ? (c.n_verified || 0) : (c.n_send || 0));   // what THIS mode dispatches
 
   async function api(url, opts) {
     const r = await fetch(url, opts);
@@ -71,16 +73,21 @@
       <select id="s6-topo" class="s6-fi"><option value="">All topologies</option>${
         topos.map((t) => `<option value="${esc(t)}" ${FILTER.topology === t ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>
       <label class="s6-fl"><input type="checkbox" id="s6-sendonly" ${FILTER.sendOnly ? "checked" : ""}/> has send</label>
-      <label class="s6-fl"><input type="checkbox" id="s6-heldonly" ${FILTER.heldOnly ? "checked" : ""}/> has held</label>`;
+      <label class="s6-fl"><input type="checkbox" id="s6-heldonly" ${FILTER.heldOnly ? "checked" : ""}/> has held</label>
+      <label class="s6-fl s6-mode" title="Dispatch ONLY human-labeled target representations — drops the speculative unlabeled tier-A auto-sends. Builds training-grade, manually-verified data.">
+        <input type="checkbox" id="s6-verified" ${VERIFIED_ONLY ? "checked" : ""}/> verified only (labeled targets)</label>`;
     bar.querySelector("#s6-q").oninput = (e) => { FILTER.q = e.target.value.toLowerCase(); renderCandidates(); };
     bar.querySelector("#s6-topo").onchange = (e) => { FILTER.topology = e.target.value; renderCandidates(); };
     bar.querySelector("#s6-sendonly").onchange = (e) => { FILTER.sendOnly = e.target.checked; renderCandidates(); };
     bar.querySelector("#s6-heldonly").onchange = (e) => { FILTER.heldOnly = e.target.checked; renderCandidates(); };
+    bar.querySelector("#s6-verified").onchange = (e) => {
+      VERIFIED_ONLY = e.target.checked; renderCandidates(); if (SELECTED.size) preview();   // re-price in the new mode
+    };
   }
 
   function passesFilter(c) {
     if (FILTER.topology && c.labeled_topology !== FILTER.topology) return false;
-    if (FILTER.sendOnly && !(c.n_send > 0)) return false;
+    if (FILTER.sendOnly && !(effSend(c) > 0)) return false;   // "has send" respects the active mode
     if (FILTER.heldOnly && !(c.n_hold > 0)) return false;
     if (FILTER.q && !`${c.name || ""} ${c.district_id} ${c.state || ""}`.toLowerCase().includes(FILTER.q)) return false;
     return true;
@@ -95,12 +102,17 @@
     shown.forEach((c) => {
       const el = document.createElement("label");
       el.className = "q-batch s6-cand";
-      const tone = c.n_send > 0 ? "badge-success" : "badge-neutral";
+      const n = effSend(c);
+      const tone = n > 0 ? "badge-success" : "badge-neutral";
+      const badge = VERIFIED_ONLY
+        ? `<span class="badge ${tone}" title="human-labeled target records — what a verified-only dispatch sends (preview shows exact reps + cost)">${n} verified</span>`
+        : `<span class="badge ${tone}" title="canonical records that will be sent — labeled targets + unlabeled tier-A${c.n_verified ? `, of which ${c.n_verified} human-verified` : ""} (preview shows exact reps + cost)">${n} send</span>`;
+      const verifiedMeta = (!VERIFIED_ONLY && c.n_verified) ? ` · <span title="human-labeled targets — the verified-only subset">${c.n_verified} verified</span>` : "";
       el.innerHTML = `<div class="s6-cand-top">
           <input type="checkbox" data-id="${esc(c.district_id)}" ${SELECTED.has(c.district_id) ? "checked" : ""}/>
           <span class="q-batch-id">${esc(c.name || c.district_id)}</span>
-          <span class="badge ${tone}" title="canonical records that will be sent — labeled targets + unlabeled tier-A (preview shows exact reps + cost)">${c.n_send} send</span></div>
-        <div class="q-batch-meta">${esc(c.state || "?")} · ${esc(c.district_id)} · ${esc(c.labeled_topology || "?")}${c.n_hold ? ` · <span title="unlabeled tier-B/C — label them in Stage 5 to dispatch">${c.n_hold} held for label</span>` : ""}</div>`;
+          ${badge}</div>
+        <div class="q-batch-meta">${esc(c.state || "?")} · ${esc(c.district_id)} · ${esc(c.labeled_topology || "?")}${verifiedMeta}${c.n_hold ? ` · <span title="unlabeled tier-B/C — label them in Stage 5 to dispatch">${c.n_hold} held for label</span>` : ""}</div>`;
       const cb = el.querySelector("input");
       cb.onchange = () => { cb.checked ? SELECTED.add(c.district_id) : SELECTED.delete(c.district_id); };
       list.appendChild(el);
@@ -114,7 +126,7 @@
     if (!ids.length) { det.innerHTML = `<div class="empty">Select at least one district on the left.</div>`; return; }
     det.innerHTML = `<div class="empty">Building package…</div>`;
     let pkg;
-    try { pkg = await api("/api/handoff/preview", postJSON({ district_ids: ids, overrides: OVERRIDES })); }
+    try { pkg = await api("/api/handoff/preview", postJSON({ district_ids: ids, overrides: OVERRIDES, verified_only: VERIFIED_ONLY })); }
     catch (e) { det.innerHTML = `<div class="empty err">Preview failed: ${esc(e.message)}</div>`; return; }
     renderPackage(pkg);
   }
@@ -147,7 +159,7 @@
     });
     det.innerHTML = `
       <div class="s6-summary">
-        <h3>Dispatch preview</h3>
+        <h3>Dispatch preview ${pkg.verified_only ? `<span class="badge badge-accent" title="only human-labeled target representations — training-grade">verified only</span>` : ""}</h3>
         <p><b>${pkg.cost.n_reps}</b> representation(s) across <b>${pkg.districts.length}</b> district(s) ·
            estimated <b>${usd(pkg.cost.total_usd)}</b> <span class="badge badge-neutral">${esc(pkg.cost.provenance)}</span></p>
         <button id="s6-dispatch" class="btn btn-primary"${pkg.cost.n_reps ? "" : " disabled"}>Approve &amp; freeze dispatch (gate@6)</button>
@@ -196,10 +208,10 @@
     if (!ids.length) return;
     btn.disabled = true; btn.textContent = "Freezing…";
     let res;
-    try { res = await api("/api/handoff/dispatch", postJSON({ district_ids: ids, actor: "ian", overrides: OVERRIDES })); }
+    try { res = await api("/api/handoff/dispatch", postJSON({ district_ids: ids, actor: "ian", overrides: OVERRIDES, verified_only: VERIFIED_ONLY })); }
     catch (e) { btn.disabled = false; btn.textContent = "Approve & freeze dispatch (gate@6)"; alert("Dispatch failed: " + e.message); return; }
     $g("#s6-detail").innerHTML = `<div class="s6-summary">
-        <h3>✓ Dispatch frozen &amp; recorded</h3>
+        <h3>✓ Dispatch frozen &amp; recorded ${res.verified_only ? `<span class="badge badge-accent">verified only</span>` : ""}</h3>
         <p><code>${esc(res.handoff_id)}</code></p>
         <p><b>${res.n_reps}</b> rep(s) · ${res.n_districts} district(s) · ${usd(res.total_usd)}
            <span class="badge badge-neutral">${esc(res.provenance)}</span></p>

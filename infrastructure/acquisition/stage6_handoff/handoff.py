@@ -48,7 +48,10 @@ def _identity(package: dict, used_councils: dict, fingerprints: dict) -> dict:
                     for rep in r.get("reps", [])]
             recs.append({"rec_key": r.get("rec_key"), "decision": r.get("decision"), "reps": reps})
         dist.append({"district_id": d.get("district_id"), "records": recs})
-    return {"districts": dist, "councils": used_councils, "fingerprints": fingerprints}
+    # `verified_only` is part of identity: a training-grade dispatch (labeled targets only) is a
+    # distinct artifact from a default one even when the reps happen to coincide (no hash collision).
+    return {"districts": dist, "councils": used_councils, "fingerprints": fingerprints,
+            "verified_only": bool(package.get("verified_only", False))}
 
 
 def freeze(package: dict, councils: dict, fingerprints: dict, created_by: str = "human") -> dict:
@@ -58,6 +61,7 @@ def freeze(package: dict, councils: dict, fingerprints: dict, created_by: str = 
     h = hashlib.md5(json.dumps(identity, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()[:12]
     return {
         "handoff_hash": h, "created_at": _now(), "created_by": created_by,
+        "verified_only": bool(package.get("verified_only", False)),
         "fingerprints": fingerprints, "councils": used,
         "cost": package.get("cost"), "districts": package.get("districts", []),
     }

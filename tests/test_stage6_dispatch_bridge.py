@@ -49,6 +49,36 @@ def test_bridge_reads_decides_enriches_and_assembles(monkeypatch):
     assert pkg["cost"]["provenance"] == "bootstrap"
 
 
+def test_verified_only_holds_the_unlabeled_tier_A_sends(monkeypatch):
+    """gate@6 training-grade mode: keep only human-labeled target sends; the speculative unlabeled
+    tier-A auto-send is downgraded to `hold` (traceable), not routed/priced."""
+    reps = [{"source": "extracted", "filename": "extracted.txt", "file_kind": "text",
+             "n_chars": 1500, "n_times": 6, "usable": 1}]
+    records = [
+        _fake_record("a", "school_bell_schedule", reps),     # labeled TARGET -> send in both modes
+        _fake_record("b", None, reps),                       # unlabeled tier-A -> send by default, HELD when verified
+    ]
+    monkeypatch.setattr(REL, "load_district",
+                        lambda s, did: {"district_id": did, "name": "X", "district_dir": f"{did}_x",
+                                        "labeled_topology": "per_school",
+                                        "nces_denominator": {"total": 3, "by_level": {}}})
+    monkeypatch.setattr(REL, "load_district_records", lambda s, did: records)
+
+    default = BR.build_handoff_package(session=None, district_ids=["0100810"])
+    assert default["districts"][0]["n_send_reps"] == 2        # target + auto:tier-A both routed
+    assert default["verified_only"] is False
+
+    verified = BR.build_handoff_package(session=None, district_ids=["0100810"], verified_only=True)
+    block = verified["districts"][0]
+    assert block["n_send_reps"] == 1                          # only the labeled target routed
+    assert verified["verified_only"] is True
+    sent = [r for r in block["records"] if r["decision"] == "send"]
+    assert [r["rec_key"] for r in sent] == ["a"]
+    held = [r for r in block["records"] if r["decision"] == "hold"][0]
+    assert held["rec_key"] == "b" and held["reason"].startswith("verified-only:held")
+    assert held["reps"] == []
+
+
 def test_missing_district_is_skipped(monkeypatch):
     monkeypatch.setattr(REL, "load_district", lambda s, did: None)
     monkeypatch.setattr(REL, "load_district_records", lambda s, did: [])

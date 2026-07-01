@@ -879,19 +879,22 @@ _TARGET_IN = "','".join(sorted(BS.TARGET_LABELS))
 @app.get("/api/handoff/candidates")
 def handoff_candidates():
     """Stage-5 districts available to dispatch, each with `n_send` (canonical records `release.decide`
-    will SEND — labeled targets + unlabeled tier-A) and `n_hold` (unlabeled tier-B/C awaiting a gate@5
+    will SEND — labeled targets + unlabeled tier-A), `n_verified` (the human-labeled-target subset of
+    n_send — what a `verified_only` dispatch sends), and `n_hold` (unlabeled tier-B/C awaiting a gate@5
     label). Matches the tier-gated release rule, so the badge reflects what dispatch actually sends, not
     the whole recall-biased funnel. Reuses release.CANONICAL_RECORD_WHERE. Preview stays authoritative
     for the exact representation count + cost."""
     with gdb.session_scope() as con:
         rows = con.execute(text(
             f"""SELECT d.district_id, d.name, d.state, d.labeled_topology,
-                       COALESCE(t.n_send, 0) AS n_send, COALESCE(t.n_hold, 0) AS n_hold
+                       COALESCE(t.n_send, 0) AS n_send, COALESCE(t.n_verified, 0) AS n_verified,
+                       COALESCE(t.n_hold, 0) AS n_hold
                 FROM district d
                 LEFT JOIN (
                     SELECT r.district_id,
                       COUNT(*) FILTER (WHERE l.primary_label IN ('{_TARGET_IN}')
                                           OR (l.primary_label IS NULL AND r.tier = 'A')) AS n_send,
+                      COUNT(*) FILTER (WHERE l.primary_label IN ('{_TARGET_IN}')) AS n_verified,
                       COUNT(*) FILTER (WHERE l.primary_label IS NULL AND r.tier IN ('B', 'C')) AS n_hold
                     FROM record r LEFT JOIN label l ON l.rec_key = r.rec_key
                     WHERE {REL.CANONICAL_RECORD_WHERE}
@@ -907,8 +910,9 @@ async def handoff_preview(payload: dict):
     `overrides` = gate@6 per-rep council overrides ({"<rec_key>::<file>": council_id})."""
     ids = payload.get("district_ids") or []
     overrides = payload.get("overrides") or {}
+    verified_only = bool(payload.get("verified_only"))
     with gdb.session_scope() as con:
-        return H6.build_handoff_package(con, ids, overrides=overrides)
+        return H6.build_handoff_package(con, ids, overrides=overrides, verified_only=verified_only)
 
 
 @app.post("/api/handoff/dispatch")
@@ -918,16 +922,19 @@ async def handoff_dispatch(payload: dict):
     ids = payload.get("district_ids") or []
     actor = payload.get("actor", "ian")
     overrides = payload.get("overrides") or {}
+    verified_only = bool(payload.get("verified_only"))
     if not ids:
         raise HTTPException(400, "no districts selected")
     try:
         with gdb.session_scope() as con:
-            doc, path = H6.dispatch_handoff(con, ids, created_by=actor, overrides=overrides)
+            doc, path = H6.dispatch_handoff(con, ids, created_by=actor, overrides=overrides,
+                                            verified_only=verified_only)
     except FileExistsError:
         raise HTTPException(409, "an identical handoff was just dispatched (same content within the "
                                  "same second) — the prior one stands; retry in a moment if intended")
     cost = doc.get("cost") or {}
     return {"handoff_id": HND6.handoff_filename(doc)[:-5], "handoff_hash": doc["handoff_hash"],
+            "verified_only": bool(doc.get("verified_only")),
             "n_districts": len(doc.get("districts", [])), "n_reps": cost.get("n_reps", 0),
             "total_usd": cost.get("total_usd", 0.0), "provenance": cost.get("provenance", "unknown"),
             "path": str(path)}

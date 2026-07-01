@@ -188,6 +188,7 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 .badge-success { background: var(--status-success); color: #fff; }
 .badge-lavender { background: var(--mmm-purple-100); color: var(--text-brand); }
 .badge-red { background: color-mix(in srgb, var(--accent-red) 12%, var(--surface-card)); color: var(--accent-red); }
+.badge-accent { background: var(--text-brand); color: #fff; }
 
 /* two-pane layout: batch list + detail */
 .gate1 { grid-template-columns: 340px 1fr; }
@@ -404,6 +405,9 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 .s6-fi { font-size: 12px; padding: 3px 6px; border: 1px solid var(--color-border, #e5e7eb); border-radius: 6px; }
 .s6-fi[type="search"] { flex: 1 1 120px; min-width: 100px; }
 .s6-fl { font-size: 12px; display: inline-flex; align-items: center; gap: 4px; color: var(--color-text-muted, #6b7280); }
+/* the verified-only MODE toggle is a dispatch choice, not a list filter — full-width row, accent-tinted */
+.s6-mode { flex-basis: 100%; margin-top: 2px; padding: 4px 6px; border-radius: 6px; font-weight: var(--fw-semibold);
+  color: var(--text-brand); background: var(--mmm-purple-100); }
 .s6-remove { border: none; background: none; cursor: pointer; color: var(--color-text-muted, #9ca3af); font-size: 13px; padding: 0 4px; line-height: 1; }
 .s6-remove:hover { color: var(--color-red-600, #dc2626); }
 .s6-rep-click { cursor: pointer; }
