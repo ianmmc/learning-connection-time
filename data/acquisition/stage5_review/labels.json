@@ -2928,10 +2928,10 @@
     "rec_key": "4222860:77a6eec89d",
     "primary_label": "school_bell_table",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"_pages\": \"4, 7-9\", \"_pages_list\": [4, 7, 8, 9]}",
     "note": "Printer-friendly version of middle.sburg.org/apps/bell_schedules/",
     "status": "labeled",
-    "updated_at": "2026-06-25T03:37:28Z"
+    "updated_at": "2026-07-01T21:31:09Z"
   },
   {
     "rec_key": "4222860:7bbb2ff11e",

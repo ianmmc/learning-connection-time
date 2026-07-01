@@ -442,3 +442,12 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 .facet-where, .facet-page { font-size: var(--fs-xs); padding: 3px 6px; border: 1px solid var(--border-subtle);
   border-radius: 6px; }
 .facet-page { flex: 1 1 auto; min-width: 60px; }
+
+/* ---- v2.1 label pane: confounder/location checkboxes + location cluster (REQ-114) ---- */
+.conf-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: var(--fs-sm); cursor: pointer; }
+.conf-row.on { color: var(--text-brand); font-weight: var(--fw-semibold); }
+.conf-row .det-hint { margin-left: auto; font-size: var(--fs-xs); font-style: normal; color: var(--accent-orange);
+  background: var(--mmm-orange-tint, #fff3e6); border-radius: var(--radius-pill); padding: 0 7px; }
+.loc-cluster { margin: 4px 0 8px; padding: 6px 8px; border-left: 2px solid var(--mmm-purple-200, var(--border-subtle));
+  background: var(--surface-alt); border-radius: 6px; }
+.axis-label.sub { margin: 0 0 4px; font-size: var(--fs-xs); color: var(--text-secondary); }
