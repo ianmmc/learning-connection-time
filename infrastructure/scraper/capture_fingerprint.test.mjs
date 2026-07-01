@@ -6,7 +6,33 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   hostOf, cdnHints, cmsHint, strippedLen, buildHtmlFingerprint, buildFetchFingerprint,
+  categorizeEmbedHost, embedCategories,
 } from './capture_discovery.mjs';
+
+test('categorizeEmbedHost buckets social/calendar/doc-viewer, else other (REQ-115)', () => {
+  assert.equal(categorizeEmbedHost('www.facebook.com'), 'social');
+  assert.equal(categorizeEmbedHost('widgets.sociablekit.com'), 'social');
+  assert.equal(categorizeEmbedHost('teamup.com'), 'calendar');
+  assert.equal(categorizeEmbedHost('calendar.google.com'), 'calendar');
+  assert.equal(categorizeEmbedHost('docs.google.com'), 'doc-viewer');
+  assert.equal(categorizeEmbedHost('issuu.com'), 'doc-viewer');
+  assert.equal(categorizeEmbedHost('example.k12.us'), 'other');
+  assert.equal(categorizeEmbedHost(''), 'other');
+});
+
+test('embedCategories dedups + sorts the distinct classes on a page (REQ-115)', () => {
+  assert.deepEqual(embedCategories(['www.facebook.com', 'twitter.com', 'teamup.com']), ['calendar', 'social']);
+  assert.deepEqual(embedCategories([]), []);
+});
+
+test('buildHtmlFingerprint carries categorized embed hosts + presence (REQ-115)', () => {
+  const fp = buildHtmlFingerprint({
+    finalHost: 'ms.dryden.k12.ny.us', headers: {}, jsDependent: true,
+    dom: { resource_hosts: [], iframe_hosts: ['www.facebook.com', 'teamup.com'] },
+  });
+  assert.deepEqual(fp.embed_hosts, ['calendar', 'social']);
+  assert.equal(fp.embed_present, true);
+});
 
 test('hostOf extracts a lowercase hostname, empty on garbage', () => {
   assert.equal(hostOf('https://WWW.Marion-ISD.org/o/vms/page'), 'www.marion-isd.org');

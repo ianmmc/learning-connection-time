@@ -204,10 +204,13 @@ social/feed · calendar · doc-viewer · other) + `embed_present`** alongside th
 cheap, additive, doesn't touch any capture path. This gives §3's `embed_hosts` signal a **structural,
 vendor-agnostic** basis, far more robust than the URL-pattern/keyword guess.
 
-**Open capture-completeness question (verify, don't assume):** does Playwright currently read `innerText`
-of same-origin iframes, or only the top document? If a real schedule renders inside an iframe (an embedded
-PDF viewer / scheduling widget), today's capture may silently miss it — a *capture* bug, not a filter one.
-Checked as part of REQ-115.
+**Capture-completeness question — ANSWERED (REQ-115).** The capture reads `document.body.innerText` of the
+**top document only** — `innerText` does not recurse into iframe documents (and cross-origin frames are
+browser-blocked outright), so a schedule rendered *inside* an iframe is absent from `page.txt`. **But it is
+NOT silently lost:** the visual path (full-page screenshot → raster → `tesseract` OCR) renders iframe content,
+so an iframe-embedded schedule is recoverable via the vision/OCR tier — consistent with tier-3 reader routing.
+So this is left as-is (traversing frames adds complexity + hits cross-origin limits; the vision backstop already
+covers it); the new `embed_present`/`embed_hosts` signal *flags* such pages so routing can prefer the visual rep.
 
 **Deliberately NOT chased (research-settled, `filtering-research/`):** schema.org / `OpeningHoursSpecification`
 microdata as a primary signal — both research passes converged on **<5% coverage on K-12 CMS platforms**

@@ -117,9 +117,14 @@ def cms_hint_of(cap: dict) -> str | None:
 
 
 def embed_hosts_of(cap: dict) -> list:
-    """Categorized iframe/embed host tags for a capture (REQ-115). Empty for pre-REQ-115 captures (the
-    field isn't on disk yet); populated for future captures + used structurally by lf_news_feed/calendar."""
-    return list((cap.get("embed_hosts") or []))
+    """Categorized iframe/embed host tags for a capture (REQ-115) — social/calendar/doc-viewer/other, from
+    the Stage-3 fingerprint. Empty for pre-REQ-115 captures (the field isn't on disk yet); populated for
+    future captures + used structurally by lf_news_feed / lf_calendar_widget."""
+    try:
+        fp = json.loads(cap.get("fingerprint_json") or "{}") or {}
+    except (json.JSONDecodeError, TypeError):
+        return []
+    return list(fp.get("embed_hosts") or [])
 
 
 def in_window_positions(text: str):
