@@ -54,7 +54,7 @@ def _records():
     """(district, rec_key, signals, primary_label) tuples: 2 districts, a mix of targets/non."""
     return [
         ("d1", "d1:a", _sig(proximity_pairs=2, n_times_in_window=3, positive_kw=["bell schedule"]),
-         "school_bell_schedule"),                                       # target, -> A
+         "school_bell_table"),                                       # target, -> A
         ("d1", "d1:b", _sig(n_times=2, n_times_in_window=2, neg_total=2,
                             negative_kw={"board": ["board", "trustees"], "sports": [], "calendar": [], "transport": []}),
          "board_schedule"),                                             # non-target, win<=2 -> C (floats to B when neg_dom loosened)
@@ -127,5 +127,5 @@ def test_load_labeled_reads_signals_and_labels(gov_session):
     assert dists == {"d1", "d2"}
     # signals come back as dicts, labels intact
     by_key = {r[1]: r for r in recs}
-    assert by_key["d1:a"][3] == "school_bell_schedule"
+    assert by_key["d1:a"][3] == "school_bell_table"
     assert isinstance(by_key["d1:a"][2], dict)

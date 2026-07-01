@@ -69,10 +69,10 @@ def test_best_send_empty_when_no_reps():
 
 # ----------------------------- decide (the release rule) -----------------------------
 def test_decide_target_label_sends():
-    rec = _rec(label="school_bell_schedule", reps=[_text_rep("page.txt", n_times=4)])
+    rec = _rec(label="school_bell_table", reps=[_text_rep("page.txt", n_times=4)])
     d = R.decide(rec)
     assert d["decision"] == "send"
-    assert d["reason"] == "target-label:school_bell_schedule"
+    assert d["reason"] == "target-label:school_bell_table"
     assert d["send"] == [{"file": "page.txt", "kind": "text"}]
 
 
@@ -82,7 +82,7 @@ def test_decide_labeled_non_target_rejects():
 
 
 def test_decide_target_with_no_usable_rep_flags_it():
-    d = R.decide(_rec(label="school_bell_schedule", reps=[]))
+    d = R.decide(_rec(label="school_bell_table", reps=[]))
     assert d["decision"] == "send" and d["reason"].endswith(";no-usable-rep") and d["send"] == []
 
 
@@ -115,7 +115,7 @@ def test_alternates_excludes_winner_and_lists_other_usable():
 def test_decide_target_carries_alternates_not_the_winner():
     reps = [_text_rep("winner.txt", n_times=9), _text_rep("alt.txt", n_times=3),
             {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
-    d = R.decide(_rec(label="school_bell_schedule", reps=reps))
+    d = R.decide(_rec(label="school_bell_table", reps=reps))
     assert d["send"] == [{"file": "winner.txt", "kind": "text"}]
     alt_files = {a["file"] for a in d["alternates"]}
     assert alt_files == {"alt.txt", "page.pdf"}        # the swappable options, winner excluded
@@ -140,7 +140,7 @@ def test_alternates_excludes_quarantined_chrome_segments():
 def test_build_doc_is_traceable_with_completeness_and_header():
     district = {"district_id": "d", "district_dir": "d_dir", "labeled_topology": "per_school",
                 "nces_denominator": {"total": 3, "by_level": {}}}
-    records = [_rec(rec_key="d:1", label="school_bell_schedule", reps=[_text_rep("p1.txt", n_times=4)]),
+    records = [_rec(rec_key="d:1", label="school_bell_table", reps=[_text_rep("p1.txt", n_times=4)]),
                _rec(rec_key="d:2", label="board_schedule", reps=[_text_rep("p2.txt", n_times=4)]),
                _rec(rec_key="d:3", label="none")]
     doc = R.build_doc(district, records, {"config": "c", "labels": "l", "data": "x"})
@@ -163,12 +163,12 @@ def _seed_district(sess, did, district_dir):
     sess.execute(BS.INSERT_RECORD, {
         "rec_key": f"{did}:h1", "district_id": did, "district_dir": district_dir, "url": "http://x/a",
         "hash": "h1", "kind": "html", "final_url": None, "content_hash": "ch1", "duplicate_of": None,
-        "tier": "A", "sort_score": 50.0, "category_hypothesis": "school_bell_schedule",
+        "tier": "A", "sort_score": 50.0, "category_hypothesis": "school_bell_table",
         "signals_json": json.dumps({"n_times": 4}), "intended_schools_json": json.dumps(["A Elem"]),
         "candidate_tools_json": "[]", "is_emergent": 0})
     sess.execute(text(
         "INSERT INTO label (rec_key, primary_label, flags_json, status) "
-        "VALUES (:rk, 'school_bell_schedule', '[]', 'labeled')"), {"rk": f"{did}:h1"})
+        "VALUES (:rk, 'school_bell_table', '[]', 'labeled')"), {"rk": f"{did}:h1"})
     sess.execute(BS.INSERT_REP, {"rec_key": f"{did}:h1", "source": "pdftotext", "filename": "page.txt",
                                  "file_kind": "text", "n_chars": 200, "n_times": 4, "usable": 1})
 

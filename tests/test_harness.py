@@ -54,9 +54,9 @@ def _seed_mini(sess):
                                labeled_topology text, nces_school_count integer)"""))
     # signals_json carries the V2 fired detectors (REQ-113) the harness reads for per-detector diagnostics.
     sess.execute(text("""INSERT INTO record VALUES
-        ('d:1','A','school_bell_schedule','{\"detectors\": [{\"name\": \"lf_time_table\"}]}'),
+        ('d:1','A','school_bell_table','{\"detectors\": [{\"name\": \"lf_time_table\"}]}'),
         ('d:2','D','none','{\"detectors\": [{\"name\": \"lf_no_times\"}]}')"""))
-    sess.execute(text("""INSERT INTO label VALUES ('d:1','school_bell_schedule','labeled','[]'),
+    sess.execute(text("""INSERT INTO label VALUES ('d:1','school_bell_table','labeled','[]'),
                                  ('d:2','none','labeled','[]')"""))
     sess.execute(text("INSERT INTO district VALUES ('d','D','per_school','per_school',3)"))
     return sess

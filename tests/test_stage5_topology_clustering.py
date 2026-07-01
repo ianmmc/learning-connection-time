@@ -20,27 +20,27 @@ class TestLabeledTopology:
         assert BS.derive_labeled_topology(["board_schedule", "none"], nces_count=1) == "none_found"
 
     def test_single_school_nces_confirmed(self):
-        assert BS.derive_labeled_topology(["school_bell_schedule"], nces_count=1) == "single_school"
+        assert BS.derive_labeled_topology(["school_bell_table"], nces_count=1) == "single_school"
 
     def test_mixed_hub_plus_school_level(self):
         got = BS.derive_labeled_topology(
-            ["district_hub_schedule", "school_bell_schedule"], nces_count=10)
+            ["district_hub_by_school", "school_bell_table"], nces_count=10)
         assert got == "mixed"
 
     def test_district_hub_only(self):
-        assert BS.derive_labeled_topology(["district_hub_schedule"], nces_count=10) == "district_hub"
+        assert BS.derive_labeled_topology(["district_hub_by_school"], nces_count=10) == "district_hub"
 
     def test_incomplete_coverage_exact_criterion(self):
-        # exactly one target, it's school_bell_schedule, NCES says >1 school
-        assert BS.derive_labeled_topology(["school_bell_schedule"], nces_count=5) == "incomplete_coverage"
+        # exactly one target, it's school_bell_table, NCES says >1 school
+        assert BS.derive_labeled_topology(["school_bell_table"], nces_count=5) == "incomplete_coverage"
 
     def test_per_school_multiple_school_level_targets(self):
         got = BS.derive_labeled_topology(
-            ["school_bell_schedule", "school_start_end_prose"], nces_count=8)
+            ["school_bell_table", "school_start_end_prose"], nces_count=8)
         assert got == "per_school"
 
     def test_incomplete_coverage_does_not_fire_for_prose_single(self):
-        # one target but it's prose, not school_bell_schedule -> per_school, not incomplete_coverage
+        # one target but it's prose, not school_bell_table -> per_school, not incomplete_coverage
         assert BS.derive_labeled_topology(["school_start_end_prose"], nces_count=5) == "per_school"
 
     def test_none_found_precedes_single_school(self):

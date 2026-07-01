@@ -44,7 +44,7 @@ def lf_time_table(sig, p):
     density, periods = sig.get("table_time_density", 0), sig.get("table_period_rows", 0)
     if periods >= p["table_min_periods"] or (density >= p["table_min_times"] and sig.get("positive_kw")):
         return Vote("lf_time_table", "target", "strong", 0.85,
-                    f"schedule table ({density} times / {periods} period rows)", "school_bell_schedule")
+                    f"schedule table ({density} times / {periods} period rows)", "school_bell_table")
     return None
 
 
@@ -52,7 +52,7 @@ def lf_prose_pair(sig, p):
     """A start/end proximity pair in-window + a positive keyword, no negative dominance — the V1 tier-A core."""
     if sig.get("proximity_pairs", 0) >= 1 and (sig.get("positive_kw") or sig.get("period_hits", 0) >= 2) \
             and not _neg_dominant(sig, p) and not _all_after5(sig):
-        cat = "school_bell_schedule" if sig.get("period_hits", 0) >= 2 else "school_start_end_prose"
+        cat = "school_bell_table" if sig.get("period_hits", 0) >= 2 else "school_start_end_prose"
         return Vote("lf_prose_pair", "target", "strong", 0.8,
                     "in-window start/end pair + positive keyword", cat)
     return None
@@ -71,7 +71,7 @@ def lf_footer_hours(sig, p):
         return Vote("lf_office_hours", "negative", "soft", 0.5,
                     "footer/header hours read as office/staff hours", "other_schedule")
     return Vote("lf_footer_hours", "target", "strong", 0.75,
-                "school-hours block in the footer/header", "school_start_end_prose")
+                "school-hours block in the footer/header", "school_start_end_list")
 
 
 def lf_heading_hours(sig, p):
@@ -84,7 +84,7 @@ def lf_heading_hours(sig, p):
         return Vote("lf_office_hours", "negative", "soft", 0.5,
                     f"time under an office-hours heading ({', '.join(labels)})", "other_schedule")
     return Vote("lf_heading_hours", "target", "strong", 0.7,
-                f"time under a school-hours heading ({', '.join(labels) or 'hours'})", "school_start_end_prose")
+                f"time under a school-hours heading ({', '.join(labels) or 'hours'})", "school_start_end_list")
 
 
 def lf_weak_times(sig, p):
@@ -92,7 +92,7 @@ def lf_weak_times(sig, p):
     (REQ-113 §2a-2 — was tier-B noise; the proximity-pair requirement is what removed the 13 FPs)."""
     if sig.get("proximity_pairs", 0) >= 1 and not _neg_dominant(sig, p) and not _all_after5(sig):
         return Vote("lf_weak_times", "target", "weak", 0.4,
-                    "in-window time pair, weak keyword support", "nonstandard_format")
+                    "in-window time pair, weak keyword support", "target_other_shape")
     return None
 
 

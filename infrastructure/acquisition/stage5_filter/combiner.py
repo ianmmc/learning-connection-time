@@ -67,7 +67,9 @@ def combine(votes: list) -> dict:
 
     # a transparent, legible sort score: target confidence up, negatives down (intra-tier ordering only).
     sort_score = round(10 * tconf - 6 * nconf - 3 * sum(v["confidence"] for v in soft_neg), 3)
-    category = winner["category"] if winner else "none"
+    # category_hypothesis = the winning TARGET shape (v2.1); a non-target winner predicts the primary
+    # 'target_absent' (the specific confounder is a facet, scored per-detector, not the primary guess).
+    category = winner["category"] if (winner and winner["polarity"] == "target") else "target_absent"
     reasons = [v["reason"] for v in sorted(votes, key=lambda v: -v["confidence"])]
     return {"decision": decision, "tier": tier, "sort_score": sort_score, "category": category,
             "reasons": reasons, "fired": [v["name"] for v in votes]}

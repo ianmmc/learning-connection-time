@@ -70,7 +70,7 @@ def test_feed_page_with_a_real_footer_block_still_sends():
 def test_schedule_table_sends():
     r = decide(proximity_pairs=4, positive_kw=["bell schedule"], table_time_density=10,
                table_period_rows=6, has_table=True, period_hits=6)
-    assert r["decision"] == "send" and r["category"] == "school_bell_schedule"
+    assert r["decision"] == "send" and r["category"] == "school_bell_table"
 
 
 def test_explicit_minutes_is_a_strong_target():

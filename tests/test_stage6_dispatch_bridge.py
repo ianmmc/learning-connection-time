@@ -24,7 +24,7 @@ def test_bridge_reads_decides_enriches_and_assembles(monkeypatch):
     reps = [{"source": "extracted", "filename": "extracted.txt", "file_kind": "text",
              "n_chars": 1500, "n_times": 6, "usable": 1}]
     records = [
-        _fake_record("a", "school_bell_schedule", reps),     # a TARGET label -> send
+        _fake_record("a", "school_bell_table", reps),     # a TARGET label -> send
         _fake_record("z", "board_calendar", reps),           # non-target -> reject
     ]
     monkeypatch.setattr(REL, "load_district",
@@ -55,7 +55,7 @@ def test_verified_only_holds_the_unlabeled_tier_A_sends(monkeypatch):
     reps = [{"source": "extracted", "filename": "extracted.txt", "file_kind": "text",
              "n_chars": 1500, "n_times": 6, "usable": 1}]
     records = [
-        _fake_record("a", "school_bell_schedule", reps),     # labeled TARGET -> send in both modes
+        _fake_record("a", "school_bell_table", reps),     # labeled TARGET -> send in both modes
         _fake_record("b", None, reps),                       # unlabeled tier-A -> send by default, HELD when verified
     ]
     monkeypatch.setattr(REL, "load_district",

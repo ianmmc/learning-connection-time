@@ -52,9 +52,32 @@ CLUSTER_THRESHOLD = 0.90  # Jaccard >= this clusters. CONSERVATIVE on purpose: t
 TIER_RANK = {"A": 0, "B": 1, "C": 2, "D": 3}
 
 # ---- labeled-topology taxonomy (derived from human labels + NCES; see the design note) ----
-TARGET_LABELS = {"school_bell_schedule", "school_start_end_prose", "district_hub_schedule",
-                 "explicit_instructional_time", "nonstandard_format"}
-SCHOOL_LEVEL_LABELS = {"school_bell_schedule", "school_start_end_prose"}
+# V2.1 target SHAPES (Ian, 2026-07-01): the primary axis is now the target's shape (single-choice),
+# distinct because each shape derives minutes + routes to Stage 6/7 differently. Non-targets moved OFF
+# this axis into multi-select confounder FACETS (a page can carry several) + the terminals target_absent
+# / unusable. See STAGE5_FILTER_DESIGN §4.
+TARGET_LABELS = {"school_start_end_list", "school_bell_table", "school_start_end_prose",
+                 "district_hub_by_school", "district_hub_by_band",
+                 "explicit_instructional_time", "target_other_shape"}
+SCHOOL_LEVEL_LABELS = {"school_start_end_list", "school_bell_table", "school_start_end_prose"}
+HUB_LABELS = {"district_hub_by_school", "district_hub_by_band"}
+# The terminal (non-target) primary values — everything else a record can be on Axis 1.
+NONTARGET_PRIMARIES = {"target_absent", "unusable"}
+# One-time relabel map (v2.0 → v2.1), used by migrate_labels_v21. Non-target v2.0 labels don't appear here
+# — they map to primary=target_absent + a confounder facet (the migration handles that separately).
+LEGACY_LABEL_MAP = {
+    "school_bell_schedule": "school_bell_table",
+    "district_hub_schedule": "district_hub_by_school",   # by_school is the common case; human re-confirms by_band
+    "nonstandard_format": "target_other_shape",
+    "none": "target_absent",
+    # unchanged: school_start_end_prose, explicit_instructional_time, unusable
+}
+# v2.0 non-target labels → the confounder facet they become (primary → target_absent).
+LEGACY_NONTARGET_TO_FACET = {
+    "board_schedule": "board", "sports_schedule": "sports", "academic_calendar": "academic_calendar",
+    "community_calendar": "community_calendar", "transportation_schedule": "transportation",
+    "embedded_feed": "news_feed", "other_schedule": "other_schedule",
+}
 
 TIME_RE = re.compile(r"\b(\d{1,2}):(\d{2})\s*([AaPp])?\.?[Mm]?\.?")
 USABLE_MIN_CHARS = 120
@@ -347,14 +370,16 @@ def derive_labeled_topology(primaries: list, nces_count) -> str:
         return "none_found"              # reviewed, nothing on-target -> re-discovery signal
     if nces_count == 1:
         return "single_school"           # NCES-confirmed one-school LEA
-    has_hub = "district_hub_schedule" in targets
+    has_hub = any(p in HUB_LABELS for p in targets)
     school_level = [p for p in targets if p in SCHOOL_LEVEL_LABELS]
     if has_hub and school_level:
         return "mixed"
     if has_hub:
         return "district_hub"
-    # exact, narrow incomplete_coverage criterion (user, 2026-06-25)
-    if len(targets) == 1 and targets[0] == "school_bell_schedule" and nces_count and nces_count > 1:
+    # exact, narrow incomplete_coverage criterion (user, 2026-06-25): a single full single-school bell
+    # TABLE for a >1-school district = a coverage gap. Deliberately narrow — a single prose/list start-end
+    # stays per_school. (v2.1: school_bell_table is the direct rename of the old school_bell_schedule.)
+    if len(targets) == 1 and targets[0] == "school_bell_table" and nces_count and nces_count > 1:
         return "incomplete_coverage"
     if school_level:
         return "per_school"
@@ -684,6 +709,51 @@ def ensure_signal_schema(sess) -> None:
         sess.execute(text(ddl))
     for ddl in _SIGNAL_ALTERS:
         sess.execute(text(ddl))
+
+
+def migrate_label_v21(primary, flags, facets):
+    """PURE: map ONE v2.0 label (primary_label + flags[] + facets{}) to the v2.1 schema. Returns
+    (new_primary, new_facets). Deterministic + reversible-in-spirit (git holds the pre-migration
+    labels.json). Ambiguous target splits land on a sensible default the HUMAN re-confirms:
+    district_hub_schedule → by_school (by_band is rarer); a target's prose-vs-list shape is left as the
+    v2.0 value carried forward. Non-targets → primary target_absent + the confounder facet. v2.0 FLAGS
+    fold in: building_hours_visible → office_building_hours facet; buried_in_long_doc / target_image_only
+    stay as facets. `duplicate` stays a flag (a dedup mechanism, not a content facet)."""
+    flags = flags or []
+    facets = dict(facets or {})
+    if primary in LEGACY_NONTARGET_TO_FACET:            # a v2.0 non-target -> absent + confounder facet
+        facets[LEGACY_NONTARGET_TO_FACET[primary]] = "yes"
+        new_primary = "target_absent"
+    else:
+        new_primary = LEGACY_LABEL_MAP.get(primary, primary)   # rename, else unchanged (prose/minutes/unusable/already-v2.1)
+    if "building_hours_visible" in flags:
+        facets["office_building_hours"] = "yes"
+    if "buried_in_long_doc" in flags:
+        facets["buried_handbook"] = "yes"
+    if "target_image_only" in flags:
+        facets["needs_vision"] = "yes"
+    return new_primary, facets
+
+
+def migrate_labels_v21(sess, *, dry_run=True):
+    """Apply migrate_label_v21 to every non-unlabeled row. dry_run just tallies. Real run UPDATEs
+    primary_label + facets_json in place (labels are precious → the caller exports labels.json after,
+    and git holds the prior backup as the restore point)."""
+    rows = sess.execute(text(
+        "SELECT rec_key, primary_label, flags_json, facets_json FROM label WHERE status!='unlabeled'")).fetchall()
+    from collections import Counter
+    valid = TARGET_LABELS | NONTARGET_PRIMARIES     # every migrated primary must land in the v2.1 vocabulary
+    moves = Counter()
+    for rk, primary, fj, facj in rows:
+        flags = json.loads(fj or "[]")
+        facets = json.loads(facj or "{}")
+        new_primary, new_facets = migrate_label_v21(primary, flags, facets)
+        assert new_primary in valid, f"migration produced an out-of-vocabulary primary: {new_primary!r}"
+        moves[f"{primary} -> {new_primary}"] += 1
+        if not dry_run:
+            sess.execute(text("UPDATE label SET primary_label=:p, facets_json=:f WHERE rec_key=:rk"),
+                         {"p": new_primary, "f": json.dumps(new_facets), "rk": rk})
+    return moves
 
 
 def delete_district_signal_rows(sess, district_id: str) -> None:
