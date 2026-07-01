@@ -2650,17 +2650,28 @@ requirements:
       'where' (main/footer/header/table/image/feed-post) and a structured handbook page number
       (harvest_pages_labeled, guessed-vs-labeled like topology). ADDITIVE to the existing taxonomy — NOT a
       reset (the 440 labels + 202 notes stay valid; user decision 2026-07-01). Free-text note retained."
+      Built as v2.1 (2026-07-01): a THREE-AXIS label object — Axis 1 target SHAPE (school_start_end_list /
+      school_bell_table / school_start_end_prose / district_hub_by_school / district_hub_by_band /
+      explicit_instructional_time / target_other_shape + terminals target_absent / unusable); Axis 2 confounder
+      facets (multi-select — board/sports/calendars/transport/news_feed/office_building_hours); Axis 3 location
+      (buried_handbook + print-dialog page range, needs_vision, where). A fired detector HINTS ('flagged') but
+      never auto-checks. migrate_label_v21 moved all 440 labels (128 targets preserved; git = restore point).
+      Detail pane reordered text-first with a per-rep unique-times readout."
     type: functional
     priority: should
-    status: planned
+    status: tested
     acceptance_criteria:
-      - the label schema gains detector-mirroring tri-state facets + structured where + harvest_pages_labeled, precious/JSON-backed like existing labels, surviving re-ingest
-      - the center/right labeling pane renders the facet checklist pre-filled with the current detector votes; saving persists facets + primary label + note atomically
-      - the facet checklist is PRE-FILLED at render from the current detector votes (confirm-or-correct, shown "suggested"), but a facet is written to facets_json only on human confirmation — detector guesses are NOT auto-persisted (that would make facet==detector trivially and destroy the per-detector accuracy measurement)
+      - the label schema gains facets_json (precious, JSON-backed, additive migration in init_precious_schema) surviving re-ingest
+      - the labeling pane renders the 3 axes (shape radio / confounder checkboxes / location); a fired detector shows a 'flagged' hint but is NOT auto-checked; saving persists primary + facets + note atomically
+      - handbook page range accepts print-dialog syntax ('4, 7-9') and stores both the raw string and the parsed list [4,7,8,9]
+      - migrate_label_v21 maps every v2.0 label into the v2.1 vocabulary (targets renamed; non-targets -> target_absent + confounder facet); 128 targets preserved; unit-tested
       - UI self-verified with Playwright before shipping (per the standing 'don't ship visuals blind' lesson)
     created: "2026-07-01T00:00:00Z"
     updated: "2026-07-01T00:00:00Z"
-    notes: "Design: STAGE5_FILTER_DESIGN_2026-06.md §4. Follows REQ-113 (needs the detectors to mirror)."
+    notes: "Design: STAGE5_FILTER_DESIGN_2026-06.md §4 (three-axis). Tests: test_stage5_scoring.py (migration),
+      test_stage5_facets_api.py (facets_json). Playwright-verified (3 axes render, migration seeds confounders,
+      page-range parses, detail pane text-first). Stage 6 verified clean (STAGE6_DISPATCH_DESIGN §0 ripple check).
+      Follow-on: facet-level per-detector scoring once re-tagging fills facets; harvest_slice using human pages."
 
   - id: REQ-115
     description: "Stage 3 iframe/embed capture + cms_hint promotion. Two V2 findings are structural not

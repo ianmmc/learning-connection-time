@@ -41,6 +41,17 @@ unlabeled **tier-B/C** are **`hold`** (a *third* decision — a maybe-target awa
 **Verified-only mode** (a gate@6 toggle — §3E) narrows the send set to **labeled targets only**, holding the
 speculative tier-A auto-sends, for building a manually-verified, training-grade corpus.
 
+**Stage-5 v2.1 ripple check (2026-07-01).** The Stage-5 labeling rework (target-shape taxonomy; non-targets →
+confounder facets; REQ-114) flows into Stage 6 **cleanly** — `release.decide` and the gate@6 candidates SQL
+both read `TARGET_LABELS` **dynamically**, so migrated labels (`school_bell_table`, `district_hub_by_*`, …)
+count as targets and `target_absent`/`unusable` reject; candidates / preview / verified-only all verified
+against the migrated set (108 verified targets, preview assembles + prices normally). Two minor wrinkles,
+neither a break: **(1)** `server._TARGET_IN` is frozen at **import** (a server started before a taxonomy
+change is stale until restart — a known pattern, not new); **(2)** the human now records the real handbook
+**page range** (`facets_json._pages_list`), but the `harvest_slice` still materializes off the *auto*
+`harvest_pages` — a worthwhile future edge (prefer the human-labeled pages once they accrue), tracked as a
+follow-up, not a defect.
+
 **The seam:** everything needed to POST is assembled here; **Stage 7** makes the paid call, runs the
 judge-on-disagreement loop, and the "request more evidence" back-edges (§3F). **Deferred (own tracks):**
 the **council lab** (`cost_benchmark` — replaces the bootstrap with measured token rates + live OpenRouter

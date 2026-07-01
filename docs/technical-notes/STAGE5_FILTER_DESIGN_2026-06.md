@@ -141,37 +141,38 @@ before the human sees it; a borderline page reaching gate@5 costs only review ti
 
 ---
 
-## 4. Labeling — a facet questionnaire (V2, REQ-114)
+## 4. Labeling — a THREE-AXIS object (v2.1, REQ-114)
 
-**V1 asked for one primary label (radio) + a few orthogonal flags.** That forced multi-purpose pages (a
-homepage with a news feed *and* footer hours *and* a calendar widget) into a single bucket, and buried the
-real findings in 202 free-text notes. **V2 turns labeling into a checklist that mirrors the detectors** —
-so the human confirms/corrects each detector, which is exactly the per-detector ground truth the harness
-needs (§5), and multi-module pages are represented honestly.
+**V1 forced two bad single-choices:** pick one target shape *or* one non-target reason. Real pages
+(homepages, feeds) break both — a homepage carries a news feed *and* a footer hours block *and* a board
+notice. **v2.1 (Ian, 2026-07-01) makes the label a multi-axis object** that mirrors the detectors, so each
+human answer scores exactly one detector (§5) and multi-module pages are represented honestly:
 
-- **Keep one "dominant content type"** field (topology/funnel bookkeeping) — but it stops being the only
-  signal scoring reasons about.
-- **Add detector-mirroring facets**, each **tri-state** (yes / no / unsure), pre-filled with the detector's
-  own vote so labeling is *confirm-or-correct*, not blank-slate: *footer/header hours block present?
-  student start/end declared anywhere? dominated by a news/social feed? calendar widget (not a schedule)?
-  times are staff/office not students? non-standard-day variant? buried in a multi-topic handbook?* The V1
-  flags (`buried_in_long_doc`, `target_image_only`, `building_hours_visible`) fold in here.
-- **Structured "where"** (main / footer / header / table / image / feed-post) replacing prose "in the footer".
-- **Structured handbook page number** — reusing the guessed-vs-labeled pattern already built for topology:
-  keep `harvest_pages` (guessed) + `harvest_pages_labeled` (a numeric field), so harvest precision/recall
-  becomes measurable instead of anecdotal (§2a evidence showed the 15-page cap + density heuristic miss real pages).
-- **Free-text note stays** as color commentary — valuable, but no longer the only record of a finding.
+- **Axis 1 — the target SHAPE (radio, single):** distinct because each derives minutes / routes to Stage 6/7
+  differently. `school_start_end_list` (footer-style "Hours: 8:30–3:30") · `school_bell_table` (Period 1…N;
+  start of 1st period → end of last) · `school_start_end_prose` · `district_hub_by_school` (per named school)
+  · `district_hub_by_band` (Elem/Middle/High ranges) · `explicit_instructional_time` · `target_other_shape`.
+  Plus terminals **`target_absent`** and **`unusable`** (kept distinct: "no target" vs. "can't read it").
+- **Axis 2 — confounding signals PRESENT (checkbox, multi):** the former non-targets, now non-exclusive —
+  `board` · `sports` · `academic_calendar` · `community_calendar` · `transportation` · `news_feed` ·
+  `office_building_hours`. Usable whether or not a target is present (Las Cruces: a real `district_hub_by_school`
+  *delivered in* a news feed). These are the ground truth for the negative detectors.
+- **Axis 3 — where / how it hides (checkbox):** `buried_handbook` (+ a **print-dialog page range** "4, 7-9"
+  parsed to `[4,7,8,9]` for the harvester — the guessed `harvest_pages` vs. labeled pattern) · `needs_vision`
+  (image/PDF only, missing from all text) · a structured `where` picker (main/footer/header/table/image/feed).
+- **Free-text note stays** as color commentary.
 
-The **primary-label taxonomy is retained** (targets: `school_bell_schedule`, `school_start_end_prose`,
-`district_hub_schedule`, `explicit_instructional_time`, `nonstandard_format`; non-targets: `board_schedule`,
-`sports_schedule`, `academic_calendar`, `community_calendar`, `transportation_schedule`, `embedded_feed`,
-`other_schedule`, `none`, `unusable`) — the facets are **additive**, not a reset (the 440 existing labels +
-202 notes stay valid evidence; user decision 2026-07-01). The facet checklist is **pre-filled at render
-time** from the current detector votes (shown "suggested" until confirmed) so labeling is confirm-or-correct,
-not blank-slate — but a facet is **written to `facets_json` only when the human confirms it**. We deliberately
-do NOT persist the detector guesses as facets: the facets are the ground truth the harness scores each
-detector against (§5), so auto-seeding "facet := detector vote" would make agreement trivially 100% and
-destroy the measurement. So on existing labels the facets start empty and accrue through gate@5 review.
+**Pre-fill is a HINT, never persisted.** A fired detector shows a "flagged" chip next to its facet, but the
+box is not auto-checked — only human checks persist. Auto-seeding "facet := detector vote" would make
+agreement trivially 100% and destroy the per-detector measurement (§5), so facets accrue only through gate@5.
+
+**Migration, not reset (`migrate_label_v21`).** The 440 v2.0 labels + 202 notes stay valid evidence: clean
+target renames (`school_bell_schedule`→`school_bell_table`, `district_hub_schedule`→`district_hub_by_school`
+(by-band re-confirmed by hand), `nonstandard_format`→`target_other_shape`); non-targets → `target_absent` +
+the confounder facet; v2.0 flags fold into Axis-3 facets. 128 targets preserved. git holds the v2.0
+`labels.json` as the restore point. The detail pane also reordered **text-first** (footer/header first) with a
+per-rep "unique-times-vs-densest" readout, so the human confirms the target is in a TEXT rep (the council
+reads text) before the image can anchor a premature check-off.
 
 ---
 
@@ -254,14 +255,22 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 | V1 tiering (`tier_and_category`), de-chrome, clustering, topology, funnel, attention, harness/frontier/ledger | **BUILT** (pre-V2) |
 | V2 detectors + combiner (`detectors.py`/`combiner.py`); the 3 fixes; new signals (footer/heading/table-density/cms_hint) | **BUILT (REQ-113)** |
 | Per-detector harness diagnostics (coverage/accuracy/overlap/conflict) | **BUILT (REQ-113)** |
-| Facet questionnaire labeling UI (server + JS + detector pre-fill) | **REQ-114** |
-| Stage-3 iframe/embed capture + `cms_hint` promotion + iframe-innerText check | **REQ-115** |
+| **v2.1 three-axis labeling** (target shapes + confounder facets + location) + label migration + text-first detail pane | **BUILT (REQ-114)** |
+| Stage-3 iframe/embed capture + `cms_hint` promotion + iframe-innerText check | **BUILT (REQ-115)** |
+| **Facet-level per-detector scoring** (negative detectors vs. confounder facets) — accrues as re-tagging fills facets | **NEXT (harness follow-on)** |
 | Learned `LabelModel` combiner · hierarchical/vendor pooling · online-FDR drift · Stage-7/8 outcome feedback | **DEFERRED (scale endgame)** |
 
 ---
 
 ## Change log
 
+- **2026-07-01 — v2.1 labeling (REQ-114).** The label became a **three-axis object** (§4): target SHAPE
+  (7 shapes + `target_absent`/`unusable`) · confounder facets (multi) · location facets (buried+page-range,
+  needs-vision, where). `migrate_label_v21` moved all 440 labels (128 targets preserved; git = restore point).
+  Detail pane reordered **text-first** with a per-rep unique-times readout. Tier/decision logic unchanged
+  (tier-A precision/recall held 0.794/0.875, tier-D 0 targets); category-guess rose 0.32→0.49 (combiner
+  `target_absent` aligns with the migrated primaries). Stage 6 verified clean (everything reads `TARGET_LABELS`
+  dynamically; candidates/preview/verified-only all work on the migrated labels — grimp-confirmed blast radius).
 - **2026-07-01 — V2 (REQ-113/114/115).** Clean rewrite. Cascade → labeling-functions + combiner; the three
   measured V1 defects fixed (de-chrome max-evidence time signal; tier-B proximity requirement; suppress
   floor = no in-window times); new deterministic signals (footer/header times, heading-adjacent hours,
