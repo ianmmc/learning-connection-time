@@ -342,14 +342,24 @@ async function renderCenter(d) {
   const texts = reps.filter((r) => r.file_kind === "text" && r.usable);
   const emptyTexts = reps.filter((r) => r.file_kind === "text" && !r.usable);
 
-  // Visual first (so the eye lands on ground truth before possibly-lossy text).
-  visual.forEach((r) => {
-    const url = fileUrl(d, r.filename);
-    const body = r.file_kind === "pdf"
-      ? `<iframe src="${url}" title="${r.filename}"></iframe>`
-      : `<img src="${url}" alt="${r.filename}" loading="lazy" />`;
-    html += card(`${r.source} · ${r.filename}`, "", body);
+  // TEXT FIRST (REQ-114 v2.1): the council reads TEXT, so confirm the target appears in a text rep BEFORE
+  // the image can anchor you into "checking it off". Footer/header/nav segments first (the common hours
+  // spot); then the densest full text; then the rest — each annotated with what it uniquely adds (below).
+  const segRank = { "segment:footer": 0, "segment:header": 1, "segment:nav": 2, "segment:main": 3 };
+  const segs = texts.filter((r) => r.source.startsWith("segment:")).sort((a, b) => (segRank[a.source] ?? 9) - (segRank[b.source] ?? 9));
+  const fulls = texts.filter((r) => !r.source.startsWith("segment:")).sort((a, b) => (b.n_times || 0) - (a.n_times || 0));
+  const ordered = [...segs, ...fulls];
+  html += `<p class="text-first-note">Text first — the council reads text, so confirm the target is in at least one
+    <b>text</b> rep. Footer/header shown first (the common “Hours:” spot). If the target is <b>only</b> in the image/PDF below,
+    tick <b>needs vision</b>.</p>`;
+  ordered.forEach((r, i) => {
+    const openSeg = r.source.startsWith("segment:footer") || r.source.startsWith("segment:header");
+    const open = (openSeg || (segs.length === 0 && i === 0)) ? "open" : "";
+    html += `<details ${open} data-file="${r.filename}" data-src="${r.source}">
+      <summary><span class="rep-src">${r.source}</span><span class="rep-uniq" data-uniq="${r.filename}">·</span></summary>
+      <pre class="text" data-target="${r.filename}">loading…</pre></details>`;
   });
+  if (emptyTexts.length) html += `<div class="chip">${emptyTexts.length} below-bar/empty text rep(s) not shown</div>`;
 
   // Per-page n_times (handbook-harvest signal) if a multi-page PDF.
   if (s.pages && s.pages.length > 1) {
@@ -361,22 +371,59 @@ async function renderCenter(d) {
     html += card("Per-page time counts (handbook harvest)", meta, `<table class="pages-table">${rows}</table>`);
   }
 
-  // Text reps (best open). Content fetched lazily.
-  texts.sort((a, b) => (b.n_times || 0) - (a.n_times || 0));
-  for (let i = 0; i < texts.length; i++) {
-    const r = texts[i];
-    const open = i === 0 ? "open" : "";
-    html += `<details ${open} data-file="${r.filename}"><summary>${r.source} — ${r.n_times} times, ${r.n_chars} chars</summary>
-      <pre class="text" data-target="${r.filename}">loading…</pre></details>`;
-  }
-  if (emptyTexts.length) html += `<div class="chip">${emptyTexts.length} below-bar/empty text rep(s) not shown</div>`;
+  // VISUAL LAST — for confirming structure / catching an image-only target (→ needs vision).
+  visual.forEach((r) => {
+    const url = fileUrl(d, r.filename);
+    const body = r.file_kind === "pdf"
+      ? `<iframe src="${url}" title="${r.filename}"></iframe>`
+      : `<img src="${url}" alt="${r.filename}" loading="lazy" />`;
+    html += card(`${r.source} · ${r.filename}`, "image/PDF — confirm the target also appears in a text rep above", body);
+  });
 
   c.innerHTML = html;
   c.querySelectorAll("[data-go]").forEach((a) => a.onclick = (e) => { e.preventDefault(); selectRecord(a.dataset.go); });
-  // lazy-load text bodies
-  c.querySelectorAll("pre.text").forEach(async (pre) => {
+  // Lazy-load text bodies, then compute the per-rep SIGNAL-LEVEL "unique contribution" (times in this rep
+  // that the densest rep lacks) — so you never re-read a rep that adds nothing, but never miss one that does.
+  const bodies = {};
+  await Promise.all([...c.querySelectorAll("pre.text")].map(async (pre) => {
     const r = await fetch(fileUrl(d, pre.dataset.target));
-    pre.textContent = (await r.text()).slice(0, 20000) || "(empty)";
+    const t = await r.text();
+    bodies[pre.dataset.target] = t;
+    pre.textContent = t.slice(0, 20000) || "(empty)";
+  }));
+  annotateUniqueTimes(c, bodies, ordered);
+}
+
+// In-window (07:00–16:00) clock times in a text, as a set of canonical "h:mm(a/p)" strings.
+function inWindowTimes(text) {
+  const out = new Set();
+  const re = /\b(\d{1,2}):(\d{2})\s*([ap])?\.?m?\.?/gi;
+  let m;
+  while ((m = re.exec(text))) {
+    let h = +m[1]; const mm = +m[2]; const ap = (m[3] || "").toLowerCase();
+    if (ap === "p" && h !== 12) h += 12; else if (ap === "a" && h === 12) h = 0;
+    else if (!ap && h >= 1 && h <= 6) h += 12;
+    if (h > 23 || mm > 59) continue;
+    const mins = h * 60 + mm;
+    if (mins >= 420 && mins <= 960) out.add(`${+m[1]}:${m[2]}${ap ? ap + "m" : ""}`);
+  }
+  return out;
+}
+
+// Annotate each text rep with the in-window times it has that the DENSEST rep lacks (or "⊆ densest").
+function annotateUniqueTimes(c, bodies, ordered) {
+  const timeSets = {};
+  ordered.forEach((r) => { timeSets[r.filename] = inWindowTimes(bodies[r.filename] || ""); });
+  let best = null, bestN = -1;
+  ordered.forEach((r) => { const n = timeSets[r.filename].size; if (n > bestN) { bestN = n; best = r.filename; } });
+  ordered.forEach((r) => {
+    const el = c.querySelector(`.rep-uniq[data-uniq="${r.filename}"]`);
+    if (!el) return;
+    const mine = timeSets[r.filename], bestSet = timeSets[best] || new Set();
+    const uniq = [...mine].filter((t) => !bestSet.has(t));
+    if (r.filename === best) el.innerHTML = `<b>densest</b> · ${mine.size} in-window time(s)`;
+    else if (uniq.length) el.innerHTML = `<span class="uniq-hot">+${uniq.length} time(s) not in densest: ${uniq.slice(0, 6).join(", ")}</span>`;
+    else el.innerHTML = `<span class="uniq-sub">⊆ densest (nothing unique)</span>`;
   });
 }
 
