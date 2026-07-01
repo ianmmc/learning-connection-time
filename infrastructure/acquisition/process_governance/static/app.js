@@ -28,6 +28,22 @@ const FLAGS = [
 // extractor (pdftotext/camelot/tesseract) captured it -> this record needs vision at Stage 6/7.
 // Only meaningful when a Target-present label is chosen; sits next to the target shapes.
 const IMAGE_ONLY = ["target_image_only", "Target is in the image/PDF but missing from ALL text extractions — needs vision"];
+
+// ---- V2 facet questionnaire (REQ-114): tri-state facets mirroring the scoring DETECTORS, so each
+// human answer confirms/corrects a detector (the per-detector ground truth the harness scores). Each
+// facet is PRE-FILLED with the detector's own vote (yes if it fired) — labeling is confirm-or-correct.
+// `id` = facet key stored in facets_json; `det` = the detector name(s) whose firing means "yes".
+const FACET_Q = [
+  ["footer_hours",     "Hours block in the footer/header?",            ["lf_footer_hours"]],
+  ["student_start_end","Student start/end declared anywhere?",         ["lf_prose_pair", "lf_heading_hours", "lf_footer_hours"]],
+  ["schedule_table",   "A schedule table (periods/times)?",            ["lf_time_table"]],
+  ["explicit_minutes", "Explicit instructional minutes stated?",       ["lf_explicit_minutes"]],
+  ["news_feed",        "Dominated by a news / social feed?",           ["lf_news_feed"]],
+  ["calendar_widget",  "A calendar widget (not a schedule)?",          ["lf_calendar_widget"]],
+  ["office_hours",     "Times are office/staff, not students?",        ["lf_office_hours"]],
+  ["nonstandard_day",  "Non-standard-day (weather/remote) schedule?",  ["lf_nonstandard_day"]],
+];
+const FACET_WHERE = ["", "main body", "footer", "header", "table", "image/PDF", "feed post", "multiple"];
 const DEFS = {
   school_bell_schedule: "A table or list that breaks the school day into periods.",
   school_start_end_prose: "Sentence(s) declaring the start and end time of the school day.",
@@ -400,6 +416,26 @@ function renderPanel(d) {
   const flags = JSON.parse(lab.flags_json || "[]");
   if (d.duplicate_of && !flags.includes("duplicate")) flags.push("duplicate");
 
+  // V2 facet questionnaire (REQ-114): pre-fill each tri-state from the STORED answer if present, else
+  // from the detector's vote (yes if its mapped detector fired). `fired` = the detectors that fired here.
+  const savedFacets = JSON.parse(lab.facets_json || "{}");
+  const fired = new Set(((d.signals && d.signals.detectors) || []).map((v) => v.name));
+  const facetRows = FACET_Q.map(([id, q, dets]) => {
+    const guess = dets.some((n) => fired.has(n)) ? "yes" : "no";
+    const cur = savedFacets[id] || (id in savedFacets ? savedFacets[id] : ("_" + guess));  // "_yes"/"_no" = unconfirmed guess
+    const val = cur.replace("_", ""), confirmed = !cur.startsWith("_");
+    const opt = (v, t) => `<label class="tri ${val === v ? "on " + v : ""} ${confirmed ? "" : "guessy"}">
+        <input type="radio" name="facet_${id}" value="${v}" ${val === v ? "checked" : ""}/><span>${t}</span></label>`;
+    return `<div class="facet-row" data-facet="${id}"><span class="facet-q">${q}${confirmed ? "" : " <em class='sug'>· suggested</em>"}</span>
+        <span class="tri-group">${opt("yes", "yes")}${opt("no", "no")}${opt("unsure", "?")}</span></div>`;
+  }).join("");
+  const whereSel = `<select id="facetWhere" class="facet-where">${
+    FACET_WHERE.map((w) => `<option value="${w}" ${savedFacets._where === w ? "selected" : ""}>${w || "where? (optional)"}</option>`).join("")}</select>`;
+  const pageInput = `<input id="facetPage" class="facet-page" type="text" inputmode="numeric" placeholder="handbook page(s)"
+      value="${savedFacets._pages || ""}"/>`;
+  const facetSection = `<div class="panel-section facets"><h3>Facets <span class="hint">(confirm or correct — pre-filled from the detectors)</span></h3>
+      ${facetRows}<div class="facet-extra">${whereSel}${pageInput}</div></div>`;
+
   const radios = (list) => list.map(([v, t]) =>
     `<label class="radio-row"><input type="radio" name="primary" value="${v}" ${lab.primary_label === v ? "checked" : ""}/>
      <span>${t}</span></label>`).join("");
@@ -421,11 +457,16 @@ function renderPanel(d) {
       <textarea class="note" placeholder="anything worth recording…">${lab.note || ""}</textarea>
       <div class="btn-row"><button id="unsureBtn" class="btn btn-secondary">Mark reviewed — unsure</button></div>
       <div id="guess" class="guess"></div>
-    </div>`;
+    </div>
+    ${facetSection}`;
 
   $("#panel").querySelectorAll('input[name="primary"]').forEach((el) => el.onchange = () => save("labeled"));
   $("#panel").querySelectorAll('input[name="flag"]').forEach((el) => el.onchange = () => save(currentStatus()));
   $("#panel .note").onblur = () => save(currentStatus());
+  // facet tri-states + where/page: any change saves (confirms the guess -> a real answer).
+  $("#panel").querySelectorAll('.facet-row input[type="radio"]').forEach((el) => el.onchange = () => save(currentStatus()));
+  const fw = $("#facetWhere"); if (fw) fw.onchange = () => save(currentStatus());
+  const fp = $("#facetPage"); if (fp) fp.onblur = () => save(currentStatus());
   $("#unsureBtn").onclick = () => save("unsure");
   $("#panel").querySelectorAll("[data-go]").forEach((a) => a.onclick = (e) => { e.preventDefault(); selectRecord(a.dataset.go); });
   $("#panel").querySelectorAll("[data-split]").forEach((b) => b.onclick = (e) => { e.preventDefault(); splitRecord(b.dataset.split); });
@@ -493,17 +534,31 @@ function renderGuess(d, status) {
             : `<span class="guess-hidden">(no primary label chosen)</span>`);
 }
 
+function collectFacets() {
+  // Each tri-state saves its confirmed value (yes/no/unsure). Unanswered facets are simply omitted.
+  const facets = {};
+  for (const [id] of FACET_Q) {
+    const sel = $(`input[name="facet_${id}"]:checked`);
+    if (sel) facets[id] = sel.value;
+  }
+  const w = $("#facetWhere"); if (w && w.value) facets._where = w.value;
+  const p = $("#facetPage"); if (p && p.value.trim()) facets._pages = p.value.trim();
+  return facets;
+}
+
 async function save(status) {
   if (!CURRENT) return;
   const primary = $('input[name="primary"]:checked')?.value || null;
   const flags = [...$("#panel").querySelectorAll('input[name="flag"]:checked')].map((e) => e.value);
   const note = $("#panel .note").value;
+  const facets = collectFacets();
   const finalStatus = status === "unsure" ? "unsure" : (primary ? "labeled" : "unlabeled");
   await fetch(`/api/label/${CURRENT}`, {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ primary_label: primary, flags, note, status: finalStatus }),
+    body: JSON.stringify({ primary_label: primary, flags, facets, note, status: finalStatus }),
   });
-  DATA.label = { primary_label: primary, flags_json: JSON.stringify(flags), note, status: finalStatus };
+  DATA.label = { primary_label: primary, flags_json: JSON.stringify(flags),
+                 facets_json: JSON.stringify(facets), note, status: finalStatus };
   flash();
   renderGuess(DATA, finalStatus);
   // update tree dot + progress

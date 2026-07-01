@@ -36,7 +36,7 @@ QUEUE_DIR = paths.QUEUE_DIR                   # Stage 1 batch_*.json (targeting 
 # regenerable cache; this JSON is what survives DB loss and lives in git (gitignore re-includes
 # it). Written on every label save (server) + at the end of each ingest; re-imported on ingest.
 LABELS_JSON = paths.LABELS_JSON
-LABEL_COLS = ["rec_key", "primary_label", "flags_json", "note", "status", "updated_at"]
+LABEL_COLS = ["rec_key", "primary_label", "flags_json", "facets_json", "note", "status", "updated_at"]
 # Durable backup for the OTHER precious human signal: cluster SPLITS (a record the reviewer
 # pulled out of an auto-cluster because it's genuinely unique). Like labels, survives DB wipe.
 CLUSTER_SPLITS_JSON = paths.CLUSTER_SPLITS_JSON
@@ -753,10 +753,11 @@ def import_labels(s, src: Path = LABELS_JSON) -> int:
                         {"rk": d["rec_key"]}).fetchone()
         if not cur or cur[0] != "unlabeled":
             continue
-        s.execute(text("UPDATE label SET primary_label=:pl, flags_json=:fj, note=:nt, "
+        s.execute(text("UPDATE label SET primary_label=:pl, flags_json=:fj, facets_json=:fac, note=:nt, "
                        "status=:st, updated_at=:ua WHERE rec_key=:rk"),
-                  {"pl": d.get("primary_label"), "fj": d.get("flags_json"), "nt": d.get("note"),
-                   "st": d.get("status", "labeled"), "ua": d.get("updated_at"), "rk": d["rec_key"]})
+                  {"pl": d.get("primary_label"), "fj": d.get("flags_json"), "fac": d.get("facets_json"),
+                   "nt": d.get("note"), "st": d.get("status", "labeled"), "ua": d.get("updated_at"),
+                   "rk": d["rec_key"]})
         n += 1
     return n
 

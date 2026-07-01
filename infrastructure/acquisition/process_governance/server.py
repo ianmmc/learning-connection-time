@@ -117,11 +117,12 @@ def record(rec_key: str):
 
 
 UPSERT_LABEL = text(
-    """INSERT INTO label (rec_key, primary_label, flags_json, note, status, updated_at)
-       VALUES (:rec_key, :primary_label, :flags_json, :note, :status, :updated_at)
+    """INSERT INTO label (rec_key, primary_label, flags_json, facets_json, note, status, updated_at)
+       VALUES (:rec_key, :primary_label, :flags_json, :facets_json, :note, :status, :updated_at)
        ON CONFLICT (rec_key) DO UPDATE SET
          primary_label=excluded.primary_label, flags_json=excluded.flags_json,
-         note=excluded.note, status=excluded.status, updated_at=excluded.updated_at""")
+         facets_json=excluded.facets_json, note=excluded.note, status=excluded.status,
+         updated_at=excluded.updated_at""")
 
 
 @app.post("/api/label/{rec_key}")
@@ -133,8 +134,12 @@ async def save_label(rec_key: str, payload: dict):
             raise HTTPException(404, "no such record")
         from datetime import datetime, timezone
         ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        # facets (REQ-114): the V2 questionnaire — a dict of detector-mirroring tri-state answers +
+        # structured where + harvest_pages_labeled. Stored as JSON; cascades to cluster members like the label.
         vals = {"primary_label": payload.get("primary_label"),
-                "flags_json": json.dumps(payload.get("flags", [])), "note": payload.get("note", ""),
+                "flags_json": json.dumps(payload.get("flags", [])),
+                "facets_json": json.dumps(payload.get("facets")) if payload.get("facets") is not None else None,
+                "note": payload.get("note", ""),
                 "status": payload.get("status", "labeled"), "updated_at": ts}
         con.execute(UPSERT_LABEL, {"rec_key": rec_key, **vals})
         # Cluster cascade: labeling the REPRESENTATIVE applies the same label to its (unsplit)

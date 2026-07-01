@@ -25,6 +25,9 @@ class Label(Base):
     rec_key: Mapped[str] = mapped_column(String, primary_key=True)
     primary_label: Mapped[str | None] = mapped_column(String)
     flags_json: Mapped[str | None] = mapped_column(String)
+    # facets_json (REQ-114): the V2 facet questionnaire — detector-mirroring tri-state answers + a structured
+    # 'where' + harvest_pages_labeled. Additive to primary_label; precious + JSON-backed like the rest.
+    facets_json: Mapped[str | None] = mapped_column(String)
     note: Mapped[str | None] = mapped_column(String)
     # server_default mirrors the original sqlite `DEFAULT 'unlabeled'` so the ingest's raw
     # `INSERT INTO label (rec_key)` gets the default at the DB (not just the ORM) — REQ-103.

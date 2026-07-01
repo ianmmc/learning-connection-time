@@ -131,3 +131,19 @@ def test_saved_view_crud(client):
     assert len(views) == 1 and views[0]["config"]["sort"] == "name"
     client.delete(f"/api/views/{views[0]['id']}")
     assert client.get("/api/views", params={"actor": "zz-test"}).json() == []
+
+
+def test_facets_json_column_and_roundtrip(client):
+    """REQ-114: init_precious_schema adds the facets_json column (additive migration) and a label
+    round-trips the V2 facet questionnaire (detector-mirroring answers + structured where/page)."""
+    with gdb.session_scope() as con:
+        cols = [r[0] for r in con.execute(text(
+            "SELECT column_name FROM information_schema.columns WHERE table_name='label'"))]
+        assert "facets_json" in cols            # the additive migration applied
+        import json
+        facets = {"schedule_table": "yes", "news_feed": "no", "_where": "footer", "_pages": "4"}
+        con.execute(text("UPDATE label SET facets_json=:f WHERE rec_key=:rk"),
+                    {"f": json.dumps(facets), "rk": f"{DL}:r"})
+        back = con.execute(text("SELECT facets_json FROM label WHERE rec_key=:rk"),
+                           {"rk": f"{DL}:r"}).scalar()
+        assert json.loads(back) == facets
