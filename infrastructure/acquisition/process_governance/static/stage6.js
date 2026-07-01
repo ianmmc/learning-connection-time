@@ -14,6 +14,8 @@
   const SELECTED = new Set();
   let CANDIDATES = [];                                   // all loaded candidates (client-side filtering)
   const FILTER = { q: "", topology: "", sendOnly: false, heldOnly: false };
+  let COUNCILS = [];                                     // council registry (override <select> options)
+  const OVERRIDES = {};                                  // "<rec_key>::<file>" -> council_id (gate@6 manual override)
 
   async function api(url, opts) {
     const r = await fetch(url, opts);
@@ -22,10 +24,14 @@
   }
 
   window.initStage6 = function () {
-    if (!inited) { inited = true; renderShell(); }
+    if (!inited) { inited = true; renderShell(); loadCouncils(); }
     loadCandidates();
     loadHandoffs();
   };
+
+  async function loadCouncils() {
+    try { COUNCILS = await api("/api/handoff/councils"); } catch (_) { COUNCILS = []; }
+  }
 
   function renderShell() {
     $g("#stage6view").innerHTML = `
@@ -108,16 +114,21 @@
     if (!ids.length) { det.innerHTML = `<div class="empty">Select at least one district on the left.</div>`; return; }
     det.innerHTML = `<div class="empty">Building package…</div>`;
     let pkg;
-    try { pkg = await api("/api/handoff/preview", postJSON({ district_ids: ids })); }
+    try { pkg = await api("/api/handoff/preview", postJSON({ district_ids: ids, overrides: OVERRIDES })); }
     catch (e) { det.innerHTML = `<div class="empty err">Preview failed: ${esc(e.message)}</div>`; return; }
     renderPackage(pkg);
   }
 
   function repRow(did, recKey, rep) {
-    return `<div class="s6-rep s6-rep-click" data-did="${esc(did)}" data-reckey="${esc(recKey)}"
-         data-file="${esc(rep.file)}" data-kind="${esc(rep.kind)}" title="click to inspect this representation">
+    const key = `${recKey}::${rep.file}`;
+    const current = rep.councils[0] || "";
+    const opts = COUNCILS.map((c) => `<option value="${esc(c.id)}" ${c.id === current ? "selected" : ""}>${esc(c.id)}</option>`).join("");
+    // the file text is the inspect click target; the <select> is the council override (stops propagation)
+    return `<div class="s6-rep" data-did="${esc(did)}">
         <span class="s6-kind">${esc(rep.kind)}</span>
-        <code>${esc(rep.file)}</code> → <b>${rep.councils.map(esc).join(", ")}</b>
+        <code class="s6-rep-click" data-did="${esc(did)}" data-reckey="${esc(recKey)}" data-file="${esc(rep.file)}"
+              data-kind="${esc(rep.kind)}" title="click to inspect this representation">${esc(rep.file)}</code> →
+        <select class="s6-council-sel" data-key="${esc(key)}" title="council override">${opts}</select>
         ${rep.fidelity_suspect ? `<span class="badge badge-warn">fidelity-suspect</span>` : ""}
         <span class="s6-usd">${usd(rep.est_usd)}</span></div>`;
   }
@@ -148,6 +159,9 @@
     det.querySelectorAll(".s6-remove").forEach((b) => { b.onclick = () => removeDistrict(b.dataset.did); });
     det.querySelectorAll(".s6-rep-click").forEach((r) => {
       r.onclick = () => openInspect(r.dataset.did, r.dataset.reckey, r.dataset.file, r.dataset.kind);
+    });
+    det.querySelectorAll(".s6-council-sel").forEach((sel) => {
+      sel.onchange = () => { OVERRIDES[sel.dataset.key] = sel.value; preview(); };   // re-price with the override
     });
   }
 
@@ -182,7 +196,7 @@
     if (!ids.length) return;
     btn.disabled = true; btn.textContent = "Freezing…";
     let res;
-    try { res = await api("/api/handoff/dispatch", postJSON({ district_ids: ids, actor: "ian" })); }
+    try { res = await api("/api/handoff/dispatch", postJSON({ district_ids: ids, actor: "ian", overrides: OVERRIDES })); }
     catch (e) { btn.disabled = false; btn.textContent = "Approve & freeze dispatch (gate@6)"; alert("Dispatch failed: " + e.message); return; }
     $g("#s6-detail").innerHTML = `<div class="s6-summary">
         <h3>✓ Dispatch frozen &amp; recorded</h3>

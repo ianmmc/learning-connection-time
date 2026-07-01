@@ -47,9 +47,10 @@ def district_release_input(session, district_id: str):
     return district, records
 
 
-def build_handoff_package(session, district_ids, councils=None, cost_model=None) -> dict:
+def build_handoff_package(session, district_ids, councils=None, cost_model=None, overrides=None) -> dict:
     """Assemble the in-memory handoff package for `district_ids` from the DB release decision.
-    Pure stage6 logic does the routing/pricing; this layer only supplies the data."""
+    Pure stage6 logic does the routing/pricing; this layer only supplies the data. `overrides` =
+    gate@6 per-rep council overrides ({"<rec_key>::<file>": council_id})."""
     councils = councils or C6.load_configs()
     cost_model = cost_model or COST6.load_cost_model()
     districts = []
@@ -57,7 +58,7 @@ def build_handoff_package(session, district_ids, councils=None, cost_model=None)
         di = district_release_input(session, did)
         if di:
             districts.append(di)
-    return PKG6.assemble_package(districts, councils, cost_model)
+    return PKG6.assemble_package(districts, councils, cost_model, overrides)
 
 
 # ----------------------------- recording a dispatch (DB index + state) -----------------------------
@@ -109,7 +110,7 @@ def record_dispatch(session, doc: dict, path, actor: str = "human", metas: dict 
 
 
 def dispatch_handoff(session, district_ids, created_by: str = "human", root=None,
-                     councils=None, cost_model=None):
+                     councils=None, cost_model=None, overrides=None):
     """Freeze + record a dispatch (up to — not including — the paid Stage-7 calls): build the package
     from the DB release decision, freeze it, RECORD the index row + state events (atomic on `session`),
     then write the immutable file LAST — so any DB failure rolls back cleanly with no orphaned record,
@@ -125,7 +126,7 @@ def dispatch_handoff(session, district_ids, created_by: str = "human", root=None
         districts_input.append(di)
         metas[did] = meta
         fingerprints[did] = REL.district_fingerprints(session, did)
-    package = PKG6.assemble_package(districts_input, councils, cost_model)
+    package = PKG6.assemble_package(districts_input, councils, cost_model, overrides)
     doc = HND.freeze(package, councils, fingerprints, created_by=created_by)
     path = (Path(root) if root else HND.DEFAULT_ROOT) / HND.handoff_filename(doc)
     record_dispatch(session, doc, path, actor=created_by, metas=metas)

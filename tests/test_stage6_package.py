@@ -81,3 +81,20 @@ def test_package_totals_across_districts_and_carries_provenance():
     assert math.isclose(pkg["cost"]["total_usd"], CLEAN_TEXT + IMAGE, rel_tol=1e-9)
     assert pkg["cost"]["provenance"] == "bootstrap"
     assert "generated_at" in pkg
+
+
+def test_override_routes_a_rep_to_the_chosen_council():
+    # gate@6 manual override: a text rep normally -> low-cost-text; override sends it to image.
+    rec = _rec("a", "send", [{"file": "t.txt", "kind": "text", "n_chars": 1000, "n_times": 5}],
+               signals={"visual_text_gap": False})
+    overrides = {"a::t.txt": "image"}
+    rep = package.assemble_record(rec, COUNCILS, COST_MODEL, overrides)["reps"][0]
+    assert rep["councils"] == ["image"]
+    assert rep["route_reason"] == "override:image"
+    assert math.isclose(rep["est_usd"], IMAGE, rel_tol=1e-9)
+
+
+def test_unknown_override_council_is_ignored():
+    rec = _rec("a", "send", [{"file": "t.txt", "kind": "text", "n_chars": 1000}])
+    rep = package.assemble_record(rec, COUNCILS, COST_MODEL, {"a::t.txt": "no-such"})["reps"][0]
+    assert rep["councils"] == ["low-cost-text"]   # falls back to auto-routing

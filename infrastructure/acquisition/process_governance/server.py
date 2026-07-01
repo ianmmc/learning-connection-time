@@ -903,10 +903,12 @@ def handoff_candidates():
 
 @app.post("/api/handoff/preview")
 async def handoff_preview(payload: dict):
-    """Build the in-memory handoff package for the selected districts (routed + priced) — no persist."""
+    """Build the in-memory handoff package for the selected districts (routed + priced) — no persist.
+    `overrides` = gate@6 per-rep council overrides ({"<rec_key>::<file>": council_id})."""
     ids = payload.get("district_ids") or []
+    overrides = payload.get("overrides") or {}
     with gdb.session_scope() as con:
-        return H6.build_handoff_package(con, ids)
+        return H6.build_handoff_package(con, ids, overrides=overrides)
 
 
 @app.post("/api/handoff/dispatch")
@@ -915,11 +917,12 @@ async def handoff_dispatch(payload: dict):
     `dispatched` state_events). Stops at the seam — no paid OpenRouter calls (that's Stage 7)."""
     ids = payload.get("district_ids") or []
     actor = payload.get("actor", "ian")
+    overrides = payload.get("overrides") or {}
     if not ids:
         raise HTTPException(400, "no districts selected")
     try:
         with gdb.session_scope() as con:
-            doc, path = H6.dispatch_handoff(con, ids, created_by=actor)
+            doc, path = H6.dispatch_handoff(con, ids, created_by=actor, overrides=overrides)
     except FileExistsError:
         raise HTTPException(409, "an identical handoff was just dispatched (same content within the "
                                  "same second) — the prior one stands; retry in a moment if intended")

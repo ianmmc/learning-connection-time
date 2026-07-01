@@ -18,15 +18,23 @@ def _now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def assemble_record(rec: dict, councils: dict, cost_model: dict) -> dict:
-    """Route + price one release record's send reps. A non-send record returns with `reps: []`."""
+def assemble_record(rec: dict, councils: dict, cost_model: dict, overrides: dict = None) -> dict:
+    """Route + price one release record's send reps. A non-send record returns with `reps: []`.
+    `overrides` (gate@6 manual override): `{"<rec_key>::<file>": council_id}` — a rep whose key is
+    overridden goes to the chosen council instead of the auto-routed one (fidelity flag recomputed)."""
+    overrides = overrides or {}
     out = {"rec_key": rec.get("rec_key"), "url": rec.get("url"),
            "decision": rec.get("decision"), "reason": rec.get("reason"), "reps": []}
     if rec.get("decision") != "send":
         return out
     signals = rec.get("signals") or {}
     for se in rec.get("send", []) or []:
-        r = routing.route(se, signals, councils)   # councils = id->config registry (carries input_kinds)
+        ov = overrides.get(f"{rec.get('rec_key')}::{se.get('file')}")
+        if ov and ov in councils:
+            r = {"councils": [ov], "fidelity_suspect": routing.is_low_fidelity(signals),
+                 "reason": f"override:{ov}"}
+        else:
+            r = routing.route(se, signals, councils)   # councils = id->config registry (carries input_kinds)
         est = sum(cost.estimate_council_cost(se, councils[cid], cost_model)
                   for cid in r["councils"] if cid in councils)
         out["reps"].append({
@@ -36,9 +44,9 @@ def assemble_record(rec: dict, councils: dict, cost_model: dict) -> dict:
     return out
 
 
-def assemble_district(district: dict, records: list, councils: dict, cost_model: dict) -> dict:
+def assemble_district(district: dict, records: list, councils: dict, cost_model: dict, overrides: dict = None) -> dict:
     """One district block: every canonical record routed/priced, plus send-rep count + cost rollup."""
-    recs = [assemble_record(r, councils, cost_model) for r in records]
+    recs = [assemble_record(r, councils, cost_model, overrides) for r in records]
     n_reps = sum(len(r["reps"]) for r in recs)
     est = sum(rep["est_usd"] for r in recs for rep in r["reps"])
     return {"district_id": district.get("district_id"), "name": district.get("name"),
@@ -46,10 +54,10 @@ def assemble_district(district: dict, records: list, councils: dict, cost_model:
             "records": recs, "n_send_reps": n_reps, "est_usd": est}
 
 
-def assemble_package(districts: list, councils: dict, cost_model: dict) -> dict:
+def assemble_package(districts: list, councils: dict, cost_model: dict, overrides: dict = None) -> dict:
     """The full in-memory handoff package over `districts` = [(district_meta, records), ...].
     Returns the district blocks + a total cost rollup carrying the cost model's provenance."""
-    blocks = [assemble_district(d, recs, councils, cost_model) for d, recs in districts]
+    blocks = [assemble_district(d, recs, councils, cost_model, overrides) for d, recs in districts]
     total = sum(b["est_usd"] for b in blocks)
     n_reps = sum(b["n_send_reps"] for b in blocks)
     return {"generated_at": _now(), "districts": blocks,
