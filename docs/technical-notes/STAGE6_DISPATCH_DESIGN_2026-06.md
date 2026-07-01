@@ -28,10 +28,18 @@ slice-by-slice; **~63 tests** (incl. govdb Postgres) + a live end-to-end dispatc
 | cost estimator | `stage6_handoff/cost.py` + `common/config/council_cost_model.json` | per-council $ = voters + escalation·judge; reads a config-as-data cost model with `provenance`. Ships a labeled **bootstrap** (flat per-call); the token×**live-OpenRouter-price** split is designed (§3C), not yet wired |
 | package assembly | `stage6_handoff/package.py` | release decision → routed + priced in-memory dispatch package (pure) |
 | release→routing bridge | `process_governance/stage6_dispatch.py` | reads the DB release decision (`release.load_district_records`/`decide`), enriches reps with size signals, assembles; the one module that imports **both** stage5 + stage6 (the §12 independence contract) |
-| immutable artifact | `stage6_handoff/handoff.py` | `handoff_<hash>_<ts>.json` under `data/acquisition/handoffs/`; a **price-independent** content-identity hash; `write()` refuses to overwrite |
+| immutable artifact | `stage6_handoff/handoff.py` | `handoff_<hash>_<ts>.json` under `data/acquisition/handoffs/`; a **price-independent** content-identity hash (which also folds in the `verified_only` mode, below); `write()` refuses to overwrite |
 | dispatch record | `stage6_handoff/models.py` (precious `handoff` table) + `stage6_dispatch.record_dispatch` | the index row + a per-district `dispatched` gate@6 `state_event`, recorded **atomically on one session** (current_state is a view); the file is written **last** so a DB failure rolls back cleanly |
 | request assembly (the seam) | `stage6_handoff/prompts.py` + `requests.py` | the ported extraction prompt (reads TIMES only, REQ-054) + a vision variant; `plan_requests` (the first-pass voter calls; judge deferred to Stage 7) + `build_request` (materialize) — **stops here; the paid POST is Stage 7** |
-| gate@6 console | `process_governance/server.py` (`/api/handoff/{candidates,preview,dispatch}`, `/api/handoffs`) + `static/stage6.js` | pick send-eligible districts → preview the routed/priced package → **Approve & freeze (gate@6)** + a recent-dispatches list |
+| gate@6 console | `process_governance/server.py` (`/api/handoff/{candidates,councils,preview,dispatch,inspect}`, `/api/handoffs`) + `static/stage6.js` | pick send-eligible districts (each showing **n_send / n_verified / n_hold**) → preview the routed/priced package → **Approve & freeze (gate@6)**. Controls: left-pane filters (name/state/topology · has-send · has-held), the **verified-only** mode (§3E), per-rep **council override** (`/councils`), click-to-**inspect** a representation (`/inspect`), remove-a-district, + a recent-dispatches list |
+
+**The send set (the 5/6 seam — tier-gated, `stage5_filter/release.decide`).** A canonical record is **send** if it
+carries a human **TARGET label**, or is unlabeled **tier-A** (`auto:tier-A` — the confident auto-dispatch);
+unlabeled **tier-B/C** are **`hold`** (a *third* decision — a maybe-target awaiting a gate@5 label, surfaced as
+`n_hold` / "held for label"), and tier-D / labeled-non-target are **reject**. Handbooks send the materialized
+**`harvest_slice`** (the high-signal `harvest_pages`, ~1–4 pp — built at Stage-5 ingest), not the whole PDF.
+**Verified-only mode** (a gate@6 toggle — §3E) narrows the send set to **labeled targets only**, holding the
+speculative tier-A auto-sends, for building a manually-verified, training-grade corpus.
 
 **The seam:** everything needed to POST is assembled here; **Stage 7** makes the paid call, runs the
 judge-on-disagreement loop, and the "request more evidence" back-edges (§3F). **Deferred (own tracks):**
@@ -383,9 +391,10 @@ clearly-labeled bootstrap until then).
 `handoff_<hash>_<timestamp>.json` (immutable), organized by district for review but **assigned per
 representation** (§3B): `districts[]` → per district its sent reps, **each rep carrying its routed council
 config** (a rep may name more than one council — the many-to-many mapping) + frozen `(config,labels,data)`
-fingerprints; the set of council configs used; total cost estimate; created_at. The freeze is what keeps
-"what we sent on date X" recoverable across the re-extract / request-more loops, even after the DB's release
-decision later regenerates.
+fingerprints; the set of council configs used; total cost estimate; created_at; the **`verified_only`** mode
+flag (§3E, **part of the identity hash** — a training-grade dispatch is a distinct artifact from a default one
+over the same reps). The freeze is what keeps "what we sent on date X" recoverable across the re-extract /
+request-more loops, even after the DB's release decision later regenerates.
 - **OPEN:** how to represent the rep→council fan-out compactly when several reps share a config (a config
   table + per-rep references vs. inlined configs).
 
@@ -393,6 +402,14 @@ decision later regenerates.
 - **manual:** review the package, assigned configs, cost; override config + representation; approve dispatch.
 - **auto:** auto-assign (cascade) + dispatch within budget; **auto-with-confidence-escalation** (escalate
   or flag on no-consensus — the same pattern confirmed for Stage 5 and Stage 8), never silent on low confidence.
+- **verified-only (training-grade dispatch — BUILT, 2026-06-30):** a manual-mode toggle that dispatches
+  **only human-labeled target** reps, downgrading the speculative unlabeled tier-A auto-sends to `hold`
+  (traceable, not dropped). For building a **manually-verified corpus** (future accuracy GT / training data —
+  ties to §3C C.6's GT-alignment). Filtered in the app-layer bridge (`stage6_dispatch.district_release_input`),
+  **not** in `release.decide` — so `filtered.json` is unaffected (a dispatch-time choice, not a change to the
+  release rule); the mode is **frozen into the dispatch identity** (`verified_only` in the hash — §3D). The
+  candidate list carries **`n_verified`** (the labeled-target subset of `n_send`) so the console shows, per
+  district, what a verified-only dispatch would send.
 - **re-dispatch (story 58):** a district/URL already extracted, re-sent to a *different* config → a new
   immutable dispatch file; the prior one is untouched (history preserved).
 

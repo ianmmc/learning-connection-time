@@ -286,7 +286,10 @@ thousands of dirs at scale. *(Stage 6's exact read-path + the dispatch freeze ar
 dispatch is a new file; never regenerated. **Freezes** each district's `filtered.json` content (or its
 fingerprints) *at dispatch time*, so a later regeneration (retune / re-discovery) can't silently rewrite
 history — required by the request-more-evidence loop and for "what did we actually send on date X." Carries
-the council config (which models) + total cost estimate. A `dispatched` `state_event` references its hash.
+the council config (which models) + total cost estimate + the **`verified_only`** dispatch-mode flag (a
+gate@6 toggle for a labeled-targets-only, training-grade dispatch — folded into the identity hash so a
+training-grade dispatch never collides with a default one). A `dispatched` `state_event` references its hash.
+*(As-built detail: `STAGE6_DISPATCH_DESIGN_2026-06.md` §0/§3D/§3E.)*
 
 ---
 
@@ -695,7 +698,7 @@ Stage-9 DB write are ungated:
 |---|---|---|---|
 | **gate@1** | 1 Queue | approve the batch (right districts/schools/bands) | CP-A |
 | **gate@5** | 5 Filter | per-URL representation review (labeling) | CP-B |
-| **gate@6** | 6 Dispatch | approve routing/dispatch (which reps → which council config) | *new* |
+| **gate@6** | 6 Dispatch | approve routing/dispatch (which reps → which council config); optional **verified-only** (labeled-targets-only) mode | *new* |
 | **gate@7** | 7 Extract | review council requests/recommendations | *new* |
 | **gate@8** | 8 Aggregate | review per-band results; override needs a reason | *effective CP-C* |
 
