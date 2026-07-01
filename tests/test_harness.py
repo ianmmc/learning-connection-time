@@ -48,11 +48,14 @@ def test_empty_inputs_dont_crash():
 def _seed_mini(sess):
     """The three tables harness.score/fingerprints read, as CONNECTION-SCOPED TEMP tables on the
     governance session (auto-dropped at close — never touches real governance data)."""
-    sess.execute(text("CREATE TEMP TABLE record (rec_key text, tier text, category_hypothesis text)"))
+    sess.execute(text("CREATE TEMP TABLE record (rec_key text, tier text, category_hypothesis text, signals_json text)"))
     sess.execute(text("CREATE TEMP TABLE label (rec_key text, primary_label text, status text, flags_json text)"))
     sess.execute(text("""CREATE TEMP TABLE district (district_id text, name text, guessed_topology text,
                                labeled_topology text, nces_school_count integer)"""))
-    sess.execute(text("INSERT INTO record VALUES ('d:1','A','school_bell_schedule'),('d:2','D','none')"))
+    # signals_json carries the V2 fired detectors (REQ-113) the harness reads for per-detector diagnostics.
+    sess.execute(text("""INSERT INTO record VALUES
+        ('d:1','A','school_bell_schedule','{\"detectors\": [{\"name\": \"lf_time_table\"}]}'),
+        ('d:2','D','none','{\"detectors\": [{\"name\": \"lf_no_times\"}]}')"""))
     sess.execute(text("""INSERT INTO label VALUES ('d:1','school_bell_schedule','labeled','[]'),
                                  ('d:2','none','labeled','[]')"""))
     sess.execute(text("INSERT INTO district VALUES ('d','D','per_school','per_school',3)"))
