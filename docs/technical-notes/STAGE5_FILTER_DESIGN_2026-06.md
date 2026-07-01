@@ -166,8 +166,12 @@ The **primary-label taxonomy is retained** (targets: `school_bell_schedule`, `sc
 `district_hub_schedule`, `explicit_instructional_time`, `nonstandard_format`; non-targets: `board_schedule`,
 `sports_schedule`, `academic_calendar`, `community_calendar`, `transportation_schedule`, `embedded_feed`,
 `other_schedule`, `none`, `unusable`) — the facets are **additive**, not a reset (the 440 existing labels +
-202 notes stay valid evidence; user decision 2026-07-01). Facets backfill deterministically from existing
-signals where a detector already answers them.
+202 notes stay valid evidence; user decision 2026-07-01). The facet checklist is **pre-filled at render
+time** from the current detector votes (shown "suggested" until confirmed) so labeling is confirm-or-correct,
+not blank-slate — but a facet is **written to `facets_json` only when the human confirms it**. We deliberately
+do NOT persist the detector guesses as facets: the facets are the ground truth the harness scores each
+detector against (§5), so auto-seeding "facet := detector vote" would make agreement trivially 100% and
+destroy the measurement. So on existing labels the facets start empty and accrue through gate@5 review.
 
 ---
 

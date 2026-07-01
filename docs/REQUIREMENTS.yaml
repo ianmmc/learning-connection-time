@@ -2656,7 +2656,7 @@ requirements:
     acceptance_criteria:
       - the label schema gains detector-mirroring tri-state facets + structured where + harvest_pages_labeled, precious/JSON-backed like existing labels, surviving re-ingest
       - the center/right labeling pane renders the facet checklist pre-filled with the current detector votes; saving persists facets + primary label + note atomically
-      - facets backfill deterministically from existing detector outputs where a detector already answers them; no human re-labeling required to seed
+      - the facet checklist is PRE-FILLED at render from the current detector votes (confirm-or-correct, shown "suggested"), but a facet is written to facets_json only on human confirmation — detector guesses are NOT auto-persisted (that would make facet==detector trivially and destroy the per-detector accuracy measurement)
       - UI self-verified with Playwright before shipping (per the standing 'don't ship visuals blind' lesson)
     created: "2026-07-01T00:00:00Z"
     updated: "2026-07-01T00:00:00Z"
