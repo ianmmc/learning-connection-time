@@ -12,6 +12,8 @@
   const postJSON = (b) => ({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) });
   let inited = false;
   const SELECTED = new Set();
+  let CANDIDATES = [];                                   // all loaded candidates (client-side filtering)
+  const FILTER = { q: "", topology: "", sendOnly: false, heldOnly: false };
 
   async function api(url, opts) {
     const r = await fetch(url, opts);
@@ -29,23 +31,62 @@
     $g("#stage6view").innerHTML = `
       <nav class="col col-tree q-left" aria-label="Dispatch candidates">
         <div class="q-left-head"><h3>Dispatch</h3><button id="s6-preview" class="btn btn-secondary">Preview →</button></div>
+        <div id="s6-filters" class="s6-filters"></div>
         <div id="s6-list" class="q-list"><div class="empty">Loading…</div></div>
         <div class="q-left-head"><h3>Recent dispatches</h3></div>
         <div id="s6-handoffs" class="q-list"><div class="empty">—</div></div>
       </nav>
-      <section id="s6-detail" class="col col-center"><div class="empty">Select districts on the left, then <b>Preview</b> to build a dispatch package.</div></section>`;
+      <section id="s6-detail" class="col col-center"><div class="empty">Select districts on the left, then <b>Preview</b> to build a dispatch package.</div></section>
+      <div id="s6-lightbox" class="s6-lightbox hidden">
+        <div class="s6-lb-card"><div class="s6-lb-head"><span id="s6-lb-title" class="s6-lb-title"></span>
+          <button id="s6-lb-close" class="btn btn-ghost">Close</button></div>
+          <div id="s6-lb-body" class="s6-lb-body"></div></div>
+      </div>`;
     $g("#s6-preview").onclick = preview;
+    $g("#s6-lb-close").onclick = closeLightbox;
+    $g("#s6-lightbox").onclick = (e) => { if (e.target.id === "s6-lightbox") closeLightbox(); };
   }
 
-  // ----------------------------- candidates -----------------------------
+  // ----------------------------- candidates + filters -----------------------------
   async function loadCandidates() {
-    const list = $g("#s6-list");
     let cands;
     try { cands = await api("/api/handoff/candidates"); }
-    catch (e) { list.innerHTML = `<div class="empty err">Couldn't load candidates: ${esc(e.message)}<br/>Is Docker (governance DB) up?</div>`; return; }
-    if (!cands.length) { list.innerHTML = `<div class="empty">No Stage-5 districts yet.</div>`; return; }
+    catch (e) { $g("#s6-list").innerHTML = `<div class="empty err">Couldn't load candidates: ${esc(e.message)}<br/>Is Docker (governance DB) up?</div>`; return; }
+    CANDIDATES = cands;
+    renderFilters();
+    renderCandidates();
+  }
+
+  function renderFilters() {
+    const topos = [...new Set(CANDIDATES.map((c) => c.labeled_topology).filter(Boolean))].sort();
+    const bar = $g("#s6-filters");
+    bar.innerHTML = `
+      <input id="s6-q" class="s6-fi" type="search" placeholder="Filter name / id / state…" value="${esc(FILTER.q)}"/>
+      <select id="s6-topo" class="s6-fi"><option value="">All topologies</option>${
+        topos.map((t) => `<option value="${esc(t)}" ${FILTER.topology === t ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>
+      <label class="s6-fl"><input type="checkbox" id="s6-sendonly" ${FILTER.sendOnly ? "checked" : ""}/> has send</label>
+      <label class="s6-fl"><input type="checkbox" id="s6-heldonly" ${FILTER.heldOnly ? "checked" : ""}/> has held</label>`;
+    bar.querySelector("#s6-q").oninput = (e) => { FILTER.q = e.target.value.toLowerCase(); renderCandidates(); };
+    bar.querySelector("#s6-topo").onchange = (e) => { FILTER.topology = e.target.value; renderCandidates(); };
+    bar.querySelector("#s6-sendonly").onchange = (e) => { FILTER.sendOnly = e.target.checked; renderCandidates(); };
+    bar.querySelector("#s6-heldonly").onchange = (e) => { FILTER.heldOnly = e.target.checked; renderCandidates(); };
+  }
+
+  function passesFilter(c) {
+    if (FILTER.topology && c.labeled_topology !== FILTER.topology) return false;
+    if (FILTER.sendOnly && !(c.n_send > 0)) return false;
+    if (FILTER.heldOnly && !(c.n_hold > 0)) return false;
+    if (FILTER.q && !`${c.name || ""} ${c.district_id} ${c.state || ""}`.toLowerCase().includes(FILTER.q)) return false;
+    return true;
+  }
+
+  function renderCandidates() {
+    const list = $g("#s6-list");
+    if (!CANDIDATES.length) { list.innerHTML = `<div class="empty">No Stage-5 districts yet.</div>`; return; }
+    const shown = CANDIDATES.filter(passesFilter);
+    if (!shown.length) { list.innerHTML = `<div class="empty">No districts match the filter.</div>`; return; }
     list.innerHTML = "";
-    cands.forEach((c) => {
+    shown.forEach((c) => {
       const el = document.createElement("label");
       el.className = "q-batch s6-cand";
       const tone = c.n_send > 0 ? "badge-success" : "badge-neutral";
@@ -53,7 +94,7 @@
           <input type="checkbox" data-id="${esc(c.district_id)}" ${SELECTED.has(c.district_id) ? "checked" : ""}/>
           <span class="q-batch-id">${esc(c.name || c.district_id)}</span>
           <span class="badge ${tone}" title="canonical records that will be sent — labeled targets + unlabeled tier-A (preview shows exact reps + cost)">${c.n_send} send</span></div>
-        <div class="q-batch-meta">${esc(c.district_id)} · ${esc(c.labeled_topology || "?")}${c.n_hold ? ` · <span title="unlabeled tier-B/C — label them in Stage 5 to dispatch">${c.n_hold} held for label</span>` : ""}</div>`;
+        <div class="q-batch-meta">${esc(c.state || "?")} · ${esc(c.district_id)} · ${esc(c.labeled_topology || "?")}${c.n_hold ? ` · <span title="unlabeled tier-B/C — label them in Stage 5 to dispatch">${c.n_hold} held for label</span>` : ""}</div>`;
       const cb = el.querySelector("input");
       cb.onchange = () => { cb.checked ? SELECTED.add(c.district_id) : SELECTED.delete(c.district_id); };
       list.appendChild(el);
@@ -69,20 +110,27 @@
     let pkg;
     try { pkg = await api("/api/handoff/preview", postJSON({ district_ids: ids })); }
     catch (e) { det.innerHTML = `<div class="empty err">Preview failed: ${esc(e.message)}</div>`; return; }
-    renderPackage(pkg, ids);
+    renderPackage(pkg);
   }
 
-  function renderPackage(pkg, ids) {
+  function repRow(did, recKey, rep) {
+    return `<div class="s6-rep s6-rep-click" data-did="${esc(did)}" data-reckey="${esc(recKey)}"
+         data-file="${esc(rep.file)}" data-kind="${esc(rep.kind)}" title="click to inspect this representation">
+        <span class="s6-kind">${esc(rep.kind)}</span>
+        <code>${esc(rep.file)}</code> → <b>${rep.councils.map(esc).join(", ")}</b>
+        ${rep.fidelity_suspect ? `<span class="badge badge-warn">fidelity-suspect</span>` : ""}
+        <span class="s6-usd">${usd(rep.est_usd)}</span></div>`;
+  }
+
+  function renderPackage(pkg) {
     const det = $g("#s6-detail");
     const blocks = pkg.districts.map((d) => {
       const sends = d.records.filter((r) => r.decision === "send");
-      const reps = sends.flatMap((r) => r.reps.map((rep) =>
-        `<div class="s6-rep"><span class="s6-kind">${esc(rep.kind)}</span>
-           <code>${esc(rep.file)}</code> → <b>${rep.councils.map(esc).join(", ")}</b>
-           ${rep.fidelity_suspect ? `<span class="badge badge-warn">fidelity-suspect</span>` : ""}
-           <span class="s6-usd">${usd(rep.est_usd)}</span></div>`));
-      return `<div class="s6-dist">
-          <h4>${esc(d.district_id)} <span class="muted">${d.n_send_reps} rep(s) · ${usd(d.est_usd)}</span></h4>
+      const reps = sends.flatMap((r) => r.reps.map((rep) => repRow(d.district_id, r.rec_key, rep)));
+      const head = `${esc(d.name || d.district_id)}${d.state ? ` · ${esc(d.state)}` : ""}
+          <span class="muted">${esc(d.district_id)} · ${esc(d.topology || "?")} · ${d.n_send_reps} rep(s) · ${usd(d.est_usd)}</span>`;
+      return `<div class="s6-dist" data-did="${esc(d.district_id)}">
+          <h4>${head} <button class="s6-remove" data-did="${esc(d.district_id)}" title="remove this district from the dispatch">✕</button></h4>
           ${reps.length ? reps.join("") : `<div class="s6-rep muted">no send-eligible records</div>`}
         </div>`;
     });
@@ -96,11 +144,42 @@
       </div>
       ${blocks.join("")}`;
     const btn = $g("#s6-dispatch");
-    if (btn) btn.onclick = () => dispatch(ids, btn);
+    if (btn) btn.onclick = () => dispatch(btn);
+    det.querySelectorAll(".s6-remove").forEach((b) => { b.onclick = () => removeDistrict(b.dataset.did); });
+    det.querySelectorAll(".s6-rep-click").forEach((r) => {
+      r.onclick = () => openInspect(r.dataset.did, r.dataset.reckey, r.dataset.file, r.dataset.kind);
+    });
+  }
+
+  function removeDistrict(did) {
+    SELECTED.delete(did);
+    const cb = $g(`#s6-list input[data-id="${did}"]`);
+    if (cb) cb.checked = false;
+    preview();   // re-preview with the remaining selection (shows "select…" if now empty)
+  }
+
+  // ----------------------------- inspect a representation (lightbox) -----------------------------
+  async function openInspect(did, recKey, file, kind) {
+    const lb = $g("#s6-lightbox"), body = $g("#s6-lb-body"), title = $g("#s6-lb-title");
+    title.textContent = `${did} · ${file}`;
+    const url = `/api/handoff/inspect?district_id=${encodeURIComponent(did)}&rec_key=${encodeURIComponent(recKey)}&file=${encodeURIComponent(file)}`;
+    body.innerHTML = `<div class="empty">Loading…</div>`;
+    lb.classList.remove("hidden");
+    if (kind === "image") { body.innerHTML = `<img src="${url}" alt="${esc(file)}" class="s6-lb-img"/>`; return; }
+    if (kind === "pdf") { body.innerHTML = `<iframe src="${url}" class="s6-lb-frame" title="${esc(file)}"></iframe>`; return; }
+    try { const r = await fetch(url); body.innerHTML = `<pre class="s6-lb-text">${esc(await r.text())}</pre>`; }
+    catch (e) { body.innerHTML = `<div class="empty err">Couldn't load: ${esc(e.message)}</div>`; }
+  }
+
+  function closeLightbox() {
+    $g("#s6-lightbox").classList.add("hidden");
+    $g("#s6-lb-body").innerHTML = "";
   }
 
   // ----------------------------- gate@6 approve -> freeze + record -----------------------------
-  async function dispatch(ids, btn) {
+  async function dispatch(btn) {
+    const ids = [...SELECTED];
+    if (!ids.length) return;
     btn.disabled = true; btn.textContent = "Freezing…";
     let res;
     try { res = await api("/api/handoff/dispatch", postJSON({ district_ids: ids, actor: "ian" })); }

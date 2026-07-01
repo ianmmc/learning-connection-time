@@ -41,8 +41,9 @@ def assemble_district(district: dict, records: list, councils: dict, cost_model:
     recs = [assemble_record(r, councils, cost_model) for r in records]
     n_reps = sum(len(r["reps"]) for r in recs)
     est = sum(rep["est_usd"] for r in recs for rep in r["reps"])
-    return {"district_id": district.get("district_id"), "records": recs,
-            "n_send_reps": n_reps, "est_usd": est}
+    return {"district_id": district.get("district_id"), "name": district.get("name"),
+            "state": district.get("state"), "topology": district.get("labeled_topology"),
+            "records": recs, "n_send_reps": n_reps, "est_usd": est}
 
 
 def assemble_package(districts: list, councils: dict, cost_model: dict) -> dict:

@@ -176,14 +176,14 @@ def build_doc(district: dict, records: list, fingerprints: dict) -> dict:
 # ----------------------------- DB readers (governance Postgres) -----------------------------
 def load_district(session, district_id: str):
     d = session.execute(text(
-        """SELECT d.district_id, d.name, d.district_dir, d.labeled_topology, d.nces_school_count,
+        """SELECT d.district_id, d.name, d.state, d.district_dir, d.labeled_topology, d.nces_school_count,
                   t.nces_by_level_json
            FROM district d LEFT JOIN district_target t ON t.district_id = d.district_id
            WHERE d.district_id = :d"""), {"d": district_id}).mappings().first()
     if not d:
         return None
-    return {"district_id": d["district_id"], "name": d["name"], "district_dir": d["district_dir"],
-            "labeled_topology": d["labeled_topology"],
+    return {"district_id": d["district_id"], "name": d["name"], "state": d["state"],
+            "district_dir": d["district_dir"], "labeled_topology": d["labeled_topology"],
             "nces_denominator": {"total": d["nces_school_count"],
                                  "by_level": json.loads(d["nces_by_level_json"]) if d["nces_by_level_json"] else {}}}
 

@@ -9,6 +9,7 @@ Run:  uvicorn server:app --reload --port 8005   (from this directory)
   or  python3 server.py
 """
 import json
+import re
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query
@@ -30,6 +31,8 @@ from infrastructure.acquisition.stage3_capture import headless as H3       # noq
 from infrastructure.acquisition.stage4_process import headless as H4       # noqa: E402  (Stage 4 process runner + DB-cache status)
 from infrastructure.acquisition.process_governance import stage6_dispatch as H6  # noqa: E402  (Stage 6 routing/release bridge — REQ-101)
 from infrastructure.acquisition.stage6_handoff import handoff as HND6       # noqa: E402  (immutable handoff filename helper)
+from infrastructure.acquisition.common import paths                         # noqa: E402  (RAW_CAPTURES — rep inspect)
+from infrastructure.acquisition.stage6_handoff import councils as C6        # noqa: E402  (council registry — gate@6 override options)
 from infrastructure.acquisition.stage6_handoff.models import Handoff        # noqa: E402  (precious handoff index row)
 
 
@@ -882,7 +885,7 @@ def handoff_candidates():
     for the exact representation count + cost."""
     with gdb.session_scope() as con:
         rows = con.execute(text(
-            f"""SELECT d.district_id, d.name, d.labeled_topology,
+            f"""SELECT d.district_id, d.name, d.state, d.labeled_topology,
                        COALESCE(t.n_send, 0) AS n_send, COALESCE(t.n_hold, 0) AS n_hold
                 FROM district d
                 LEFT JOIN (
@@ -935,6 +938,33 @@ def handoff_list():
             "SELECT handoff_id, created_at, created_by, status, n_districts, n_reps, total_usd, "
             "cost_provenance FROM handoff ORDER BY created_at DESC")).mappings().all()
         return [dict(r) for r in rows]
+
+
+@app.get("/api/handoff/councils")
+def handoff_councils():
+    """The council registry (id / name / input_kinds) for the gate@6 per-rep override dropdown."""
+    return [{"id": cid, "name": c.get("name", cid), "input_kinds": c.get("input_kinds", [])}
+            for cid, c in C6.load_configs().items()]
+
+
+@app.get("/api/handoff/inspect")
+def handoff_inspect(district_id: str, rec_key: str, file: str):
+    """Serve one representation's file (text / image / pdf) for gate@6 inspection. Resolves
+    RAW_CAPTURES/<district_dir>/captures/<hash>/<file>; path-safe (basename-only file + hex hash)."""
+    if not file or "/" in file or "\\" in file or ".." in file:
+        raise HTTPException(400, "bad file")
+    if ":" not in rec_key or not re.fullmatch(r"[0-9a-fA-F]+", rec_key.split(":", 1)[1]):
+        raise HTTPException(400, "bad rec_key")
+    h = rec_key.split(":", 1)[1]
+    with gdb.session_scope() as con:
+        ddir = con.execute(text("SELECT district_dir FROM district WHERE district_id = :d"),
+                           {"d": district_id}).scalar()
+    if not ddir:
+        raise HTTPException(404, "no such district")
+    fp = paths.RAW_CAPTURES / ddir / "captures" / h / file
+    if not fp.exists():
+        raise HTTPException(404, f"file not found: {file}")
+    return FileResponse(fp)
 
 
 @app.get("/")

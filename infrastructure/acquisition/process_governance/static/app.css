@@ -398,3 +398,22 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 .s6-kind { text-transform: uppercase; font-size: 10px; letter-spacing: .04em; color: var(--color-text-muted, #6b7280); }
 .s6-usd { margin-left: auto; color: var(--color-text-muted, #6b7280); }
 .s6-handoff .q-batch-meta { font-size: 11px; }
+
+/* Stage 6 — filters, remove, clickable reps, inspect lightbox */
+.s6-filters { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 0 10px; align-items: center; }
+.s6-fi { font-size: 12px; padding: 3px 6px; border: 1px solid var(--color-border, #e5e7eb); border-radius: 6px; }
+.s6-fi[type="search"] { flex: 1 1 120px; min-width: 100px; }
+.s6-fl { font-size: 12px; display: inline-flex; align-items: center; gap: 4px; color: var(--color-text-muted, #6b7280); }
+.s6-remove { border: none; background: none; cursor: pointer; color: var(--color-text-muted, #9ca3af); font-size: 13px; padding: 0 4px; line-height: 1; }
+.s6-remove:hover { color: var(--color-red-600, #dc2626); }
+.s6-rep-click { cursor: pointer; }
+.s6-rep-click:hover { background: var(--color-surface-hover, #f3f4f6); }
+.s6-lightbox.hidden { display: none; }
+.s6-lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; z-index: 50; }
+.s6-lb-card { background: var(--color-surface, #fff); border-radius: 10px; width: min(1000px, 92vw); height: min(88vh, 900px); display: flex; flex-direction: column; overflow: hidden; }
+.s6-lb-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--color-border, #e5e7eb); }
+.s6-lb-title { font-family: monospace; font-size: 13px; }
+.s6-lb-body { flex: 1; overflow: auto; padding: 12px; background: var(--color-surface-subtle, #fafafa); }
+.s6-lb-text { white-space: pre-wrap; word-break: break-word; font-size: 12px; margin: 0; }
+.s6-lb-img { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+.s6-lb-frame { width: 100%; height: 100%; border: 0; }
