@@ -67,44 +67,44 @@ LCT = 18 minutes per student per day
 - Temporal trends (year-over-year changes)
 - Relationship to outcomes (with appropriate caveats)
 
-## Current Status (2026-06-13 — see root `CLAUDE.md` for the live 2026-06-22 picture)
+## Current Status (2026-07-01 — root `CLAUDE.md` *Current Status* is always the live authority)
 
-> **Freshness:** This block is the 2026-06-13 snapshot. The current state (per-school pipeline built, **GROSS bell-to-bell** metric, 6-model council with composition TBD, reader-routing, 3 human checkpoints, code at `infrastructure/acquisition/`, GT 940/943 verified) lives in root `CLAUDE.md` → *Current Status* + *Next session*. Below is retained as the design-validation milestone.
+**Phase**: Phase 1.5 (bell-schedule enrichment) via the **9-stage per-school acquisition pipeline**
+(`infrastructure/acquisition/`), console-driven and **built through the Stage 6→7 seam** — the paid
+council extraction (Stage 7), per-band aggregation (Stage 8), and LCT-DB write (Stage 9) are next.
+**Metric**: **GROSS bell-to-bell minutes** (`end − start`, labeled `gross_bell_to_bell`; net
+deferred). Extractors read TIMES; deterministic code computes minutes + the per-band mode
+(REQ-054/055/056).
+**Extraction finding** (the durable one): on good inputs top cheap cloud models hit ~95–100% —
+**input quality, not the model, is the ceiling**; hence the pipeline's per-school targeting,
+tiered capture, and Stage-5 filtering. See `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.
+**Discovery**: a deterministic SERP cascade (Bright Data SERP + Serper failover → Claude WebSearch
+residual) — **the search index predicts recall**; agent-led and own-index providers retired.
+**Coverage**: 17,842 U.S. school districts in PostgreSQL · **SEA Integrations**: 9/9 (FL, TX, CA,
+NY, IL, MI, PA, VA, MA) ✅ · **Data Sources**: Federal (NCES CCD, CRDC, IDEA 618) + bell schedules
++ state agencies.
+**Architecture**: isolated `governance` Postgres = the working store; JSON artifacts = auditable
+receipts; cross-stage state = the `state_event` log; human gates are stage-numbered
+(`gate@1/5/6/7/8`).
 
-**Phase**: Pipeline design validated end-to-end — extraction *and* discovery proven; building toward a cheap-cloud "council" + per-school targeting
-**Extraction finding**: a capable cloud model ~doubles the best local. Full-41 leader **Gemini 2.5 Flash 68.9%** (cheapest *and* best); on *good* inputs (difficulty > 0.70) top models hit **~95–100%**. **Input quality, not the model, is the ceiling** (20% of districts solved by zero models; hard inputs failed on granularity/noise, not OCR). See `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.
-**Discovery finding**: search-led discovery works; **domain-scoped search** (Perplexity / OpenRouter `gpt-4o-mini-search` / Claude WebSearch) eliminates the wrong-district problem and reaches school subdomains. Blind Crawlee crawling fails. New bottleneck = capture fidelity on JS pages → tiered capture (text-layer preferred; screenshot+OCR/vision fallback).
-**Direction**: per-school targeting → tiered capture → cheap-cloud council consensus (Gemini 2.5 Flash + a cross-family model) → fail-loud statutory fallback. Multi-model conduits wired (`pplx:`, `openrouter:` in `extractors.py`). REQ-043…053.
-**Coverage**: 17,842 U.S. school districts in PostgreSQL database
-**SEA Integrations**: 9/9 complete (FL, TX, CA, NY, IL, MI, PA, VA, MA) ✅
-**Acquisition Stack**: search APIs (Perplexity/OpenRouter/Claude WebSearch) for discovery + Playwright capture; Crawlee re-cast as terrain-mapper/one-hop fetcher; cheap-cloud council for extraction (local Ollama models deleted post-benchmark; Granite 4.1 8B is the self-host candidate)
-**Data Sources**: Federal (NCES, CRDC, IDEA 618) + Bell schedules + State agencies
-
-> **Note:** Strategy evolved twice — the Jan-2026 local-first Crawlee+Ollama pivot (to avoid per-token cost) was itself superseded on 2026-06-13 once benchmarking showed paid-cloud extraction is *cheap* (~$0.05–0.30/1M) and far more accurate. Canonical learnings: `docs/technical-notes/EXTRACTION_AND_DISCOVERY_LEARNINGS_2026-06.md`. Architecture map: `docs/PROJECT_HISTORY.md` (Part 5; SYNTHESIS archived).
+> **History note:** strategy evolved twice — cloud multi-tier (Firecrawl/Gemini) → the Jan-2026
+> local-first Crawlee+Ollama pivot → superseded 2026-06-13 when benchmarking showed paid-cloud
+> extraction is *cheap* (~$0.05–0.30/1M) and far more accurate. The Crawlee/Ollama stack is
+> archived (`data/archive/crawlee-ollama-era-superseded-20260625/`). Canonical learnings:
+> `docs/technical-notes/EXTRACTION_AND_DISCOVERY_LEARNINGS_2026-06.md`; decisions:
+> `docs/PROJECT_HISTORY.md`.
 
 ### What We Have ✅
-- Comprehensive project structure
-- PostgreSQL database with 17,842 districts
-- Multi-part file handling capability
-- SPED segmentation (v3 self-contained focus)
-- Data safeguards (7 validation flags)
-- Crawlee scraper service (Playwright browsers) with async crawl jobs, school discovery + grade-band sampling
-- Local-first acquisition pipeline: Crawlee mapping → Ollama URL ranking → PDF capture → Ollama triage
-- Local LLM time-extraction stage (Ollama) with deterministic minutes calculation
-- Ground-truth + benchmark harness for measuring local extraction accuracy
-- LCT calculation engine with variants
-- QA dashboard and validation framework
-- Interactive enrichment tools
-- Grade-level analysis (elementary, middle, high)
-- Token-optimized infrastructure (88% size reduction)
-
-### Recent Work (Jan 2026)
-
-- **9/9 SEA integrations complete** with crosswalk tables
-- Pivot from cloud multi-tier (Firecrawl/Gemini) to local-first Crawlee + Ollama acquisition
-- Async crawl jobs, serial acquisition queue, school discovery + grade-band sampling
-- Local Ollama time-extraction stage + deterministic minutes calculation
-- Ground-truth labeling + benchmark harness (in progress) to validate extraction accuracy
+- PostgreSQL database with 17,842 districts; 9/9 SEA crosswalks
+- LCT calculation engine with variants (8+2 staff scopes, grade-level breakdowns)
+- SPED segmentation (v3 self-contained focus) + data safeguards (7 validation flags)
+- QA dashboard and validation framework; interactive enrichment tools
+- Acquisition Stages 1–6 built + run live on real batches: gate@1 queue console, SERP discovery,
+  Playwright capture (fingerprinting, de-chrome, iframe/embed), local processing (pdftotext /
+  pdfplumber / camelot / tesseract), Stage-5 detector/combiner scoring + three-axis human
+  labeling (440 labels), Stage-6 routing/pricing/immutable dispatch (gate@6)
+- The measurement discipline: config-as-data + fingerprinted scorecards + tuning ledger
+  (nothing ships to scoring without harness measurement)
 
 ## Evolution Strategy
 
@@ -250,29 +250,25 @@ Outputs & Visualizations
 - Test suite for calculations
 - Manual spot-checks of results
 
-## Next Steps
+## Next Steps (2026-07; live sequencing in root `CLAUDE.md` → "Next session")
 
-1. **Immediate** (This Month - January 2026)
-   - Continue state-by-state bell schedule enrichment
-   - Analyze SPED segmentation results for policy insights
-   - Document equity findings from SPED data
-   - Refine data safeguard thresholds based on review
+1. **Immediate**
+   - Complete the v2.1 re-tagging of the 440 Stage-5 labels (field observations →
+     `STAGE5_FILTER_DESIGN` §3a; fold in measured, never by eye)
+   - Facet-level per-detector scoring (as re-tagging fills the confounder facets)
 
-2. **Short-term** (Next Quarter - Q1 2026)
-   - Complete bell schedule enrichment for remaining priority states
-   - Generate district-level SPED equity profiles
-   - Create visualization dashboard for LCT variants
-   - Draft initial SPED disparity analysis report
+2. **Short-term**
+   - The council lab (`cost_benchmark`): measured token model + live OpenRouter pricing
+   - **Stage 7** (paid council + judge loop + request-more-evidence back-edges, budget-governed)
+   - Stage 8 (per-band modal aggregation + gate@8) → Stage 9 (LCT-DB write)
 
-3. **Medium-term** (H1 2026)
-   - Complete Layer 2 integrations for Florida and New York
-   - Enhance Texas with PEIMS data (if needed for deeper analysis)
-   - Expand SPED analysis with state-specific data where available
-   - Develop interactive web tool for LCT exploration
-   - Publish methodology paper and findings
+3. **Medium-term**
+   - GT alignment into the pipeline (`batch_00000`) → council composition re-benchmark
+   - Scale batches toward the enrollment-weighted top districts; funnel/coverage analysis
+   - Equity-story analysis and visualization on enriched (gross bell-to-bell) LCT
 
 ---
 
-**Document Version**: 2.3
-**Last Updated**: June 13, 2026
-**Status**: Bell Schedule Acquisition - local-first Crawlee + Ollama pipeline with 9/9 SEA integrations complete
+**Document Version**: 2.4
+**Last Updated**: July 1, 2026
+**Status**: Bell Schedule Acquisition — 9-stage pipeline built through the Stage 6→7 seam; Stage 7 (paid council extraction) next; 9/9 SEA integrations complete

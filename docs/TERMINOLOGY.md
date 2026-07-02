@@ -1,6 +1,6 @@
 # Project Terminology Guide
 
-**Last Updated:** 2026-06-25
+**Last Updated:** 2026-07-01
 
 The canonical vocabulary for the Learning Connection Time (LCT) project — the file an auditor or new
 developer should read first. It standardizes the terms used across `docs/ACQUISITION_PIPELINE.md`,
@@ -63,19 +63,26 @@ The pipeline is built and walked **stage by stage** with human checkpoints. Cano
 `docs/ACQUISITION_PIPELINE.md`. Stages: **1 Queue · 2 Discover · 3 Capture · 4 Local processing ·
 5 Local filtering · 6 Dispatch · 7 Council extraction · 8 Aggregate · 9 Write**.
 
-### Checkpoints (CP-A / CP-B / CP-C) — human-in-the-loop
-Deliberate high-supervision gates: **CP-A (Queue)** — are the right schools/bands targeted? · **CP-B
-(Input)** — is the captured input legible and relevant (the critical gate, before any paid call)? ·
-**CP-C (Output→Write)** — are the per-school times correct + honestly labeled before the DB write?
+### Gates (`gate@N`) — human-in-the-loop
+Deliberate high-supervision gates, **stage-numbered** (2026-06-27, governance §11; replaces the
+CP-A/B/C names): **gate@1 (Queue)** — right districts/schools/bands (was CP-A) · **gate@5 (Filter)**
+— per-URL representation review, the critical gate before any paid call (was CP-B) · **gate@6
+(Dispatch)** — which reps → which council config · **gate@7 (Extract)** — review council
+requests/recommendations · **gate@8 (Aggregate)** — per-band results correct + honestly labeled
+(the effective old CP-C; the Stage-9 DB write is then mechanical, ungated). Each gate is
+manual/auto (auto = confidence-escalating).
 
 ### Batch / `batch_NNNNN.json`
 One run's worth of targeting, produced by Stage 1 (`data/acquisition/queue/`). Carries the selected
 districts + per-band school lists + the NCES denominator. `batch_00001` is the live working batch.
 
-### District-status registry / `district_status.json`
-The cross-stage progress ledger (`data/acquisition/status/`): each district's `furthest_stage` and
-outcome. `already_attempted()` excludes a district from re-queue once it has reached **Stage 3
-(Capture)+** — searched/queued-only districts stay eligible.
+### Cross-stage state / `state_event` log / `district_status.json`
+The cross-stage registry is the Postgres **`state_event` append-log** in the governance DB
+(REQ-099); current state (each district's `furthest_stage` and outcome) is a SQL view.
+`data/acquisition/status/district_status.json` is its **regenerable backup/receipt** (swept into
+commits by the pre-commit hook), not the working store. `already_attempted()` excludes a district
+from first-run re-queue once it has reached **Stage 3 (Capture)+** — searched/queued-only
+districts stay eligible.
 
 ---
 
@@ -101,9 +108,13 @@ outcome. `already_attempted()` excludes a district from re-queue once it has rea
   *not* `ccd_lea`'s self-reported figure; captured at Stage 1 with `nces_year` for provenance.
 
 ### Stage 2 — Discover (recall)
-- **Discovery = a recall problem** — find *a* schedule page; capture verifies it. Run in cost-ascending
-  **waves** with stop-when-found (not a council): **Wave 1** Claude WebSearch (Haiku subagent) → **Wave 2**
-  OpenRouter `gpt-4o-mini-search` → flag for manual.
+- **Discovery = a recall problem** — find *a* schedule page; capture verifies it. A **deterministic
+  SERP cascade** (re-architected 2026-06-28, REQ-104 — no agent in the Wave-1 loop): **Wave 1**
+  Bright Data SERP (real Google, `site:`-scoped) with **Serper failover** on API failure (same
+  Google index = uptime backup) → **Wave 2** Claude WebSearch on the residual (a *different*
+  index, speculative) → flag for manual. **Index predicts recall** — raw Google wins; own-index
+  providers (Perplexity 43%) crater on long-tail K-12. (The original Claude/OpenRouter agent
+  waves are retired.)
 - **`gate()`** — deterministic filter rejecting off-domain / news / aggregator URLs. **Residual** — a
   school still unsatisfied after gating; only residuals go to Wave 2.
 - **`discovery.json`** — per-district discovery output (the `schools[]` roster + raw per-school URLs).
@@ -123,10 +134,13 @@ outcome. `already_attempted()` excludes a district from re-queue once it has rea
   `meta_generator`, `js_dependent`, **`cms_hint`**). **`CMS_HOSTS`** — the curated set of *school-district
   CMS vendors* (SharpSchool, Apptegy, Educational Networks, …); a `cms_hint` is a host-suffix match
   against it. Additions are **human-in-the-loop, school-vendor-only** (never a general host/CDN).
-- **DOM segmentation / de-chrome (PLANNED)** — segment a page's `<header>`/`<footer>`/`<nav>` vs `main`
-  at render time into separate representations (`page.main/header/footer/nav.txt`), so CMS **chrome**
-  (a footer "Building Hours", a school-switcher nav) can't pollute signals. **Landmark** — the
-  semantic/ARIA selectors used to identify chrome.
+- **DOM segmentation / de-chrome (BUILT + MEASURED, REQ-091)** — segment a page's
+  `<header>`/`<footer>`/`<nav>` vs `main` at render time into separate representations
+  (`page.main/header/footer/nav.txt`), so CMS **chrome** (a footer "Building Hours", a
+  school-switcher nav) can't pollute signals — measured a strong win (category 0.43→0.60,
+  topology 0.6→0.8). **Landmark** — the semantic/ARIA selectors used to identify chrome. (Note:
+  V2 scoring reads the time signal over the **max-evidence** source, not main-only — footer/OCR
+  targets recovered, REQ-113.)
 
 ### Stage 4 — Local processing
 - **Representation** — one extracted view of a captured artifact: a text file from a tool, an image, a
