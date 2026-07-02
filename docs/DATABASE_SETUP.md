@@ -201,7 +201,8 @@ Actual bell schedule data collected from districts.
 
 **Constraints**:
 - Foreign key to `districts(nces_id)`
-- Check constraint: `instructional_minutes BETWEEN 0 AND 600`
+- Check constraint: `instructional_minutes BETWEEN 100 AND 600` (the DB's outer sanity bound;
+  the REQ-055 plausibility gate 240–510 lives in `infrastructure/database/school_year.py`)
 - Unique constraint: `(district_id, year, grade_level)`
 
 #### **grade_level_enrollment**

@@ -91,32 +91,43 @@ def find_districts(root: Path) -> list[dict]:
     return out
 
 
-def check_file_consistency(district: dict) -> None:
+class InconsistentCapturesError(RuntimeError):
+    """A district's captures.json claims files that aren't on disk (see check_file_consistency)."""
+
+
+def check_file_consistency(district: dict) -> list[str]:
     """Finer-grained than the registry check below: every ok:true record's files{} entries
-    must actually exist on disk. A mismatch means something structurally broke (a partial
-    write, a manual deletion, a Stage 3 bug) -- halt the entire run, same severity as
-    registry-ahead-of-disk, not worked around or skipped. ok:false records (files: {} by
+    must actually exist on disk. A mismatch means something structurally broke for THAT
+    district (a partial write, a manual deletion, a Stage 3 bug). Returns the list of
+    problems (empty = consistent). The blast radius is tiered (#78): an inconsistent
+    district is QUARANTINED by reconcile() -- excluded from the run, reported loudly, and
+    surfaced like `failed` -- rather than SystemExit-ing the whole run, because one
+    district's broken captures say nothing about the rest of the batch.
+    Registry-ahead-of-disk (reconcile's other check) KEEPS the hard stop: that one is a
+    control-layer failure, not a per-district data problem. ok:false records (files: {} by
     design -- capture_failed, needs_oauth_reauth) are exempt, not an inconsistency."""
+    problems = []
     for rec in district["captures"]:
         if not rec.get("ok"):
             continue
         record_dir = district["dir"] / "captures" / rec["hash"]
         for fname in (rec.get("files") or {}).values():
             if not (record_dir / fname).exists():
-                raise SystemExit(
-                    f"CONTROL FAILURE: {district['district_id']} ({district['name']}) "
-                    f"captures.json claims '{fname}' exists in {record_dir} but it does "
-                    f"not. Stopping the entire run -- investigate before re-running anything."
+                problems.append(
+                    f"captures.json claims '{fname}' exists in {record_dir} but it does not"
                 )
+    return problems
 
 
-def reconcile(districts: list[dict], registry: dict) -> tuple[list, list]:
+def reconcile(districts: list[dict], registry: dict) -> tuple[list, list, list]:
     """Filesystem is truth, same shape as Stage 2/3 reconcile() -- plus the file-existence
-    check above, run before any registry comparison so a structural problem is caught even
-    on a district that would otherwise look 'todo'."""
-    todo, skipped = [], []
+    check above, run ONLY on districts about to be processed (an already-done district is
+    not gated retroactively). Returns (todo, skipped, quarantined): a quarantined district
+    is inconsistent on disk (#78) -- excluded from the run with a loud per-district report
+    line and its problems attached as d['inconsistency']; the caller surfaces it like a
+    `failed` district. Registry-ahead-of-disk stays a run-halting SystemExit."""
+    todo, skipped, quarantined = [], [], []
     for d in districts:
-        check_file_consistency(d)
         did = d["district_id"]
         done_on_disk = (d["dir"] / "processed.json").exists()
         rec = registry["districts"].get(did)
@@ -134,15 +145,37 @@ def reconcile(districts: list[dict], registry: dict) -> tuple[list, list]:
                 f"investigate before re-running anything."
             )
         else:
-            todo.append(d)
-    return todo, skipped
+            problems = check_file_consistency(d)
+            if problems:
+                for p in problems:
+                    print(f"QUARANTINED (inconsistent captures) {did} ({d['name']}): {p}")
+                d["inconsistency"] = problems
+                quarantined.append(d)
+            else:
+                todo.append(d)
+    return todo, skipped, quarantined
 
 
 # ---------------- tool runners ----------------
 
+class ToolError(RuntimeError):
+    """A tool subprocess failed in a way that left no usable output."""
+
+
 def _run(cmd: list[str], timeout: int = 60) -> str:
+    """Run a local tool and return its stdout.
+
+    Exit-code policy (#32): a nonzero exit with EMPTY stdout is an error -- raised, so the
+    caller's add() records an `error` entry instead of a silent, non-errored empty
+    representation. A nonzero exit WITH non-empty stdout is treated as success: pdftotext/
+    tesseract commonly warn on stderr and exit nonzero while still emitting perfectly usable
+    text, and the text itself is the product Stage 4 is after (the usable-text bar then
+    judges it like any other output)."""
     p = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
-    return p.stdout or ""
+    out = p.stdout or ""
+    if p.returncode != 0 and not out.strip():
+        raise ToolError(f"exit {p.returncode}: {(p.stderr or '').strip()[:120]}")
+    return out
 
 
 def run_pdftotext(pdf_path: Path) -> str:
@@ -204,17 +237,35 @@ PDF_TOOLS = [
 ]
 
 
+# OCR page budget (#45): a 100-page handbook must not queue 100 sequential 60s-budget
+# tesseract calls. pdftoppm rasterizes at most this many pages (-l) and run_tesseract_multi
+# OCRs at most this many images. Module-level so a config change / test override is one line.
+OCR_RASTER_PAGE_CAP = 40
+
+
 def rasterize(pdf_path: Path, out_dir: Path) -> list[Path]:
     """Persisted, not ephemeral -- a deliberate departure from reading.py's tempdir
     precedent, since Stage 4 keeps every representation inspectable in captures/<hash>/,
     same as page.txt/page.png/page.pdf. Named raster_p<N>.png so it never collides with
     Stage 3's page.png -- a genuinely different rendering path (print-CSS reflow can
-    differ from the on-screen render), kept as a separate OCR input, not a substitute."""
+    differ from the on-screen render), kept as a separate OCR input, not a substitute.
+
+    #45 hardening: stale raster_p*.png from a prior failed/partial run are cleared first
+    (they'd otherwise be globbed up as if this rasterization produced them); pages are
+    capped at OCR_RASTER_PAGE_CAP via -l; and pdftoppm's exit code is checked -- a nonzero
+    exit that produced NO pages raises (a nonzero exit with some pages proceeds with the
+    partial set, same spirit as _run's stdout policy)."""
     out_dir.mkdir(parents=True, exist_ok=True)
+    for stale in out_dir.glob("raster_p*.png"):
+        stale.unlink()
     prefix = out_dir / "raster_p"
-    subprocess.run(["pdftoppm", "-png", "-r", "200", str(pdf_path), str(prefix)],
-                    capture_output=True, timeout=120)
-    return sorted(out_dir.glob("raster_p*.png"))
+    p = subprocess.run(["pdftoppm", "-png", "-r", "200",
+                        "-l", str(OCR_RASTER_PAGE_CAP), str(pdf_path), str(prefix)],
+                       capture_output=True, text=True, timeout=120)
+    pages = sorted(out_dir.glob("raster_p*.png"))
+    if p.returncode != 0 and not pages:
+        raise ToolError(f"pdftoppm exit {p.returncode}: {(p.stderr or '').strip()[:120]}")
+    return pages
 
 
 def run_tesseract(image_path: Path) -> str:
@@ -222,7 +273,20 @@ def run_tesseract(image_path: Path) -> str:
 
 
 def run_tesseract_multi(image_paths: list[Path]) -> str:
-    return "\n".join(run_tesseract(p) for p in image_paths)
+    """OCR up to OCR_RASTER_PAGE_CAP pages with per-page error tolerance (#45): one page's
+    timeout/crash records an inline note and keeps every other page's text, instead of
+    discarding the whole document; pages beyond the cap record a note, not silence."""
+    parts = []
+    capped = list(image_paths)[:OCR_RASTER_PAGE_CAP]
+    for p in capped:
+        try:
+            parts.append(run_tesseract(p))
+        except Exception as e:  # noqa: BLE001 -- per-page tolerance is the point
+            parts.append(f"[ocr failed: {p.name}: {type(e).__name__}: {str(e)[:80]}]")
+    skipped = len(image_paths) - len(capped)
+    if skipped > 0:
+        parts.append(f"[ocr page cap: {skipped} page(s) beyond {OCR_RASTER_PAGE_CAP} not OCR'd]")
+    return "\n".join(parts)
 
 
 # ---------------- per-record processing ----------------
@@ -344,8 +408,13 @@ def write_processed(district: dict, records: list[dict]) -> Path:
 
 def finish_district(district: dict, registry: dict) -> str:
     """Single registry write per district, at actual completion -- same principle as
-    Stage 2/3: there's nothing meaningful to reconcile against a half-finished state."""
-    check_file_consistency(district)
+    Stage 2/3: there's nothing meaningful to reconcile against a half-finished state.
+    Belt-and-braces re-check of file consistency (#78): reconcile() already quarantines,
+    but the direct `run <district_id>` path reaches here without it -- raise a district-
+    scoped error, never a run-halting SystemExit."""
+    problems = check_file_consistency(district)
+    if problems:
+        raise InconsistentCapturesError("; ".join(problems))
     records = process_district(district)
     write_processed(district, records)
     outcome = compute_outcome(records)
@@ -374,17 +443,25 @@ def main():
     registry = DS.load()
 
     if a.cmd == "reconcile":
-        todo, skipped = reconcile(districts, registry)
+        todo, skipped, quarantined = reconcile(districts, registry)
         DS.save(registry)
-        print(f"{len(todo)} to process, {len(skipped)} already done (skipped)")
+        print(f"{len(todo)} to process, {len(skipped)} already done (skipped), "
+              f"{len(quarantined)} quarantined (inconsistent)")
         for d in skipped:
             print(f"  skip [{d['state']}] {d['name']} ({d['district_id']})")
+        for d in quarantined:
+            print(f"  inconsistent [{d['state']}] {d['name']} ({d['district_id']})")
         for d in todo:
             print(f"  todo [{d['state']}] {d['name']} ({d['district_id']})")
 
     elif a.cmd == "run":
         if a.all:
-            todo, _ = reconcile(districts, registry)
+            todo, _, quarantined = reconcile(districts, registry)
+            for d in quarantined:
+                DS.record_stage(registry, d["district_id"], d["name"], d["state"],
+                                 stage_name="process", event_type="failed",
+                                 notes="inconsistent: " + "; ".join(d["inconsistency"])[:200])
+                print(f"{d['district_id']} {d['name']}: inconsistent (quarantined)")
             for d in todo:
                 outcome = finish_district(d, registry)
                 print(f"{d['district_id']} {d['name']}: {outcome}")

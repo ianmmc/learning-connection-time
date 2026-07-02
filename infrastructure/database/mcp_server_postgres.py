@@ -20,6 +20,8 @@ Configuration in claude_desktop_config.json:
 """
 
 import json
+
+from infrastructure.database.school_year import CURRENT_SCHOOL_YEAR, NCES_PRIMARY_YEAR
 import sys
 from pathlib import Path
 from typing import Any
@@ -55,7 +57,7 @@ async def handle_list_tools() -> list[Tool]:
                     "year": {
                         "type": "string",
                         "description": "School year (e.g., '2025-26')",
-                        "default": "2025-26"
+                        "default": CURRENT_SCHOOL_YEAR
                     }
                 }
             }
@@ -74,7 +76,7 @@ async def handle_list_tools() -> list[Tool]:
                     "year": {
                         "type": "string",
                         "description": "School year (e.g., '2023-24')",
-                        "default": "2023-24"
+                        "default": NCES_PRIMARY_YEAR
                     }
                 }
             }
@@ -88,7 +90,7 @@ async def handle_list_tools() -> list[Tool]:
                     "year": {
                         "type": "string",
                         "description": "School year (e.g., '2025-26')",
-                        "default": "2025-26"
+                        "default": CURRENT_SCHOOL_YEAR
                     }
                 }
             }
@@ -106,7 +108,7 @@ async def handle_list_tools() -> list[Tool]:
                     "year": {
                         "type": "string",
                         "description": "School year (e.g., '2025-26')",
-                        "default": "2025-26"
+                        "default": CURRENT_SCHOOL_YEAR
                     },
                     "limit": {
                         "type": "integer",
@@ -132,18 +134,18 @@ async def handle_list_tools() -> list[Tool]:
 async def handle_call_tool(name: str, arguments: dict) -> list[TextContent]:
     """Handle tool calls."""
     if name == "query_campaign_progress":
-        year = arguments.get("year", "2025-26")
+        year = arguments.get("year", CURRENT_SCHOOL_YEAR)
         return [await _query_campaign_progress(year)]
     elif name == "query_lct_summary":
         scope = arguments.get("scope", "teachers_only")
-        year = arguments.get("year", "2023-24")
+        year = arguments.get("year", NCES_PRIMARY_YEAR)
         return [await _query_lct_summary(scope, year)]
     elif name == "query_enrichment_summary":
-        year = arguments.get("year", "2025-26")
+        year = arguments.get("year", CURRENT_SCHOOL_YEAR)
         return [await _query_enrichment_summary(year)]
     elif name == "query_next_candidates":
         state = arguments["state"]
-        year = arguments.get("year", "2025-26")
+        year = arguments.get("year", CURRENT_SCHOOL_YEAR)
         limit = arguments.get("limit", 9)
         return [await _query_next_candidates(state, year, limit)]
     elif name == "database_status":
@@ -152,7 +154,7 @@ async def handle_call_tool(name: str, arguments: dict) -> list[TextContent]:
         raise ValueError(f"Unknown tool: {name}")
 
 
-async def _query_campaign_progress(year: str = "2025-26") -> TextContent:
+async def _query_campaign_progress(year: str = CURRENT_SCHOOL_YEAR) -> TextContent:
     """
     Get state-by-state enrichment campaign progress.
 
@@ -176,7 +178,7 @@ async def _query_campaign_progress(year: str = "2025-26") -> TextContent:
         )
 
 
-async def _query_lct_summary(scope: str = "teachers_only", year: str = "2023-24") -> TextContent:
+async def _query_lct_summary(scope: str = "teachers_only", year: str = NCES_PRIMARY_YEAR) -> TextContent:
     """
     Get LCT statistics for a specific scope.
 
@@ -202,7 +204,7 @@ async def _query_lct_summary(scope: str = "teachers_only", year: str = "2023-24"
         )
 
 
-async def _query_enrichment_summary(year: str = "2025-26") -> TextContent:
+async def _query_enrichment_summary(year: str = CURRENT_SCHOOL_YEAR) -> TextContent:
     """
     Get overall enrichment statistics.
 
@@ -226,7 +228,7 @@ async def _query_enrichment_summary(year: str = "2025-26") -> TextContent:
         )
 
 
-async def _query_next_candidates(state: str, year: str = "2025-26", limit: int = 9) -> TextContent:
+async def _query_next_candidates(state: str, year: str = CURRENT_SCHOOL_YEAR, limit: int = 9) -> TextContent:
     """
     Get next unenriched district candidates for a state.
 

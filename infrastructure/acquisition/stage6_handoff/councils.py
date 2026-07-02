@@ -26,6 +26,11 @@ FAMILY = {
     "deepseek/deepseek-v3.2": "deepseek",
     "qwen/qwen3-235b-a22b-2507": "qwen",
 }
+# Provider-prefix aliases for the fallback: OpenRouter's prefix is sometimes NOT the family bucket
+# name we catalog under ("mistralai/..." models are family "mistral"). Without this, a catalogued
+# Mistral voter + an uncatalogued mistralai/* voter would resolve to "mistral" vs "mistralai" and
+# slip past the diversity rule (issue #36).
+FAMILY_ALIAS = {"mistralai": "mistral"}
 
 
 class ConfigError(ValueError):
@@ -33,10 +38,11 @@ class ConfigError(ValueError):
 
 
 def family_of(model_id: str) -> str:
-    """The model's family bucket — explicit map first, else the provider prefix as a proxy."""
+    """The model's family bucket — explicit map first, else the (alias-normalized) provider prefix."""
     if model_id in FAMILY:
         return FAMILY[model_id]
-    return model_id.split("/", 1)[0]
+    prefix = model_id.split("/", 1)[0]
+    return FAMILY_ALIAS.get(prefix, prefix)
 
 
 def validate(cfg: dict) -> None:
@@ -49,6 +55,14 @@ def validate(cfg: dict) -> None:
     judge = cfg.get("judge")
     if not judge:
         raise ConfigError(f"council '{cid}': a judge is required (the third family)")
+    # Configs are CURATED: every member must be in the FAMILY catalog. A prefix fallback is only a
+    # display convenience (family_of) — letting an uncatalogued id through validation would let a
+    # mis-bucketed prefix defeat the cross-family rule (REQ-056), so fail fast here instead.
+    for m in voters + [judge]:
+        if m not in FAMILY:
+            raise ConfigError(
+                f"council '{cid}': model '{m}' is not in the FAMILY catalog — add it to "
+                f"councils.FAMILY (with its family bucket) before using it in a council config")
     vf = [family_of(v) for v in voters]
     if vf[0] == vf[1]:
         raise ConfigError(

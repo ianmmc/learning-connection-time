@@ -1,3 +1,6 @@
+-- LEDGERED RETROACTIVELY 2026-07-02 (issue #21): this file was applied out-of-band before
+-- the migrate.py ledger existed and sat un-numbered outside it. Numbered + backfilled;
+-- objects verified present in the live DB at numbering time. Do not re-run by hand.
 -- Create Materialized Views for Common Joins
 -- These views pre-compute expensive joins for faster querying.
 -- Refresh after data updates using: REFRESH MATERIALIZED VIEW view_name;

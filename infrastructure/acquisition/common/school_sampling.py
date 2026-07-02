@@ -169,10 +169,15 @@ def sample_size(N, z=1.96, e=0.05, p=0.5):
 OPEN = {"1","Open","open"}  # SY_STATUS 1 = open (filter closed/inactive)
 
 def _sch_file(year):
+    # year is 'YYYY_YY' (e.g. '2023_24'): the file's short year pair is year[2:4]+year[5:7]
+    # -> '2324'. (Was year[7:9] -- '' for this format -- so the fast path never hit and the
+    # glob fallback always ran; #40.)
     d = _NCES_DIR / year
-    f = d / f"ccd_sch_029_{year[2:4]}{year[7:9]}_w_1a_073025.csv"
+    f = d / f"ccd_sch_029_{year[2:4]}{year[5:7]}_w_1a_073025.csv"
     if not f.exists():  # fall back to glob
-        f = next(d.glob("ccd_sch_029_*_w_1a_*.csv"))
+        f = next(d.glob("ccd_sch_029_*_w_1a_*.csv"), None)
+        if f is None:
+            raise FileNotFoundError(f"no ccd_sch_029_*_w_1a_*.csv found in {d}")
     return f
 
 def _lea_file(year):
@@ -182,10 +187,13 @@ def _lea_file(year):
     return matches[0]
 
 def _virtual_file(year):
+    # Same 'YYYY_YY' slice + missing-file handling as _sch_file (#40).
     d = _NCES_DIR / year
-    f = d / f"ccd_sch_129_{year[2:4]}{year[7:9]}_w_1a_073025.csv"
+    f = d / f"ccd_sch_129_{year[2:4]}{year[5:7]}_w_1a_073025.csv"
     if not f.exists():  # fall back to glob
-        f = next(d.glob("ccd_sch_129_*_w_1a_*.csv"))
+        f = next(d.glob("ccd_sch_129_*_w_1a_*.csv"), None)
+        if f is None:
+            raise FileNotFoundError(f"no ccd_sch_129_*_w_1a_*.csv found in {d}")
     return f
 
 # NCES VIRTUAL_TEXT enum: No virtual instruction / Supplemental Virtual / Primarily virtual /

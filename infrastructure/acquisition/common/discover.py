@@ -2,14 +2,17 @@
 with an unscoped fallback for districts whose NCES WEBSITE is blank. Ranks candidates
 (schedule-keyword URLs + multi-tool agreement first) and caps per district. Google dropped.
 Writes candidates.json (gated, ranked, capped) + rejected.json. Usage: discover.py [ids] [cap]"""
-import os, json, sys, csv
-from pathlib import Path
+import os, json, sys, csv, time
 from urllib.parse import urlparse
 
 from infrastructure.acquisition.common import config_loader  # noqa: E402  (config-as-data layer — REQ-088)
+from infrastructure.acquisition.common import paths  # noqa: E402  (repo-anchored locations — REQ-087)
 
-OUT=Path("data/acquisition/discovery")
-NCES="data/raw/federal/nces-ccd/2023_24/ccd_lea_029_2324_w_1a_073124.csv"
+# Repo-anchored, never CWD-relative (issue #31): this module is imported by the governance server
+# and the Stage-2 runners, which may be launched from any directory — a bare Path("config/...")
+# silently resolves against the launch CWD (the exact bug class paths.py exists to end).
+OUT=paths.ACQUISITION / "discovery"
+NCES=paths.DATA_ROOT / "raw/federal/nces-ccd/2023_24/ccd_lea_029_2324_w_1a_073124.csv"
 # Trusted K-12 CMS / content-host SUFFIXES -- now the shared config-as-data knob `cms_hosts`
 # (single source of truth with capture_discovery.mjs; no more hand-syncing). LOAD-BEARING in
 # gate(): an off-domain candidate whose host ends with one of these AND contains the district
@@ -30,13 +33,18 @@ def load_domains():
             out[row.get("LEAID","").zfill(7)] = host_of(w if "//" in w else "http://"+w) if w else ""
     return out
 
+def _host_matches(h, suffix):
+    """True iff host `h` IS `suffix` or is a subdomain of it -- dot-boundary matching (issue #34).
+    A bare endswith() lets halifax.com match x.com and evilschoolwires.com match schoolwires.com."""
+    return h == suffix or h.endswith("." + suffix)
+
 def gate(url, dhost, slug, scoped):
     h=host_of(url)
     if not h: return False,"no-host"
-    if any(h.endswith(n) for n in NEWS_AGG): return False,"news/aggregator"
+    if any(_host_matches(h, n) for n in NEWS_AGG): return False,"news/aggregator"
     if scoped:
         if h==dhost or h.endswith("."+dhost): return True,"on-domain"
-        if any(h.endswith(c) for c in CMS_HOSTS) and slug and slug in url.lower(): return True,"cms-slug"
+        if any(_host_matches(h, c) for c in CMS_HOSTS) and slug and slug in url.lower(): return True,"cms-slug"
         return False,"off-district"
     return True,"unscoped"   # no NCES domain: keep non-news results; relevance gate sorts it out
 
@@ -47,7 +55,7 @@ def perplexity_search(q, dhost, k=10):
     r=Perplexity().search.create(**kw)
     return [getattr(it,"url","") for it in (r.results or []) if getattr(it,"url","")]
 
-SECRETS_FILE = Path("config/secrets.local.json")
+SECRETS_FILE = paths.SECRETS_FILE   # repo-anchored (issue #31), never CWD-relative
 
 def _openrouter_key():
     """OPENROUTER_API_KEY isn't auto-loaded from .env or secrets.local.json -- and in any
@@ -66,10 +74,17 @@ def _openrouter_key():
         return None
 
 # HTTP statuses that mean "this call was never really attempted" (bad/revoked key, exhausted
-# pre-paid balance, rate-limited) -- every later call would fail identically, so this must
-# never be treated the same as "the search legitimately found nothing" (see
-# BILLING_AUTH_STATUS_CODES usage below).
-BILLING_AUTH_STATUS_CODES = {401, 402, 429}
+# pre-paid balance) -- every later call would fail identically, so this must never be treated
+# the same as "the search legitimately found nothing" (see BILLING_AUTH_STATUS_CODES usage
+# below). 429 was SPLIT OUT (issue #29): a rate-limit is TRANSIENT -- later calls recover --
+# so it must trigger failover/degrade, never a whole-run halt.
+BILLING_AUTH_STATUS_CODES = {401, 402}
+
+
+class TransientProviderError(RuntimeError):
+    """A provider failure that is transient/infrastructural (429 rate-limit, non-JSON body, ...):
+    the RIGHT reaction is failover (Wave 1: Bright Data -> Serper) or per-school degradation,
+    NOT the SystemExit whole-run halt reserved for billing/auth (401/402). Issue #29."""
 
 def openrouter_search(q, dhost, k=10):
     import openai
@@ -85,11 +100,11 @@ def openrouter_search(q, dhost, k=10):
             # to propagate and halt the whole run, the same as a reconcile() CONTROL FAILURE.
             raise SystemExit(
                 f"CONTROL FAILURE: OpenRouter returned HTTP {e.status_code} -- this is a "
-                f"billing/auth/rate-limit failure, not 'no results found'. Every remaining "
+                f"billing/auth failure, not 'no results found'. Every remaining "
                 f"Wave 2 call would fail identically. Stopping the entire run -- check the "
                 f"account balance / API key before re-running. ({str(e)[:200]})"
             )
-        raise
+        raise   # 429/5xx/etc propagate as the plain APIStatusError -- transient, caller degrades
     ann=getattr(r.choices[0].message,"annotations",None) or []
     out=[]
     for a in ann:
@@ -104,18 +119,30 @@ def _secret(name):
                                if SECRETS_FILE.exists() else None)
 
 
-def serper_search(q, dhost, k=10):
+def serper_search(q, dhost, k=10, _sleep=time.sleep):
     """Serper.dev Google SERP -- domain-scoped via `site:`, returns organic result URLs. The Stage 2
-    WAVE-2 fallback (banked credits; ~$0.001/query). Measured 100% recall on the 53-school
-    known-positive set. Billing/auth/rate (401/402/429) -> SystemExit halt, same control-failure
-    stance as openrouter_search (every later call would fail identically)."""
+    Wave-1 UPTIME FAILOVER (banked credits; ~$0.001/query). Measured 100% recall on the 53-school
+    known-positive set. Billing/auth (401/402) -> SystemExit halt, same control-failure stance as
+    openrouter_search (every later call would fail identically). A 429 is TRANSIENT (issue #29):
+    one short sleep + single retry, then TransientProviderError (a plain exception -- the caller
+    degrades that school, the run continues)."""
     import requests
-    qq = f"{q} site:{dhost}" if dhost else q
-    r = requests.post("https://google.serper.dev/search",
-                      headers={"X-API-KEY": _secret("SERPER_API_KEY"), "Content-Type": "application/json"},
-                      json={"q": qq, "num": k, "gl": "us"}, timeout=30)
+
+    def _post():
+        return requests.post("https://google.serper.dev/search",
+                             headers={"X-API-KEY": _secret("SERPER_API_KEY"), "Content-Type": "application/json"},
+                             json={"q": f"{q} site:{dhost}" if dhost else q, "num": k, "gl": "us"},
+                             timeout=30)
+
+    r = _post()
+    if r.status_code == 429:
+        _sleep(2)
+        r = _post()
+        if r.status_code == 429:
+            raise TransientProviderError(f"Serper HTTP 429 (rate-limited) after one retry -- "
+                                         f"degrading, not halting. {r.text[:160]}")
     if r.status_code in BILLING_AUTH_STATUS_CODES:
-        raise SystemExit(f"CONTROL FAILURE: Serper HTTP {r.status_code} (billing/auth/rate-limit) -- "
+        raise SystemExit(f"CONTROL FAILURE: Serper HTTP {r.status_code} (billing/auth) -- "
                          f"halting the run. {r.text[:160]}")
     r.raise_for_status()
     return [o["link"] for o in r.json().get("organic", []) if o.get("link")][:k]
@@ -125,8 +152,9 @@ def brightdata_search(q, dhost, k=10):
     """Bright Data SERP API (Google) -- domain-scoped via `site:`, structured JSON via brd_json. The
     Stage 2 PRIMARY Wave-1 provider (5,000/mo RECURRING free tier; ~$0.0015/query above it). Measured
     98% recall on the 53-school set. Needs BRIGHTDATA_API_KEY + a SERP-API-type zone in
-    BRIGHTDATA_SERP_ZONE (a residential-proxy zone returns HTML/empty -> the RuntimeError below).
-    Billing/auth -> SystemExit, same control-failure stance as the others."""
+    BRIGHTDATA_SERP_ZONE (a residential-proxy zone returns HTML/empty -> the TransientProviderError
+    below). Billing/auth (401/402) -> SystemExit; a 429 is TRANSIENT (issue #29) and raises
+    TransientProviderError so the Wave-1 cascade fails over to Serper instead of halting."""
     import requests
     from urllib.parse import quote_plus
     qq = f"{q} site:{dhost}" if dhost else q
@@ -137,18 +165,30 @@ def brightdata_search(q, dhost, k=10):
                       json={"zone": _secret("BRIGHTDATA_SERP_ZONE"), "url": gurl, "format": "raw"},
                       timeout=60)
     if r.status_code in BILLING_AUTH_STATUS_CODES:
-        raise SystemExit(f"CONTROL FAILURE: Bright Data HTTP {r.status_code} (billing/auth/rate-limit) -- "
+        raise SystemExit(f"CONTROL FAILURE: Bright Data HTTP {r.status_code} (billing/auth) -- "
                          f"halting the run. {r.text[:160]}")
+    if r.status_code == 429:
+        raise TransientProviderError(f"Bright Data HTTP 429 (rate-limited) -- transient, "
+                                     f"failover to Serper. {r.text[:160]}")
     r.raise_for_status()
     try:
         body = r.json()
         if isinstance(body, str):
             body = json.loads(body)
     except (json.JSONDecodeError, ValueError):
-        raise RuntimeError(f"Bright Data returned non-JSON (is BRIGHTDATA_SERP_ZONE a SERP API zone? "
-                           f"got: {r.text[:120]!r})")
+        raise TransientProviderError(f"Bright Data returned non-JSON (is BRIGHTDATA_SERP_ZONE a SERP "
+                                     f"API zone? got: {r.text[:120]!r})")
     org = body.get("organic") or body.get("organic_results") or []
     return [(o.get("link") or o.get("url")) for o in org if (o.get("link") or o.get("url"))][:k]
+
+
+# Canonical provenance names (issue #30): Stage 2's flatten() records WHICH provider actually
+# served each kept URL into candidates.json `tools[]` (-> DB cache -> Stage-5 candidate_tools_json),
+# so the names must be the real providers, not the retired claude/openrouter wave labels.
+perplexity_search.provider_name = "perplexity"
+openrouter_search.provider_name = "openrouter"
+serper_search.provider_name = "serper"
+brightdata_search.provider_name = "brightdata"
 
 
 def rank_key(c):

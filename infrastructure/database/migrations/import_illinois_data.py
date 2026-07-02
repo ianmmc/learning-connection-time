@@ -41,7 +41,7 @@ import logging
 from infrastructure.database.migrations.sea_import_utils import (
     safe_float, safe_int,
     load_state_crosswalk, get_district_name,
-    log_import_summary,
+    log_import_summary, il_rcdts_to_state_id,
 )
 
 # Configure logging
@@ -62,14 +62,17 @@ REPORT_CARD_FILE = IL_DATA_DIR / "il_report_card_2023_24.xlsx"
 def rcdts_to_state_id(rcdts):
     """Convert 15-digit RCDTS to crosswalk format (RR-CCC-DDDD-TT).
 
+    Delegates to the shared converter, which zero-pads to 15 digits so RCDTS codes
+    for regions 01-09 that Excel parsed as numbers (dropping the leading zero) still
+    match the crosswalk instead of being silently skipped (issue #23).
+
     Args:
         rcdts: 15-digit RCDTS code (e.g., 150162990250000)
 
     Returns:
         Formatted state ID (e.g., 15-016-2990-25)
     """
-    s = str(rcdts)
-    return f'{s[0:2]}-{s[2:5]}-{s[5:9]}-{s[9:11]}'
+    return il_rcdts_to_state_id(rcdts)
 
 
 def load_il_crosswalk(session) -> dict:
@@ -96,9 +99,12 @@ def load_report_card_data():
         return None
 
     try:
+        # Read RCDTS as string so leading zeros (regions 01-09) survive (issue #23);
+        # il_rcdts_to_state_id additionally normalizes any numeric mangling
         df = pd.read_excel(
             REPORT_CARD_FILE,
-            sheet_name="General"
+            sheet_name="General",
+            dtype={"RCDTS": str},
         )
         # Filter to district-level records only
         districts = df[df["Type"] == "District"].copy()
@@ -193,8 +199,8 @@ def import_district_identifiers(df):
         for _, row in df.iterrows():
             try:
                 # Convert RCDTS to state ID format
-                rcdts = str(row['RCDTS'])
-                state_id = rcdts_to_state_id(rcdts)
+                state_id = rcdts_to_state_id(row['RCDTS'])
+                rcdts = state_id.replace('-', '').ljust(15, '0')
 
                 # Look up NCES ID
                 nces_id = il_crosswalk.get(state_id)
@@ -244,8 +250,8 @@ def import_staff_data(df):
     for _, row in df.iterrows():
         try:
             # Convert RCDTS to state ID format
-            rcdts = str(row['RCDTS'])
-            state_id = rcdts_to_state_id(rcdts)
+            state_id = rcdts_to_state_id(row['RCDTS'])
+            rcdts = state_id.replace('-', '').ljust(15, '0')
 
             # Look up NCES ID from crosswalk
             nces_id = il_crosswalk.get(state_id)
@@ -329,8 +335,8 @@ def import_enrollment_data(df):
     for _, row in df.iterrows():
         try:
             # Convert RCDTS to state ID format
-            rcdts = str(row['RCDTS'])
-            state_id = rcdts_to_state_id(rcdts)
+            state_id = rcdts_to_state_id(row['RCDTS'])
+            rcdts = state_id.replace('-', '').ljust(15, '0')
 
             # Look up NCES ID from crosswalk
             nces_id = il_crosswalk.get(state_id)

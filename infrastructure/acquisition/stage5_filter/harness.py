@@ -52,7 +52,12 @@ def tier_target_metrics(rows):
         fn = sum(1 for t, g in rows if t not in positive and g)
         prec = tp / (tp + fp) if (tp + fp) else None
         rec = tp / (tp + fn) if (tp + fn) else None
-        f1 = (2 * prec * rec / (prec + rec)) if (prec and rec) else None
+        # `is not None` on purpose (issue #63): a legitimate 0.0 precision/recall is COMPUTABLE
+        # (f1 = 0.0), not missing — truthiness would report it as None.
+        if prec is not None and rec is not None:
+            f1 = 0.0 if (prec + rec) == 0 else 2 * prec * rec / (prec + rec)
+        else:
+            f1 = None
         thresholds[name] = {"tp": tp, "fp": fp, "fn": fn,
                             "precision": _r(prec), "recall": _r(rec), "f1": _r(f1)}
     return {"per_tier": {k: dict(v) for k, v in sorted(per_tier.items())}, "thresholds": thresholds}
@@ -170,7 +175,7 @@ def fingerprints(con):
     cfg = "".join(sorted(f.read_text() for f in paths.CONFIG_DIR.glob("*.json"))) \
         if paths.CONFIG_DIR.exists() else ""
     labels = con.execute(text(
-        """SELECT rec_key, primary_label, status, flags_json FROM label
+        """SELECT rec_key, primary_label, status, facets_json FROM label
            WHERE status != 'unlabeled' ORDER BY rec_key""")).fetchall()
     data = con.execute(text("SELECT rec_key, tier, category_hypothesis FROM record ORDER BY rec_key")).fetchall()
     topo = con.execute(text(

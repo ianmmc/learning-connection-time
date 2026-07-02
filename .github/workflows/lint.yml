@@ -22,12 +22,23 @@ jobs:
       - name: Install linting tools
         run: |
           python -m pip install --upgrade pip
-          pip install flake8
+          pip install flake8 pyyaml
 
       - name: Lint with flake8 (critical errors only)
         run: |
           # Stop the build if there are Python syntax errors or undefined names
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+      - name: REQUIREMENTS.yaml must parse (issue #77)
+        run: |
+          # The requirements ledger was once broken YAML for an unknown period (fable review #7);
+          # this guarantees a parse regression can never land silently again.
+          python -c "
+          import yaml
+          d = yaml.safe_load(open('docs/REQUIREMENTS.yaml'))
+          assert isinstance(d.get('requirements'), list) and d['requirements'], 'no requirements parsed'
+          print(f\"REQUIREMENTS.yaml OK: {len(d['requirements'])} requirements\")
+          "
 
       - name: Lint with flake8 (warnings - non-blocking)
         run: |

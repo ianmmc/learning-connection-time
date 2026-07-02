@@ -24,6 +24,13 @@ def test_family_of_unknown_falls_back_to_provider_prefix():
     assert councils.family_of("anthropic/claude-x") == "anthropic"
 
 
+def test_family_of_uncatalogued_mistralai_normalizes_to_mistral():
+    # issue #36: the raw prefix "mistralai" is NOT the family bucket name — the alias map folds it
+    # into "mistral" so an uncatalogued Mistral id can never read as a distinct family
+    assert councils.family_of("mistralai/mistral-medium-3") == "mistral"
+    assert councils.family_of("mistralai/anything-new") == councils.family_of("mistralai/mistral-large-2512")
+
+
 # --------------------------- the diversity validator ---------------------------
 def _cfg(voters, judge, cid="t", prompts={"default": "stage6.extract.v1"}):
     return {"id": cid, "name": cid, "voters": list(voters), "judge": judge,
@@ -57,6 +64,28 @@ def test_must_have_exactly_two_voters():
         councils.validate(_cfg(
             ["google/gemini-2.5-flash-lite", "mistralai/mistral-small-24b-instruct-2501",
              "deepseek/deepseek-v3.2"], "qwen/qwen3-235b-a22b-2507"))
+
+
+def test_two_mistral_voters_one_uncatalogued_rejected():
+    # the #36 adversarial case: a catalogued Mistral voter + an UNCATALOGUED mistralai/* voter are
+    # the same family — validation must FAIL (via the catalog check; the alias fallback is the
+    # second line of defense), never pass as "mistral" vs "mistralai"
+    cfg = _cfg(["mistralai/mistral-large-2512", "mistralai/mistral-medium-uncatalogued"],
+               "qwen/qwen3-235b-a22b-2507")
+    with pytest.raises(councils.ConfigError):
+        councils.validate(cfg)
+
+
+def test_uncatalogued_model_id_rejected():
+    # configs are curated: any member not in the FAMILY catalog fails fast at validation
+    cfg = _cfg(["google/gemini-2.5-flash-lite", "anthropic/claude-x"],
+               "qwen/qwen3-235b-a22b-2507")
+    with pytest.raises(councils.ConfigError, match="FAMILY catalog"):
+        councils.validate(cfg)
+    cfg = _cfg(["google/gemini-2.5-flash-lite", "mistralai/mistral-small-24b-instruct-2501"],
+               "openai/gpt-x")   # uncatalogued judge
+    with pytest.raises(councils.ConfigError, match="FAMILY catalog"):
+        councils.validate(cfg)
 
 
 def test_judge_required():

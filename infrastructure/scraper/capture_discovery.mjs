@@ -326,7 +326,7 @@ async function dismissModals(page) {
 // first real run: Stroudsburg's bell-schedule pages link to themselves via fragment
 // anchors, and without stripping these, the same page got queued and re-captured 2-3
 // times under fragment-different URLs.
-function stripFragment(url) {
+export function stripFragment(url) {
   try {
     const u = new URL(url);
     u.hash = '';
@@ -334,6 +334,23 @@ function stripFragment(url) {
   } catch {
     return url.split('#')[0];
   }
+}
+
+// Pure, unit-testable manifest bookkeeping (#18): a files{} entry is recorded ONLY when the
+// underlying write actually succeeded; a failure records a short `<key>_err` note instead --
+// so captures.json never claims a file that isn't on disk (Stage 4's consistency check treats
+// a phantom entry as an inconsistency and quarantines the district).
+export function noteFileResult(rec, key, filename, err = null) {
+  if (err == null) rec.files[key] = filename;
+  else rec[`${key}_err`] = String(err).slice(0, 80);
+  return rec;
+}
+
+// Pure, unit-testable (#44): once a capture resolves, its FINAL url (post-redirect) joins the
+// district's seen-set, so an emergent anchor pointing directly at a redirect TARGET isn't
+// captured a second time under its other name. Must be called before the page's emergent scan.
+export function noteFinalUrl(district, finalUrl) {
+  if (finalUrl) district.seen.add(stripFragment(finalUrl));
 }
 
 function findEmergentLinks(anchors) {
@@ -397,17 +414,12 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
   const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
   const ctx = await browser.newContext({ ignoreHTTPSErrors: true, userAgent: 'Mozilla/5.0 (research; bell-schedule discovery)' });
 
-  async function processTask(t) {
-    const { did, url, tools, source, found_on, capDir } = t;
-    const h = createHash('md5').update(url).digest('hex').slice(0, 10);
-    // One subdirectory per captured URL (named by its hash) -- not flat hash-prefixed files
-    // sharing the district's captures/ folder. The whole point of hashing the URL was so a
-    // human reviewing CP-B output can open one folder and see everything for that one page,
-    // not have to mentally regroup files by matching prefixes.
-    const recDir = path.join(capDir, h);
-    mkdirSync(recDir, { recursive: true });
-    const rec = { url, tools: tools || [], source, found_on, hash: h, ok: false, files: {} };
-    try {
+  // The capture work for one task. Early `return`s are fine -- the caller (processTask) owns
+  // the record push and the catch-all, so a throw ANYWHERE in here (including fs errors)
+  // becomes a per-record err, never a rejected worker.
+  async function captureInto(t, rec, recDir) {
+    const { did, url, source, capDir } = t;
+    {   // (kept block: preserves the original body's indentation for a reviewable diff)
       // --- Google Drive / Docs / Sheets / Slides: Tier 1 only (Tier 2 OAuth not wired yet) ---
       if (isGoogleUrl(url)) {
         const drive = driveExportCandidates(url);
@@ -430,8 +442,7 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
           if (any) {
             rec.kind = 'drive_export';
             rec.ok = true;
-            byDistrict[did].records.push(rec);
-            return rec;
+            return;
           }
         }
         // Tier 1 didn't pan out (folder URL, unrecognized pattern, or every format failed).
@@ -440,8 +451,7 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
         // API) is not implemented in this script yet; until it is, this is the real outcome,
         // not a placeholder.
         rec.err = 'needs_oauth_reauth';
-        byDistrict[did].records.push(rec);
-        return rec;
+        return;
       }
 
       let ct = '';
@@ -449,6 +459,7 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
         const r = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
         ct = (r.headers.get('content-type') || '').toLowerCase();
         rec.final_url = r.url;
+        noteFinalUrl(byDistrict[did], rec.final_url);
         if (ct.includes('pdf') || ct.includes('image')) {
           const ext = ct.includes('pdf') ? 'pdf' : ((ct.split('/')[1] || 'img').split(';')[0]);
           writeFileSync(path.join(recDir, `original.${ext}`), Buffer.from(await r.arrayBuffer()));
@@ -467,6 +478,7 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
           const rawHtml = response ? await response.text().catch(() => '') : '';
           await page.waitForTimeout(2500);
           rec.final_url = page.url();
+          noteFinalUrl(byDistrict[did], rec.final_url);
 
           // Modal dismissal sequenced AFTER the 2.5s wait, giving slow/deliberately-delayed
           // cookie-consent banners a window to actually render before dismissal is attempted.
@@ -479,10 +491,16 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
             try { text += `\n${(await fr.evaluate(() => (document.body ? document.body.innerText : ''))) || ''}`; } catch { /* cross-origin frame */ }
           }
           writeFileSync(path.join(recDir, 'page.txt'), text);
+          rec.files.txt = 'page.txt'; // only after the write succeeded (a throw lands in processTask's catch)
+          // #18: files.png only on a SUCCESSFUL screenshot -- mirroring the pdf pattern below.
+          // The old unconditional `rec.files.png = 'page.png'` after a swallowed .catch()
+          // manifested phantom entries that Stage 4's consistency check then tripped on.
           await withTimeout(
             page.screenshot({ path: path.join(recDir, 'page.png'), fullPage: true }),
             OP_TIMEOUT_MS, 'screenshot',
-          ).catch(() => {});
+          )
+            .then(() => noteFileResult(rec, 'png', 'page.png'))
+            .catch((e) => noteFileResult(rec, 'png', 'page.png', e));
           // Unconditional -- no multi-column-detection trigger. Local compute is free; the
           // decision of which representation to actually use moves downstream to Stage 4/7.
           await withTimeout(
@@ -495,12 +513,10 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
             }),
             OP_TIMEOUT_MS, 'pdf',
           )
-            .then(() => { rec.files.pdf = 'page.pdf'; })
-            .catch((e) => { rec.pdf_err = String(e).slice(0, 80); });
+            .then(() => noteFileResult(rec, 'pdf', 'page.pdf'))
+            .catch((e) => noteFileResult(rec, 'pdf', 'page.pdf', e));
 
           rec.kind = 'html';
-          rec.files.txt = 'page.txt';
-          rec.files.png = 'page.png';
           rec.text_times = (text.match(TIME) || []).length;
 
           // Hosting/CMS fingerprint -- gathered from the goto Response (headers we used to
@@ -536,10 +552,31 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
           await page.close();
         }
       }
-    } catch (e) {
-      rec.err = String(e).slice(0, 120);
     }
-    byDistrict[did].records.push(rec);
+  }
+
+  // #35: the ENTIRE task -- preamble (hash, mkdir), capture body, AND the record push -- runs
+  // inside this try/catch/finally, so a throw anywhere becomes a per-record err entry instead
+  // of rejecting a worker (which used to reject Promise.all and leave EVERY district of the
+  // run without a captures.json).
+  async function processTask(t) {
+    const rec = { url: t.url, tools: t.tools || [], source: t.source, found_on: t.found_on,
+      hash: null, ok: false, files: {} };
+    try {
+      // One subdirectory per captured URL (named by its hash) -- not flat hash-prefixed files
+      // sharing the district's captures/ folder. The whole point of hashing the URL was so a
+      // human reviewing CP-B output can open one folder and see everything for that one page,
+      // not have to mentally regroup files by matching prefixes.
+      const h = createHash('md5').update(t.url).digest('hex').slice(0, 10);
+      rec.hash = h;
+      const recDir = path.join(t.capDir, h);
+      mkdirSync(recDir, { recursive: true });
+      await captureInto(t, rec, recDir);
+    } catch (e) {
+      if (!rec.err) rec.err = String(e).slice(0, 120);
+    } finally {
+      byDistrict[t.did].records.push(rec);
+    }
     return rec;
   }
 
@@ -556,22 +593,37 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
     }
   }
   console.log(`capturing ${tasks.length} candidate URLs across ${dirs.length} districts (concurrency ${CONC})`);
-  await Promise.all(Array.from({ length: CONC }, () => worker()));
+  // #35: allSettled + a finally around the manifest writes -- node owns its shutdown, so the
+  // per-district manifests are ALWAYS written even if a worker somehow rejects (processTask
+  // already converts task throws into per-record err entries, so this is the second belt).
+  let notAttemptedCount = 0;
+  try {
+    const settled = await Promise.allSettled(Array.from({ length: CONC }, () => worker()));
+    for (const s of settled) {
+      if (s.status === 'rejected') console.error(`worker crashed (its in-flight task may be missing from the manifest): ${s.reason}`);
+    }
+  } finally {
+    // Un-started tasks (deadline reached / worker crash) -> a not_attempted record each, so the
+    // manifest lists EVERY candidate (completeness) and the district resolves captured_partial
+    // rather than vanishing.
+    const notAttempted = tasks.slice(idx);
+    notAttemptedCount = notAttempted.length;
+    for (const t of notAttempted) {
+      const h = createHash('md5').update(t.url).digest('hex').slice(0, 10);
+      byDistrict[t.did].records.push({ url: t.url, tools: t.tools || [], source: t.source,
+        found_on: t.found_on, hash: h, ok: false, files: {}, err: 'not_attempted (capture deadline reached)' });
+    }
 
-  // Un-started tasks (deadline reached) -> a not_attempted record each, so the manifest lists EVERY
-  // candidate (completeness) and the district resolves captured_partial rather than vanishing.
-  const notAttempted = tasks.slice(idx);
-  for (const t of notAttempted) {
-    const h = createHash('md5').update(t.url).digest('hex').slice(0, 10);
-    byDistrict[t.did].records.push({ url: t.url, tools: t.tools || [], source: t.source,
-      found_on: t.found_on, hash: h, ok: false, files: {}, err: 'not_attempted (capture deadline reached)' });
+    for (const did of Object.keys(byDistrict)) {
+      try {
+        writeVersioned(path.join(ROOT, did, 'captures.json'), JSON.stringify(byDistrict[did].records, null, 2));
+      } catch (e) {
+        console.error(`manifest write FAILED for ${did}: ${e}`); // keep writing the other districts'
+      }
+    }
+    await browser.close().catch(() => {});
   }
-
-  for (const did of Object.keys(byDistrict)) {
-    writeVersioned(path.join(ROOT, did, 'captures.json'), JSON.stringify(byDistrict[did].records, null, 2));
-  }
-  await browser.close();
-  const tag = notAttempted.length ? ` — ${notAttempted.length} not attempted (deadline)` : '';
+  const tag = notAttemptedCount ? ` — ${notAttemptedCount} not attempted (deadline)` : '';
   console.log(`CAPTURE DONE — ${done} URLs captured, ${dirs.length} districts${tag}`);
 }
 

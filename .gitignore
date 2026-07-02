@@ -172,3 +172,7 @@ data/benchmark_results/stage4_pdf_tool_spike/run.log
 data/acquisition/stage5_review/*
 !data/acquisition/stage5_review/labels.json
 !data/acquisition/stage5_review/cluster_splits.json
+!data/acquisition/stage5_review/followup_flags.json
+
+# Derived harvest slices (regenerable from captures at ingest; issue #58 relocation)
+data/acquisition/harvest_slices/

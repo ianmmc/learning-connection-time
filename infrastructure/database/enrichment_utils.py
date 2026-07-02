@@ -9,34 +9,42 @@ Primary function:
 """
 
 import json
+import logging
 from datetime import datetime
 from typing import Tuple, Optional, Dict, List
 from sqlalchemy.orm import Session
 
 from infrastructure.database.models import EnrichmentQueue, BellSchedule
+from infrastructure.database.school_year import CURRENT_SCHOOL_YEAR
 from infrastructure.database.verification import validate_schedule_plausibility
 
+logger = logging.getLogger(__name__)
 
-def map_schedule_type_to_grade_level(schedule_type: str, schools_sampled: List[Dict] = None) -> str:
+
+def resolve_grade_level(schedule_type: str, schools_sampled: List[Dict] = None) -> Tuple[str, bool]:
     """
-    Map schedule_type from enrichment data to valid grade_level for bell_schedules table
+    Resolve schedule_type from enrichment data to a valid grade_level, saying so
+    when it had to guess (issue #68 — 'all'/'district_average' used to map to
+    'high' silently).
 
     Args:
         schedule_type: Schedule type from enrichment (e.g., 'all', 'high_school', 'district_average')
         schools_sampled: Optional list of schools with level information
 
     Returns:
-        Valid grade_level: 'elementary', 'middle', or 'high'
+        (grade_level, was_defaulted): grade_level is 'elementary', 'middle', or 'high';
+        was_defaulted is True when nothing in the input indicated a level and 'high'
+        was used as the fallback — callers should record that caveat.
     """
     schedule_lower = schedule_type.lower()
 
     # Direct mappings
     if 'high' in schedule_lower or 'hs' in schedule_lower or 'secondary' in schedule_lower:
-        return 'high'
+        return 'high', False
     elif 'middle' in schedule_lower or 'ms' in schedule_lower or 'intermediate' in schedule_lower:
-        return 'middle'
+        return 'middle', False
     elif 'elementary' in schedule_lower or 'elem' in schedule_lower or 'primary' in schedule_lower:
-        return 'elementary'
+        return 'elementary', False
 
     # Check schools_sampled for clues
     if schools_sampled:
@@ -44,14 +52,25 @@ def map_schedule_type_to_grade_level(schedule_type: str, schools_sampled: List[D
             if isinstance(school, dict):
                 level = school.get('level', '').lower()
                 if 'high' in level or 'hs' in level or 'secondary' in level:
-                    return 'high'
+                    return 'high', False
                 elif 'middle' in level or 'ms' in level or 'intermediate' in level:
-                    return 'middle'
+                    return 'middle', False
                 elif 'elem' in level or 'primary' in level:
-                    return 'elementary'
+                    return 'elementary', False
 
-    # Default to high (most common in secondary/unified districts)
-    return 'high'
+    # No signal — default to high (most common in secondary/unified districts),
+    # but tell the caller it is a guess.
+    logger.warning(
+        "schedule_type %r has no grade-level signal; defaulting grade_level to 'high'",
+        schedule_type,
+    )
+    return 'high', True
+
+
+def map_schedule_type_to_grade_level(schedule_type: str, schools_sampled: List[Dict] = None) -> str:
+    """Backward-compatible wrapper around resolve_grade_level() (drops the flag)."""
+    grade_level, _ = resolve_grade_level(schedule_type, schools_sampled)
+    return grade_level
 
 
 def map_confidence_to_category(confidence: float) -> str:
@@ -75,7 +94,8 @@ def map_confidence_to_category(confidence: float) -> str:
 def copy_enrichment_to_bell_schedules(
     session: Session,
     district_id: str,
-    force: bool = False
+    force: bool = False,
+    commit: bool = True
 ) -> Tuple[bool, str]:
     """
     Copy completed enrichment results to bell_schedules table
@@ -87,6 +107,9 @@ def copy_enrichment_to_bell_schedules(
         session: SQLAlchemy session
         district_id: NCES district ID
         force: If True, update existing records even if they exist
+        commit: If True (default), commit the write; pass False when the CALLER
+            owns the transaction (issue #68 — the unconditional commit here broke
+            caller transactionality). With commit=False the write is flushed only.
 
     Returns:
         Tuple of (success: bool, message: str)
@@ -123,11 +146,13 @@ def copy_enrichment_to_bell_schedules(
     if not total_minutes:
         return False, "No instructional minutes data in tier result"
 
-    # Extract schedule data
-    start_time = tier_result.get('start_time', 'Unknown')
-    end_time = tier_result.get('end_time', 'Unknown')
-    source_url = tier_result.get('source_url', 'Unknown')
-    year = tier_result.get('year', '2025-26')
+    # Extract schedule data. Absent times stay None (issue #68 — the old
+    # 'Unknown' placeholder could never pass time-format validation, so
+    # minutes-only enrichments were permanently uncopyable).
+    start_time = tier_result.get('start_time') or None
+    end_time = tier_result.get('end_time') or None
+    source_url = tier_result.get('source_url') or None
+    year = tier_result.get('year', CURRENT_SCHOOL_YEAR)
     schedule_type = tier_result.get('schedule_type', 'high')
     schools_sampled = tier_result.get('schools_sampled', [])
     extraction_method = tier_result.get('extraction_method', f'tier_{tier}')
@@ -135,12 +160,20 @@ def copy_enrichment_to_bell_schedules(
     notes = tier_result.get('notes', '')
 
     # Map to valid bell_schedules values
-    grade_level = map_schedule_type_to_grade_level(schedule_type, schools_sampled)
+    grade_level, grade_defaulted = resolve_grade_level(schedule_type, schools_sampled)
+    if grade_defaulted:
+        notes = (
+            f"grade_level defaulted to 'high' (schedule_type={schedule_type!r} "
+            f"had no grade-level signal). {notes}"
+        )
     method = 'automated_enrichment'  # All enriched data uses this method
     confidence_str = map_confidence_to_category(confidence)
 
     # Ensure source_url is a list
-    source_urls = [source_url] if isinstance(source_url, str) else source_url
+    if source_url is None:
+        source_urls = []
+    else:
+        source_urls = [source_url] if isinstance(source_url, str) else source_url
 
     # REQ-038: Validate schedule plausibility before database insertion
     validation_result = validate_schedule_plausibility({
@@ -198,14 +231,18 @@ def copy_enrichment_to_bell_schedules(
         session.add(new_schedule)
         action = "Created"
 
-    session.commit()
+    if commit:
+        session.commit()
+    else:
+        session.flush()
     return True, f"{action} bell schedule: {total_minutes} min, {grade_level}, {confidence_str} confidence"
 
 
 def copy_all_completed_enrichments(
     session: Session,
     force: bool = False,
-    verbose: bool = True
+    verbose: bool = True,
+    commit_each: bool = True
 ) -> Dict[str, any]:
     """
     Copy all completed enrichment results to bell_schedules table
@@ -214,6 +251,9 @@ def copy_all_completed_enrichments(
         session: SQLAlchemy session
         force: If True, update existing records
         verbose: If True, print progress
+        commit_each: If True (default), commit after each district so one bad
+            district cannot lose the batch; pass False to let the caller own
+            the transaction (issue #68)
 
     Returns:
         Summary dictionary with counts
@@ -233,7 +273,8 @@ def copy_all_completed_enrichments(
         success, message = copy_enrichment_to_bell_schedules(
             session,
             enrichment.district_id,
-            force=force
+            force=force,
+            commit=commit_each
         )
 
         if success:

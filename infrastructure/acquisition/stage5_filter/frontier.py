@@ -1,23 +1,29 @@
 #!/usr/bin/env python3
-"""Frontier / grid search over the Stage 5 tier thresholds (REQ-096) — ADVISORY, not auto-applied.
+"""Frontier / grid search over the Stage 5 V2 detector params (REQ-096) — ADVISORY, not auto-applied.
 
-Re-scores the LABELED records under candidate threshold params and reports the precision/recall
-frontier subject to a hard RECALL FLOOR, ranked by precision (= Stage 7 cost saved). The human (and
-Claude, in chat) inspects the frontier and the per-record movements; nothing is written to config
-automatically. A chosen move is recorded to the tuning ledger (REQ-095).
+Re-scores the LABELED records under candidate DETECTOR/COMBINER params and reports the
+precision/recall frontier subject to a hard RECALL FLOOR, ranked by precision (= Stage 7 cost
+saved). The human (and Claude, in chat) inspects the frontier and the per-record movements;
+nothing is written to config automatically. A chosen move is recorded to the tuning ledger (REQ-095).
+
+Issue #56: this tool used to grid-search the V1 `tier_and_category` cascade, which REQ-113 deleted
+in favor of the labeling-function DETECTORS + COMBINER (`detectors.py` + `combiner.py`). The knob
+surface is now `detectors.DEFAULT_DETECTOR_PARAMS` (table_min_times / table_min_periods /
+neg_dom_min — the thresholds every detector reads); the re-score path is the LIVE one:
+`combiner.score_record(sig, params)` -> a derived tier letter, scored with the same harness metrics.
 
 Why this needs no re-ingest: the review DB already stores each record's full signal vector
 (`signals_json`) and the human `primary_label`. So we load those once and re-run the PARAMETERIZED
-`build_signals.tier_and_category` over the stored signals — instant, deterministic, exact. Metrics
-reuse the harness (`tier_target_metrics`); thresholds reuse the real scorer. Nothing reimplemented.
+detectors+combiner over the stored signals — instant, deterministic, exact. Metrics reuse the
+harness (`tier_target_metrics`); scoring reuses the real combiner. Nothing reimplemented.
 
 Overfitting guard (research-confirmed): LeaveOneGroupOut **by district** — records within a district
-are correlated (same CMS chrome/templates), so plain k-fold would leak. At n=12 the CV estimate is
+are correlated (same CMS chrome/templates), so plain k-fold would leak. At small n the CV estimate is
 high-variance; it is REPORTED alongside the in-sample number, never a gate (CV detects overfit, it
 does not prevent it). See docs/technical-notes/STAGE5_FILTER_DESIGN_2026-06.md.
 
 Usage:
-    python3 frontier.py --recall-floor 0.97                 # grid over the C->B neg_dominant knob
+    python3 frontier.py --recall-floor 0.97                 # grid over the detector-threshold knobs
     python3 frontier.py --recall-floor 0.97 --cv            # + LOGO-by-district on the best feasible
 """
 import argparse
@@ -26,15 +32,21 @@ import json
 
 from sqlalchemy import text
 
-from infrastructure.acquisition.stage5_filter import build_signals as BS  # noqa: E402  (DEFAULT_TIER_PARAMS, tier_and_category, TARGET_LABELS)
+from infrastructure.acquisition.stage5_filter import build_signals as BS  # noqa: E402  (TARGET_LABELS)
+from infrastructure.acquisition.stage5_filter import combiner as COMB  # noqa: E402    (the LIVE V2 scorer)
+from infrastructure.acquisition.stage5_filter import detectors as DET  # noqa: E402    (DEFAULT_DETECTOR_PARAMS — the knob surface)
 from infrastructure.acquisition.stage5_filter import harness  # noqa: E402             (tier_target_metrics — the metric of record)
 from infrastructure.acquisition.common import db as gdb  # noqa: E402  (governance Postgres — REQ-103)
 
 TARGET = BS.TARGET_LABELS
 
-# The default grid: the immediately-actionable C->B regression knob (the de-chrome left 24
-# non-targets leaning on chrome negatives that are now gone). Small, enumerable, exact.
-DEFAULT_GRID = {"neg_dom_min": [2, 3, 4], "neg_dom_win_max": [1, 2, 3]}
+# The default grid: the full V2 detector-threshold knob surface (detectors.DEFAULT_DETECTOR_PARAMS).
+# Small, enumerable, exact — each knob one step tighter/looser around the shipped default.
+DEFAULT_GRID = {
+    "table_min_times": [3, 4, 5],     # lf_time_table: dense in-window table times (with a positive kw)
+    "table_min_periods": [1, 2, 3],   # lf_time_table: period-row structure floor
+    "neg_dom_min": [2, 3, 4],         # lf_board/sports/transport + _neg_dominant: negative-class dominance
+}
 
 
 # ----------------------------- load (no re-ingest) -----------------------------
@@ -52,10 +64,11 @@ def load_labeled(con):
 
 # ----------------------------- re-score + evaluate -----------------------------
 def _retier(records, params):
-    """[(district, rec_key, tier, is_target), ...] under candidate params."""
+    """[(district, rec_key, tier, is_target), ...] under candidate detector params — the LIVE V2
+    scoring path (detectors.run_all -> combiner.combine), tier = the derived letter."""
     out = []
     for dist, rk, sig, lab in records:
-        tier, _score, _cat = BS.tier_and_category(sig, sig.get("roster_school_names_hit", 0), params)
+        tier = COMB.score_record(sig, params)["tier"]
         out.append((dist, rk, tier, lab in TARGET))
     return out
 
@@ -79,9 +92,9 @@ def _moves(records, baseline, params):
 def grid_search(records, grid=None, recall_floor=0.97, positive_tier="A", baseline=None):
     """Enumerate the grid, score each config, keep those whose `positive_tier` recall >= floor,
     rank by that tier's precision desc. Returns [{params, metrics, feasible, recall, precision,
-    moves}, ...]. `moves` is vs `baseline` (defaults to DEFAULT_TIER_PARAMS)."""
+    moves}, ...]. `moves` is vs `baseline` (defaults to detectors.DEFAULT_DETECTOR_PARAMS)."""
     grid = grid or DEFAULT_GRID
-    baseline = baseline or BS.DEFAULT_TIER_PARAMS
+    baseline = baseline or DET.DEFAULT_DETECTOR_PARAMS
     keys = list(grid)
     results = []
     for combo in itertools.product(*(grid[k] for k in keys)):
@@ -104,7 +117,7 @@ def logo_cv(records, params, positive_tier="A"):
     """LeaveOneGroupOut by district: for each district, score the HELD-OUT district under `params`
     (thresholds aren't fit per-fold here — they're global — so this measures how the global config
     generalizes across districts). Reports mean/std of held-out precision/recall. High std => the
-    config leans on particular districts. Uses sklearn when available, else a pure-Python fallback."""
+    config leans on particular districts."""
     retiered = _retier(records, params)
     by_dist = {}
     for dist, rk, tier, g in retiered:
@@ -148,7 +161,7 @@ def _fmt(x):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Stage 5 frontier / grid search (REQ-096, advisory)")
+    ap = argparse.ArgumentParser(description="Stage 5 frontier / grid search over the V2 detector params (REQ-096, advisory)")
     ap.add_argument("--recall-floor", type=float, default=0.97)
     ap.add_argument("--tier", default="A", help="positive tier to constrain/rank on (A or A+B)")
     ap.add_argument("--cv", action="store_true", help="also run LOGO-by-district on the top config")
@@ -156,7 +169,7 @@ def main():
 
     with gdb.session_scope() as con:
         records = load_labeled(con)
-    base_m = evaluate(records, BS.DEFAULT_TIER_PARAMS)["thresholds"][a.tier]
+    base_m = evaluate(records, DET.DEFAULT_DETECTOR_PARAMS)["thresholds"][a.tier]
     print(f"loaded {len(records)} labeled records "
           f"({sum(1 for *_ , lab in records if lab in TARGET)} targets)")
     print(f"baseline tier-{a.tier}: precision={_fmt(base_m['precision'])} recall={_fmt(base_m['recall'])} "
@@ -170,7 +183,7 @@ def main():
         print(f"  {r['params']}  precision={_fmt(r['precision'])} recall={_fmt(r['recall'])}{flag}")
         print(f"      moves: {mv}")
     if a.cv and res:
-        cv = logo_cv(records, {**BS.DEFAULT_TIER_PARAMS, **res[0]["params"]}, positive_tier=a.tier)
+        cv = logo_cv(records, {**DET.DEFAULT_DETECTOR_PARAMS, **res[0]["params"]}, positive_tier=a.tier)
         print(f"\nLOGO-by-district on top config ({cv['n_folds']} folds): "
               f"precision {_fmt(cv['precision_mean'])}±{_fmt(cv['precision_std'])}  "
               f"recall {_fmt(cv['recall_mean'])}±{_fmt(cv['recall_std'])}")

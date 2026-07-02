@@ -25,6 +25,8 @@ import json
 import subprocess
 from pathlib import Path
 
+import requests
+
 from sqlalchemy import text
 
 from infrastructure.acquisition.common import cache_ingest as CI
@@ -215,20 +217,30 @@ def finish_from_wave1(batch: dict, district: dict, raw: dict, registry: dict) ->
     roster = D2.merge_wave1(roster, raw, district.get("domain", ""))
     residual = D2.residual_schools(roster)
     if residual:
-        D2.run_wave2(residual, district.get("domain", ""))
+        # Wave 2 = the DECIDED Claude WebSearch provider (issue #41: run_wave2's retired
+        # openrouter_search default is gone -- this path must never silently reach it).
+        _wave2_claude(district, residual, district.get("domain", ""))
     return D2.finish_district(district, roster, batch["batch_id"], registry)
 
 
-def brightdata_then_serper(query: str, domain: str) -> list:
+def brightdata_then_serper(query: str, domain: str) -> tuple:
     """Wave-1 search WITH AVAILABILITY FAILOVER. Bright Data is primary (recurring-free Google). If it
-    is out of credits / auth-fails / rate-limits (its SystemExit), fall back to Serper (banked credits)
-    for THIS school -- both hit the SAME Google index, so this is redundancy for UPTIME, not a recall
-    layer (a school Google has no page for is missed by both). If Serper ALSO billing-fails, that
-    SystemExit propagates and halts the run (both Google providers exhausted)."""
+    fails for ANY infrastructure reason (issue #29) -- billing/auth SystemExit, 429/non-JSON-zone
+    TransientProviderError, network timeout/ConnectionError/5xx (requests.RequestException) -- fall
+    back to Serper (banked credits) for THIS school. Both hit the SAME Google index, so this is
+    redundancy for UPTIME, not a recall layer (a school Google has no page for is missed by both).
+    If Serper ALSO billing-fails, that SystemExit propagates and halts the run (both Google providers
+    exhausted); a transient Serper failure propagates as a plain exception (per-school degrade).
+
+    Returns (provider, urls) -- only this cascade knows which provider actually served the query,
+    and run_wave1 records it as the candidate's provenance (issue #30)."""
     try:
-        return DISC.brightdata_search(query, domain)
-    except SystemExit:
-        return DISC.serper_search(query, domain)
+        return ("brightdata", DISC.brightdata_search(query, domain))
+    except SystemExit as e:
+        print(f"   [w1] Bright Data billing/auth failure -> Serper failover: {str(e)[:80]}")
+    except (requests.RequestException, RuntimeError) as e:   # RuntimeError covers TransientProviderError
+        print(f"   [w1] Bright Data {type(e).__name__} -> Serper failover: {str(e)[:80]}")
+    return ("serper", DISC.serper_search(query, domain))
 
 
 def _wave2_claude(district: dict, residual: list, domain: str, *, _run=subprocess.run) -> None:
@@ -248,6 +260,7 @@ def _wave2_claude(district: dict, residual: list, domain: str, *, _run=subproces
         urls = by_id.get(r["school_id"], [])
         r["wave2_invoked"] = True
         r["wave2_raw_urls"] = urls
+        r["wave2_provider"] = "claude_websearch"   # real provenance for flatten() (issue #30)
         r["wave2_gated"] = D2.gate_urls(urls, domain)
 
 
@@ -377,45 +390,51 @@ def run_batch(batch_ref: str, *, actor: str = "auto:stage2", on_event=None,
         if on_event:
             on_event(kind, {"batch_id": batch_id, **payload})
 
-    registry = DS.load()
-    todo, skipped = D2.reconcile(batch, registry)
-    DS.save(registry)
-    emit("reconciled", todo=[d["district_id"] for d in todo],
-         skipped=[d["district_id"] for d in skipped])
-    if not todo:
-        return {"batch_id": batch_id, "todo": 0, "skipped": len(skipped), "results": []}
-
-    # Mark every todo district dispatched (one buffered event each, single flush) so the console's
-    # event-log projection shows "in flight" immediately.
-    registry = DS.load()
-    for d in todo:
-        DS.record_stage(registry, d["district_id"], d["name"], d["state"], stage_name="discover",
-                        event_type="dispatched", actor=actor, batch_id=batch_id)
-        emit("dispatched", district_id=d["district_id"], name=d["name"])
-    DS.save(registry)
-
-    results = []
-    for d in todo:
-        did = d["district_id"]
+    # Per-district saves defer the district_status.json regeneration (export=False) — re-exporting the
+    # FULL log per district is O(N²) over a run (issue #49). One explicit DS.export() runs at the end
+    # (in a finally, so a crash mid-run still leaves the backup current with the committed events).
+    try:
         registry = DS.load()
-        try:
-            outcome = discover_district(batch, d, registry,
-                                        wave1_search=wave1_search, wave2_runner=wave2_runner)
-            DS.save(registry)
-            results.append({"district_id": did, "name": d["name"], "outcome": outcome})
-            emit("completed", district_id=did, name=d["name"], outcome=outcome)
-        except SystemExit:
-            raise   # CONTROL FAILURE / billing-auth halt -- never swallow
-        except Exception as e:
+        todo, skipped = D2.reconcile(batch, registry)
+        DS.save(registry, export=False)
+        emit("reconciled", todo=[d["district_id"] for d in todo],
+             skipped=[d["district_id"] for d in skipped])
+        if not todo:
+            return {"batch_id": batch_id, "todo": 0, "skipped": len(skipped), "results": []}
+
+        # Mark every todo district dispatched (one buffered event each, single flush) so the console's
+        # event-log projection shows "in flight" immediately.
+        registry = DS.load()
+        for d in todo:
+            DS.record_stage(registry, d["district_id"], d["name"], d["state"], stage_name="discover",
+                            event_type="dispatched", actor=actor, batch_id=batch_id)
+            emit("dispatched", district_id=d["district_id"], name=d["name"])
+        DS.save(registry, export=False)
+
+        results = []
+        for d in todo:
+            did = d["district_id"]
             registry = DS.load()
-            DS.record_stage(registry, did, d["name"], d["state"], stage_name="discover",
-                            event_type="failed", actor=actor, batch_id=batch_id,
-                            notes=f"{type(e).__name__}: {str(e)[:200]}")
-            DS.save(registry)
-            results.append({"district_id": did, "name": d["name"], "outcome": "error",
-                            "error": f"{type(e).__name__}: {str(e)[:200]}"})
-            emit("failed", district_id=did, name=d["name"], error=str(e)[:200])
-    return {"batch_id": batch_id, "todo": len(todo), "skipped": len(skipped), "results": results}
+            try:
+                outcome = discover_district(batch, d, registry,
+                                            wave1_search=wave1_search, wave2_runner=wave2_runner)
+                DS.save(registry, export=False)
+                results.append({"district_id": did, "name": d["name"], "outcome": outcome})
+                emit("completed", district_id=did, name=d["name"], outcome=outcome)
+            except SystemExit:
+                raise   # CONTROL FAILURE / billing-auth halt -- never swallow
+            except Exception as e:
+                registry = DS.load()
+                DS.record_stage(registry, did, d["name"], d["state"], stage_name="discover",
+                                event_type="failed", actor=actor, batch_id=batch_id,
+                                notes=f"{type(e).__name__}: {str(e)[:200]}")
+                DS.save(registry, export=False)
+                results.append({"district_id": did, "name": d["name"], "outcome": "error",
+                                "error": f"{type(e).__name__}: {str(e)[:200]}"})
+                emit("failed", district_id=did, name=d["name"], error=str(e)[:200])
+        return {"batch_id": batch_id, "todo": len(todo), "skipped": len(skipped), "results": results}
+    finally:
+        DS.export()   # one full district_status.json regeneration per run (issue #49)
 
 
 def main():

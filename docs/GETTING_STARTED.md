@@ -107,13 +107,16 @@ details: [DATABASE_SETUP.md → "Two databases"](DATABASE_SETUP.md#two-databases
 ### 3. Run Tests
 
 ```bash
-# Run all tests (831 tests)
+# Fast, resource-free suite (what CI's first job runs; ~700 tests)
+pytest -q -m "not integration"
+
+# Governance-DB suite (needs Docker Postgres up; CI's second job)
+pytest -q -m govdb
+
+# Everything, verbose
 pytest tests/ -v
 
-# Run quick smoke tests
-pytest tests/ -v -x --ignore=tests/test_*_integration.py
-
-# Run integration tests only
+# Integration tests only (network/system-dependent)
 pytest tests/ -v -m integration
 ```
 
@@ -240,15 +243,13 @@ git commit -m "feat: Add new bell schedule parser"
 
 ---
 
-## Current Status (2026-06-12 — see root `CLAUDE.md` for the live 2026-06-22 picture)
+## Current Status (2026-07-01 — root `CLAUDE.md` *Current Status* is always the live authority)
 
-> **Freshness:** snapshot below is 2026-06-12. Current state = building the per-school acquisition pipeline (gross bell-to-bell metric, council extraction, 3 human checkpoints; code at `infrastructure/acquisition/`); see root `CLAUDE.md` *Current Status* + `docs/ACQUISITION_PIPELINE.md`.
-
-- **Database:** 17,842 U.S. school districts; 9/9 SEA integrations (FL, TX, CA, NY, IL, MI, PA, VA, MA)
-- **Phase:** Bell-schedule **extraction-quality evaluation — benchmarked.** See `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.
-- **Finding:** local extraction plateaus ~35–53% (plain-text 7B best local ~42%; Claude Haiku ~53%); **input/ground-truth quality is the main limiter, not the model.**
-- **Direction:** format-aware reading + dual-path consensus (human review of disagreements) + better ground truth.
-- **Acquisition:** Crawlee scraper + FastAPI; extractor TBD. Local Ollama models deleted post-benchmark (re-pullable). Headless Ubuntu server planned (`/Users/ianmmc/Development/ai-server-setup/`).
+- **Database:** 17,842 U.S. school districts; 9/9 SEA integrations (FL, TX, CA, NY, IL, MI, PA, VA, MA); statutory-driven LCT calculations live.
+- **Phase:** the **9-stage per-school acquisition pipeline** (`infrastructure/acquisition/`) is console-driven and **built through the Stage 6→7 seam**: gate@1 queue · deterministic SERP discovery (Bright Data + Serper failover → Claude Wave 2) · Playwright capture · local processing · Stage-5 detector/combiner scoring + three-axis labeling (gate@5) · Stage-6 routing/pricing/immutable dispatch (gate@6) — stopping before the paid council call (Stage 7, next).
+- **Metric:** GROSS bell-to-bell minutes (`end − start`, labeled `gross_bell_to_bell`); extractors read TIMES, deterministic code computes minutes + the per-band mode (REQ-054/055/056).
+- **Architecture:** the isolated `governance` Postgres is the working store; JSON artifacts are receipts; state = the `state_event` log; gates are stage-numbered (`gate@1/5/6/7/8`).
+- Map: `docs/ACQUISITION_PIPELINE.md` · governance: `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` · per-stage design: `docs/technical-notes/STAGE*_DESIGN_*.md`.
 
 ---
 
@@ -270,4 +271,4 @@ git commit -m "feat: Add new bell schedule parser"
 
 ---
 
-**Last Updated:** June 12, 2026
+**Last Updated:** July 1, 2026

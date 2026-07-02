@@ -17,6 +17,7 @@ import argparse
 import hashlib
 import json
 import re
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -36,7 +37,11 @@ QUEUE_DIR = paths.QUEUE_DIR                   # Stage 1 batch_*.json (targeting 
 # regenerable cache; this JSON is what survives DB loss and lives in git (gitignore re-includes
 # it). Written on every label save (server) + at the end of each ingest; re-imported on ingest.
 LABELS_JSON = paths.LABELS_JSON
-LABEL_COLS = ["rec_key", "primary_label", "flags_json", "facets_json", "note", "status", "updated_at"]
+# The v2.1 label object (REQ-114): primary + facets + note + status. The legacy v2.0 `flags_json`
+# column is an inert archive (values folded into facets by migrate_label_v21; the human `duplicate`
+# flag retired — programmatic dedup via record.duplicate_of + clustering owns that now). Not
+# exported/imported/written anywhere; historical values live in the DB column + labels.json git history.
+LABEL_COLS = ["rec_key", "primary_label", "facets_json", "note", "status", "updated_at"]
 # Durable backup for the OTHER precious human signal: cluster SPLITS (a record the reviewer
 # pulled out of an auto-cluster because it's genuinely unique). Like labels, survives DB wipe.
 CLUSTER_SPLITS_JSON = paths.CLUSTER_SPLITS_JSON
@@ -567,74 +572,10 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
     return sig, full_best
 
 
-# Tier-decision thresholds, extracted as a tunable params dict (REQ-096). Defaults reproduce the
-# original hardcoded behavior EXACTLY — the frontier/grid search varies these over the stored
-# signals (no re-ingest) to find the recall-constrained precision optimum. NOT yet config-as-data
-# knobs: they live here next to the logic until the frontier search settles them; promotion to
-# config/ comes after. (Score weights below are a separate, later optimization.)
-DEFAULT_TIER_PARAMS = {
-    "min_chars_d": 40,       # below this many chars AND no pages -> tier D (unusable)
-    "neg_dom_min": 2,        # neg_total >= this (and > #positives, and win <= win_max) -> neg-dominant
-    "neg_dom_win_max": 2,    # neg-dominant only when in-window times are this few
-    "prox_min_a": 1,         # proximity pairs >= this (+ a positive/instr signal) -> tier A
-    "win_min_b": 2,          # in-window times >= this -> tier B (the fallthrough plausible case)
-}
-
-
-def tier_and_category(sig: dict, roster_size: int, params: dict = None):
-    p = params or DEFAULT_TIER_PARAMS
-    n, win, prox = sig["n_times"], sig["n_times_in_window"], sig["proximity_pairs"]
-    pos, neg, instr = sig["positive_kw"], sig["negative_kw"], sig["instructional_time"]
-    neg_total = sig["neg_total"]
-    all_after5 = n > 0 and sig["times_after_5pm"] == n
-    neg_dominant = neg_total >= p["neg_dom_min"] and neg_total > len(pos) and win <= p["neg_dom_win_max"]
-
-    # ---- likelihood tier (confident, sortable) ----
-    if sig["max_text_chars"] < p["min_chars_d"] and not sig["pages"]:
-        tier = "D"
-    elif prox >= p["prox_min_a"] and (pos or instr) and not neg_dominant and not all_after5:
-        tier = "A"
-    elif instr and not all_after5:
-        # An explicit instructional-time declaration (minutes OR hours) is a target signal even with
-        # no clock-time pair and even amid calendar/board keywords -> rescue to B, never hard-drop
-        # (REQ-093: DUNSEITH buries "7.5 hrs/day" in an academic calendar). Checked before the n==0
-        # and neg_dominant drops; the strong-target A branch above still wins when it qualifies.
-        tier = "B"
-    elif n == 0:
-        tier = "D"
-    elif (neg_dominant or all_after5):
-        tier = "C"
-    elif win >= p["win_min_b"]:
-        tier = "B"
-    else:
-        tier = "C"
-    score = (prox * 10) + win * 2 + len(pos) * 3 + (25 if instr else 0) - neg_total * 4 - (15 if all_after5 else 0)
-
-    # ---- weak category hypothesis (HIDDEN in UI until the human labels) ----
-    nb = {k: len(v) for k, v in neg.items()}
-    if sig["max_text_chars"] < 40:
-        cat = "unusable"
-    elif instr:
-        cat = "explicit_instructional_time"
-    elif nb["board"] >= 1 and nb["board"] >= max(nb["sports"], nb["calendar"]):
-        cat = "board_schedule"
-    elif nb["sports"] >= 1 and nb["sports"] >= max(nb["board"], nb["calendar"]):
-        cat = "sports_schedule"
-    elif nb["calendar"] >= 2:
-        cat = "academic_calendar"
-    elif nb["transport"] >= 1 and win >= 1:
-        cat = "transportation_schedule"
-    elif roster_size and sig["roster_school_names_hit"] >= 3 and sig["has_table"]:
-        cat = "district_hub_schedule"
-    elif sig["period_hits"] >= 2 or (sig["has_table"] and win >= 2):
-        cat = "school_bell_schedule"
-    elif 2 <= win <= 6 and any(k in pos for k in ("start time", "end time", "dismissal", "arrival", "school hours")):
-        cat = "school_start_end_prose"
-    elif win >= 1 or instr:
-        cat = "nonstandard_format"
-    else:
-        cat = "none"
-    return tier, score, cat
+# The V1 tier cascade (`tier_and_category` + DEFAULT_TIER_PARAMS) was DELETED here (issue #56):
+# ingest scores through the V2 detectors+combiner (combiner.score_record, REQ-113) and the frontier
+# grid-searches detectors.DEFAULT_DETECTOR_PARAMS — nothing live read the V1 path anymore
+# (grep/grimp-verified: its only remaining consumers were frontier.py and its tests, both re-pointed).
 
 
 # ----------------------------- DB (isolated governance Postgres — REQ-103) -----------------------------
@@ -718,7 +659,9 @@ def migrate_label_v21(primary, flags, facets):
     district_hub_schedule → by_school (by_band is rarer); a target's prose-vs-list shape is left as the
     v2.0 value carried forward. Non-targets → primary target_absent + the confounder facet. v2.0 FLAGS
     fold in: building_hours_visible → office_building_hours facet; buried_in_long_doc / target_image_only
-    stay as facets. `duplicate` stays a flag (a dedup mechanism, not a content facet)."""
+    stay as facets. `duplicate` has NO facet successor — retired outright (2026-07-01): programmatic
+    dedup (record.duplicate_of + near-dup clustering) owns duplicates; flags_json is now an inert
+    archive column (no live reads/writes)."""
     flags = flags or []
     facets = dict(facets or {})
     if primary in LEGACY_NONTARGET_TO_FACET:            # a v2.0 non-target -> absent + confounder facet
@@ -735,14 +678,32 @@ def migrate_label_v21(primary, flags, facets):
     return new_primary, facets
 
 
-def migrate_labels_v21(sess, *, dry_run=True):
+def migrate_labels_v21(sess, *, dry_run=True, force=False):
     """Apply migrate_label_v21 to every non-unlabeled row. dry_run just tallies. Real run UPDATEs
     primary_label + facets_json in place (labels are precious → the caller exports labels.json after,
-    and git holds the prior backup as the restore point)."""
+    and git holds the prior backup as the restore point).
+
+    RE-RUN GUARD (issue #59): this is a ONE-TIME migration. A second real run would re-fold the
+    legacy v2.0 flags_json into facets_json, silently overwriting any facet edits the human made
+    since (the exact data v2.1 re-tagging is producing). A real run therefore REFUSES when it
+    detects it already ran — any label already carrying a v2.1-vocabulary primary AND non-empty
+    facets — unless force=True is passed explicitly (with a loud warning)."""
     rows = sess.execute(text(
         "SELECT rec_key, primary_label, flags_json, facets_json FROM label WHERE status!='unlabeled'")).fetchall()
     from collections import Counter
     valid = TARGET_LABELS | NONTARGET_PRIMARIES     # every migrated primary must land in the v2.1 vocabulary
+    if not dry_run:
+        already = [rk for rk, primary, _fj, facj in rows
+                   if primary in valid and json.loads(facj or "{}")]
+        if already and not force:
+            raise RuntimeError(
+                f"migrate_labels_v21 refused: it appears to have already run — {len(already)} labels "
+                f"are already in the v2.1 vocabulary with non-empty facets (e.g. {already[:3]}). "
+                f"Re-running would re-fold legacy flags over newer HUMAN facet edits. "
+                f"Pass force=True only if you are certain (git holds the restore point).")
+        if already and force:
+            print(f"[WARNING] migrate_labels_v21 force=True: re-folding legacy flags over "
+                  f"{len(already)} already-migrated labels — human facet edits may be overwritten.")
     moves = Counter()
     for rk, primary, fj, facj in rows:
         flags = json.loads(fj or "[]")
@@ -823,9 +784,9 @@ def import_labels(s, src: Path = LABELS_JSON) -> int:
                         {"rk": d["rec_key"]}).fetchone()
         if not cur or cur[0] != "unlabeled":
             continue
-        s.execute(text("UPDATE label SET primary_label=:pl, flags_json=:fj, facets_json=:fac, note=:nt, "
+        s.execute(text("UPDATE label SET primary_label=:pl, facets_json=:fac, note=:nt, "
                        "status=:st, updated_at=:ua WHERE rec_key=:rk"),
-                  {"pl": d.get("primary_label"), "fj": d.get("flags_json"), "fac": d.get("facets_json"),
+                  {"pl": d.get("primary_label"), "fac": d.get("facets_json"),
                    "nt": d.get("note"), "st": d.get("status", "labeled"), "ua": d.get("updated_at"),
                    "rk": d["rec_key"]})
         n += 1
@@ -850,6 +811,30 @@ def _rep(rec_key, source, filename, file_kind, n_chars, n_times, usable):
 
 HARVEST_SLICE_SOURCE = "harvest_slice"
 HARVEST_SLICE_FILE = "harvest_slice.txt"
+# DERIVED artifact home (issue #58): slices are ingest OUTPUT, so they live under data/acquisition/
+# (regenerable), never under data/raw/ (write-once Stage-3 captures — Critical Rule 5). Pre-#58
+# ingests wrote harvest_slice.txt next to the raw capture; resolve_harvest_slice() keeps those
+# readable (read fallback to the old location; writes go ONLY to the new one).
+HARVEST_SLICES_DIR = paths.HARVEST_SLICES_DIR
+
+
+def harvest_slice_path(district_id: str, rec_key: str) -> Path:
+    """The canonical WRITE location for one record's harvest slice:
+    data/acquisition/harvest_slices/<district_id>/<rec_key with ':'→'_'>.txt"""
+    return HARVEST_SLICES_DIR / str(district_id) / f"{rec_key.replace(':', '_')}.txt"
+
+
+def resolve_harvest_slice(district_id: str, district_dir: str, rec_key: str) -> Path | None:
+    """Where a record's harvest slice actually IS: the new derived-artifact location first, else the
+    legacy pre-#58 location inside the raw capture dir (RAW_DIR/<district_dir>/captures/<hash>/
+    harvest_slice.txt). Returns None when neither exists. Consumers materializing a rep whose
+    source == 'harvest_slice' should call this instead of joining the capture dir themselves."""
+    new = harvest_slice_path(district_id, rec_key)
+    if new.exists():
+        return new
+    rec_hash = rec_key.split(":", 1)[-1]
+    legacy = RAW_DIR / district_dir / "captures" / rec_hash / HARVEST_SLICE_FILE
+    return legacy if legacy.exists() else None
 
 
 def build_harvest_slice(harvest_pages: list, page_text_fn):
@@ -904,6 +889,9 @@ def ingest_district(sess, ddir: Path, *, splits: set, batches: dict, nces: dict)
     processed = {r["hash"]: r for r in json.loads(pj.read_text())}
     cand_map = load_candidates(ddir)   # url -> {schools, tools}; misses = emergent
     delete_district_signal_rows(sess, did)   # idempotent re-ingest (incremental); no-op in full ingest
+    # Stale-slice cleanup (issue #58): drop the district's old derived slices before regenerating,
+    # so a record whose harvest_pages shrank/vanished can't leave an orphaned slice behind.
+    shutil.rmtree(HARVEST_SLICES_DIR / did, ignore_errors=True)
     ingest_cross_stage_cache(sess, disc, caps, processed, cand_map)   # REQ-103c (upsert; already idempotent)
 
     seen_content = {}   # content_hash -> canonical rec_key
@@ -979,7 +967,10 @@ def ingest_district(sess, ddir: Path, *, splits: set, batches: dict, nces: dict)
                 built = build_harvest_slice(hp, lambda p: pdf_page_text(pdf, p))
                 if built:
                     slice_text, rep_kwargs = built
-                    (rdir / HARVEST_SLICE_FILE).write_text(slice_text)
+                    # write to the DERIVED-artifact home, never into the raw capture dir (issue #58)
+                    sp = harvest_slice_path(did, rec_key)
+                    sp.parent.mkdir(parents=True, exist_ok=True)
+                    sp.write_text(slice_text)
                     sess.execute(INSERT_REP, _rep(rec_key, **rep_kwargs))
         for key, fname in files.items():
             fk = BIN_KINDS.get(key)
@@ -1085,6 +1076,10 @@ def ingest_batch(district_ids: list, root: Path = RAW_DIR, *, regenerate_filtere
             for ddir in sorted(p for p in root.glob(f"{did}_*") if p.is_dir()):
                 if ingest_district(sess, ddir, splits=splits, batches=batches, nces=nces):
                     ingested.append(did)
+        # Restore-before-export, mirroring ingest(): after the loop has seeded label rows, restore
+        # any labels from the JSON backup (no-op on a healthy DB) — so the export_labels below can
+        # never truncate the precious backup after a DB wipe (fable review 2026-07-01, finding 2.3).
+        import_labels(sess)
         att_cfg = AT.load_config()
         for did in set(ingested):
             recompute_labeled_topology(sess, did)

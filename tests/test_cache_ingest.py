@@ -56,3 +56,46 @@ def test_discovery_upsert_rolls_up_waves(gov_session):
     r = gov_session.execute(text("SELECT wave1_n_kept, outcome FROM discovery_school WHERE school_id='s1'")).first()
     assert r.wave1_n_kept == 1 and r.outcome == "found"
     assert gov_session.execute(text("SELECT n_schools FROM candidate WHERE url='http://x/p'")).scalar() == 1
+
+
+# ----------------------------- issue #33: per-district DELETE-then-UPSERT (no ghost rows) -----------------------------
+def test_capture_reingest_drops_ghost_rows_for_that_district_only(gov_session):
+    _create_cache_temp(gov_session)
+    CI.upsert_capture_rows(gov_session, "d1", {
+        "h1": {"url": "u1", "ok": True, "source": "discovered"},
+        "h2": {"url": "u2", "ok": True, "source": "discovered"},
+    })
+    CI.upsert_capture_rows(gov_session, "d2", {"hx": {"url": "ux", "ok": True, "source": "discovered"}})
+    # re-capture of d1 no longer includes h2 (e.g. the candidate vanished) — the ghost must go
+    CI.upsert_capture_rows(gov_session, "d1", {"h1": {"url": "u1", "ok": True, "source": "discovered"}})
+    hashes = [r[0] for r in gov_session.execute(text("SELECT hash FROM capture WHERE district_id='d1'"))]
+    assert hashes == ["h1"]                        # h2 ghost is gone
+    assert gov_session.execute(text("SELECT COUNT(*) FROM capture WHERE district_id='d2'")).scalar() == 1
+    # the OTHER district's rows are untouched (deletion is scoped per district)
+
+
+def test_discovery_reingest_drops_ghost_school_and_candidate_rows(gov_session):
+    _create_cache_temp(gov_session)
+    disc = {"district_id": "d1", "schools": [
+        {"school_id": "s1", "school": "A", "bands": [], "query": "q", "wave1_gated": [], "outcome": "found"},
+        {"school_id": "s2", "school": "B", "bands": [], "query": "q", "wave1_gated": [], "outcome": "found"},
+    ]}
+    CI.upsert_discovery_rows(gov_session, disc, {"http://x/p": {"schools": ["A"], "tools": []},
+                                                 "http://x/q": {"schools": ["B"], "tools": []}})
+    disc["schools"] = disc["schools"][:1]          # s2 dropped on re-discovery
+    CI.upsert_discovery_rows(gov_session, disc, {"http://x/p": {"schools": ["A"], "tools": []}})
+    assert [r[0] for r in gov_session.execute(
+        text("SELECT school_id FROM discovery_school WHERE district_id='d1'"))] == ["s1"]
+    assert [r[0] for r in gov_session.execute(
+        text("SELECT url FROM candidate WHERE district_id='d1'"))] == ["http://x/p"]
+
+
+def test_processed_reingest_drops_ghost_rows(gov_session):
+    _create_cache_temp(gov_session)
+    CI.upsert_processed_rows(gov_session, "d1", {
+        "h1": {"url": "u1", "usable": True, "texts": ["t"]},
+        "h2": {"url": "u2", "usable": False, "texts": []},
+    })
+    CI.upsert_processed_rows(gov_session, "d1", {"h1": {"url": "u1", "usable": True, "texts": ["t"]}})
+    assert [r[0] for r in gov_session.execute(
+        text("SELECT hash FROM processed_doc WHERE district_id='d1'"))] == ["h1"]

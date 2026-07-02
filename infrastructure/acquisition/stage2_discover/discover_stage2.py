@@ -29,7 +29,7 @@ from infrastructure.acquisition.common import cache_ingest as CI
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import paths
 
-from infrastructure.acquisition.common.discover import host_of, gate, openrouter_search
+from infrastructure.acquisition.common.discover import host_of, gate
 
 # Anchored to the repo (paths.RAW_CAPTURES), never a CWD-relative literal -- this script and the
 # governance server (which reads the same discovery.json/candidates.json) must agree on the location
@@ -152,6 +152,8 @@ def merge_wave1(roster: list, raw: dict, domain: str) -> list:
     for r in roster:
         urls = by_id.get(r["school_id"], [])
         r["wave1_raw_urls"] = urls
+        # the agent-in-the-loop Wave 1 IS a Claude WebSearch subagent -- record the real provider
+        r["wave1_provider"] = "claude_websearch"
         r["wave1_gated"] = gate_urls(urls, domain)
         r["wave2_invoked"] = False
         r["wave2_raw_urls"] = []
@@ -168,20 +170,29 @@ def residual_schools(roster: list) -> list:
 
 def run_wave1(roster: list, domain: str, search_fn) -> list:
     """Deterministic Wave 1 for the SERP architecture: call search_fn(query, domain) per school (a
-    SERP provider -- brightdata_search primary, serper_search/openrouter_search alternates), gate the
-    URLs, init the Wave-2 fields empty. There is NO agent result to validate here (the provider
-    returns URLs directly), so this replaces the merge_wave1/validate_wave1_result handoff of the
-    retired agent-in-the-loop model. A billing/auth SystemExit propagates (halts the run, like a
-    reconcile CONTROL FAILURE); any other per-school error degrades to zero URLs (logged)."""
+    SERP provider -- brightdata_search primary via the headless failover cascade, serper_search the
+    alternate), gate the URLs, init the Wave-2 fields empty. There is NO agent result to validate
+    here (the provider returns URLs directly), so this replaces the merge_wave1/validate_wave1_result
+    handoff of the retired agent-in-the-loop model. A billing/auth SystemExit propagates (halts the
+    run, like a reconcile CONTROL FAILURE); any other per-school error degrades to zero URLs (logged).
+
+    Provenance (issue #30): search_fn may return either a bare url list or a
+    (provider_name, urls) tuple -- the failover cascade returns the tuple, because only IT knows
+    which provider actually served the query. A bare list falls back to the fn's `provider_name`
+    attribute. The name lands in `wave1_provider` and flows through flatten() into candidates.json."""
+    default_provider = getattr(search_fn, "provider_name", "unknown_wave1")
     for r in roster:
+        provider = default_provider
         try:
-            urls = search_fn(r["query"], domain)
+            res = search_fn(r["query"], domain)
+            provider, urls = res if isinstance(res, tuple) else (default_provider, res)
         except SystemExit:
             raise
         except Exception as e:
             urls = []
             print(f"   [w1/{r['school'][:24]}] ERR {str(e)[:60]}")
         r["wave1_raw_urls"] = urls
+        r["wave1_provider"] = provider
         r["wave1_gated"] = gate_urls(urls, domain)
         r["wave2_invoked"] = False
         r["wave2_raw_urls"] = []
@@ -189,11 +200,13 @@ def run_wave1(roster: list, domain: str, search_fn) -> list:
     return roster
 
 
-def run_wave2(residual: list, domain: str, search_fn=openrouter_search) -> None:
+def run_wave2(residual: list, domain: str, search_fn) -> None:
     """Mutates each residual row in place. Script-driven, never a subagent -- a SERP/API call, not
-    agent judgment. `search_fn` is the provider (default openrouter_search for back-compat; the SERP
-    runner passes serper_search). A billing/auth SystemExit propagates; other errors degrade to zero
-    URLs for that school."""
+    agent judgment. `search_fn` is the provider and is REQUIRED (issue #41: the old default was the
+    retired openrouter_search, ~$27/1K -- a silent default must never be able to reach a retired
+    paid provider). A billing/auth SystemExit propagates; other errors degrade to zero URLs for
+    that school. The provider name is recorded per row (issue #30)."""
+    provider = getattr(search_fn, "provider_name", "unknown_wave2")
     for r in residual:
         r["wave2_invoked"] = True
         try:
@@ -204,6 +217,7 @@ def run_wave2(residual: list, domain: str, search_fn=openrouter_search) -> None:
             urls = []
             print(f"   [w2/{r['school'][:24]}] ERR {str(e)[:60]}")
         r["wave2_raw_urls"] = urls
+        r["wave2_provider"] = provider
         r["wave2_gated"] = gate_urls(urls, domain)
 
 
@@ -229,10 +243,23 @@ def _normalize_url(u: str) -> str:
 def flatten(roster: list) -> list:
     """Dedup kept candidates across schools by normalized URL -- collapses a hub page into
     one shared capture target automatically, independent of any topology label (topology
-    classification itself was dropped -- see ACQUISITION_PIPELINE.md Stage 2)."""
+    classification itself was dropped -- see ACQUISITION_PIPELINE.md Stage 2).
+
+    `tools[]` records the REAL provider that served each kept URL (issue #30): Wave 1 =
+    "brightdata"/"serper" (whichever the failover cascade actually used), Wave 2 =
+    "claude_websearch" -- read from the per-row `wave1_provider`/`wave2_provider` set by
+    run_wave1/run_wave2/merge_wave1. The list flows into candidates.json -> the DB cache ->
+    Stage-5 candidate_tools_json, so the names must be true provenance.
+
+    BACKFILL NOTE (issue #30): batches discovered BEFORE this fix (<= batch_00007) carry the
+    retired-architecture labels "claude" (really Bright Data/Serper Wave 1) and "openrouter"
+    (really Claude WebSearch Wave 2) in candidates.json/the DB cache. Deliberately NOT
+    backfilled by script -- the mislabels are documented in the issue; rows with the old
+    labels are simply pre-fix vintage."""
     dedup = {}
     for r in roster:
-        for tool, gated in (("claude", r["wave1_gated"]), ("openrouter", r["wave2_gated"])):
+        for tool, gated in ((r.get("wave1_provider") or "unknown_wave1", r["wave1_gated"]),
+                            (r.get("wave2_provider") or "unknown_wave2", r["wave2_gated"])):
             for g in gated:
                 if not g["kept"]:
                     continue
@@ -275,9 +302,11 @@ def write_discovery(district: dict, roster: list, batch_id: str) -> Path:
                 "bands": r["bands"],
                 "query": r["query"],
                 "wave1_raw_urls": r["wave1_raw_urls"],
+                "wave1_provider": r.get("wave1_provider"),
                 "wave1_gated": r["wave1_gated"],
                 "wave2_invoked": r["wave2_invoked"],
                 "wave2_raw_urls": r["wave2_raw_urls"],
+                "wave2_provider": r.get("wave2_provider"),
                 "wave2_gated": r["wave2_gated"],
                 "outcome": school_outcome(r),
             }
@@ -355,10 +384,16 @@ def main():
         roster = merge_wave1(roster, raw, district.get("domain", ""))
         residual = residual_schools(roster)
         if residual:
-            print(f"  wave 2: {len(residual)}/{len(roster)} schools residual after Wave 1 + gating")
-            run_wave2(residual, district.get("domain", ""))
-        else:
-            print(f"  wave 2: skipped, Wave 1 + gating satisfied all {len(roster)} schools")
+            # Issue #41: run_wave2's old default was the RETIRED openrouter_search (~$27/1K).
+            # The decided Wave-2 provider (Claude WebSearch) needs the headless runner's
+            # subprocess context, so this legacy CLI path refuses instead of silently paying.
+            raise SystemExit(
+                f"finish: {len(residual)}/{len(roster)} schools residual after Wave 1 + gating -- "
+                f"the OpenRouter Wave-2 default is retired (issue #41) and the decided Wave-2 "
+                f"provider (Claude WebSearch) runs only in the headless runner. Use the console "
+                f"or: python3 -m infrastructure.acquisition.stage2_discover.headless run <batch>"
+            )
+        print(f"  wave 2: skipped, Wave 1 + gating satisfied all {len(roster)} schools")
         registry = DS.load()
         outcome = finish_district(district, roster, batch["batch_id"], registry)
         DS.save(registry)

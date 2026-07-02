@@ -198,10 +198,11 @@ def import_staff_data(df):
             if not nces_id:
                 continue
 
-            # Extract staff counts using safe conversion
-            total_staff = safe_float(row.get('Total Instructional Staff')) or 0
-            total_teachers = safe_float(row.get('Total Teachers')) or 0
-            ese_teachers = safe_float(row.get('Exceptional Education Teachers')) or 0
+            # Extract staff counts using safe conversion. Suppressed/masked values
+            # stay None and are stored as NULL — never coerced to 0 (issue #22)
+            total_staff = safe_float(row.get('Total Instructional Staff'))
+            total_teachers = safe_float(row.get('Total Teachers'))
+            ese_teachers = safe_float(row.get('Exceptional Education Teachers'))
 
             # Use individual transaction for each row
             with session_scope() as session:
@@ -258,8 +259,9 @@ def import_enrollment_data(df):
             if not nces_id:
                 continue
 
-            # Extract enrollment using safe conversion
-            total_enrollment = safe_int(row.get('Total Enrollment')) or 0
+            # Extract enrollment using safe conversion; suppressed -> NULL, not 0
+            # (issue #22)
+            total_enrollment = safe_int(row.get('Total Enrollment'))
 
             # Use individual transaction for each row
             with session_scope() as session:

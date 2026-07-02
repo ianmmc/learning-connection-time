@@ -38,20 +38,43 @@ def _councils_used(package: dict, councils: dict) -> dict:
 
 
 def _identity(package: dict, used_councils: dict, fingerprints: dict) -> dict:
-    """The price-INDEPENDENT content that defines this dispatch's identity (drops all dollar fields)."""
+    """The price-INDEPENDENT content that defines this dispatch's identity (drops all dollar fields).
+
+    ORDER-INSENSITIVE (issue #52): districts / records / reps are sorted here so the same selection
+    hashes identically regardless of the order it was assembled in (e.g. the console sending district
+    ids in click order). NOTE: adding this sort (and the `pages` field, issue #38) CHANGES the identity
+    hash future dispatches compute for content that would previously have hashed differently — that's
+    fine: no stored hash is ever compared against a recomputed one (the 409 dedup only compares two
+    freshly computed hashes), so past frozen artifacts stand untouched."""
     dist = []
     for d in package.get("districts", []):
         recs = []
         for r in d.get("records", []):
-            reps = [{"file": rep.get("file"), "kind": rep.get("kind"),
-                     "councils": rep.get("councils"), "fidelity_suspect": rep.get("fidelity_suspect")}
-                    for rep in r.get("reps", [])]
+            reps = sorted(
+                ({"file": rep.get("file"), "kind": rep.get("kind"), "pages": rep.get("pages"),
+                  "councils": rep.get("councils"), "fidelity_suspect": rep.get("fidelity_suspect")}
+                 for rep in r.get("reps", [])),
+                key=lambda x: (x["file"] or "", x["kind"] or ""))
             recs.append({"rec_key": r.get("rec_key"), "decision": r.get("decision"), "reps": reps})
+        recs.sort(key=lambda x: x["rec_key"] or "")
         dist.append({"district_id": d.get("district_id"), "records": recs})
+    dist.sort(key=lambda x: x["district_id"] or "")
     # `verified_only` is part of identity: a training-grade dispatch (labeled targets only) is a
     # distinct artifact from a default one even when the reps happen to coincide (no hash collision).
     return {"districts": dist, "councils": used_councils, "fingerprints": fingerprints,
             "verified_only": bool(package.get("verified_only", False))}
+
+
+def package_identity(package: dict) -> str:
+    """Public identity hash of an UNFROZEN package — the gate@6 preview→freeze staleness token
+    (issue #37). Covers exactly what the human reviewed: the sorted districts/records/reps (incl.
+    each rep's routed councils + overrides, via rep['councils']) and the verified_only mode; NO
+    fingerprints and NO council configs (a preview has neither), and price-independent like the
+    frozen hash. Preview and dispatch both compute it from a freshly built package: equal hashes ⇒
+    the release content the human approved is what dispatch is about to freeze."""
+    identity = _identity(package, {}, {})
+    return hashlib.md5(json.dumps(identity, sort_keys=True, ensure_ascii=False)
+                       .encode("utf-8")).hexdigest()[:12]
 
 
 def freeze(package: dict, councils: dict, fingerprints: dict, created_by: str = "human") -> dict:

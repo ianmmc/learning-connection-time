@@ -14,6 +14,7 @@ from sqlalchemy import and_, desc, func, or_, select
 from sqlalchemy.orm import Session
 
 from .models import BellSchedule, DataLineage, District, LCTCalculation, StateRequirement
+from .school_year import CURRENT_SCHOOL_YEAR, NCES_PRIMARY_YEAR, is_acceptable_data_year
 from .verification import validate_schedule_plausibility
 
 
@@ -24,8 +25,9 @@ from .verification import validate_schedule_plausibility
 
 def get_district_by_id(session: Session, nces_id: str) -> Optional[District]:
     """Get a single district by NCES ID."""
-    # Try with and without leading zeros
-    normalized_id = nces_id.lstrip("0") or nces_id
+    # The DB is zero-padded to 7 digits (migration 015) — normalize INPUT by padding,
+    # never by stripping (issue #20: lstrip made unpadded input return None post-015)
+    normalized_id = nces_id.zfill(7)
     district = session.query(District).filter(
         or_(District.nces_id == nces_id, District.nces_id == normalized_id)
     ).first()
@@ -98,7 +100,7 @@ def get_unenriched_districts(
 def get_bell_schedule(
     session: Session,
     district_id: str,
-    year: str = "2024-25",
+    year: str = CURRENT_SCHOOL_YEAR,
     grade_level: Optional[str] = None,
 ):
     """
@@ -108,7 +110,7 @@ def get_bell_schedule(
         - If grade_level specified: Single BellSchedule or None
         - If grade_level not specified: List of BellSchedule objects
     """
-    normalized_id = district_id.lstrip("0") or district_id
+    normalized_id = district_id.zfill(7)   # pad, never strip (migration 015 / issue #20)
 
     query = session.query(BellSchedule).filter(
         or_(
@@ -126,7 +128,7 @@ def get_bell_schedule(
 
 
 def get_enriched_districts(
-    session: Session, year: str = "2024-25"
+    session: Session, year: str = CURRENT_SCHOOL_YEAR
 ) -> List[Tuple[District, int]]:
     """Get all districts with bell schedules and count of grade levels."""
     results = (
@@ -140,7 +142,7 @@ def get_enriched_districts(
     return results
 
 
-def get_enrichment_by_state(session: Session, year: str = "2024-25") -> List[Dict]:
+def get_enrichment_by_state(session: Session, year: str = CURRENT_SCHOOL_YEAR) -> List[Dict]:
     """Get enrichment statistics by state."""
     results = (
         session.query(
@@ -190,6 +192,7 @@ def add_bell_schedule(
     source_urls: Optional[List[str]] = None,
     confidence: str = "high",
     method: str = "human_provided",
+    minutes_basis: str = "gross_bell_to_bell",
     source_description: Optional[str] = None,
     notes: Optional[str] = None,
     created_by: str = "claude",
@@ -197,10 +200,25 @@ def add_bell_schedule(
     """
     Add or update a bell schedule record.
 
+    New writes always carry minutes_basis (issue #19; default 'gross_bell_to_bell'
+    per REQ-055 — pass 'statutory' for statutory-minimum fallbacks). On the update
+    path, optional fields left as None PRESERVE the existing values (issue #26:
+    a partial update used to erase lunch/passing/source data).
+
+    Raises ValueError for COVID-era or malformed years (issue #26 — the seam guard
+    for Stage 9 writes; Rule #2 COVID exclusion).
+
     Returns the created/updated BellSchedule instance.
     """
+    # Validate year at the seam: reject COVID-era (2019-20..2022-23) and malformed years
+    if not is_acceptable_data_year(year):
+        raise ValueError(
+            f"Unacceptable school year for bell schedule write: {year!r} "
+            f"(COVID-era years are excluded and years must be 'YYYY-YY')"
+        )
+
     # Normalize district ID
-    normalized_id = district_id.lstrip("0") or district_id
+    normalized_id = district_id.zfill(7)   # pad, never strip (migration 015 / issue #20)
 
     # Verify district exists
     district = get_district_by_id(session, normalized_id)
@@ -231,19 +249,31 @@ def add_bell_schedule(
     )
 
     if existing:
-        # Update existing record
+        # Update existing record. Only overwrite fields the caller actually
+        # provided — None means "not specified", so existing values are
+        # preserved (issue #26: a partial update used to null them out).
         existing.instructional_minutes = instructional_minutes
-        existing.start_time = start_time
-        existing.end_time = end_time
-        existing.lunch_duration = lunch_duration
-        existing.passing_periods = passing_periods
-        existing.recess_duration = recess_duration
-        existing.schools_sampled = schools_sampled or []
-        existing.source_urls = source_urls or []
+        if start_time is not None:
+            existing.start_time = start_time
+        if end_time is not None:
+            existing.end_time = end_time
+        if lunch_duration is not None:
+            existing.lunch_duration = lunch_duration
+        if passing_periods is not None:
+            existing.passing_periods = passing_periods
+        if recess_duration is not None:
+            existing.recess_duration = recess_duration
+        if schools_sampled is not None:
+            existing.schools_sampled = schools_sampled
+        if source_urls is not None:
+            existing.source_urls = source_urls
+        if source_description is not None:
+            existing.source_description = source_description
+        if notes is not None:
+            existing.notes = notes
         existing.confidence = confidence
         existing.method = method
-        existing.source_description = source_description
-        existing.notes = notes
+        existing.minutes_basis = minutes_basis
         existing.updated_at = datetime.utcnow()
         schedule = existing
         operation = "update"
@@ -263,6 +293,7 @@ def add_bell_schedule(
             source_urls=source_urls or [],
             confidence=confidence,
             method=method,
+            minutes_basis=minutes_basis,
             source_description=source_description,
             notes=notes,
         )
@@ -356,124 +387,17 @@ def get_state_requirement(session: Session, state: str) -> Optional[StateRequire
         .first()
     )
 
-
-def get_instructional_minutes(
-    session: Session, state: str, grade_level: str
-) -> Optional[int]:
-    """Get statutory instructional minutes for a state and grade level."""
-    req = get_state_requirement(session, state)
-    if req:
-        return req.get_minutes(grade_level)
-    return None
-
-
 # =============================================================================
 # LCT CALCULATION QUERIES
 # =============================================================================
 
 
-def calculate_and_store_lct(
-    session: Session,
-    district_id: str,
-    year: str = "2024-25",
-    use_statutory_fallback: bool = True,
-) -> List[LCTCalculation]:
-    """
-    Calculate LCT for a district and store results.
-
-    Uses actual bell schedule data where available,
-    falls back to state statutory requirements if enabled.
-    """
-    district = get_district_by_id(session, district_id)
-    if not district:
-        raise ValueError(f"District {district_id} not found")
-
-    if not district.enrollment or district.enrollment <= 0:
-        raise ValueError(f"District {district_id} has no valid enrollment data")
-
-    if not district.instructional_staff or district.instructional_staff <= 0:
-        raise ValueError(f"District {district_id} has no valid staff data")
-
-    results = []
-    bell_schedules = get_bell_schedule(session, district_id, year)
-
-    for grade_level in ["elementary", "middle", "high"]:
-        # Find matching bell schedule
-        schedule = next(
-            (s for s in bell_schedules if s.grade_level == grade_level), None
-        )
-
-        if schedule:
-            # Use actual bell schedule data
-            instructional_minutes = schedule.instructional_minutes
-            data_tier = 1 if schedule.method == "human_provided" else 2
-            bell_schedule_id = schedule.id
-        elif use_statutory_fallback:
-            # Fall back to state requirements
-            instructional_minutes = get_instructional_minutes(
-                session, district.state, grade_level
-            )
-            if not instructional_minutes:
-                continue
-            data_tier = 3
-            bell_schedule_id = None
-        else:
-            continue
-
-        # Calculate LCT
-        lct_value = LCTCalculation.calculate_lct(
-            instructional_minutes=instructional_minutes,
-            enrollment=district.enrollment,
-            instructional_staff=float(district.instructional_staff),
-        )
-
-        # Check for existing calculation
-        existing = (
-            session.query(LCTCalculation)
-            .filter(
-                LCTCalculation.district_id == district.nces_id,
-                LCTCalculation.year == year,
-                LCTCalculation.grade_level == grade_level,
-            )
-            .first()
-        )
-
-        if existing:
-            existing.instructional_minutes = instructional_minutes
-            existing.enrollment = district.enrollment
-            existing.instructional_staff = district.instructional_staff
-            existing.lct_value = lct_value
-            existing.data_tier = data_tier
-            existing.bell_schedule_id = bell_schedule_id
-            existing.calculated_at = datetime.utcnow()
-            calc = existing
-        else:
-            calc = LCTCalculation(
-                district_id=district.nces_id,
-                year=year,
-                grade_level=grade_level,
-                instructional_minutes=instructional_minutes,
-                enrollment=district.enrollment,
-                instructional_staff=district.instructional_staff,
-                lct_value=lct_value,
-                data_tier=data_tier,
-                bell_schedule_id=bell_schedule_id,
-            )
-            session.add(calc)
-
-        results.append(calc)
-
-    session.flush()
-    return results
-
-
-# =============================================================================
-# EXPORT UTILITIES
-# =============================================================================
-
+# NOTE (2026-07-02, issue #27): the legacy calculate_and_store_lct — the pre-scoped-staffing
+# per-grade writer (flat district.instructional_staff, its own data_tier semantics) — was
+# RETIRED. The one LCT write path is calculate_lct_variants.py (git holds the old code).
 
 def export_bell_schedules_to_json(
-    session: Session, year: str = "2024-25", pretty: bool = True
+    session: Session, year: str = CURRENT_SCHOOL_YEAR, pretty: bool = True
 ) -> str:
     """
     Export all bell schedules to JSON format.
@@ -524,7 +448,7 @@ def export_bell_schedules_to_json(
 
 
 def export_enriched_districts_csv(
-    session: Session, year: str = "2024-25"
+    session: Session, year: str = CURRENT_SCHOOL_YEAR
 ) -> str:
     """Export enriched districts summary as CSV."""
     results = get_enriched_districts(session, year)
@@ -552,7 +476,7 @@ def export_enriched_districts_csv(
 
 
 def get_lct_summary_by_scope(
-    session: Session, scope: str = "teachers_only", year: str = "2023-24"
+    session: Session, scope: str = "teachers_only", year: str = NCES_PRIMARY_YEAR
 ) -> Dict:
     """Get LCT summary statistics for a specific scope."""
     from sqlalchemy import func as sqlfunc
@@ -590,7 +514,7 @@ def get_lct_summary_by_scope(
 def get_districts_needing_calculation(
     session: Session,
     last_run_id: Optional[str] = None,
-    year: str = "2023-24",
+    year: str = NCES_PRIMARY_YEAR,
 ) -> List[str]:
     """
     Get districts that need LCT recalculation.
@@ -630,7 +554,7 @@ def get_districts_needing_calculation(
     return [r[0] for r in query.all()]
 
 
-def get_state_campaign_progress(session: Session, year: str = "2024-25") -> List[Dict]:
+def get_state_campaign_progress(session: Session, year: str = CURRENT_SCHOOL_YEAR) -> List[Dict]:
     """
     Get state-by-state enrichment progress for campaign tracking.
 
@@ -673,7 +597,7 @@ def get_state_campaign_progress(session: Session, year: str = "2024-25") -> List
 def get_next_enrichment_candidates(
     session: Session,
     state: str,
-    year: str = "2024-25",
+    year: str = CURRENT_SCHOOL_YEAR,
     limit: int = 9,
 ) -> List[District]:
     """
@@ -705,7 +629,7 @@ def get_next_enrichment_candidates(
 # =============================================================================
 
 
-def get_enrichment_summary(session: Session, year: str = "2024-25") -> Dict:
+def get_enrichment_summary(session: Session, year: str = CURRENT_SCHOOL_YEAR) -> Dict:
     """Get overall enrichment statistics."""
     total_districts = session.query(func.count(District.nces_id)).scalar()
 
@@ -748,7 +672,7 @@ def get_enrichment_summary(session: Session, year: str = "2024-25") -> Dict:
     }
 
 
-def print_enrichment_report(session: Session, year: str = "2024-25"):
+def print_enrichment_report(session: Session, year: str = CURRENT_SCHOOL_YEAR):
     """Print a formatted enrichment report."""
     summary = get_enrichment_summary(session, year)
 
@@ -778,7 +702,7 @@ def get_target_districts(
     size_range: Tuple[int, int],
     limit: int = 15,
     exclude_large: bool = True,
-    year: str = "2024-25",
+    year: str = CURRENT_SCHOOL_YEAR,
 ) -> List[District]:
     """
     Get unenriched districts in a specific size range for campaign targeting.
@@ -847,7 +771,7 @@ def get_campaign_targets_by_state(
     size_range: Tuple[int, int],
     districts_per_state: int = 4,
     exclude_single_district_states: bool = True,
-    year: str = "2024-25",
+    year: str = CURRENT_SCHOOL_YEAR,
 ) -> Dict[str, List[District]]:
     """
     Get campaign targets for all states, returning a dict keyed by state.
@@ -899,7 +823,7 @@ def get_campaign_targets_by_state(
     return results
 
 
-def get_size_distribution_summary(session: Session, year: str = "2024-25") -> Dict:
+def get_size_distribution_summary(session: Session, year: str = CURRENT_SCHOOL_YEAR) -> Dict:
     """
     Get summary of enrichment coverage by district size category.
 

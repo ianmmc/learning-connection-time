@@ -31,6 +31,7 @@ project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from infrastructure.database.connection import session_scope
+from infrastructure.database.school_year import CURRENT_SCHOOL_YEAR
 from infrastructure.database.models import District, BellSchedule
 from infrastructure.database.queries import (
     get_district_by_id,
@@ -61,7 +62,7 @@ def print_district_info(district: District, rank: int = 0):
     print(f"  Enrollment: {district.enrollment:,}" if district.enrollment else "  Enrollment: N/A")
 
 
-def generate_search_query(district: District, year: str = "2025-26") -> str:
+def generate_search_query(district: District, year: str = CURRENT_SCHOOL_YEAR) -> str:
     """Generate search query for bell schedule."""
     return f'"{district.name}" bell schedule {year}'
 
@@ -98,7 +99,7 @@ def prompt_time(prompt: str) -> Optional[str]:
 
 def collect_schedule_data(
     district: District,
-    year: str = "2025-26",
+    year: str = CURRENT_SCHOOL_YEAR,
 ) -> Optional[Dict]:
     """
     Interactively collect bell schedule data for a district.
@@ -154,7 +155,7 @@ def save_schedule(
     session,
     district: District,
     schedules: Dict,
-    year: str = "2025-26",
+    year: str = CURRENT_SCHOOL_YEAR,
     method: str = "human_provided",
 ) -> bool:
     """Save collected schedules to database."""
@@ -187,7 +188,7 @@ def save_schedule(
         return False
 
 
-def run_state_campaign(state: str, year: str = "2025-26", target: int = 3):
+def run_state_campaign(state: str, year: str = CURRENT_SCHOOL_YEAR, target: int = 3):
     """
     Run enrichment campaign for a state.
 
@@ -274,7 +275,7 @@ def run_state_campaign(state: str, year: str = "2025-26", target: int = 3):
             print(f"  Remaining: {target - current - successful}")
 
 
-def run_single_district(district_id: str, year: str = "2025-26"):
+def run_single_district(district_id: str, year: str = CURRENT_SCHOOL_YEAR):
     """Enrich a single district by ID."""
     print_header("Single District Enrichment")
 
@@ -308,8 +309,8 @@ def show_campaign_status():
     print_header("Enrichment Campaign Status")
 
     with session_scope() as session:
-        summary = get_enrichment_summary(session, "2024-25")
-        progress = get_state_campaign_progress(session, "2024-25")
+        summary = get_enrichment_summary(session, CURRENT_SCHOOL_YEAR)
+        progress = get_state_campaign_progress(session, CURRENT_SCHOOL_YEAR)
 
         print(f"\nTotal enriched districts: {summary['enriched_districts']}")
         print(f"States represented: {summary['states_represented']}")
@@ -346,7 +347,7 @@ Examples:
     )
     parser.add_argument("--state", help="State code for campaign mode")
     parser.add_argument("--district", help="District NCES ID for single enrichment")
-    parser.add_argument("--year", default="2025-26", help="School year (default: 2025-26)")
+    parser.add_argument("--year", default=CURRENT_SCHOOL_YEAR, help=f"School year (default: {CURRENT_SCHOOL_YEAR})")
     parser.add_argument("--target", type=int, default=3, help="Target per state (default: 3)")
     parser.add_argument("--status", action="store_true", help="Show campaign status")
     args = parser.parse_args()

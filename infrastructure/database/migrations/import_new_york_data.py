@@ -257,14 +257,15 @@ def import_staff_data(df):
                 skipped += 1
                 continue
 
-            # Extract staff data using safe conversion
+            # Extract staff data using safe conversion. Suppressed/masked values
+            # stay None and are stored as NULL — never coerced to 0 (issue #22)
             staff_category = str(row.get('STAFF_IND_DESC', '')).strip()
-            fte = safe_float(row.get('FTE')) or 0
-            enrollment = safe_int(row.get('K-12_ENROLL')) or 0
-            ratio = safe_float(row.get('DISTRICT_RATIO')) or 0
+            fte = safe_float(row.get('FTE'))
+            enrollment = safe_int(row.get('K-12_ENROLL'))
+            ratio = safe_float(row.get('DISTRICT_RATIO'))
 
-            # Skip if no FTE
-            if fte == 0:
+            # Skip if FTE missing/suppressed or zero
+            if not fte:
                 continue
 
             # Use individual transaction for each row
@@ -334,9 +335,10 @@ def import_enrollment_data(df, sped_df=None):
                     skipped += 1
                     continue
 
-                # Extract enrollment data using safe conversion
+                # Extract enrollment data using safe conversion; suppressed -> NULL,
+                # not 0 (issue #22)
                 subgroup = str(row.get('Subgroup Name', '')).strip()
-                enrollment = safe_int(row.get('PreK-12 Total')) or 0
+                enrollment = safe_int(row.get('PreK-12 Total'))
 
                 # Build grade-level JSON
                 grade_data = {}
@@ -400,7 +402,8 @@ def import_enrollment_data(df, sped_df=None):
                     continue
 
                 subgroup = str(row.get('Subgroup Name', 'All Students')).strip()
-                enrollment = safe_int(row.get('PreK-12 Total')) or 0
+                # Suppressed -> NULL, not 0 (issue #22)
+                enrollment = safe_int(row.get('PreK-12 Total'))
 
                 # Build grade-level JSON (same as above)
                 grade_data = {}

@@ -21,7 +21,7 @@ HANDOFF = {
         "district_id": "0100810",
         "records": [
             {"rec_key": "a", "decision": "send",
-             "reps": [{"file": "t.txt", "kind": "text", "councils": ["low-cost-text"]}]},
+             "reps": [{"file": "t.txt", "kind": "text", "pages": [2, 3], "councils": ["low-cost-text"]}]},
             {"rec_key": "b", "decision": "send",
              "reps": [{"file": "p.png", "kind": "image", "councils": ["image"]}]},
             {"rec_key": "z", "decision": "reject", "reps": []},
@@ -47,6 +47,9 @@ def test_plan_carries_routing_context_and_prompt_id():
     assert a["file"] == "t.txt" and a["kind"] == "text" and a["prompt_id"] == "stage6.extract.v1"
     b = next(c for c in plan if c["rec_key"] == "b")
     assert b["prompt_id"] == "stage6.extract.vision.v1"
+    # issue #38: the harvest-pages hint rides the plan (None when the rep has no page scoping)
+    assert a["pages"] == [2, 3]
+    assert b["pages"] is None
 
 
 def test_build_request_text():

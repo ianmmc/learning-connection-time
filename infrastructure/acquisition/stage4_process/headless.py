@@ -219,43 +219,62 @@ def run_batch(batch: dict, *, actor: str = "auto:stage4", on_event=None) -> dict
         if on_event:
             on_event(kind, {"batch_id": batch_id, **payload})
 
-    districts = find_batch_districts(batch)
-    registry = DS.load()
-    todo, skipped = C4.reconcile(districts, registry)   # filesystem truth; CONTROL FAILURE raises
-    DS.save(registry)
-    emit("reconciled", todo=[d["district_id"] for d in todo],
-         skipped=[d["district_id"] for d in skipped])
-    if not todo:
-        return {"batch_id": batch_id, "todo": 0, "skipped": len(skipped), "results": []}
-
-    registry = DS.load()
-    for d in todo:
-        DS.record_stage(registry, d["district_id"], d["name"], d["state"], stage_name="process",
-                        event_type="dispatched", actor=actor, batch_id=batch_id)
-        emit("dispatched", district_id=d["district_id"], name=d["name"])
-    DS.save(registry)
-
-    results = []
-    for d in todo:
-        did = d["district_id"]
-        try:
-            registry = DS.load()
-            outcome = C4.finish_district(d, registry)   # in-process work + processed.json + DB cache
-            DS.save(registry)
-            results.append({"district_id": did, "name": d["name"], "outcome": outcome})
-            emit("completed", district_id=did, name=d["name"], outcome=outcome)
-        except SystemExit:
-            raise   # CONTROL FAILURE -- never swallow
-        except Exception as e:
-            registry = DS.load()
-            DS.record_stage(registry, did, d["name"], d["state"], stage_name="process",
+    # Per-district saves defer the district_status.json regeneration (export=False; issue #49) — one
+    # explicit DS.export() at run end (in a finally, so a crash still exports the committed events).
+    try:
+        districts = find_batch_districts(batch)
+        registry = DS.load()
+        # Filesystem truth. Registry-ahead-of-disk = CONTROL FAILURE -> SystemExit (unchanged);
+        # a captures.json/disk mismatch quarantines JUST that district (#78) -- recorded as a
+        # `failed` process event (so status shows it, retriable after investigation) with a
+        # distinct `inconsistent` outcome in the results, while the rest of the batch runs.
+        todo, skipped, quarantined = C4.reconcile(districts, registry)
+        results = []
+        for q in quarantined:
+            problems = "; ".join(q.get("inconsistency") or [])
+            DS.record_stage(registry, q["district_id"], q["name"], q["state"], stage_name="process",
                             event_type="failed", actor=actor, batch_id=batch_id,
-                            notes=f"{type(e).__name__}: {str(e)[:200]}")
-            DS.save(registry)
-            results.append({"district_id": did, "name": d["name"], "outcome": "error",
-                            "error": f"{type(e).__name__}: {str(e)[:200]}"})
-            emit("failed", district_id=did, name=d["name"], error=str(e)[:200])
-    return {"batch_id": batch_id, "todo": len(todo), "skipped": len(skipped), "results": results}
+                            notes=f"inconsistent: {problems[:200]}")
+            results.append({"district_id": q["district_id"], "name": q["name"],
+                            "outcome": "inconsistent", "error": problems[:200]})
+            emit("failed", district_id=q["district_id"], name=q["name"],
+                 error=f"inconsistent: {problems[:200]}")
+        DS.save(registry, export=False)
+        emit("reconciled", todo=[d["district_id"] for d in todo],
+             skipped=[d["district_id"] for d in skipped],
+             quarantined=[d["district_id"] for d in quarantined])
+        if not todo:
+            return {"batch_id": batch_id, "todo": 0, "skipped": len(skipped), "results": results}
+
+        registry = DS.load()
+        for d in todo:
+            DS.record_stage(registry, d["district_id"], d["name"], d["state"], stage_name="process",
+                            event_type="dispatched", actor=actor, batch_id=batch_id)
+            emit("dispatched", district_id=d["district_id"], name=d["name"])
+        DS.save(registry, export=False)
+
+        for d in todo:
+            did = d["district_id"]
+            try:
+                registry = DS.load()
+                outcome = C4.finish_district(d, registry)   # in-process work + processed.json + DB cache
+                DS.save(registry, export=False)
+                results.append({"district_id": did, "name": d["name"], "outcome": outcome})
+                emit("completed", district_id=did, name=d["name"], outcome=outcome)
+            except SystemExit:
+                raise   # CONTROL FAILURE -- never swallow
+            except Exception as e:
+                registry = DS.load()
+                DS.record_stage(registry, did, d["name"], d["state"], stage_name="process",
+                                event_type="failed", actor=actor, batch_id=batch_id,
+                                notes=f"{type(e).__name__}: {str(e)[:200]}")
+                DS.save(registry, export=False)
+                results.append({"district_id": did, "name": d["name"], "outcome": "error",
+                                "error": f"{type(e).__name__}: {str(e)[:200]}"})
+                emit("failed", district_id=did, name=d["name"], error=str(e)[:200])
+        return {"batch_id": batch_id, "todo": len(todo), "skipped": len(skipped), "results": results}
+    finally:
+        DS.export()   # one full district_status.json regeneration per run (issue #49)
 
 
 def main():

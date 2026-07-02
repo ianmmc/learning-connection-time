@@ -19,7 +19,8 @@ from infrastructure.acquisition.stage4_process import process_stage4 as C4
 def inmem_registry(monkeypatch):
     reg = {"schema_version": 2, "districts": {}, "_events": []}
     monkeypatch.setattr(DS, "load", lambda: reg)
-    monkeypatch.setattr(DS, "save", lambda r: len(r.get("_events", [])))
+    monkeypatch.setattr(DS, "save", lambda r, **kw: len(r.get("_events", [])))
+    monkeypatch.setattr(DS, "export", lambda: 0)   # run-end export (issue #49) — no Postgres in tests
     # the cross-stage cache hook opens its own DB session — no-op it so the runner needs no Postgres
     monkeypatch.setattr(C4.CI, "cache_processed", lambda *a, **k: None)
     return reg
@@ -126,6 +127,52 @@ class TestRunBatch:
         summary = H4.run_batch(_batch("111", "222"))
         assert summary["todo"] == 1
         assert {r["district_id"] for r in summary["results"]} == {"111"}
+
+
+class TestConsistencyBlastRadius:
+    """#78: a captures.json/disk mismatch quarantines ONE district (excluded, surfaced like
+    `failed` with a distinct `inconsistent` outcome); registry-ahead-of-disk keeps the hard
+    SystemExit; already-processed districts aren't consistency-gated retroactively."""
+
+    def test_inconsistent_district_is_quarantined_not_run_halting(self, tmp_path, monkeypatch, inmem_registry):
+        monkeypatch.setattr(C4, "RAW_DIR", tmp_path)
+        monkeypatch.setattr(H4, "RAW_DIR", tmp_path)
+        _seed_district(tmp_path, "111", "D111")
+        d = _seed_district(tmp_path, "222", "D222")
+        (d / "captures" / "h1" / "page.txt").unlink()   # manifest claims page.txt; disk disagrees
+        events = []
+        summary = H4.run_batch(_batch("111", "222"),
+                               on_event=lambda k, p: events.append((k, p.get("district_id"))))
+        by_id = {r["district_id"]: r for r in summary["results"]}
+        assert by_id["222"]["outcome"] == "inconsistent"
+        assert "page.txt" in by_id["222"]["error"]
+        assert by_id["111"]["outcome"] == "processed_all"          # blast radius: one district
+        assert ("failed", "222") in events                          # surfaced like a failed district
+        assert not (tmp_path / "222_d222" / "processed.json").exists()
+
+    def test_registry_ahead_of_disk_keeps_the_hard_stop(self, tmp_path, monkeypatch, inmem_registry):
+        monkeypatch.setattr(C4, "RAW_DIR", tmp_path)
+        monkeypatch.setattr(H4, "RAW_DIR", tmp_path)
+        _seed_district(tmp_path, "111", "D111")   # captured, NOT processed on disk
+        inmem_registry["districts"]["111"] = {"furthest_stage": 4}   # registry claims Stage 4+
+        with pytest.raises(SystemExit):
+            H4.run_batch(_batch("111"))
+
+    def test_already_processed_district_is_not_consistency_gated(self, tmp_path, monkeypatch, inmem_registry):
+        monkeypatch.setattr(C4, "RAW_DIR", tmp_path)
+        monkeypatch.setattr(H4, "RAW_DIR", tmp_path)
+        d = _seed_district(tmp_path, "111", "D111", processed=True)
+        (d / "captures" / "h1" / "page.txt").unlink()   # inconsistent, but Stage 4 already done
+        summary = H4.run_batch(_batch("111"))
+        assert summary["skipped"] == 1 and summary["results"] == []
+
+    def test_finish_district_raises_district_scoped_error_not_systemexit(self, tmp_path, monkeypatch, inmem_registry):
+        monkeypatch.setattr(C4, "RAW_DIR", tmp_path)
+        d = _seed_district(tmp_path, "111", "D111")
+        (d / "captures" / "h1" / "page.txt").unlink()
+        district = C4.find_districts(tmp_path)[0]
+        with pytest.raises(C4.InconsistentCapturesError):
+            C4.finish_district(district, inmem_registry)
 
 
 def test_rollup_counts():

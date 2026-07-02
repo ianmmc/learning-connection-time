@@ -125,10 +125,10 @@ class TestContentParser:
         minutes = self.parser._calculate_minutes("8:00 AM", "3:00 PM")
         assert minutes == 420  # 7 hours
 
-    def test_calculate_minutes_with_lunch(self):
-        """Test typical school day length."""
+    def test_calculate_minutes_gross_no_lunch_deduction(self):
+        """Minutes are GROSS bell-to-bell (REQ-055): end - start, NO lunch/passing deduction."""
         minutes = self.parser._calculate_minutes("7:30 AM", "2:30 PM")
-        assert minutes == 420  # 7 hours
+        assert minutes == 420  # 7 hours gross, even though a real day includes lunch
 
     def test_calculate_minutes_short_day(self):
         """Test early dismissal day."""

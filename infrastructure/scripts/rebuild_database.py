@@ -40,6 +40,7 @@ project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from infrastructure.database.connection import session_scope, get_engine
+from infrastructure.database.school_year import NCES_PRIMARY_YEAR
 from sqlalchemy import text
 
 
@@ -92,7 +93,8 @@ def run_script(script_path: str, args: list = None, dry_run: bool = False) -> bo
 def verify_table_counts(session, expected: dict = None) -> dict:
     """Get current table counts."""
     tables = [
-        "districts", "state_requirements", "staff_counts", "staff_counts_effective",
+        "districts", "state_district_crosswalk", "state_requirements",
+        "staff_counts", "staff_counts_effective",
         "enrollment_by_grade", "sped_state_baseline", "sped_lea_baseline",
         "sped_estimates", "bell_schedules", "lct_calculations"
     ]
@@ -143,6 +145,18 @@ def phase_2_foundation(dry_run: bool = False) -> bool:
     if not run_script(SCRIPTS["import_all"], args, dry_run=False):  # Script handles dry-run internally
         return False
 
+    # Verify the crosswalk actually came back (issue #16: TRUNCATE districts CASCADE wipes
+    # state_district_crosswalk — "the single source of truth for all state mappings" — and a
+    # rebuild that silently skips its re-import must fail loudly here, not months later).
+    if not dry_run:
+        with session_scope() as session:
+            n = session.execute(text("SELECT COUNT(*) FROM state_district_crosswalk")).scalar()
+        if not n:
+            print("ERROR: state_district_crosswalk is EMPTY after phase 2 — the crosswalk "
+                  "re-import did not run. Halting the rebuild (Rule #6: verify, don't trust).")
+            return False
+        print(f"  Crosswalk verified: {n} entries")
+
     # Import district website URLs and grade spans from NCES CCD
     print("\nImporting district URLs and grade spans...")
     url_args = []
@@ -151,7 +165,7 @@ def phase_2_foundation(dry_run: bool = False) -> bool:
     return run_script(SCRIPTS["import_district_urls"], url_args, dry_run=dry_run)
 
 
-def phase_3_staff_enrollment(dry_run: bool = False, year: str = "2023-24") -> bool:
+def phase_3_staff_enrollment(dry_run: bool = False, year: str = NCES_PRIMARY_YEAR) -> bool:
     """Phase 3: Load staff counts and enrollment."""
     print("\n" + "=" * 60)
     print("PHASE 3: LOAD STAFF COUNTS AND ENROLLMENT")

@@ -128,11 +128,13 @@ def get_database_url() -> str:
     user = os.getenv("POSTGRES_USER", DEFAULT_USER)
     password = os.getenv("POSTGRES_PASSWORD", DEFAULT_PASSWORD)
 
-    # Build connection string
+    # Build connection string (credentials URL-escaped — a password with @/:/% must not
+    # corrupt the URL, issue #70)
+    from urllib.parse import quote_plus
     if password:
-        return f"postgresql://{user}:{password}@{host}:{port}/{database}"
+        return f"postgresql://{quote_plus(user)}:{quote_plus(password)}@{host}:{port}/{database}"
     else:
-        return f"postgresql://{user}@{host}:{port}/{database}"
+        return f"postgresql://{quote_plus(user)}@{host}:{port}/{database}"
 
 
 def get_engine(database_url: Optional[str] = None, echo: bool = False) -> Engine:
@@ -156,6 +158,13 @@ def get_engine(database_url: Optional[str] = None, echo: bool = False) -> Engine
         _check_docker_postgres()
 
     if _engine is None or database_url is not None:
+        if _engine is not None:
+            # An explicit database_url replaces the global engine for all later callers —
+            # release the old pool instead of leaking its connections, and invalidate the
+            # session factory still bound to it (issue #70)
+            global _SessionLocal
+            _engine.dispose()
+            _SessionLocal = None
         url = database_url or get_database_url()
         _engine = create_engine(
             url,

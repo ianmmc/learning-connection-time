@@ -15,6 +15,8 @@ from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
+from infrastructure.database.school_year import plausible_gross_minutes
+
 
 @dataclass
 class BellScheduleData:
@@ -241,7 +243,7 @@ class ContentParser:
                 end = times[0]['end']
                 minutes = self._calculate_minutes(start, end)
 
-                if minutes and 240 <= minutes <= 540:  # 4-9 hours reasonable
+                if minutes and plausible_gross_minutes(minutes):  # REQ-055 band (240-510)
                     results.append(BellScheduleData(
                         start_time=start,
                         end_time=end,
@@ -291,7 +293,7 @@ class ContentParser:
 
         # Calculate minutes
         minutes = self._calculate_minutes(start_time, end_time)
-        if not minutes or minutes < 240 or minutes > 540:  # 4-9 hours
+        if not minutes or not plausible_gross_minutes(minutes):  # REQ-055 band (240-510)
             return None
 
         # Detect grade level from context
@@ -355,14 +357,17 @@ class ContentParser:
 
     def _calculate_minutes(self, start: str, end: str) -> Optional[int]:
         """
-        Calculate instructional minutes between start and end times.
+        Calculate GROSS bell-to-bell minutes between start and end times.
+
+        The metric is gross (end - start) with NO deductions — no lunch,
+        passing, or recess subtraction (REQ-055; assumed deductions forbidden).
 
         Args:
             start: Start time string (e.g., "8:00 AM")
             end: End time string (e.g., "3:00 PM")
 
         Returns:
-            Number of minutes, or None if calculation fails
+            Number of gross minutes, or None if calculation fails
         """
         try:
             # Parse times

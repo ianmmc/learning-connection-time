@@ -115,3 +115,47 @@ def test_save_then_load_round_trips_through_db(gov_session):
         {"d": did}).mappings().first()
     assert r["furthest_stage"] == 3 and r["stage_name"] == "capture" and r["outcome"] == "captured"
     gov_session.rollback()
+
+
+# ----------------------------- save(export=...) / export() — issue #49 (no DB: all faked) -----------------------------
+def _fake_db(monkeypatch, exports: list):
+    """Stub the schema/session/export plumbing so the save() control flow is testable DB-free."""
+    import contextlib
+
+    class _Con:
+        def execute(self, *a, **k):
+            pass
+
+        def commit(self):
+            pass
+
+    @contextlib.contextmanager
+    def scope():
+        yield _Con()
+
+    monkeypatch.setattr(DS, "ensure_schema", lambda: None)
+    monkeypatch.setattr(DS.gdb, "session_scope", scope)
+    monkeypatch.setattr(DS, "export_status", lambda s, out=None: exports.append(1) or 0)
+
+
+def test_save_default_exports_the_backup(monkeypatch):
+    exports: list = []
+    _fake_db(monkeypatch, exports)
+    reg = _empty()
+    DS.record_stage(reg, "TSTX", "N", "ZZ", stage=1, stage_name="queue", outcome="queued")
+    assert DS.save(reg) == 1
+    assert exports == [1]                    # single-call behavior unchanged for normal callers
+    assert reg["_events"] == []
+
+
+def test_save_export_false_defers_the_backup(monkeypatch):
+    """Batch runners save per district with export=False (O(N²) fix) and export once at run end."""
+    exports: list = []
+    _fake_db(monkeypatch, exports)
+    reg = _empty()
+    for i in range(3):
+        DS.record_stage(reg, f"TSTX{i}", "N", "ZZ", stage=2, stage_name="discover", outcome="found_all")
+        DS.save(reg, export=False)
+    assert exports == []                     # no per-district regeneration
+    DS.export()
+    assert exports == [1]                    # exactly one full regeneration at run end

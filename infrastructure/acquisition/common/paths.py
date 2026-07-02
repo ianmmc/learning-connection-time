@@ -30,6 +30,10 @@ QUEUE_DIR = ACQUISITION / "queue"                       # Stage 1 batch_*.json
 STATUS_DIR = ACQUISITION / "status"
 STATUS_FILE = STATUS_DIR / "district_status.json"       # cross-stage registry
 
+# Derived per-record harvest slices (Stage-5 ingest output; regenerable). Deliberately under
+# acquisition/, NOT under raw/ — data/raw is write-once Stage-3 output (Critical Rule 5; issue #58).
+HARVEST_SLICES_DIR = ACQUISITION / "harvest_slices"
+
 STAGE5_DIR = ACQUISITION / "stage5_review"
 # (The retired SQLite review.db cache lived here pre-REQ-103; the working store is now the isolated
 # governance Postgres DB — see common/db.py. The precious JSON backups below remain.)
@@ -39,6 +43,10 @@ SCORECARDS_DIR = STAGE5_DIR / "scorecards"              # harness output (config
 
 # --- config-as-data (versioned tunables; near code, intentionally NOT under DATA_ROOT) ---
 CONFIG_DIR = Path(__file__).resolve().parent / "config"
+
+# Gitignored local secrets (API keys) -- repo-anchored so importers resolve it identically
+# regardless of launch CWD (issue #31; the same bug class RAW_CAPTURES already fixed).
+SECRETS_FILE = REPO_ROOT / "config" / "secrets.local.json"
 
 
 def data_root_is_default() -> bool:

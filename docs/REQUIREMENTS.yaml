@@ -599,38 +599,41 @@ requirements:
     notes: "From California SPED integration and SPED v3 implementation - DATA PRECEDENCE comment in calculate_lct_variants.py"
 
   - id: REQ-026
-    description: Enforce 3-year temporal blending window for multi-source data
+    description: "Enforce the temporal blending window for multi-source data — v2 semantics
+      (Ian, 2026-07-01): data blended into one calculation may span at most THREE CONSECUTIVE
+      school years (max start-year span = 2). {2023-24, 2024-25, 2025-26} is acceptable;
+      {2022-23 .. 2025-26} (span 3 = four school years) is not. COVID exclusion (REQ-007)
+      applies FIRST — a COVID source year is invalid regardless of span. The read side prefers
+      the newest COHERENT set: a bell year that cannot form a valid window with the
+      staff/enrollment years is dropped in favor of statutory, not blended anyway."
     type: constraint
     priority: must
     status: tested
     acceptance_criteria:
-      - Data from multiple sources must span ≤3 years apart (year_span calculated as absolute difference in start years)
-      - year_span = |year1_start - year2_start| (e.g., 2024-25 and 2023-24 = |2024-2023| = 1)
-      - within_3year_window boolean flag indicates validation status
-      - temporal_flags array tracks validation status - WARN_YEAR_GAP, ERR_SPAN_EXCEEDED
-      - No flags when year_span ≤ 1 (same year or adjacent years - e.g., 2024-25 and 2023-24)
-      - WARN_YEAR_GAP added when year_span is 2-3 (e.g., 2025-26 and 2023-24 has 1-year gap, span=2)
-      - ERR_SPAN_EXCEEDED added when year_span >3 (exceeds blending window)
-      - Trigger trg_lct_temporal_validation auto-validates on INSERT/UPDATE
-      - SPED baseline (2017-18 IDEA 618/CRDC) exempt from 3-year rule as ratio proxy
+      - year_span = |max_start_year - min_start_year| over the non-null source years
+      - within_3year_window is TRUE iff year_span <= 2 AND no COVID source year
+      - No flags when year_span <= 1; WARN_YEAR_GAP when year_span == 2 (valid, notable); ERR_SPAN_EXCEEDED when year_span > 2; ERR_COVID_YEAR when any source year is 2019-20..2022-23
+      - The write path populates enrollment_source_year / staff_source_year / bell_schedule_source_year so trigger trg_lct_temporal_validation auto-validates on INSERT/UPDATE (was inert — issue #11)
+      - calculate_all_variants enforces the window at read time (drops an out-of-window bell year to statutory) so invalid blends are prevented, not just flagged
+      - SPED baseline (2017-18 IDEA 618/CRDC) exempt from the window as a ratio proxy
+      - The single source of truth for the window math is infrastructure/database/school_year.py (within_blend_window)
       - v_lct_temporal_validation view provides validation summary
-      - Resolution options - update source, seek user direction, accept with flag
     tests:
+      - tests/test_school_year.py::TestBlendWindow
       - tests/test_temporal_validation.py::TestYearSpanCalculation::test_calculates_year_span_from_sources
-      - tests/test_temporal_validation.py::TestYearSpanCalculation::test_same_year_sources_span_is_1
       - tests/test_temporal_validation.py::TestYearSpanCalculation::test_2_year_span_is_valid
-      - tests/test_temporal_validation.py::TestYearSpanCalculation::test_3_year_span_is_valid
-      - tests/test_temporal_validation.py::TestYearSpanCalculation::test_4_year_span_exceeds_window
-      - tests/test_temporal_validation.py::TestTemporalFlags::test_warn_year_gap_added_for_2_3_year_span
-      - tests/test_temporal_validation.py::TestTemporalFlags::test_err_span_exceeded_added_for_greater_than_3
+      - tests/test_temporal_validation.py::TestYearSpanCalculation::test_3_year_span_is_invalid_v2
+      - tests/test_temporal_validation.py::TestTemporalFlags::test_warn_year_gap_added_for_span_2
       - tests/test_temporal_validation.py::TestTemporalFlags::test_no_flags_for_same_year_data
       - tests/test_temporal_validation.py::TestSpedBaselineException::test_sped_2017_18_exempt_from_3_year_rule
-      - tests/test_temporal_validation.py::TestSpedBaselineException::test_info_ratio_baseline_flag_for_sped_exception
       - tests/test_temporal_validation.py::TestValidationTrigger::test_trigger_auto_validates_on_insert
       - tests/test_temporal_validation.py::TestValidationTrigger::test_trigger_auto_validates_on_update
     created: "2026-01-16T06:30:00Z"
-    updated: "2026-01-16T06:30:00Z"
-    notes: "From METHODOLOGY.md v2.1 - Temporal Data Blending section. Migration 008 implements this."
+    updated: "2026-07-02T00:00:00Z"
+    notes: "v1 (span<=3, admitting four school years) was ambiguous and its DB trigger was inert
+      (issue #11: unmapped/unpopulated source-year columns). v2 decided by Ian 2026-07-01 during
+      the fable-review lct-core hardening; implemented by migration 018 + school_year.py +
+      the calculate_lct_variants write/read wiring (issues #11/#12)."
 
   - id: REQ-027
     description: Master crosswalk table for all state NCES-to-SEA mappings
@@ -810,6 +813,22 @@ requirements:
     created: "2026-01-23T21:30:00Z"
     updated: "2026-01-23T21:30:00Z"
     notes: "SUPERSEDED 2026-06-26 — tests the OLD scraper→parser→DB→LCT contract (markdown/html scraper_response, ContentParser), i.e. the Crawlee-era architecture, not the 9-stage acquisition pipeline. The intent (cross-stage data contracts) now lives in the as-built stage REQs (068–083) and, going forward, the governance event log. CORRECTION 2026-06-26: an earlier draft of this note called content_parser.py 'likely dead code' — that is WRONG. content_parser.py is LIVE via the LCT-cluster manual-import path (rebuild_database.py phase 6 → import_manual_bell_schedules.py → ContentParser), tested by tests/test_content_parser.py (REQ-032). It is NOT retired. Only this orchestration test models the dead scraper contract. Original: E2E pipeline testing ensures data contracts maintained across all stages."
+
+  - id: REQ-034
+    description: "[SUPERSEDED — Firecrawl tier removed with the obsolete tier-based enrichment
+      system; this requirement and its tests (test_firecrawl_discovery.py) were DELETED outright
+      instead of banner-superseded, leaving an unexplained ID gap until the 2026-07-02 fable-review
+      hygiene pass restored this tombstone from git history (2a1ede4). Discovery now = the Stage-2
+      deterministic SERP cascade (REQ-104).] Firecrawl URL discovery and content extraction testing"
+    type: non-functional
+    priority: must
+    status: superseded
+    superseded_by: [REQ-104]
+    acceptance_criteria:
+      - (historical) Firecrawl /v1/map URL discovery + /v1/scrape extraction, ContentParser integration, Playwright fallback
+    created: "2026-01-23T21:30:00Z"
+    updated: "2026-07-02T00:00:00Z"
+    notes: "Tombstone restored 2026-07-02 (issue #74). Full original text: git show 2a1ede4:REQUIREMENTS.yaml."
 
   - id: REQ-035
     description: Enrichment count verification against database before documentation
@@ -1305,10 +1324,15 @@ requirements:
       ~27 GT districts remain in gt_curation CURATION_RECONCILED.json for validation."
 
   - id: REQ-058
-    description: "Per-school discovery via cost-ascending waves (Claude WebSearch -> OpenRouter gpt-4o-mini-search -> manual), stop-when-found"
+    description: "[SUPERSEDED 2026-06-28 by REQ-104 — Stage 2 re-architected to a deterministic SERP
+      cascade: Bright Data SERP Wave 1 + Serper failover -> Claude WebSearch Wave 2 on the residual;
+      the agent-orchestrated Claude/OpenRouter waves and the per-school-acquire skill are retired.
+      Still-good parts carried forward: domain scoping, cross-school dedup, sampling caps (REQ-052).]
+      Per-school discovery via cost-ascending waves (Claude WebSearch -> OpenRouter gpt-4o-mini-search -> manual), stop-when-found"
     type: functional
     priority: must
-    status: accepted
+    status: superseded
+    superseded_by: [REQ-104]
     acceptance_criteria:
       - Discovery runs in waves and stops once a district/school is satisfied; it does NOT run all tools on every school
       - Wave 1 = Claude WebSearch (Haiku subagent, subscription); Wave 2 = OpenRouter gpt-4o-mini-search on the residual only; then flag for manual
@@ -1321,10 +1345,11 @@ requirements:
       - tests/test_acquisition_stages.py::TestSampling::test_band_classifier_grade_span
       - tests/test_acquisition_stages.py::TestSampling::test_sample_size_censuses_small
     created: "2026-06-21T00:00:00Z"
-    updated: "2026-06-21T00:00:00Z"
-    notes: "Wave 1 needs the agent (spawns WebSearch subagent) -> orchestrated by the per-school-acquire
-      skill, not a bare script (agent-in-the-loop, not lights-out). school_sampling.py is built+testable now;
-      live wave orchestration is a skip stub until wired."
+    updated: "2026-07-01T00:00:00Z"
+    notes: "Superseded banner added 2026-07-01 (fable review — this req missed the banner pattern
+      042/046/048/057 got). Historical: Wave 1 was agent-orchestrated via the per-school-acquire skill;
+      REQ-104's deterministic cascade replaced it. TestWaves::test_wave_order_no_perplexity encodes the
+      OLD wave order — retire with the next test-hygiene pass."
 
   - id: REQ-059
     description: "Ground truth is human-verified per-school start/end times; models propose, human confirms"
@@ -2175,12 +2200,19 @@ requirements:
       is pursued; the tier still governs whether it is - a harvest on a non-target is harmless.)"
 
   - id: REQ-093
-    description: Stage 5 Tier-0 scoring refinements, each measured against labels via the harness
+    description: "[SUPERSEDED 2026-07-02 by REQ-113 (with REQ-091) — the V1 tier-cascade this
+      tuned was replaced by the detector/combiner architecture. What shipped here survives
+      (config-as-data keyword knobs; 'class schedule' keyword; the calendar-rescue principle);
+      the HOURS-regex idea was harness-DISPROVEN (see notes); and the 'main-only de-chrome
+      signal' criterion was INVERTED by V2's measured fix #1 (time signals over the MAX-evidence
+      source, never main-exclusively).] Stage 5 Tier-0 scoring refinements, each measured against
+      labels via the harness"
     type: functional
     priority: should
-    status: accepted
+    status: superseded
+    superseded_by: [REQ-113, REQ-091]
     acceptance_criteria:
-      - Detect instructional HOURS (not only minutes); stop dropping academic_calendar candidates; add a class-schedule positive keyword; consume the de-chrome main-only signal
+      - (historical) Detect instructional HOURS (not only minutes); stop dropping academic_calendar candidates; add a class-schedule positive keyword; consume the de-chrome main-only signal
       - Every change shows a before/after against the labels via REQ-090; no regression to tier precision-recall on batch_00001
       - Changes land as config edits (REQ-088), not new code literals
     tests:
@@ -2229,9 +2261,9 @@ requirements:
     priority: should
     status: tested
     acceptance_criteria:
-      - Re-scores labeled records under candidate threshold params WITHOUT re-ingest (reads stored signals_json + labels)
-      - Reuses build_signals.tier_and_category (parameterized) and harness.tier_target_metrics; nothing reimplemented
-      - tier_and_category refactor is behavior-preserving (defaults reproduce stored tiers exactly on the live DB)
+      - Re-scores labeled records under candidate params WITHOUT re-ingest (reads stored signals_json + labels)
+      - Reuses the LIVE V2 scoring path — the detector/combiner (combiner.score_record, parameterized over the detector/combiner config knobs) — and harness.tier_target_metrics; nothing reimplemented (criterion updated 2026-07-02, issue #56/#73 — originally pinned the deleted V1 tier_and_category)
+      - The parameterized path is behavior-preserving (defaults reproduce stored decisions/tiers exactly on stored signals)
       - Emits the precision/recall frontier filtered by a hard recall floor, ranked by precision, with per-record moves
       - LeaveOneGroupOut-by-district CV reported as an overfitting guard (never a gate)
       - Evaluates on CANONICAL records (cluster reps + singletons), not all labeled — operational send-set semantics
@@ -2261,7 +2293,10 @@ requirements:
     created: "2026-06-26T00:00:00Z"
     updated: "2026-06-26T00:00:00Z"
     notes: "Designed (research-backed: CUSUM+Wilson beat EWMA/Page-Hinkley for binary-proportion metrics; KS/chi-sq
-      are the wrong layer). Deferred until batch 2 exists to demonstrate against. Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §7a."
+      are the wrong layer). Original deferral ('until batch 2 exists') EXPIRED — batches 00002-00007 exist
+      (re-triaged 2026-07-02, issue #75): remains accepted/unbuilt by choice, best sequenced after the
+      facet-level per-detector scoring pass (its input series — the tuning ledger — gains V2-era episodes
+      there first). Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §7a."
 
   - id: REQ-098
     description: Package the acquisition tree + code move + wire the dependency/dead-code/architecture tooling baseline
@@ -2464,28 +2499,40 @@ requirements:
     description: Stage 6 Dispatch — route filtered representations to an OpenRouter council config and emit an immutable handoff_<hash>_<ts>.json dispatch record; gate@6
     type: functional
     priority: must
-    status: accepted
+    status: tested
     acceptance_criteria:
-      - Input = each district's filtered.json (Stage 5 projection); does NO extraction itself (that is Stage 7) — it is routing + release only
-      - A council_config is a first-class registered object (lean: config-as-data JSON with provenance, mirroring common/config/; assignment + cost are runtime/DB)
-      - Default routing assigns a config, cascade-style (start cheap-trio; escalate to accuracy-pair on no-consensus per REQ-056), never silent on low confidence
-      - Output is an immutable handoff_<hash>_<timestamp>.json dispatch record; a 'dispatched' state_event references the dispatch hash; re-dispatch writes a NEW file, prior untouched
-      - Cost estimate per config x per rep (OpenRouter price/1M x token estimate) feeds the gate@6 go/no-go and the budget governor (REQ-051)
-      - gate@6 manual/auto (auto = confidence-escalating, cost-gated)
+      - Input = the Stage-5 release decision read from the governance DB (record/representation/label + release.decide); filtered.json is the auditable receipt, not the transport; does NO extraction itself (that is Stage 7) — routing + release only
+      - A council_config is a first-class registered object (config-as-data JSON with provenance, common/config/council_configs.json); the validator enforces the HARD diversity rule — 2 voters from 2 different families, judge from a 3rd family
+      - Routing is per-REPRESENTATION, data-driven off each config's input_kinds + the capture-fidelity gate (visual_text_gap -> vision council, fidelity_suspect never auto-accepts on agreement)
+      - Output is an immutable handoff_<hash>_<timestamp>.json dispatch record with a price-independent identity hash; a 'dispatched' state_event references the dispatch hash atomically with the precious handoff index row; re-dispatch writes a NEW file, prior untouched
+      - Cost estimate per config x per rep feeds the gate@6 go/no-go (bootstrap cost model with provenance today; measured token model x live OpenRouter pricing is the council-lab track)
+      - gate@6 manual approve via the console (preview routed/priced package -> Approve & freeze); AUTO mode + the budget-governor cost-gate (REQ-051) DEFERRED
+    tests:
+      - tests/test_stage6_councils.py
+      - tests/test_stage6_routing.py
+      - tests/test_stage6_package.py
+      - tests/test_stage6_handoff_artifact.py
+      - tests/test_stage6_dispatch.py
+      - tests/test_stage6_dispatch_bridge.py
+      - tests/test_stage6_handoff_api.py
+      - tests/test_stage6_requests.py
     created: "2026-06-27T00:00:00Z"
-    updated: "2026-06-27T00:00:00Z"
-    notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §5/§9 (step 6) + STAGE6_DISPATCH_DESIGN_2026-06.md.
-      OPEN #1 (settle before build): council-config grain — per-district vs per-dispatch vs per-representation
-      (shapes the artifact + cost model). Also open: seed config sets (the candidate 6 models), judge in-config
-      vs fixed-stage, token-estimation method. For batch_00002 we STOP at gate@6 approval — no paid dispatch
-      (Stage 7 out of scope this pass). Acceptance criteria firm up as the design note's OPEN sections resolve;
-      tests authored at build time."
+    updated: "2026-07-01T00:00:00Z"
+    notes: "BUILT to the Stage 6->7 seam; merged PR #2 2026-06-30. Authority: STAGE6_DISPATCH_DESIGN_2026-06.md
+      §0 (as-built). OPEN #1 (config grain) RESOLVED by the build: per-representation. The cheap-trio/
+      accuracy-pair cascade question collapsed into the decided template (2 cross-family voters -> 3rd-family
+      judge); the cross-config cascade + composition stay open (council lab). Acceptance criteria updated
+      2026-07-01 (fable review) to match the as-built seam; original design-era criteria in git history.
+      Verified-only dispatch mode + per-rep council override added post-merge (330e43b, d50e9a6)."
 
   - id: REQ-102
-    description: Governance console gate@1 (CP-A) queue view + stage selector — review/approve a queued batch_*.json as a recorded gate@1 event; create the batch-of-record via a console action, not a direct script run
+    description: Governance console gate@1 queue view + stage selector — review/approve a queued batch as a recorded gate@1 event; create the batch-of-record via a console action, not a direct script run
     type: functional
     priority: must
-    status: accepted
+    status: tested
+    tests:
+      - tests/test_stage1_batch_store.py
+      - tests/test_gate1_api.py
     acceptance_criteria:
       - The wordmark becomes a stage selector that swaps per-stage views (gate@1 queue, gate@5 review, later gate@6 dispatch)
       - The gate@1 view presents the queued batch (districts / bands / per-band school selections + the NCES denominators) for human review
@@ -2493,8 +2540,10 @@ requirements:
       - A 'create batch' console action invokes queue_batch.py as a callable (actor=human, the §7a-B orchestration model); the batch-of-record is created HERE
       - Home view = an attention-queue projection over state_event current-state ('what needs my attention'), not a static stage tree
     created: "2026-06-27T00:00:00Z"
-    updated: "2026-06-27T00:00:00Z"
-    notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §7/§7b/§9 (step 7) + governance §11.
+    updated: "2026-07-01T00:00:00Z"
+    notes: "BUILT (backend 2026-06-27, frontend 2026-06-28); validated end-to-end — batch_00002 created ->
+      edited -> approved through the UI. Status bumped 2026-07-01 (fable review).
+      Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §7/§7b/§11h.
       FORCING FUNCTION (decided 2026-06-27): batch_00002 is created and advanced ONLY through the console,
       stage view by stage view, driving the console toward a self-governing/self-sustaining app under the
       ramp-up model (manual gates + high supervision now, easing back later). Hand-run queue_batch.py is for
@@ -2506,16 +2555,16 @@ requirements:
     priority: should
     status: tested
     acceptance_criteria:
-      - Each district's Wave 1 runs as a headless `claude -p ... --model haiku --allowedTools WebSearch --output-format json` agent; the orchestrator collects the JSON and runs the existing deterministic Wave-2 / gating / flatten unchanged
-      - Search providers sit behind one contract — given a school, return candidate URLs as JSON — so providers can be added/reordered/swapped (Claude CLI, OpenRouter gpt-4o-mini-search, future Bright Data / Brave) without touching gating/flatten/dedup
-      - No chat, no human-in-loop; schedulable overnight; uses subscription auth (no ANTHROPIC_API_KEY shadowing the subscription)
-      - VERIFY FIRST — WebSearch behavior + subscription rate limits at overnight ~17k-district volume, before converting
+      - Wave 1 is fully deterministic (no agent in the loop) — Bright Data SERP per school, site:-scoped; Serper failover ONLY on a Bright Data API failure (same Google index = uptime backup, not recall)
+      - Wave 2 = Claude WebSearch (headless claude -p, 75s timeout) on the genuine residual only (a different index, speculative); degrades to manual_flag, never halts
+      - Search providers sit behind one contract — given a school, return candidate URLs as JSON — so providers can be added/reordered/swapped without touching gating/flatten/dedup (this layer is what made the bake-off swap cheap)
+      - The existing deterministic gating / flatten / dedup / atomic-write / registry path is unchanged; runnable headless from the console (background job), no chat required
     created: "2026-06-27T00:00:00Z"
-    updated: "2026-06-27T00:00:00Z"
-    notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §7a/§9 (step 8). Lower priority for batch_00002 —
-      the current stage2-discover skill (subagent, concurrency cap 2) works for this batch; the headless
-      conversion is an efficiency/scale upgrade, not a blocker. Retires the 'subagent requires a chat open'
-      framing throughout the Stage 2 docs."
+    updated: "2026-07-01T00:00:00Z"
+    notes: "Authority: STAGE2_DISCOVER_DESIGN_2026-06.md §7. Acceptance criteria rewritten 2026-07-01 (fable
+      review) to the as-built SERP cascade — the original criteria described the claude-p-as-Wave-1 design
+      this req's own description records as replaced; originals in git history. The stage2-discover skill is
+      retired (see REQ-058 supersession)."
 
   - id: REQ-110
     description: "Stage 3 (Capture) console + the cross-stage cache as a LIVE working store — DONE 2026-06-28.
@@ -2629,7 +2678,7 @@ requirements:
       in docs/technical-notes/filtering-research/ (weak supervision; FrugalGPT/SUPG cascades)."
     type: functional
     priority: must
-    status: in_progress
+    status: tested
     acceptance_criteria:
       - detectors.py exposes pure labeling functions (signals)->{vote,confidence,reason}; combiner.py reduces votes to a send/suppress/review decision + a derived tier; both config-as-data driven
       - time signals compute over the max-evidence source (main ∪ footer/header segment ∪ best raw rep); a footer/OCR-only 'Hours:' target is no longer zeroed by de-chrome
@@ -2638,8 +2687,12 @@ requirements:
       - harness reports per-detector coverage/accuracy/overlap/conflict against the human facets/labels; a re-ingest before/after episode is recorded in the tuning ledger
     created: "2026-07-01T00:00:00Z"
     updated: "2026-07-01T00:00:00Z"
-    notes: "Design: STAGE5_FILTER_DESIGN_2026-06.md §2 (detectors/combiner) + §5 (harness). Branch
-      stage5-scoring-labeling-v2."
+    notes: "MERGED to main (PR #3, cde04e9). Measured over 440 labels: tier-A precision 0.79 / recall 0.88 /
+      tier-D 0-target leak / A+B recall 1.0. Design: STAGE5_FILTER_DESIGN_2026-06.md §2 (detectors/combiner)
+      + §5 (harness). Open follow-on: facet-level per-detector scoring (as v2.1 re-tagging fills facets).
+      NOTE (fable review 2026-07-01): the V1 remnants (tier_and_category / DEFAULT_TIER_PARAMS / frontier.py)
+      are still in-tree but dead on the ingest path — retire or re-point frontier at DEFAULT_DETECTOR_PARAMS;
+      REQ-093/096 still reference the V1 cascade and need reconciling."
 
   - id: REQ-114
     description: "Stage 5 labeling UI V2 — a facet questionnaire. V1 forced multi-purpose pages into one
@@ -2649,7 +2702,7 @@ requirements:
       confirm-or-correct (and yields the per-detector ground truth the harness needs). Adds a structured
       'where' (main/footer/header/table/image/feed-post) and a structured handbook page number
       (harvest_pages_labeled, guessed-vs-labeled like topology). ADDITIVE to the existing taxonomy — NOT a
-      reset (the 440 labels + 202 notes stay valid; user decision 2026-07-01). Free-text note retained."
+      reset (the 440 labels + 202 notes stay valid; user decision 2026-07-01). Free-text note retained.
       Built as v2.1 (2026-07-01): a THREE-AXIS label object — Axis 1 target SHAPE (school_start_end_list /
       school_bell_table / school_start_end_prose / district_hub_by_school / district_hub_by_band /
       explicit_instructional_time / target_other_shape + terminals target_absent / unusable); Axis 2 confounder
@@ -2684,12 +2737,25 @@ requirements:
       one). Schema.org OpeningHoursSpecification deliberately NOT chased (research: <5% on K-12 CMS)."
     type: functional
     priority: should
-    status: planned
+    status: tested
     acceptance_criteria:
       - capture_discovery.mjs records iframe_srcs[] (categorized by host) + embed_present per capture; unit-tested on the pure categorizer
       - cms_hint is threaded from captures.json fingerprint into the Stage-5 record signals_json at ingest
       - the iframe-innerText capture question is answered in the note (fixed if a gap, documented if not)
+    tests:
+      - infrastructure/scraper/capture_fingerprint.test.mjs (categorizeEmbedHost)
     created: "2026-07-01T00:00:00Z"
     updated: "2026-07-01T00:00:00Z"
     notes: "Design: STAGE5_FILTER_DESIGN_2026-06.md §6. Additive to Stage 3; applies to future captures
       (existing captures backfill cms_hint only, which is already on disk)."
+
+  - id: REQ-116
+    description: "In preparation of dispatches during Stage 6, If a district has a URL with either a labeled or A-scoring district hub schedule (either by school or by band) that covers all bands, then the best representation of that URL is the only URL that needs to be sent for the district on the first dispatch."
+    type: functional
+    priority: must
+    status: draft
+    acceptance_criteria:
+    tests:
+    created: "2026-07-01T00:00:00Z"
+    updated: "2026-07-01T00:00:00Z"
+    notes: "Design: STAGE6_DISPATCH_DESIGN_2026-06.md. The rationale here is that the presence of a district hub schedule renders the need for representations of other URLs moot. Sending more would needless add to cost. If more information is needed, the extraction council can request more representations and more URLs"

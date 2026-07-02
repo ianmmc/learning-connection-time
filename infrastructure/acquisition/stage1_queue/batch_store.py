@@ -7,6 +7,7 @@ in `gdb.session_scope`; tests use the rolling-back `gov_session` fixture). The g
 is ever destroyed — the full proposed batch stays auditable.
 """
 import json
+import os
 
 from sqlalchemy import select, text
 
@@ -26,12 +27,22 @@ def create_batch(sess, batch_doc: dict, *, batch_type: str = "first-run", actor:
     rows). A multi-band school collapses to ONE BatchSchool row carrying all its bands. Flushes so the
     rows are visible to a same-transaction to_receipt_doc()."""
     bid = batch_doc["batch_id"]
-    sess.add(Batch(
-        batch_id=bid, batch_type=batch_type, status="draft",
-        nces_year=batch_doc.get("nces_year", ""),
-        created_at=batch_doc.get("created") or utcnow(), created_by=actor,
-        meta_json={k: batch_doc[k] for k in _META_KEYS if k in batch_doc},
-    ))
+    existing = sess.get(Batch, bid)
+    if existing is not None and existing.status == "reserving":
+        # Upgrade the id reservation (reserve_next_batch, issue #46) to the real draft row in place.
+        existing.batch_type = batch_type
+        existing.status = "draft"
+        existing.nces_year = batch_doc.get("nces_year", "")
+        existing.created_at = batch_doc.get("created") or utcnow()
+        existing.created_by = actor
+        existing.meta_json = {k: batch_doc[k] for k in _META_KEYS if k in batch_doc}
+    else:
+        sess.add(Batch(
+            batch_id=bid, batch_type=batch_type, status="draft",
+            nces_year=batch_doc.get("nces_year", ""),
+            created_at=batch_doc.get("created") or utcnow(), created_by=actor,
+            meta_json={k: batch_doc[k] for k in _META_KEYS if k in batch_doc},
+        ))
     for i, d in enumerate(batch_doc["districts"]):
         sbb = d.get("schools_by_band", {})
         order = d.get("band_processing_order") or list(sbb.keys())
@@ -193,7 +204,9 @@ def write_receipt(sess, batch_id: str):
     doc = to_receipt_doc(sess, batch_id)
     paths.QUEUE_DIR.mkdir(parents=True, exist_ok=True)
     out_path = paths.QUEUE_DIR / f"{batch_id}.json"
-    out_path.write_text(json.dumps(doc, indent=2))
+    tmp = out_path.with_name(out_path.name + ".tmp")   # atomic (issue #50): a crash mid-write must
+    tmp.write_text(json.dumps(doc, indent=2))          # never leave a truncated receipt behind —
+    os.replace(tmp, out_path)                          # same tmp+replace pattern as export_status
     return out_path
 
 
@@ -296,6 +309,29 @@ def reopen_batch(sess, batch_id: str, actor: str) -> None:
 
 
 # ---------------------------------------------------------------- next id (DB rows + on-disk receipts)
+def reserve_next_batch(sess, *, actor: str) -> str:
+    """Reserve the next batch id UP FRONT by inserting a placeholder row (status='reserving') — the
+    fix for the duplicate-id race (issue #46): the console's create path spends 10-20s in build_batch
+    between computing the number and persisting, during which a second create used to compute the SAME
+    number. The caller commits this in its own short transaction BEFORE the slow build; create_batch
+    then upgrades the placeholder to the real draft row. A concurrent reserve of the same number fails
+    fast on the PK (IntegrityError) instead of 20s later. On a failed build the caller should
+    release_reservation() so the number isn't burned by a dead placeholder."""
+    bid = f"batch_{next_batch_number(sess):05d}"
+    sess.add(Batch(batch_id=bid, batch_type="first-run", status="reserving",
+                   nces_year="", created_at=utcnow(), created_by=actor, meta_json={}))
+    sess.flush()
+    return bid
+
+
+def release_reservation(sess, batch_id: str) -> None:
+    """Delete a placeholder reservation after a failed build (only if it's still just a reservation)."""
+    b = sess.get(Batch, batch_id)
+    if b is not None and b.status == "reserving":
+        sess.delete(b)
+        sess.flush()
+
+
 def next_batch_number(sess) -> int:
     """The next free batch number, considering BOTH the DB batch rows and any batch_*.json receipts on
     disk (a hand-run CLI batch may exist as a file before it's a row)."""

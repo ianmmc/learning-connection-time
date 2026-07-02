@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """
+LEDGER NOTE (2026-07-02, issue #21): this is a DATA backfill — it backfills districts.is_shared_service_entity / is_career_technical_center (Rule 6) — NOT a schema migration; it deliberately does not write schema_migrations. All DDL lives in the numbered NNN_*.sql files (migrate.py status = the ledger).
+
 Backfill is_career_technical_center / is_shared_service_entity for CTCs.
 
 METHODOLOGY.md Rule 6 calls for excluding career/technical centers and other

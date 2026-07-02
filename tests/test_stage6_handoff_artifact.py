@@ -78,6 +78,28 @@ def test_verified_only_is_carried_and_part_of_identity():
     assert verified["handoff_hash"] != default["handoff_hash"]
 
 
+def test_hash_is_order_insensitive():
+    # issue #52: the same selection must hash identically regardless of the order districts /
+    # records / reps were assembled in (e.g. console click order)
+    def _pkg2(reverse=False):
+        def _rec(rk, f):
+            return {"rec_key": rk, "decision": "send",
+                    "reps": [{"file": f, "kind": "text", "councils": ["low-cost-text"],
+                              "fidelity_suspect": False, "route_reason": "clean-text", "est_usd": 0.001}]}
+        d1 = {"district_id": "0100810", "records": [_rec("a", "a.txt"), _rec("b", "b.txt")]}
+        d2 = {"district_id": "0200220", "records": [_rec("c", "c.txt")]}
+        dists = [d2, d1] if reverse else [d1, d2]
+        if reverse:
+            dists[1]["records"] = list(reversed(dists[1]["records"]))
+        return {"districts": dists, "cost": {"total_usd": 0.003, "n_reps": 3, "provenance": "bootstrap"}}
+
+    fpr = {"0100810": {"config": "c", "labels": "l", "data": "d"},
+           "0200220": {"config": "c", "labels": "l", "data": "d"}}
+    a = handoff.freeze(_pkg2(), COUNCILS, fpr)
+    b = handoff.freeze(_pkg2(reverse=True), COUNCILS, fpr)
+    assert a["handoff_hash"] == b["handoff_hash"]
+
+
 def test_filename_format():
     doc = handoff.freeze(_pkg(), COUNCILS, FPR)
     fn = handoff.handoff_filename(doc)

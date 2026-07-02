@@ -14,6 +14,17 @@ Data sources:
 Texas District Code Format: 6-digit TEA district number (e.g., "227901" for Houston ISD)
 - Crosswalk via tx_district_identifiers table (TEA → NCES)
 
+All fields are read BY COLUMN NAME (issue #17). The old iloc-positional access was
+off by one for nearly every field: e.g. row.iloc[27] was used for BOTH total
+enrollment and grade 12 (it is actually the grade-11 count; "All Students Count"
+is column 29), iloc[14] labeled PK was the EE (Early Education) count, and every
+staff program field (regular/bilingual/gifted/special-ed) was shifted one column
+left (iloc[39] labeled Special Ed is the Gifted & Talented count). Column names in
+the TAPR export are verbose and year-prefixed ("District 2025 Staff: Teacher Total
+Full Time Equiv Count"), so fields are resolved by unique year-agnostic suffix via
+find_column(). Files are read with dtype=str so district numbers keep leading
+zeros and masking sentinels (-1/-2/-3) reach safe_float/safe_int intact.
+
 Uses shared utilities from sea_import_utils.py for common operations.
 
 Usage:
@@ -55,6 +66,59 @@ STAFF_FILE = TX_DATA_DIR / "2025 District Staff Information.csv"
 STUDENT_FILE = TX_DATA_DIR / "2025 District Student Information.csv"
 REFERENCE_FILE = TX_DATA_DIR / "2025 District Reference.csv"
 
+DISTRICT_NO_COL = '6 Digit County District Number'
+
+# Year-agnostic column-name suffixes (headers are prefixed "District <YYYY> ...").
+# Verified against the 2024-25 TAPR district CSV headers (issue #17).
+STAFF_COLUMNS = {
+    'teacher_total': 'Staff: Teacher Total Full Time Equiv Count',
+    'teacher_regular': 'Staff: Teacher Regular Program Full Time Equiv Count',
+    'teacher_bilingual': 'Staff: Teacher Bilingual Program Full Time Equiv Count',
+    'teacher_gifted': 'Staff: Teacher Gifted & Talented Program Full Time Equiv Count',
+    'teacher_special_ed': 'Staff: Teacher Special Education Full Time Equiv Count',
+}
+
+STUDENT_COLUMNS = {
+    'total': 'Student Membership: All Students Count',
+    'pk': 'Student Membership: PK Count',
+    'k': 'Student Membership: KG Count',
+    'g1': 'Student Membership: 01 Count',
+    'g2': 'Student Membership: 02 Count',
+    'g3': 'Student Membership: 03 Count',
+    'g4': 'Student Membership: 04 Count',
+    'g5': 'Student Membership: 05 Count',
+    'g6': 'Student Membership: 06 Count',
+    'g7': 'Student Membership: 07 Count',
+    'g8': 'Student Membership: 08 Count',
+    'g9': 'Student Membership: 09 Count',
+    'g10': 'Student Membership: 10 Count',
+    'g11': 'Student Membership: 11 Count',
+    'g12': 'Student Membership: 12 Count',
+    'sped': 'Student Membership: Special Ed Count',
+    'ell': 'Student Membership: EB/EL Count',
+    'econ_disadv': 'Student Membership: Econ Disadv Count',
+}
+
+
+def find_column(columns, suffix: str) -> str:
+    """Resolve the single column name ending with `suffix`.
+
+    Raises KeyError when the suffix matches zero or multiple columns, so a header
+    change fails loudly instead of silently importing the wrong field (the failure
+    mode positional iloc access created).
+    """
+    matches = [c for c in columns if c.endswith(suffix)]
+    if len(matches) != 1:
+        raise KeyError(
+            f"expected exactly one column ending with {suffix!r}, found {matches!r}"
+        )
+    return matches[0]
+
+
+def resolve_columns(df: pd.DataFrame, spec: dict) -> dict:
+    """Map each field key in `spec` to the actual DataFrame column name."""
+    return {key: find_column(df.columns, suffix) for key, suffix in spec.items()}
+
 
 def log_stats(stats: dict) -> None:
     """Log import statistics."""
@@ -81,10 +145,10 @@ def load_staff_data() -> pd.DataFrame:
     """Load TAPR staff data from CSV file."""
     logger.info(f"Loading staff data from: {STAFF_FILE}")
 
-    # Read CSV with first row as verbose column names
-    df = pd.read_csv(STAFF_FILE)
+    # Read CSV with verbose column names; dtype=str keeps leading zeros in the
+    # district number and delivers masking sentinels intact (issue #17/#22)
+    df = pd.read_csv(STAFF_FILE, dtype=str)
 
-    # Extract TEA district code and district name from first two columns
     df.columns = [col.strip('"') for col in df.columns]
 
     logger.info(f"  Loaded {len(df)} district records")
@@ -97,7 +161,7 @@ def load_student_data() -> pd.DataFrame:
     """Load TAPR student data from CSV file."""
     logger.info(f"Loading student data from: {STUDENT_FILE}")
 
-    df = pd.read_csv(STUDENT_FILE)
+    df = pd.read_csv(STUDENT_FILE, dtype=str)
     df.columns = [col.strip('"') for col in df.columns]
 
     logger.info(f"  Loaded {len(df)} district records")
@@ -111,10 +175,12 @@ def import_staff_to_database(session, staff_df: pd.DataFrame, crosswalk: dict, d
 
     stats = {'total': 0, 'matched': 0, 'skipped': 0, 'inserted': 0}
 
+    cols = resolve_columns(staff_df, STAFF_COLUMNS)
+
     for _, row in staff_df.iterrows():
         stats['total'] += 1
 
-        tea_code = str(row['6 Digit County District Number']).strip()
+        tea_code = str(row[DISTRICT_NO_COL]).strip()
         district_name = row['District Name']
 
         # Get NCES ID from crosswalk
@@ -127,13 +193,12 @@ def import_staff_to_database(session, staff_df: pd.DataFrame, crosswalk: dict, d
 
         stats['matched'] += 1
 
-        # Extract key staff fields
-        # Use internal column names (second header row)
-        teacher_total = safe_float(row.iloc[2])  # DPSTTOFC
-        teacher_special_ed = safe_float(row.iloc[39])  # DPSTSPFC
-        teacher_regular = safe_float(row.iloc[34])  # DPSTREFC
-        teacher_bilingual = safe_float(row.iloc[36])  # DPSTBIFC
-        teacher_gifted = safe_float(row.iloc[38])  # DPSTGIFC
+        # Extract key staff fields by column name (issue #17)
+        teacher_total = safe_float(row[cols['teacher_total']])
+        teacher_special_ed = safe_float(row[cols['teacher_special_ed']])
+        teacher_regular = safe_float(row[cols['teacher_regular']])
+        teacher_bilingual = safe_float(row[cols['teacher_bilingual']])
+        teacher_gifted = safe_float(row[cols['teacher_gifted']])
 
         if not dry_run:
             # Check if record exists
@@ -208,10 +273,12 @@ def import_enrollment_to_database(session, student_df: pd.DataFrame, crosswalk: 
 
     stats = {'total': 0, 'matched': 0, 'skipped': 0, 'inserted': 0}
 
+    cols = resolve_columns(student_df, STUDENT_COLUMNS)
+
     for _, row in student_df.iterrows():
         stats['total'] += 1
 
-        tea_code = str(row['6 Digit County District Number']).strip()
+        tea_code = str(row[DISTRICT_NO_COL]).strip()
 
         # Get NCES ID from crosswalk
         nces_id = crosswalk.get(tea_code)
@@ -221,30 +288,31 @@ def import_enrollment_to_database(session, student_df: pd.DataFrame, crosswalk: 
 
         stats['matched'] += 1
 
-        # Extract enrollment fields
-        # Total enrollment
-        total_enrollment = safe_int(row.iloc[27])  # DPETALLC
+        # Extract enrollment fields by column name (issue #17 — the old iloc
+        # access used column 27 for BOTH total and grade 12, and was off by one
+        # for every grade)
+        total_enrollment = safe_int(row[cols['total']])
 
         # By grade
-        enrollment_pk = safe_int(row.iloc[14])  # DPETGPKC
-        enrollment_k = safe_int(row.iloc[15])  # DPETGKNC
-        enrollment_g1 = safe_int(row.iloc[16])  # DPETG01C
-        enrollment_g2 = safe_int(row.iloc[17])  # DPETG02C
-        enrollment_g3 = safe_int(row.iloc[18])  # DPETG03C
-        enrollment_g4 = safe_int(row.iloc[19])  # DPETG04C
-        enrollment_g5 = safe_int(row.iloc[20])  # DPETG05C
-        enrollment_g6 = safe_int(row.iloc[21])  # DPETG06C
-        enrollment_g7 = safe_int(row.iloc[22])  # DPETG07C
-        enrollment_g8 = safe_int(row.iloc[23])  # DPETG08C
-        enrollment_g9 = safe_int(row.iloc[24])  # DPETG09C
-        enrollment_g10 = safe_int(row.iloc[25])  # DPETG10C
-        enrollment_g11 = safe_int(row.iloc[26])  # DPETG11C
-        enrollment_g12 = safe_int(row.iloc[27])  # DPETG12C
+        enrollment_pk = safe_int(row[cols['pk']])
+        enrollment_k = safe_int(row[cols['k']])
+        enrollment_g1 = safe_int(row[cols['g1']])
+        enrollment_g2 = safe_int(row[cols['g2']])
+        enrollment_g3 = safe_int(row[cols['g3']])
+        enrollment_g4 = safe_int(row[cols['g4']])
+        enrollment_g5 = safe_int(row[cols['g5']])
+        enrollment_g6 = safe_int(row[cols['g6']])
+        enrollment_g7 = safe_int(row[cols['g7']])
+        enrollment_g8 = safe_int(row[cols['g8']])
+        enrollment_g9 = safe_int(row[cols['g9']])
+        enrollment_g10 = safe_int(row[cols['g10']])
+        enrollment_g11 = safe_int(row[cols['g11']])
+        enrollment_g12 = safe_int(row[cols['g12']])
 
         # Special populations
-        enrollment_sped = safe_int(row.iloc[28])  # DPETSPEC
-        enrollment_ell = safe_int(row.iloc[31])  # DPETLEPC
-        enrollment_econ_disadv = safe_int(row.iloc[32])  # DPETECOC
+        enrollment_sped = safe_int(row[cols['sped']])
+        enrollment_ell = safe_int(row[cols['ell']])
+        enrollment_econ_disadv = safe_int(row[cols['econ_disadv']])
 
         if not dry_run:
             # Check if record exists

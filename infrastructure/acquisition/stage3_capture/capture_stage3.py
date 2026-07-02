@@ -110,8 +110,83 @@ def compute_outcome(captures: list) -> tuple[str, str]:
 # text_times aren't recoverable from disk). The going-forward fix is Node-owns-shutdown (write a partial
 # manifest on its own deadline); this is for the already-orphaned districts.
 
+# WHATWG-parity helpers (#43): capture_discovery.mjs's stripFragment() round-trips through
+# `new URL(url)` -- which NORMALIZES (lowercase scheme/host, default port dropped, '/' for an
+# empty path, dot segments removed, space/unicode percent-encoded) -- so the folder name on
+# disk is md5(<normalized url>). A raw '#'-split here hashed the UN-normalized URL and missed
+# those folders during reconstruction.
+_DEFAULT_PORTS = {"http": 80, "https": 443, "ws": 80, "wss": 443, "ftp": 21}
+# WHATWG leaves these raw in a path (beyond quote()'s always-safe unreserved set).
+_PATH_SAFE = "/%:@!$&'()*+,;=~[]-._"
+# The query encode set is smaller still (only space, ", #, <, > get encoded).
+_QUERY_SAFE = "%/:@!$&'()*+,;=?~[]^`{|}\\-._"
+
+
+def _remove_dot_segments(path: str) -> str:
+    """WHATWG path normalization: /a/../b -> /b, /a/./b -> /a/b, /a/.. -> / (trailing
+    '.'/'..' keeps the trailing slash, like new URL())."""
+    if not path:
+        return path
+    segs = path.split("/")
+    out: list[str] = []
+    for i, seg in enumerate(segs):
+        if seg == ".":
+            pass
+        elif seg == "..":
+            if len(out) > 1:
+                out.pop()
+        else:
+            out.append(seg)
+            continue
+        if i == len(segs) - 1:  # trailing '.'/'..' -> keep a trailing '/'
+            out.append("")
+    return "/".join(out)
+
+
 def _strip_fragment(url: str) -> str:
-    return url.split("#", 1)[0]
+    """Replicate capture_discovery.mjs's stripFragment (new URL(url); u.hash=''; toString())
+    for the common cases, so md5(_strip_fragment(url)) matches the per-URL folder Node named:
+    lowercase scheme+host, punycode a unicode host, drop the scheme's default port, '/' for an
+    empty path, remove dot segments, percent-encode space/unicode in path+query without
+    double-encoding existing %XX. Residual (documented, accepted) divergences from Node: a
+    bare trailing '?' (Node keeps it, we drop it), '\\' in a special-scheme path (Node
+    rewrites it to '/'), malformed %-sequences (both mostly pass them through, but not
+    byte-identically in every case), and full IDN/host-validation quirks. Unparseable input
+    falls back to the raw '#'-split, matching Node's catch branch."""
+    from urllib.parse import quote, urlsplit, urlunsplit
+    try:
+        parts = urlsplit(url)
+    except ValueError:
+        return url.split("#", 1)[0]
+    scheme = parts.scheme.lower()
+    if not scheme or not parts.netloc:
+        return url.split("#", 1)[0]
+    host = parts.hostname or ""
+    if not host.isascii():
+        try:
+            host = host.encode("idna").decode("ascii")
+        except UnicodeError:
+            pass
+    userinfo = ""
+    if parts.username is not None:
+        userinfo = parts.username
+        if parts.password is not None:
+            userinfo += f":{parts.password}"
+        userinfo += "@"
+    try:
+        port = parts.port
+    except ValueError:
+        port = None
+    netloc = userinfo + host
+    if port is not None and port != _DEFAULT_PORTS.get(scheme):
+        netloc += f":{port}"
+    path = parts.path
+    if scheme in _DEFAULT_PORTS:  # the WHATWG "special" schemes
+        path = _remove_dot_segments(path) or "/"
+        if not path.startswith("/"):
+            path = "/" + path
+    return urlunsplit((scheme, netloc, quote(path, safe=_PATH_SAFE),
+                       quote(parts.query, safe=_QUERY_SAFE), ""))
 
 
 def _url_hash(url: str) -> str:
@@ -142,10 +217,16 @@ def _record_from_folder(folder: Path, url: str, *, tools, source, found_on) -> d
         ext = orig.rsplit(".", 1)[-1].lower()
         rec["kind"] = "image" if ext in IMAGE_EXTS else ("pdf" if ext == "pdf" else "binary")
         rec["files"]["bin"] = orig
-    else:   # a Drive export (file.pdf / pdf.pdf / csv.csv / markdown.md ...) — map by stem
+    else:   # a Drive export — mirror capture_discovery.mjs's live-path keying (#42): a known
+            # format stem (pdf.pdf / md.md / csv.csv) keys as itself, but the generic download
+            # `file.<ext>` (format 'auto') is keyed 'bin' by the live path — and Stage 4 only
+            # reads txt/md/csv/pdf/bin, so any unrecognized stem maps to 'bin' too (keying it
+            # by raw stem made Stage 4 silently skip the recovered file).
         rec["kind"] = "drive_export"
         for f in files:
-            rec["files"][f.split(".")[0]] = f
+            stem = f.split(".", 1)[0]
+            key = stem if stem in ("txt", "md", "csv", "pdf") else "bin"
+            rec["files"].setdefault(key, f)
     return rec
 
 

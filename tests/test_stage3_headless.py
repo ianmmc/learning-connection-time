@@ -19,7 +19,8 @@ from infrastructure.acquisition.stage3_capture import headless as H3
 def inmem_registry(monkeypatch):
     reg = {"schema_version": 2, "districts": {}, "_events": []}
     monkeypatch.setattr(DS, "load", lambda: reg)
-    monkeypatch.setattr(DS, "save", lambda r: len(r.get("_events", [])))
+    monkeypatch.setattr(DS, "save", lambda r, **kw: len(r.get("_events", [])))
+    monkeypatch.setattr(DS, "export", lambda: 0)   # run-end export (issue #49) — no Postgres in tests
     # the cross-stage cache hook opens its own DB session — no-op it so the runner needs no Postgres
     monkeypatch.setattr(C3.CI, "cache_capture", lambda *a, **k: None)
     return reg

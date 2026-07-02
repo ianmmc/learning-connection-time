@@ -24,6 +24,10 @@ class Label(Base):
 
     rec_key: Mapped[str] = mapped_column(String, primary_key=True)
     primary_label: Mapped[str | None] = mapped_column(String)
+    # LEGACY (v2.0) — inert archive. Values were folded into facets_json by migrate_label_v21
+    # (the human `duplicate` flag retired outright: programmatic dedup — record.duplicate_of +
+    # near-dup clustering — owns that). No live code reads or writes this column; kept only so
+    # historical values and the migration path survive. Do not resurrect.
     flags_json: Mapped[str | None] = mapped_column(String)
     # facets_json (REQ-114): the V2 facet questionnaire — detector-mirroring tri-state answers + a structured
     # 'where' + harvest_pages_labeled. Additive to primary_label; precious + JSON-backed like the rest.

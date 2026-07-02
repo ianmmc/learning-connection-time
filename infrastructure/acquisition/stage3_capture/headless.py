@@ -223,54 +223,59 @@ def run_batch(batch: dict, *, actor: str = "auto:stage3", on_event=None, _run=su
         if on_event:
             on_event(kind, {"batch_id": batch_id, **payload})
 
-    districts = find_batch_districts(batch)
-    registry = DS.load()
-    todo, skipped = C3.reconcile(districts, registry)
-    DS.save(registry)
-    # Drop no-link districts (Stage 2 manual_flag_all -> empty candidates.json) BEFORE dispatch: they
-    # have nothing for Playwright, are terminal at Stage 2, and get no Stage-3 artifact/event (they
-    # surface as `manual_flag_all` in status, sourced from the discovery state). Cheap pre-capture skip
-    # that matters at continuous-running scale.
-    no_link = [d for d in todo if candidate_count(d["dir"]) == 0]
-    todo = [d for d in todo if candidate_count(d["dir"]) > 0]
-    for d in no_link:
-        emit("skipped_no_links", district_id=d["district_id"], name=d["name"])
-    emit("reconciled", todo=[d["district_id"] for d in todo],
-         skipped=[d["district_id"] for d in skipped], no_links=[d["district_id"] for d in no_link])
-    if not todo:
-        return {"batch_id": batch_id, "todo": 0, "skipped": len(skipped),
-                "no_links": len(no_link), "results": []}
+    # Per-district saves defer the district_status.json regeneration (export=False; issue #49) — one
+    # explicit DS.export() at run end (in a finally, so a crash still exports the committed events).
+    try:
+        districts = find_batch_districts(batch)
+        registry = DS.load()
+        todo, skipped = C3.reconcile(districts, registry)
+        DS.save(registry, export=False)
+        # Drop no-link districts (Stage 2 manual_flag_all -> empty candidates.json) BEFORE dispatch: they
+        # have nothing for Playwright, are terminal at Stage 2, and get no Stage-3 artifact/event (they
+        # surface as `manual_flag_all` in status, sourced from the discovery state). Cheap pre-capture skip
+        # that matters at continuous-running scale.
+        no_link = [d for d in todo if candidate_count(d["dir"]) == 0]
+        todo = [d for d in todo if candidate_count(d["dir"]) > 0]
+        for d in no_link:
+            emit("skipped_no_links", district_id=d["district_id"], name=d["name"])
+        emit("reconciled", todo=[d["district_id"] for d in todo],
+             skipped=[d["district_id"] for d in skipped], no_links=[d["district_id"] for d in no_link])
+        if not todo:
+            return {"batch_id": batch_id, "todo": 0, "skipped": len(skipped),
+                    "no_links": len(no_link), "results": []}
 
-    registry = DS.load()
-    for d in todo:
-        DS.record_stage(registry, d["district_id"], d["name"], d["state"], stage_name="capture",
-                        event_type="dispatched", actor=actor, batch_id=batch_id)
-        emit("dispatched", district_id=d["district_id"], name=d["name"])
-    DS.save(registry)
+        registry = DS.load()
+        for d in todo:
+            DS.record_stage(registry, d["district_id"], d["name"], d["state"], stage_name="capture",
+                            event_type="dispatched", actor=actor, batch_id=batch_id)
+            emit("dispatched", district_id=d["district_id"], name=d["name"])
+        DS.save(registry, export=False)
 
-    results = []
-    for d in todo:
-        did = d["district_id"]
-        try:
-            _capture_one(d, _run=_run)
-            registry = DS.load()
-            outcome = C3.finish_district(d, registry)   # reads captures.json + upserts the DB cache
-            DS.save(registry)
-            results.append({"district_id": did, "name": d["name"], "outcome": outcome})
-            emit("completed", district_id=did, name=d["name"], outcome=outcome)
-        except SystemExit:
-            raise   # CONTROL FAILURE -- never swallow
-        except Exception as e:
-            registry = DS.load()
-            DS.record_stage(registry, did, d["name"], d["state"], stage_name="capture",
-                            event_type="failed", actor=actor, batch_id=batch_id,
-                            notes=f"{type(e).__name__}: {str(e)[:200]}")
-            DS.save(registry)
-            results.append({"district_id": did, "name": d["name"], "outcome": "error",
-                            "error": f"{type(e).__name__}: {str(e)[:200]}"})
-            emit("failed", district_id=did, name=d["name"], error=str(e)[:200])
-    return {"batch_id": batch_id, "todo": len(todo), "skipped": len(skipped),
-            "no_links": len(no_link), "results": results}
+        results = []
+        for d in todo:
+            did = d["district_id"]
+            try:
+                _capture_one(d, _run=_run)
+                registry = DS.load()
+                outcome = C3.finish_district(d, registry)   # reads captures.json + upserts the DB cache
+                DS.save(registry, export=False)
+                results.append({"district_id": did, "name": d["name"], "outcome": outcome})
+                emit("completed", district_id=did, name=d["name"], outcome=outcome)
+            except SystemExit:
+                raise   # CONTROL FAILURE -- never swallow
+            except Exception as e:
+                registry = DS.load()
+                DS.record_stage(registry, did, d["name"], d["state"], stage_name="capture",
+                                event_type="failed", actor=actor, batch_id=batch_id,
+                                notes=f"{type(e).__name__}: {str(e)[:200]}")
+                DS.save(registry, export=False)
+                results.append({"district_id": did, "name": d["name"], "outcome": "error",
+                                "error": f"{type(e).__name__}: {str(e)[:200]}"})
+                emit("failed", district_id=did, name=d["name"], error=str(e)[:200])
+        return {"batch_id": batch_id, "todo": len(todo), "skipped": len(skipped),
+                "no_links": len(no_link), "results": results}
+    finally:
+        DS.export()   # one full district_status.json regeneration per run (issue #49)
 
 
 def main():

@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 
 from infrastructure.acquisition.common import district_status as DS
+from infrastructure.acquisition.common import paths
 from infrastructure.acquisition.stage5_filter import release as REL
 from infrastructure.acquisition.stage6_handoff import councils as C6
 from infrastructure.acquisition.stage6_handoff import cost as COST6
@@ -18,14 +19,30 @@ from infrastructure.acquisition.stage6_handoff import package as PKG6
 from infrastructure.acquisition.stage6_handoff.models import Handoff
 
 
-def _enrich_send(decision_send: list, reps: list) -> list:
+def _enrich_send(decision_send: list, reps: list, rec: dict = None, district_dir: str = None) -> list:
     """Join each release `send` entry ({file, kind, pages?}) back to its representation row to attach
-    `n_chars`/`n_times` (which the release descent dropped) — routing keys on kind, cost on size."""
+    the size inputs cost.py documents (issue #55) — routing keys on kind, cost on size:
+      * `n_chars`/`n_times` from the representation row (None for binaries);
+      * `n_schools` = len(record.intended_schools) when known (the output-token scaler cost._n_schools
+        expects; falls back there to n_times, then the model's default floor);
+      * `n_bytes` = on-disk file size for a binary rep whose n_chars is None — the documented size
+        PROXY the future measured vision-token model needs (no current formula reads it)."""
     by_file = {r.get("filename"): r for r in (reps or [])}
+    rec = rec or {}
+    n_schools = len(rec.get("intended_schools") or []) or None
+    rec_hash = (rec.get("rec_key") or "").split(":", 1)[-1]
+    base = (paths.RAW_CAPTURES / district_dir / "captures" / rec_hash) \
+        if (district_dir and rec_hash) else None
     out = []
     for s in decision_send or []:
         rr = by_file.get(s.get("file"), {})
-        out.append({**s, "n_chars": rr.get("n_chars"), "n_times": rr.get("n_times")})
+        e = {**s, "n_chars": rr.get("n_chars"), "n_times": rr.get("n_times"), "n_schools": n_schools}
+        if e["n_chars"] is None and base is not None and s.get("file"):
+            try:
+                e["n_bytes"] = (base / s["file"]).stat().st_size
+            except OSError:
+                e["n_bytes"] = None
+        out.append(e)
     return out
 
 
@@ -50,7 +67,7 @@ def district_release_input(session, district_id: str, verified_only: bool = Fals
             "rec_key": rec["rec_key"], "url": rec.get("url"),
             "decision": decision, "reason": reason,
             "signals": rec.get("signals") or {},
-            "send": _enrich_send(send, rec.get("reps")),
+            "send": _enrich_send(send, rec.get("reps"), rec, district.get("district_dir")),
         })
     return district, records
 
@@ -94,7 +111,10 @@ def _record_dispatched_events(session, doc: dict, actor: str, metas: dict) -> No
     (so the index row + the events commit atomically — `current_state` is a VIEW over `state_event`,
     no separate snapshot to update). Carries the district's real name (from `metas`, not a possibly-empty
     current_state lookup), the frozen fingerprints, and the handoff hash. A pure checkpoint event
-    (stage=NULL), so it never moves furthest_stage. The git-tracked JSON backup is refreshed best-effort."""
+    (stage=NULL), so it never moves furthest_stage. The district_status.json backup is NOT refreshed
+    here (issue #39): these events are flushed-not-committed, and dispatch_handoff writes the immutable
+    file after this — an export now could bake phantom `dispatched` events into the backup if the file
+    write then failed and the DB rolled back. The export runs LAST, in dispatch_handoff."""
     for d in doc.get("districts", []):
         did = d["district_id"]
         meta = metas.get(did) or {}
@@ -106,11 +126,6 @@ def _record_dispatched_events(session, doc: dict, actor: str, metas: dict) -> No
             "batch_id": None, "fingerprints_json": json.dumps(fp) if fp else None,
             "actor": actor, "note": doc.get("handoff_hash"), "created_at": HND._now()})
     session.flush()
-    try:
-        DS.export_status(session)   # refresh district_status.json from the now-flushed events (the DB is truth)
-    except Exception as e:
-        print(f"[warn] district_status.json backup refresh failed after dispatch "
-              f"({type(e).__name__}: {e}); the DB is authoritative — re-export later")
 
 
 def record_dispatch(session, doc: dict, path, actor: str = "human", metas: dict = None) -> str:
@@ -130,19 +145,36 @@ def dispatch_handoff(session, district_ids, created_by: str = "human", root=None
     gate@6 training-grade mode (labeled targets only), frozen into the doc's identity. Returns (doc, path)."""
     councils = councils or C6.load_configs()
     cost_model = cost_model or COST6.load_cost_model()
-    districts_input, metas, fingerprints = [], {}, {}
+    districts_input, metas, fingerprints, skipped = [], {}, {}, []
     for did in district_ids:
         di = district_release_input(session, did, verified_only=verified_only)
         if not di:
-            continue                     # unknown district — silently skipped from the package
+            skipped.append(did)          # unknown district — skipped from the package (surfaced below)
+            continue
         meta, _records = di
         districts_input.append(di)
         metas[did] = meta
         fingerprints[did] = REL.district_fingerprints(session, did)
+    if not districts_input:
+        # Refuse to freeze a 0-district handoff (issue #53): an all-unknown (or empty) selection is
+        # an operator error, not a dispatchable artifact.
+        raise ValueError(
+            "dispatch refused: the effective selection is empty — "
+            + (f"none of the selected districts exist in the release store "
+               f"(unknown ids skipped: {skipped})" if skipped else "no districts were selected"))
     package = PKG6.assemble_package(districts_input, councils, cost_model, overrides)
     package["verified_only"] = bool(verified_only)
     doc = HND.freeze(package, councils, fingerprints, created_by=created_by)
     path = (Path(root) if root else HND.DEFAULT_ROOT) / HND.handoff_filename(doc)
     record_dispatch(session, doc, path, actor=created_by, metas=metas)
     HND.write(doc, root=root)            # the immutable file LAST (commit-order: DB record, then disk)
+    # district_status.json refresh runs TRULY LAST (issue #39): only after the file write succeeded —
+    # if write() had raised, the session would roll back and an earlier export would have baked
+    # phantom `dispatched` events into the git-tracked backup. Best-effort, as everywhere: the DB is
+    # authoritative and the backup regenerates on the next save/export.
+    try:
+        DS.export_status(session)
+    except Exception as e:
+        print(f"[warn] district_status.json backup refresh failed after dispatch "
+              f"({type(e).__name__}: {e}); the DB is authoritative — re-export later")
     return doc, path

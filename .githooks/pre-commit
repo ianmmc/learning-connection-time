@@ -26,9 +26,15 @@ echo -e "${GREEN}Running pre-commit validation...${NC}"
 # behind on a sync to GitHub. git add on an unchanged file is a harmless no-op.
 #   - labels.json          <- the `label` table        (export_labels on every build_signals ingest)
 #   - district_status.json <- the `state_event` log    (export_status on every DS.save)
+#   - cluster_splits.json  <- the `cluster_split` table (export_splits on every split; issue #57)
+#   - followup_flags.json  <- the `followup_flag` table (_backup_followups on every flag; issue #57)
+# The [ -f ] guard means a backup that doesn't exist yet (e.g. no follow-up flag ever created) is
+# skipped gracefully.
 PRECIOUS_BACKUPS=(
     "data/acquisition/stage5_review/labels.json"
     "data/acquisition/status/district_status.json"
+    "data/acquisition/stage5_review/cluster_splits.json"
+    "data/acquisition/stage5_review/followup_flags.json"
 )
 for f in "${PRECIOUS_BACKUPS[@]}"; do
     if [ -f "$f" ]; then
@@ -36,6 +42,17 @@ for f in "${PRECIOUS_BACKUPS[@]}"; do
         echo -e "${GREEN}Ensured $f is staged${NC}"
     fi
 done
+
+# REQUIREMENTS.yaml must parse when staged (issue #77 — it was once broken YAML for an
+# unknown period; the ledger being machine-readable is load-bearing)
+if git diff --cached --name-only | grep -q '^docs/REQUIREMENTS.yaml$'; then
+    if ! python3 -c "import yaml; yaml.safe_load(open('docs/REQUIREMENTS.yaml'))" 2>/dev/null; then
+        echo -e "${RED}docs/REQUIREMENTS.yaml does not parse as YAML — fix before committing${NC}"
+        python3 -c "import yaml; yaml.safe_load(open('docs/REQUIREMENTS.yaml'))" 2>&1 | head -5
+        exit 1
+    fi
+    echo -e "${GREEN}REQUIREMENTS.yaml parses OK${NC}"
+fi
 
 # Check if any documentation files are being committed
 DOC_FILES=$(git diff --cached --name-only | grep -E '\.(md|yaml|yml)$' || true)

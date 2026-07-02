@@ -40,6 +40,7 @@ from infrastructure.database.verification import (
     find_lineage_gaps
 )
 from infrastructure.database.queries import get_enrichment_summary
+from infrastructure.database.school_year import CURRENT_SCHOOL_YEAR
 
 
 def main():
@@ -63,8 +64,8 @@ def main():
         help='Output as JSON'
     )
     parser.add_argument(
-        '--year', default='2024-25',
-        help='School year to verify (default: 2024-25)'
+        '--year', default=CURRENT_SCHOOL_YEAR,
+        help=f'School year to verify (default: {CURRENT_SCHOOL_YEAR})'
     )
 
     args = parser.parse_args()
@@ -74,7 +75,7 @@ def main():
             run_quick_check(session, args)
         elif args.date_range:
             run_date_range_check(session, args)
-        elif args.validate_claim:
+        elif args.validate_claim is not None:   # a claimed count of 0 is a real claim to validate
             run_claim_validation(session, args)
         else:
             run_full_verification(session, args)

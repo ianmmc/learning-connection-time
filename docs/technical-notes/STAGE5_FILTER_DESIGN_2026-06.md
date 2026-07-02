@@ -145,8 +145,8 @@ before the human sees it; a borderline page reaching gate@5 costs only review ti
 > **Written down, not implemented** (per `feedback-explore-before-scoring-changes`): fold in deliberately and
 > measure against the labels, never tune by eye. New observations append here.
 
-**(1) A footer time-range on a DISTRICT page leans building/office hours; on a SCHOOL page it leans the
-student day (2026-07-01).** An unlabeled footer range (the `school_start_end_list` shape) is more likely
+**(1) A footer time-range on a DISTRICT page leans building/office hours**; on a SCHOOL page it leans the
+student day (2026-07-01). An unlabeled footer range (the `school_start_end_list` shape) is more likely
 `office_building_hours` when the page is district-focused, and more likely a real target on a single-school
 page. → would down-weight `lf_footer_hours` / up-weight `lf_office_hours` when the page is a district page.
 - **Open sub-problem — we lack a reliable "page focus: district vs school" signal, and the domain/TLD is NOT
@@ -168,6 +168,17 @@ a target.
 School** carried the real instructional start/stop — disambiguated by page focus (obs. 1) and the off-the-hour
 minutes (obs. 2). This is exactly the office-vs-school-hours confusable (the research's #1 danger) and where
 both observations would pay off.
+
+**(3) Registration, open house, back-to-school, and last day of school information may merit facets.** Content about these sorts of events seem to come up a lot. There may be associated keywords to look at for downweighting. They may merit adding facet checkboxes to the console view for Stage 5.
+
+**(4) SUMMER SCHOOL pages are a confounder shape the detectors don't distinguish (2026-07-02).** Marshall
+WI (5508790, batch_00008): `…/students-families/summer-school.cfm` auto-sent as **tier-A** — it carries a
+genuine-looking start/end pair and schedule keywords, but summer hours are NOT the regular instructional
+day (shorter day, subset of students, different calendar). Same family as `lf_nonstandard_day`'s
+weather/delay cases: real bell-shape, wrong schedule. Candidate signal: a `summer` keyword class
+(summer school / summer session / ESY / extended school year) as a soft negative and/or a `summer_school`
+confounder facet on Axis 2 (pairs naturally with obs. 3's event-content facets). Also relates to the
+recency/dispatch question — see `STAGE6_DISPATCH_DESIGN` §3G.
 
 ---
 
@@ -294,6 +305,18 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 
 ## Change log
 
+- **2026-07-01 (later) — flags→facets convergence completed (fable review findings 2.1/2.2/2.3).**
+  The v2.0 `flags_json` column is now an **inert archive**: no live reads or writes anywhere. The
+  label save (`server.UPSERT_LABEL`) no longer touches it (it had been wiping historical flags to
+  `[]` on every v2.1 save — the UI posts no `flags` key); the release descent
+  (`release.load_district_records`/`decide`/`best_send`) reads **`facets_json`**, with the human
+  **`needs_vision == "yes"`** facet driving image routing (was the `target_image_only` flag); the
+  label-set fingerprints (harness + `release.district_fingerprints`) hash `facets_json`. The human
+  **`duplicate` flag is retired without a successor** — programmatic dedup (`record.duplicate_of`
+  exact-hash + near-dup clustering with `cluster_split`) owns duplicates; the 9 legacy `duplicate`
+  flags remain readable in the DB column and `labels.json` git history. Also: `ingest_batch` now
+  runs `import_labels` before `export_labels` (mirroring `ingest()`), so an incremental ingest on a
+  fresh/wiped DB can never truncate the precious `labels.json` backup.
 - **2026-07-01 — v2.1 labeling (REQ-114).** The label became a **three-axis object** (§4): target SHAPE
   (7 shapes + `target_absent`/`unusable`) · confounder facets (multi) · location facets (buried+page-range,
   needs-vision, where). `migrate_label_v21` moved all 440 labels (128 targets preserved; git = restore point).

@@ -13,7 +13,9 @@ from infrastructure.acquisition.stage6_handoff import prompts as P
 
 def plan_requests(handoff_doc: dict) -> list:
     """The first-pass voter-call plan over a frozen handoff. Each entry:
-    {district_id, rec_key, file, kind, council_id, model, role, prompt_id}."""
+    {district_id, rec_key, file, kind, pages, council_id, model, role, prompt_id}.
+    `pages` (the harvest-pages hint on a handbook send, or None) rides along so Stage 7's
+    materialization reads ONLY the flagged pages of a long PDF (issue #38)."""
     councils = handoff_doc.get("councils") or {}
     plan = []
     for d in handoff_doc.get("districts", []):
@@ -30,6 +32,7 @@ def plan_requests(handoff_doc: dict) -> list:
                         plan.append({
                             "district_id": did, "rec_key": rec.get("rec_key"),
                             "file": rep.get("file"), "kind": rep.get("kind"),
+                            "pages": rep.get("pages"),
                             "council_id": cid, "model": model, "role": "voter",
                             "prompt_id": P.select_prompt_id(cfg, model)})
     return plan
