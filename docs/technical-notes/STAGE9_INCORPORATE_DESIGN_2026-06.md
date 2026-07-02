@@ -1,10 +1,18 @@
-# Stage 9 — Incorporate: design (NOT STARTED)
+# Stage 9 — Incorporate: design (NOT STARTED — landing zone is READY)
 
-> **Status: DESIGN — not started, not built.** Seeded from the APGA console user stories (migrated here
-> 2026-06-27 from the retired `docs/scratch-paper/apga_console_application_stage_view.md`).
+> **Authority:** none yet for the write logic itself (§1–§3 below); the **landing zone it writes into**
+> (`bell_schedules` schema: `minutes_basis`, `chk_method` incl. `council_extraction`, 24-hour time
+> acceptance, the COVID/malformed-year seam guard) is BUILT — see `DATABASE_SETUP.md` and the
+> fable-review lct-core hardening (migration 019, `queries.add_bell_schedule`).
+> **Audience:** whoever designs/builds Stage 9.
+> **Companions:** `ACQUISITION_PIPELINE.md` §9 (the slim map), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
+> §11, `DATABASE_SETUP.md` (the LCT DB schema — the "Two databases" section explains why this write
+> crosses into the separate production LCT database). Upstream: `STAGE8_AGGREGATE_DESIGN_2026-06.md`.
+> **Update this when:** Stage 9 design decisions are made (append below) or the stage is built.
 
-**Companions / authority:** `ACQUISITION_PIPELINE.md` §9 (the slim map), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
-§11, `DATABASE_SETUP.md` (the LCT DB schema). Upstream: `STAGE8_AGGREGATE_DESIGN_2026-06.md`.
+**Status: DESIGN — not started for the write logic; the landing zone is ready.** Seeded from the APGA
+console user stories (migrated here 2026-06-27 from the retired
+`docs/scratch-paper/apga_console_application_stage_view.md`).
 
 ---
 

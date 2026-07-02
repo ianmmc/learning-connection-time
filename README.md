@@ -31,14 +31,12 @@ This reframes "20:1 student-teacher ratio" into a more visceral equity metric.
 - **This README** - Quick start and commands
 
 ### Methodology & Analysis (Canonical Sources)
-- **[METHODOLOGY.md](docs/METHODOLOGY.md)** - LCT formulas, data safeguards, validation rules
-- **[SPED_SEGMENTATION_IMPLEMENTATION.md](docs/SPED_SEGMENTATION_IMPLEMENTATION.md)** - SPED methodology (core_sped, teachers_gened, instructional_sped)
+- **[METHODOLOGY.md](docs/METHODOLOGY.md)** - LCT formulas, data safeguards, validation rules, SPED segmentation, QA dashboard
 - **[DATA_SOURCES.md](docs/DATA_SOURCES.md)** - Data source details (NCES, CRDC, IDEA 618)
 - **[PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md)** - Mission, evolution strategy (Phases 1-6)
 
 ### Operations & Infrastructure
 - **[DATABASE_SETUP.md](docs/DATABASE_SETUP.md)** - PostgreSQL schema, queries, setup
-- **[QA_DASHBOARD.md](docs/QA_DASHBOARD.md)** - Automated quality validation
 - **[Infrastructure Scripts README](infrastructure/scripts/README.md)** - Script documentation
 
 ### Bell Schedule Enrichment
@@ -47,7 +45,7 @@ This reframes "20:1 student-teacher ratio" into a more visceral equity metric.
 ### Where to Find Results
 - **Current LCT values:** `data/enriched/lct-calculations/lct_all_variants_*.csv`
 - **QA reports:** `data/enriched/lct-calculations/lct_qa_report_*.json`
-- **Enrichment counts:** [CLAUDE.md](CLAUDE.md#project-status)
+- **Enrichment counts:** verify in the DB, don't trust docs — [CLAUDE.md](CLAUDE.md#database-quick-reference)
 - **Data dictionary:** `docs/data-dictionaries/database_schema_latest.md`
 
 ---
@@ -253,7 +251,7 @@ Automatically detects and concatenates split files:
 - Three LCT scopes: core_sped (SPED teachers / self-contained), teachers_gened (GenEd teachers / GenEd enrollment), instructional_sped (SPED teachers + paras / self-contained)
 - Two-step ratio estimation using state-level baselines (IDEA 618 + CRDC 2017-18)
 - Audit validation passes (weighted average = overall LCT)
-- See [SPED_SEGMENTATION_IMPLEMENTATION.md](docs/SPED_SEGMENTATION_IMPLEMENTATION.md) for full methodology and results
+- See [METHODOLOGY.md](docs/METHODOLOGY.md) §SPED Segmentation for full methodology and results
 
 ### ✅ Token-Optimized Infrastructure (New)
 - **Slim files:** 88% size reduction for NCES data

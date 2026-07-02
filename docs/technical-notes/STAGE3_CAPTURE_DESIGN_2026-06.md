@@ -1,46 +1,38 @@
-# Stage 3 — Capture: design & decision log
+# Stage 3 — Capture: present state & decision log
 
-> **Status: BUILT + run live (2026-06-23)** against all 12 `batch_00001` districts (150/150 URLs
-> captured, 0 failures, all `captured_all`). Per-record hosting/CMS **fingerprinting** added + backfilled
-> 2026-06-24 (150/150); DOM **de-chrome** segmentation built + backfilled 2026-06-25 (REQ-091). Drive
-> Tier 2 (OAuth) deliberately deferred, not built. Produces, per district,
-> `captures/<hash>/` directories + `captures.json` — the input Stage 4 (Local processing) consumes.
->
-> **Console view BUILT + RUN LIVE 2026-06-28/29 (REQ-110).** Ungated health/emergent readout + a
-> **per-district Node-Playwright capture run trigger** — `static/stage3.js` + `/api/capture/*` in
-> `process_governance/server.py`, driven by `stage3_capture/headless.py`. Run live on
-> batch_00002–00005. The console reads the **DB cross-stage cache** (the live working store, §3), NOT
-> captures.json; the batch is resolved from the **DB working store**, not the receipt. The Node capture
-> gained a batch-scoped `district <ROOT> <DIR> [CONC] [DEADLINE_S]` mode. **Several hardenings landed from
-> live runs (§7 — read this first for current behavior):** no-link districts skip Playwright;
-> failures/timeouts are surfaced + retriable; per-op timeouts + emergent cap; **node-owns-shutdown** (a
-> timeout writes a PARTIAL manifest, never orphans work); a **manifest-recovery** tool for the
-> already-orphaned districts; shared status labels (`static/outcomes.js`) + left-pane progress fractions.
->
-> **Downstream now built (REQ-111, 2026-06-29):** the Stage 4 console view + the **Stage 4→5 incremental
-> handoff** ship — a process run that resolves a whole batch ingests just that batch into Stage 5 (see
-> `STAGE4_PROCESS_DESIGN` §4a/§4b). The shared scaffolding this note's console pioneered (`outcomes.js`,
-> `progressBadge`, the DB working store) is now used by Stage 2/3/4 alike.
->
-> **What this note is:** for the already-built Stages 1–4 the **code is authoritative**; this note is a
-> **narrative of what the code currently does**, not a redesign. §1–§5 describe the core capture behavior;
-> **§7 is the current console + resilience layer (2026-06-28/29)**; §6 is the historical decision log.
->
-> **Code (2026-06-28):** `stage3_capture/capture_stage3.py` (reconcile/outcome/`finish_district`) imports
-> `common.district_status` (state events) + `common.cache_ingest` (the Stage-3 cache hook — governance DB,
-> but only the regenerable cross-stage cache, never the LCT DB). `stage3_capture/headless.py` (NEW, REQ-110)
-> is the batch runner the console drives. The actual browser work is Node:
-> `infrastructure/scraper/capture_discovery.mjs` (active; `segmentChrome`/`dismissModals`/`stripFragment`/
-> `buildHtmlFingerprint`/`runCapture(ROOT, CONC, only?)` + the new `district` mode/`runBackfill*`) +
-> `capture_drive.mjs` (Tier 1 Drive export-URL logic, `node:test`-tested). The Python↔Node split mirrors
-> Stage 2: **Python orchestrates and owns the registry; a separate process does the risky/external work.**
-> *(Note: the Python code was promoted from `infrastructure/acquisition/discovery/` to `stage3_capture/`;
-> the decision log below reflects the original paths.)*
+> **Authority:** Stage 3's purpose, I/O, per-candidate capture logic (Drive tiers, direct fetch, HTML
+> render + de-chrome + fingerprint), the console + resilience layer, and manifest recovery — what the
+> code does today.
+> **Audience:** anyone building on or debugging Stage 3; anyone tracing why a page wasn't captured, was
+> captured partially, or is missing a representation.
+> **Companions:** `ACQUISITION_PIPELINE.md` §3 (the slim map + flow diagram), Stage 2's note (upstream
+> `candidates.json` contract), Stage 4's + Stage 5's notes (downstream — de-chrome *measurement* lives in
+> `STAGE5_FILTER_DESIGN_2026-06.md`), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (§3 state_event, §11 gates).
+> **Update this when:** Stage 3's code behavior changes. Design turns and superseded approaches belong in
+> §6 (Decision log), not here.
 
-**Companions:** `ACQUISITION_PIPELINE.md` §3 (the slim map + the flow diagram),
-Stage 2's note (upstream `candidates.json` contract), Stage 4's + Stage 5's notes (downstream — de-chrome
-*measurement* lives in `STAGE5_FILTER_DESIGN_2026-06.md`). `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
-(§3 state_event, §11 gates).
+**Status: BUILT + run live**, including de-chrome, hosting/CMS fingerprinting, the console + resilience
+layer (node-owns-shutdown, manifest recovery), and iframe/embed capture (REQ-115). Drive Tier 2 (OAuth) is
+deliberately deferred, not built (§5).
+
+**Code:** `stage3_capture/capture_stage3.py` (reconcile/outcome/`finish_district`) imports
+`common.district_status` (state events) + `common.cache_ingest` (the Stage-3 cache hook — governance DB
+only, never the LCT DB). `stage3_capture/headless.py` is the batch runner the console drives. The browser
+work is Node: `infrastructure/scraper/capture_discovery.mjs` (`segmentChrome`/`dismissModals`/
+`stripFragment`/`buildHtmlFingerprint`/`runCapture`/`processTask`/`noteFileResult`/`noteFinalUrl`) +
+`capture_drive.mjs` (Tier 1 Drive export-URL logic). Python orchestrates and owns the registry; Node does
+the risky/external work — the same split as Stage 2.
+
+---
+
+## 0. Receipt from prior stage / Handoff to next stage
+
+**Receipt from prior stage:** each district's `candidates.json` (Stage 2's deduped, capture-ready URL
+list), read but never modified.
+
+**Handoff to next stage:** `captures/<hash>/` directories + `captures.json` per district is Stage 4's
+input, read via `find_districts()` (which requires both `discovery.json` and `captures.json`). Stage 3 is
+**ungated** — Stage 4 can start as soon as capture completes.
 
 ---
 
@@ -49,16 +41,14 @@ Stage 2's note (upstream `candidates.json` contract), Stage 4's + Stage 5's note
 Fetch and persist every candidate page so later stages have local evidence to read — capture *everything
 available*, decide which representation to trust downstream.
 
-- **Input — read, never modify:** each district's `candidates.json` (Stage 2's deduped, capture-ready URL
-  list) under `data/raw/lea-website-captures/<id>_<slug>/`. `find_districts()` requires both
-  `discovery.json` (for the name/state/domain header fields) and `candidates.json` to be present.
+- **Input — read, never modify:** each district's `candidates.json` under
+  `data/raw/lea-website-captures/<id>_<slug>/`.
 - **Output, written once per district:**
-  - `captures/<hash>/` — **one subdirectory per captured URL**, `hash = md5(url).slice(0,10)`, holding
+  - `captures/<hash>/` — one subdirectory per captured URL, `hash = md5(url).slice(0,10)`, holding
     plain-named files (`page.txt`/`page.png`/`page.pdf` for HTML; `original.<ext>` for a direct binary;
-    `<format>.<ext>` for a Drive export; plus the de-chrome segments — §2d). One folder = everything for
-    one page (not flat hash-*prefixed* files; that was the first-pass bug, §6).
+    `<format>.<ext>` for a Drive export; plus the de-chrome segments — §2d).
   - `captures.json` — per-candidate record (`url`, `hash`, `tools`/`source`/`found_on`, `ok`, `kind`,
-    `final_url`, `files`, `err`, `fingerprint`, `segmented`) — a **separate file from `candidates.json`**,
+    `final_url`, `files`, `err`, `fingerprint`, `segmented`) — a separate file from `candidates.json`,
     never a mutation of it.
 - **Gate:** **none** (Stages 2/3/4 ungated). Registry outcome: `captured_all` / `captured_partial` /
   `capture_failed_all` + a short `notes` rollup.
@@ -67,99 +57,131 @@ available*, decide which representation to trust downstream.
 
 ## 2. The design (settled)
 
-### 2a. Reconciliation — filesystem-authoritative (identical pattern to Stage 2)
+### 2a. Reconciliation — filesystem-authoritative
 `captures.json` on disk IS "Stage 3 done"; the registry is a cache, reconciled *from* disk. Disk-ahead
-reconciles up silently (`reconciled_from_disk`, skip); **registry-ahead-of-disk** (registry says
-`furthest_stage >= 3`, no `captures.json`) raises `SystemExit` CONTROL FAILURE and halts the whole run.
+reconciles up silently and skips; **registry-ahead-of-disk raises `SystemExit` CONTROL FAILURE** and halts
+the whole run — the same severity as Stage 2's reconcile (a registry claiming completion the filesystem
+can't back up signals lost data or a bad migration, not a per-district problem).
 
-### 2b. Per-candidate branch logic (`runCapture`)
+### 2b. Per-candidate branch logic
 Every URL (and any emergent candidate) is `stripFragment()`-normalized before the `seen` dedup, then routed:
 1. **Google Drive/Docs/Sheets/Slides** (checked first) — **Tier 1, unauthenticated export URL** for
-   recognized single-file patterns: Docs → PDF **+ Markdown** (the cheap win — born-digital Markdown skips
-   `pdftotext`), Slides → PDF, Sheets → CSV **+ PDF** (PDF catches an image pasted into a cell), generic
-   Drive file → direct download. All applicable formats captured unconditionally. **Tier 2 (OAuth Drive
-   API)** — the only path for folder enumeration and Tier-1 failures — is **designed, not built** (§5).
-   An OAuth/Drive failure is a **per-item flag** (`err: "needs_oauth_reauth"`), NOT a run halt — one stuck
-   Drive item says nothing about the rest of the batch (contrast the Stage 2 billing CONTROL FAILURE).
-2. **Direct PDF/image fetch** (non-Google) — plain HTTP GET, byte-for-byte; **never** `page.pdf()` a URL
-   that is already a PDF (a lossy round-trip).
-3. **Generic HTML render** — `goto(networkidle)` + a 2.5s wait, then **modal dismissal** (`dismissModals`:
-   CSS-hide overlays → click known dismiss selectors → DOM removal), then innerText→`.txt`, full-page
-   screenshot→`.png`, and **`page.pdf()` unconditionally** (resolves the reader-routing "Tier 1→2
-   escalation trigger" by removing the need for a trigger — capture both, decide downstream).
-   **Emergent candidates:** scan anchors whose text/href match `SCHED_KW` → new candidate, **exactly one
-   hop, never recursive** (`source: "emergent"`, `found_on`). Explicitly for CDN-hosted PDFs too, not just
-   Drive/Docs.
+   recognized single-file patterns: Docs → PDF + Markdown, Slides → PDF, Sheets → CSV + PDF. **Tier 2
+   (OAuth Drive API)** — the only path for folder enumeration and Tier-1 failures — is designed, not
+   built (§5). An OAuth/Drive failure is a **per-item flag** (`err: "needs_oauth_reauth"`), never a run
+   halt — one stuck Drive item says nothing about the rest of the batch.
+2. **Direct PDF/image fetch** (non-Google) — plain HTTP GET, byte-for-byte; never `page.pdf()` a URL that
+   is already a PDF.
+3. **Generic HTML render** — `goto(networkidle)` + a wait, then **modal dismissal**, then
+   innerText→`.txt`, full-page screenshot→`.png`, and **`page.pdf()` unconditionally** (removes the need
+   for a Tier-1→2 escalation trigger — capture both, decide downstream). **Emergent candidates:** scan
+   anchors whose text/href match `SCHED_KW` → new candidate, exactly one hop, never recursive
+   (`source: "emergent"`, `found_on`) — catches CDN-hosted PDFs too, not just Drive/Docs.
 
-### 2c. Hosting/CMS fingerprint (per record, raw signals only — 2026-06-24)
-`buildHtmlFingerprint`/`buildFetchFingerprint` record, at the **URL level** (school subdomains often run a
-different platform than the district root), facts gathered for free from data the capture already held:
-`final_host`, `server`, `powered_by`, `cdn_hints[]`, `meta_generator`, `resource_hosts[]` (off-domain
-script/link/img hosts, own-host dropped, cap 20), `js_dependent` (served-vs-rendered-text proxy; null for
-non-HTML), and `cms_hint` (the one cheap inline classification — a suffix match against the shared
-`cms_hosts` config knob; null on no match). Direct PDF/image/Drive records get a reduced (no-DOM)
-fingerprint. **Facts, not classification** — real CMS ID is a later pure function over these signals,
-refinable retroactively. Backfilled via `backfill-fingerprints` (re-visits each `ok` record, patches only
-the fingerprint, touches nothing Stage 4 produced); `recompute-cms-hint` re-derives `cms_hint` over stored
-`resource_hosts` with no browser at all — the standing mechanism for applying a human-approved `cms_hosts`
-change to already-captured data cheaply.
+**File-write correctness (fable review issue #18):** the screenshot's manifest entry (`rec.files.png`) is
+set only in the success `.then()`, mirroring the PDF path — a screenshot timeout leaves `rec.png_err`
+instead of a phantom manifest claim. `page.txt` is written and its manifest entry set immediately after
+the successful `writeFileSync` call.
 
-### 2d. DOM de-chrome segmentation (REQ-091, built + measured 2026-06-25)
-CMS chrome (a footer "Building Hours 7:15–3:15", a school-switcher nav, footer board/athletics links)
-injects false signal. The fix **must live at Stage 3, at render time** — we persist `innerText` only, never
-raw HTML, so by Stage 4 the structure that identifies a footer is gone. **Segment, don't strip:**
-`segmentChrome()` captures `innerText` of structural landmarks (`<header>`/`<footer>`/`<nav>` + ARIA
-banner/contentinfo/navigation, per `config/de_chrome_landmarks.json`) as **separate additive
-representations** — `page.main.txt` (clean signal), `page.header/footer/nav.txt` — alongside the
-**untouched full `page.txt`** (always kept; segmentation is best-effort, never lossy). Header/footer are
-kept because real *school hours* sometimes live there, not only confounding building hours. Stage 5 tiers
-on `main` only and screens chrome separately. Backfilled via `backfill-segments`. **The measurement
-belongs to Stage 5** (`STAGE5_FILTER_DESIGN_2026-06.md`): the live backfill measured category-guess
-0.43→0.60 and topology 0.6→0.8 — a strong win.
+### 2c. Hosting/CMS fingerprint + iframe/embed (per record, raw signals only)
+`buildHtmlFingerprint`/`buildFetchFingerprint` record, at the **URL level**, facts gathered for free from
+data the capture already held: `final_host`, `server`, `powered_by`, `cdn_hints[]`, `meta_generator`,
+`resource_hosts[]` (off-domain script/link/img hosts, cap 20), `js_dependent`, and `cms_hint` (a suffix
+match against the shared `cms_hosts` config knob). **Iframe/embed detection (REQ-115):** `iframe_srcs[]`
+(categorized social/feed · calendar · doc-viewer · other) + `embed_present`, a structural, vendor-agnostic
+signal for the `embedded_feed`/embedded-calendar confounders Stage 5 screens for. Direct PDF/image/Drive
+records get a reduced (no-DOM) fingerprint. Facts, not classification — real CMS ID is a later pure
+function over these signals, refinable retroactively without re-capturing. `backfill-fingerprints` and
+`recompute-cms-hint` apply a human-approved `cms_hosts`/signal change to already-captured data with no
+browser, no re-capture.
 
-### 2e. Outcome rollup + single registry write
+**Capture-completeness note:** the capture reads `document.body.innerText` of the top document only —
+`innerText` does not recurse into iframes (and cross-origin frames are browser-blocked outright), so a
+schedule rendered *inside* an iframe is absent from `page.txt`. It is **not silently lost**: the visual
+path (screenshot → raster → tesseract OCR) renders iframe content, so it's recoverable via the vision/OCR
+tier. Left as-is by design; `embed_present`/`embed_hosts` flags such pages so routing can prefer the
+visual rep.
+
+### 2d. DOM de-chrome segmentation (REQ-091, measured)
+CMS chrome (a footer "Building Hours", a school-switcher nav, footer board/athletics links) injects false
+signal. The fix lives at Stage 3, at render time — only `innerText` is persisted, so by Stage 4 the DOM
+structure that identifies a footer is gone. **Segment, don't strip:** `segmentChrome()` captures
+`innerText` of structural landmarks (`<header>`/`<footer>`/`<nav>` + ARIA equivalents) as separate
+**additive** representations (`page.main/header/footer/nav.txt`) alongside the untouched full `page.txt`.
+Header/footer are kept because real *school hours* sometimes live there, not only confounding building
+hours. `backfill-segments` applies it to already-captured data. Measured: category-guess 0.43→0.60,
+topology 0.6→0.8 — a strong win (detail in `STAGE5_FILTER_DESIGN_2026-06.md`). Stage 5's V2 scoring
+computes time signals over the **max-evidence source** (main ∪ chrome ∪ best raw rep), never main
+exclusively — de-chrome stays for keyword/category signal, never suppresses time evidence.
+
+### 2e. Emergent dedup includes redirect targets (fable review issue #44)
+`noteFinalUrl()` adds a captured page's `stripFragment(final_url)` to the `seen` set right after capture —
+so an emergent anchor pointing at a URL that a *different* candidate redirects to is recognized as the
+same content and not captured twice.
+
+### 2f. Outcome rollup + single registry write
 `compute_outcome()` rolls per-candidate `ok`/`err` into `captured_all`/`captured_partial`/
-`capture_failed_all` + a `notes` `Counter` of `err` reasons. The registry holds this **rollup only** —
-never a live array of open issues (a sync-bug recipe); a human generates the triage list on demand by
-scanning `captures.json` for an `err` string. One `record_stage()` write per district at completion.
-**Redo is versioned** (`writeVersioned` renames aside with a UTC timestamp), never an overwrite.
+`capture_failed_all` + a `notes` counter of `err` reasons. The registry holds this rollup only — never a
+live array of open issues; a human generates the triage list on demand by scanning `captures.json`. One
+`record_stage()` write per district at completion. **Redo is versioned** (`writeVersioned` renames aside
+with a UTC timestamp), never an overwrite.
 
 ---
 
-## 3. Console surface — BUILT 2026-06-28 (REQ-110)
+## 3. Console + resilience layer
+
 Stage 3 is **ungated**, so the console is **status/observability + a run trigger** (next human gate =
-`gate@5`). Built following the gate@1/Stage-2 pattern (`STAGE2_DISCOVER_DESIGN` §4a): a stage selector
-view (`static/stage3.js`) + thin `/api/capture/*` endpoints delegating to `stage3_capture/headless.py`.
+`gate@5`). `static/stage3.js` + `/api/capture/{batch_id}` (status) + `/api/capture/{batch_id}/run`
+(background job, `stage3_capture/headless.py`). The batch is resolved from the **DB working store**
+(`batch_store.to_view`, included-only), never the on-disk receipt.
 
-**Reads the DB cross-stage cache, not captures.json** (the deliberate decision this build turned on —
-see "the cross-stage cache is a live working store" below). The readout (governance §11f): per-district
-outcome (`captured_all`/`partial`/`failed`), per-district capture/ok/failed/**emergent** counts, the
-**failure-reason breakdown** (`err` — incl. `needs_oauth_reauth`/WAF blocks), and the batch-level
-**CMS/host distribution** (`capture.final_host` + `cms_hint` from `fingerprint_json`). NOT a live PNG feed
-(low governance value). A `done`-on-disk-but-not-in-cache district is flagged `uncached`.
+**Reads the DB cross-stage cache**, not `captures.json` off disk — the Stage-3 finish hook
+(`common.cache_ingest.cache_capture`) upserts each district's slice on completion (per-district
+DELETE-then-UPSERT, so re-captured/removed URLs' rows never linger). Readout: per-district outcome +
+capture/ok/failed/emergent counts, the **failure-reason breakdown** (`err`, incl. `needs_oauth_reauth`/WAF
+blocks), and the batch-level **CMS/host distribution**. NOT a live PNG feed (low governance value). A
+`done`-on-disk-but-not-in-cache district is self-healing (ingested on first console view).
 
-**Run trigger** — `POST /api/capture/{batch_id}/run` kicks off `headless.run_batch` as a background job:
-reconcile (filesystem-authoritative; registry-ahead-of-disk = CONTROL FAILURE halt), then **one Node
-Playwright subprocess per district** (`capture_discovery.mjs district <ROOT> <DISTRICT_DIR>` — a new
-batch-scoped mode, so a run never re-captures the rest of `RAW_DIR`), sequential (one registry writer),
-`dispatched`/`completed`/`failed` events feeding the job board. After each district, `finish_district`
-records the state_event AND upserts the capture slice into the cache. The batch's districts are resolved
-from the **DB working store** (`batch_store.to_view`, included-only), not the on-disk receipt.
+**No-link districts skip Playwright:** a district whose Stage-2 outcome is `manual_flag_all` (empty
+`candidates.json`) is dropped before dispatch — no Node subprocess, no empty Stage-3 artifact; it stays
+terminal at Stage 2.
 
-### The cross-stage cache is a LIVE working store (the infrastructure this build turned on — REQ-110)
-REQ-103c built the cross-stage cache (`discovery_school`/`candidate`/`capture`/`processed_doc`) so the
-console's stage surfaces could query the funnel — but it was populated **only** by the monolithic Stage-5
-`build_signals.ingest()` (a `DROP`+rebuild over *every* district with all of discovery+captures+processed).
-So for an in-flight batch (Stage 2 done, Stage 3 pending) the cache was empty, and the Stage-2 console fell
-back to parsing `discovery.json` off disk. To make the DB the working store the console reads (§7a-A), the
-cache **graduated**: its schema + per-district UPSERTs moved to **`common/cache_ingest.py`** (stages are
-independent siblings — the ingest can't live in `stage5_filter`), the four tables are `CREATE IF NOT EXISTS`
-and **never dropped** (still rebuildable from disk, the authoritative source), and **each stage's finish
-hook** (`cache_discovery`/`cache_capture`/`cache_processed`) projects its district's slice in — best-effort
-(a cache hiccup logs + is swallowed; disk JSON + the state_event log stay the durable record). `build_signals`
-now imports the same module and re-upserts on a full pass. Added `capture.err` so the failure breakdown is
-queryable. **User stories (APGA, seed; migrated 2026-06-27):** the user was unsure Stage 3 carried console
-value — a possible emergent-URL readout / PNG flow; resolved to this health/emergent readout.
+**Per-district status (`status_for_batch`):** `awaiting_discovery` · `manual_flag_all` (terminal) · `todo`
+· `done` · `failed`/`timed_out` (read from the latest `capture` state_event, not a captures.json artifact;
+retriable). The rollup adds `resolved = done + flagged`; a batch's Stage 3 is complete when
+`resolved == total`.
+
+**Shared labels + left-pane progress:** `static/outcomes.js` (`outcomeBadge`, `progressBadge`) — the same
+elements Stage 2/4 use. Honest counts: no-link districts report separately, never folded into the
+captured count. The active batch's chip live-syncs to the header during a run.
+
+**Capture hardening:** `page.pdf()`/`screenshot()` wrapped in a 45s timeout race; direct fetch is a 20s
+`AbortSignal`; `goto` is 30s. Emergent candidates capped at 25/district.
+
+**Node-owns-shutdown — a timeout writes a PARTIAL manifest, never orphans work.** `runCapture(ROOT, CONC,
+only, deadlineMs)`: once the deadline passes, workers stop pulling new pages, in-flight pages finish
+(bounded by the per-page timeouts above), un-started candidates are recorded `not_attempted`, and
+`captures.json` is **always written**. A timeout is `captured_partial` with the work preserved, not lost.
+Python's subprocess timeout is a backstop that only fires on a true Node hang.
+
+**One task exception can no longer abort every district's manifest (fable review issue #35).** The entire
+per-task body — hash, directory creation, capture logic, and the manifest-record push — is wrapped in one
+try/catch, and workers run under `Promise.allSettled` rather than `Promise.all`; a district-level failure
+(ENOSPC, EACCES) becomes a per-record error entry, and every other district's manifest still gets written
+in a `finally`. This closes the last gap in the node-owns-shutdown guarantee.
+
+**Manifest recovery** (`capture_stage3.py reconstruct <district_id> [--manual-file PATH --manual-url URL]`)
+rebuilds `captures.json` from on-disk per-URL folders for already-orphaned districts. Recovery-only:
+refuses to overwrite an existing manifest; emergent folders are unrecoverable (the URL was in-memory, the
+hash is one-way) and are left on disk, out of the manifest. **URL-hash normalization matches Node's `new
+URL().toString()`** (lowercase host, IDN punycode, default-port drop, WHATWG dot-segment removal,
+percent-encoding without double-encoding — fable review issue #43) so a reconstruct run finds the right
+folder for the same candidate URL Node would have hashed. **Reconstructed Drive exports map to the `bin`
+key** (fable review issue #42) — Stage 4 reads `files.bin` for any non-text binary, so a recovered generic
+Drive download (`file.pdf`, previously keyed `"file"` and silently skipped) is now readable.
+`--manual-*` drops a human-sourced file in as a `source:"manual"` record.
+
+---
 
 ## 4. Tool/code provenance
 Active: `capture_discovery.mjs` (+ `capture_drive.mjs`). The modal-dismissal + `page.pdf()` logic was
@@ -170,20 +192,23 @@ carried forward into `capture_drive.mjs`).
 
 ## 5. Open decisions
 - **Drive Tier 2 (OAuth Drive API) — deferred, not blocked** (REQ-078, `must`→`should`). Build it when a
-  real Drive link actually needs it; `batch_00001` produced zero. Needs a one-time GCP OAuth setup with the
-  consent screen out of "Testing" status (the documented trigger for forced-short refresh tokens).
+  real Drive link actually needs it; zero real links have needed it so far.
 - **Duplicate-PDF dedup — deliberately NOT built.** A cross-directory content-hash scan for a negligible
   current benefit; recorded watch-item.
-- **Tier-C `neg_dominant` retune** (de-chrome side-effect) — a Stage 5 follow-up (its note), surfaced here
-  because de-chrome is the Stage 3 mechanism that exposed it.
+- **Partial-retry.** A recovered/partial district has a `captures.json`, so reconcile treats it as done —
+  its `not_attempted`/`not_recovered` candidates don't auto-retry. Natural follow-up, not blocking.
+- **Emergent recovery.** Reconstruction can't recover emergent captures (no URL); a future capture could
+  write an incremental per-task JSONL line so even a hard kill preserves emergent URLs.
+- **Politeness / rate-limiting.** A capture burst can trigger transient stalls on a target site; consider
+  a small per-request delay or lower per-district concurrency if this recurs.
 
 ---
 
-## 6. Decision log (chronological — moved here from the flow diagram, 2026-06-27)
+## 6. Decision log (chronological)
 
-_Preserved verbatim from the retired flow diagram's decision log (now in `ACQUISITION_PIPELINE.md`); `gate@5` was "CP-B" at the time of
+_Preserved verbatim from the retired flow diagram's decision log; `gate@5` was "CP-B" at the time of
 writing (governance §11). Paths reflect the original `infrastructure/acquisition/discovery/` location
-before the package promotion._
+before the package promotion to `stage3_capture/`._
 
 **2026-06-23 — Stage 3 (Capture) design conversation: grounded several open questions in what's actually in the codebase rather than the docs' claims about it.** Before any Stage 3 code is written:
 - `capture_discovery.mjs` (the real, active capture script — 73 lines, bare Playwright + `fetch()`, no Crawlee) already implements the `captures/` subdirectory + MD5-hash-of-URL naming pattern independently converged on in conversation, and already writes a separate per-district `captures.json` (url → hash → files) rather than mutating `candidates.json` — which answers "should capture results get logged back to candidates.json" with "there's already a cleaner pattern, no write-once policy exception needed."
@@ -191,121 +216,39 @@ before the package promotion._
 - **`google_drive_handler.py` already has a 3-tier Drive fallback (direct download → Playwright preview → Gemini API) anticipating exactly the Gemini question the user raised — but the Gemini tier is an unimplemented stub, and the Drive-folder case (vs. a direct file link) isn't handled at all (`DRIVE_PATTERNS` only matches file-level URLs).** It also depends on a separate Express microservice (`server.ts`, `localhost:3000`) nothing else in the active pipeline runs.
 - **No modal-dismissal logic actually exists in the live capture path**, despite `ACQUISITION_PIPELINE.md` claiming it was "salvaged" from `capturer.ts` — confirmed by reading the real script. A real, previously-undocumented gap, agreed to fix now rather than defer.
 - `page.pdf()` does not exist anywhere in the current capture script — confirmed it's a genuine addition, not a config flip. User decision: run it unconditionally on every HTML page captured (no multi-column-detection trigger), since it's free local compute and removes the need to ever define the "Tier 1→2 escalation trigger" that `ACQUISITION_PIPELINE.md`'s reader-routing spec had left deliberately open and unsolved.
-- **Drive/Docs API research (Gemini MCP + Perplexity, cross-checked against each other):** `files.list` (folder enumeration) always requires OAuth/service account, even for fully public folders — no API-key-only path exists. The unauthenticated export-URL trick still works for "anyone with the link" content. An image-only Doc/Slide exports to an image-in-a-PDF with no text layer — not a dead end, it's the same shape as a scanned PDF and routes into the existing Tier 2.5 OCR path. **One real discrepancy caught between the two sources:** Gemini claimed refresh tokens expire after 6 months of inactivity as documented Google policy; a citation-backed Perplexity follow-up found no such rule in Google's actual OAuth docs — the only documented forced-short-lifetime case is leaving the OAuth consent screen in "Testing" publishing status (7-day tokens), unrelated to inactivity or personal/unverified-app status. Architectural implication: OAuth is only actually needed for folder *enumeration* — individual Docs/Sheets/Slides/Drive-file retrieval already works via the existing unauthenticated path. Not yet written into `ACQUISITION_PIPELINE.md` — still mid-discussion.
+- **Drive/Docs API research (Gemini MCP + Perplexity, cross-checked against each other):** `files.list` (folder enumeration) always requires OAuth/service account, even for fully public folders — no API-key-only path exists. The unauthenticated export-URL trick still works for "anyone with the link" content. An image-only Doc/Slide exports to an image-in-a-PDF with no text layer — not a dead end, it's the same shape as a scanned PDF and routes into the existing Tier 2.5 OCR path. **One real discrepancy caught between the two sources:** Gemini claimed refresh tokens expire after 6 months of inactivity as documented Google policy; a citation-backed Perplexity follow-up found no such rule in Google's actual OAuth docs — the only documented forced-short-lifetime case is leaving the OAuth consent screen in "Testing" publishing status (7-day tokens), unrelated to inactivity or personal/unverified-app status. Architectural implication: OAuth is only actually needed for folder *enumeration* — individual Docs/Sheets/Slides/Drive-file retrieval already works via the existing unauthenticated path.
 
 **2026-06-23 — Stage 3 (Capture) design closed out and written into `ACQUISITION_PIPELINE.md` + this diagram.** Final three open points resolved before formalizing:
-- **OAuth/Drive failure handling: a per-item flag, not a batch halt.** Unlike the Stage 2 billing CONTROL FAILURE (where one failure means every subsequent call fails identically), one stuck Drive item says nothing about the rest of the batch — so it's recorded (`err: "needs_oauth_reauth"` in that candidate's `captures.json` record) and capture moves on to the next candidate. Explicitly rejected: maintaining a live array of open issues inside the registry itself ("that's a recipe for sync issues" — the user's words) — the registry holds a status rollup only (`captured_partial`, etc.), and a human generates the actual triage array on demand by scanning `captures.json` files when ready to act, not by reading an accumulating structure that has to stay in sync with reality.
-- **Dropped the Gemini-API tier too, not just Playwright-preview.** Reasoning: Gemini would only end up calling the same Drive API that already failed — it buys nothing over what OAuth+Drive-API already attempted. `google_drive_handler.py`'s original 3-tier design (direct download → Playwright preview → Gemini) collapses to 2 tiers (unauthenticated export URL → OAuth Drive API), with the OAuth tier also being the *only* path for folder enumeration — one mechanism doing double duty instead of three separate ones.
-- **Export formats, finalized:** Docs → PDF + Markdown (the Markdown export is a genuine cheap win — already-clean plain text, skips `pdftotext` entirely for born-digital Docs). Slides → PDF only (no markdown equivalent makes sense for slides). Sheets → CSV + PDF (PDF specifically to catch the edge case of an image pasted into a spreadsheet cell, which CSV alone would silently lose — same shape as the image-only-Doc problem already solved via the existing OCR path).
-- The full per-candidate branch logic (Google detection → Tier 1/Tier 2 Drive handling → direct PDF/image fetch → generic HTML render with modal dismissal + unconditional `page.pdf()` + one-hop emergent-candidate link-following) is now in both docs. Nothing built yet — `capture_discovery.mjs` still needs all of this added; `capturer.ts`'s modal-dismissal and PDF-options logic still needs porting in, not run as-is.
+- **OAuth/Drive failure handling: a per-item flag, not a batch halt.** Unlike the Stage 2 billing CONTROL FAILURE (where one failure means every subsequent call fails identically), one stuck Drive item says nothing about the rest of the batch — so it's recorded (`err: "needs_oauth_reauth"` in that candidate's `captures.json` record) and capture moves on. Explicitly rejected: a live array of open issues inside the registry — the registry holds a status rollup only, and a human generates the actual triage array on demand.
+- **Dropped the Gemini-API tier too, not just Playwright-preview.** Reasoning: Gemini would only end up calling the same Drive API that already failed. The original 3-tier design (direct download → Playwright preview → Gemini) collapses to 2 tiers (unauthenticated export URL → OAuth Drive API).
+- **Export formats, finalized:** Docs → PDF + Markdown (a genuine cheap win — skips `pdftotext` entirely for born-digital Docs). Slides → PDF only. Sheets → CSV + PDF (PDF specifically catches an image pasted into a spreadsheet cell).
 
-**2026-06-23 — clarified scope of the emergent-candidate path: explicitly for CDN-hosted materials too, not just Drive/Docs.** Caught before implementation: the emergent-candidate writeup had been framed almost entirely around the Drive/Docs research that preceded it, risking a narrow mental model (and narrow test coverage) for whoever builds it. The real motivating case is broader — an on-domain page Discovery *did* find can easily link to a bell-schedule PDF hosted off-domain on a CMS/CDN host (Finalsite, BoardDocs, SchoolWires/Blackboard, an S3 bucket — `discover.py`'s existing `CMS_HOSTS` set, not a new list) that Discovery's domain-scoped search would never surface directly. The branch logic already handles this correctly once an emergent candidate is found (it lands on the ordinary direct-PDF/image-fetch branch) — the thing that needed fixing was documentation/intent, so that **when Stage 3's tests get written, a CDN-hosted-PDF emergent candidate is a first-class test case, not an incidental side effect of the Drive/Docs test cases.** `ACQUISITION_PIPELINE.md` and the `C_EMERGENT` node both updated to say this explicitly.
+**2026-06-23 — clarified scope of the emergent-candidate path: explicitly for CDN-hosted materials too, not just Drive/Docs.** The real motivating case is broader — an on-domain page Discovery *did* find can easily link to a bell-schedule PDF hosted off-domain on a CMS/CDN host (Finalsite, BoardDocs, SchoolWires/Blackboard, an S3 bucket) that Discovery's domain-scoped search would never surface directly.
 
-**2026-06-23 — Stage 3 implemented; one real bug caught by the user reviewing real output, not by anything written down beforehand.** Built `capture_stage3.py` (Python orchestration: reconcile/outcome-rollup/registry write-back, mirroring `discover_stage2.py` exactly), `capture_drive.mjs` (Tier 1 Drive/Docs/Sheets/Slides export-URL logic, unit-tested via `node:test` — no new dependency), and extended `capture_discovery.mjs` with modal dismissal, unconditional `page.pdf()`, one-hop emergent-candidate discovery, and the Drive Tier 1 branch.
-- **The bug:** the original design conversation said "capture directory per URL" — meaning one subdirectory per captured page. What got documented (`ACQUISITION_PIPELINE.md`: "files named by `md5(url).slice(0,10)` plus extension") and built both quietly collapsed this into flat hash-*prefixed* files sharing one district-wide `captures/` folder — which only preserves the hashing half of the original intent, not the per-URL grouping half. This happened because the existing 73-line `capture_discovery.mjs` was read early in the Stage 3 design conversation, its hash-naming was (correctly) noted as matching what we'd just converged on, and that got reported back as "already exactly how `capture_discovery.mjs` works today, independently arrived at twice" — true for the hashing, not true for the directory-per-URL structure, and the distinction wasn't caught at design time.
-- **Caught how:** the user looked at real output (`data/raw/lea-website-captures/1739960_urbana_sd_116/captures/`) mid-run and asked directly whether it should be grouped by hash into subdirectories. It should have been.
-- **Fix:** `capture_discovery.mjs` now creates `captures/<hash>/` per URL, with plain filenames inside (`page.txt`/`page.png`/`page.pdf` for HTML; `original.<ext>` for a direct binary fetch; `<format>.<ext>` for a Drive export) — `captures.json`'s `files` field now holds bare filenames within that per-hash folder, not hash-prefixed names. Both docs corrected. The first real full-batch run was caught, stopped, and re-run after this fix — no district was left with the wrong structure.
-- Confirmed via two re-runs after the fix: a local HTML fixture (modal dismissal, `page.pdf()`, and emergent-candidate discovery via a "Bell Schedule" link, with an unrelated "About Us" link correctly excluded) and a real district (Blue Water Middle College, 4 real URLs, all captured cleanly) — both before discovering the structure bug, repeated after fixing it.
+**2026-06-23 — Stage 3 implemented; one real bug caught by the user reviewing real output, not by anything written down beforehand.** Built `capture_stage3.py`, `capture_drive.mjs`, extended `capture_discovery.mjs` with modal dismissal, unconditional `page.pdf()`, one-hop emergent-candidate discovery, and the Drive Tier 1 branch.
+- **The bug:** the original design said "capture directory per URL," but what got built collapsed this into flat hash-*prefixed* files sharing one district-wide `captures/` folder — only preserving the hashing half of the intent, not the per-URL grouping half. Caught by the user looking at real output mid-run.
+- **Fix:** `capture_discovery.mjs` now creates `captures/<hash>/` per URL, with plain filenames inside. Both docs corrected; the first full-batch run was caught, stopped, and re-run after this fix.
 
-**2026-06-23 — first real full-batch Stage 3 run, all 12 `batch_00001` districts, found a second real bug and confirmed the emergent-candidate path's value with hard numbers.** 112 original candidates grew to 173 total URLs on the first pass — every single one captured successfully (0 failures), but the count itself revealed a problem worth checking before trusting it.
-- **The bug:** Stroudsburg alone contributed 35 of the 61 emergent candidates found. Inspecting them showed many were pure URL-fragment variants of pages already captured (`.../bell_schedules/#pageTitle`, `.../bell_schedules/#nav_items_0`) — a fragment never represents different server-side content, so these were the *same page* being re-rendered, re-screenshotted, and re-PDF'd 2-3 times under fragment-different URLs, because the dedup `seen` set was checking exact URL strings without stripping the fragment first.
-- **Fix:** added `stripFragment()`, applied both when seeding the initial candidate set and when an emergent link is found, before the `seen` dedup check. Re-running after the fix: total URLs dropped from 173 to 150 (61 → 38 emergent), with the genuine duplicates gone and all real distinct content preserved — confirmed by re-inspecting Stroudsburg's remaining 23 emergent candidates by hand: a shared `cross.jsp` cross-reference link repeated once per school subdomain (real but low-marginal-value), several `printerfriendly.jsp` variants (potentially a cleaner extraction target than the regular page), and multiple genuinely distinct `index.jsp?id=N` entries per school within what's clearly a shared "Bell Schedules" CMS app (id 7100-7105 alone under one high school) — likely real alternate-day-type schedule variants (early release, 2-hour delay, etc.) that Stage 7's existing "standard full day only" filtering is already designed to sort out downstream, not something Capture needed to pre-filter.
-- **Net result, user's read confirmed with numbers:** the emergent-candidate path "earned its keep" — across the batch it found 38 genuinely new candidate pages Discovery's domain-scoped search never directly surfaced, with zero capture failures and the duplicate-inflation bug caught and fixed before it could quietly waste effort at scale.
-- Final state: all 12 districts `captured_all` in the registry (`capture_stage3.py finish` run for each), 150/150 URLs captured with zero errors, 900 Python tests + 8 Node tests passing.
+**2026-06-23 — first real full-batch Stage 3 run, all 12 `batch_00001` districts, found a second real bug and confirmed the emergent-candidate path's value with hard numbers.** 112 original candidates grew to 173 total URLs on the first pass, all captured (0 failures) — but the count revealed a problem.
+- **The bug:** Stroudsburg alone contributed 35 of 61 emergent candidates — mostly URL-fragment variants of pages already captured (`.../bell_schedules/#pageTitle`), re-rendered/re-screenshotted/re-PDF'd 2-3x because the `seen` dedup checked exact URL strings without stripping the fragment first.
+- **Fix:** added `stripFragment()`, applied both when seeding the initial candidate set and when an emergent link is found. Total URLs dropped 173 → 150 (61 → 38 emergent) with genuine duplicates gone.
+- **Net result:** the emergent-candidate path found 38 genuinely new pages Discovery never directly surfaced, zero capture failures. Final state: all 12 districts `captured_all`, 150/150 URLs, zero errors.
 
-**2026-06-23 — Drive Tier 2 (OAuth) deliberately deferred, not just blocked on the GCP prerequisite.** The real `batch_00001` run produced zero Drive/folder links needing it — `needs_oauth_reauth` never actually fired on real data. User's explicit call: build Tier 2 when a real Drive link is actually hit, not speculatively ahead of any evidence it's needed ("it's also very possible that it's never needed... getting ahead of ourselves is counterproductive"). REQ-078 downgraded from `must` to `should` and reworded to record this as a deliberate choice, not an open blocker — a future session should not read it as forgotten work.
+**2026-06-23 — Drive Tier 2 (OAuth) deliberately deferred, not just blocked on the GCP prerequisite.** `batch_00001` produced zero Drive/folder links needing it. User's explicit call: build Tier 2 when a real link is actually hit, not speculatively ahead of any evidence. REQ-078 downgraded `must`→`should`.
 
-**2026-06-24 — Stage 3 hosting/CMS fingerprinting added, backfilled across all 12 districts, and immediately earned its keep.** User's idea: record what platform/CMS/host generates each captured page, at the URL level (school subdomains often differ from the district root), as early screening signal for later refinement. Grounded against the code first — found the capture was already *holding and discarding* most of the signal: the `goto`/`fetch` Response headers (only `content-type` was kept), and there was already a `page.evaluate` DOM scan (for emergent anchors) that fingerprint extraction could ride alongside. Raw HTML is never saved (only innerText), so DOM signals (`<meta generator>`, resource hosts) are ephemeral and must be read at render time — a sharp constraint that settled the design.
-- **Architecture: record raw facts, don't classify the CMS inline** (the one cheap exception: a `cms_hint` host-suffix match against the existing `CMS_HOSTS`). Same invariant as the rest of the pipeline — real classification is a later pure function over the raw signals, refinable retroactively without re-capturing 20K districts. User approved this framing explicitly ("just capture fingerprints").
-- **Fields** (per record `fingerprint` block): `final_host`, `server`, `powered_by`, `cdn_hints[]`, `meta_generator`, `resource_hosts[]` (off-domain script/link/img hosts, own-host dropped, cap 20), `js_dependent` (served-text-near-empty-but-rendered-substantial proxy; null for non-HTML), `cms_hint`. Direct PDF/image/Drive records get a reduced (no-DOM) fingerprint.
-- **Parity via backfill, NOT full re-capture** — the user's call after I flagged that re-running capture over the already-Stage-4 districts would mix fresh Stage-3 artifacts with existing Stage-4 outputs in the same `captures/<hash>/` dirs, leave `processed.json` stale, and risk content drift. `backfill-fingerprints` mode re-visits each existing `ok` record, computes only the fingerprint, patches `captures.json` (versioned-redo) — touches nothing Stage 4 produced. Ran live: 150/150 records, 0 errors.
-- **The finding:** `cms_hint` came back `null` on all 150 — correctly, because the real platforms in this sample aren't in the discovery-era `CMS_HOSTS`. Raw `resource_hosts` revealed them: **SharpSchool** (51), **Apptegy/Thrillshare** (~24), **Educational Networks** (25); server strings corroborated (`Pepyaka`=Wix, `Pagely`=managed WordPress, `AmazonS3`). Whether to grow `CMS_HOSTS` (cross-cutting — it changes `discover.py`'s `gate()`) or give fingerprinting its own broader platform list is recorded as Open decision #8, deliberately not acted on unilaterally.
-- Tests: 6 new pure-helper unit tests (`capture_fingerprint.test.mjs`, `node:test`), helpers exported + a main-module guard added so importing for tests doesn't trigger a capture run. 14 Node tests pass (8 drive + 6 fingerprint).
+**2026-06-24 — Stage 3 hosting/CMS fingerprinting added, backfilled across all 12 districts, and immediately earned its keep.** Record what platform/CMS/host generates each captured page, at the URL level (school subdomains often differ from the district root). Grounded against the code first — found the capture was already *holding and discarding* most of the signal (Response headers, an existing DOM scan). Raw HTML is never saved (only innerText), so DOM signals must be read at render time.
+- **Architecture: record raw facts, don't classify the CMS inline** (the one cheap exception: `cms_hint`, a host-suffix match against `CMS_HOSTS`) — real classification is a later pure function, refinable retroactively without re-capturing 20K districts.
+- **Parity via backfill, not full re-capture** — re-running capture over already-Stage-4 districts would mix fresh Stage-3 artifacts with existing Stage-4 outputs and risk content drift. `backfill-fingerprints` patches only the fingerprint field. Ran live: 150/150 records, 0 errors.
+- **The finding:** `cms_hint` came back `null` on all 150 — correctly, because the real platforms in this sample aren't in the discovery-era `CMS_HOSTS`. Raw `resource_hosts` revealed them: **SharpSchool** (51), **Apptegy/Thrillshare** (~24), **Educational Networks** (25).
 
-**2026-06-24 — CMS_HOSTS grown by human approval (Open decision #8 resolved), encoding a standing governance rule.** The fingerprint finding (SharpSchool/Apptegy/Educational Networks dominate the sample, none in CMS_HOSTS) was acted on: the user approved adding `sharpschool.com`/`apptegy.net`/`thrillshare.com`/`educationalnetworks.net` to `CMS_HOSTS` in both `discover.py` and `capture_discovery.mjs`. This is the load-bearing change — it also makes Stage 2's `gate()` keep slug-matched URLs on those hosts that it previously rejected as off-district (closing a possible recall gap), so a `TestDiscoveryGate` regression class was added. **Standing governance rule the user set:** every `CMS_HOSTS` addition is a human-in-the-loop decision, never automated, and must be a *school-district-specific vendor*, never a general host/CDN — `amazonaws.com` was deliberately NOT added despite `core-docs.s3.amazonaws.com` appearing in the data, exactly to avoid the pollution that whitelisting general hosting would invite. The user framed this as the first instance of the fingerprint-driven refinement loop they want to run continuously, and an explicit topic to carry into Stage 5 design. _(Later migrated to the `cms_hosts` config-as-data knob — single source of truth across `discover.py` and `capture_discovery.mjs`, no more hand-syncing; see Stage 5's note.)_
+**2026-06-24 — `CMS_HOSTS` grown by human approval, encoding a standing governance rule.** The fingerprint finding was acted on: `sharpschool.com`/`apptegy.net`/`thrillshare.com`/`educationalnetworks.net` added to `CMS_HOSTS` in both `discover.py` and `capture_discovery.mjs`. This also makes Stage 2's `gate()` keep slug-matched URLs on those hosts it previously rejected as off-district. **Standing governance rule: every `CMS_HOSTS` addition is human-in-the-loop, never automated, and must be a school-district-specific vendor, never a general host/CDN** — `amazonaws.com` deliberately NOT added despite appearing in the data. *(Later migrated to the `cms_hosts` config-as-data knob — single source of truth, no hand-syncing.)*
 
-**2026-06-25 — Stage 3 DOM segmentation (header/footer/nav vs. main) designed, then BUILT + MEASURED (REQ-091).** Stage 5's batch_00001 review surfaced CMS *chrome* as the single biggest source of false signal: a global footer's "Building Hours 7:15–3:15" injects a fake start/end proximity-pair (false-positive tier), a school-switcher `nav` inflates `roster_school_names_hit` into a false `hub` topology (Marion's `guess hub` vs labeled `per_school`), and footer board/athletics/calendar links drag real schedule pages toward tier C. Key realization, traced to a hard constraint: **the fix has to live at Stage 3, at render time** — we persist `innerText` only, never raw HTML (the fingerprint-design constraint), so by Stage 4 the DOM structure that identifies "this is a footer" is gone. Decisions, mirroring the fingerprint pattern:
-- **Segment, don't strip.** Capture `innerText` of the structural landmarks (`<header>`/`<footer>`/`<nav>` + ARIA `banner`/`contentinfo`/`navigation`) as **separate representations** (`page.main/header/footer/nav.txt`) alongside the **untouched full `page.txt`** — additive, best-effort, never lossy. We keep header/footer because the real *school hours* sometimes live there, not only the confounding building hours.
-- **Raw segments, not classification** (same invariant as fingerprinting): Stage 5 computes signals per representation, **tiers on `main` only** (chrome can't contaminate the verdict), and **screens chrome separately** — a footer start/end pair + `office hours`/`building hours` ⇒ the existing `building_hours_visible` flag; + `school hours`/`dismissal` and not in a board/sports nav ⇒ a candidate school-hours signal.
-- **Graceful degradation + `backfill-segments`** (a no-Stage-4-touch re-visit, exactly like `backfill-fingerprints`) for the already-captured batch_00001; free on future captures. When no landmarks exist (`<div class="footer">` CMSs), `main` = full page, chrome reps empty — never worse than today.
-- **Built + measured** (`config/de_chrome_landmarks.json`, `segmentChrome()` + `backfill-segments`, `build_signals.compute_signals(main_text=…)`): the live backfill on batch_00001 (140/140 html, 123/150 de-chromed) measured **category-guess 0.43→0.60 (+17pts), topology 0.6→0.8** (Marion `hub→per_school`), **tier A unchanged**. Side-effect: footer-negative stripping floated 24 non-targets C→B (A+B precision 0.75→0.53) — the tier-C `neg_dominant` retune is the next Tier-0 follow-up. Two bugs caught by validating on Marion first: `textContent`-on-detached-clone (98KB hidden cruft → live-DOM `innerText`); `goto` missing the capture path's `.catch(()=>null)`. The measurement detail lives in `STAGE5_FILTER_DESIGN_2026-06.md`.
+**2026-06-25 — Stage 3 DOM segmentation (header/footer/nav vs. main) designed, then built + measured (REQ-091).** Stage 5's batch_00001 review surfaced CMS *chrome* as the single biggest source of false signal: a global footer's "Building Hours" injects a fake start/end pair, a school-switcher nav inflates `roster_school_names_hit` into a false `hub` topology. Key realization: the fix has to live at Stage 3, at render time — the DOM structure that identifies a footer is gone by Stage 4.
+- **Segment, don't strip.** Additive representations (`page.main/header/footer/nav.txt`) alongside the untouched full `page.txt` — never lossy. Header/footer are kept because real *school hours* sometimes live there too.
+- **Built + measured:** the live backfill on batch_00001 (140/140 html, 123/150 de-chromed) measured **category-guess 0.43→0.60, topology 0.6→0.8**, tier A unchanged. Side-effect: footer-negative stripping floated 24 non-targets C→B — the tier-C `neg_dominant` retune became a Stage-5 follow-up.
 
----
+**2026-06-28/29 — the console + resilience layer built and hardened over live runs (batch_00002–00005, REQ-110).** The core fix: `captures.json` used to be written once at end-of-run, so Python's subprocess timeout SIGKILLing Node mid-run discarded the manifest for ALL completed work (Brookwood, Fairfield, and a 534-file LAS CRUCES capture all read as total failures despite the files existing on disk). Fixed via node-owns-shutdown (§3) — a timeout now writes a partial manifest instead of losing everything. Manifest recovery (`reconstruct`) built as the interim path for already-orphaned districts (recovered Brookwood 5/15, Fairfield 8/9, LAS CRUCES 78/128 live) and doubled as the interim manual-follow-up mechanism (Brookwood's parent handbook, pp. 32-33, added via `--manual-file`).
 
-## 7. The console + capture-resilience layer — BUILT + RUN LIVE 2026-06-28/29 (REQ-110)
+**2026-07-01 — Stage 3 gained iframe/embed capture + `cms_hint` promotion (REQ-115).** Two Stage-5 V2 findings — `embedded_feed` pollution and embedded-calendar clusters — turned out to be structural (an `<iframe>`/`<embed>` pointing at a known third-party host), not a heuristic Stage 5 could reliably guess from URL/keyword patterns alone. See §2c.
 
-This is the **current** Stage 3 surface and the authoritative description of timeout/failure handling.
-§1–§6 describe the core capture; this section supersedes them where they differ on outcomes/console.
-
-### 7a. Console view (ungated → status/observability + run trigger)
-`static/stage3.js` + `/api/capture/{batch_id}` (status) + `/api/capture/{batch_id}/run` (background job),
-driven by `stage3_capture/headless.py` (`run_batch` reconcile→sequential per-district→events;
-`status_for_batch` reads the DB cross-stage cache). Follows the gate@1/Stage-2 console pattern. The batch
-is resolved from the **DB working store** (`batch_store.to_view`, included-only), never the on-disk receipt.
-Per-district readout: outcome + capture/ok/failed/**emergent** counts + the **err breakdown** + the
-batch-level **CMS/host distribution** (`capture.final_host` + `cms_hint`). Run live on batch_00002–00005.
-
-### 7b. No-link districts skip Playwright (pre-capture)
-A district whose Stage-2 outcome is `manual_flag_all` (empty `candidates.json`) is **dropped before
-dispatch** in `run_batch` (`candidate_count(ddir)==0`) — no Node subprocess, no empty Stage-3 artifact;
-it stays terminal at Stage 2 and surfaces as `manual_flag_all` in status (sourced from the candidate
-count, the SAME label Stage 2 uses). Cheap, and matters at continuous-running scale.
-
-### 7c. Per-district status — four+ states (`status_for_batch`)
-`awaiting_discovery` (no candidates.json) · `manual_flag_all` (discovered, zero links — terminal) ·
-`todo` (links, not captured) · `done` (captured; outcome from cache) · **`failed`/`timed_out`** (a capture
-error/timeout with no captures.json — read from the latest `capture` event in the state log, NOT a
-captures.json artifact; retriable). SELF-HEALING like Stage 2 (ingests a captured district whose rows
-aren't in the cache yet). The rollup adds `manual_flag_all`/`failed`/`resolved` (`resolved = done +
-flagged`; the batch's Stage-3 is **complete** when `resolved == total`).
-
-### 7d. Shared labels + left-pane progress (UI)
-`static/outcomes.js` is the ONE source of truth: `outcomeBadge(key)` (per-district status, used by
-Stage 2/3/4 — rename `manual_flag_all` in one place; Stage 4 added `no_usable_text_any`/`awaiting_capture`)
-+ `progressBadge(progress, stage)`
-(left-pane stage-contextual fraction). **Honest counts:** no-link districts are reported SEPARATELY, never
-folded into the captured count — `0/10 captured · 2 no-links` → `✓ captured · 2 no-links`; capture/process
-denominators **exclude** no-links (never capturable), discovery counts the whole batch. The detail header
-shows the SAME badge as the left pane (not the stale gate@1 "approved"), and the active batch's chip is
-**live-synced** to the header during a run (`list_batches` carries per-stage progress counts via a
-`current_state` aggregate; the chip is refreshed from the polled detail so it doesn't freeze). The run
-button gets a CSS sheen (`.run-anim`) while a job is in flight.
-
-### 7e. Capture hardening (per-page bounds + emergent cap)
-`page.pdf()` (no native timeout) and the full-page `screenshot()` are wrapped in a 45s `withTimeout`
-race; the direct fetch is `AbortSignal.timeout(20000)`; `goto` is 30s. Emergent (one-hop) candidates are
-capped at **25/district** so a link-dense page can't explode the task queue. *Finding (2026-06-29):* the
-batch_00004 Brookwood double-timeout was **transient** (run-time slowness / likely rate-limiting from a
-5-concurrent burst on a small district) — every page captures in 1–3s on probing. The site isn't the
-problem; resilience to transient stalls is.
-
-### 7f. Node-owns-shutdown — a timeout writes a PARTIAL manifest, never orphans (the core fix)
-**Root cause we hit:** `captures.json` is written once at end-of-run, so Python's `subprocess.run(timeout=)`
-SIGKILLing Node mid-run discarded the manifest for ALL completed work — the per-URL folders were on disk
-but invisible/unused (Brookwood, Fairfield, **LAS CRUCES 534 files** all read as total failures).
-**Fix:** `runCapture(ROOT, CONC, only, deadlineMs)` — once the deadline passes, workers stop pulling new
-pages, in-flight pages finish (bounded by §7e), un-started candidates are recorded **`not_attempted`**,
-and `captures.json` is **always written**. A timeout is now `captured_partial` with the work preserved.
-Budgets (`headless.py`): Node deadline `CAPTURE_DEADLINE_S=600`; Python subprocess timeout =
-`600 + DRAIN_BUFFER_S(240) = 840` is now a **backstop** that only fires on a true Node hang (and that case
-is recoverable — §7g). Large districts (LAS CRUCES, 128 candidates) capture what fits and report the rest.
-
-### 7g. Manifest recovery (for the already-orphaned districts)
-`capture_stage3.py reconstruct <district_id> [--manual-file PATH --manual-url URL]` rebuilds
-`captures.json` from the on-disk per-URL folders. **Recovery-only:** refuses to overwrite an existing
-manifest; skips empty (in-flight-at-kill) folders; **emergent folders are unrecoverable** (md5 is one-way,
-their URL was in-memory) and are left on disk, out of the manifest. Records are **degraded** (no
-fingerprint/final_url). Every candidate appears (recovered `ok` / `not_recovered`) → `captured_partial`.
-`--manual-*` drops a human-sourced file in as a `source:"manual"` record (used to add Brookwood's parent
-handbook — pp. 32–33 carry the bell schedule — which Stage 3 could never reach on its own). Ran live:
-Brookwood 5/15, Fairfield 8/9, LAS CRUCES 78/128; cache + event log updated. This is the interim
-"manual follow-up" mechanism until a formal one exists.
-
-### 7h. Open / watch-items
-- **Partial-retry.** A recovered/partial district has a `captures.json`, so reconcile treats it as done —
-  its `not_attempted`/`not_recovered` candidates don't auto-retry. A reconcile enhancement (re-dispatch a
-  district that still has unfinished candidates) is the natural follow-up. Not blocking.
-- **Politeness / rate-limiting.** The 5-concurrent burst likely triggered the Brookwood stall; consider a
-  small per-request delay or lower per-district concurrency.
-- **Emergent recovery.** Reconstruction can't recover emergent captures (no URL); a future capture could
-  write an incremental per-task line (JSONL) so even a hard kill preserves emergent URLs.
+**2026-07-02 — capture-manifest integrity gaps closed (fable review issues #18, #35, #42, #43, #44).** Adversarial review found the screenshot success path could leave a phantom `files.png` manifest entry on timeout (fixed — mirrors the pdf `.then()` pattern), a single task exception could abort every district's manifest in a run (fixed — whole-task try/catch + `Promise.allSettled`), emergent dedup didn't account for redirect targets (fixed — `noteFinalUrl`), and the Python-side reconstruct tool's URL normalization diverged from Node's `new URL()` and mis-keyed generic Drive downloads (both fixed — see §3). See §2b/§2e for the present-state description.

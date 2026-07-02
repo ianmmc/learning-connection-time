@@ -234,7 +234,7 @@ python calculate_lct_variants.py --year 2023-24 --no-track
 
 **Features:**
 - **7 LCT Variants**: teachers_only, teachers_elementary, teachers_secondary, teachers_core, instructional, instructional_plus_support, all
-- **QA Dashboard**: Real-time validation with hierarchy checks (see `docs/QA_DASHBOARD.md`)
+- **QA Dashboard**: Real-time validation with hierarchy checks (see `docs/METHODOLOGY.md` §Quality Assurance)
 - **Incremental Processing**: Tracks runs in database, only recalculates when data changes
 - **Parquet Export**: Optional columnar format for large datasets
 - **Calculation Tracking**: Stores run metadata, QA results, and output files in database
@@ -260,7 +260,7 @@ State Coverage: 48 states/territories
 ============================================================
 ```
 
-See `docs/QA_DASHBOARD.md` for detailed QA documentation.
+See `docs/METHODOLOGY.md` §Quality Assurance for detailed QA documentation.
 
 ---
 
@@ -721,7 +721,7 @@ Seven new capabilities added to improve workflow efficiency:
 - QA automation: Real-time validation with hierarchy checks
 - Documentation: Auto-generated, always up-to-date
 
-See `docs/QA_DASHBOARD.md` and `docs/DATABASE_SETUP.md` for detailed documentation.
+See `docs/METHODOLOGY.md` §Quality Assurance and `docs/DATABASE_SETUP.md` for detailed documentation.
 
 ---
 

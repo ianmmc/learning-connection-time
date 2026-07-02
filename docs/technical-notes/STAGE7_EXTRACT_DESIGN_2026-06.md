@@ -1,12 +1,23 @@
 # Stage 7 — Extract: design (NOT STARTED)
 
-> **Status: DESIGN — not started, not built.** Seeded from the APGA console user stories (migrated here
-> 2026-06-27 from the retired `docs/scratch-paper/apga_console_application_stage_view.md`). This is the
-> place Stage 7 will be designed when we get to it — same role STAGE6's note started in.
+> **Authority:** none yet — this is the seed for Stage 7's future design, not a present-state doc. Nothing
+> in §1–§3 below is built.
+> **Audience:** whoever designs/builds Stage 7.
+> **Companions:** `ACQUISITION_PIPELINE.md` §7 (the slim map), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
+> §11 (gates/console), `LLM_COUNCIL_RESEARCH_2026-06.md` (council research), `EXTRACTION_BENCHMARK_FINDINGS.md`
+> (model leaderboard + costs). Upstream: `STAGE6_DISPATCH_DESIGN_2026-06.md` (the dispatch package Stage 7
+> consumes — its §0a documents the exact handoff shape).
+> **Update this when:** Stage 7 design decisions are made (append below) or the stage is built (rewrite
+> this doc present-state-first, per every other `STAGE*_DESIGN` note).
 
-**Companions / authority:** `ACQUISITION_PIPELINE.md` §7 (the slim map), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
-§11 (gates/console), `LLM_COUNCIL_RESEARCH_2026-06.md` (council research), `EXTRACTION_BENCHMARK_FINDINGS.md`
-(model leaderboard + costs). Upstream: `STAGE6_DISPATCH_DESIGN_2026-06.md` (the dispatch package Stage 7 consumes).
+**Status: DESIGN — not started, not built.** Seeded from the APGA console user stories (migrated here
+2026-06-27 from the retired `docs/scratch-paper/apga_console_application_stage_view.md`).
+
+**Ready and waiting (2026-07-02):** `batch_00000` — the 27 curated-GT districts, injected from frozen
+`gt_curation` artifacts (`STAGE1_QUEUE_DESIGN` §2h) — is dispatched through Stage 5 and ready for gate@6.
+It exists specifically so Stage 7's first real build can be scored against 940 hand-verified per-school
+times with zero site-drift confounding. `batch_type == "benchmark"` marks it; its output must never be
+Stage-9-written or counted in enrichment stats (see `STAGE6_DISPATCH_DESIGN` §3C C.6).
 
 ---
 

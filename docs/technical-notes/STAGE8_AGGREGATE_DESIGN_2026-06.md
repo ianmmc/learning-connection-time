@@ -1,12 +1,13 @@
 # Stage 8 — Aggregate: design (EARLY — modal aggregation prototyped)
 
-> **Status: DESIGN — early; a modal-aggregation prototype exists** (`stage8_aggregate/aggregate.py`), but
-> the stage is not wired end-to-end (it depends on Stage 7, not built). Seeded from the APGA console user
-> stories (migrated here 2026-06-27 from the retired `docs/scratch-paper/apga_console_application_stage_view.md`).
-
-**Companions / authority:** `ACQUISITION_PIPELINE.md` §8 (the slim map), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
-§11 (gates/console; §11e cyclic back-edges), `METHODOLOGY.md` (the metric: gross bell-to-bell, the mode).
-Upstream: `STAGE7_EXTRACT_DESIGN_2026-06.md`. Downstream: `STAGE9_INCORPORATE_DESIGN_2026-06.md`.
+> **Authority:** none yet for the console/gate design (§2–3 below); `stage8_aggregate/aggregate.py`'s
+> mode-then-mean logic is a real, tested prototype, but the stage isn't wired end-to-end (depends on
+> Stage 7, not built).
+> **Audience:** whoever designs/builds Stage 8.
+> **Companions:** `ACQUISITION_PIPELINE.md` §8 (the slim map), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
+> §11 (gates/console; §11e cyclic back-edges), `METHODOLOGY.md` (the metric: gross bell-to-bell, the mode).
+> Upstream: `STAGE7_EXTRACT_DESIGN_2026-06.md`. Downstream: `STAGE9_INCORPORATE_DESIGN_2026-06.md`.
+> **Update this when:** Stage 8 design decisions are made (append below) or the stage is built.
 
 ---
 

@@ -1,3 +1,7 @@
+> **ARCHIVED 2026-07-02.** Consolidated into `docs/METHODOLOGY.md` §SPED Segmentation (self-contained vs.
+> mainstreamed). Kept here as the original, unmodified source (incl. the full v1→v3 changelog); the live
+> doc is METHODOLOGY.md, not this file.
+
 # SPED Segmentation Implementation
 
 **Date:** January 3, 2026

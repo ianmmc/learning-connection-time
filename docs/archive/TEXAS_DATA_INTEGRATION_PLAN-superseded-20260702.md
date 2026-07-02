@@ -1,3 +1,10 @@
+> **ARCHIVED 2026-07-02.** The Texas integration built since this plan is the NCES `ST_LEAID` crosswalk
+> only — verified against the live DB 2026-07-02, `staff_counts`/`enrollment_by_grade` for TX are still
+> 100% `nces_ccd`-sourced, not superseded by TEA data (METHODOLOGY.md's Tier 2 "identifiers only" framing
+> is the accurate one). The living reference for state-integration status is `docs/SEA_INTEGRATION_GUIDE.md`
+> + `docs/DATA_SOURCES.md` + `docs/METHODOLOGY.md` §Data Source Precedence, not this file. Kept here as the
+> original planning record.
+
 # Texas Education Data Integration Plan
 
 **Created:** 2026-01-11

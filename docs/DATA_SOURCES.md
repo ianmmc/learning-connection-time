@@ -1,5 +1,13 @@
 # Data Sources
 
+> **Authority:** what each federal/state data source provides, how it's accessed, and its integration
+> status — verify status claims against the live DB (Rule #6) before trusting them for anything LCT-facing.
+> **Audience:** anyone adding a new state integration or tracing where a number in the DB came from.
+> **Companions:** `docs/SEA_INTEGRATION_GUIDE.md` (the how-to for building a new state integration),
+> `docs/METHODOLOGY.md` §Data Source Precedence (the authoritative Tier 1/Tier 2 completeness breakdown).
+> **Update this when:** a new data source or state integration is added, or an integration's actual DB
+> coverage changes — verify in the DB before updating a status claim, don't just update the prose.
+
 ## Overview
 
 This document catalogs all data sources for the Instructional Minute Metric project, including access methods, update frequencies, and known limitations.
@@ -133,7 +141,7 @@ IDEA 618 provides state-level baseline data (2017-18 pre-COVID) for:
 2. State SPED instructional (teachers + paras) ratios
 3. State self-contained proportion (self-contained / all SPED)
 
-These ratios are applied to LEA-level estimates in a two-step process. See `docs/SPED_SEGMENTATION_IMPLEMENTATION.md` for full methodology.
+These ratios are applied to LEA-level estimates in a two-step process. See `docs/METHODOLOGY.md` §SPED Segmentation for full methodology.
 
 ---
 
@@ -202,20 +210,24 @@ Each state maintains its own education data system. Quality, accessibility, and 
 
 **Agency**: California Department of Education (CDE)
 **URL**: https://www.cde.ca.gov/ds/
-**Integration Status**: ✅ Layer 2 Complete (January 2026)
+**Integration Status**: ✅ LCFF/SPED/FRPM data integrated and tested (January 2026). **Does NOT supersede
+NCES staff/enrollment** — verified against the live DB 2026-07-02, CA `staff_counts`/`enrollment_by_grade`
+are still 100% `nces_ccd`-sourced. This is a real, tested Layer-2 integration for the datasets it covers
+(funding/attendance/SPED/meals), not the staff+enrollment pair LCT's core formula consumes — see
+`METHODOLOGY.md` §Data Source Precedence "Future State Integrations (Tier 2)".
 
 #### Data Portal
 - **Name**: DataQuest
 - **URL**: https://dq.cde.ca.gov/dataquest/
 - **API**: Yes - https://api.cde.ca.gov/
 
-#### Key Datasets
-- Enrollment by school/district
-- Staff demographics and assignments
+#### Key Datasets (available via DataQuest — not all pulled into the DB, see below)
+- Enrollment by school/district *(available at source; not integrated — CA enrollment in our DB is NCES)*
+- Staff demographics and assignments *(available at source; not integrated — CA staff in our DB is NCES)*
 - SARC (School Accountability Report Card) data
-- **LCFF Snapshot** - Local Control Funding Formula data
-- **SPED Counts** - Special Education enrollment
-- **FRPM Counts** - Free/Reduced Price Meals
+- **LCFF Snapshot** - Local Control Funding Formula data — **integrated**
+- **SPED Counts** - Special Education enrollment — **integrated**
+- **FRPM Counts** - Free/Reduced Price Meals — **integrated**
 
 #### Local Data Files
 - `data/raw/state/california/lcff_snapshot_2023_24.csv`
@@ -252,7 +264,11 @@ Each state maintains its own education data system. Quality, accessibility, and 
 
 **Agency**: Texas Education Agency (TEA)
 **URL**: https://tea.texas.gov/
-**Integration Status**: ✅ Layer 2 Complete (Migration 005, January 2026)
+**Integration Status**: ✅ NCES↔TEA identifier crosswalk complete (Migration 005, January 2026). **No
+staff/enrollment PEIMS data integrated** — verified against the live DB 2026-07-02, TX
+`staff_counts`/`enrollment_by_grade` are still 100% `nces_ccd`-sourced (`tx_sped_district_data` is a
+placeholder table, not populated). See `METHODOLOGY.md` §Data Source Precedence "Future State Integrations
+(Tier 2)".
 
 #### Data Portal
 - **Name**: PEIMS (Public Education Information Management System)
@@ -481,8 +497,9 @@ When adding a new state or data source:
 
 ---
 
-**Last Updated**: January 16, 2026
-**Sources Documented**: 3 federal (NCES CCD, CRDC, IDEA 618), 4 state (CA, TX, FL integrated), bell schedules (182 districts)
-**Layer 2 Integrations**: California ✅, Texas ✅, Florida ✅
-**Integration Tests**: 183 tests across FL (71), TX (54), CA (58) - see `tests/test_*_integration.py`
-**Status**: Active development - Phase 1.5 (Bell Schedule Enrichment & SPED Segmentation) + Layer 2 State Integration (NY next)
+**Sources Documented**: 3 federal (NCES CCD, CRDC, IDEA 618), 9 state SEA integrations (7 feeding LCT
+staff+enrollment: FL, IL, MA, MI, NY, PA, VA; 2 narrower-scope: CA funding/SPED/FRPM, TX ID-crosswalk only
+— see `METHODOLOGY.md` §Data Source Precedence for the authoritative, DB-verified breakdown), bell
+schedules (acquisition pipeline, see `docs/ACQUISITION_PIPELINE.md`).
+**Integration Tests**: see `tests/test_*_integration.py`, one suite per state.
+**Status**: not tracked here — see root `CLAUDE.md` and GitHub Issues for current build status.

@@ -1,35 +1,40 @@
-# Stage 1 — Queue: design & decision log
+# Stage 1 — Queue: present state & decision log
 
-> **Status: BUILT + run live (2026-06-22); the gate@1 CONSOLE — backend AND frontend — BUILT + validated
-> end-to-end 2026-06-28 (REQ-102).** The batch is a first-class entity in the governance DB (the working
-> store) with `data/acquisition/queue/batch_NNNNN.json` regenerated from the rows as the auditable receipt.
-> gate@1 is an **in-band console approval** (a batch-row lifecycle transition + per-district events), no
-> longer an out-of-band go-ahead (§4, §6). **`batch_00002` was created, edited (1 reject), and approved
-> entirely through the console UI** — the forcing-function milestone — with the `batch` row, the
-> `state_event` log, and the receipt all consistent. The gate@1 queue view (the first console stage view)
-> is live; edits are reversible (reject/restore).
->
-> **The batch as a unit now runs end-to-end (2026-06-29):** gate@1 (Queue) → Stage 2 (Discover) → Stage 3
-> (Capture) → Stage 4 (Process) → the **Stage 4→5 handoff**, all console-driven. **This is where the batch
-> ends its life:** at the Stage-4→5 handoff the work hands off to Stage 5, where the batch *dissolves* as a
-> unit and the **district** becomes the driving grain (governance §11d, §12). So Stage 1 is the batch's
-> birth and Stage 4 is its last batch-shaped checkpoint; Stage 5's console is district-driven on purpose.
->
-> **What this note is:** the code is authoritative; this note is a **narrative of what the code currently
-> does**. §1–§6 describe current behavior (verified against the scripts 2026-06-27); §7 is the decision log.
->
-> **Code (grimp-confirmed dependency set, 2026-06-27):** `stage1_queue/queue_batch.py` imports
-> `common.{school_sampling, district_status, paths, discover, db}` + `stage1_queue.batch_store` +
-> `infrastructure.database.{connection, models}` (`District`, `EnrollmentByGrade`) — it reads both NCES
-> CSVs **and** the LCT Postgres DB (§1), and now writes the **governance** DB batch working store (§7).
-> The batch logic is split into pure/IO callables: **`build_batch()`** (pure construction) and
-> **`persist_batch()`** (DB write + receipt + state events), shared by the CLI and the gate@1 console.
-> The store + models live in `stage1_queue/batch_store.py` + `stage1_queue/models.py`; the console
-> endpoints in `process_governance/server.py`. `ACQUISITION_PIPELINE.md` carries the slim summary.
+> **Authority:** Stage 1's purpose, I/O, exclusion/sampling/selection logic, output schema, and the
+> gate@1 console (batch working store + edit/approve API + frontend) — what the code does today.
+> **Audience:** anyone building on or debugging Stage 1; anyone tracing why a district is/isn't in a batch.
+> **Companions:** `ACQUISITION_PIPELINE.md` (the 9-stage map + flow diagram), `METHODOLOGY.md` (Rule 6
+> CTC / Rule 7 grade-span-gap / the sampling-policy rationale), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
+> (§3 state_event, §11 gates / batch types / district×band grain).
+> **Update this when:** Stage 1's code behavior changes. Design turns and superseded approaches belong in
+> §7 (Decision log), not here — this doc's body (§1–§6) is present-state only.
 
-**Companions:** `ACQUISITION_PIPELINE.md` (the 9-stage map + the flow diagram),
-`METHODOLOGY.md` (Rule 6 CTC / Rule 7 grade-span-gap), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
-(§3 state_event, §11 gates / batch types / district×band grain).
+**Status: BUILT + run live**, including the gate@1 console (backend + frontend) and the benchmark batch
+type (§2h). The batch is a first-class entity in the governance DB (the working store), with
+`data/acquisition/queue/batch_NNNNN.json` regenerated from the rows as the auditable receipt (governance
+§7a-A). gate@1 is an **in-band console approval** (a batch-row lifecycle transition + per-district events),
+never an out-of-band go-ahead (§4, §6).
+
+**Code:** `stage1_queue/queue_batch.py` (`build_batch()` pure construction + `persist_batch()` DB write +
+receipt + state events — shared by the CLI and the console), `stage1_queue/benchmark_batch.py` (the
+benchmark-batch builder, §2g), `stage1_queue/batch_store.py` + `stage1_queue/models.py` (the working
+store), `process_governance/server.py` (the console API). `queue_batch.py` imports
+`common.{school_sampling, district_status, paths, discover, db}` + `stage1_queue.batch_store` +
+`infrastructure.database.{connection, models}` (`District`, `EnrollmentByGrade`) — it reads both NCES
+CSVs **and** the LCT Postgres DB (§1), and writes the **governance** DB batch working store (§6).
+
+---
+
+## 0. Receipt from prior stage / Handoff to next stage
+
+**Receipt from prior stage:** none — Stage 1 is the pipeline's entry point. Its inputs are external:
+NCES CCD files on disk and the LCT production database (read-only; the one sanctioned Stage-1 read across
+the acquisition→LCT layering boundary, alongside Stage 9's write).
+
+**Handoff to next stage:** an **approved** batch (`batch.status == "approved"`) is Stage 2's input.
+Stage 2 reads the batch directly from the governance DB working store (never re-derives band membership
+from NCES CSVs — that would discard every gate@1 edit). A batch stays in `draft` until approved; Stage 2
+has nothing to consume until then.
 
 ---
 
@@ -148,16 +153,29 @@ stay pure in-memory dict ops (so the stage scripts are unchanged). `district_sta
 regenerable, version-controlled backup. **Pre-queue exclusions are deliberately NOT recorded** — they're
 live filters. See `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §3.
 
-### 2g. Two batch types + completion grain = district × BAND (2026-06-27, governance §11d)
-Batches are **first-run** (cold-start stratified draw; excludes already-attempted districts) or
+### 2g. Batch types + completion grain = district × BAND (governance §11d)
+Batches are **first-run** (cold-start stratified draw; excludes already-attempted districts),
 **follow-up** (re-discovery / band-gap fill; deliberately re-includes attempted districts, targeting their
-**unsatisfied bands**). A district can recur across batches; both are hard-capped at **12 districts** (a
-stages-1–4 blast-radius control). The goal is daily instructional minutes per district **per band** —
-**schools are instrumental** (raw material for queries + expected sampling units), so a district is
-"satisfied" when every claimed band has confident minutes, not when every school is covered (e.g. Dunseith:
-one captured page stated "elementary 435 min / high 450 min" and the schools became moot). Follow-up
-batches are created at the **return to Stage 1** from a `gate@8`/`gate@7` direction (never minted straight
-to discovery by 7/8), so they stay reviewable at `gate@1`.
+**unsatisfied bands**), or **benchmark** (the special case — §2h). A district can recur across batches;
+first-run and follow-up are both hard-capped at **12 districts** (a stages-1–4 blast-radius control). The
+goal is daily instructional minutes per district **per band** — **schools are instrumental** (raw material
+for queries + expected sampling units), so a district is "satisfied" when every claimed band has confident
+minutes, not when every school is covered (e.g. Dunseith: one captured page stated "elementary 435 min /
+high 450 min" and the schools became moot). Follow-up batches are created at the **return to Stage 1**
+from a `gate@8`/`gate@7` direction (never minted straight to discovery by 7/8), so they stay reviewable at
+`gate@1`.
+
+### 2h. `batch_type="benchmark"` — the special case (`batch_00000`, 2026-07-02)
+A third batch type, built for the 27 curated-GT districts: `stage1_queue/benchmark_batch.py` builds a
+batch over a **fixed district list** (not a stratified draw — the pre-queue exclusion filters are
+bypassed by fiat) and injects each district's frozen `data/benchmark/gt_curation_*` artifacts directly at
+the Stage-3 seam (discovery.json/candidates.json/captures.json + copied files, all Stage-4-ready) — no
+discovery, no fetching. Created + approved in one step (`create_and_inject()`), not through gate@1's
+normal draft→edit→approve flow. **The wall:** `batch_type == "benchmark"` marks the batch permanently;
+benchmark districts must never be Stage-9-written or counted in funnel/enrichment statistics — they are
+an accuracy yardstick (per-school times hand-verified against these exact files), not coverage, and
+several source documents are deliberately older school years. See `STAGE6_DISPATCH_DESIGN_2026-06.md`
+§3C C.6.
 
 ---
 
@@ -179,15 +197,14 @@ The companion **extraction-time mode-stability early-exit** is a Stage-7 decisio
 
 ---
 
-## 4. `gate@1` — the in-band console approval (BUILT 2026-06-27, backend)
+## 4. `gate@1` — the in-band console approval
 
-`gate@1` (human review, was Checkpoint A) is now **in-band**: approval is a **batch-row lifecycle
-transition** (`status: draft → approved`, stamping `approved_at`/`approved_by`) plus a **per-district
-`gate@1 "approved"` `state_event`** for the auditable timeline. The reviewer no longer just eyeballs a
-file and says "go" out of band — they act in the console, and the action is recorded. The unit of approval
-is the **batch** (the thing that advances to discovery), not the individual district; rejecting
-districts/schools happens *before* approval via editing (§6). Manual/auto is per Settings (governance §11b;
-auto not yet wired). The frontend queue view is step 3; this section + §6 describe the built backend.
+`gate@1` (human review) is **in-band**: approval is a **batch-row lifecycle transition**
+(`status: draft → approved`, stamping `approved_at`/`approved_by`) plus a **per-district `gate@1
+"approved"` `state_event`** for the auditable timeline. The reviewer acts in the console, and the action
+is recorded — never an out-of-band "go." The unit of approval is the **batch** (the thing that advances to
+discovery), not the individual district; rejecting districts/schools happens *before* approval via editing
+(§6c). Manual/auto is per Settings (governance §11b); **auto mode is not wired — gate@1 is manual-only.**
 
 ---
 
@@ -197,11 +214,10 @@ auto not yet wired). The frontend queue view is step 3; this section + §6 descr
   First-run stratified draw + soft edits is what's built.
 - **gate@1 auto mode** — confidence-escalating auto-approve (governance §11b); manual-only today.
 - **Extraction-time early-exit** — §3, deferred to Stage 7.
-- *(gate@1 frontend — DONE 2026-06-28, §6d/§6f; no longer open.)*
 
 ---
 
-## 6. The batch working store + gate@1 console (REQ-102, built 2026-06-27)
+## 6. The batch working store + gate@1 console (REQ-102)
 
 The batch is a first-class entity in the **governance DB** (the working store); `batch_NNNNN.json` is the
 receipt regenerated from the rows on every change (governance §7a-A — the JSON shifted from a
@@ -220,13 +236,21 @@ the cross-batch queries the user stories need (a district in multiple batches; p
   multi-band school is ONE row), `included` (soft-reject), `source` (`stratified`|`manual_add`).
 
 ### 6b. doc ↔ rows (`stage1_queue/batch_store.py`)
-- **`create_batch(sess, batch_doc, …)`** — write a freshly-built batch_doc into rows.
+- **`reserve_next_batch(sess, actor=)`** — reserves the next batch id up front, in its own short
+  transaction, by inserting a `status="reserving"` placeholder row. The console's create path spends
+  10–20s inside `build_batch()` between computing the number and persisting; without a reservation two
+  concurrent creates could compute the *same* number and collide 20s later. A concurrent `reserve` of the
+  same number fails fast on the PK instead. **`release_reservation(sess, id)`** deletes the placeholder if
+  the build then fails (never burns the number on a dead reservation).
+- **`create_batch(sess, batch_doc, …)`** — write a freshly-built batch_doc into rows; if a `reserving`
+  placeholder exists for the id, upgrades it in place rather than inserting a duplicate.
 - **`to_receipt_doc(sess, id)`** — the canonical batch_doc (INCLUDED rows only, original shape) for the
   receipt + Stage 2; `n_selected` is **recomputed live** from included rows (counts stay honest after edits).
 - **`to_view(sess, id)`** — the gate@1 review payload: lifecycle fields + ALL rows (included *and*
   soft-rejected) with their flags, so the human sees what was proposed and what they dropped.
 - **`write_receipt(sess, id)`** — regenerate `batch_NNNNN.json` from the rows (the receipt always mirrors
-  the working store). Every function takes a Session and does **not** commit — the caller owns the txn.
+  the working store); writes via tmp-file + `os.replace` so a crash mid-write can never leave a truncated
+  receipt. Every function takes a Session and does **not** commit — the caller owns the txn.
 - **`list_batches(sess)`** — the queue-list rows. Each carries a **`progress`** block (REQ-110): per-batch
   district counts `{total, discovered, captured, processed, flagged}` from a cheap `current_state`
   aggregate (`furthest_stage` ≥ 2/3/4; `flagged` = latest stage outcome `manual_flag_all`), so every stage
@@ -243,37 +267,26 @@ the cross-batch queries the user stories need (a district in multiple batches; p
   per-district `gate@1 "edited"` event (transparency/auditability — the standing principle).
 
 ### 6d. The console API (`process_governance/server.py`)
-The Stage-5 review app grows into the stage-selectable governance console; gate@1 is the first added
-surface: `POST /api/queue/create` (synchronous stratified draw — `build_batch` reads the full NCES corpus
-+ DB, ~10–20s; the UI shows a progress affordance), `GET /api/queue` (list), `GET /api/queue/{id}` (review),
+The Stage-5 review app grows into the stage-selectable governance console; gate@1 is one of its surfaces:
+`POST /api/queue/create` (synchronous stratified draw — `build_batch` reads the full NCES corpus + DB,
+~10–20s; the UI shows a progress affordance), `GET /api/queue` (list), `GET /api/queue/{id}` (review),
 `POST /api/queue/{id}/edit` (reject/restore district+school, add_school), `POST .../approve` + `.../reopen`,
 `GET .../district/{did}/candidates` (remaining eligible schools for "add school"). Tests:
-`tests/test_stage1_batch_store.py` (10, the working store) + `tests/test_gate1_api.py` (6, the HTTP wiring).
+`tests/test_stage1_batch_store.py` (the working store) + `tests/test_gate1_api.py` (the HTTP wiring).
 
-### 6e-ui. The console frontend (BUILT 2026-06-28 — `process_governance/static/`)
+### 6e. The console frontend (`process_governance/static/`)
 The first stage view, built on the **MMM Design System** (imported via the **DesignSync** tool from the
 `claude.ai/design` project — Badge status pills, Select, Card, Button + the shared `tokens/`/`app.css`):
-- **`index.html`** — a **stage selector** in the topbar (gate@1 queue ↔ the existing Stage-5 review) + a
-  `stage1view` container; **`gate1.js`** — the view (batch list, the district→band→school tree with
-  `included` flags + each school's LEVEL/grade-range surfaced for classification review, the soft edit
-  controls, a **loading overlay** for the synchronous ~10–20s create, Approve/Reopen); **`app.css`** —
-  gate@1 styles (badges, the selector, the two-pane layout, the overlay/spinner).
-- **CWD-independence (fixed 2026-06-28, load-bearing for the server):** the create path reads the NCES CSVs
-  (`school_sampling`) and the LCT DB password (`.env`) — both were CWD-relative and 500'd when the server
-  ran from a non-repo-root dir. Now anchored to `paths.DATA_ROOT` / the repo-root `.env`, so the console
-  works regardless of launch directory. *(Lesson for every later stage: read data via `paths.DATA_ROOT`,
-  never a CWD-relative literal.)*
-
-### 6f. End-to-end validation (`batch_00002`, 2026-06-28)
-`batch_00002` was **created → edited (1 district rejected) → approved entirely through the console UI** —
-the forcing-function milestone. Confirmed consistent across all three surfaces: `batch.status='approved'`
-(by `ian`), **11/12 districts** in the receipt (canonical = included-only, regenerated from rows), and the
-`state_event` log carrying **11 `gate@1 "approved"` + 1 `gate@1 "edited"`**. The rejected district stayed at
-`furthest_stage=1` — *not* disqualified from future draws (only Stage-3+ capture disqualifies; §2a).
+**`index.html`** — a **stage selector** in the topbar + a `stage1view` container; **`gate1.js`** — the
+view (batch list, the district→band→school tree with `included` flags + each school's LEVEL/grade-range
+surfaced for classification review, the soft edit controls, a loading overlay for the synchronous
+~10–20s create, Approve/Reopen); **`app.css`** — gate@1 styles (badges, the selector, the two-pane
+layout, the overlay/spinner). The create path reads NCES CSVs and the LCT DB password via
+`paths.DATA_ROOT` / the repo-root `.env` — CWD-independent regardless of launch directory.
 
 ---
 
-### 6e. Console view — user stories (APGA, seed; migrated 2026-06-27 from the retired apga doc)
+### 6f. Console view — user stories (APGA, seed; migrated 2026-06-27 from the retired apga doc)
 - Start a new batch of districts — **✅ built** (`create`).
 - gate@1 (was CP-A) review: look at proposed districts + schools — **✅**; reject districts — **✅**; reject
   schools — **✅**; add schools to a district that has more to queue — **✅** (§6c, APGA stories 28–31).
@@ -360,3 +373,28 @@ _The turn-by-turn record of how Stage 1 was designed and hardened. Preserved ver
 - `batch_00001.json` regenerated again: Blue Water Middle College MI, HOPE LEADERSHIP ACADEMY MO, ROY NM, Hoboken Dual Language Charter School NJ, Sojourner Truth Academy MN, DUNSEITH 1 ND, Marion ISD IA, Mt. Abraham USD #61 VT, Fort Scott KS, Stroudsburg Area SD PA, Urbana SD 116 IL, Pittsylvania County VA. Reviewed in full: every overlap is a single named school genuinely covering two bands (e.g. Stroudsburg JHS, LEVEL=Secondary 08-09, correctly joins both middle and high alongside the LEVEL-clean MS and HS) — no dilution, no virtual/CTC/alternative/preschool leaks found.
 
 **2026-06-22 — investigated Stroudsburg JHS (LEVEL=Secondary, 08-09) joining both middle and high, before deciding whether it needed special-casing.** Scanned the full 2024-25 NCES corpus for the exact shape (a `...-07` middle segment + an `08-09` junior-high segment + a `10-12` high segment). Found **39 distinct districts** nationally with an exact `08-09`-span school (46 schools total) — **33** in the full clean 3-tier shape (uniformly flanked by a `10-12` high; the "before" segment almost always starts at grade 6), 6 in messier shapes. **Every one of the 46 is NCES `LEVEL="Secondary"`** — NCES has no dedicated junior-high category, so this always falls to the ambiguous/per-segment path, never the LEVEL-clean one. **Decision: leave it alone.** At 39/~17,000 districts, and since a grade-8-9 school genuinely has students in both bands with one real bell schedule covering both, dual-band membership is correct behavior, not a bug — not worth a special case.
+
+**2026-06-28 — gate@1 console end-to-end validation (`batch_00002`).** `batch_00002` was created →
+edited (1 district rejected) → approved entirely through the console UI — the forcing-function milestone
+(the first batch-of-record advanced without a hand-run CLI). Confirmed consistent across all three
+surfaces: `batch.status='approved'` (by `ian`), **11/12 districts** in the receipt (canonical =
+included-only, regenerated from rows), and the `state_event` log carrying **11 `gate@1 "approved"` + 1
+`gate@1 "edited"`**. The rejected district stayed at `furthest_stage=1` — *not* disqualified from future
+draws (only Stage-3+ capture disqualifies; §2a).
+
+**2026-07-02 — duplicate-batch-id race fixed (issue #46, fable review).** The console's create path
+computes the next batch number, then spends 10–20s inside `build_batch()` before persisting anything — a
+second concurrent create in that window could compute the *same* number. Fix: `reserve_next_batch()`
+inserts a committed placeholder row up front, in its own short transaction, so a concurrent reserve of the
+same number fails fast on the primary-key constraint instead of colliding 20s later; a failed build
+releases the reservation so the number isn't burned. `write_receipt()` also gained tmp-file +
+`os.replace` atomicity (issue #50) — a crash mid-write can no longer leave a truncated receipt.
+
+**2026-07-02 — `batch_type="benchmark"` added; `batch_00000` created (fable review, Ian approved
+in-chat).** The 27 curated-GT districts (hand-verified per-school bell times, `data/benchmark/gt_curation_*`)
+needed to enter the pipeline as an accuracy yardstick for Stage 7/8, without going through normal
+discovery (which would re-fetch pages that may have since changed, poisoning the comparison with drift
+instead of measuring the council). Built `stage1_queue/benchmark_batch.py`: a third batch type over a
+fixed district list, injecting each district's frozen curation files directly at the Stage-3 seam and
+freezing the batch as created+approved in one step. `batch_type` is the enforcement key for the wall
+(never Stage-9-written, never counted in enrichment stats) that Stages 7–9 must respect. See §2h.

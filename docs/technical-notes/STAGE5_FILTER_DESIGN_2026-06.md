@@ -1,11 +1,33 @@
-# Stage 5 (Local Filtering) — Design Note
+# Stage 5 — Filter: present state & decision log
 
-> **Present-state design of record.** Code is ground truth; this note narrates it. Rewritten clean
-> 2026-07-01 (V2 scoring/labeling architecture) — prior accreted history (the June 24–29 build layers)
-> lives in git. Authority for Stage-5 *signals / tiers / topology / clustering / funnel / tuning*.
-> Cross-stage architecture (state model, gates, the console) is `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`.
-> Tuning methods + citations: `STAGE5_TUNING_NOTES_2026-06.md`. Research that grounds V2:
-> `docs/technical-notes/filtering-research/` (weak-supervision / labeling functions; K-12 hours markup).
+> **Authority:** Stage 5's purpose/boundary, the V2 detector/combiner scoring architecture, signals, the
+> three-axis labeling object, the learning loop, and the attention-first console — what the code does
+> today. Code is ground truth; this note narrates it.
+> **Audience:** anyone building on or debugging Stage 5; anyone tracing why a record scored a given
+> tier/decision, or why a label field means what it means.
+> **Companions:** `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (state model, gates, the console);
+> `STAGE5_TUNING_NOTES_2026-06.md` (tuning methods + citations); `docs/technical-notes/filtering-research/`
+> (the weak-supervision / labeling-functions research V2 is grounded in); `STAGE4_PROCESS_DESIGN` (upstream);
+> `STAGE6_DISPATCH_DESIGN` (downstream — the release decision this stage emits).
+> **Update this when:** Stage 5's code behavior changes. Design turns belong in the Change log at the
+> bottom, not here. Field observations from labeling that are NOT yet built stay in §3a (a distinct,
+> intentionally-not-current section — see its own header).
+
+---
+
+## 0. Receipt from prior stage / Handoff to next stage
+
+**Receipt from prior stage:** Stage 4's `processed.json` + representation text files, arriving via the
+**incremental Stage 4→5 ingest** (triggered automatically when a Stage-4 batch resolves — see
+`STAGE4_PROCESS_DESIGN` §4b). This is the seam where the batch dissolves: Stage 5 is **district-driven**,
+not batch-driven (governance §12) — its console groups/sorts/filters by district and record facets, with
+no batch concept in the UI.
+
+**Handoff to next stage:** the release decision, read by Stage 6 directly from the governance DB
+(`record`/`representation`/`label` + `release.decide`) — `filtered.json` is the auditable **receipt** of
+that decision, not the transport. Stage 5 has no gate of its own that blocks Stage 6; `gate@5` is
+per-record human labeling that feeds tier-B/C records into `send` — Stage 6 can dispatch tier-A records
+(and any already-labeled target) without waiting for every record in a district to be labeled.
 
 ---
 
@@ -220,8 +242,10 @@ reads text) before the image can anchor a premature check-off.
 ## 5. The learning loop (REQ-113 harness extension; scale endgame deferred)
 
 The machinery already exists and V2 **extends** it — it does not replace it: `harness.py` (fingerprinted
-scorecards), `frontier.py` (recall-constrained grid/coordinate search + LOGO-by-district CV guard),
-`tuning_ledger.py` (append-only before→after episodes), config-as-data with `provenance`.
+scorecards), `frontier.py` (recall-constrained grid/coordinate search over `detectors.DEFAULT_DETECTOR_PARAMS`
++ LOGO-by-district CV guard — re-pointed at the live V2 combiner path 2026-07-02; the V1 `tier_and_category`
+cascade it originally tuned is deleted, not just superseded), `tuning_ledger.py` (append-only before→after
+episodes), config-as-data with `provenance`.
 
 1. **NOW (this REQ): per-detector precision/recall.** The harness scores **each detector against its
    matching facet** (not just one aggregate tier-A number) — Snorkel's LF diagnostics: **coverage** (how
@@ -293,10 +317,15 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 
 | piece | status |
 |---|---|
-| V1 tiering (`tier_and_category`), de-chrome, clustering, topology, funnel, attention, harness/frontier/ledger | **BUILT** (pre-V2) |
+| De-chrome, clustering, topology, funnel, attention, harness/tuning_ledger | **BUILT** (pre-V2) |
+| V1 tiering (`tier_and_category`, `DEFAULT_TIER_PARAMS`) | **DELETED 2026-07-02** — fully superseded by the combiner; grimp-verified zero callers before removal |
 | V2 detectors + combiner (`detectors.py`/`combiner.py`); the 3 fixes; new signals (footer/heading/table-density/cms_hint) | **BUILT (REQ-113)** |
 | Per-detector harness diagnostics (coverage/accuracy/overlap/conflict) | **BUILT (REQ-113)** |
+| `frontier.py` re-pointed at the V2 combiner path (`DEFAULT_DETECTOR_PARAMS`) | **BUILT 2026-07-02** |
 | **v2.1 three-axis labeling** (target shapes + confounder facets + location) + label migration + text-first detail pane | **BUILT (REQ-114)** |
+| flags→facets convergence (release descent reads `facets_json`; `flags_json` an inert archive) | **BUILT 2026-07-02** |
+| `migrate_labels_v21` re-run guard (refuses a second real run without `force=True`) | **BUILT 2026-07-02** |
+| Harvest slices relocated out of `data/raw/` to `data/acquisition/harvest_slices/` (read-fallback to legacy location) | **BUILT 2026-07-02** |
 | Stage-3 iframe/embed capture + `cms_hint` promotion + iframe-innerText check | **BUILT (REQ-115)** |
 | **Facet-level per-detector scoring** (negative detectors vs. confounder facets) — accrues as re-tagging fills facets | **NEXT (harness follow-on)** |
 | Learned `LabelModel` combiner · hierarchical/vendor pooling · online-FDR drift · Stage-7/8 outcome feedback | **DEFERRED (scale endgame)** |
@@ -334,3 +363,16 @@ existing plain-text footer capture is already sufficient for the heading-proximi
   (category 0.43→0.60, topology 0.6→0.8); tiers A–D; clustering + durable splits; handbook harvest;
   funnel ingredients; the learning-loop infra (config-as-data + harness + ledger + frontier); the
   district-driven attention-first console rework (REQ-112).
+- **2026-07-02 — frontier re-pointed at V2; V1 tier_and_category deleted; migration re-run guard; harvest
+  slices relocated (fable review issues #56, #59, #58).** `frontier.py` was still grid-searching the
+  deleted-in-spirit V1 cascade (`tier_and_category`) even though the live scoring path had moved to the
+  combiner months earlier — no tuning had been run against it since, so nothing was silently mistuned, but
+  the tool itself pointed at dead code. Re-pointed at `combiner.score_record` over
+  `detectors.DEFAULT_DETECTOR_PARAMS`, same LOGO-CV harness; `tier_and_category`/`DEFAULT_TIER_PARAMS` then
+  had zero remaining callers (grimp-verified) and were deleted outright rather than left as an unused
+  landmine. `migrate_labels_v21`'s real-run mode now refuses a second run (any label already in the v2.1
+  vocabulary with non-empty facets) unless `force=True` is passed with a loud warning — closes the risk of
+  silently re-folding a legacy flag over a human's newer facet edit. `harvest_slice.txt` materialization
+  moved from inside `data/raw/` (a write-once-in-spirit directory) to `data/acquisition/harvest_slices/`,
+  with a read-fallback to the legacy location so already-materialized slices keep working without a
+  re-ingest.

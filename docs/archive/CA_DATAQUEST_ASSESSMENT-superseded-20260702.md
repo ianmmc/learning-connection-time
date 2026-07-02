@@ -1,3 +1,9 @@
+> **ARCHIVED 2026-07-02.** The California integration built since this assessment covers LCFF/ADA/SPED/FRPM
+> (funding/attendance) — verified against the live DB 2026-07-02, `staff_counts`/`enrollment_by_grade` for
+> CA are still 100% `nces_ccd`-sourced, not superseded by CDE staff/enrollment data. The living reference
+> is `docs/SEA_INTEGRATION_GUIDE.md` + `docs/DATA_SOURCES.md` + `docs/METHODOLOGY.md` §Data Source
+> Precedence, not this file. Kept here as the original assessment.
+
 # California DataQuest & CDE Data Assessment
 
 **Date:** January 9, 2026
