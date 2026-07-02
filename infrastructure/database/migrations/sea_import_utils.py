@@ -457,10 +457,11 @@ def is_sped_intensive(
 
 
 # =============================================================================
-# COVID YEAR VALIDATION
+# COVID YEAR VALIDATION — delegates to the single source of truth (issue #24)
 # =============================================================================
 
-COVID_EXCLUDED_YEARS = {'2019-20', '2020-21', '2021-22', '2022-23'}
+from infrastructure.database.school_year import COVID_EXCLUDED_YEARS  # noqa: E402
+
 VALID_DATA_YEARS = {'2018-19', '2023-24', '2024-25', '2025-26'}
 
 

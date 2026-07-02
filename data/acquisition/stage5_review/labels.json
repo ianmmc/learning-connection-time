@@ -1,5 +1,23 @@
 [
   {
+    "rec_key": "0100810:47a0a3082c",
+    "primary_label": "target_absent",
+    "flags_json": "[]",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\", \"_pages\": \"4\", \"_pages_list\": [4]}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-02T07:09:36Z"
+  },
+  {
+    "rec_key": "0100810:4b49c7aff9",
+    "primary_label": "district_hub_by_band",
+    "flags_json": "[]",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-02T07:09:27Z"
+  },
+  {
     "rec_key": "0101410:0303ad5d5d",
     "primary_label": "target_absent",
     "flags_json": "[]",
@@ -133,6 +151,60 @@
     "note": "This is summer hours for the district ",
     "status": "labeled",
     "updated_at": "2026-06-30T01:23:38Z"
+  },
+  {
+    "rec_key": "0500012:30be5394ca",
+    "primary_label": "school_bell_table",
+    "flags_json": "[]",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-02T07:10:00Z"
+  },
+  {
+    "rec_key": "0500012:a9b45454fd",
+    "primary_label": "target_absent",
+    "flags_json": "[]",
+    "facets_json": "{\"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-02T07:10:11Z"
+  },
+  {
+    "rec_key": "0500012:ecd9d120bc",
+    "primary_label": "target_absent",
+    "flags_json": "[]",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-02T07:10:35Z"
+  },
+  {
+    "rec_key": "0602057:19cd71db0b",
+    "primary_label": "target_absent",
+    "flags_json": "[]",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-02T07:08:20Z"
+  },
+  {
+    "rec_key": "0602057:27867e2e6f",
+    "primary_label": "target_absent",
+    "flags_json": "[]",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-02T07:08:02Z"
+  },
+  {
+    "rec_key": "0602057:27b6fc7963",
+    "primary_label": "target_absent",
+    "flags_json": "[]",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-02T07:08:12Z"
   },
   {
     "rec_key": "0602095:1e84861a7a",
@@ -270,6 +342,15 @@
     "updated_at": "2026-06-29T07:48:42Z"
   },
   {
+    "rec_key": "1725260:f11472e1d7",
+    "primary_label": "target_absent",
+    "flags_json": "[]",
+    "facets_json": "{}",
+    "note": "Appears to be library information",
+    "status": "labeled",
+    "updated_at": "2026-07-02T07:33:55Z"
+  },
+  {
     "rec_key": "1737350:09030084bb",
     "primary_label": "target_absent",
     "flags_json": "[]",
@@ -372,10 +453,10 @@
     "rec_key": "1737350:4a420ba54f",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"other_schedule\": \"yes\"}",
+    "facets_json": "{\"board\": \"yes\", \"community_calendar\": \"yes\"}",
     "note": "Has schedule for online learning during weather events, but that does not appear to be a regular school day.\n\n\"TMS/THS Remote Learning/Weather Event Bell Schedule (Times are slightly different from the regular schedule, so please pay close attention.\"",
     "status": "labeled",
-    "updated_at": "2026-06-29T09:14:08Z"
+    "updated_at": "2026-07-02T07:01:09Z"
   },
   {
     "rec_key": "1737350:4c8d299160",
@@ -435,19 +516,19 @@
     "rec_key": "1737350:7da8c2aa90",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"other_schedule\": \"yes\"}",
+    "facets_json": "{\"sports\": \"yes\", \"community_calendar\": \"yes\"}",
     "note": "This is a borderline case. There is an eLearning schedule in the text. It says it's different times and appears short.\n---\nTMS Remote Learning/Weather Event Bell Schedule (Times are slightly different from the\nregular schedule, so please pay close attention.)\n\n\u00a2 Early Bird - 7:20 AM\n\ne Period 1- 8:00 AM\n\ne Period 2 - 8:40 AM\n\ne Period 3 - 9:20 AM\n\ne Period 4 - 10:00 AM\n\ne Period 5 - 10:40 AM\n\n\u00a2 Period 6 - 11:20 AM\n\ne Period 7 - 12:00 PM\n\ne Teacher Office Hours - 12:40-1:00 PM\n---\n\nThere is also prose text with drop off information, but no end-of-day information. Drop-off time is from 7:00 - 7:30. Tardy arrivals begin at\n---\n7:30 a.m. We have been very flexible, but would like to get back\nto our routine and start time. I'm sure many of you would also\nappreciate a shorter drop-off in the morning.\n---\n\nLots of other event information in here too. Very noisy.",
     "status": "labeled",
-    "updated_at": "2026-06-29T09:09:50Z"
+    "updated_at": "2026-07-02T06:57:44Z"
   },
   {
     "rec_key": "1737350:8105414824",
-    "primary_label": "school_bell_table",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "2024-2025 Bell Schedule:\n\nSchool doors open 7:00am\n\nHomeroom begins 7:30am\n\nStudent Dismissal 1:55pm",
     "status": "labeled",
-    "updated_at": "2026-06-29T09:15:44Z"
+    "updated_at": "2026-07-02T06:58:17Z"
   },
   {
     "rec_key": "1737350:827ad129fe",
@@ -478,12 +559,12 @@
   },
   {
     "rec_key": "1737350:8594de5dcf",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-29T09:20:19Z"
+    "updated_at": "2026-07-02T07:00:06Z"
   },
   {
     "rec_key": "1737350:90247ed7a6",
@@ -496,12 +577,12 @@
   },
   {
     "rec_key": "1737350:9e29340e94",
-    "primary_label": "school_bell_table",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "School Hours Classes Begin 8:50 AM\n\nSchool Dismissed 3:00 PM",
     "status": "labeled",
-    "updated_at": "2026-06-29T09:17:43Z"
+    "updated_at": "2026-07-02T06:59:50Z"
   },
   {
     "rec_key": "1737350:a54cfe59b0",
@@ -541,12 +622,12 @@
   },
   {
     "rec_key": "1737350:c09c08e49a",
-    "primary_label": "school_bell_table",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "2024-2025 Bell Schedule:\n\nSchool doors open 7:00am\n\nHomeroom begins 7:30am\n\nStudent Dismissal 1:55pm\n",
     "status": "labeled",
-    "updated_at": "2026-06-29T09:15:22Z"
+    "updated_at": "2026-07-02T06:59:07Z"
   },
   {
     "rec_key": "1737350:c6f378d599",
@@ -568,12 +649,12 @@
   },
   {
     "rec_key": "1737350:cb193a6deb",
-    "primary_label": "school_bell_table",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "2025-2026 Bell Schedule:\n\nSchool doors open 7:00am\n\nHomeroom begins 7:30am\n\nStudent Dismissal 1:55pm",
     "status": "labeled",
-    "updated_at": "2026-06-29T09:14:52Z"
+    "updated_at": "2026-07-02T06:58:48Z"
   },
   {
     "rec_key": "1737350:dcc5acc6c3",
@@ -624,10 +705,10 @@
     "rec_key": "1739960:3c11c24113",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"transportation\": \"yes\"}",
     "note": "Bus / transportation info for local public transportation (not district managed), but no schedule of any sort.",
     "status": "labeled",
-    "updated_at": "2026-06-25T04:22:15Z"
+    "updated_at": "2026-07-02T07:04:14Z"
   },
   {
     "rec_key": "1739960:46aa4f1509",
@@ -649,12 +730,12 @@
   },
   {
     "rec_key": "1739960:5bb66dc186",
-    "primary_label": "school_bell_table",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "In the bell schedule block",
     "status": "labeled",
-    "updated_at": "2026-06-25T04:16:41Z"
+    "updated_at": "2026-07-02T07:02:09Z"
   },
   {
     "rec_key": "1739960:815ad7e883",
@@ -667,12 +748,12 @@
   },
   {
     "rec_key": "1739960:8e030312cd",
-    "primary_label": "school_bell_table",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "In the Bell Schedule block",
     "status": "labeled",
-    "updated_at": "2026-06-25T04:19:14Z"
+    "updated_at": "2026-07-02T07:02:19Z"
   },
   {
     "rec_key": "1739960:a0a98bdf1b",
@@ -686,11 +767,11 @@
   {
     "rec_key": "1739960:a7d489f0f1",
     "primary_label": "school_bell_table",
-    "flags_json": "[\"building_hours_visible\"]",
-    "facets_json": "{\"office_building_hours\": \"yes\"}",
+    "flags_json": "[]",
+    "facets_json": "{\"news_feed\": \"yes\", \"office_building_hours\": \"yes\"}",
     "note": "Bell schedule in the \"Bell Schedule\" block. Building hours \u2014 a potential red herring for school start and end \u2014 is in the \"Find Us\" block.",
     "status": "labeled",
-    "updated_at": "2026-06-25T06:23:17Z"
+    "updated_at": "2026-07-02T07:02:33Z"
   },
   {
     "rec_key": "1739960:c8d6b3b9e7",
@@ -802,12 +883,12 @@
   },
   {
     "rec_key": "1918690:1deeb63356",
-    "primary_label": "school_bell_table",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "8:30 School begins, tardy bell\nYour classroom lunch time will be sent home by classroom teachers\n3:30 Dismissal",
     "status": "labeled",
-    "updated_at": "2026-06-25T01:26:55Z"
+    "updated_at": "2026-07-02T06:47:58Z"
   },
   {
     "rec_key": "1918690:600ade165e",
@@ -820,21 +901,21 @@
   },
   {
     "rec_key": "1918690:8015fc58df",
-    "primary_label": "school_bell_table",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "The info we're looking for:\n8:20-School Begins\n3:20-School Ends\n\nThe script guessed district hub. I'm wondering if there's a way that we can programmatically determine that this is a school page for Longfellow Elementary School rather than a district page.",
     "status": "labeled",
-    "updated_at": "2026-06-25T01:24:57Z"
+    "updated_at": "2026-07-02T06:48:14Z"
   },
   {
     "rec_key": "1918690:8f6ed54432",
-    "primary_label": "school_bell_table",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "Key information:\n8:20 \u2013 School Begins\n3:20 \u2013 School Ends\n\nNot a duplicate, but very similar to Longfellow Elementary School page.",
     "status": "labeled",
-    "updated_at": "2026-06-25T01:26:14Z"
+    "updated_at": "2026-07-02T06:48:22Z"
   },
   {
     "rec_key": "1918690:a8bfb0b149",
@@ -948,19 +1029,19 @@
     "rec_key": "2506750:506432825f",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"academic_calendar\": \"yes\"}",
+    "facets_json": "{\"academic_calendar\": \"yes\", \"community_calendar\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-30T01:20:43Z"
+    "updated_at": "2026-07-02T06:45:21Z"
   },
   {
     "rec_key": "2506750:800987aeb0",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"community_calendar\": \"yes\"}",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "Also has social media and news feeds.",
     "status": "labeled",
-    "updated_at": "2026-06-30T01:19:48Z"
+    "updated_at": "2026-07-02T06:44:51Z"
   },
   {
     "rec_key": "2506750:98f5a7ba66",
@@ -975,10 +1056,10 @@
     "rec_key": "2506750:9ac0326833",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"news_feed\": \"yes\"}",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "Also has events calendar",
     "status": "labeled",
-    "updated_at": "2026-06-30T01:20:20Z"
+    "updated_at": "2026-07-02T06:45:03Z"
   },
   {
     "rec_key": "2506750:f5bde7c77f",
@@ -991,12 +1072,12 @@
   },
   {
     "rec_key": "2506900:057095fab4",
-    "primary_label": "school_bell_table",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "School Hours\n\nMonday, Tuesday, Thursday, Friday \u2013 8:00-2:50",
     "status": "labeled",
-    "updated_at": "2026-06-29T09:00:33Z"
+    "updated_at": "2026-07-02T06:45:58Z"
   },
   {
     "rec_key": "2506900:2813ea8af3",
@@ -1011,10 +1092,10 @@
     "rec_key": "2506900:31b776595b",
     "primary_label": "district_hub_by_school",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "Schools Hours are listed in the \"Our Schools\" block at the bottom.",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:59:16Z"
+    "updated_at": "2026-07-02T06:46:12Z"
   },
   {
     "rec_key": "2506900:ae5cbc2d52",
@@ -1378,12 +1459,12 @@
   },
   {
     "rec_key": "3501500:04108dbf4a",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "Full district information in a school specific website. Also printed in Spanish, not just English.",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:32:47Z"
+    "updated_at": "2026-07-02T06:34:35Z"
   },
   {
     "rec_key": "3501500:0bec6d12e4",
@@ -1432,39 +1513,39 @@
   },
   {
     "rec_key": "3501500:17103002ed",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "Potentially confounding as both current year and next year are listed, and elementary schools have a school day 10 minutes longer.",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:26:49Z"
+    "updated_at": "2026-07-02T06:32:25Z"
   },
   {
     "rec_key": "3501500:174ae1bce3",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "District information shared on school page. Two different years shared. ",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:34:18Z"
+    "updated_at": "2026-07-02T06:30:43Z"
   },
   {
     "rec_key": "3501500:188ab8fb32",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "District information in a specific school webpage. Potentially tricky as it has both current year and prior year start and stop times by band, but moot because it's the exact same day length even with shifted times.",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:15:03Z"
+    "updated_at": "2026-07-02T06:32:01Z"
   },
   {
     "rec_key": "3501500:1cf9b136b7",
     "primary_label": "district_hub_by_school",
-    "flags_json": "[\"target_image_only\"]",
-    "facets_json": "{\"needs_vision\": \"yes\"}",
+    "flags_json": "[]",
+    "facets_json": "{\"needs_vision\": \"yes\", \"news_feed\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"18\", \"_pages_list\": [18]}",
     "note": "Social media feed with a post that contains districtwide hours by band.",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:43:13Z"
+    "updated_at": "2026-07-02T06:40:50Z"
   },
   {
     "rec_key": "3501500:1d776cf188",
@@ -1478,11 +1559,11 @@
   {
     "rec_key": "3501500:24ea4eb8b2",
     "primary_label": "district_hub_by_school",
-    "flags_json": "[\"target_image_only\"]",
-    "facets_json": "{\"needs_vision\": \"yes\"}",
+    "flags_json": "[]",
+    "facets_json": "{\"needs_vision\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"21\", \"_pages_list\": [21]}",
     "note": "Post in social media feed contains districtwide hours by band",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:45:29Z"
+    "updated_at": "2026-07-02T06:42:13Z"
   },
   {
     "rec_key": "3501500:28e9711cdd",
@@ -1513,12 +1594,12 @@
   },
   {
     "rec_key": "3501500:31d4bbb03d",
-    "primary_label": "school_start_end_prose",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"_where\": \"footer\"}",
     "note": "School hours in footer",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:31:03Z"
+    "updated_at": "2026-07-02T06:33:34Z"
   },
   {
     "rec_key": "3501500:31d827b978",
@@ -1621,12 +1702,12 @@
   },
   {
     "rec_key": "3501500:4ebd3d24bf",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "Full district information in a school specific website. Also printed in Spanish, not just English.",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:32:47Z"
+    "updated_at": "2026-07-02T06:34:35Z"
   },
   {
     "rec_key": "3501500:4f2c52c69c",
@@ -1641,19 +1722,19 @@
     "rec_key": "3501500:50200f0180",
     "primary_label": "district_hub_by_school",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "Social media feed with an image post that captures full district hours by band. School specific hours are in footer.",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:42:03Z"
+    "updated_at": "2026-07-02T06:31:31Z"
   },
   {
     "rec_key": "3501500:52f8d810e8",
-    "primary_label": "school_start_end_prose",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"news_feed\": \"yes\", \"_where\": \"footer\"}",
     "note": "School hours in footer.",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:29:03Z"
+    "updated_at": "2026-07-02T06:33:11Z"
   },
   {
     "rec_key": "3501500:53a29125f5",
@@ -1693,12 +1774,12 @@
   },
   {
     "rec_key": "3501500:62591e6fc7",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "School specific page with district information. If the script is guessing that this is a transportation schedule, why is it graded A?",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:12:29Z"
+    "updated_at": "2026-07-02T06:30:52Z"
   },
   {
     "rec_key": "3501500:650175c225",
@@ -1711,21 +1792,21 @@
   },
   {
     "rec_key": "3501500:6a20e53c62",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:09:39Z"
+    "updated_at": "2026-07-02T06:31:02Z"
   },
   {
     "rec_key": "3501500:83035af49a",
     "primary_label": "district_hub_by_school",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"news_feed\": \"yes\"}",
     "note": "District information in a social media post in an image that OCR doesn't seem to be getting. School specific hours in footer, so multiple sets of signals here.",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:37:25Z"
+    "updated_at": "2026-07-02T06:35:30Z"
   },
   {
     "rec_key": "3501500:83da3e8de4",
@@ -1783,12 +1864,12 @@
   },
   {
     "rec_key": "3501500:9518f5f15d",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "Full district information in a school specific website. Also printed in Spanish, not just English.",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:32:47Z"
+    "updated_at": "2026-07-02T06:34:35Z"
   },
   {
     "rec_key": "3501500:a1cbd8ca2d",
@@ -1802,11 +1883,11 @@
   {
     "rec_key": "3501500:a5c9e7b3ca",
     "primary_label": "district_hub_by_school",
-    "flags_json": "[\"target_image_only\"]",
-    "facets_json": "{\"needs_vision\": \"yes\"}",
+    "flags_json": "[]",
+    "facets_json": "{\"needs_vision\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"12\", \"_pages_list\": [12]}",
     "note": "Start times in text. But start and end times are in a table that's only showing up in an image post.",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:39:41Z"
+    "updated_at": "2026-07-02T06:37:01Z"
   },
   {
     "rec_key": "3501500:a60bee2cc9",
@@ -1846,12 +1927,12 @@
   },
   {
     "rec_key": "3501500:b0aa515a51",
-    "primary_label": "school_start_end_prose",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\", \"_where\": \"footer\"}",
     "note": "School hours in footer",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:31:40Z"
+    "updated_at": "2026-07-02T06:34:15Z"
   },
   {
     "rec_key": "3501500:b87cc365a0",
@@ -1864,12 +1945,12 @@
   },
   {
     "rec_key": "3501500:bbfa0ff1cb",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "School specific page with district information. If the script is guessing that this is a transportation schedule, why is it graded A?",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:12:29Z"
+    "updated_at": "2026-07-02T06:30:52Z"
   },
   {
     "rec_key": "3501500:bcb951acbc",
@@ -1887,16 +1968,16 @@
     "facets_json": "{\"news_feed\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:43:36Z"
+    "updated_at": "2026-07-02T06:39:33Z"
   },
   {
     "rec_key": "3501500:bf3315525e",
     "primary_label": "district_hub_by_school",
-    "flags_json": "[\"target_image_only\"]",
-    "facets_json": "{\"needs_vision\": \"yes\"}",
+    "flags_json": "[]",
+    "facets_json": "{\"needs_vision\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"19\", \"_pages_list\": [19]}",
     "note": "This is a social media feed, but the feed contains an image post that has \"New bell schedule for the 2025-26 school year.\n\nAnother post in the feed has start times, but not the full ranges.",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:23:43Z"
+    "updated_at": "2026-07-02T06:42:39Z"
   },
   {
     "rec_key": "3501500:c0519a4973",
@@ -1909,30 +1990,30 @@
   },
   {
     "rec_key": "3501500:c53a859fc8",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "School specific page with district information. If the script is guessing that this is a transportation schedule, why is it graded A?",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:12:29Z"
+    "updated_at": "2026-07-02T06:30:52Z"
   },
   {
     "rec_key": "3501500:c55121f4f9",
-    "primary_label": "school_start_end_prose",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"news_feed\": \"yes\", \"_where\": \"footer\"}",
     "note": "School hours in footer",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:50:12Z"
+    "updated_at": "2026-07-02T06:35:57Z"
   },
   {
     "rec_key": "3501500:c5c615fa69",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "Full district information in a school specific website. Also printed in Spanish, not just English.",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:32:47Z"
+    "updated_at": "2026-07-02T06:34:35Z"
   },
   {
     "rec_key": "3501500:ca240a8646",
@@ -1945,12 +2026,12 @@
   },
   {
     "rec_key": "3501500:cd6bd1c6cd",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "School specific page with district information. If the script is guessing that this is a transportation schedule, why is it graded A?",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:12:29Z"
+    "updated_at": "2026-07-02T06:30:52Z"
   },
   {
     "rec_key": "3501500:d25a9943bf",
@@ -1963,12 +2044,12 @@
   },
   {
     "rec_key": "3501500:d404820119",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "Full district information in a school specific website. Also printed in Spanish, not just English.",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:32:47Z"
+    "updated_at": "2026-07-02T06:34:35Z"
   },
   {
     "rec_key": "3501500:d522ace094",
@@ -1981,12 +2062,12 @@
   },
   {
     "rec_key": "3501500:d9768df5d6",
-    "primary_label": "school_start_end_prose",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
-    "note": "",
+    "note": "New Bell Schedules \n\nStarting this school year, a new bell schedule will be implemented for middle and high school students to allow for more efficient bus service and better sleep patterns, according to scientific research: \n\nElementary students will still start school at 8 a.m. and dismiss at 2:40 p.m.  \n\nMiddle school students will attend school from 9:15 a.m. to 4:15 p.m.  \n\nHigh school students will attend school from 8:35 a.m. to 3:35 p.m.  ",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:35:09Z"
+    "updated_at": "2026-07-02T06:30:32Z"
   },
   {
     "rec_key": "3501500:e211abeb79",
@@ -2008,12 +2089,12 @@
   },
   {
     "rec_key": "3501500:e4dd3cd163",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "School specific page with district information. If the script is guessing that this is a transportation schedule, why is it graded A?",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:12:29Z"
+    "updated_at": "2026-07-02T06:30:52Z"
   },
   {
     "rec_key": "3501500:e708643448",
@@ -2044,12 +2125,12 @@
   },
   {
     "rec_key": "3501500:ffe9f09f00",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "School specific page with district information. If the script is guessing that this is a transportation schedule, why is it graded A?",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:12:29Z"
+    "updated_at": "2026-07-02T06:30:52Z"
   },
   {
     "rec_key": "3502280:31170892b5",
@@ -2856,10 +2937,10 @@
     "rec_key": "4222860:1da0a99205",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"other_schedule\": \"yes\"}",
+    "facets_json": "{}",
     "note": "This is not the standard bell schedule we're targeting. This is a subset focused on a special bell schedule rather than standard school day. Related to high.sburg.org/apps/bell_schedules/index.jsp. Check all related pages for subsets and dupes.",
     "status": "labeled",
-    "updated_at": "2026-06-25T03:59:44Z"
+    "updated_at": "2026-07-02T06:56:34Z"
   },
   {
     "rec_key": "4222860:1f51effa21",
@@ -2928,10 +3009,10 @@
     "rec_key": "4222860:77a6eec89d",
     "primary_label": "school_bell_table",
     "flags_json": "[]",
-    "facets_json": "{\"buried_handbook\": \"yes\", \"_pages\": \"4, 7-9\", \"_pages_list\": [4, 7, 8, 9]}",
+    "facets_json": "{}",
     "note": "Printer-friendly version of middle.sburg.org/apps/bell_schedules/",
     "status": "labeled",
-    "updated_at": "2026-07-01T21:31:09Z"
+    "updated_at": "2026-07-02T06:55:26Z"
   },
   {
     "rec_key": "4222860:7bbb2ff11e",
@@ -3069,13 +3150,31 @@
     "updated_at": "2026-06-29T09:02:17Z"
   },
   {
+    "rec_key": "4843560:4e1ea028f0",
+    "primary_label": "explicit_instructional_time",
+    "flags_json": "[]",
+    "facets_json": "{\"academic_calendar\": \"yes\"}",
+    "note": "HOURS 7:45-4:03 Daily Minutes = 498",
+    "status": "labeled",
+    "updated_at": "2026-07-02T07:07:16Z"
+  },
+  {
+    "rec_key": "4843560:fb01c2fbc8",
+    "primary_label": "target_absent",
+    "flags_json": "[]",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-02T07:07:37Z"
+  },
+  {
     "rec_key": "5000425:88e7b7e0ef",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"other_schedule\": \"yes\"}",
+    "facets_json": "{\"board\": \"yes\", \"academic_calendar\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "Multiple non-bell schedule signals here. Board meeting noted, performance of Seussical, Jr. Community meeting.",
     "status": "labeled",
-    "updated_at": "2026-06-25T01:38:13Z"
+    "updated_at": "2026-07-02T06:49:07Z"
   },
   {
     "rec_key": "5102940:0932688744",
@@ -3206,11 +3305,11 @@
   {
     "rec_key": "5102940:33ab0ee79d",
     "primary_label": "school_bell_table",
-    "flags_json": "[\"buried_in_long_doc\"]",
-    "facets_json": "{\"buried_handbook\": \"yes\"}",
+    "flags_json": "[]",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"4\", \"_pages_list\": [4]}",
     "note": "Bell schedule on page 4",
     "status": "labeled",
-    "updated_at": "2026-06-25T01:43:41Z"
+    "updated_at": "2026-07-02T06:51:42Z"
   },
   {
     "rec_key": "5102940:3b7bf17c6d",
@@ -3251,11 +3350,11 @@
   {
     "rec_key": "5102940:4ea496b9c9",
     "primary_label": "school_bell_table",
-    "flags_json": "[\"buried_in_long_doc\"]",
-    "facets_json": "{\"buried_handbook\": \"yes\"}",
+    "flags_json": "[]",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"1-2\", \"_pages_list\": [1, 2]}",
     "note": "Bell schedule headers are at the bottom of page 1 and the actual content is the majority of page 2.",
     "status": "labeled",
-    "updated_at": "2026-06-25T01:41:46Z"
+    "updated_at": "2026-07-02T06:52:05Z"
   },
   {
     "rec_key": "5102940:5531f7eabb",
@@ -3450,19 +3549,19 @@
     "rec_key": "5102940:a7bd20cb3e",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"community_calendar\": \"yes\"}",
     "note": "This is an embedded calendar presented in conventional month-view format, whereas other schools in the district present a list format and only show an upcoming school board meeting.",
     "status": "labeled",
-    "updated_at": "2026-06-25T02:02:21Z"
+    "updated_at": "2026-07-02T06:53:21Z"
   },
   {
     "rec_key": "5102940:a8f029279e",
     "primary_label": "school_bell_table",
-    "flags_json": "[\"buried_in_long_doc\"]",
-    "facets_json": "{\"buried_handbook\": \"yes\"}",
+    "flags_json": "[]",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"4\", \"_pages_list\": [4]}",
     "note": "Bell schedule on page 4",
     "status": "labeled",
-    "updated_at": "2026-06-25T01:47:34Z"
+    "updated_at": "2026-07-02T06:52:20Z"
   },
   {
     "rec_key": "5102940:ac65b33181",
@@ -3620,11 +3719,11 @@
   {
     "rec_key": "5102940:f5d6f611fb",
     "primary_label": "school_bell_table",
-    "flags_json": "[\"buried_in_long_doc\"]",
-    "facets_json": "{\"buried_handbook\": \"yes\"}",
+    "flags_json": "[]",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"3\", \"_pages_list\": [3]}",
     "note": "Bell schedule on page 3",
     "status": "labeled",
-    "updated_at": "2026-06-25T01:42:37Z"
+    "updated_at": "2026-07-02T06:52:32Z"
   },
   {
     "rec_key": "5102940:f68f559a07",

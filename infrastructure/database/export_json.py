@@ -24,6 +24,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from infrastructure.database.connection import session_scope
 from infrastructure.database.queries import export_bell_schedules_to_json
+from infrastructure.database.school_year import CURRENT_SCHOOL_YEAR
 
 # Configure logging
 logging.basicConfig(
@@ -89,7 +90,7 @@ def export_individual_files(year: str, output_dir: Path) -> int:
         file_count = 0
         for district_id, district_data in data.items():
             # Create individual file for each district
-            file_path = output_dir / f"{district_id}_2024-25.json"
+            file_path = output_dir / f"{district_id}_{year}.json"
 
             with open(file_path, "w") as f:
                 json.dump(district_data, f, indent=2)
@@ -135,8 +136,8 @@ def main():
     )
     parser.add_argument(
         "--year",
-        default="2024-25",
-        help="School year to export (default: 2024-25)"
+        default=CURRENT_SCHOOL_YEAR,
+        help=f"School year to export (default: {CURRENT_SCHOOL_YEAR})"
     )
     parser.add_argument(
         "--output",

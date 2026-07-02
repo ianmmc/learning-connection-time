@@ -14,6 +14,7 @@ from typing import Tuple, Optional, Dict, List
 from sqlalchemy.orm import Session
 
 from infrastructure.database.models import EnrichmentQueue, BellSchedule
+from infrastructure.database.school_year import CURRENT_SCHOOL_YEAR
 from infrastructure.database.verification import validate_schedule_plausibility
 
 
@@ -127,7 +128,7 @@ def copy_enrichment_to_bell_schedules(
     start_time = tier_result.get('start_time', 'Unknown')
     end_time = tier_result.get('end_time', 'Unknown')
     source_url = tier_result.get('source_url', 'Unknown')
-    year = tier_result.get('year', '2025-26')
+    year = tier_result.get('year', CURRENT_SCHOOL_YEAR)
     schedule_type = tier_result.get('schedule_type', 'high')
     schools_sampled = tier_result.get('schools_sampled', [])
     extraction_method = tier_result.get('extraction_method', f'tier_{tier}')

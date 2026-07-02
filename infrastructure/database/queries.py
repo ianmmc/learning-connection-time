@@ -14,6 +14,7 @@ from sqlalchemy import and_, desc, func, or_, select
 from sqlalchemy.orm import Session
 
 from .models import BellSchedule, DataLineage, District, LCTCalculation, StateRequirement
+from .school_year import CURRENT_SCHOOL_YEAR, NCES_PRIMARY_YEAR
 from .verification import validate_schedule_plausibility
 
 
@@ -98,7 +99,7 @@ def get_unenriched_districts(
 def get_bell_schedule(
     session: Session,
     district_id: str,
-    year: str = "2024-25",
+    year: str = CURRENT_SCHOOL_YEAR,
     grade_level: Optional[str] = None,
 ):
     """
@@ -126,7 +127,7 @@ def get_bell_schedule(
 
 
 def get_enriched_districts(
-    session: Session, year: str = "2024-25"
+    session: Session, year: str = CURRENT_SCHOOL_YEAR
 ) -> List[Tuple[District, int]]:
     """Get all districts with bell schedules and count of grade levels."""
     results = (
@@ -140,7 +141,7 @@ def get_enriched_districts(
     return results
 
 
-def get_enrichment_by_state(session: Session, year: str = "2024-25") -> List[Dict]:
+def get_enrichment_by_state(session: Session, year: str = CURRENT_SCHOOL_YEAR) -> List[Dict]:
     """Get enrichment statistics by state."""
     results = (
         session.query(
@@ -375,7 +376,7 @@ def get_instructional_minutes(
 def calculate_and_store_lct(
     session: Session,
     district_id: str,
-    year: str = "2024-25",
+    year: str = CURRENT_SCHOOL_YEAR,
     use_statutory_fallback: bool = True,
 ) -> List[LCTCalculation]:
     """
@@ -473,7 +474,7 @@ def calculate_and_store_lct(
 
 
 def export_bell_schedules_to_json(
-    session: Session, year: str = "2024-25", pretty: bool = True
+    session: Session, year: str = CURRENT_SCHOOL_YEAR, pretty: bool = True
 ) -> str:
     """
     Export all bell schedules to JSON format.
@@ -524,7 +525,7 @@ def export_bell_schedules_to_json(
 
 
 def export_enriched_districts_csv(
-    session: Session, year: str = "2024-25"
+    session: Session, year: str = CURRENT_SCHOOL_YEAR
 ) -> str:
     """Export enriched districts summary as CSV."""
     results = get_enriched_districts(session, year)
@@ -552,7 +553,7 @@ def export_enriched_districts_csv(
 
 
 def get_lct_summary_by_scope(
-    session: Session, scope: str = "teachers_only", year: str = "2023-24"
+    session: Session, scope: str = "teachers_only", year: str = NCES_PRIMARY_YEAR
 ) -> Dict:
     """Get LCT summary statistics for a specific scope."""
     from sqlalchemy import func as sqlfunc
@@ -590,7 +591,7 @@ def get_lct_summary_by_scope(
 def get_districts_needing_calculation(
     session: Session,
     last_run_id: Optional[str] = None,
-    year: str = "2023-24",
+    year: str = NCES_PRIMARY_YEAR,
 ) -> List[str]:
     """
     Get districts that need LCT recalculation.
@@ -630,7 +631,7 @@ def get_districts_needing_calculation(
     return [r[0] for r in query.all()]
 
 
-def get_state_campaign_progress(session: Session, year: str = "2024-25") -> List[Dict]:
+def get_state_campaign_progress(session: Session, year: str = CURRENT_SCHOOL_YEAR) -> List[Dict]:
     """
     Get state-by-state enrichment progress for campaign tracking.
 
@@ -673,7 +674,7 @@ def get_state_campaign_progress(session: Session, year: str = "2024-25") -> List
 def get_next_enrichment_candidates(
     session: Session,
     state: str,
-    year: str = "2024-25",
+    year: str = CURRENT_SCHOOL_YEAR,
     limit: int = 9,
 ) -> List[District]:
     """
@@ -705,7 +706,7 @@ def get_next_enrichment_candidates(
 # =============================================================================
 
 
-def get_enrichment_summary(session: Session, year: str = "2024-25") -> Dict:
+def get_enrichment_summary(session: Session, year: str = CURRENT_SCHOOL_YEAR) -> Dict:
     """Get overall enrichment statistics."""
     total_districts = session.query(func.count(District.nces_id)).scalar()
 
@@ -748,7 +749,7 @@ def get_enrichment_summary(session: Session, year: str = "2024-25") -> Dict:
     }
 
 
-def print_enrichment_report(session: Session, year: str = "2024-25"):
+def print_enrichment_report(session: Session, year: str = CURRENT_SCHOOL_YEAR):
     """Print a formatted enrichment report."""
     summary = get_enrichment_summary(session, year)
 
@@ -778,7 +779,7 @@ def get_target_districts(
     size_range: Tuple[int, int],
     limit: int = 15,
     exclude_large: bool = True,
-    year: str = "2024-25",
+    year: str = CURRENT_SCHOOL_YEAR,
 ) -> List[District]:
     """
     Get unenriched districts in a specific size range for campaign targeting.
@@ -847,7 +848,7 @@ def get_campaign_targets_by_state(
     size_range: Tuple[int, int],
     districts_per_state: int = 4,
     exclude_single_district_states: bool = True,
-    year: str = "2024-25",
+    year: str = CURRENT_SCHOOL_YEAR,
 ) -> Dict[str, List[District]]:
     """
     Get campaign targets for all states, returning a dict keyed by state.
@@ -899,7 +900,7 @@ def get_campaign_targets_by_state(
     return results
 
 
-def get_size_distribution_summary(session: Session, year: str = "2024-25") -> Dict:
+def get_size_distribution_summary(session: Session, year: str = CURRENT_SCHOOL_YEAR) -> Dict:
     """
     Get summary of enrichment coverage by district size category.
 
