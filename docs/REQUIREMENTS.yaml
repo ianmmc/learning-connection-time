@@ -2719,3 +2719,14 @@ requirements:
     updated: "2026-07-01T00:00:00Z"
     notes: "Design: STAGE5_FILTER_DESIGN_2026-06.md §6. Additive to Stage 3; applies to future captures
       (existing captures backfill cms_hint only, which is already on disk)."
+
+  - id: REQ-116
+    description: "In preparation of dispatches during Stage 6, If a district has a URL with either a labeled or A-scoring district hub schedule (either by school or by band) that covers all bands, then the best representation of that URL is the only URL that needs to be sent for the district on the first dispatch."
+    type: functional
+    priority: must
+    status: draft
+    acceptance_criteria:
+    tests:
+    created: "2026-07-01T00:00:00Z"
+    updated: "2026-07-01T00:00:00Z"
+    notes: "Design: STAGE6_DISPATCH_DESIGN_2026-06.md. The rationale here is that the presence of a district hub schedule renders the need for representations of other URLs moot. Sending more would needless add to cost. If more information is needed, the extraction council can request more representations and more URLs"

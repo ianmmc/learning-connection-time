@@ -145,8 +145,8 @@ before the human sees it; a borderline page reaching gate@5 costs only review ti
 > **Written down, not implemented** (per `feedback-explore-before-scoring-changes`): fold in deliberately and
 > measure against the labels, never tune by eye. New observations append here.
 
-**(1) A footer time-range on a DISTRICT page leans building/office hours; on a SCHOOL page it leans the
-student day (2026-07-01).** An unlabeled footer range (the `school_start_end_list` shape) is more likely
+**(1) A footer time-range on a DISTRICT page leans building/office hours**; on a SCHOOL page it leans the
+student day (2026-07-01). An unlabeled footer range (the `school_start_end_list` shape) is more likely
 `office_building_hours` when the page is district-focused, and more likely a real target on a single-school
 page. → would down-weight `lf_footer_hours` / up-weight `lf_office_hours` when the page is a district page.
 - **Open sub-problem — we lack a reliable "page focus: district vs school" signal, and the domain/TLD is NOT
@@ -168,6 +168,8 @@ a target.
 School** carried the real instructional start/stop — disambiguated by page focus (obs. 1) and the off-the-hour
 minutes (obs. 2). This is exactly the office-vs-school-hours confusable (the research's #1 danger) and where
 both observations would pay off.
+
+**(3) Registration, open house, back-to-school, and last day of school information may merit facets.** Content about these sorts of events seem to come up a lot. There may be associated keywords to look at for downweighting. They may merit adding facet checkboxes to the console view for Stage 5.
 
 ---
 

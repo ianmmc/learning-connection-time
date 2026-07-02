@@ -3,10 +3,10 @@
     "rec_key": "0101410:0303ad5d5d",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"community_calendar\": \"yes\"}",
+    "facets_json": "{\"sports\": \"yes\", \"community_calendar\": \"yes\"}",
     "note": "Sports are contained in this schedule",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:49:51Z"
+    "updated_at": "2026-07-02T06:12:09Z"
   },
   {
     "rec_key": "0101410:0b90f8b02d",
@@ -21,19 +21,19 @@
     "rec_key": "0101410:714f1b24a5",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"news_feed\": \"yes\"}",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:50:04Z"
+    "updated_at": "2026-07-02T06:11:36Z"
   },
   {
     "rec_key": "0101410:97c0b1afd4",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"news_feed\": \"yes\"}",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:50:44Z"
+    "updated_at": "2026-07-02T06:12:30Z"
   },
   {
     "rec_key": "0101410:edff136170",
@@ -903,10 +903,10 @@
     "rec_key": "2006180:84f1cf3eb7",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"sports\": \"yes\"}",
     "note": "Last day of school notice",
     "status": "labeled",
-    "updated_at": "2026-06-25T00:40:24Z"
+    "updated_at": "2026-07-02T06:13:21Z"
   },
   {
     "rec_key": "2006180:a5836ff821",
@@ -921,10 +921,10 @@
     "rec_key": "2006180:f255ce5bb9",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"community_calendar\": \"yes\"}",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "Events calendar is a page element",
     "status": "labeled",
-    "updated_at": "2026-06-25T06:23:17Z"
+    "updated_at": "2026-07-02T06:13:46Z"
   },
   {
     "rec_key": "2506750:07bd9533e3",
@@ -1182,19 +1182,19 @@
     "rec_key": "2900601:783f67d875",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"news_feed\": \"yes\"}",
     "note": "There's an embedded blog or social media feed.",
     "status": "labeled",
-    "updated_at": "2026-06-25T01:14:58Z"
+    "updated_at": "2026-07-02T06:15:00Z"
   },
   {
     "rec_key": "2900601:d880a9f87b",
-    "primary_label": "school_bell_table",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"office_building_hours\": \"yes\"}",
     "note": "This isn't strictly speaking a bell schedule, not is it prose. There are a few sets of hours hours in this. The relevant one is:\n\nINSTRUCTIONAL HOURS:\nMonday- Friday\n8:10AM- 3:15PM",
     "status": "labeled",
-    "updated_at": "2026-06-25T01:12:25Z"
+    "updated_at": "2026-07-02T06:14:32Z"
   },
   {
     "rec_key": "2900601:f4044f0a6c",
@@ -2073,10 +2073,10 @@
     "rec_key": "3609330:0f5a649b86",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"news_feed\": \"yes\"}",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:02:21Z"
+    "updated_at": "2026-07-02T05:40:55Z"
   },
   {
     "rec_key": "3609330:12f8c4604f",
@@ -2109,10 +2109,10 @@
     "rec_key": "3609330:68637939c3",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"news_feed\": \"yes\"}",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:04:32Z"
+    "updated_at": "2026-07-02T02:39:06Z"
   },
   {
     "rec_key": "3609330:731793647a",
@@ -2137,18 +2137,18 @@
     "primary_label": "target_absent",
     "flags_json": "[]",
     "facets_json": "{\"news_feed\": \"yes\"}",
-    "note": "Also has community calendar at bottom.",
+    "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:06:27Z"
+    "updated_at": "2026-07-02T05:43:40Z"
   },
   {
     "rec_key": "3609330:9b00329367",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"news_feed\": \"yes\"}",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "Also has community calendar at bottom.",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:06:01Z"
+    "updated_at": "2026-07-02T05:42:18Z"
   },
   {
     "rec_key": "3609330:b4937edfc9",
@@ -2172,10 +2172,10 @@
     "rec_key": "3609330:b9f97f552c",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"news_feed\": \"yes\"}",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "Also has community calendar at bottom.",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:05:47Z"
+    "updated_at": "2026-07-02T05:43:02Z"
   },
   {
     "rec_key": "3609330:bdab485a63",
@@ -2199,10 +2199,10 @@
     "rec_key": "3609330:c8ba4c439a",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"news_feed\": \"yes\"}",
-    "note": "Also has community calendar at bottom.",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:05:36Z"
+    "updated_at": "2026-07-02T02:42:18Z"
   },
   {
     "rec_key": "3609330:cabf9b8c43",
@@ -2217,19 +2217,19 @@
     "rec_key": "3609330:d48a9179d2",
     "primary_label": "school_start_end_prose",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"_where\": \"main body\"}",
     "note": "Attendance section: \"Our school day begins at 9:00 AM and ends at 3:22 PM\"",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:03:21Z"
+    "updated_at": "2026-07-02T05:37:55Z"
   },
   {
     "rec_key": "3609330:d91335ea30",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"news_feed\": \"yes\"}",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:04:32Z"
+    "updated_at": "2026-07-02T02:39:06Z"
   },
   {
     "rec_key": "3609330:e66134866b",
@@ -2244,10 +2244,10 @@
     "rec_key": "3609330:e8026b5e7d",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"news_feed\": \"yes\"}",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:04:32Z"
+    "updated_at": "2026-07-02T02:39:06Z"
   },
   {
     "rec_key": "3609330:febabd7885",
@@ -2739,19 +2739,19 @@
     "rec_key": "3805460:574a093366",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"news_feed\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-25T00:34:09Z"
+    "updated_at": "2026-07-02T05:46:01Z"
   },
   {
     "rec_key": "3805460:84db5b8100",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{}",
-    "note": "Embedded social media feed",
+    "facets_json": "{\"news_feed\": \"yes\"}",
+    "note": "Embedded social media feed. Lots of posts about early outs and schedule changes that could be confounding.",
     "status": "labeled",
-    "updated_at": "2026-06-25T00:16:25Z"
+    "updated_at": "2026-07-02T05:45:16Z"
   },
   {
     "rec_key": "3805460:95519bda9c",
@@ -3702,10 +3702,10 @@
     "rec_key": "5501770:46c9d5ecb6",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"sports\": \"yes\"}",
+    "facets_json": "{\"sports\": \"yes\", \"community_calendar\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:46:56Z"
+    "updated_at": "2026-07-02T06:09:41Z"
   },
   {
     "rec_key": "5501770:4dee30825d",
@@ -3727,30 +3727,30 @@
   },
   {
     "rec_key": "5501770:55cfd1b998",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "Appears to be on a school specific website, but contains districtwide info,\n\nSCHOOL START & END TIMES\n\nElementary Schools: 8:50 - 3:43\n4K AM Session: 8:50 - 11:35\n4K PM Session: 12:55 - 3:43\nMiddle Schools: 7:18 - 2:31\nHigh Schools: 7:55 - 3:09",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:34:41Z"
+    "updated_at": "2026-07-02T05:51:49Z"
   },
   {
     "rec_key": "5501770:61a75c2d65",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"sports\": \"yes\"}",
+    "facets_json": "{\"sports\": \"yes\", \"community_calendar\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:46:28Z"
+    "updated_at": "2026-07-02T06:09:22Z"
   },
   {
     "rec_key": "5501770:63543d9fbf",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "Appears to be on a school specific website, but contains districtwide info,\n\nSCHOOL START & END TIMES\n\nElementary Schools: 8:50 - 3:43\n4K AM Session: 8:50 - 11:35\n4K PM Session: 12:55 - 3:43\nMiddle Schools: 7:18 - 2:31\nHigh Schools: 7:55 - 3:09",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:34:25Z"
+    "updated_at": "2026-07-02T05:51:40Z"
   },
   {
     "rec_key": "5501770:701d3aa394",
@@ -3781,39 +3781,39 @@
   },
   {
     "rec_key": "5501770:7b5982fec4",
-    "primary_label": "school_bell_table",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
-    "facets_json": "{}",
-    "note": "",
+    "facets_json": "{\"_where\": \"main body\"}",
+    "note": "Normal School Day: 7:18 am - 2:31 pm",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:41:04Z"
+    "updated_at": "2026-07-02T05:49:04Z"
   },
   {
     "rec_key": "5501770:8c548e1d03",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "Appears to be on a school specific website, but contains districtwide info,\n\nSCHOOL START & END TIMES\n\nElementary Schools: 8:50 - 3:43\n4K AM Session: 8:50 - 11:35\n4K PM Session: 12:55 - 3:43\nMiddle Schools: 7:18 - 2:31\nHigh Schools: 7:55 - 3:09",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:34:32Z"
+    "updated_at": "2026-07-02T05:49:09Z"
   },
   {
     "rec_key": "5501770:8de749d287",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "Appears to be on a school specific website, but contains districtwide info,\n\nSCHOOL START & END TIMES\n\nElementary Schools: 8:50 - 3:43\n4K AM Session: 8:50 - 11:35\n4K PM Session: 12:55 - 3:43\nMiddle Schools: 7:18 - 2:31\nHigh Schools: 7:55 - 3:09",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:33:55Z"
+    "updated_at": "2026-07-02T05:50:16Z"
   },
   {
     "rec_key": "5501770:96bba5deeb",
     "primary_label": "school_start_end_prose",
-    "flags_json": "[\"buried_in_long_doc\"]",
-    "facets_json": "{\"buried_handbook\": \"yes\"}",
+    "flags_json": "[]",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"office_building_hours\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"7\", \"_pages_list\": [7]}",
     "note": "SCHOOL DAY\nOur school day is from 7:18 a.m. to 2:31 p.m",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:31:40Z"
+    "updated_at": "2026-07-02T05:51:24Z"
   },
   {
     "rec_key": "5501770:a0aad7409d",
@@ -3831,34 +3831,34 @@
     "facets_json": "{\"news_feed\": \"yes\"}",
     "note": "The phrase \"Schedule a Tour\" may be creating a false signal.",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:47:47Z"
+    "updated_at": "2026-07-02T06:10:03Z"
   },
   {
     "rec_key": "5501770:b58c9479bd",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "Appears to be on a school specific website, but contains districtwide info,\n\nSCHOOL START & END TIMES\n\nElementary Schools: 8:50 - 3:43\n4K AM Session: 8:50 - 11:35\n4K PM Session: 12:55 - 3:43\nMiddle Schools: 7:18 - 2:31\nHigh Schools: 7:55 - 3:09",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:34:55Z"
+    "updated_at": "2026-07-02T05:47:27Z"
   },
   {
     "rec_key": "5501770:ba367e9037",
-    "primary_label": "school_start_end_prose",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
-    "facets_json": "{}",
-    "note": "This is indeed school board news, but it contains the target information.\n\nThe new three-tier busing schedule for the 2027-2028 school year will be:\nHigh School (Tier 1): Start time at 7:35 AM and end time at 2:41 PM. The approved high school\nschedule maintains the standard 84-minute course periods and 34-minute resource period. While the\ntotal school day is shortened by eight minutes, this time is reclaimed by slightly reducing the passing\nperiods for the third block and lunch, ensuring no loss of instructional time.\nMiddle School (Tier 2): Start time at 8:10 AM and end time at 3:23 PM. This preserves the current\nmiddle school length of day.\nElementary School (Tier 3): Start time at 9:00 AM and end time at 3:58 PM. The elementary schedule\ndelays the start time by 10 minutes and lengthens the school day by 5 minutes. Options to return the\nschool day to its current length will be considered as implementation plans are developed.",
+    "facets_json": "{\"board\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "This is indeed school board news, but it contains the target information. Uniquely, it is encoded in prose under the School Start Times: Scenario 2 Approved header.\n\nThe new three-tier busing schedule for the 2027-2028 school year will be:\nHigh School (Tier 1): Start time at 7:35 AM and end time at 2:41 PM. The approved high school\nschedule maintains the standard 84-minute course periods and 34-minute resource period. While the\ntotal school day is shortened by eight minutes, this time is reclaimed by slightly reducing the passing\nperiods for the third block and lunch, ensuring no loss of instructional time.\nMiddle School (Tier 2): Start time at 8:10 AM and end time at 3:23 PM. This preserves the current\nmiddle school length of day.\nElementary School (Tier 3): Start time at 9:00 AM and end time at 3:58 PM. The elementary schedule\ndelays the start time by 10 minutes and lengthens the school day by 5 minutes. Options to return the\nschool day to its current length will be considered as implementation plans are developed.",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:36:49Z"
+    "updated_at": "2026-07-02T06:08:44Z"
   },
   {
     "rec_key": "5501770:bd46f37869",
-    "primary_label": "school_bell_table",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:40:57Z"
+    "updated_at": "2026-07-02T06:06:43Z"
   },
   {
     "rec_key": "5501770:be547edc7b",
@@ -3880,39 +3880,39 @@
   },
   {
     "rec_key": "5501770:c31836cd98",
-    "primary_label": "school_bell_table",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"_where\": \"main body\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:41:00Z"
+    "updated_at": "2026-07-02T05:52:11Z"
   },
   {
     "rec_key": "5501770:cf2e5a94e8",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "Appears to be on a school specific website, but contains districtwide info,\n\nSCHOOL START & END TIMES\n\nElementary Schools: 8:50 - 3:43\n4K AM Session: 8:50 - 11:35\n4K PM Session: 12:55 - 3:43\nMiddle Schools: 7:18 - 2:31\nHigh Schools: 7:55 - 3:09",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:35:00Z"
+    "updated_at": "2026-07-02T05:51:54Z"
   },
   {
     "rec_key": "5501770:d332f8d942",
     "primary_label": "school_bell_table",
-    "flags_json": "[\"buried_in_long_doc\"]",
-    "facets_json": "{\"buried_handbook\": \"yes\"}",
+    "flags_json": "[]",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"1\", \"_pages_list\": [1]}",
     "note": "On page 1",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:29:50Z"
+    "updated_at": "2026-07-02T05:49:38Z"
   },
   {
     "rec_key": "5501770:d7b01a095a",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "Appears to be on a school specific website, but contains districtwide info,\n\nSCHOOL START & END TIMES\n\nElementary Schools: 8:50 - 3:43\n4K AM Session: 8:50 - 11:35\n4K PM Session: 12:55 - 3:43\nMiddle Schools: 7:18 - 2:31\nHigh Schools: 7:55 - 3:09",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:34:48Z"
+    "updated_at": "2026-07-02T05:47:09Z"
   },
   {
     "rec_key": "5501770:df97c70aa2",
@@ -3925,38 +3925,38 @@
   },
   {
     "rec_key": "5501770:e1f6ecf97a",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "Appears to be on a school specific website, but contains districtwide info,\n\nSCHOOL START & END TIMES\n\nElementary Schools: 8:50 - 3:43\n4K AM Session: 8:50 - 11:35\n4K PM Session: 12:55 - 3:43\nMiddle Schools: 7:18 - 2:31\nHigh Schools: 7:55 - 3:09",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:34:02Z"
+    "updated_at": "2026-07-02T05:50:43Z"
   },
   {
     "rec_key": "5501770:eb1ca61f81",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "Appears to be on a school specific website, but contains districtwide info,\n\nSCHOOL START & END TIMES\n\nElementary Schools: 8:50 - 3:43\n4K AM Session: 8:50 - 11:35\n4K PM Session: 12:55 - 3:43\nMiddle Schools: 7:18 - 2:31\nHigh Schools: 7:55 - 3:09",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:35:06Z"
+    "updated_at": "2026-07-02T05:47:35Z"
   },
   {
     "rec_key": "5501770:ed2a423605",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
     "facets_json": "{}",
     "note": "Appears to be on a school specific website, but contains districtwide info,\n\nSCHOOL START & END TIMES\n\nElementary Schools: 8:50 - 3:43\n4K AM Session: 8:50 - 11:35\n4K PM Session: 12:55 - 3:43\nMiddle Schools: 7:18 - 2:31\nHigh Schools: 7:55 - 3:09",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:34:18Z"
+    "updated_at": "2026-07-02T05:51:29Z"
   },
   {
     "rec_key": "5501770:f7b0f0cd4e",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"news_feed\": \"yes\"}",
+    "facets_json": "{\"sports\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "News stories contain an array of schedule-related information, including first day of school, registration, athletics, and extracurricular activities",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:39:09Z"
+    "updated_at": "2026-07-02T06:09:03Z"
   }
 ]

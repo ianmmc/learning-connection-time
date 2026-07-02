@@ -460,6 +460,7 @@ mechanisms for reconstituting context if they don't.
 - **Council/judge "request more evidence"** (§3F): more text reps, the image → image council, or a new
   Stage 2 query — i.e. **Stage 7 can trigger prior-stage scripts**, and Stage 6 equips the follow-up
   (incl. the OpenRouter session/context-persistence question).
+- **Prioritization of District Hub schedules** If a district has a URL with either a labeled or A-scoring district hub schedule (either by school or by band) that covers all bands, then the best representation of that URL is the only URL that needs to be sent for the district on the first dispatch.
 
 ---
 
