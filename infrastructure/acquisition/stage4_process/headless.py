@@ -221,12 +221,27 @@ def run_batch(batch: dict, *, actor: str = "auto:stage4", on_event=None) -> dict
 
     districts = find_batch_districts(batch)
     registry = DS.load()
-    todo, skipped = C4.reconcile(districts, registry)   # filesystem truth; CONTROL FAILURE raises
+    # Filesystem truth. Registry-ahead-of-disk = CONTROL FAILURE -> SystemExit (unchanged);
+    # a captures.json/disk mismatch quarantines JUST that district (#78) -- recorded as a
+    # `failed` process event (so status shows it, retriable after investigation) with a
+    # distinct `inconsistent` outcome in the results, while the rest of the batch runs.
+    todo, skipped, quarantined = C4.reconcile(districts, registry)
+    results = []
+    for q in quarantined:
+        problems = "; ".join(q.get("inconsistency") or [])
+        DS.record_stage(registry, q["district_id"], q["name"], q["state"], stage_name="process",
+                        event_type="failed", actor=actor, batch_id=batch_id,
+                        notes=f"inconsistent: {problems[:200]}")
+        results.append({"district_id": q["district_id"], "name": q["name"],
+                        "outcome": "inconsistent", "error": problems[:200]})
+        emit("failed", district_id=q["district_id"], name=q["name"],
+             error=f"inconsistent: {problems[:200]}")
     DS.save(registry)
     emit("reconciled", todo=[d["district_id"] for d in todo],
-         skipped=[d["district_id"] for d in skipped])
+         skipped=[d["district_id"] for d in skipped],
+         quarantined=[d["district_id"] for d in quarantined])
     if not todo:
-        return {"batch_id": batch_id, "todo": 0, "skipped": len(skipped), "results": []}
+        return {"batch_id": batch_id, "todo": 0, "skipped": len(skipped), "results": results}
 
     registry = DS.load()
     for d in todo:
@@ -235,7 +250,6 @@ def run_batch(batch: dict, *, actor: str = "auto:stage4", on_event=None) -> dict
         emit("dispatched", district_id=d["district_id"], name=d["name"])
     DS.save(registry)
 
-    results = []
     for d in todo:
         did = d["district_id"]
         try:
