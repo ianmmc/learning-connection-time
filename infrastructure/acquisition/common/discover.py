@@ -2,7 +2,7 @@
 with an unscoped fallback for districts whose NCES WEBSITE is blank. Ranks candidates
 (schedule-keyword URLs + multi-tool agreement first) and caps per district. Google dropped.
 Writes candidates.json (gated, ranked, capped) + rejected.json. Usage: discover.py [ids] [cap]"""
-import os, json, sys, csv, time
+import os, json, re, sys, csv, time
 from urllib.parse import urlparse
 
 from infrastructure.acquisition.common import config_loader  # noqa: E402  (config-as-data layer — REQ-088)
@@ -24,6 +24,14 @@ SCHED_KW=("bell","schedule","hours","start-time","start_time","daily-schedule","
 def host_of(url):
     try: return urlparse(url).netloc.lower().split(":")[0].replace("www.","")
     except Exception: return ""
+
+def slugify(name: str, maxlen: int = 40) -> str:
+    """lowercase, non-alphanumeric -> underscore, collapsed, truncated. district_id is the
+    real disambiguator (see stage2_discover.discover_stage2.lea_dir()) -- this is for human
+    readability only. Shared by stage1_queue (benchmark_batch) and stage2_discover -- lives in
+    common/ because stages must not import each other (import-linter layering contract)."""
+    s = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
+    return s[:maxlen].rstrip("_")
 
 def load_domains():
     out={}

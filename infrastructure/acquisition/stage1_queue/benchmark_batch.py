@@ -37,10 +37,9 @@ from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import paths
 from infrastructure.acquisition.common import cache_ingest as CI
-from infrastructure.acquisition.common.discover import host_of
+from infrastructure.acquisition.common.discover import host_of, slugify
 from infrastructure.acquisition.stage1_queue import batch_store as BSTORE
 from infrastructure.acquisition.stage1_queue.queue_batch import eligible_pool, select_schools
-from infrastructure.acquisition.stage2_discover.discover_stage2 import slugify
 
 import infrastructure.acquisition.common.school_sampling as S
 

@@ -20,7 +20,6 @@ Usage:
 """
 import argparse
 import json
-import re
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
@@ -29,20 +28,13 @@ from infrastructure.acquisition.common import cache_ingest as CI
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import paths
 
-from infrastructure.acquisition.common.discover import host_of, gate
+from infrastructure.acquisition.common.discover import host_of, gate, slugify
 
 # Anchored to the repo (paths.RAW_CAPTURES), never a CWD-relative literal -- this script and the
 # governance server (which reads the same discovery.json/candidates.json) must agree on the location
 # regardless of launch directory. (The gate@1 create 500'd on exactly this CWD-relative class of bug.)
 RAW_DIR = paths.RAW_CAPTURES
 BANDS = ("elementary", "middle", "high")
-
-
-def slugify(name: str, maxlen: int = 40) -> str:
-    """lowercase, non-alphanumeric -> underscore, collapsed, truncated. district_id is the
-    real disambiguator (see lea_dir()) -- this is for human readability only."""
-    s = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
-    return s[:maxlen].rstrip("_")
 
 
 def lea_dir(district_id: str, name: str) -> Path:
