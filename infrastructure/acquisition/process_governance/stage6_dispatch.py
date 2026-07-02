@@ -111,7 +111,10 @@ def _record_dispatched_events(session, doc: dict, actor: str, metas: dict) -> No
     (so the index row + the events commit atomically — `current_state` is a VIEW over `state_event`,
     no separate snapshot to update). Carries the district's real name (from `metas`, not a possibly-empty
     current_state lookup), the frozen fingerprints, and the handoff hash. A pure checkpoint event
-    (stage=NULL), so it never moves furthest_stage. The git-tracked JSON backup is refreshed best-effort."""
+    (stage=NULL), so it never moves furthest_stage. The district_status.json backup is NOT refreshed
+    here (issue #39): these events are flushed-not-committed, and dispatch_handoff writes the immutable
+    file after this — an export now could bake phantom `dispatched` events into the backup if the file
+    write then failed and the DB rolled back. The export runs LAST, in dispatch_handoff."""
     for d in doc.get("districts", []):
         did = d["district_id"]
         meta = metas.get(did) or {}
@@ -123,11 +126,6 @@ def _record_dispatched_events(session, doc: dict, actor: str, metas: dict) -> No
             "batch_id": None, "fingerprints_json": json.dumps(fp) if fp else None,
             "actor": actor, "note": doc.get("handoff_hash"), "created_at": HND._now()})
     session.flush()
-    try:
-        DS.export_status(session)   # refresh district_status.json from the now-flushed events (the DB is truth)
-    except Exception as e:
-        print(f"[warn] district_status.json backup refresh failed after dispatch "
-              f"({type(e).__name__}: {e}); the DB is authoritative — re-export later")
 
 
 def record_dispatch(session, doc: dict, path, actor: str = "human", metas: dict = None) -> str:
@@ -170,4 +168,13 @@ def dispatch_handoff(session, district_ids, created_by: str = "human", root=None
     path = (Path(root) if root else HND.DEFAULT_ROOT) / HND.handoff_filename(doc)
     record_dispatch(session, doc, path, actor=created_by, metas=metas)
     HND.write(doc, root=root)            # the immutable file LAST (commit-order: DB record, then disk)
+    # district_status.json refresh runs TRULY LAST (issue #39): only after the file write succeeded —
+    # if write() had raised, the session would roll back and an earlier export would have baked
+    # phantom `dispatched` events into the git-tracked backup. Best-effort, as everywhere: the DB is
+    # authoritative and the backup regenerates on the next save/export.
+    try:
+        DS.export_status(session)
+    except Exception as e:
+        print(f"[warn] district_status.json backup refresh failed after dispatch "
+              f"({type(e).__name__}: {e}); the DB is authoritative — re-export later")
     return doc, path

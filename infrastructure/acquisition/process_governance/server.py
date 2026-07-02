@@ -8,8 +8,13 @@ around the deterministic signals computed by build_signals.py.
 Run:  uvicorn server:app --reload --port 8005   (from this directory)
   or  python3 server.py
 """
+import contextlib
 import json
+import os
 import re
+import signal
+import subprocess
+import threading
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query
@@ -53,7 +58,87 @@ LABELS_JSON = BS.LABELS_JSON
 CLUSTER_SPLITS_JSON = BS.CLUSTER_SPLITS_JSON
 RAW_DIR = BS.RAW_DIR
 
-app = FastAPI(title="Stage 5 Review")
+
+# ---------------------------------------------------------------- run coordination (issue #47)
+# (a) Tracked subprocesses: stage runners spawn children (Node Playwright capture, `claude -p`
+#     WebSearch) from daemon job threads — on server shutdown the daemon thread dies but the child
+#     used to keep running (an orphan Node kept capturing). _tracked_run is a subprocess.run-compatible
+#     wrapper that starts each child in its OWN PROCESS GROUP, registers it, and the lifespan shutdown
+#     hook SIGTERMs any group still alive.
+# (b) Per-batch run lock: discover/capture/process runs on the SAME batch are mutually exclusive
+#     (a second run request gets a 409). This is an IN-PROCESS threading.Lock registry — cross-PROCESS
+#     locking is out of scope (the console is a single localhost server; a second server instance or a
+#     concurrent CLI run is not protected here).
+_SUBPROCESSES: set = set()
+_SUBPROC_GUARD = threading.Lock()
+_BATCH_RUN_LOCKS: dict = {}                 # batch_id -> threading.Lock
+_BATCH_RUN_GUARD = threading.Lock()
+
+
+def _tracked_run(cmd, *, input=None, capture_output=False, text=None, timeout=None, cwd=None):
+    """subprocess.run-compatible runner that (1) starts the child in a new session/process group and
+    (2) registers it so server shutdown can terminate the whole group (issue #47). Matches the call
+    shapes the stage runners use (input/capture_output/text/timeout/cwd)."""
+    kw: dict = {"cwd": cwd, "start_new_session": True}
+    if capture_output:
+        kw.update(stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if text:
+        kw["text"] = True
+    if input is not None:
+        kw["stdin"] = subprocess.PIPE
+    proc = subprocess.Popen(cmd, **kw)
+    with _SUBPROC_GUARD:
+        _SUBPROCESSES.add(proc)
+    try:
+        try:
+            out, err = proc.communicate(input=input, timeout=timeout)
+        except subprocess.TimeoutExpired:
+            _terminate_group(proc)
+            proc.wait()
+            raise
+    finally:
+        with _SUBPROC_GUARD:
+            _SUBPROCESSES.discard(proc)
+    return subprocess.CompletedProcess(cmd, proc.returncode, out, err)
+
+
+def _terminate_group(proc) -> None:
+    """SIGTERM a tracked child's whole process group (best-effort; it may already be gone)."""
+    try:
+        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+    except (ProcessLookupError, PermissionError, OSError):
+        pass
+
+
+def _acquire_batch_run(batch_id: str):
+    """Take the per-batch run lock (non-blocking) or 409. The job thread MUST release it in finally."""
+    with _BATCH_RUN_GUARD:
+        lock = _BATCH_RUN_LOCKS.setdefault(batch_id, threading.Lock())
+    if not lock.acquire(blocking=False):
+        raise HTTPException(409, f"a run is already in progress for this batch ({batch_id}) — "
+                                 f"wait for it to finish before starting another stage")
+    return lock
+
+
+@contextlib.asynccontextmanager
+async def _lifespan(app):
+    """Startup: create the PRECIOUS batch tables if absent (idempotent; best-effort so the app still
+    boots when Docker is down — DB calls then fail with the same clear error the Stage-5 path gives).
+    Shutdown: terminate any still-running tracked subprocess groups (issue #47) so a dying server
+    never orphans a Node capture / claude child. (Migrated from the deprecated @app.on_event.)"""
+    try:
+        gdb.init_precious_schema()
+    except Exception as e:
+        print(f"[warn] could not init batch schema at startup ({type(e).__name__}: {e}); "
+              f"start Docker (lct_postgres) — queue endpoints will error until then")
+    yield
+    with _SUBPROC_GUARD:
+        live = list(_SUBPROCESSES)
+    for proc in live:
+        _terminate_group(proc)
+
+
+app = FastAPI(title="Stage 5 Review", lifespan=_lifespan)
 
 
 @app.get("/api/tree")
@@ -128,6 +213,20 @@ UPSERT_LABEL = text(
          updated_at=excluded.updated_at""")
 
 
+# Facet keys that describe the REPRESENTATIVE's own file (the Axis-3 print-dialog handbook page
+# range), not the cluster's shared content — cascading them stamped one file's page numbers onto
+# every member (issue #64). The representative keeps them; members get the rest.
+MEMBER_STRIPPED_FACET_KEYS = ("_pages", "_pages_list")
+
+
+def cascade_facets(facets: dict | None) -> dict | None:
+    """The facets a cluster-cascade save writes to MEMBERS: the shared answers minus the
+    representative-specific location keys (issue #64)."""
+    if facets is None:
+        return None
+    return {k: v for k, v in facets.items() if k not in MEMBER_STRIPPED_FACET_KEYS}
+
+
 @app.post("/api/label/{rec_key}")
 async def save_label(rec_key: str, payload: dict):
     with gdb.session_scope() as con:
@@ -146,12 +245,15 @@ async def save_label(rec_key: str, payload: dict):
         con.execute(UPSERT_LABEL, {"rec_key": rec_key, **vals})
         # Cluster cascade: labeling the REPRESENTATIVE applies the same label to its (unsplit)
         # members, so a near-dup cluster is labeled once. Split members already have cluster_id
-        # cleared, so they're naturally excluded.
+        # cleared, so they're naturally excluded. Member facets drop the rep-specific page-range
+        # keys (issue #64) — the representative keeps them.
         cascaded = 0
         if rec["cluster_id"] and rec["is_cluster_rep"]:
+            mf = cascade_facets(payload.get("facets"))
+            member_vals = {**vals, "facets_json": json.dumps(mf) if mf is not None else None}
             for (m,) in con.execute(text("SELECT rec_key FROM record WHERE cluster_id=:cid AND rec_key!=:rk"),
                                     {"cid": rec["cluster_id"], "rk": rec_key}).fetchall():
-                con.execute(UPSERT_LABEL, {"rec_key": m, **vals})
+                con.execute(UPSERT_LABEL, {"rec_key": m, **member_vals})
                 cascaded += 1
         BS.recompute_labeled_topology(con, rec["district_id"])
         BS.recompute_attention(con, rec["district_id"])   # label/split changed canonical/resolved state -> refresh attention
@@ -201,12 +303,21 @@ async def split_record(rec_key: str):
     return {"ok": True}
 
 
+def _progress_counts(con) -> dict:
+    """total = current records; labeled = non-unlabeled labels JOINed to a current record (issue #51):
+    the precious `label` table deliberately keeps rows whose record vanished in a shrinking re-ingest,
+    so counting the bare table could report labeled > total."""
+    total = con.execute(text("SELECT COUNT(*) FROM record")).scalar()
+    done = con.execute(text(
+        "SELECT COUNT(*) FROM label l JOIN record r ON r.rec_key = l.rec_key "
+        "WHERE l.status != 'unlabeled'")).scalar()
+    return {"total": total, "labeled": done}
+
+
 @app.get("/api/progress")
 def progress():
     with gdb.session_scope() as con:
-        total = con.execute(text("SELECT COUNT(*) FROM record")).scalar()
-        done = con.execute(text("SELECT COUNT(*) FROM label WHERE status!='unlabeled'")).scalar()
-    return {"total": total, "labeled": done}
+        return _progress_counts(con)
 
 
 # ---------------------------------------------------------------- Stage 5 faceted console (the rework)
@@ -450,12 +561,38 @@ async def views_delete(view_id: int):
     return {"ok": True}
 
 
+def _harvest_slice_fallback(district_dir: str, rec_hash: str):
+    """A harvest_slice.txt that isn't in the legacy capture dir may live in the NEW derived-artifact
+    location (issue #58 moved writes there; wave 1D added the resolver). Look the record up by
+    (district_dir, hash) to get the ids resolve_harvest_slice needs. None if unresolvable."""
+    try:
+        with gdb.session_scope() as con:
+            row = con.execute(text(
+                "SELECT district_id, rec_key FROM record WHERE district_dir=:dd AND hash=:h"),
+                {"dd": district_dir, "h": rec_hash}).first()
+    except Exception:
+        return None
+    if not row:
+        return None
+    return BS.resolve_harvest_slice(row[0], district_dir, row[1])
+
+
 @app.get("/files/{district_dir}/{rec_hash}/{filename}")
 def serve_file(district_dir: str, rec_hash: str, filename: str):
-    """Serve a captured file for inspection. Path-restricted to within a record's capture dir."""
-    base = (RAW_DIR / district_dir / "captures" / rec_hash).resolve()
+    """Serve a captured file for inspection. Path-restricted to within a record's capture dir
+    (Path.is_relative_to on resolved paths — issue #48; the old startswith idiom let a sibling dir
+    with a shared prefix through, and an encoded ../ escape the capture dir)."""
+    root = RAW_DIR.resolve()
+    base = (root / district_dir / "captures" / rec_hash).resolve()
     target = (base / filename).resolve()
-    if not str(target).startswith(str(base)) or not target.is_file():
+    if not (base.is_relative_to(root) and target.is_relative_to(base)):
+        raise HTTPException(404, "not found")
+    if not target.is_file():
+        # harvest slices moved out of the raw capture dir (issue #58) — resolve new-location-first
+        if filename == BS.HARVEST_SLICE_FILE:
+            alt = _harvest_slice_fallback(district_dir, rec_hash)
+            if alt is not None:
+                return FileResponse(alt)
         raise HTTPException(404, "not found")
     return FileResponse(target)
 
@@ -465,17 +602,6 @@ def serve_file(district_dir: str, rec_hash: str, filename: str):
 # the rows. Edits are SOFT (included flags / row inserts) so the full proposed batch stays auditable.
 # Batch-level lifecycle (draft -> approved) lives on the `batch` row; per-district gate@1 events are the
 # auditable timeline.
-
-@app.on_event("startup")
-def _ensure_batch_tables():
-    """Create the PRECIOUS batch tables if absent (idempotent). Best-effort so the app still boots when
-    Docker is down — DB calls then fail with the same clear error the Stage-5 path already gives."""
-    try:
-        gdb.init_precious_schema()
-    except Exception as e:
-        print(f"[warn] could not init batch schema at startup ({type(e).__name__}: {e}); "
-              f"start Docker (lct_postgres) — queue endpoints will error until then")
-
 
 def _record_gate1(district_rows, *, event_type: str, actor: str, note: str = "") -> None:
     """Record a per-district gate@1 event (approved/edited/reopened) — the auditable timeline that
@@ -503,11 +629,20 @@ async def queue_create(payload: dict):
     n = int(payload.get("n", 12))
     batch_type = payload.get("batch_type", "first-run")
     actor = payload.get("actor", "ian")
+    # Reserve the id UP FRONT in its own short transaction (issue #46): build_batch takes 10-20s, and
+    # computing the number without persisting anything let a second concurrent create draw the SAME
+    # number. The committed 'reserving' placeholder makes a duplicate draw fail fast on the PK;
+    # create_batch (inside persist_batch) upgrades it to the real draft row.
     with gdb.session_scope() as con:
-        batch_id = f"batch_{BSTORE.next_batch_number(con):05d}"
-    registry = DS.load()
-    batch_doc, _gap, _n_elig = Q1.build_batch(year, n, batch_id, registry)
-    Q1.persist_batch(batch_doc, registry, batch_type=batch_type, actor=actor)
+        batch_id = BSTORE.reserve_next_batch(con, actor=actor)
+    try:
+        registry = DS.load()
+        batch_doc, _gap, _n_elig = Q1.build_batch(year, n, batch_id, registry)
+        Q1.persist_batch(batch_doc, registry, batch_type=batch_type, actor=actor)
+    except BaseException:
+        with gdb.session_scope() as con:   # failed build — free the number (don't leave a dead placeholder)
+            BSTORE.release_reservation(con, batch_id)
+        raise
     with gdb.session_scope() as con:
         return BSTORE.to_view(con, batch_id)
 
@@ -666,6 +801,7 @@ async def discover_run(batch_id: str, payload: dict):
     existing = _DISCOVER_JOBS.get(batch_id)
     if existing and existing["state"] == "running":
         raise HTTPException(409, f"discovery already running for {batch_id}")
+    run_lock = _acquire_batch_run(batch_id)   # cross-stage mutual exclusion per batch (issue #47)
 
     from datetime import datetime, timezone
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -676,9 +812,15 @@ async def discover_run(batch_id: str, payload: dict):
     def _on_event(kind, p):
         job["events"].append({"kind": kind, **p})
 
+    # Wave-2 `claude -p` children go through the tracked, process-group runner so a server shutdown
+    # terminates them instead of orphaning them (issue #47).
+    def _wave2(district, residual, domain):
+        return H2._wave2_claude(district, residual, domain, _run=_tracked_run)
+
     def _work():
         try:
-            job["summary"] = H2.run_batch(batch_id, actor=actor, on_event=_on_event)
+            job["summary"] = H2.run_batch(batch_id, actor=actor, on_event=_on_event,
+                                          wave2_runner=_wave2)
             job["state"] = "done"
         except SystemExit as e:   # reconcile CONTROL FAILURE / billing-auth halt — surface, don't hide
             job["state"], job["error"] = "halted", f"CONTROL FAILURE: {e}"
@@ -686,8 +828,8 @@ async def discover_run(batch_id: str, payload: dict):
             job["state"], job["error"] = "error", f"{type(e).__name__}: {e}"
         finally:
             job["finished_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            run_lock.release()
 
-    import threading
     threading.Thread(target=_work, name=f"discover-{batch_id}", daemon=True).start()
     return {"started": True, "batch_id": batch_id}
 
@@ -746,6 +888,7 @@ async def capture_run(batch_id: str, payload: dict):
     existing = _CAPTURE_JOBS.get(batch_id)
     if existing and existing["state"] == "running":
         raise HTTPException(409, f"capture already running for {batch_id}")
+    run_lock = _acquire_batch_run(batch_id)   # cross-stage mutual exclusion per batch (issue #47)
 
     from datetime import datetime, timezone
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -758,7 +901,9 @@ async def capture_run(batch_id: str, payload: dict):
 
     def _work():
         try:
-            job["summary"] = H3.run_batch(batch, actor=actor, on_event=_on_event)
+            # Node children run through the tracked, process-group runner so a server shutdown
+            # terminates them instead of orphaning a capture (issue #47).
+            job["summary"] = H3.run_batch(batch, actor=actor, on_event=_on_event, _run=_tracked_run)
             job["state"] = "done"
         except SystemExit as e:   # reconcile CONTROL FAILURE — surface, don't hide
             job["state"], job["error"] = "halted", f"CONTROL FAILURE: {e}"
@@ -766,8 +911,8 @@ async def capture_run(batch_id: str, payload: dict):
             job["state"], job["error"] = "error", f"{type(e).__name__}: {e}"
         finally:
             job["finished_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            run_lock.release()
 
-    import threading
     threading.Thread(target=_work, name=f"capture-{batch_id}", daemon=True).start()
     return {"started": True, "batch_id": batch_id}
 
@@ -815,6 +960,7 @@ async def process_run(batch_id: str, payload: dict):
     existing = _PROCESS_JOBS.get(batch_id)
     if existing and existing["state"] == "running":
         raise HTTPException(409, f"processing already running for {batch_id}")
+    run_lock = _acquire_batch_run(batch_id)   # cross-stage mutual exclusion per batch (issue #47)
 
     from datetime import datetime, timezone
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -842,8 +988,8 @@ async def process_run(batch_id: str, payload: dict):
             job["state"], job["error"] = "error", f"{type(e).__name__}: {e}"
         finally:
             job["finished_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            run_lock.release()
 
-    import threading
     threading.Thread(target=_work, name=f"process-{batch_id}", daemon=True).start()
     return {"started": True, "batch_id": batch_id}
 
@@ -880,7 +1026,6 @@ def _ingest_stage5_if_complete(batch: dict, on_event) -> None:
 # Build a handoff package from the Stage-5 release decision, review routed councils + estimated cost,
 # then APPROVE & FREEZE (gate@6) — writes the immutable handoff_<hash>.json + records the dispatch.
 # Stops at the seam: NO paid Stage-7 calls here.
-_TARGET_IN = "','".join(sorted(BS.TARGET_LABELS))
 
 
 @app.get("/api/handoff/candidates")
@@ -891,6 +1036,9 @@ def handoff_candidates():
     label). Matches the tier-gated release rule, so the badge reflects what dispatch actually sends, not
     the whole recall-biased funnel. Reuses release.CANONICAL_RECORD_WHERE. Preview stays authoritative
     for the exact representation count + cost."""
+    # Target labels are a BOUND list parameter computed per request (issue #62): the old module-level
+    # _TARGET_IN froze the vocabulary at import time AND string-interpolated it into the SQL.
+    targets = sorted(BS.TARGET_LABELS)
     with gdb.session_scope() as con:
         rows = con.execute(text(
             f"""SELECT d.district_id, d.name, d.state, d.labeled_topology,
@@ -899,15 +1047,16 @@ def handoff_candidates():
                 FROM district d
                 LEFT JOIN (
                     SELECT r.district_id,
-                      COUNT(*) FILTER (WHERE l.primary_label IN ('{_TARGET_IN}')
+                      COUNT(*) FILTER (WHERE l.primary_label = ANY(:targets)
                                           OR (l.primary_label IS NULL AND r.tier = 'A')) AS n_send,
-                      COUNT(*) FILTER (WHERE l.primary_label IN ('{_TARGET_IN}')) AS n_verified,
+                      COUNT(*) FILTER (WHERE l.primary_label = ANY(:targets)) AS n_verified,
                       COUNT(*) FILTER (WHERE l.primary_label IS NULL AND r.tier IN ('B', 'C')) AS n_hold
                     FROM record r LEFT JOIN label l ON l.rec_key = r.rec_key
                     WHERE {REL.CANONICAL_RECORD_WHERE}
                     GROUP BY r.district_id
                 ) t ON t.district_id = d.district_id
-                ORDER BY n_send DESC, n_hold DESC, d.district_id""")).mappings().all()
+                ORDER BY n_send DESC, n_hold DESC, d.district_id"""),
+            {"targets": targets}).mappings().all()
         return [dict(r) for r in rows]
 
 
@@ -919,7 +1068,12 @@ async def handoff_preview(payload: dict):
     overrides = payload.get("overrides") or {}
     verified_only = bool(payload.get("verified_only"))
     with gdb.session_scope() as con:
-        return H6.build_handoff_package(con, ids, overrides=overrides, verified_only=verified_only)
+        pkg = H6.build_handoff_package(con, ids, overrides=overrides, verified_only=verified_only)
+    # The staleness token (issue #37): dispatch rebuilds the package from the live DB, so what the
+    # human approved on screen can drift (a label edit, a re-ingest) between preview and freeze. The
+    # console echoes this back as `expected_identity`; dispatch 409s on mismatch.
+    pkg["preview_identity"] = HND6.package_identity(pkg)
+    return pkg
 
 
 @app.post("/api/handoff/dispatch")
@@ -930,10 +1084,20 @@ async def handoff_dispatch(payload: dict):
     actor = payload.get("actor", "ian")
     overrides = payload.get("overrides") or {}
     verified_only = bool(payload.get("verified_only"))
-    if not ids:
+    expected_identity = payload.get("expected_identity")   # optional (issue #37) — the console always
+    if not ids:                                            # sends it; a bare CLI/test POST still works
         raise HTTPException(400, "no districts selected")
     try:
         with gdb.session_scope() as con:
+            if expected_identity:
+                # Preview→freeze staleness gate (issue #37): rebuild the package the same way the
+                # preview did and compare identities BEFORE freezing anything.
+                pkg = H6.build_handoff_package(con, ids, overrides=overrides,
+                                               verified_only=verified_only)
+                if HND6.package_identity(pkg) != expected_identity:
+                    raise HTTPException(409, "release changed since preview — the package that would "
+                                             "be frozen no longer matches what was reviewed; re-preview "
+                                             "before dispatching")
             doc, path = H6.dispatch_handoff(con, ids, created_by=actor, overrides=overrides,
                                             verified_only=verified_only)
     except FileExistsError:
@@ -980,6 +1144,12 @@ def handoff_inspect(district_id: str, rec_key: str, file: str):
         raise HTTPException(404, "no such district")
     fp = paths.RAW_CAPTURES / ddir / "captures" / h / file
     if not fp.exists():
+        # harvest slices moved out of the raw capture dir (issue #58) — resolve new-location-first,
+        # legacy fallback (issue #48: this resolver only knew the legacy captures path)
+        if file == BS.HARVEST_SLICE_FILE:
+            alt = BS.resolve_harvest_slice(district_id, ddir, rec_key)
+            if alt is not None:
+                return FileResponse(alt)
         raise HTTPException(404, f"file not found: {file}")
     return FileResponse(fp)
 

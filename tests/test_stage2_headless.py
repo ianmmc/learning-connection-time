@@ -310,7 +310,8 @@ def inmem_registry(monkeypatch):
     """Swap DS.load/DS.save for an in-memory registry so run_batch needs no Postgres."""
     reg = {"schema_version": 2, "districts": {}, "_events": []}
     monkeypatch.setattr(DS, "load", lambda: reg)
-    monkeypatch.setattr(DS, "save", lambda r: len(r.get("_events", [])))
+    monkeypatch.setattr(DS, "save", lambda r, **kw: len(r.get("_events", [])))
+    monkeypatch.setattr(DS, "export", lambda: 0)   # run-end export (issue #49) — no Postgres in tests
     return reg
 
 

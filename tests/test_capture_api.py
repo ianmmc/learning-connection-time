@@ -52,6 +52,13 @@ def client():
         _cleanup(con)
         BS.create_batch(con, _doc(), actor="setup")
     server._CAPTURE_JOBS.pop(BID, None)
+    # per-batch run lock (issue #47): a prior test's job thread may release a beat after its job
+    # reads "done" — wait for the lock so the next run request can't 409 spuriously
+    _lk = server._BATCH_RUN_LOCKS.get(BID)
+    for _ in range(100):
+        if _lk is None or not _lk.locked():
+            break
+        time.sleep(0.05)
     try:
         yield TestClient(server.app)
     finally:
@@ -83,7 +90,7 @@ def test_run_starts_background_job(client, monkeypatch):
 
     calls = {}
 
-    def fake_run_batch(batch, *, actor="auto:stage3", on_event=None):
+    def fake_run_batch(batch, *, actor="auto:stage3", on_event=None, **kw):
         calls["bid"], calls["actor"] = batch["batch_id"], actor
         if on_event:
             on_event("completed", {"batch_id": batch["batch_id"], "district_id": "ZZCAPA", "outcome": "captured_all"})
@@ -123,3 +130,38 @@ def test_run_twice_rejects_second_while_running(client, monkeypatch):
         assert client.post(f"/api/capture/{BID}/run", json={}).status_code == 409
     finally:
         release.set()
+        # wait for the job thread to release the per-batch run lock (issue #47) before the next test
+        for _ in range(50):
+            if server._CAPTURE_JOBS.get(BID, {}).get("state") != "running":
+                break
+            time.sleep(0.05)
+
+
+def test_cross_stage_runs_on_same_batch_are_mutually_exclusive(client, monkeypatch):
+    """Issue #47: while a capture run is in flight for a batch, starting a PROCESS run on the SAME
+    batch is refused with 409 (per-batch run lock; in-process only — single localhost server)."""
+    from infrastructure.acquisition.process_governance import server
+    import threading
+    release = threading.Event()
+
+    def blocking_run_batch(batch, **kw):
+        release.wait(timeout=5)
+        return {"batch_id": batch["batch_id"], "todo": 0, "skipped": 0, "no_links": 0, "results": []}
+
+    monkeypatch.setattr(server.H3, "run_batch", blocking_run_batch)
+    try:
+        assert client.post(f"/api/capture/{BID}/run", json={}).status_code == 200
+        for _ in range(20):
+            if server._CAPTURE_JOBS.get(BID, {}).get("state") == "running":
+                break
+            time.sleep(0.05)
+        r = client.post(f"/api/process/{BID}/run", json={})
+        assert r.status_code == 409
+        assert "already in progress" in r.json()["detail"]
+    finally:
+        release.set()
+        # wait for the job thread to finish and release the per-batch lock (no cross-test leakage)
+        for _ in range(50):
+            if server._CAPTURE_JOBS.get(BID, {}).get("state") != "running":
+                break
+            time.sleep(0.05)

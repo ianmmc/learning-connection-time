@@ -192,18 +192,32 @@ def load() -> dict:
     return reg
 
 
-def save(registry: dict) -> int:
+def save(registry: dict, *, export: bool = True) -> int:
     """Flush the buffered events to state_event (append), then regenerate district_status.json from
-    the full DB log (the version-controlled backup + human view). Returns the # events written."""
+    the full DB log (the version-controlled backup + human view). Returns the # events written.
+
+    `export=False` (issue #49): batch runners save per district in a loop, and regenerating the FULL
+    JSON from the whole event log on every save is O(N²) over a run. They pass export=False per
+    district and call one explicit `export()` at run end (and in their `finally`, so a crash still
+    exports). Default True keeps the single-call behavior for every other caller."""
     ensure_schema()
     events = registry.get("_events", [])
     with gdb.session_scope() as s:
         for ev in events:
             s.execute(INSERT_STATE_EVENT, ev)
         s.commit()                 # persist before exporting, so the backup only reflects committed state
-        export_status(s)
+        if export:
+            export_status(s)
     registry["_events"] = []
     return len(events)
+
+
+def export() -> int:
+    """Regenerate district_status.json from the committed DB log in a fresh session — the explicit
+    run-end companion to save(export=False) (issue #49). Returns the # districts exported."""
+    ensure_schema()
+    with gdb.session_scope() as s:
+        return export_status(s)
 
 
 def export_status(s, out=None) -> int:

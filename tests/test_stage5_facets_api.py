@@ -170,3 +170,56 @@ def test_label_save_never_touches_legacy_flags_json(client):
         assert row[0] == legacy                       # the archive column survived the save
         assert row[1] == "school_bell_table"          # ...while the v2.1 fields were written
         assert json.loads(row[2]) == {"needs_vision": "yes"}
+
+
+# ----------------------------- cluster cascade facet strip (issue #64) -----------------------------
+def test_cascade_facets_strips_member_page_keys():
+    from infrastructure.acquisition.process_governance import server
+    facets = {"schedule_table": "yes", "_where": "footer", "_pages": "4-6", "_pages_list": [4, 5, 6]}
+    assert server.cascade_facets(facets) == {"schedule_table": "yes", "_where": "footer"}
+    assert server.cascade_facets(None) is None
+    assert server.cascade_facets({}) == {}
+
+
+def test_label_cascade_strips_pages_from_members(client, monkeypatch):
+    """Labeling a cluster REPRESENTATIVE cascades the label to members, but the rep-specific Axis-3
+    page-range keys (_pages/_pages_list) must NOT be stamped onto every member (issue #64)."""
+    import json
+    from infrastructure.acquisition.process_governance import server
+    # keep the endpoint's export/refresh side effects away from the real tracked backups
+    monkeypatch.setattr(server.BS, "export_labels", lambda *a, **k: 0)
+    monkeypatch.setattr(server, "_refresh_filtered", lambda *a, **k: None)
+    rep, mem = f"{DH}:crep", f"{DH}:cmem"
+    with gdb.session_scope() as con:
+        con.execute(text("""INSERT INTO record (rec_key, district_id, url, tier, is_cluster_rep,
+            cluster_id, cluster_size) VALUES (:rk,:d,'http://z/rep','A',1,'ZZCL',2)"""),
+            {"rk": rep, "d": DH})
+        con.execute(text("""INSERT INTO record (rec_key, district_id, url, tier, is_cluster_rep,
+            cluster_id, cluster_size) VALUES (:rk,:d,'http://z/mem','A',0,'ZZCL',2)"""),
+            {"rk": mem, "d": DH})
+    facets = {"schedule_table": "yes", "_where": "handbook", "_pages": "12-14", "_pages_list": [12, 13, 14]}
+    r = client.post(f"/api/label/{rep}", json={"primary_label": "school_bell_table",
+                                               "facets": facets, "status": "labeled"})
+    assert r.status_code == 200 and r.json()["cascaded"] == 1
+    with gdb.session_scope() as con:
+        rep_f = json.loads(con.execute(text("SELECT facets_json FROM label WHERE rec_key=:rk"),
+                                       {"rk": rep}).scalar())
+        mem_f = json.loads(con.execute(text("SELECT facets_json FROM label WHERE rec_key=:rk"),
+                                       {"rk": mem}).scalar())
+    assert rep_f == facets                                        # the representative keeps its pages
+    assert mem_f == {"schedule_table": "yes", "_where": "handbook"}   # members get the shared answers only
+
+
+# ----------------------------- progress counts (issue #51) -----------------------------
+def test_progress_counts_never_report_labeled_over_total(gov_session):
+    """After a shrinking re-ingest the precious `label` table keeps rows whose record vanished; the
+    progress readout must JOIN labels to current records, not count the bare table (issue #51).
+    Uses connection-scoped TEMP tables that shadow the real ones."""
+    from infrastructure.acquisition.process_governance import server
+    gov_session.execute(text("CREATE TEMP TABLE record (rec_key text PRIMARY KEY)"))
+    gov_session.execute(text("CREATE TEMP TABLE label (rec_key text PRIMARY KEY, status text)"))
+    gov_session.execute(text("INSERT INTO record VALUES ('d:kept')"))
+    gov_session.execute(text("INSERT INTO label VALUES ('d:kept','labeled'), ('d:orphan','labeled')"))
+    counts = server._progress_counts(gov_session)
+    assert counts == {"total": 1, "labeled": 1}       # the orphan label doesn't inflate `labeled`
+    assert counts["labeled"] <= counts["total"]

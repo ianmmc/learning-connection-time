@@ -17,6 +17,7 @@
   let VERIFIED_ONLY = false;                             // gate@6 training-grade mode: labeled targets only
   let COUNCILS = [];                                     // council registry (override <select> options)
   const OVERRIDES = {};                                  // "<rec_key>::<file>" -> council_id (gate@6 manual override)
+  let PREVIEW_IDENTITY = null;                           // the previewed package's identity hash (issue #37)
   const effSend = (c) => (VERIFIED_ONLY ? (c.n_verified || 0) : (c.n_send || 0));   // what THIS mode dispatches
 
   async function api(url, opts) {
@@ -128,6 +129,7 @@
     let pkg;
     try { pkg = await api("/api/handoff/preview", postJSON({ district_ids: ids, overrides: OVERRIDES, verified_only: VERIFIED_ONLY })); }
     catch (e) { det.innerHTML = `<div class="empty err">Preview failed: ${esc(e.message)}</div>`; return; }
+    PREVIEW_IDENTITY = pkg.preview_identity || null;   // echoed back on dispatch (issue #37 staleness gate)
     renderPackage(pkg);
   }
 
@@ -208,8 +210,18 @@
     if (!ids.length) return;
     btn.disabled = true; btn.textContent = "Freezing…";
     let res;
-    try { res = await api("/api/handoff/dispatch", postJSON({ district_ids: ids, actor: "ian", overrides: OVERRIDES, verified_only: VERIFIED_ONLY })); }
-    catch (e) { btn.disabled = false; btn.textContent = "Approve & freeze dispatch (gate@6)"; alert("Dispatch failed: " + e.message); return; }
+    try {
+      res = await api("/api/handoff/dispatch", postJSON({ district_ids: ids, actor: "ian", overrides: OVERRIDES,
+        verified_only: VERIFIED_ONLY, expected_identity: PREVIEW_IDENTITY }));
+    } catch (e) {
+      btn.disabled = false; btn.textContent = "Approve & freeze dispatch (gate@6)";
+      if (e.message.startsWith("409")) {   // stale preview (issue #37) — re-preview, don't freeze blind
+        alert("Dispatch blocked: " + e.message + "\n\nRebuilding the preview from the current release now — review it, then approve again.");
+        preview();
+        return;
+      }
+      alert("Dispatch failed: " + e.message); return;
+    }
     $g("#s6-detail").innerHTML = `<div class="s6-summary">
         <h3>✓ Dispatch frozen &amp; recorded ${res.verified_only ? `<span class="badge badge-accent">verified only</span>` : ""}</h3>
         <p><code>${esc(res.handoff_id)}</code></p>
@@ -219,6 +231,7 @@
         <p class="muted s6-note">Recorded as <b>dispatched</b>. The paid council extraction is Stage&nbsp;7 (out of scope here).</p>
       </div>`;
     SELECTED.clear();
+    PREVIEW_IDENTITY = null;
     loadCandidates();
     loadHandoffs();
   }

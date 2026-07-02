@@ -155,3 +155,63 @@ class TestLifecycle:
         BS.reject_district(sess, "batch_test_store", "D2")
         rows = [b for b in BS.list_batches(sess) if b["batch_id"] == "batch_test_store"]
         assert len(rows) == 1 and rows[0]["n_districts"] == 1 and rows[0]["status"] == "draft"
+
+
+class TestReservation:
+    """Issue #46 — the create path reserves the batch id up front, in its own short transaction,
+    before the 10-20s build_batch; a concurrent create can no longer draw the same number."""
+
+    def test_reserve_returns_sequential_ids_and_persists_placeholder(self, sess):
+        bid1 = BS.reserve_next_batch(sess, actor="t")
+        bid2 = BS.reserve_next_batch(sess, actor="t")
+        n1, n2 = int(bid1[6:]), int(bid2[6:])
+        assert n2 == n1 + 1                      # the flushed placeholder claims the number
+        b = sess.get(Batch, bid1)
+        assert b is not None and b.status == "reserving" and b.created_by == "t"
+
+    def test_create_batch_upgrades_a_reservation_in_place(self, sess):
+        bid = BS.reserve_next_batch(sess, actor="t")
+        doc = _doc(bid)
+        BS.create_batch(sess, doc, actor="ian")   # must NOT raise a duplicate-PK error
+        b = sess.get(Batch, bid)
+        assert b.status == "draft" and b.created_by == "ian" and b.nces_year == "2024_25"
+        # and the receipt content is the real batch
+        receipt = BS.to_receipt_doc(sess, bid)
+        assert [d["district_id"] for d in receipt["districts"]] == ["D1", "D2"]
+
+    def test_release_reservation_frees_the_number(self, sess):
+        bid = BS.reserve_next_batch(sess, actor="t")
+        BS.release_reservation(sess, bid)
+        assert sess.get(Batch, bid) is None
+        assert BS.reserve_next_batch(sess, actor="t") == bid   # the number is reusable
+
+    def test_release_never_deletes_a_real_batch(self, sess):
+        BS.create_batch(sess, _doc(), actor="t")
+        BS.release_reservation(sess, "batch_test_store")       # status='draft', not 'reserving'
+        assert sess.get(Batch, "batch_test_store") is not None
+
+
+class TestReceiptAtomicity:
+    """Issue #50 — write_receipt goes tmp + os.replace so a crash mid-write can't leave a truncated
+    receipt (mirrors export_status)."""
+
+    def test_write_receipt_writes_via_replace_and_leaves_no_tmp(self, sess, tmp_path, monkeypatch):
+        import json as _json
+        monkeypatch.setattr(BS.paths, "QUEUE_DIR", tmp_path)
+        BS.create_batch(sess, _doc(), actor="t")
+        out = BS.write_receipt(sess, "batch_test_store")
+        assert out == tmp_path / "batch_test_store.json"
+        assert _json.loads(out.read_text())["batch_id"] == "batch_test_store"
+        assert list(tmp_path.glob("*.tmp")) == []              # tmp file was replaced away
+
+    def test_crash_between_tmp_and_replace_keeps_the_old_receipt(self, sess, tmp_path, monkeypatch):
+        monkeypatch.setattr(BS.paths, "QUEUE_DIR", tmp_path)
+        BS.create_batch(sess, _doc(), actor="t")
+        out = tmp_path / "batch_test_store.json"
+        out.write_text('{"old": "receipt"}')                   # the prior good receipt
+        def boom(src, dst):
+            raise OSError("simulated crash at replace")
+        monkeypatch.setattr(BS.os, "replace", boom)
+        with pytest.raises(OSError):
+            BS.write_receipt(sess, "batch_test_store")
+        assert out.read_text() == '{"old": "receipt"}'         # untouched — no partial overwrite

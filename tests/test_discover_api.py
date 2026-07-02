@@ -56,6 +56,13 @@ def client():
         _cleanup(con)
         BS.create_batch(con, _doc(), actor="setup")
     server._DISCOVER_JOBS.pop(BID, None)
+    # per-batch run lock (issue #47): a prior test's job thread may release a beat after its job
+    # reads "done" — wait for the lock so the next run request can't 409 spuriously
+    _lk = server._BATCH_RUN_LOCKS.get(BID)
+    for _ in range(100):
+        if _lk is None or not _lk.locked():
+            break
+        time.sleep(0.05)
     try:
         yield TestClient(server.app)
     finally:
@@ -86,7 +93,7 @@ def test_run_on_approved_starts_background_job(client, monkeypatch):
 
     calls = {}
 
-    def fake_run_batch(batch_ref, *, actor="auto:stage2", workers=2, provider=None, on_event=None):
+    def fake_run_batch(batch_ref, *, actor="auto:stage2", workers=2, provider=None, on_event=None, **kw):
         calls["ref"], calls["actor"] = batch_ref, actor
         if on_event:
             on_event("completed", {"batch_id": batch_ref, "district_id": "ZZDISCA", "outcome": "found_all"})
@@ -134,3 +141,8 @@ def test_run_twice_rejects_second_while_running(client, monkeypatch):
         assert client.post(f"/api/discover/{BID}/run", json={}).status_code == 409
     finally:
         release.set()
+        # wait for the job thread to release the per-batch run lock (issue #47) before the next test
+        for _ in range(50):
+            if server._DISCOVER_JOBS.get(BID, {}).get("state") != "running":
+                break
+            time.sleep(0.05)

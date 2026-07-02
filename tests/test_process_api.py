@@ -52,6 +52,13 @@ def client():
         _cleanup(con)
         BS.create_batch(con, _doc(), actor="setup")
     server._PROCESS_JOBS.pop(BID, None)
+    # per-batch run lock (issue #47): a prior test's job thread may release a beat after its job
+    # reads "done" — wait for the lock so the next run request can't 409 spuriously
+    _lk = server._BATCH_RUN_LOCKS.get(BID)
+    for _ in range(100):
+        if _lk is None or not _lk.locked():
+            break
+        time.sleep(0.05)
     try:
         yield TestClient(server.app)
     finally:
@@ -123,6 +130,11 @@ def test_run_twice_rejects_second_while_running(client, monkeypatch):
         assert client.post(f"/api/process/{BID}/run", json={}).status_code == 409
     finally:
         release.set()
+        # wait for the job thread to release the per-batch run lock (issue #47) before the next test
+        for _ in range(50):
+            if server._PROCESS_JOBS.get(BID, {}).get("state") != "running":
+                break
+            time.sleep(0.05)
 
 
 def _stub_stage5(monkeypatch, *, resolved, total):

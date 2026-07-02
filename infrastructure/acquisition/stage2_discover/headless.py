@@ -390,45 +390,51 @@ def run_batch(batch_ref: str, *, actor: str = "auto:stage2", on_event=None,
         if on_event:
             on_event(kind, {"batch_id": batch_id, **payload})
 
-    registry = DS.load()
-    todo, skipped = D2.reconcile(batch, registry)
-    DS.save(registry)
-    emit("reconciled", todo=[d["district_id"] for d in todo],
-         skipped=[d["district_id"] for d in skipped])
-    if not todo:
-        return {"batch_id": batch_id, "todo": 0, "skipped": len(skipped), "results": []}
-
-    # Mark every todo district dispatched (one buffered event each, single flush) so the console's
-    # event-log projection shows "in flight" immediately.
-    registry = DS.load()
-    for d in todo:
-        DS.record_stage(registry, d["district_id"], d["name"], d["state"], stage_name="discover",
-                        event_type="dispatched", actor=actor, batch_id=batch_id)
-        emit("dispatched", district_id=d["district_id"], name=d["name"])
-    DS.save(registry)
-
-    results = []
-    for d in todo:
-        did = d["district_id"]
+    # Per-district saves defer the district_status.json regeneration (export=False) — re-exporting the
+    # FULL log per district is O(N²) over a run (issue #49). One explicit DS.export() runs at the end
+    # (in a finally, so a crash mid-run still leaves the backup current with the committed events).
+    try:
         registry = DS.load()
-        try:
-            outcome = discover_district(batch, d, registry,
-                                        wave1_search=wave1_search, wave2_runner=wave2_runner)
-            DS.save(registry)
-            results.append({"district_id": did, "name": d["name"], "outcome": outcome})
-            emit("completed", district_id=did, name=d["name"], outcome=outcome)
-        except SystemExit:
-            raise   # CONTROL FAILURE / billing-auth halt -- never swallow
-        except Exception as e:
+        todo, skipped = D2.reconcile(batch, registry)
+        DS.save(registry, export=False)
+        emit("reconciled", todo=[d["district_id"] for d in todo],
+             skipped=[d["district_id"] for d in skipped])
+        if not todo:
+            return {"batch_id": batch_id, "todo": 0, "skipped": len(skipped), "results": []}
+
+        # Mark every todo district dispatched (one buffered event each, single flush) so the console's
+        # event-log projection shows "in flight" immediately.
+        registry = DS.load()
+        for d in todo:
+            DS.record_stage(registry, d["district_id"], d["name"], d["state"], stage_name="discover",
+                            event_type="dispatched", actor=actor, batch_id=batch_id)
+            emit("dispatched", district_id=d["district_id"], name=d["name"])
+        DS.save(registry, export=False)
+
+        results = []
+        for d in todo:
+            did = d["district_id"]
             registry = DS.load()
-            DS.record_stage(registry, did, d["name"], d["state"], stage_name="discover",
-                            event_type="failed", actor=actor, batch_id=batch_id,
-                            notes=f"{type(e).__name__}: {str(e)[:200]}")
-            DS.save(registry)
-            results.append({"district_id": did, "name": d["name"], "outcome": "error",
-                            "error": f"{type(e).__name__}: {str(e)[:200]}"})
-            emit("failed", district_id=did, name=d["name"], error=str(e)[:200])
-    return {"batch_id": batch_id, "todo": len(todo), "skipped": len(skipped), "results": results}
+            try:
+                outcome = discover_district(batch, d, registry,
+                                            wave1_search=wave1_search, wave2_runner=wave2_runner)
+                DS.save(registry, export=False)
+                results.append({"district_id": did, "name": d["name"], "outcome": outcome})
+                emit("completed", district_id=did, name=d["name"], outcome=outcome)
+            except SystemExit:
+                raise   # CONTROL FAILURE / billing-auth halt -- never swallow
+            except Exception as e:
+                registry = DS.load()
+                DS.record_stage(registry, did, d["name"], d["state"], stage_name="discover",
+                                event_type="failed", actor=actor, batch_id=batch_id,
+                                notes=f"{type(e).__name__}: {str(e)[:200]}")
+                DS.save(registry, export=False)
+                results.append({"district_id": did, "name": d["name"], "outcome": "error",
+                                "error": f"{type(e).__name__}: {str(e)[:200]}"})
+                emit("failed", district_id=did, name=d["name"], error=str(e)[:200])
+        return {"batch_id": batch_id, "todo": len(todo), "skipped": len(skipped), "results": results}
+    finally:
+        DS.export()   # one full district_status.json regeneration per run (issue #49)
 
 
 def main():

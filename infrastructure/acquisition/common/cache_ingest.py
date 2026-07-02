@@ -8,8 +8,10 @@ the layering contract makes stages independent siblings, so the ingest cannot li
 (REQ-103c originally put it there; it moved here when stages 2/3/4 started maintaining the cache live).
 
 **Lifecycle: a live working store, not a drop-each-ingest cache.** The four tables are created
-`IF NOT EXISTS` and only ever UPSERTed — never dropped mid-flight — so the console reads fresh rows for
-a batch that is only partway down the pipeline (Stage 2 done, Stage 3 pending). They remain fully
+`IF NOT EXISTS` and refreshed per district (DELETE that district's rows, then UPSERT — issue #33, so a
+row that vanished from the source JSON can't linger as a ghost) — whole tables are never dropped
+mid-flight, so the console reads fresh rows for a batch that is only partway down the pipeline
+(Stage 2 done, Stage 3 pending). They remain fully
 regenerable from disk (`stage5_filter.build_signals.ingest()` re-upserts every district on a full pass);
 they are simply never destroyed under in-flight data. Contrast the *derived* signal tables
 (`record`/`representation`/…), which stay drop+rebuild because they are an all-or-nothing recomputation.
@@ -125,10 +127,19 @@ def load_candidates(ddir: Path) -> dict:
 
 
 # ---------------------------------------------------------------- dict-based upserts (build_signals reuse)
+# Each per-district ingest DELETEs that district's rows from the table(s) it owns before re-UPSERTing
+# (issue #33): the source JSON is a whole-district snapshot, so a school/URL/hash that vanished from
+# disk must also vanish from the cache — UPSERT alone leaves ghost rows behind. Scoped per district +
+# per stage-table pair, inside the caller's transaction, so an in-flight OTHER district is untouched.
+# None of the four tables accumulates across batches by design: a district belongs to one batch, and
+# discovery.json/candidates.json/captures.json/processed.json are each rewritten wholesale per run.
 def upsert_discovery_rows(con, disc: dict, cand_map: dict) -> None:
-    """Upsert one district's Stage-2 funnel: discovery_school (per school, rolled-up wave counts +
-    raw JSON for audit) + candidate (per planned URL, the URL->school map)."""
+    """Replace one district's Stage-2 funnel: discovery_school (per school, rolled-up wave counts +
+    raw JSON for audit) + candidate (per planned URL, the URL->school map). DELETE-then-UPSERT so
+    rows for schools/URLs no longer on disk don't linger (#33)."""
     did = disc["district_id"]
+    con.execute(text("DELETE FROM discovery_school WHERE district_id=:d"), {"d": did})
+    con.execute(text("DELETE FROM candidate WHERE district_id=:d"), {"d": did})
     for sc in disc.get("schools", []):
         w1g, w2g = sc.get("wave1_gated", []), sc.get("wave2_gated", [])
         con.execute(UPSERT_DISCOVERY_SCHOOL, {
@@ -151,8 +162,9 @@ def upsert_discovery_rows(con, disc: dict, cand_map: dict) -> None:
 
 
 def upsert_capture_rows(con, district_id: str, caps: dict) -> None:
-    """Upsert one district's Stage-3 capture receipts (one row per hash, incl. captures that never
-    processed). `caps`: hash -> capture record dict (from captures.json)."""
+    """Replace one district's Stage-3 capture receipts (one row per hash, incl. captures that never
+    processed). `caps`: hash -> capture record dict (from captures.json). DELETE-then-UPSERT (#33)."""
+    con.execute(text("DELETE FROM capture WHERE district_id=:d"), {"d": district_id})
     for h, cap in caps.items():
         fp = cap.get("fingerprint") or {}
         con.execute(UPSERT_CAPTURE, {
@@ -168,7 +180,9 @@ def upsert_capture_rows(con, district_id: str, caps: dict) -> None:
 
 
 def upsert_processed_rows(con, district_id: str, processed: dict) -> None:
-    """Upsert one district's Stage-4 processed-doc rows (texts themselves live in `representation`)."""
+    """Replace one district's Stage-4 processed-doc rows (texts themselves live in `representation`).
+    DELETE-then-UPSERT (#33)."""
+    con.execute(text("DELETE FROM processed_doc WHERE district_id=:d"), {"d": district_id})
     for h, prec in processed.items():
         con.execute(UPSERT_PROCESSED_DOC, {
             "district_id": district_id, "hash": h, "url": prec.get("url"),

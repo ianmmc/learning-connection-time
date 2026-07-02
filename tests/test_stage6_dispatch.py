@@ -98,3 +98,44 @@ def test_insert_handoff_row_against_postgres(gov_session):
     assert row.cost_provenance == "bootstrap" and row.status == "dispatched"
     assert row.district_ids == ["0100810", "0101410"]
     assert row.council_ids == ["low-cost-text"]
+
+
+def _fake_release(monkeypatch):
+    reps = [{"source": "extracted", "filename": "extracted.txt", "file_kind": "text",
+             "n_chars": 1200, "n_times": 4, "usable": 1}]
+    records = [{"rec_key": "a", "url": "u", "tier": "A", "category": None,
+                "signals": {"visual_text_gap": False}, "is_emergent": 0, "intended_schools": [],
+                "label": "school_bell_table", "flags": [], "reps": reps}]
+    monkeypatch.setattr(REL, "load_district",
+                        lambda s, did: {"district_id": did, "name": "X", "district_dir": f"{did}_x",
+                                        "labeled_topology": "per_school",
+                                        "nces_denominator": {"total": 1, "by_level": {}}})
+    monkeypatch.setattr(REL, "load_district_records", lambda s, did: records)
+    monkeypatch.setattr(REL, "district_fingerprints",
+                        lambda s, did: {"config": "c", "labels": "l", "data": "d"})
+
+
+def test_status_backup_exports_only_after_the_file_write_succeeds(tmp_path, monkeypatch):
+    """Issue #39: dispatch_handoff used to export district_status.json from flushed-not-committed
+    events BEFORE the handoff file write — a write failure rolled the DB back but left phantom
+    `dispatched` events baked into the git-tracked backup. The export must run truly last."""
+    _fake_release(monkeypatch)
+    monkeypatch.setattr(BR, "record_dispatch", lambda *a, **k: None)
+    exports = []
+    monkeypatch.setattr(BR.DS, "export_status", lambda session, out=None: exports.append(1) or 0)
+
+    # (a) the file write raises -> NO export happened
+    orig_write = BR.HND.write
+
+    def boom(doc, root=None):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(BR.HND, "write", boom)
+    with pytest.raises(OSError):
+        BR.dispatch_handoff(session=None, district_ids=["0100810"], root=tmp_path)
+    assert exports == []
+
+    # (b) the file write succeeds -> exactly one export, after it
+    monkeypatch.setattr(BR.HND, "write", orig_write)
+    BR.dispatch_handoff(session=None, district_ids=["0100810"], root=tmp_path)
+    assert exports == [1]

@@ -60,3 +60,56 @@ def test_candidates_and_handoffs_lists():
         assert "district_id" in row and "n_send" in row and "n_hold" in row
     h = client.get("/api/handoffs")
     assert h.status_code == 200 and isinstance(h.json(), list)
+
+
+# ----------------------------- preview→freeze staleness gate (issue #37) -----------------------------
+from infrastructure.acquisition.stage6_handoff import handoff as HND
+
+
+def _pkg():
+    return {"districts": [{"district_id": "0100810", "records": [
+                {"rec_key": "0100810:abc", "decision": "send",
+                 "reps": [{"file": "page.txt", "kind": "text", "councils": ["low-cost-text"],
+                           "est_usd": 0.001}]}]}],
+            "cost": {"total_usd": 0.001, "n_reps": 1, "provenance": "bootstrap"},
+            "verified_only": False}
+
+
+def test_preview_returns_the_identity_token(monkeypatch):
+    monkeypatch.setattr(SRV.gdb, "session_scope", _fake_scope)
+    monkeypatch.setattr(SRV.H6, "build_handoff_package", lambda con, ids, *a, **k: _pkg())
+    r = client.post("/api/handoff/preview", json={"district_ids": ["0100810"]})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["preview_identity"] == HND.package_identity(_pkg())
+
+
+def test_dispatch_with_stale_identity_is_409(monkeypatch):
+    """The release changed between preview and approve (a label edit / re-ingest): the dispatch
+    rebuild no longer matches what the human reviewed -> 409, nothing frozen."""
+    monkeypatch.setattr(SRV.gdb, "session_scope", _fake_scope)
+    monkeypatch.setattr(SRV.H6, "build_handoff_package", lambda con, ids, *a, **k: _pkg())
+    frozen = {"called": False}
+    monkeypatch.setattr(SRV.H6, "dispatch_handoff",
+                        lambda *a, **k: frozen.update(called=True) or ({}, ""))
+    stale_pkg = _pkg()   # what an earlier preview hashed: the same district, a different record
+    stale_pkg["districts"][0]["records"][0]["rec_key"] = "0100810:zzz"
+    stale = HND.package_identity(stale_pkg)
+    r = client.post("/api/handoff/dispatch",
+                    json={"district_ids": ["0100810"], "expected_identity": stale})
+    assert r.status_code == 409
+    assert "re-preview" in r.json()["detail"]
+    assert frozen["called"] is False               # nothing was frozen/recorded
+
+
+def test_dispatch_with_matching_identity_freezes(monkeypatch):
+    monkeypatch.setattr(SRV.gdb, "session_scope", _fake_scope)
+    monkeypatch.setattr(SRV.H6, "build_handoff_package", lambda con, ids, *a, **k: _pkg())
+    doc = {"handoff_hash": "abc123", "created_at": "2026-07-02T00:00:00Z",
+           "districts": [{"district_id": "0100810"}],
+           "cost": {"total_usd": 0.001, "n_reps": 1, "provenance": "bootstrap"}}
+    monkeypatch.setattr(SRV.H6, "dispatch_handoff", lambda con, ids, **k: (doc, "/x.json"))
+    r = client.post("/api/handoff/dispatch",
+                    json={"district_ids": ["0100810"],
+                          "expected_identity": HND.package_identity(_pkg())})
+    assert r.status_code == 200 and r.json()["handoff_hash"] == "abc123"

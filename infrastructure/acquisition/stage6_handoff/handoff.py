@@ -65,6 +65,18 @@ def _identity(package: dict, used_councils: dict, fingerprints: dict) -> dict:
             "verified_only": bool(package.get("verified_only", False))}
 
 
+def package_identity(package: dict) -> str:
+    """Public identity hash of an UNFROZEN package — the gate@6 preview→freeze staleness token
+    (issue #37). Covers exactly what the human reviewed: the sorted districts/records/reps (incl.
+    each rep's routed councils + overrides, via rep['councils']) and the verified_only mode; NO
+    fingerprints and NO council configs (a preview has neither), and price-independent like the
+    frozen hash. Preview and dispatch both compute it from a freshly built package: equal hashes ⇒
+    the release content the human approved is what dispatch is about to freeze."""
+    identity = _identity(package, {}, {})
+    return hashlib.md5(json.dumps(identity, sort_keys=True, ensure_ascii=False)
+                       .encode("utf-8")).hexdigest()[:12]
+
+
 def freeze(package: dict, councils: dict, fingerprints: dict, created_by: str = "human") -> dict:
     """Build the immutable handoff doc from a package + the council registry + per-district fingerprints."""
     used = _councils_used(package, councils)
