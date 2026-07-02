@@ -1,8 +1,13 @@
 """REQ-093 — Stage 5 keyword knobs load from config; the instructional-time regex is MINUTES-ONLY
 (hours reverted after the harness proved it net-negative — a vision problem); an instructional-time
-hit rescues a record from the n==0 / neg-keyword drop."""
+hit rescues a record from the n==0 / neg-keyword drop (now via the V2 detectors+combiner — the V1
+tier_and_category cascade was deleted, issue #56)."""
+import json
+
+import pytest
 
 from infrastructure.acquisition.stage5_filter import build_signals as BS  # noqa: E402
+from infrastructure.acquisition.stage5_filter import combiner as COMB  # noqa: E402
 
 
 def _sig(**over):
@@ -30,28 +35,27 @@ def test_instructional_regex_is_minutes_only_no_hours_false_positives():
     assert not BS.INSTRUCTIONAL_RE.search("board meeting minutes approved")
 
 
-def test_instructional_time_rescues_calendar_record_to_B():
-    # instr hit, no clock times, calendar keywords -> rescued to B (not D via n==0, not C via neg_dominant)
-    tier, _score, cat = BS.tier_and_category(
+def test_instructional_time_rescues_calendar_record_from_the_drop():
+    # instr hit, no clock times, calendar keywords -> lf_explicit_minutes keeps it alive (never a
+    # tier-D suppress via no-times, never a hard calendar drop) — the DUNSEITH rescue, V2-style
+    out = COMB.score_record(
         _sig(instructional_time=True, neg_total=2,
-             negative_kw={"board": [], "sports": [], "calendar": ["academic calendar", "holiday"], "transport": []}),
-        roster_size=2)
-    assert tier == "B"
-    assert cat == "explicit_instructional_time"
+             negative_kw={"board": [], "sports": [], "calendar": ["academic calendar", "holiday"], "transport": []}))
+    assert out["decision"] == "send" and out["tier"] == "A"
+    assert out["category"] == "explicit_instructional_time"
 
 
 def test_no_times_no_instr_still_drops_to_D():
-    tier, _s, _c = BS.tier_and_category(_sig(), roster_size=0)
-    assert tier == "D"
+    out = COMB.score_record(_sig())
+    assert out["decision"] == "suppress" and out["tier"] == "D"
 
 
 def test_strong_target_still_tier_A_not_demoted_by_rescue():
     # a real bell schedule (time pair + positive kw) must remain A even if instr also true
-    tier, _s, _c = BS.tier_and_category(
+    out = COMB.score_record(
         _sig(n_times=4, n_times_in_window=4, proximity_pairs=2, positive_kw=["bell schedule"],
-             instructional_time=True),
-        roster_size=2)
-    assert tier == "A"
+             instructional_time=True))
+    assert out["decision"] == "send" and out["tier"] == "A"
 
 
 # ---- REQ-092 handbook page-harvest ----
@@ -156,3 +160,88 @@ def test_every_migrated_primary_is_in_the_v21_vocabulary():
                 "embedded_feed", "board_schedule", "sports_schedule", "academic_calendar",
                 "community_calendar", "transportation_schedule", "other_schedule"]:
         assert BS.migrate_label_v21(old, [], {})[0] in vocab, old
+
+
+# ---- issue #59: migrate_labels_v21 re-run guard (a real run must not re-fold flags over human edits) ----
+class _FakeResult:
+    def __init__(self, rows):
+        self._rows = rows
+
+    def fetchall(self):
+        return self._rows
+
+
+class _FakeSess:
+    """SELECT (no params) returns the seeded label rows; UPDATE (params) is recorded."""
+    def __init__(self, rows):
+        self.rows = rows
+        self.updates = []
+
+    def execute(self, stmt, params=None):
+        if params is None:
+            return _FakeResult(self.rows)
+        self.updates.append(params)
+        return _FakeResult([])
+
+
+def _v20_rows():
+    # (rec_key, primary_label, flags_json, facets_json) — a genuinely un-migrated v2.0 state
+    return [("d:1", "school_bell_schedule", "[]", "{}"),
+            ("d:2", "board_schedule", "[]", None)]
+
+
+def _migrated_rows():
+    # already v2.1: in-vocabulary primaries AND non-empty facets (possibly HUMAN-edited since)
+    return [("d:1", "school_bell_table", '["building_hours_visible"]', '{"needs_vision": "yes"}'),
+            ("d:2", "target_absent", "[]", '{"board": "yes"}')]
+
+
+def test_migrate_labels_v21_real_run_works_on_fresh_v20_state():
+    sess = _FakeSess(_v20_rows())
+    moves = BS.migrate_labels_v21(sess, dry_run=False)
+    assert sum(moves.values()) == 2
+    assert len(sess.updates) == 2                     # both rows updated
+
+
+def test_migrate_labels_v21_refuses_a_second_real_run():
+    sess = _FakeSess(_migrated_rows())
+    with pytest.raises(RuntimeError, match="already run"):
+        BS.migrate_labels_v21(sess, dry_run=False)
+    assert sess.updates == []                          # nothing touched — human facets are safe
+
+
+def test_migrate_labels_v21_dry_run_and_force_still_allowed():
+    # dry_run only tallies (never guarded); force=True explicitly overrides the guard
+    sess = _FakeSess(_migrated_rows())
+    moves = BS.migrate_labels_v21(sess, dry_run=True)
+    assert sum(moves.values()) == 2 and sess.updates == []
+    forced = _FakeSess(_migrated_rows())
+    BS.migrate_labels_v21(forced, dry_run=False, force=True)
+    assert len(forced.updates) == 2
+
+
+# ---- issue #58: harvest slices are DERIVED artifacts — written under data/acquisition, never data/raw ----
+def test_harvest_slice_path_is_under_acquisition_not_raw(monkeypatch, tmp_path):
+    monkeypatch.setattr(BS, "HARVEST_SLICES_DIR", tmp_path / "acq" / "harvest_slices")
+    p = BS.harvest_slice_path("0100810", "0100810:abc123")
+    assert p == tmp_path / "acq" / "harvest_slices" / "0100810" / "0100810_abc123.txt"
+
+
+def test_resolve_harvest_slice_prefers_new_location_falls_back_to_legacy(monkeypatch, tmp_path):
+    new_root = tmp_path / "acq" / "harvest_slices"
+    raw_root = tmp_path / "raw"
+    monkeypatch.setattr(BS, "HARVEST_SLICES_DIR", new_root)
+    monkeypatch.setattr(BS, "RAW_DIR", raw_root)
+    did, ddir, rk = "0100810", "0100810_slug", "0100810:abc123"
+    # neither exists -> None
+    assert BS.resolve_harvest_slice(did, ddir, rk) is None
+    # legacy pre-#58 slice (inside the raw capture dir) still readable
+    legacy = raw_root / ddir / "captures" / "abc123" / BS.HARVEST_SLICE_FILE
+    legacy.parent.mkdir(parents=True)
+    legacy.write_text("legacy slice")
+    assert BS.resolve_harvest_slice(did, ddir, rk) == legacy
+    # the new derived-artifact location wins when present
+    new = BS.harvest_slice_path(did, rk)
+    new.parent.mkdir(parents=True)
+    new.write_text("new slice")
+    assert BS.resolve_harvest_slice(did, ddir, rk) == new

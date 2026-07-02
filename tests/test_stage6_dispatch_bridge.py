@@ -79,6 +79,36 @@ def test_verified_only_holds_the_unlabeled_tier_A_sends(monkeypatch):
     assert held["reps"] == []
 
 
+def test_enrich_send_threads_n_schools_and_n_bytes(tmp_path, monkeypatch):
+    """Issue #55: the bridge populates the size inputs cost.py documents — `n_schools` from the
+    record's intended_schools, and `n_bytes` (file size, the documented proxy) for a binary rep
+    whose n_chars is None. Bootstrap dollar numbers are untouched (flat pricing reads neither)."""
+    monkeypatch.setattr(BR.paths, "RAW_CAPTURES", tmp_path)
+    ddir, h = "0100810_x", "abc123"
+    png = tmp_path / ddir / "captures" / h / "page.png"
+    png.parent.mkdir(parents=True)
+    png.write_bytes(b"\x89PNG" + b"0" * 96)                    # 100 bytes on disk
+    reps = [{"source": "capture:png", "filename": "page.png", "file_kind": "image",
+             "n_chars": None, "n_times": None, "usable": 1},
+            {"source": "extracted", "filename": "t.txt", "file_kind": "text",
+             "n_chars": 1500, "n_times": 6, "usable": 1}]
+    rec = {"rec_key": f"0100810:{h}", "intended_schools": ["A Elem", "B Middle"]}
+
+    out = BR._enrich_send([{"file": "page.png", "kind": "image"},
+                           {"file": "t.txt", "kind": "text"}], reps, rec, ddir)
+    img, txt = out[0], out[1]
+    assert img["n_schools"] == 2                               # intended_schools count threaded
+    assert img["n_bytes"] == 100                               # binary size proxy (n_chars is None)
+    assert txt["n_chars"] == 1500 and txt["n_times"] == 6
+    assert "n_bytes" not in txt                                # text reps keep their real n_chars
+    # a binary whose file is absent degrades to None, never raises
+    missing = BR._enrich_send([{"file": "gone.png", "kind": "image"}], reps, rec, ddir)[0]
+    assert missing["n_bytes"] is None
+    # no intended_schools -> n_schools None (cost._n_schools then falls back to n_times/default)
+    none_rec = {"rec_key": f"0100810:{h}", "intended_schools": []}
+    assert BR._enrich_send([{"file": "t.txt", "kind": "text"}], reps, none_rec, ddir)[0]["n_schools"] is None
+
+
 def test_missing_district_is_skipped(monkeypatch):
     monkeypatch.setattr(REL, "load_district", lambda s, did: None)
     monkeypatch.setattr(REL, "load_district_records", lambda s, did: [])

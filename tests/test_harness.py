@@ -39,6 +39,15 @@ def test_topology_coarse_agreement_excludes_non_hub_per_school():
     assert m["pairs"]["D3"] == ["hub", "per_school"]
 
 
+def test_f1_is_zero_not_none_when_precision_and_recall_are_zero():
+    # issue #63: tp=0 with fp>0 and fn>0 -> precision 0.0, recall 0.0 — LEGITIMATE values, so f1
+    # must be 0.0 (computable), not None (not-computable)
+    m = harness.tier_target_metrics([("A", False), ("B", True)])
+    a = m["thresholds"]["A"]
+    assert a["precision"] == 0.0 and a["recall"] == 0.0
+    assert a["f1"] == 0.0
+
+
 def test_empty_inputs_dont_crash():
     assert harness.category_accuracy([])["overall"] is None
     assert harness.tier_target_metrics([])["thresholds"]["A"]["precision"] is None

@@ -8,7 +8,10 @@ assertions are exact (flat bootstrap): clean text -> 0.00102, image -> 0.00484.
 """
 import math
 
-from infrastructure.acquisition.stage6_handoff import councils, cost, package
+import pytest
+
+from infrastructure.acquisition.stage6_handoff import councils, cost, handoff, package
+from infrastructure.acquisition.stage6_handoff import requests as RQ
 
 COUNCILS = councils.load_configs()
 COST_MODEL = cost.load_cost_model()
@@ -94,7 +97,30 @@ def test_override_routes_a_rep_to_the_chosen_council():
     assert math.isclose(rep["est_usd"], IMAGE, rel_tol=1e-9)
 
 
-def test_unknown_override_council_is_ignored():
+def test_unknown_override_council_refuses():
+    # issue #54: a stale/unknown override must FAIL the assembly loudly (naming the council id),
+    # never silently fall back to auto-routing a paid call
     rec = _rec("a", "send", [{"file": "t.txt", "kind": "text", "n_chars": 1000}])
-    rep = package.assemble_record(rec, COUNCILS, COST_MODEL, {"a::t.txt": "no-such"})["reps"][0]
-    assert rep["councils"] == ["low-cost-text"]   # falls back to auto-routing
+    with pytest.raises(ValueError, match="no-such"):
+        package.assemble_record(rec, COUNCILS, COST_MODEL, {"a::t.txt": "no-such"})
+
+
+def test_pages_survive_assemble_freeze_and_plan():
+    # issue #38: the harvest-pages hint on a handbook send must reach Stage 7 —
+    # assemble_record -> the frozen handoff doc (incl. identity) -> plan_requests
+    rec = _rec("a", "send", [{"file": "handbook.pdf", "kind": "pdf", "pages": [4, 9]}])
+    out = package.assemble_record(rec, COUNCILS, COST_MODEL)
+    assert out["reps"][0]["pages"] == [4, 9]
+
+    pkg = package.assemble_package([({"district_id": "0100810"}, [rec])], COUNCILS, COST_MODEL)
+    doc = handoff.freeze(pkg, COUNCILS, {"0100810": {"config": "c", "labels": "l", "data": "d"}})
+    frozen_rep = doc["districts"][0]["records"][0]["reps"][0]
+    assert frozen_rep["pages"] == [4, 9]
+    # pages are part of the content identity: dropping them is a DIFFERENT dispatch
+    rec_np = _rec("a", "send", [{"file": "handbook.pdf", "kind": "pdf"}])
+    pkg_np = package.assemble_package([({"district_id": "0100810"}, [rec_np])], COUNCILS, COST_MODEL)
+    doc_np = handoff.freeze(pkg_np, COUNCILS, {"0100810": {"config": "c", "labels": "l", "data": "d"}})
+    assert doc_np["handoff_hash"] != doc["handoff_hash"]
+
+    plan = RQ.plan_requests(doc)
+    assert plan and all(c["pages"] == [4, 9] for c in plan)

@@ -30,17 +30,30 @@ def assemble_record(rec: dict, councils: dict, cost_model: dict, overrides: dict
     signals = rec.get("signals") or {}
     for se in rec.get("send", []) or []:
         ov = overrides.get(f"{rec.get('rec_key')}::{se.get('file')}")
-        if ov and ov in councils:
+        if ov:
+            # A stale/unknown override must REFUSE, not silently fall back to auto-routing — an
+            # override is a human dispatch decision; misrouting a paid call quietly is worse than
+            # failing the assembly (issue #54).
+            if ov not in councils:
+                raise ValueError(
+                    f"unknown council override '{ov}' for rep "
+                    f"{rec.get('rec_key')}::{se.get('file')} — not in the loaded council registry "
+                    f"({sorted(councils)}); remove or correct the override")
             r = {"councils": [ov], "fidelity_suspect": routing.is_low_fidelity(signals),
                  "reason": f"override:{ov}"}
         else:
             r = routing.route(se, signals, councils)   # councils = id->config registry (carries input_kinds)
         est = sum(cost.estimate_council_cost(se, councils[cid], cost_model)
                   for cid in r["councils"] if cid in councils)
-        out["reps"].append({
+        rep = {
             "file": se.get("file"), "kind": se.get("kind"),
             "councils": r["councils"], "fidelity_suspect": r["fidelity_suspect"],
-            "route_reason": r["reason"], "est_usd": est})
+            "route_reason": r["reason"], "est_usd": est}
+        # `pages` (the harvest-pages hint on a handbook PDF/slice send) must survive to the frozen
+        # handoff + the Stage-7 request plan — it's what scopes the paid read (issue #38).
+        if se.get("pages"):
+            rep["pages"] = se["pages"]
+        out["reps"].append(rep)
     return out
 
 

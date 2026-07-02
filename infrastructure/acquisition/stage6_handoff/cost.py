@@ -9,6 +9,15 @@ which supports two shapes per model:
 
 Pure: dicts in, numbers out. No DB, no other-stage imports, no network. Imports only `common`.
 The cost model's `provenance` ("bootstrap" | "measured") rides through so callers can label estimates.
+
+Rep-dict inputs the bridge (process_governance.stage6_dispatch._enrich_send) populates (issue #55):
+  * `n_chars` / `n_times` — from the representation row (text reps; None for binaries).
+  * `n_schools` — len(record.intended_schools) when known, else None; `_n_schools` then falls back to
+    `n_times`, then the model's `default_n_schools` floor. This is the output-token scaler.
+  * `n_bytes` — file size on disk for BINARY reps whose n_chars is None (image/pdf), a documented
+    size PROXY for the future measured vision-token model. NOT read by any current formula — the
+    bootstrap flat pricing and the text token model are unchanged; it exists so frozen handoffs and
+    the council lab carry the size input the measured model will be fitted on.
 """
 from infrastructure.acquisition.common import config_loader
 

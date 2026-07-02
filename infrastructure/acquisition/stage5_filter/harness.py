@@ -52,7 +52,12 @@ def tier_target_metrics(rows):
         fn = sum(1 for t, g in rows if t not in positive and g)
         prec = tp / (tp + fp) if (tp + fp) else None
         rec = tp / (tp + fn) if (tp + fn) else None
-        f1 = (2 * prec * rec / (prec + rec)) if (prec and rec) else None
+        # `is not None` on purpose (issue #63): a legitimate 0.0 precision/recall is COMPUTABLE
+        # (f1 = 0.0), not missing — truthiness would report it as None.
+        if prec is not None and rec is not None:
+            f1 = 0.0 if (prec + rec) == 0 else 2 * prec * rec / (prec + rec)
+        else:
+            f1 = None
         thresholds[name] = {"tp": tp, "fp": fp, "fn": fn,
                             "precision": _r(prec), "recall": _r(rec), "f1": _r(f1)}
     return {"per_tier": {k: dict(v) for k, v in sorted(per_tier.items())}, "thresholds": thresholds}
