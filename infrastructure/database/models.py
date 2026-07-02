@@ -24,7 +24,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, validates
 
 
@@ -349,6 +349,16 @@ class LCTCalculation(Base):
     data_tier: Mapped[int] = mapped_column(Integer, nullable=False)
     notes: Mapped[Optional[str]] = mapped_column(Text)
 
+    # Temporal validation (migration 008; REQ-026). The write path MUST populate the three
+    # *_source_year columns — the DB trigger computes year_span/within_3year_window/temporal_flags
+    # from them (they were unmapped here for months, leaving the trigger inert — issue #11).
+    enrollment_source_year: Mapped[Optional[str]] = mapped_column(String(10))
+    staff_source_year: Mapped[Optional[str]] = mapped_column(String(10))
+    bell_schedule_source_year: Mapped[Optional[str]] = mapped_column(String(10))
+    year_span: Mapped[Optional[int]] = mapped_column(Integer)
+    within_3year_window: Mapped[Optional[bool]] = mapped_column(Boolean)
+    temporal_flags: Mapped[Optional[list]] = mapped_column(ARRAY(Text))
+
     # Timestamp
     calculated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=datetime.utcnow
@@ -372,27 +382,9 @@ class LCTCalculation(Base):
     def __repr__(self) -> str:
         return f"<LCTCalculation {self.district_id}/{self.year}: {self.lct_value:.2f} min>"
 
-    @classmethod
-    def calculate_lct(
-        cls,
-        instructional_minutes: int,
-        enrollment: int,
-        instructional_staff: float,
-    ) -> float:
-        """
-        Calculate the LCT value.
-
-        Args:
-            instructional_minutes: Daily instructional minutes
-            enrollment: Total student enrollment
-            instructional_staff: Full-time equivalent instructional staff
-
-        Returns:
-            LCT value (minutes per student per day)
-        """
-        if enrollment <= 0 or instructional_staff <= 0:
-            raise ValueError("Enrollment and staff must be positive")
-        return (instructional_minutes * instructional_staff) / enrollment
+    # NOTE: the old calculate_lct classmethod was removed 2026-07-02 with the retirement of
+    # queries.calculate_and_store_lct (issue #27) — the ONE production formula lives in
+    # infrastructure/scripts/analyze/calculate_lct_variants.py::calculate_lct (REQ-001).
 
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON export."""
@@ -837,8 +829,9 @@ class StaffCountsEffective(Base):
         from decimal import Decimal
 
         def safe_sum(*values):
-            """Sum values, treating None and NaN as 0."""
-            total = 0
+            """Sum values, skipping None/NaN. Returns None only when EVERY input is missing —
+            a reported 0 stays 0, distinguishable from not-reported (issue #65)."""
+            total, any_present = 0.0, False
             for v in values:
                 if v is None:
                     continue
@@ -846,9 +839,10 @@ class StaffCountsEffective(Base):
                     fv = float(v)
                     if not math.isnan(fv):
                         total += fv
+                        any_present = True
                 except (TypeError, ValueError):
                     continue
-            return total
+            return total if any_present else None
 
         # Teacher-level aggregates (for level-based LCT)
         # LCT-Teachers: elem + sec + kinder (NO prek, NO ungraded)
@@ -856,13 +850,13 @@ class StaffCountsEffective(Base):
             self.teachers_elementary,
             self.teachers_secondary,
             self.teachers_kindergarten
-        ) or None
+        )
 
         # LCT-Teachers-Elementary: elem + kinder
         self.teachers_elementary_k5 = safe_sum(
             self.teachers_elementary,
             self.teachers_kindergarten
-        ) or None
+        )
 
         # LCT-Teachers-Secondary: just secondary
         self.teachers_secondary_6_12 = self.teachers_secondary
@@ -876,7 +870,7 @@ class StaffCountsEffective(Base):
             self.teachers_secondary,
             self.teachers_kindergarten,
             self.teachers_ungraded
-        ) or None
+        )
 
         # scope_instructional: core + coordinators + paras
         self.scope_instructional = safe_sum(
@@ -886,7 +880,7 @@ class StaffCountsEffective(Base):
             self.teachers_ungraded,
             self.instructional_coordinators,
             self.paraprofessionals
-        ) or None
+        )
 
         # scope_instructional_plus_support: instructional + counselors + psych + support
         self.scope_instructional_plus_support = safe_sum(
@@ -899,7 +893,7 @@ class StaffCountsEffective(Base):
             self.counselors_total,
             self.psychologists,
             self.student_support_services
-        ) or None
+        )
 
         # scope_all: All staff EXCEPT Pre-K teachers
         self.scope_all = safe_sum(
@@ -919,7 +913,7 @@ class StaffCountsEffective(Base):
             self.lea_admin_support,
             self.school_admin_support,
             self.other_staff
-        ) or None
+        )
 
 
 class EnrollmentByGrade(Base):
@@ -1639,6 +1633,10 @@ class EnrichmentAttempt(Base):
     # Error tracking
     error_message: Mapped[Optional[str]] = mapped_column(Text)
     error_code: Mapped[Optional[str]] = mapped_column(String(50))
+
+    # Don't retry this district (migration 010; required by queries.get_target_districts —
+    # was unmapped, so init_db()-created databases crashed with UndefinedColumn, issue #21)
+    skip_future_attempts: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
 
     # Relationships
     district: Mapped["District"] = relationship(back_populates="enrichment_attempts")

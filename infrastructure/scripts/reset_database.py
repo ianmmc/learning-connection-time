@@ -62,6 +62,11 @@ TRUNCATION_ORDER = [
     # Layer 2: SPED baseline (LEA-level)
     "sped_lea_baseline",
 
+    # Layer 1.5: Crosswalk (FK ON DELETE CASCADE from districts — truncating districts wipes it
+    # regardless; listing it EXPLICITLY so it is counted, reported, and verified rather than
+    # silently cascaded (issue #16). Rebuild phase 2 re-imports it and verifies the count.
+    "state_district_crosswalk",
+
     # Layer 1: Core tables (truncated last)
     "districts",
     "state_requirements",

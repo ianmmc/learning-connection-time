@@ -25,8 +25,9 @@ from .verification import validate_schedule_plausibility
 
 def get_district_by_id(session: Session, nces_id: str) -> Optional[District]:
     """Get a single district by NCES ID."""
-    # Try with and without leading zeros
-    normalized_id = nces_id.lstrip("0") or nces_id
+    # The DB is zero-padded to 7 digits (migration 015) — normalize INPUT by padding,
+    # never by stripping (issue #20: lstrip made unpadded input return None post-015)
+    normalized_id = nces_id.zfill(7)
     district = session.query(District).filter(
         or_(District.nces_id == nces_id, District.nces_id == normalized_id)
     ).first()
@@ -109,7 +110,7 @@ def get_bell_schedule(
         - If grade_level specified: Single BellSchedule or None
         - If grade_level not specified: List of BellSchedule objects
     """
-    normalized_id = district_id.lstrip("0") or district_id
+    normalized_id = district_id.zfill(7)   # pad, never strip (migration 015 / issue #20)
 
     query = session.query(BellSchedule).filter(
         or_(
@@ -201,7 +202,7 @@ def add_bell_schedule(
     Returns the created/updated BellSchedule instance.
     """
     # Normalize district ID
-    normalized_id = district_id.lstrip("0") or district_id
+    normalized_id = district_id.zfill(7)   # pad, never strip (migration 015 / issue #20)
 
     # Verify district exists
     district = get_district_by_id(session, normalized_id)
@@ -357,121 +358,14 @@ def get_state_requirement(session: Session, state: str) -> Optional[StateRequire
         .first()
     )
 
-
-def get_instructional_minutes(
-    session: Session, state: str, grade_level: str
-) -> Optional[int]:
-    """Get statutory instructional minutes for a state and grade level."""
-    req = get_state_requirement(session, state)
-    if req:
-        return req.get_minutes(grade_level)
-    return None
-
-
 # =============================================================================
 # LCT CALCULATION QUERIES
 # =============================================================================
 
 
-def calculate_and_store_lct(
-    session: Session,
-    district_id: str,
-    year: str = CURRENT_SCHOOL_YEAR,
-    use_statutory_fallback: bool = True,
-) -> List[LCTCalculation]:
-    """
-    Calculate LCT for a district and store results.
-
-    Uses actual bell schedule data where available,
-    falls back to state statutory requirements if enabled.
-    """
-    district = get_district_by_id(session, district_id)
-    if not district:
-        raise ValueError(f"District {district_id} not found")
-
-    if not district.enrollment or district.enrollment <= 0:
-        raise ValueError(f"District {district_id} has no valid enrollment data")
-
-    if not district.instructional_staff or district.instructional_staff <= 0:
-        raise ValueError(f"District {district_id} has no valid staff data")
-
-    results = []
-    bell_schedules = get_bell_schedule(session, district_id, year)
-
-    for grade_level in ["elementary", "middle", "high"]:
-        # Find matching bell schedule
-        schedule = next(
-            (s for s in bell_schedules if s.grade_level == grade_level), None
-        )
-
-        if schedule:
-            # Use actual bell schedule data
-            instructional_minutes = schedule.instructional_minutes
-            data_tier = 1 if schedule.method == "human_provided" else 2
-            bell_schedule_id = schedule.id
-        elif use_statutory_fallback:
-            # Fall back to state requirements
-            instructional_minutes = get_instructional_minutes(
-                session, district.state, grade_level
-            )
-            if not instructional_minutes:
-                continue
-            data_tier = 3
-            bell_schedule_id = None
-        else:
-            continue
-
-        # Calculate LCT
-        lct_value = LCTCalculation.calculate_lct(
-            instructional_minutes=instructional_minutes,
-            enrollment=district.enrollment,
-            instructional_staff=float(district.instructional_staff),
-        )
-
-        # Check for existing calculation
-        existing = (
-            session.query(LCTCalculation)
-            .filter(
-                LCTCalculation.district_id == district.nces_id,
-                LCTCalculation.year == year,
-                LCTCalculation.grade_level == grade_level,
-            )
-            .first()
-        )
-
-        if existing:
-            existing.instructional_minutes = instructional_minutes
-            existing.enrollment = district.enrollment
-            existing.instructional_staff = district.instructional_staff
-            existing.lct_value = lct_value
-            existing.data_tier = data_tier
-            existing.bell_schedule_id = bell_schedule_id
-            existing.calculated_at = datetime.utcnow()
-            calc = existing
-        else:
-            calc = LCTCalculation(
-                district_id=district.nces_id,
-                year=year,
-                grade_level=grade_level,
-                instructional_minutes=instructional_minutes,
-                enrollment=district.enrollment,
-                instructional_staff=district.instructional_staff,
-                lct_value=lct_value,
-                data_tier=data_tier,
-                bell_schedule_id=bell_schedule_id,
-            )
-            session.add(calc)
-
-        results.append(calc)
-
-    session.flush()
-    return results
-
-
-# =============================================================================
-# EXPORT UTILITIES
-# =============================================================================
-
+# NOTE (2026-07-02, issue #27): the legacy calculate_and_store_lct — the pre-scoped-staffing
+# per-grade writer (flat district.instructional_staff, its own data_tier semantics) — was
+# RETIRED. The one LCT write path is calculate_lct_variants.py (git holds the old code).
 
 def export_bell_schedules_to_json(
     session: Session, year: str = CURRENT_SCHOOL_YEAR, pretty: bool = True

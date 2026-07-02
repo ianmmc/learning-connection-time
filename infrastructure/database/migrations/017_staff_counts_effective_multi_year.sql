@@ -9,7 +9,7 @@
 --          callers select the year explicitly (see calculate_lct_variants.py's
 --          get_most_recent_staff, queries.py, merge_sea_precedence.py).
 
-ALTER TABLE staff_counts_effective DROP CONSTRAINT staff_counts_effective_pkey;
+ALTER TABLE staff_counts_effective DROP CONSTRAINT IF EXISTS staff_counts_effective_pkey;
 
 ALTER TABLE staff_counts_effective
     ADD CONSTRAINT staff_counts_effective_pkey PRIMARY KEY (district_id, effective_year);
