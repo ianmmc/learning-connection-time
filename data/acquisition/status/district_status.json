@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-06-30T20:57:53Z",
+  "last_updated": "2026-07-02T16:29:19Z",
   "districts": {
     "0100810": {
       "name": "Coffee County",
@@ -522,6 +522,33 @@
       ],
       "notes": "gate@1 approved batch_00003"
     },
+    "0601464": {
+      "name": "Community Montessori District",
+      "state": "CA",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00008",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-02T16:13:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-02T16:15:13Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
+        }
+      ],
+      "notes": "reject district 0601464"
+    },
     "0601700": {
       "name": "City Heights Preparatory Charter District",
       "state": "CA",
@@ -942,6 +969,33 @@
         }
       ],
       "notes": ""
+    },
+    "1100020": {
+      "name": "Roots PCS",
+      "state": "DC",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00008",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-02T16:13:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-02T16:15:15Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
+        }
+      ],
+      "notes": "reject district 1100020"
     },
     "1600001": {
       "name": "WEST BONNER COUNTY DISTRICT",
@@ -1646,6 +1700,33 @@
       ],
       "notes": ""
     },
+    "1928020": {
+      "name": "Tri-County Comm School District",
+      "state": "IA",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00008",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-02T16:13:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-02T16:15:17Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
+        }
+      ],
+      "notes": "reject district 1928020"
+    },
     "2006180": {
       "name": "Fort Scott",
       "state": "KS",
@@ -2006,6 +2087,81 @@
       ],
       "notes": "gate@1 approved batch_00002"
     },
+    "2507080": {
+      "name": "Lunenburg",
+      "state": "MA",
+      "furthest_stage": 5,
+      "stage_name": "filter",
+      "outcome": "ingested",
+      "topology": null,
+      "batch_id": "batch_00008",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-02T16:13:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-02T16:15:37Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-02T16:15:48Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-02T16:16:16Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-07-02T16:18:13Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-07-02T16:19:34Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-02T16:21:17Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_partial",
+          "at": "2026-07-02T16:22:25Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-07-02T16:29:19Z"
+        }
+      ],
+      "notes": "gate@1 approved batch_00008"
+    },
     "2600209": {
       "name": "Chandler Woods Charter Academy",
       "state": "MI",
@@ -2088,6 +2244,33 @@
         }
       ],
       "notes": ""
+    },
+    "2601036": {
+      "name": "Tipton Academy",
+      "state": "MI",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00008",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-02T16:13:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-02T16:14:44Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
+        }
+      ],
+      "notes": "reject district 2601036"
     },
     "2607470": {
       "name": "Burt Township School District",
@@ -2341,6 +2524,33 @@
       ],
       "notes": "reject district 2700361"
     },
+    "2804020": {
+      "name": "Smith County School District",
+      "state": "MS",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00008",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-02T16:13:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-02T16:14:21Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
+        }
+      ],
+      "notes": "reject district 2804020"
+    },
     "2900601": {
       "name": "HOPE LEADERSHIP ACADEMY",
       "state": "MO",
@@ -2506,6 +2716,33 @@
         }
       ],
       "notes": "gate@1 approved batch_00003"
+    },
+    "2921720": {
+      "name": "NAYLOR R-II",
+      "state": "MO",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00008",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-02T16:13:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-02T16:14:34Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
+        }
+      ],
+      "notes": "reject district 2921720"
     },
     "3008860": {
       "name": "Denton Elem",
@@ -2799,6 +3036,33 @@
         }
       ],
       "notes": ""
+    },
+    "3415510": {
+      "name": "Sparta Township Public School District",
+      "state": "NJ",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00008",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-02T16:13:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-02T16:14:23Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
+        }
+      ],
+      "notes": "reject district 3415510"
     },
     "3416500": {
       "name": "Township of Union School District",
@@ -3665,6 +3929,33 @@
       ],
       "notes": ""
     },
+    "3900342": {
+      "name": "Summit Academy Transition High School-Columbus",
+      "state": "OH",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00008",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-02T16:13:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-02T16:15:19Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
+        }
+      ],
+      "notes": "reject district 3900342"
+    },
     "3900344": {
       "name": "Summit Academy Alternative LearnersWarren Middle & Secondary",
       "state": "OH",
@@ -4109,6 +4400,33 @@
         }
       ],
       "notes": "gate@1 approved batch_00004"
+    },
+    "4202670": {
+      "name": "Athens Area SD",
+      "state": "PA",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00008",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-02T16:13:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-02T16:14:19Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
+        }
+      ],
+      "notes": "reject district 4202670"
     },
     "4207560": {
       "name": "Derry Area SD",
@@ -5102,18 +5420,9 @@
           "stage_name": "process",
           "outcome": "processed_partial",
           "at": "2026-06-29T07:24:22Z"
-        },
-        {
-          "stage": null,
-          "stage_name": null,
-          "outcome": null,
-          "at": "2026-06-30T20:57:53Z",
-          "checkpoint": "gate@6",
-          "event_type": "dispatched",
-          "actor": "verify"
         }
       ],
-      "notes": "bd6dd5a3e783"
+      "notes": "gate@1 approved batch_00002"
     },
     "5505100": {
       "name": "Geneva J4 School District",
@@ -5225,6 +5534,90 @@
       ],
       "notes": "gate@1 approved batch_00003"
     },
+    "5508790": {
+      "name": "Marshall School District",
+      "state": "WI",
+      "furthest_stage": 5,
+      "stage_name": "filter",
+      "outcome": "ingested",
+      "topology": null,
+      "batch_id": "batch_00008",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-02T16:13:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-02T16:15:31Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-02T16:15:37Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-02T16:15:48Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-02T16:15:59Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-07-02T16:18:13Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-07-02T16:20:52Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-02T16:21:17Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-07-02T16:29:11Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-07-02T16:29:19Z"
+        }
+      ],
+      "notes": "gate@1 approved batch_00008"
+    },
     "5510380": {
       "name": "Nekoosa School District",
       "state": "WI",
@@ -5329,6 +5722,33 @@
         }
       ],
       "notes": ""
+    },
+    "7200030": {
+      "name": "PUERTO RICO DEPARTMENT OF EDUCATION",
+      "state": "PR",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00008",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-02T16:13:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-02T16:13:58Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
+        }
+      ],
+      "notes": "reject district 7200030"
     }
   }
 }

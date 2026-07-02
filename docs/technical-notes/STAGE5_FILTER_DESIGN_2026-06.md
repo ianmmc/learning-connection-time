@@ -171,6 +171,15 @@ both observations would pay off.
 
 **(3) Registration, open house, back-to-school, and last day of school information may merit facets.** Content about these sorts of events seem to come up a lot. There may be associated keywords to look at for downweighting. They may merit adding facet checkboxes to the console view for Stage 5.
 
+**(4) SUMMER SCHOOL pages are a confounder shape the detectors don't distinguish (2026-07-02).** Marshall
+WI (5508790, batch_00008): `…/students-families/summer-school.cfm` auto-sent as **tier-A** — it carries a
+genuine-looking start/end pair and schedule keywords, but summer hours are NOT the regular instructional
+day (shorter day, subset of students, different calendar). Same family as `lf_nonstandard_day`'s
+weather/delay cases: real bell-shape, wrong schedule. Candidate signal: a `summer` keyword class
+(summer school / summer session / ESY / extended school year) as a soft negative and/or a `summer_school`
+confounder facet on Axis 2 (pairs naturally with obs. 3's event-content facets). Also relates to the
+recency/dispatch question — see `STAGE6_DISPATCH_DESIGN` §3G.
+
 ---
 
 ## 4. Labeling — a THREE-AXIS object (v2.1, REQ-114)

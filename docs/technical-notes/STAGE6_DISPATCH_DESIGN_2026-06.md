@@ -172,7 +172,8 @@ runtime path changes to enable it.
 > (config-as-data + validator); *composition* OPEN (the lab). **§3B** routing = BUILT (data-driven off
 > `input_kinds` + the fidelity gate); the *cross-config cascade* OPEN. **§3C** cost = BUILT on a bootstrap;
 > the *measured token×live-price* model DESIGNED. **§3D** dispatch schema = BUILT. **§3E** gate@6 = *manual*
-> BUILT (console); *auto* DEFERRED. **§3F** request-more-evidence = Stage 7 (deferred).
+> BUILT (console); *auto* DEFERRED. **§3F** request-more-evidence = Stage 7 (deferred). **§3G** recency
+> preference = OPEN (a dispatch decision; batch_00008 evidence).
 
 ### A. What *is* a council configuration? (the heart of Stage 6)
 A first-class, registered object (stories 62–66: view/create/assign/override; default assignment). The
@@ -440,6 +441,36 @@ we keep an API session open across the request round-trip, or must we re-pass fr
 dispatch is what makes this recoverable) into a fresh call with an appropriate follow-up prompt? Councils may
 or may not persist in the OpenRouter session; the dispatch freeze + per-model prompts (§3A) are the
 mechanisms for reconstituting context if they don't.
+
+### G. Recency preference in bell-schedule documentation (OPEN — a DISPATCH decision; Ian, 2026-07-02)
+
+**The problem, from live data (batch_00008):** Marshall WI's tier-gated auto-send set included a
+**2021-2022 HS Handbook (COVID-era)** and a **2018-2019 MES Handbook** alongside the current
+`Bell Schedule 25-26` PDF — the detectors score content shape, not school year, so stale documents
+reach the paid seam looking identical to current ones. The Data Year Strategy (CLAUDE.md) is
+explicit: bell schedules **2025-26 → 2024-25 → 2023-24** (search current first), **COVID years
+(2019-20..2022-23) never**.
+
+**Ian's lean: this is a DISPATCH decision** — the natural home is Stage 6, where competing
+representations for the same district/school are visible side by side, not (only) the Stage-5
+per-record gate (REQ-044 scoped recency there; the two are complementary, not duplicates):
+- **Prefer-recent selection:** when multiple send-eligible records plausibly cover the same
+  school/band, dispatch the most recent school year's document first; the stale sibling is held,
+  not spent — it remains available if the recent one fails extraction (a cheaper 7→6 re-dispatch
+  than paying for both up front).
+- **COVID/stale down-rank or hold:** a record whose only year evidence is COVID-era or ≥3 school
+  years old should not auto-send on tier alone — hold for a gate@5 label or require an explicit
+  gate@6 override (mirrors the tier-B/C hold posture: the uncertain middle waits for judgment).
+- **The signal problem is upstream:** dispatch needs a per-record **content school-year** signal
+  to act on (URL/filename year patterns like `25-26`/`2018-2019`, in-text year mentions, capture
+  date as a weak floor) — a Stage-5 deterministic signal + candidate Axis-3 facet
+  (`content_school_year`), surfaced to the gate@6 preview. Detector/scoring use of it follows the
+  measured-pass discipline (§3a of the Stage-5 note; kin to obs. 4's summer-school confounder).
+- **Not decided:** hard-reject vs. hold for stale; whether year-preference lives in
+  `release.decide` (Stage 5) or the routing/package layer (here); how it interacts with the
+  handbook `harvest_slice` (an old handbook's slice may still be the only evidence for a band).
+Cross-refs: REQ-044 (recency gate), REQ-007/school_year.py (COVID exclusion), the batch_00008
+observation record (issues #60/#61's deferral note explains the measured-pass rule this follows).
 
 ---
 
