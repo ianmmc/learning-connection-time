@@ -136,12 +136,12 @@
   },
   {
     "rec_key": "0602095:1e84861a7a",
-    "primary_label": "school_bell_table",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"academic_calendar\": \"yes\"}",
     "note": "In an academic calendar \u2014 small \"Bell Schedule\" table in lower-right corner, one up from the bottom in the rightmost column.",
     "status": "labeled",
-    "updated_at": "2026-06-29T07:45:46Z"
+    "updated_at": "2026-07-01T23:41:40Z"
   },
   {
     "rec_key": "0602095:30f02b3149",
@@ -156,10 +156,10 @@
     "rec_key": "0602095:42b78e0992",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"news_feed\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-29T07:46:52Z"
+    "updated_at": "2026-07-01T23:43:52Z"
   },
   {
     "rec_key": "0602095:571aaeec0e",
@@ -172,12 +172,12 @@
   },
   {
     "rec_key": "0602095:6e8db3e114",
-    "primary_label": "school_bell_table",
-    "flags_json": "[\"buried_in_long_doc\"]",
-    "facets_json": "{\"buried_handbook\": \"yes\"}",
+    "primary_label": "school_start_end_list",
+    "flags_json": "[]",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"academic_calendar\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"7\", \"_pages_list\": [7]}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-29T07:43:27Z"
+    "updated_at": "2026-07-01T23:39:07Z"
   },
   {
     "rec_key": "0602095:85a814e8d4",
@@ -204,7 +204,7 @@
     "facets_json": "{\"academic_calendar\": \"yes\"}",
     "note": "Actually a school profile page, but has academic calendar information in a list.",
     "status": "labeled",
-    "updated_at": "2026-06-29T07:50:31Z"
+    "updated_at": "2026-07-01T23:43:04Z"
   },
   {
     "rec_key": "0602095:b84b0c0608",
@@ -1065,19 +1065,19 @@
     "rec_key": "2600992:f067ea2f83",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"news_feed\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-25T00:14:49Z"
+    "updated_at": "2026-07-01T23:45:22Z"
   },
   {
     "rec_key": "2607470:269f63b311",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"community_calendar\": \"yes\"}",
+    "facets_json": "{\"board\": \"yes\", \"community_calendar\": \"yes\", \"office_building_hours\": \"yes\"}",
     "note": "This actually has a number of different components: community events, school board, a news feed, and event a recycling schedule.",
     "status": "labeled",
-    "updated_at": "2026-06-29T07:57:47Z"
+    "updated_at": "2026-07-01T23:46:43Z"
   },
   {
     "rec_key": "2607470:3d73357c3c",
@@ -1119,10 +1119,10 @@
     "rec_key": "2607470:bab3d3937a",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"sports\": \"yes\"}",
+    "facets_json": "{\"sports\": \"yes\", \"community_calendar\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-29T07:55:51Z"
+    "updated_at": "2026-07-01T23:45:41Z"
   },
   {
     "rec_key": "2607470:e3e7e60fc0",
@@ -1217,83 +1217,83 @@
   {
     "rec_key": "2905790:3bf6571c0d",
     "primary_label": "school_bell_table",
-    "flags_json": "[\"buried_in_long_doc\"]",
-    "facets_json": "{\"buried_handbook\": \"yes\"}",
-    "note": "On pages 7-8 of the PDF",
+    "flags_json": "[]",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"sports\": \"yes\", \"academic_calendar\": \"yes\", \"community_calendar\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"7-8\", \"_pages_list\": [7, 8]}",
+    "note": "",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:56:55Z"
+    "updated_at": "2026-07-01T23:36:10Z"
   },
   {
     "rec_key": "2905790:5045765901",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"news_feed\": \"yes\"}",
-    "note": "Not actually social media feed. It's a newsletter.",
+    "facets_json": "{\"board\": \"yes\", \"academic_calendar\": \"yes\", \"community_calendar\": \"yes\"}",
+    "note": "",
     "status": "labeled",
-    "updated_at": "2026-07-01T06:02:51Z"
+    "updated_at": "2026-07-01T23:32:55Z"
   },
   {
     "rec_key": "2905790:5c115eb32b",
     "primary_label": "school_bell_table",
-    "flags_json": "[\"buried_in_long_doc\"]",
-    "facets_json": "{\"footer_hours\": \"no\", \"student_start_end\": \"yes\", \"schedule_table\": \"yes\", \"explicit_minutes\": \"no\", \"news_feed\": \"no\", \"calendar_widget\": \"no\", \"office_hours\": \"no\", \"nonstandard_day\": \"yes\", \"buried_handbook\": \"yes\"}",
-    "note": "On pages 21-22 of the PDF",
+    "flags_json": "[]",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"academic_calendar\": \"yes\", \"community_calendar\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"21-22\", \"_pages_list\": [21, 22]}",
+    "note": "Bell schedule unconventionally has class times as columns rather than rows",
     "status": "labeled",
-    "updated_at": "2026-07-01T19:57:20Z"
+    "updated_at": "2026-07-01T23:34:46Z"
   },
   {
     "rec_key": "2905790:71b7c68ade",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"news_feed\": \"yes\"}",
-    "note": "Not actually a social media feed. It's a newsletter document.",
+    "facets_json": "{\"board\": \"yes\", \"community_calendar\": \"yes\"}",
+    "note": "",
     "status": "labeled",
-    "updated_at": "2026-07-01T06:01:12Z"
+    "updated_at": "2026-07-01T23:26:18Z"
   },
   {
     "rec_key": "2905790:c31d425ccb",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"news_feed\": \"yes\"}",
-    "note": "Not actually a social media feed. It's a newsletter.",
+    "facets_json": "{\"sports\": \"yes\", \"academic_calendar\": \"yes\", \"community_calendar\": \"yes\"}",
+    "note": "",
     "status": "labeled",
-    "updated_at": "2026-07-01T06:01:59Z"
+    "updated_at": "2026-07-01T23:32:04Z"
   },
   {
     "rec_key": "2905790:cec5700763",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"news_feed\": \"yes\"}",
-    "note": "Not technically a blog/news feed embedded in a web page. It's a newsletter document.",
+    "facets_json": "{\"sports\": \"yes\", \"academic_calendar\": \"yes\", \"community_calendar\": \"yes\"}",
+    "note": "",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:58:05Z"
+    "updated_at": "2026-07-01T23:37:19Z"
   },
   {
     "rec_key": "2905790:d953e92385",
     "primary_label": "school_bell_table",
-    "flags_json": "[\"buried_in_long_doc\"]",
-    "facets_json": "{\"buried_handbook\": \"yes\"}",
-    "note": "On pages 18-19 of the PDF",
+    "flags_json": "[]",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"sports\": \"yes\", \"academic_calendar\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"18-19\", \"_pages_list\": [18, 19]}",
+    "note": "Bell schedule times are unconventionally columns rather than rows.",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:55:34Z"
+    "updated_at": "2026-07-01T23:29:22Z"
   },
   {
     "rec_key": "2905790:e39555d45b",
     "primary_label": "school_bell_table",
-    "flags_json": "[\"buried_in_long_doc\"]",
-    "facets_json": "{\"buried_handbook\": \"yes\"}",
-    "note": "Pages 17-18",
+    "flags_json": "[]",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"academic_calendar\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"17-18\", \"_pages_list\": [17, 18]}",
+    "note": "Bell schedule in handbook has times unconventionally in columns rather than rows",
     "status": "labeled",
-    "updated_at": "2026-07-01T06:00:06Z"
+    "updated_at": "2026-07-01T23:36:24Z"
   },
   {
     "rec_key": "2905790:e91e43df1a",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"board\": \"yes\"}",
+    "facets_json": "{\"board\": \"yes\", \"academic_calendar\": \"yes\", \"community_calendar\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:59:13Z"
+    "updated_at": "2026-07-01T23:24:46Z"
   },
   {
     "rec_key": "2905790:ed9a5234be",
@@ -2333,20 +2333,20 @@
   {
     "rec_key": "3800038:01c0ba51f8",
     "primary_label": "district_hub_by_school",
-    "flags_json": "[\"buried_in_long_doc\"]",
-    "facets_json": "{\"buried_handbook\": \"yes\"}",
+    "flags_json": "[]",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"5\", \"_pages_list\": [5]}",
     "note": "Bottom of page 5. Elementary schools only.",
     "status": "labeled",
-    "updated_at": "2026-06-30T07:29:04Z"
+    "updated_at": "2026-07-01T23:51:36Z"
   },
   {
     "rec_key": "3800038:08b330937e",
     "primary_label": "school_bell_table",
-    "flags_json": "[\"buried_in_long_doc\"]",
-    "facets_json": "{\"buried_handbook\": \"yes\"}",
+    "flags_json": "[]",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"_where\": \"image/PDF\"}",
     "note": "Table on page 16",
     "status": "labeled",
-    "updated_at": "2026-07-01T06:09:32Z"
+    "updated_at": "2026-07-01T23:48:18Z"
   },
   {
     "rec_key": "3800038:0d3bd88243",
@@ -2387,11 +2387,11 @@
   {
     "rec_key": "3800038:1497f7f1cc",
     "primary_label": "target_absent",
-    "flags_json": "[\"building_hours_visible\"]",
-    "facets_json": "{\"office_building_hours\": \"yes\"}",
+    "flags_json": "[]",
+    "facets_json": "{\"academic_calendar\": \"yes\", \"news_feed\": \"yes\", \"office_building_hours\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-07-01T06:16:25Z"
+    "updated_at": "2026-07-02T00:04:22Z"
   },
   {
     "rec_key": "3800038:1569c6f853",
@@ -2467,12 +2467,12 @@
   },
   {
     "rec_key": "3800038:57cc183802",
-    "primary_label": "school_bell_table",
+    "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{}",
-    "note": "School start stop hours in footer.",
+    "facets_json": "{\"office_building_hours\": \"yes\"}",
+    "note": "",
     "status": "labeled",
-    "updated_at": "2026-07-01T06:06:07Z"
+    "updated_at": "2026-07-02T00:06:50Z"
   },
   {
     "rec_key": "3800038:62a54394f8",
@@ -2540,38 +2540,38 @@
   {
     "rec_key": "3800038:a8941eea87",
     "primary_label": "school_start_end_prose",
-    "flags_json": "[\"buried_in_long_doc\"]",
-    "facets_json": "{\"buried_handbook\": \"yes\"}",
+    "flags_json": "[]",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"office_building_hours\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"2\", \"_pages_list\": [2]}",
     "note": "Page 2. Schools doors are locked from 8:20 AM to 3:20 PM during our school day",
     "status": "labeled",
-    "updated_at": "2026-06-30T07:30:43Z"
+    "updated_at": "2026-07-01T23:58:11Z"
   },
   {
     "rec_key": "3800038:a97e7de385",
-    "primary_label": "school_bell_table",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"academic_calendar\": \"yes\", \"_where\": \"footer\"}",
     "note": "School hours in footer",
     "status": "labeled",
-    "updated_at": "2026-07-01T06:13:06Z"
+    "updated_at": "2026-07-02T00:01:52Z"
   },
   {
     "rec_key": "3800038:acbbfd24a1",
-    "primary_label": "school_bell_table",
+    "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{}",
-    "note": "School hours in footer.",
+    "facets_json": "{\"office_building_hours\": \"yes\"}",
+    "note": "",
     "status": "labeled",
-    "updated_at": "2026-07-01T06:18:15Z"
+    "updated_at": "2026-07-02T00:06:30Z"
   },
   {
     "rec_key": "3800038:af5756eb79",
-    "primary_label": "district_hub_by_school",
+    "primary_label": "district_hub_by_band",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"community_calendar\": \"yes\"}",
     "note": "New school times by band in post.",
     "status": "labeled",
-    "updated_at": "2026-07-01T06:07:24Z"
+    "updated_at": "2026-07-01T23:49:30Z"
   },
   {
     "rec_key": "3800038:b6cc7604ec",
@@ -2584,21 +2584,21 @@
   },
   {
     "rec_key": "3800038:c1a0d26caa",
-    "primary_label": "school_bell_table",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"news_feed\": \"yes\"}",
     "note": "School hours in footer.",
     "status": "labeled",
-    "updated_at": "2026-07-01T06:17:15Z"
+    "updated_at": "2026-07-02T00:04:06Z"
   },
   {
     "rec_key": "3800038:caaaaec3e1",
     "primary_label": "school_start_end_prose",
-    "flags_json": "[\"buried_in_long_doc\"]",
-    "facets_json": "{\"buried_handbook\": \"yes\"}",
+    "flags_json": "[]",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"4\", \"_pages_list\": [4]}",
     "note": "On page 4.\nAttendance \u2013 School hours are from 7:30 \u2013 3:30",
     "status": "labeled",
-    "updated_at": "2026-06-30T07:28:18Z"
+    "updated_at": "2026-07-01T23:56:36Z"
   },
   {
     "rec_key": "3800038:d287a1eaa2",
@@ -2613,10 +2613,10 @@
     "rec_key": "3800038:d9504fd1cc",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"board\": \"yes\"}",
+    "facets_json": "{\"board\": \"yes\", \"office_building_hours\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-07-01T06:17:49Z"
+    "updated_at": "2026-07-02T00:07:49Z"
   },
   {
     "rec_key": "3800038:dea8788ce2",
@@ -2629,39 +2629,39 @@
   },
   {
     "rec_key": "3800038:df6bcfc4b7",
-    "primary_label": "school_bell_table",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"news_feed\": \"yes\", \"_where\": \"footer\"}",
     "note": "School hours in footer",
     "status": "labeled",
-    "updated_at": "2026-07-01T06:17:30Z"
+    "updated_at": "2026-07-02T00:08:48Z"
   },
   {
     "rec_key": "3800038:e06b0e317b",
-    "primary_label": "school_bell_table",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"_where\": \"footer\"}",
     "note": "It's in the footer: Hours: 8:24 AM \u2013 3:30 PM. This is an ambiguous case where these could be either building hours or school hours. They're not labeled.",
     "status": "labeled",
-    "updated_at": "2026-06-30T07:24:01Z"
+    "updated_at": "2026-07-01T23:54:23Z"
   },
   {
     "rec_key": "3800038:e7544b01cf",
-    "primary_label": "school_bell_table",
+    "primary_label": "school_start_end_list",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"news_feed\": \"yes\", \"_where\": \"footer\"}",
     "note": "Start and stop times in footer",
     "status": "labeled",
-    "updated_at": "2026-07-01T06:12:10Z"
+    "updated_at": "2026-07-02T00:01:59Z"
   },
   {
     "rec_key": "3800038:e8832a517f",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"office_building_hours\": \"yes\"}",
     "note": "Contains links to calendars, but no bell schedule content.",
     "status": "labeled",
-    "updated_at": "2026-06-30T07:21:11Z"
+    "updated_at": "2026-07-01T23:57:26Z"
   },
   {
     "rec_key": "3800038:ef517c384e",
@@ -2683,48 +2683,48 @@
   },
   {
     "rec_key": "3800038:f578be20a3",
-    "primary_label": "school_bell_table",
+    "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"news_feed\": \"yes\", \"office_building_hours\": \"yes\"}",
     "note": "School hours in footer",
     "status": "labeled",
-    "updated_at": "2026-07-01T06:16:48Z"
+    "updated_at": "2026-07-02T00:08:17Z"
   },
   {
     "rec_key": "3800038:f78241f3fe",
     "primary_label": "district_hub_by_school",
-    "flags_json": "[\"buried_in_long_doc\"]",
-    "facets_json": "{\"buried_handbook\": \"yes\"}",
+    "flags_json": "[]",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"academic_calendar\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"4\", \"_pages_list\": [4]}",
     "note": "Bottom of page 4. Elementary schools only.",
     "status": "labeled",
-    "updated_at": "2026-06-30T07:31:25Z"
+    "updated_at": "2026-07-01T23:59:33Z"
   },
   {
     "rec_key": "3800038:f7c9e6cc9f",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"office_building_hours\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-07-01T06:07:32Z"
+    "updated_at": "2026-07-01T23:49:06Z"
   },
   {
     "rec_key": "3800038:f9232441cf",
     "primary_label": "school_bell_table",
     "flags_json": "[]",
-    "facets_json": "{}",
+    "facets_json": "{\"office_building_hours\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-30T07:24:10Z"
+    "updated_at": "2026-07-01T23:50:58Z"
   },
   {
     "rec_key": "3800038:f962d4236d",
     "primary_label": "school_bell_table",
-    "flags_json": "[\"buried_in_long_doc\"]",
-    "facets_json": "{\"buried_handbook\": \"yes\"}",
-    "note": "At the top of page 5 in the PDF",
+    "flags_json": "[]",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"community_calendar\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"5\", \"_pages_list\": [5]}",
+    "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-30T07:26:13Z"
+    "updated_at": "2026-07-01T23:54:57Z"
   },
   {
     "rec_key": "3800038:fb3dc640a1",

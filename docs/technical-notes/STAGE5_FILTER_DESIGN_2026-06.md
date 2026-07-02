@@ -139,6 +139,36 @@ at page granularity for multi-page PDFs. Existing (V1, retained): `n_times`, `n_
 target evidence flows to `send` or `review` — the expensive error is silently dropping a real schedule
 before the human sees it; a borderline page reaching gate@5 costs only review time.
 
+### 3a. Field observations from labeling — candidate refinements (RECORDED, not yet built)
+
+> A running log of patterns Ian spots during gate@5 review that should sharpen the detectors/signals later.
+> **Written down, not implemented** (per `feedback-explore-before-scoring-changes`): fold in deliberately and
+> measure against the labels, never tune by eye. New observations append here.
+
+**(1) A footer time-range on a DISTRICT page leans building/office hours; on a SCHOOL page it leans the
+student day (2026-07-01).** An unlabeled footer range (the `school_start_end_list` shape) is more likely
+`office_building_hours` when the page is district-focused, and more likely a real target on a single-school
+page. → would down-weight `lf_footer_hours` / up-weight `lf_office_hours` when the page is a district page.
+- **Open sub-problem — we lack a reliable "page focus: district vs school" signal, and the domain/TLD is NOT
+  it** (schools may or may not have their own subdomains). Candidate signals already on hand:
+  `roster_school_names_hit` (many distinct school names on one page → district/hub), `intended_schools` (the
+  candidates.json school[s] a URL was discovered for — exactly one → school-focused), the URL path. None is
+  decisive alone; this needs its own small page-focus classifier before the observation can be used.
+
+**(2) Off-the-hour minutes are a POSITIVE instructional signal — asymmetrically (2026-07-01).** A range with an
+oddly-specific minute (e.g. **8:24**–3:30) is far more likely a real bell schedule (times computed from actual
+period boundaries) than a tidy stated office-hours range. **The asymmetry is the whole point:** it's the `:24`
+that's positive — a round range like **8:00–4:00** is **NEUTRAL, not negative** (round times say nothing either
+way). So the candidate signal is "≥1 in-window time has a non-round minute (not :00/:15/:30/:45)" → a small
+positive nudge for `lf_footer_hours` / `lf_weak_times`; round times must **never** be read as evidence *against*
+a target.
+
+**Motivating case — Dickinson 1, ND (one district, the same footer SHAPE meant different things).** The
+**district** page and **Dickinson High School** carried building/office hours in the footer; **Dickinson Middle
+School** carried the real instructional start/stop — disambiguated by page focus (obs. 1) and the off-the-hour
+minutes (obs. 2). This is exactly the office-vs-school-hours confusable (the research's #1 danger) and where
+both observations would pay off.
+
 ---
 
 ## 4. Labeling — a THREE-AXIS object (v2.1, REQ-114)
