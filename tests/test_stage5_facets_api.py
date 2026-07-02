@@ -147,3 +147,26 @@ def test_facets_json_column_and_roundtrip(client):
         back = con.execute(text("SELECT facets_json FROM label WHERE rec_key=:rk"),
                            {"rk": f"{DL}:r"}).scalar()
         assert json.loads(back) == facets
+
+
+def test_label_save_never_touches_legacy_flags_json(client):
+    """Regression (fable review 2026-07-01, finding 2.1): the v2.1 UI posts no `flags`, and the old
+    UPSERT wrote payload.get('flags', []) — wiping historical v2.0 flags_json on every save. The
+    upsert must not reference flags_json at all: a save leaves the inert archive column untouched.
+    (Exercises the real UPSERT_LABEL statement directly — the endpoint itself also exports the
+    tracked labels.json backup, a side effect tests must not trigger.)"""
+    import json
+    from infrastructure.acquisition.process_governance.server import UPSERT_LABEL
+    legacy = json.dumps(["duplicate", "building_hours_visible"])
+    with gdb.session_scope() as con:
+        con.execute(text("UPDATE label SET flags_json=:fj WHERE rec_key=:rk"),
+                    {"fj": legacy, "rk": f"{DL}:r"})
+        con.execute(UPSERT_LABEL, {
+            "rec_key": f"{DL}:r", "primary_label": "school_bell_table",
+            "facets_json": json.dumps({"needs_vision": "yes"}),
+            "note": "", "status": "labeled", "updated_at": "2026-07-01T00:00:00Z"})
+        row = con.execute(text("SELECT flags_json, primary_label, facets_json FROM label WHERE rec_key=:rk"),
+                          {"rk": f"{DL}:r"}).fetchone()
+        assert row[0] == legacy                       # the archive column survived the save
+        assert row[1] == "school_bell_table"          # ...while the v2.1 fields were written
+        assert json.loads(row[2]) == {"needs_vision": "yes"}

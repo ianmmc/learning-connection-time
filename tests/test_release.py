@@ -15,9 +15,9 @@ from infrastructure.acquisition.stage5_filter import release as R
 from infrastructure.acquisition.stage5_filter import build_signals as BS
 
 
-def _rec(label=None, tier="A", reps=None, signals=None, flags=None, **over):
+def _rec(label=None, tier="A", reps=None, signals=None, facets=None, **over):
     base = {"rec_key": "d:1", "url": "http://x/a", "tier": tier, "category": "x",
-            "label": label, "signals": signals or {}, "flags": flags or [],
+            "label": label, "signals": signals or {}, "facets": facets or {},
             "is_emergent": 0, "intended_schools": [], "reps": reps or []}
     base.update(over)
     return base
@@ -31,19 +31,23 @@ def _text_rep(filename, n_times=0, n_chars=100, usable=1, source="pdftotext"):
 # ----------------------------- best_send (one best representation) -----------------------------
 def test_best_send_picks_densest_usable_text():
     reps = [_text_rep("a.txt", n_times=1), _text_rep("b.txt", n_times=5), _text_rep("c.txt", n_times=2)]
-    assert R.best_send(reps, {}, []) == [{"file": "b.txt", "kind": "text"}]
+    assert R.best_send(reps, {}, {}) == [{"file": "b.txt", "kind": "text"}]
 
 
 def test_best_send_image_when_visual_text_gap():
     reps = [_text_rep("a.txt", n_times=3),
             {"source": "capture:png", "filename": "page.png", "file_kind": "image"}]
-    assert R.best_send(reps, {"visual_text_gap": True}, []) == [{"file": "page.png", "kind": "image"}]
+    assert R.best_send(reps, {"visual_text_gap": True}, {}) == [{"file": "page.png", "kind": "image"}]
 
 
-def test_best_send_image_when_human_flags_target_image_only():
+def test_best_send_image_when_human_facets_needs_vision():
+    # v2.1 (REQ-114 Axis 3): the human's needs_vision facet routes to the image rep — this replaced
+    # the v2.0 target_image_only flag (flags_json is a retired, inert archive).
     reps = [_text_rep("a.txt", n_times=9),
             {"source": "raster", "filename": "raster_p1.png", "file_kind": "image"}]
-    assert R.best_send(reps, {}, ["target_image_only"]) == [{"file": "raster_p1.png", "kind": "image"}]
+    assert R.best_send(reps, {}, {"needs_vision": "yes"}) == [{"file": "raster_p1.png", "kind": "image"}]
+    # tri-state: only an explicit "yes" routes; "no"/"unsure"/absent do not
+    assert R.best_send(reps, {}, {"needs_vision": "no"}) == [{"file": "a.txt", "kind": "text"}]
 
 
 def test_best_send_handbook_prefers_the_materialized_slice():
@@ -53,18 +57,18 @@ def test_best_send_handbook_prefers_the_materialized_slice():
             _text_rep("a.txt", n_times=4),
             {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
     sig = {"is_handbook": True, "harvest_pages": [4, 9]}
-    assert R.best_send(reps, sig, []) == [{"file": "harvest_slice.txt", "kind": "text", "pages": [4, 9]}]
+    assert R.best_send(reps, sig, {}) == [{"file": "harvest_slice.txt", "kind": "text", "pages": [4, 9]}]
 
 
 def test_best_send_handbook_falls_back_to_pdf_when_no_slice():
     reps = [_text_rep("a.txt", n_times=4),
             {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
     sig = {"is_handbook": True, "harvest_pages": [2, 3]}
-    assert R.best_send(reps, sig, []) == [{"file": "page.pdf", "kind": "pdf", "pages": [2, 3]}]
+    assert R.best_send(reps, sig, {}) == [{"file": "page.pdf", "kind": "pdf", "pages": [2, 3]}]
 
 
 def test_best_send_empty_when_no_reps():
-    assert R.best_send([], {}, []) == []
+    assert R.best_send([], {}, {}) == []
 
 
 # ----------------------------- decide (the release rule) -----------------------------
@@ -167,8 +171,8 @@ def _seed_district(sess, did, district_dir):
         "signals_json": json.dumps({"n_times": 4}), "intended_schools_json": json.dumps(["A Elem"]),
         "candidate_tools_json": "[]", "is_emergent": 0})
     sess.execute(text(
-        "INSERT INTO label (rec_key, primary_label, flags_json, status) "
-        "VALUES (:rk, 'school_bell_table', '[]', 'labeled')"), {"rk": f"{did}:h1"})
+        "INSERT INTO label (rec_key, primary_label, facets_json, status) "
+        "VALUES (:rk, 'school_bell_table', '{}', 'labeled')"), {"rk": f"{did}:h1"})
     sess.execute(BS.INSERT_REP, {"rec_key": f"{did}:h1", "source": "pdftotext", "filename": "page.txt",
                                  "file_kind": "text", "n_chars": 200, "n_times": 4, "usable": 1})
 

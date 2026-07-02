@@ -36,7 +36,11 @@ QUEUE_DIR = paths.QUEUE_DIR                   # Stage 1 batch_*.json (targeting 
 # regenerable cache; this JSON is what survives DB loss and lives in git (gitignore re-includes
 # it). Written on every label save (server) + at the end of each ingest; re-imported on ingest.
 LABELS_JSON = paths.LABELS_JSON
-LABEL_COLS = ["rec_key", "primary_label", "flags_json", "facets_json", "note", "status", "updated_at"]
+# The v2.1 label object (REQ-114): primary + facets + note + status. The legacy v2.0 `flags_json`
+# column is an inert archive (values folded into facets by migrate_label_v21; the human `duplicate`
+# flag retired — programmatic dedup via record.duplicate_of + clustering owns that now). Not
+# exported/imported/written anywhere; historical values live in the DB column + labels.json git history.
+LABEL_COLS = ["rec_key", "primary_label", "facets_json", "note", "status", "updated_at"]
 # Durable backup for the OTHER precious human signal: cluster SPLITS (a record the reviewer
 # pulled out of an auto-cluster because it's genuinely unique). Like labels, survives DB wipe.
 CLUSTER_SPLITS_JSON = paths.CLUSTER_SPLITS_JSON
@@ -718,7 +722,9 @@ def migrate_label_v21(primary, flags, facets):
     district_hub_schedule → by_school (by_band is rarer); a target's prose-vs-list shape is left as the
     v2.0 value carried forward. Non-targets → primary target_absent + the confounder facet. v2.0 FLAGS
     fold in: building_hours_visible → office_building_hours facet; buried_in_long_doc / target_image_only
-    stay as facets. `duplicate` stays a flag (a dedup mechanism, not a content facet)."""
+    stay as facets. `duplicate` has NO facet successor — retired outright (2026-07-01): programmatic
+    dedup (record.duplicate_of + near-dup clustering) owns duplicates; flags_json is now an inert
+    archive column (no live reads/writes)."""
     flags = flags or []
     facets = dict(facets or {})
     if primary in LEGACY_NONTARGET_TO_FACET:            # a v2.0 non-target -> absent + confounder facet
@@ -823,9 +829,9 @@ def import_labels(s, src: Path = LABELS_JSON) -> int:
                         {"rk": d["rec_key"]}).fetchone()
         if not cur or cur[0] != "unlabeled":
             continue
-        s.execute(text("UPDATE label SET primary_label=:pl, flags_json=:fj, facets_json=:fac, note=:nt, "
+        s.execute(text("UPDATE label SET primary_label=:pl, facets_json=:fac, note=:nt, "
                        "status=:st, updated_at=:ua WHERE rec_key=:rk"),
-                  {"pl": d.get("primary_label"), "fj": d.get("flags_json"), "fac": d.get("facets_json"),
+                  {"pl": d.get("primary_label"), "fac": d.get("facets_json"),
                    "nt": d.get("note"), "st": d.get("status", "labeled"), "ua": d.get("updated_at"),
                    "rk": d["rec_key"]})
         n += 1
@@ -1085,6 +1091,10 @@ def ingest_batch(district_ids: list, root: Path = RAW_DIR, *, regenerate_filtere
             for ddir in sorted(p for p in root.glob(f"{did}_*") if p.is_dir()):
                 if ingest_district(sess, ddir, splits=splits, batches=batches, nces=nces):
                     ingested.append(did)
+        # Restore-before-export, mirroring ingest(): after the loop has seeded label rows, restore
+        # any labels from the JSON backup (no-op on a healthy DB) — so the export_labels below can
+        # never truncate the precious backup after a DB wipe (fable review 2026-07-01, finding 2.3).
+        import_labels(sess)
         att_cfg = AT.load_config()
         for did in set(ingested):
             recompute_labeled_topology(sess, did)

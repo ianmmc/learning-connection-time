@@ -55,12 +55,13 @@ def _best_image(images: list) -> dict:
     return next((r for r in images if (r.get("source") or "").startswith("capture:png")), images[0])
 
 
-def best_send(reps: list, signals: dict, flags: list) -> list:
+def best_send(reps: list, signals: dict, facets: dict) -> list:
     """The ONE best representation for the council to read (governance §4). reps: the record's
     representation rows ({source, filename, file_kind, n_chars, n_times, usable}). Returns a list
     of send entries (usually one): handbook → the PDF + harvest pages; image when text never
-    captured the content (visual_text_gap / human target_image_only flag); else the densest text."""
-    flags = flags or []
+    captured the content (visual_text_gap / the human needs_vision facet, REQ-114 Axis 3);
+    else the densest text."""
+    facets = facets or {}
     signals = signals or {}
     # the harvest slice is a purpose-built handbook rep — never a general "densest text" candidate
     usable_text = [r for r in reps if r.get("file_kind") == "text" and r.get("usable") and r.get("filename")
@@ -76,7 +77,7 @@ def best_send(reps: list, signals: dict, flags: list) -> list:
         return [{"file": slice_rep["filename"], "kind": "text", "pages": harvest}]
     if signals.get("is_handbook") and harvest and pdfs:
         return [{"file": pdfs[0]["filename"], "kind": "pdf", "pages": harvest}]
-    if ("target_image_only" in flags or signals.get("visual_text_gap")) and images:
+    if (facets.get("needs_vision") == "yes" or signals.get("visual_text_gap")) and images:
         return [{"file": _best_image(images)["filename"], "kind": "image"}]
     if usable_text:
         best = max(usable_text, key=lambda r: ((r.get("n_times") or 0), (r.get("n_chars") or 0)))
@@ -119,10 +120,10 @@ def decide(rec: dict) -> dict:
     """The release decision for one canonical record. Returns {decision, reason, send, alternates}."""
     label = rec.get("label")
     sig = rec.get("signals") or {}
-    flags = rec.get("flags") or []
+    facets = rec.get("facets") or {}
     reps = rec.get("reps", [])
     if label in TARGET_LABELS:
-        send = best_send(reps, sig, flags)
+        send = best_send(reps, sig, facets)
         reason = f"target-label:{label}" + ("" if send else ";no-usable-rep")
         return {"decision": "send", "reason": reason, "send": send,
                 "alternates": alternates(reps, {s["file"] for s in send})}
@@ -135,7 +136,7 @@ def decide(rec: dict) -> dict:
     # "a maybe-target awaiting your label," so the funnel + UI can surface it as the label queue.
     tier = rec.get("tier")
     if tier == "A":
-        send = best_send(reps, sig, flags)
+        send = best_send(reps, sig, facets)
         if send:
             return {"decision": "send", "reason": "auto:tier-A", "send": send,
                     "alternates": alternates(reps, {s["file"] for s in send})}
@@ -190,10 +191,10 @@ def load_district(session, district_id: str):
 
 def load_district_records(session, district_id: str) -> list:
     """The district's CANONICAL records (non-dup; cluster rep or singleton) with label, signals,
-    flags, and representation rows — the population the release rule runs over."""
+    facets, and representation rows — the population the release rule runs over."""
     recs = session.execute(text(
         f"""SELECT r.rec_key, r.url, r.tier, r.category_hypothesis, r.signals_json, r.is_emergent,
-                  r.intended_schools_json, l.primary_label, l.flags_json
+                  r.intended_schools_json, l.primary_label, l.facets_json
            FROM record r LEFT JOIN label l ON l.rec_key = r.rec_key
            WHERE r.district_id = :d AND {CANONICAL_RECORD_WHERE}
            ORDER BY r.tier, r.sort_score DESC"""), {"d": district_id}).mappings().all()
@@ -207,7 +208,7 @@ def load_district_records(session, district_id: str) -> list:
             "category": r["category_hypothesis"], "signals": json.loads(r["signals_json"] or "{}"),
             "is_emergent": r["is_emergent"],
             "intended_schools": json.loads(r["intended_schools_json"] or "[]"),
-            "label": r["primary_label"], "flags": json.loads(r["flags_json"] or "[]"),
+            "label": r["primary_label"], "facets": json.loads(r["facets_json"] or "{}"),
             "reps": [dict(x) for x in reps]})
     return out
 
@@ -219,7 +220,7 @@ def district_fingerprints(session, district_id: str) -> dict:
     cfg = "".join(sorted(f.read_text() for f in paths.CONFIG_DIR.glob("*.json"))) \
         if paths.CONFIG_DIR.exists() else ""
     labels = session.execute(text(
-        """SELECT r.rec_key, l.primary_label, l.status, l.flags_json
+        """SELECT r.rec_key, l.primary_label, l.status, l.facets_json
            FROM record r JOIN label l ON l.rec_key = r.rec_key
            WHERE r.district_id = :d AND l.status != 'unlabeled' ORDER BY r.rec_key"""),
         {"d": district_id}).fetchall()

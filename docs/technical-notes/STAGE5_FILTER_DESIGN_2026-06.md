@@ -294,6 +294,18 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 
 ## Change log
 
+- **2026-07-01 (later) — flags→facets convergence completed (fable review findings 2.1/2.2/2.3).**
+  The v2.0 `flags_json` column is now an **inert archive**: no live reads or writes anywhere. The
+  label save (`server.UPSERT_LABEL`) no longer touches it (it had been wiping historical flags to
+  `[]` on every v2.1 save — the UI posts no `flags` key); the release descent
+  (`release.load_district_records`/`decide`/`best_send`) reads **`facets_json`**, with the human
+  **`needs_vision == "yes"`** facet driving image routing (was the `target_image_only` flag); the
+  label-set fingerprints (harness + `release.district_fingerprints`) hash `facets_json`. The human
+  **`duplicate` flag is retired without a successor** — programmatic dedup (`record.duplicate_of`
+  exact-hash + near-dup clustering with `cluster_split`) owns duplicates; the 9 legacy `duplicate`
+  flags remain readable in the DB column and `labels.json` git history. Also: `ingest_batch` now
+  runs `import_labels` before `export_labels` (mirroring `ingest()`), so an incremental ingest on a
+  fresh/wiped DB can never truncate the precious `labels.json` backup.
 - **2026-07-01 — v2.1 labeling (REQ-114).** The label became a **three-axis object** (§4): target SHAPE
   (7 shapes + `target_absent`/`unusable`) · confounder facets (multi) · location facets (buried+page-range,
   needs-vision, where). `migrate_label_v21` moved all 440 labels (128 targets preserved; git = restore point).

@@ -170,7 +170,7 @@ def fingerprints(con):
     cfg = "".join(sorted(f.read_text() for f in paths.CONFIG_DIR.glob("*.json"))) \
         if paths.CONFIG_DIR.exists() else ""
     labels = con.execute(text(
-        """SELECT rec_key, primary_label, status, flags_json FROM label
+        """SELECT rec_key, primary_label, status, facets_json FROM label
            WHERE status != 'unlabeled' ORDER BY rec_key""")).fetchall()
     data = con.execute(text("SELECT rec_key, tier, category_hypothesis FROM record ORDER BY rec_key")).fetchall()
     topo = con.execute(text(
