@@ -685,6 +685,30 @@ class TestOpenRouterBillingFailure:
         with pytest.raises(openai_module.APIStatusError):
             DISC.openrouter_search("query", "example.org")
 
+    def test_429_is_transient_not_a_halt(self, monkeypatch):
+        """Issue #29: 429 was split out of the billing/auth halt set -- a rate-limit is
+        transient, so it propagates as the plain APIStatusError (per-school degrade)."""
+        import openai as openai_module
+
+        class FakeCompletions:
+            def create(self, **kwargs):
+                raise _api_status_error(429)
+
+        class FakeClient:
+            def __init__(self, **kwargs):
+                self.chat = type("C", (), {"completions": FakeCompletions()})()
+
+        monkeypatch.setattr(openai_module, "OpenAI", FakeClient)
+        with pytest.raises(openai_module.APIStatusError):
+            DISC.openrouter_search("query", "example.org")
+
+    def test_run_wave2_requires_an_explicit_provider(self):
+        """Issue #41: the old default (the retired openrouter_search, ~$27/1K) is gone --
+        search_fn is a required parameter, so no code path can reach the paid provider silently."""
+        import inspect
+        param = inspect.signature(D2.run_wave2).parameters["search_fn"]
+        assert param.default is inspect.Parameter.empty
+
     def test_run_wave2_does_not_swallow_a_billing_system_exit(self):
         """run_wave2's `except Exception` must not catch a billing-failure SystemExit --
         SystemExit isn't an Exception subclass, so it propagates. The provider is injected via the
@@ -697,6 +721,76 @@ class TestOpenRouterBillingFailure:
                      "wave2_raw_urls": [], "wave2_gated": []}]
         with pytest.raises(SystemExit, match="CONTROL FAILURE"):
             D2.run_wave2(residual, "example.org", search_fn=fake_openrouter_search)
+
+
+def _fake_response(status_code, payload=None, text=""):
+    class R:
+        def __init__(self):
+            self.status_code = status_code
+            self.text = text or (json.dumps(payload) if payload is not None else "")
+
+        def json(self):
+            if payload is None:
+                raise ValueError("no JSON")
+            return payload
+
+        def raise_for_status(self):
+            if status_code >= 400:
+                import requests
+                raise requests.HTTPError(f"HTTP {status_code}")
+    return R()
+
+
+class TestSerpProviderFailureSemantics:
+    """Issue #29: 401/402 = billing/auth -> SystemExit halt (every later call fails identically);
+    429 = transient -> TransientProviderError / retry, never a whole-run halt; 5xx propagates as
+    requests.HTTPError. All HTTP is mocked via requests.post."""
+
+    def test_brightdata_401_halts(self, monkeypatch):
+        import requests
+        monkeypatch.setattr(requests, "post", lambda *a, **k: _fake_response(401, text="bad key"))
+        with pytest.raises(SystemExit, match="CONTROL FAILURE"):
+            DISC.brightdata_search("q", "example.org")
+
+    def test_brightdata_429_raises_transient_not_systemexit(self, monkeypatch):
+        import requests
+        monkeypatch.setattr(requests, "post", lambda *a, **k: _fake_response(429, text="slow down"))
+        with pytest.raises(DISC.TransientProviderError):
+            DISC.brightdata_search("q", "example.org")
+
+    def test_brightdata_5xx_propagates_as_requests_error(self, monkeypatch):
+        import requests
+        monkeypatch.setattr(requests, "post", lambda *a, **k: _fake_response(502))
+        with pytest.raises(requests.HTTPError):
+            DISC.brightdata_search("q", "example.org")
+
+    def test_brightdata_nonjson_zone_raises_transient(self, monkeypatch):
+        import requests
+        monkeypatch.setattr(requests, "post", lambda *a, **k: _fake_response(200, payload=None, text="<html>"))
+        with pytest.raises(DISC.TransientProviderError, match="non-JSON"):
+            DISC.brightdata_search("q", "example.org")
+
+    def test_serper_402_halts(self, monkeypatch):
+        import requests
+        monkeypatch.setattr(requests, "post", lambda *a, **k: _fake_response(402, text="no credits"))
+        with pytest.raises(SystemExit, match="CONTROL FAILURE"):
+            DISC.serper_search("q", "example.org", _sleep=lambda s: None)
+
+    def test_serper_429_retries_once_then_succeeds(self, monkeypatch):
+        import requests
+        responses = [_fake_response(429, text="slow down"),
+                     _fake_response(200, payload={"organic": [{"link": "https://example.org/bell"}]})]
+        slept = []
+        monkeypatch.setattr(requests, "post", lambda *a, **k: responses.pop(0))
+        urls = DISC.serper_search("q", "example.org", _sleep=slept.append)
+        assert urls == ["https://example.org/bell"]
+        assert len(slept) == 1          # one short sleep, one retry -- not a retry framework
+
+    def test_serper_429_twice_raises_transient_not_systemexit(self, monkeypatch):
+        import requests
+        monkeypatch.setattr(requests, "post", lambda *a, **k: _fake_response(429, text="still limited"))
+        with pytest.raises(DISC.TransientProviderError, match="429"):
+            DISC.serper_search("q", "example.org", _sleep=lambda s: None)
 
 
 class TestDiscoveryGate:
@@ -730,6 +824,32 @@ class TestDiscoveryGate:
         ok, why = DISC.gate("https://other.sharpschool.com/somewhere/bell", "district5.org", "district5", True)
         assert not ok and why == "off-district"
 
+    # ---- issue #34: suffix matching needs a dot boundary ----
+
+    def test_halifax_com_is_not_rejected_as_x_com(self):
+        """halifax.com endswith x.com (a NEWS_AGG entry) -- without a dot boundary a district
+        hosted on halifax.com was rejected as a news/aggregator."""
+        ok, why = DISC.gate("https://halifax.com/bell-schedule", "halifax.com", "halifax", True)
+        assert ok and why == "on-domain"
+
+    def test_x_com_itself_still_rejected(self):
+        ok, why = DISC.gate("https://x.com/district5/status/1", "district5.org", "district5", True)
+        assert not ok and why == "news/aggregator"
+
+    def test_subdomain_of_news_host_still_rejected(self):
+        ok, why = DISC.gate("https://sub.x.com/district5/bell", "district5.org", "district5", True)
+        assert not ok and why == "news/aggregator"
+
+    def test_evil_lookalike_of_cms_host_is_not_cms_matched(self):
+        """evilschoolwires.com endswith schoolwires.com but is NOT the vendor -- the dot
+        boundary keeps the CMS whitelist from matching lookalike registrations."""
+        ok, why = DISC.gate("https://evilschoolwires.com/district5/bell", "district5.org", "district5", True)
+        assert not ok and why == "off-district"
+
+    def test_real_cms_subdomain_still_cms_matched(self):
+        ok, why = DISC.gate("https://district5.schoolwires.com/bell", "district5.org", "district5", True)
+        assert ok and why == "cms-slug"
+
 
 class TestOutcomeRollup:
     def test_found_all_when_every_school_resolved(self):
@@ -753,22 +873,38 @@ class TestFlatten:
         page into one shared capture target, which is why dropping topology classification
         doesn't cost the 'capture the hub once' efficiency (see ACQUISITION_PIPELINE.md)."""
         roster = [
-            {"school": "Elem A", "wave1_gated": [{"url": "https://d.example/hub", "kept": True, "reason": "on-domain"}], "wave2_gated": []},
-            {"school": "Middle B", "wave1_gated": [{"url": "https://d.example/hub?x=1", "kept": True, "reason": "on-domain"}], "wave2_gated": []},
+            {"school": "Elem A", "wave1_provider": "brightdata", "wave1_gated": [{"url": "https://d.example/hub", "kept": True, "reason": "on-domain"}], "wave2_gated": []},
+            {"school": "Middle B", "wave1_provider": "brightdata", "wave1_gated": [{"url": "https://d.example/hub?x=1", "kept": True, "reason": "on-domain"}], "wave2_gated": []},
         ]
         cands = D2.flatten(roster)
         assert len(cands) == 1
         assert sorted(cands[0]["schools"]) == ["Elem A", "Middle B"]
-        assert cands[0]["tools"] == ["claude"]
+        assert cands[0]["tools"] == ["brightdata"]
 
     def test_rejected_candidates_excluded(self):
         roster = [{"school": "A", "wave1_gated": [{"url": "https://wrong.example/x", "kept": False, "reason": "off-district"}], "wave2_gated": []}]
         assert D2.flatten(roster) == []
 
     def test_wave2_tool_tagged_separately_from_wave1(self):
-        roster = [{"school": "A", "wave1_gated": [], "wave2_gated": [{"url": "https://d.example/x", "kept": True, "reason": "on-domain"}]}]
+        """Issue #30: tools[] carries the REAL serving provider per wave, not the retired
+        claude/openrouter architecture labels."""
+        roster = [{"school": "A", "wave1_provider": "brightdata", "wave1_gated": [],
+                   "wave2_provider": "claude_websearch",
+                   "wave2_gated": [{"url": "https://d.example/x", "kept": True, "reason": "on-domain"}]}]
         cands = D2.flatten(roster)
-        assert cands[0]["tools"] == ["openrouter"]
+        assert cands[0]["tools"] == ["claude_websearch"]
+
+    def test_wave1_serper_failover_provenance_survives_flatten(self):
+        roster = [{"school": "A", "wave1_provider": "serper",
+                   "wave1_gated": [{"url": "https://d.example/x", "kept": True, "reason": "on-domain"}],
+                   "wave2_gated": []}]
+        assert D2.flatten(roster)[0]["tools"] == ["serper"]
+
+    def test_legacy_roster_without_provider_fields_does_not_crash(self):
+        """Pre-fix rosters (no wave*_provider) flatten with an honest 'unknown' label rather
+        than resurrecting the retired claude/openrouter names (backfill NOTE in flatten())."""
+        roster = [{"school": "A", "wave1_gated": [{"url": "https://d.example/x", "kept": True, "reason": "on-domain"}], "wave2_gated": []}]
+        assert D2.flatten(roster)[0]["tools"] == ["unknown_wave1"]
 
 
 class TestWriteDiscovery:

@@ -202,18 +202,48 @@ class TestFinishFromWave1:
 
 # --------------------------------------------------------------------------- Wave-1 failover
 class TestWave1Failover:
+    """Issue #29 failover matrix: ANY Bright Data infrastructure failure (billing SystemExit,
+    429/non-JSON TransientProviderError, network timeout/ConnectionError/5xx) fails over to Serper;
+    the hard halt is reserved for Serper ALSO failing on billing/auth. Returns (provider, urls)
+    so run_wave1 can record true provenance (issue #30)."""
+
     def test_brightdata_primary_used_when_healthy(self, monkeypatch):
         from infrastructure.acquisition.common import discover as DISC
         monkeypatch.setattr(DISC, "brightdata_search", lambda q, d: ["https://bd/ok"])
         monkeypatch.setattr(DISC, "serper_search", lambda q, d: pytest.fail("serper must not run"))
-        assert H.brightdata_then_serper("q", "d.org") == ["https://bd/ok"]
+        assert H.brightdata_then_serper("q", "d.org") == ("brightdata", ["https://bd/ok"])
 
     def test_serper_failover_on_brightdata_billing_systemexit(self, monkeypatch):
         from infrastructure.acquisition.common import discover as DISC
         def bd(q, d): raise SystemExit("Bright Data out of credits")
         monkeypatch.setattr(DISC, "brightdata_search", bd)
         monkeypatch.setattr(DISC, "serper_search", lambda q, d: ["https://serper/failover"])
-        assert H.brightdata_then_serper("q", "d.org") == ["https://serper/failover"]
+        assert H.brightdata_then_serper("q", "d.org") == ("serper", ["https://serper/failover"])
+
+    def test_serper_failover_on_brightdata_network_timeout(self, monkeypatch):
+        """The issue #29 outage case: a requests timeout used to propagate as a plain exception
+        that run_wave1 swallowed into urls=[] -- Serper never fired. Now it fails over."""
+        import requests as requests_module
+        from infrastructure.acquisition.common import discover as DISC
+        def bd(q, d): raise requests_module.ConnectTimeout("connect timed out")
+        monkeypatch.setattr(DISC, "brightdata_search", bd)
+        monkeypatch.setattr(DISC, "serper_search", lambda q, d: ["https://serper/failover"])
+        assert H.brightdata_then_serper("q", "d.org") == ("serper", ["https://serper/failover"])
+
+    def test_serper_failover_on_brightdata_5xx(self, monkeypatch):
+        import requests as requests_module
+        from infrastructure.acquisition.common import discover as DISC
+        def bd(q, d): raise requests_module.HTTPError("502 Server Error")
+        monkeypatch.setattr(DISC, "brightdata_search", bd)
+        monkeypatch.setattr(DISC, "serper_search", lambda q, d: ["https://serper/failover"])
+        assert H.brightdata_then_serper("q", "d.org") == ("serper", ["https://serper/failover"])
+
+    def test_serper_failover_on_brightdata_nonjson_zone_runtimeerror(self, monkeypatch):
+        from infrastructure.acquisition.common import discover as DISC
+        def bd(q, d): raise DISC.TransientProviderError("Bright Data returned non-JSON")
+        monkeypatch.setattr(DISC, "brightdata_search", bd)
+        monkeypatch.setattr(DISC, "serper_search", lambda q, d: ["https://serper/failover"])
+        assert H.brightdata_then_serper("q", "d.org") == ("serper", ["https://serper/failover"])
 
     def test_serper_billing_failure_propagates_halt(self, monkeypatch):
         from infrastructure.acquisition.common import discover as DISC
@@ -222,6 +252,30 @@ class TestWave1Failover:
         monkeypatch.setattr(DISC, "serper_search", boom)
         with pytest.raises(SystemExit):
             H.brightdata_then_serper("q", "d.org")   # both Google providers gone -> halt
+
+    def test_serper_transient_failure_propagates_as_plain_exception(self, monkeypatch):
+        """A transient Serper failure after a Bright Data outage is a per-school degrade
+        (run_wave1 catches plain exceptions), NOT a whole-run halt."""
+        from infrastructure.acquisition.common import discover as DISC
+        monkeypatch.setattr(DISC, "brightdata_search",
+                            lambda q, d: (_ for _ in ()).throw(SystemExit("bd down")))
+        def serper(q, d): raise DISC.TransientProviderError("Serper HTTP 429 after one retry")
+        monkeypatch.setattr(DISC, "serper_search", serper)
+        with pytest.raises(DISC.TransientProviderError):
+            H.brightdata_then_serper("q", "d.org")
+
+    def test_run_wave1_records_serving_provider(self, monkeypatch):
+        """Provenance end-to-end (issue #30): the tuple from the cascade lands in
+        wave1_provider, and flatten() emits it as the candidate's tool."""
+        from infrastructure.acquisition.common import discover as DISC
+        monkeypatch.setattr(DISC, "brightdata_search",
+                            lambda q, d: (_ for _ in ()).throw(SystemExit("bd down")))
+        monkeypatch.setattr(DISC, "serper_search", lambda q, d: [f"https://{d}/bell"])
+        roster = D2.build_roster(_district())
+        D2.run_wave1(roster, "testschools.example", H.brightdata_then_serper)
+        assert all(r["wave1_provider"] == "serper" for r in roster)
+        cands = D2.flatten(roster)
+        assert cands and all(c["tools"] == ["serper"] for c in cands)
 
 
 # --------------------------------------------------------------------------- Wave-2 (Claude, residual)
@@ -237,6 +291,10 @@ class TestWave2Claude:
         assert any(g["kept"] for g in by_id["9999999001"]["wave2_gated"])    # on-domain kept
         assert not any(g["kept"] for g in by_id["9999999002"]["wave2_gated"])  # off-domain gated out
         assert all(r["wave2_invoked"] for r in residual)
+        # issue #30: Wave-2 candidates are labeled with the real provider, not "openrouter"
+        assert all(r["wave2_provider"] == "claude_websearch" for r in residual)
+        cands = D2.flatten([{**r, "wave1_gated": r.get("wave1_gated", [])} for r in residual])
+        assert any(c["tools"] == ["claude_websearch"] for c in cands)
 
     def test_claude_failure_degrades_to_manual_flag_not_halt(self):
         d = _district()
