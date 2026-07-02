@@ -599,38 +599,41 @@ requirements:
     notes: "From California SPED integration and SPED v3 implementation - DATA PRECEDENCE comment in calculate_lct_variants.py"
 
   - id: REQ-026
-    description: Enforce 3-year temporal blending window for multi-source data
+    description: "Enforce the temporal blending window for multi-source data — v2 semantics
+      (Ian, 2026-07-01): data blended into one calculation may span at most THREE CONSECUTIVE
+      school years (max start-year span = 2). {2023-24, 2024-25, 2025-26} is acceptable;
+      {2022-23 .. 2025-26} (span 3 = four school years) is not. COVID exclusion (REQ-007)
+      applies FIRST — a COVID source year is invalid regardless of span. The read side prefers
+      the newest COHERENT set: a bell year that cannot form a valid window with the
+      staff/enrollment years is dropped in favor of statutory, not blended anyway."
     type: constraint
     priority: must
     status: tested
     acceptance_criteria:
-      - Data from multiple sources must span ≤3 years apart (year_span calculated as absolute difference in start years)
-      - year_span = |year1_start - year2_start| (e.g., 2024-25 and 2023-24 = |2024-2023| = 1)
-      - within_3year_window boolean flag indicates validation status
-      - temporal_flags array tracks validation status - WARN_YEAR_GAP, ERR_SPAN_EXCEEDED
-      - No flags when year_span ≤ 1 (same year or adjacent years - e.g., 2024-25 and 2023-24)
-      - WARN_YEAR_GAP added when year_span is 2-3 (e.g., 2025-26 and 2023-24 has 1-year gap, span=2)
-      - ERR_SPAN_EXCEEDED added when year_span >3 (exceeds blending window)
-      - Trigger trg_lct_temporal_validation auto-validates on INSERT/UPDATE
-      - SPED baseline (2017-18 IDEA 618/CRDC) exempt from 3-year rule as ratio proxy
+      - year_span = |max_start_year - min_start_year| over the non-null source years
+      - within_3year_window is TRUE iff year_span <= 2 AND no COVID source year
+      - No flags when year_span <= 1; WARN_YEAR_GAP when year_span == 2 (valid, notable); ERR_SPAN_EXCEEDED when year_span > 2; ERR_COVID_YEAR when any source year is 2019-20..2022-23
+      - The write path populates enrollment_source_year / staff_source_year / bell_schedule_source_year so trigger trg_lct_temporal_validation auto-validates on INSERT/UPDATE (was inert — issue #11)
+      - calculate_all_variants enforces the window at read time (drops an out-of-window bell year to statutory) so invalid blends are prevented, not just flagged
+      - SPED baseline (2017-18 IDEA 618/CRDC) exempt from the window as a ratio proxy
+      - The single source of truth for the window math is infrastructure/database/school_year.py (within_blend_window)
       - v_lct_temporal_validation view provides validation summary
-      - Resolution options - update source, seek user direction, accept with flag
     tests:
+      - tests/test_school_year.py::TestBlendWindow
       - tests/test_temporal_validation.py::TestYearSpanCalculation::test_calculates_year_span_from_sources
-      - tests/test_temporal_validation.py::TestYearSpanCalculation::test_same_year_sources_span_is_1
       - tests/test_temporal_validation.py::TestYearSpanCalculation::test_2_year_span_is_valid
-      - tests/test_temporal_validation.py::TestYearSpanCalculation::test_3_year_span_is_valid
-      - tests/test_temporal_validation.py::TestYearSpanCalculation::test_4_year_span_exceeds_window
-      - tests/test_temporal_validation.py::TestTemporalFlags::test_warn_year_gap_added_for_2_3_year_span
-      - tests/test_temporal_validation.py::TestTemporalFlags::test_err_span_exceeded_added_for_greater_than_3
+      - tests/test_temporal_validation.py::TestYearSpanCalculation::test_3_year_span_is_invalid_v2
+      - tests/test_temporal_validation.py::TestTemporalFlags::test_warn_year_gap_added_for_span_2
       - tests/test_temporal_validation.py::TestTemporalFlags::test_no_flags_for_same_year_data
       - tests/test_temporal_validation.py::TestSpedBaselineException::test_sped_2017_18_exempt_from_3_year_rule
-      - tests/test_temporal_validation.py::TestSpedBaselineException::test_info_ratio_baseline_flag_for_sped_exception
       - tests/test_temporal_validation.py::TestValidationTrigger::test_trigger_auto_validates_on_insert
       - tests/test_temporal_validation.py::TestValidationTrigger::test_trigger_auto_validates_on_update
     created: "2026-01-16T06:30:00Z"
-    updated: "2026-01-16T06:30:00Z"
-    notes: "From METHODOLOGY.md v2.1 - Temporal Data Blending section. Migration 008 implements this."
+    updated: "2026-07-02T00:00:00Z"
+    notes: "v1 (span<=3, admitting four school years) was ambiguous and its DB trigger was inert
+      (issue #11: unmapped/unpopulated source-year columns). v2 decided by Ian 2026-07-01 during
+      the fable-review lct-core hardening; implemented by migration 018 + school_year.py +
+      the calculate_lct_variants write/read wiring (issues #11/#12)."
 
   - id: REQ-027
     description: Master crosswalk table for all state NCES-to-SEA mappings

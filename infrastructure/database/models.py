@@ -1275,10 +1275,15 @@ class SpedEstimate(Base):
         teachers_per_student = float(self.ratio_state_sped_teachers_per_student)
         self.estimated_sped_teachers = round(self.estimated_self_contained_sped * teachers_per_student, 2)
 
-        # Step 5: Estimate SPED instructional (teachers + paras, per self-contained student)
+        # Step 5: Estimate SPED instructional (teachers + paras, per self-contained student).
+        # The instructional ratio is deliberately NOT in the hard gate above (a missing state
+        # ratio shouldn't drop the whole district's estimate) — but its absence must be
+        # traceable, not silent (issue #67): the instructional_sped scope loses coverage here.
         if self.ratio_state_sped_instructional_per_student:
             instructional_per_student = float(self.ratio_state_sped_instructional_per_student)
             self.estimated_sped_instructional = round(self.estimated_self_contained_sped * instructional_per_student, 2)
+        else:
+            self.notes = (self.notes or "") + " NOTE: no state instructional ratio — instructional_sped not estimated."
 
         # Step 5: Estimate GenEd teachers
         total_teachers = float(self.current_total_teachers)

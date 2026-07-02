@@ -91,6 +91,11 @@ def compute_input_hash(session) -> str:
 
 
 from infrastructure.database.connection import session_scope, get_engine
+from infrastructure.database.school_year import (
+    COVID_EXCLUDED_YEARS,
+    is_covid_year,
+    within_blend_window,
+)
 from infrastructure.database.models import (
     District,
     BellSchedule,
@@ -131,28 +136,46 @@ SPED_SCOPES = [
 ]
 
 
+def get_statutory_minutes(session, state: str, grade_level: str) -> tuple[int, str, Optional[str]]:
+    """Statutory fallback: state requirement, else the 360 default. A statutory minimum has
+    no school-year identity — year is None, never a fabricated literal (issue #24)."""
+    state_req = session.query(StateRequirement).filter(
+        StateRequirement.state == state
+    ).first()
+    if state_req:
+        m = state_req.get_minutes(grade_level)
+        if m:
+            return m, "state_requirement", None
+    return 360, "default", None
+
+
 def get_instructional_minutes(
     session,
     district_id: str,
     state: str,
     grade_level: str = "high"
-) -> tuple[int, str, str]:
+) -> tuple[int, str, Optional[str]]:
     """
     Get instructional minutes for a district.
 
-    Priority:
+    Priority (REQ-024):
     1. Bell schedule for requested grade level (enriched data)
     2. Bell schedule for any available grade level (K-8 districts, etc.)
     3. State requirement (statutory fallback)
     4. Default (360 minutes)
 
+    COVID-era bell rows (Rule #2) are never considered (issue #12). The caller enforces the
+    blend window against staff/enrollment years and re-fetches statutory when a bell year
+    can't form a coherent set (see calculate_all_variants).
+
     Returns:
-        Tuple of (minutes, source, year)
+        Tuple of (minutes, source, year) — year is None for statutory/default.
     """
     # Try bell schedule for requested grade level first
     bell = session.query(BellSchedule).filter(
         BellSchedule.district_id == district_id,
-        BellSchedule.grade_level == grade_level
+        BellSchedule.grade_level == grade_level,
+        ~BellSchedule.year.in_(COVID_EXCLUDED_YEARS),
     ).order_by(BellSchedule.year.desc()).first()
 
     if bell and bell.instructional_minutes:
@@ -165,23 +188,13 @@ def get_instructional_minutes(
             continue  # Already tried this one
         bell = session.query(BellSchedule).filter(
             BellSchedule.district_id == district_id,
-            BellSchedule.grade_level == fallback_level
+            BellSchedule.grade_level == fallback_level,
+            ~BellSchedule.year.in_(COVID_EXCLUDED_YEARS),
         ).order_by(BellSchedule.year.desc()).first()
         if bell and bell.instructional_minutes:
             return bell.instructional_minutes, f"bell_schedule_{fallback_level}", bell.year
 
-    # Fall back to state requirement
-    state_req = session.query(StateRequirement).filter(
-        StateRequirement.state == state
-    ).first()
-
-    if state_req:
-        minutes = state_req.get_minutes(grade_level)
-        if minutes:
-            return minutes, "state_requirement", "2023-24"
-
-    # Ultimate fallback
-    return 360, "default", "2023-24"
+    return get_statutory_minutes(session, state, grade_level)
 
 
 def calculate_lct(
@@ -284,6 +297,8 @@ def get_most_recent_enrollment(session, target_year: Optional[str] = None) -> Di
     subq = session.query(
         EnrollmentByGrade.district_id,
         func.max(EnrollmentByGrade.source_year).label('max_year')
+    ).filter(
+        ~EnrollmentByGrade.source_year.in_(COVID_EXCLUDED_YEARS)   # Rule #2 (issue #12)
     ).group_by(EnrollmentByGrade.district_id).subquery()
 
     enrollments = session.query(EnrollmentByGrade).join(
@@ -328,6 +343,9 @@ def get_most_recent_staff(session, target_year: Optional[str] = None) -> Dict[st
 
     result = {}
     for district_id, records in by_district.items():
+        records = [r for r in records if r.effective_year not in COVID_EXCLUDED_YEARS]  # Rule #2
+        if not records:
+            continue
         records.sort(key=lambda r: r.effective_year, reverse=True)
         usable = next(
             (r for r in records if r.scope_teachers_only and r.scope_teachers_only > 0),
@@ -364,6 +382,8 @@ def get_most_recent_sped(session, target_year: Optional[str] = None) -> Dict[str
     subq = session.query(
         SpedEstimate.district_id,
         func.max(SpedEstimate.estimate_year).label('max_year')
+    ).filter(
+        ~SpedEstimate.estimate_year.in_(COVID_EXCLUDED_YEARS)   # Rule #2 (issue #12)
     ).group_by(SpedEstimate.district_id).subquery()
 
     sped_estimates = session.query(SpedEstimate).join(
@@ -399,6 +419,8 @@ def get_most_recent_ca_sped(session, target_year: Optional[str] = None) -> Dict[
     subq = session.query(
         CASpedDistrictEnvironments.nces_id,
         func.max(CASpedDistrictEnvironments.year).label('max_year')
+    ).filter(
+        ~CASpedDistrictEnvironments.year.in_(COVID_EXCLUDED_YEARS)   # CA SPED ships 2022-23 (issue #12)
     ).group_by(CASpedDistrictEnvironments.nces_id).subquery()
 
     ca_sped = session.query(CASpedDistrictEnvironments).join(
@@ -450,6 +472,8 @@ def calculate_all_variants(
         Tuple of (DataFrame with LCT calculations, data_year_min, data_year_max)
     """
     print("Calculating LCT variants...")
+    if target_year and is_covid_year(target_year):
+        raise ValueError(f"target_year {target_year} is COVID-excluded (Rule #2) — refusing to calculate")
     mode_str = f"{calculation_mode.value}"
     if target_year:
         mode_str += f" (target: {target_year})"
@@ -514,10 +538,29 @@ def calculate_all_variants(
         if not district:
             continue
 
-        # Get instructional minutes
+        # Get instructional minutes PER BAND (issue #13 — one "high" fetch used to feed every
+        # variant, systematically inflating elementary LCT wherever a real HS schedule existed).
+        # Base K-12 scopes use the high-band value (the K-12-wide convention, documented);
+        # the elementary variant uses elementary minutes; secondary (6-12) uses high.
         minutes, minutes_source, minutes_year = get_instructional_minutes(
             session, staff.district_id, district.state, "high"
         )
+        elem_minutes, elem_minutes_source, elem_minutes_year = get_instructional_minutes(
+            session, staff.district_id, district.state, "elementary"
+        )
+
+        # Blend-window enforcement (issue #12; REQ-026 semantics per Ian 2026-07-01: max 3
+        # CONSECUTIVE school years). A bell year that can't form a coherent set with the
+        # staff/enrollment years is dropped in favor of statutory — prefer the coherent set.
+        _enroll_yr = enrollment_years.get(staff.district_id)
+        if minutes_year and not within_blend_window(
+                [minutes_year, staff.effective_year, _enroll_yr]):
+            minutes, minutes_source, minutes_year = get_statutory_minutes(
+                session, district.state, "high")
+        if elem_minutes_year and not within_blend_window(
+                [elem_minutes_year, staff.effective_year, _enroll_yr]):
+            elem_minutes, elem_minutes_source, elem_minutes_year = get_statutory_minutes(
+                session, district.state, "elementary")
 
         # Get enrollments from enrollment_by_grade table
         grade_enrollment = enrollment_map.get(staff.district_id)
@@ -547,8 +590,8 @@ def calculate_all_variants(
         teachers_elem = float(staff.teachers_elementary_k5) if staff.teachers_elementary_k5 else None
         teachers_sec = float(staff.teachers_secondary_6_12) if staff.teachers_secondary_6_12 else None
 
-        # Calculate level LCT values for validation
-        lct_elementary = calculate_lct(minutes, teachers_elem, elem_enrollment) if teachers_elem and elem_enrollment else None
+        # Calculate level LCT values for validation — each band uses ITS OWN minutes (issue #13)
+        lct_elementary = calculate_lct(elem_minutes, teachers_elem, elem_enrollment) if teachers_elem and elem_enrollment else None
         lct_secondary = calculate_lct(minutes, teachers_sec, sec_enrollment) if teachers_sec and sec_enrollment else None
         lct_teachers = calculate_lct(minutes, teachers_k12, k12_enrollment) if teachers_k12 else None
 
@@ -588,7 +631,7 @@ def calculate_all_variants(
                     "district_name": district.name,
                     "state": district.state,
                     "staff_scope": scope,
-                    "lct_value": round(lct_value, 2),
+                    "lct_value": lct_value,   # unrounded — rounding happens at export (REQ-001)
                     "instructional_minutes": minutes,
                     "instructional_minutes_source": minutes_source,
                     "instructional_minutes_year": minutes_year,
@@ -597,6 +640,7 @@ def calculate_all_variants(
                     "staff_year": staff.effective_year,
                     "enrollment": k12_enrollment,
                     "enrollment_type": "k12",
+                    "enrollment_year": _enroll_yr,
                     "level_lct_notes": "",  # No level notes for base scopes
                 })
 
@@ -608,15 +652,16 @@ def calculate_all_variants(
                 "district_name": district.name,
                 "state": district.state,
                 "staff_scope": "teachers_elementary",
-                "lct_value": round(lct_elementary, 2),
-                "instructional_minutes": minutes,
-                "instructional_minutes_source": minutes_source,
-                "instructional_minutes_year": minutes_year,
+                "lct_value": lct_elementary,
+                "instructional_minutes": elem_minutes,
+                "instructional_minutes_source": elem_minutes_source,
+                "instructional_minutes_year": elem_minutes_year,
                 "staff_count": teachers_elem,
                 "staff_source": staff.primary_source,
                 "staff_year": staff.effective_year,
                 "enrollment": elem_enrollment,
                 "enrollment_type": "elementary_k5",
+                "enrollment_year": _enroll_yr,
                 "level_lct_notes": level_lct_notes,
             })
 
@@ -627,7 +672,7 @@ def calculate_all_variants(
                 "district_name": district.name,
                 "state": district.state,
                 "staff_scope": "teachers_secondary",
-                "lct_value": round(lct_secondary, 2),
+                "lct_value": lct_secondary,
                 "instructional_minutes": minutes,
                 "instructional_minutes_source": minutes_source,
                 "instructional_minutes_year": minutes_year,
@@ -636,6 +681,7 @@ def calculate_all_variants(
                 "staff_year": staff.effective_year,
                 "enrollment": sec_enrollment,
                 "enrollment_type": "secondary_6_12",
+                "enrollment_year": _enroll_yr,
                 "level_lct_notes": level_lct_notes,
             })
 
@@ -697,7 +743,7 @@ def calculate_all_variants(
                         "district_name": district.name,
                         "state": district.state,
                         "staff_scope": "core_sped",
-                        "lct_value": round(lct_core_sped, 2),
+                        "lct_value": lct_core_sped,
                         "instructional_minutes": minutes,
                         "instructional_minutes_source": minutes_source,
                         "instructional_minutes_year": minutes_year,
@@ -707,13 +753,20 @@ def calculate_all_variants(
                         "enrollment": sped_enrollment,
                         "enrollment_type": "self_contained_sped",
                         "enrollment_source": enrollment_source,
+                        "enrollment_year": _enroll_yr,
                         "level_lct_notes": core_sped_notes,
                     })
 
             # LCT-Teachers-GenEd
             if gened_teachers and gened_teachers > 0 and gened_enrollment and gened_enrollment > 0:
                 lct_gened = calculate_lct(minutes, gened_teachers, gened_enrollment)
-                if lct_gened is not None and lct_gened <= 360:  # Sanity check
+                # Cap-and-flag, symmetric with the SPED scopes (issue #67 — rows > 360 were
+                # silently DROPPED here while SPED rows were capped with a WARN)
+                gened_capped = False
+                if lct_gened is not None and lct_gened > 360:
+                    gened_capped = True
+                    lct_gened = 360.0
+                if lct_gened is not None and lct_gened <= 360:
                     gened_sped_year = sped_years.get(staff.district_id, "2017-18")
                     all_years_used.add(gened_sped_year)
                     results.append({
@@ -721,7 +774,7 @@ def calculate_all_variants(
                         "district_name": district.name,
                         "state": district.state,
                         "staff_scope": "teachers_gened",
-                        "lct_value": round(lct_gened, 2),
+                        "lct_value": lct_gened,
                         "instructional_minutes": minutes,
                         "instructional_minutes_source": minutes_source,
                         "instructional_minutes_year": minutes_year,
@@ -731,7 +784,9 @@ def calculate_all_variants(
                         "enrollment": gened_enrollment,
                         "enrollment_type": "gened",
                         "enrollment_source": enrollment_source,
-                        "level_lct_notes": f"GenEd enrollment: {enrollment_source}, confidence: {enrollment_confidence}",
+                        "enrollment_year": _enroll_yr,
+                        "level_lct_notes": (f"GenEd enrollment: {enrollment_source}, confidence: {enrollment_confidence}"
+                                            + ("; WARN_SPED_RATIO_CAP: LCT capped at 360 (high teacher-to-student ratio)" if gened_capped else "")),
                     })
 
             # LCT-Instructional-SPED: teachers + paras (fuller picture of SPED support)
@@ -754,7 +809,7 @@ def calculate_all_variants(
                         "district_name": district.name,
                         "state": district.state,
                         "staff_scope": "instructional_sped",
-                        "lct_value": round(lct_instr_sped, 2),
+                        "lct_value": lct_instr_sped,
                         "instructional_minutes": minutes,
                         "instructional_minutes_source": minutes_source,
                         "instructional_minutes_year": minutes_year,
@@ -764,6 +819,7 @@ def calculate_all_variants(
                         "enrollment": sped_enrollment,
                         "enrollment_type": "self_contained_sped",
                         "enrollment_source": enrollment_source,
+                        "enrollment_year": _enroll_yr,
                         "level_lct_notes": instr_sped_notes,
                     })
 
@@ -1163,7 +1219,7 @@ def write_calculations_to_db(
         for result in batch:
             calc = LCTCalculation(
                 district_id=result['district_id'],
-                year=year if year != 'blended' else result.get('staff_year', '2023-24'),
+                year=year if year != 'blended' else result['staff_year'],
                 grade_level=None,  # Scope-based calculations don't have traditional grade levels
                 staff_scope=result['staff_scope'],
                 run_id=run_id,
@@ -1178,6 +1234,17 @@ def write_calculations_to_db(
                 lct_value=result['lct_value'],
                 data_tier=get_data_tier(result['instructional_minutes_source']),
                 notes=result.get('level_lct_notes', ''),
+                # Temporal-validation inputs (issue #11): the migration-008 trigger computes
+                # year_span/within_3year_window/temporal_flags from THESE three — they were
+                # never populated before, leaving the trigger inert. Statutory minutes carry
+                # no year (bell_schedule_source_year stays None).
+                enrollment_source_year=result.get('enrollment_year'),
+                staff_source_year=result['staff_year'],
+                bell_schedule_source_year=(
+                    result['instructional_minutes_year']
+                    if result['instructional_minutes_source'].startswith('bell_schedule')
+                    else None
+                ),
             )
             session.add(calc)
             inserted += 1
@@ -1256,6 +1323,9 @@ def export_lct_from_db(
 
     # Save detailed results
     detail_file = output_dir / f"lct_all_variants_{year_str}{timestamp}.csv"
+    # Rounding-at-export (REQ-001): the DB holds unrounded values; display artifacts round here
+    if 'lct_value' in df.columns:
+        df['lct_value'] = pd.to_numeric(df['lct_value'], errors='coerce').round(2)
     df.to_csv(detail_file, index=False)
     print(f"  Saved detailed results to {detail_file}")
     output_files.append(str(detail_file))
@@ -1289,7 +1359,6 @@ Examples:
     )
     parser.add_argument("--output-dir", type=Path, default=None, help="Output directory")
     parser.add_argument("--parquet", action="store_true", help="Also save Parquet files")
-    parser.add_argument("--incremental", action="store_true", help="Only recalculate changed districts")
     parser.add_argument("--no-track", action="store_true", help="Don't track run in database")
     args = parser.parse_args()
 
