@@ -1,3 +1,8 @@
+> **ARCHIVED 2026-07-02.** Technical reference for the CDE file structures used by the California
+> integration (LCFF/ADA/SPED/FRPM — funding/attendance, not staff/enrollment; see the companion
+> `CA_DATAQUEST_ASSESSMENT` archive banner). The living reference is `docs/SEA_INTEGRATION_GUIDE.md` +
+> `docs/DATA_SOURCES.md`, not this file. Kept here as the original technical documentation.
+
 # California CDE Data File Structures - Technical Documentation
 
 **Date:** January 9, 2026

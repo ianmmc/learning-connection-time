@@ -1,5 +1,14 @@
 # SEA Integration Guide
 
+> **Authority:** how to build a new state SEA integration (crosswalk, precedence, testing pattern) and the
+> current per-state integration status — verify status claims against the live DB (Rule #6) before trusting
+> them for anything LCT-facing.
+> **Audience:** anyone building a new state integration or checking what a given state's DB data actually
+> comes from.
+> **Companions:** `docs/DATA_SOURCES.md` (per-source catalog), `docs/METHODOLOGY.md` §Data Source
+> Precedence (the authoritative Tier 1/Tier 2 completeness breakdown).
+> **Update this when:** a new state integration ships or an existing one's DB coverage changes.
+
 Guide for integrating State Education Agency (SEA) data into the Learning Connection Time project.
 
 **Related Files:**
@@ -52,17 +61,26 @@ Each state uses different district identifiers. The crosswalk maps between:
 
 ### Implemented SEA Integrations
 
-| State | Agency | Status | Test File | Key Data |
-|-------|--------|--------|-----------|----------|
-| California | CDE | ✅ Complete | `test_california_integration.py` | LCFF, ADA, SPED, FRPM |
-| Texas | TEA | ✅ Complete | `test_texas_integration.py` | NCES crosswalk via ST_LEAID |
-| Florida | FLDOE | ✅ Complete | `test_florida_integration.py` | Staff, enrollment, 82 districts |
-| New York | NYSED | ✅ Complete | `test_new_york_integration.py` | NYC (33 sub-districts), upstate |
-| Illinois | ISBE | ✅ Complete | `test_illinois_integration.py` | Chicago (City of Chicago SD 299) |
-| Michigan | MDE | ✅ Complete | `test_michigan_integration.py` | Staff, enrollment, SPED, 836 districts |
-| Pennsylvania | PDE | ✅ Complete | `test_pennsylvania_integration.py` | Staff, enrollment, 777 districts |
-| Virginia | VDOE | ✅ Complete | `test_virginia_integration.py` | Staff, enrollment, SPED, 131 divisions |
-| Massachusetts | DESE | ✅ Complete | `test_massachusetts_integration.py` | Staff, enrollment, ~400 districts |
+**Verify against the live DB before trusting this table for anything LCT-facing (Rule #6)** — "test file
+exists and passes" is not the same claim as "this state's data supersedes NCES in an LCT calculation."
+Confirmed 2026-07-02 via `staff_counts`/`enrollment_by_grade` `data_source`: **7 states feed real
+staff+enrollment SEA data into LCT** (Tier 1, `METHODOLOGY.md` §Data Source Precedence); **Texas and
+California integrations are real and tested but narrower in scope** — Texas is the NCES `ST_LEAID`
+crosswalk only (no staff/enrollment superseding NCES yet), and California covers LCFF/ADA/SPED/FRPM
+(funding/attendance data, not the staff+enrollment pair LCT's core formula consumes). Both TX and CA
+staff/enrollment in the DB are currently 100% `nces_ccd`-sourced, not SEA-sourced.
+
+| State | Agency | Status | Test File | Key Data | Feeds LCT staff+enrollment? |
+|-------|--------|--------|-----------|----------|---|
+| California | CDE | ✅ Complete (this scope) | `test_california_integration.py` | LCFF, ADA, SPED, FRPM | No — funding/attendance only |
+| Texas | TEA | ✅ Complete (this scope) | `test_texas_integration.py` | NCES crosswalk via ST_LEAID | No — crosswalk only |
+| Florida | FLDOE | ✅ Complete | `test_florida_integration.py` | Staff, enrollment, 82 districts | Yes |
+| New York | NYSED | ✅ Complete | `test_new_york_integration.py` | NYC (33 sub-districts), upstate | Yes |
+| Illinois | ISBE | ✅ Complete | `test_illinois_integration.py` | Chicago (City of Chicago SD 299) | Yes |
+| Michigan | MDE | ✅ Complete | `test_michigan_integration.py` | Staff, enrollment, SPED, 836 districts | Yes |
+| Pennsylvania | PDE | ✅ Complete | `test_pennsylvania_integration.py` | Staff, enrollment, 777 districts | Yes |
+| Virginia | VDOE | ✅ Complete | `test_virginia_integration.py` | Staff, enrollment, SPED, 131 divisions | Yes |
+| Massachusetts | DESE | ✅ Complete | `test_massachusetts_integration.py` | Staff, enrollment, ~400 districts | Yes |
 
 ### Complex Districts: NYC and Chicago
 

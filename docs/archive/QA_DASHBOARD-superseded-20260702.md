@@ -1,3 +1,7 @@
+> **ARCHIVED 2026-07-02.** Consolidated into `docs/METHODOLOGY.md` §Quality Assurance → "QA Dashboard:
+> generating & interpreting reports". Kept here as the original, unmodified source; the live doc is
+> METHODOLOGY.md, not this file.
+
 # LCT Calculation QA Dashboard
 
 **Last Updated**: December 28, 2025

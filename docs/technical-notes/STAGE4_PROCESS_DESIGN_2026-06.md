@@ -1,31 +1,37 @@
-# Stage 4 — Local processing: design & decision log
+# Stage 4 — Local processing: present state & decision log
 
-> **Status: processing BUILT + run live (2026-06-23)** against all 12 `batch_00001` districts: 150/150
-> records processed, 0 crashes, 10 `processed_all` + 2 `processed_partial`. Produces, per district,
-> `processed.json` + per-record `extracted.txt`/`<tool>.txt`/`raster_p-<N>.png` in each
-> `captures/<hash>/` — the local-text layer Stage 5 (Local filtering) consumes.
->
-> **Console view + Stage 4→5 handoff BUILT (REQ-111, 2026-06-29).** The Stage 4 console view (status +
-> run trigger + tool-effectiveness readout) is live, and a process run that resolves a whole batch now
-> **incrementally ingests just that batch into Stage 5** so the Stage-5 view loads with no lag. Details:
-> §4 (console) + §4a (as-built) + §4b (the handoff).
->
-> **What this note is:** for the already-built Stages 1–4 the **code is authoritative**; this note is a
-> **narrative of what the code currently does**, not a redesign. §1–§3 describe the processing behavior
-> (verified 2026-06-27); §4–§4b describe the console + handoff (as built 2026-06-29); §6 is the
-> historical decision log.
->
-> **Code (grimp-confirmed, 2026-06-27):** `stage4_process/process_stage4.py` imports exactly
-> `common.district_status` (no LCT DB — ungated middle stage). **Unlike Stages 2/3 it does the real
-> extraction work itself** (pdftotext/pdfplumber/camelot/tesseract — all fast local calls, no browser, no
-> LLM), so there is no separate worker process. *(Note: promoted from
-> `infrastructure/acquisition/discovery/process_stage4.py` to `stage4_process/`; the decision log below
-> reflects the original path.)*
+> **Authority:** Stage 4's purpose, I/O, the always-run-every-tool processing model, the tool roster, the
+> console + the Stage 4→5 incremental handoff — what the code does today.
+> **Audience:** anyone building on or debugging Stage 4; anyone tracing why a representation is/isn't
+> usable, or why a district's Stage-4 run halted or quarantined.
+> **Companions:** `ACQUISITION_PIPELINE.md` §4 (the slim map + flow diagram), Stage 3's note (upstream
+> `captures.json` contract), Stage 5's note (downstream — the relevance/tiering layer this stage feeds).
+> `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (§3 state_event, §11/§12 gates + the Stage 4→5 seam).
+> **Update this when:** Stage 4's code behavior changes. Design turns and superseded approaches belong in
+> §6 (Decision log), not here.
 
-**Companions:** `ACQUISITION_PIPELINE.md` §4 (the slim map + the flow diagram),
-Stage 3's note (upstream `captures.json` + per-`captures/<hash>/` directory contract), Stage 5's note
-(downstream — the relevance/tiering layer this stage feeds). `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
-(§3 state_event, §11 gates).
+**Status: BUILT + run live**, including the console (status + run trigger + tool-effectiveness readout)
+and the Stage 4→5 incremental handoff. Produces, per district, `processed.json` + per-record
+`extracted.txt`/`<tool>.txt`/`raster_p-<N>.png` in each `captures/<hash>/` — the local-text layer Stage 5
+consumes.
+
+**Code:** `stage4_process/process_stage4.py` imports exactly `common.district_status` (no LCT DB — ungated
+middle stage). **Unlike Stages 2/3 it does the real extraction work itself** (pdftotext/pdfplumber/
+camelot/tesseract — fast local calls, no browser, no LLM), so there is no separate worker process.
+`stage4_process/headless.py` is the batch runner the console drives.
+
+---
+
+## 0. Receipt from prior stage / Handoff to next stage
+
+**Receipt from prior stage:** each district's `captures.json` (Stage 3's output) + the files in each
+`captures/<hash>/`, read but never modified.
+
+**Handoff to next stage:** `processed.json` + the representation text files are Stage 5's input — but
+unlike Stages 1→2→3→4, this handoff is **active**, not passive. When a Stage 4 run resolves a whole batch,
+the orchestration layer triggers the **incremental Stage 4→5 ingest** (§4b) automatically — the Stage-5
+view has no lag waiting for a manual trigger. This is also **the seam where the batch dissolves**: Stage 5
+is district-driven, not batch-driven (governance §12).
 
 ---
 
@@ -51,14 +57,17 @@ is better at merged/spanning cells than deterministic code).
 
 ## 2. The design (settled)
 
-### 2a. Two reconciliation checks, both fail-loud at the same severity
+### 2a. Two reconciliation checks — tiered, not equal severity
 1. **Registry consistency** (same as Stage 2/3): `processed.json` on disk IS "Stage 4 done"; disk-ahead
-   reconciles up silently, **registry-ahead-of-disk halts the whole run** (CONTROL FAILURE).
-2. **File-existence consistency** (`check_file_consistency`, new — finer-grained than any prior stage): for
-   every `ok: true` record in `captures.json`, every filename in its `files` map must exist on disk. A
-   mismatch halts the run at the same severity — a manifest claiming a file that isn't there is structural
-   breakage (partial write, manual deletion, Stage 3 bug), not a content failure. `ok: false` records
-   (`files: {}`) are exempt by design.
+   reconciles up silently, **registry-ahead-of-disk halts the whole run** (CONTROL FAILURE) — a registry
+   claiming completion the filesystem can't back up signals lost data or a bad migration.
+2. **File-existence consistency** (`check_file_consistency`): for every `ok: true` record in
+   `captures.json`, every filename in its `files` map must exist on disk. **A mismatch QUARANTINES only
+   that district** (`inconsistent`, a `failed` process state_event, retriable) — it no longer halts the
+   whole run (fable review issue #78: a single missing screenshot file used to brick every future Stage-4
+   run for the batch). The check runs **only on districts about to be processed**, not retroactively on
+   already-processed ones. `ok: false` records (`files: {}`) are exempt by design. `finish_district`
+   (the direct `run <id>` CLI path) still raises a district-scoped `InconsistentCapturesError`.
 
 ### 2b. Run every kept tool against every applicable input, always — no waterfall
 This superseded a first-pass "stop at the first usable representation" design: a real test (Longfellow
@@ -76,7 +85,16 @@ pair *even though* the `.txt` already looked usable — the short-circuit was di
 - **Existing `.txt`/`.md`/`.csv`** (from Stage 3 or a Drive export) → evaluated against the same bar, no
   special priority, **referenced never rewritten**.
 - **Every attempted representation gets an entry** — success, below-bar, or errored — each with its own
-  `usable` boolean.
+  `usable` boolean. **Tool exit codes are honored** (fable review issue #32): a nonzero exit with empty
+  stdout records `error=f"exit {rc}: {stderr[:120]}"` rather than a silent empty "success" — a crashed
+  `pdftotext`/`tesseract` is now distinguishable from a document that genuinely has no text. A nonzero
+  exit *with* substantial stdout still counts as success (some tools warn on stderr and exit nonzero while
+  emitting perfectly usable text).
+- **OCR raster generation is hardened** (fable review issue #45): stale `raster_p*.png` files from a prior
+  failed run are cleared before re-rasterizing; `pdftoppm`'s own exit code is checked (nonzero + zero
+  pages produced is an error; nonzero + a partial page set proceeds with what rendered); a page cap
+  (`OCR_RASTER_PAGE_CAP = 40`) bounds a pathological multi-hundred-page handbook, with per-page error
+  tolerance so one bad page doesn't discard the rest of a document's OCR.
 
 ### 2c. The "usable text" bar — deliberately weaker than and separate from Stage 5's relevance check
 `is_usable()`: `len ≥ USABLE_MIN_CHARS` (120 — reused from `reading.py`'s `PDF_MIN_TEXT_CHARS`, not a new
@@ -192,10 +210,10 @@ view is instant, with no full-corpus rebuild and no perceived lag (the design go
   rebuild (schema changes, recovery). The console handoff is the batch-scoped fast path.
 
 ## 5. Open decisions
-- None blocking. Tier roster and the always-run model are settled by the spike (§3); the
+- None blocking. Tool roster and the always-run model are settled by the spike (§3); the
   duplicate-PDF-dedup and vision-escalation non-goals (§2d) are deliberate, not deferred work. The Stage
-  4→5 handoff (§4b) is built; the broader Stage-5 console rework (district-driven, batch dissolves) is the
-  next focus — see `PIPELINE_GOVERNANCE_AND_STATE` §11/§12 and `PROJECT_HISTORY`.
+  4→5 handoff (§4b) is built and the Stage-5 console rework it feeds is also done (district-driven,
+  attention-first — see `STAGE5_FILTER_DESIGN_2026-06.md`).
 
 ---
 
@@ -233,3 +251,16 @@ before the package promotion._
 - `capture_discovery.mjs`'s `captures.json` write was retrofitted in the same round to use the same rename-aside-with-UTC-timestamp redo convention `processed.json` now uses — it previously just overwrote in place, a real gap caught while designing Stage 4's own redo behavior.
 - Tests: 31 new (orchestration logic against synthetic fixtures, same style as Stage 2/3's tests, **plus** real tool-invocation tests against genuinely generated fixtures — a tiny real PDF via PyMuPDF, a tiny real image via PIL — closing the kind of gap Stage 3's browser-driving logic left open, REQ-079). Full suite: 575 passed, 22 pre-existing skips, 0 regressions.
 - Production run result: 10/12 districts `processed_all`, 2 `processed_partial` (Stroudsburg, Pittsylvania) — the 4 genuinely-not-usable records out of 150 are all explainable by already-known patterns (3 Pittsylvania Student Handbook PDFs, 1 Stroudsburg `cross.jsp` cross-reference link), not new bugs.
+
+**2026-07-02 — CONTROL-FAILURE blast radius tiered; tool exit codes honored; OCR hardened (fable review
+issues #78, #32, #45).** Adversarial review found three real gaps: (1) the file-existence consistency
+check (§2a) treated a single district's structural inconsistency as a whole-run halt, and re-checked
+already-processed districts on every future run — a district with one bad manifest entry permanently
+bricked the batch's Stage-4 runs; fixed by quarantining just that district and scoping the check to
+about-to-be-processed districts only. (2) `_run()` returned subprocess stdout regardless of exit code, so
+a crashed tool recorded a non-errored empty representation, indistinguishable from "no text in this
+document"; fixed to check the return code. (3) `run_tesseract_multi`/`rasterize` were unbounded (a
+100-page handbook meant 100 sequential 60s-timeout calls) and all-or-nothing (one page's timeout discarded
+every prior page's OCR), and ignored `pdftoppm`'s exit code, silently reusing stale rasters from a failed
+prior run; fixed with a page cap, per-page tolerance, and a returncode check + stale-raster clear. See §2a
+and §2b for the present-state description.

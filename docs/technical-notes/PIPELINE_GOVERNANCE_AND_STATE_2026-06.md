@@ -1,36 +1,35 @@
-# Pipeline Governance, State Model & the Stage 5→6 Release (2026-06-26)
+# Pipeline Governance, State Model & the Stage 5→6 Release
 
-> **Status: DESIGN + BUILD UNDERWAY (updated 2026-06-26).** Shipped: the tuning foundations
-> (REQ-095 ledger, REQ-096 frontier) and **REQ-098** (acquisition tree packaged, code moved, tooling
-> wired — import-linter/grimp/vulture/dependency-cruiser). **REQ-103 (Postgres governance DB) is
-> functionally COMPLETE** — 103a (foundation) + **103b–f** (ingest + readers + tests migrated
-> SQLite→Postgres, committed `bbd0f66`) + **103c** (cross-stage cache) + **103g** (these docs) all done;
-> see §1b. **REQ-099 (state event-log) COMPLETE** (§3) and **REQ-094 (`filtered.json` release generator)
-> COMPLETE** — event-driven projection (§6). **Console & gate model decided 2026-06-27 (§11).** The
-> stage-selectable console is BUILT through Stage 4: **gate@1** (REQ-102), **Stage 2** (REQ-104),
-> **Stage 3** (REQ-110), **Stage 4 + the Stage 4→5 incremental handoff** (REQ-111, §12) — all run live on
-> batch_00002–00005. **The Stage-5 console rework (REQ-112, 2026-06-29) is BUILT** — the district-driven,
-> attention-first faceted console (the app's origin, finally on the current architecture; §12c +
-> `STAGE5_FILTER_DESIGN` §A–D). **Stage 6 + gate@6 routing is BUILT to the Stage 6→7 seam (REQ-101, merged
-> PR #2, 2026-06-30)** — the `stage6_handoff/` package (routing/cost/freeze/request-assembly) + the gate@6
-> console (preview → Approve & freeze); the immutable `handoff_<hash>_<ts>.json` + a precious `handoff` index
-> row + a `dispatched` state_event. Stops before the paid call (Stage 7). Authority: `STAGE6_DISPATCH_DESIGN_2026-06.md`
-> §0. **Next: Stage 7 (the paid council) + the council lab (`cost_benchmark`)**; still open: REQ-100 (staleness),
-> gate@6 auto mode. This note is the architecture for three coupled decisions that outgrew
-> `STAGE5_FILTER_DESIGN_2026-06.md`:
-> 1. **The DB is the working store; disk holds binaries + receipts** — the cross-stage registry *and*
->    every stage's data live in the DB (what the next stage reads); the per-stage JSON files are
->    auditable receipts, not transmitters (§1, as built through REQ-110/111/112).
-> 2. **The Stage 5→6 release** — `filtered.json` as a generated **export** of the DB's release state
->    (not the primary store), + the Stage 6 `handoff_<hash>_<timestamp>.json` immutable dispatch record.
-> 3. **The app's scope** — the Stage-5-only review app → a **stage-selectable governance console**
->    at `infrastructure/acquisition/process_governance/`, the human-in-the-loop surface for CP-A / CP-B / (later) CP-C.
->
-> Companions: `ACQUISITION_PIPELINE.md` (the 9 stages + checkpoints), `STAGE5_FILTER_DESIGN_2026-06.md`
-> (Stage 5 signals/tiers/clustering/tuning — still authoritative for *that* content), `PROJECT_HISTORY.md`
-> (high-level ADR log). **Gates are now stage-numbered (§11, 2026-06-27): `gate@1` (queue) · `gate@5`
-> (per-URL review) · `gate@6` (dispatch) · `gate@7` (council requests) · `gate@8` (results, the effective
-> CP-C)** — supersedes the old CP-A/B/C naming throughout this note.
+> **Authority:** the cross-stage architecture — DB-vs-disk split, state-event log, gate/console model,
+> the Stage 5→6 release mechanics. Per-stage present-state detail lives in each `STAGE*_DESIGN_2026-06.md`;
+> this doc is what ties them together.
+> **Audience:** anyone building or reasoning about a pipeline stage, the console, or the DB schema.
+> **Companions:** `ACQUISITION_PIPELINE.md` (the 9-stage map + flow diagram), every `STAGE*_DESIGN_2026-06.md`
+> (per-stage detail — each links back here for its gate/console/DB contract), `PROJECT_HISTORY.md`
+> (high-level ADR log; §8/§9/§9a below are the detailed build history behind those entries).
+> **Update this when:** a cross-stage architectural decision changes (DB schema, gate model, the
+> DB-is-working-store/disk-is-receipts split, console scope) — NOT for per-stage implementation detail,
+> which belongs in that stage's own design note.
+
+This note is the architecture for three coupled decisions that span every stage:
+1. **The DB is the working store; disk holds binaries + receipts** — the cross-stage registry *and*
+   every stage's data live in the DB (what the next stage reads); the per-stage JSON files are
+   auditable receipts, not transmitters (§1).
+2. **The Stage 5→6 release** — `filtered.json` as a generated **export** of the DB's release state
+   (not the primary store), + the Stage 6 `handoff_<hash>_<timestamp>.json` immutable dispatch record (§5–§6).
+3. **The app's scope** — a single **stage-selectable governance console** at
+   `infrastructure/acquisition/process_governance/`, the human-in-the-loop surface for every gate (§7, §11).
+
+**Current build state (2026-07-02):** REQ-098/099/103/094 (packaging, state-event log, Postgres governance
+DB, event-driven `filtered.json`) are all COMPLETE — see §1b, §3, §6. The console is built and run live
+through **`gate@6`**: gate@1 (REQ-102), Stage 2 (REQ-104), Stage 3 (REQ-110), Stage 4 + the Stage 4→5
+incremental handoff (REQ-111, §12), the Stage 5 district-driven console (REQ-112), Stage 6 dispatch/freeze
+through the Stage 6→7 seam (REQ-101) — stops before the paid call. **Gates are stage-numbered (§11):**
+`gate@1` (queue) · `gate@5` (per-URL review) · `gate@6` (dispatch) · `gate@7` (council requests) · `gate@8`
+(results). §8, §9, and §9a below are **historical** — fully executed planning/sequencing docs kept in place
+because their section numbers (`governance §9a`, etc.) are cross-referenced elsewhere; see the banners on
+each. Next: Stage 7 (the paid council) + the council lab (`cost_benchmark`); still open: REQ-100 (staleness),
+gate@6 auto mode.
 
 ---
 
@@ -350,7 +349,7 @@ view/controls. Once cross-stage STATE is in the DB, the app is the governance co
 - **Stage 7 / gate@7** — review the council's requests/recommendations.
 - **(later) Stage 8 / gate@8** — review per-band results before the mechanical Stage-9 DB write (the effective old "CP-C").
 
-### Code structure (PROPOSAL — confirm)
+### Code structure — DONE (REQ-098)
 - **Move the app** the Stage-5 review app (server + `static/`) → **`infrastructure/acquisition/process_governance/`** (a top app layer, cross-stage). *(Done in REQ-098: relocated out of `common/` after import-linter flagged the common-imports-stages inversion; renamed console→process_governance for a slightly broader scope.)*
 - **Keep stage logic with its stage:** `build_signals.py` is Stage 5 ingest/signal logic, not app logic →
   move it to **`stage5_filter/build_signals.py`** (out of the app's subfolder). The thin console
@@ -506,6 +505,10 @@ recorded as they surface:
 
 ## 8. Open decisions
 
+> **HISTORICAL — fully resolved.** Every item below was open during the design phase and is now decided
+> (folded into §1–§7); kept in place (not renumbered) because `governance §8` is cross-referenced elsewhere.
+> Read as a retrospective, not a live decision queue.
+
 **RESOLVED 2026-06-26:** ~~Database engine~~ → Postgres, isolated `governance` DB (§1a). ~~Council
 in/out-of-process~~ → out-of-process (OpenRouter); `filtered.json` + `handoff` warranted (§5).
 ~~record→rep descent~~ → one best rep (§4). ~~`filtered.json` role~~ → regenerable export, not primary
@@ -526,6 +529,10 @@ all three fingerprints (config,labels,data); console filters by which changed** 
 ---
 
 ## 9. Sequencing (proposed — prove the data model before the console UI)
+
+> **HISTORICAL — fully executed.** All 8 steps below shipped (REQ-098/103/099/094/100/101/102/104); this
+> is the build-order plan as it was proposed and then revised in-place, kept for the reasoning trail. Kept
+> in place (not renumbered) because `governance §9` is cross-referenced elsewhere.
 
 Don't stall the actual goal (representations → council) behind an app re-architecture. Order:
 
@@ -584,6 +591,10 @@ REQ-104 — REQ-104 is the Stage 2 headless conversion.
 
 ## 9a. REQ-098 execution plan — package + code move + tooling (drafted & approved 2026-06-26)
 
+> **HISTORICAL — fully executed.** REQ-098 shipped (the package move, absolute imports, the
+> import-linter/grimp/vulture/dependency-cruiser tooling in §10). Kept for the reasoning trail behind that
+> migration; kept in place (not renumbered) because `governance §9a` is cross-referenced elsewhere.
+
 The detailed sub-plan for §9 step 1. Persisted so a cold start can execute it.
 
 **The key enabling insight:** an **editable install** (`pip install -e .`) registers `infrastructure` as an
@@ -641,7 +652,7 @@ The only new setup step is a one-time `pip install -e .`.
 
 Adopted to **equip the agent to monitor/manage** the codebase (machine-readable, CLI/CI-driven — not
 browser dashboards) and to keep this infrastructure investment from eroding. Research basis (saved):
-`docs/technical-notes/Polyglot Pipeline Architecture Toolchain.md` (Perplexity deep-research) + the
+`docs/technical-notes/POLYGLOT_PIPELINE_ARCHITECTURE_TOOLCHAIN.md` (Perplexity deep-research) + the
 earlier scratch-paper passes. Kept in this note for now (user's call) — extract to its own note only if
 it grows.
 

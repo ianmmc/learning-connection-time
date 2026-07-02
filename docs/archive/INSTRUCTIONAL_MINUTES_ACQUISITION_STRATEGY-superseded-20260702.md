@@ -1,3 +1,8 @@
+> **ARCHIVED 2026-07-02.** The constraint analysis (coverage × human-QC × time-budget) is distilled into
+> `docs/PROJECT_HISTORY.md` → "The human-QC constraint: decouple coverage from verification". The
+> cost/options table and phased bake-off plan are superseded by the executed multi-provider bake-off and
+> per-school pipeline entries in the same doc. Kept here as the original, unmodified source.
+
 # Daily Instructional Minutes: Acquisition Strategy — Decision Record
 
 > **Status:** Historical strategy/options report (2026-06-12, validated 2026-06-13). **The current operational pipeline now lives in `docs/ACQUISITION_PIPELINE.md`** — read that first. This file is retained for two things still worth keeping: (1) the **constraint analysis** (the coverage × human-QC × <1 hr/week conflict and its resolution), and (2) the **options table** (the cost/time/accuracy decision history that explains *why* we chose the cheap-cloud council + per-school path). The phased "bake-off → build" program below is **largely executed**: the bake-off is done (see `EXTRACTION_BENCHMARK_FINDINGS.md`), discovery and extraction are validated, and the live build items moved to `ACQUISITION_PIPELINE.md` *Open decisions*. Treat the Phase 0–3 plan as the record of intent, not the current task list.

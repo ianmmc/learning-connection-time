@@ -1,6 +1,13 @@
 # Getting Started with Learning Connection Time
 
-> Quick onboarding guide for new contributors
+> **Authority:** dev setup, repo orientation, common tasks, conventions — how to get a fresh checkout
+> running and find your way around, for a human or an AI agent.
+> **Audience:** anyone completely new to this repo.
+> **Companions:** `docs/PROJECT_CONTEXT.md` (the mission/story — read that for *why*, this doc for *how*),
+> root `CLAUDE.md` (current build status + durable operating rules for AI sessions), `docs/TERMINOLOGY.md`
+> (vocabulary — read first), `docs/ACQUISITION_PIPELINE.md` (the 9-stage pipeline map).
+> **Update this when:** setup steps, repo layout, or conventions change — NOT for build progress, which
+> lives in `CLAUDE.md` and GitHub Issues/Projects.
 
 ## What This Project Does
 
@@ -126,12 +133,15 @@ pytest tests/ -v -m integration
 
 | Document | Purpose |
 |----------|---------|
-| [CLAUDE.md](../CLAUDE.md) | Project briefing for Claude Code sessions |
+| [CLAUDE.md](../CLAUDE.md) | Project briefing + current build status for Claude Code sessions |
 | [README.md](../README.md) | Project overview and commands |
-| [METHODOLOGY.md](METHODOLOGY.md) | LCT calculation formulas and data safeguards |
+| [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) | The mission, the reframe, the 6-phase evolution roadmap — the *story* |
+| [METHODOLOGY.md](METHODOLOGY.md) | LCT calculation formulas, SPED segmentation, QA dashboard, data safeguards |
 | [TERMINOLOGY.md](TERMINOLOGY.md) | Standardized vocabulary (read first!) |
 | [DATABASE_SETUP.md](DATABASE_SETUP.md) | PostgreSQL schema and setup |
+| [ACQUISITION_PIPELINE.md](ACQUISITION_PIPELINE.md) | The 9-stage bell-schedule acquisition pipeline map |
 | [SEA_INTEGRATION_GUIDE.md](SEA_INTEGRATION_GUIDE.md) | State education agency data integration |
+| [PROJECT_HISTORY.md](PROJECT_HISTORY.md) | Decision log — how the project got to where it is |
 
 ---
 
@@ -243,13 +253,13 @@ git commit -m "feat: Add new bell schedule parser"
 
 ---
 
-## Current Status (2026-07-01 — root `CLAUDE.md` *Current Status* is always the live authority)
+## Current Build Status
 
-- **Database:** 17,842 U.S. school districts; 9/9 SEA integrations (FL, TX, CA, NY, IL, MI, PA, VA, MA); statutory-driven LCT calculations live.
-- **Phase:** the **9-stage per-school acquisition pipeline** (`infrastructure/acquisition/`) is console-driven and **built through the Stage 6→7 seam**: gate@1 queue · deterministic SERP discovery (Bright Data + Serper failover → Claude Wave 2) · Playwright capture · local processing · Stage-5 detector/combiner scoring + three-axis labeling (gate@5) · Stage-6 routing/pricing/immutable dispatch (gate@6) — stopping before the paid council call (Stage 7, next).
-- **Metric:** GROSS bell-to-bell minutes (`end − start`, labeled `gross_bell_to_bell`); extractors read TIMES, deterministic code computes minutes + the per-band mode (REQ-054/055/056).
-- **Architecture:** the isolated `governance` Postgres is the working store; JSON artifacts are receipts; state = the `state_event` log; gates are stage-numbered (`gate@1/5/6/7/8`).
-- Map: `docs/ACQUISITION_PIPELINE.md` · governance: `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` · per-stage design: `docs/technical-notes/STAGE*_DESIGN_*.md`.
+Not tracked here — it changes too fast for a static doc to keep up. Root `CLAUDE.md` is the live-status
+authority (what's built, what's running, what's next); day-to-day task tracking is in GitHub Issues/Projects.
+For the pipeline architecture itself (stable, not status): `docs/ACQUISITION_PIPELINE.md` (the map),
+`docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (governance/DB/gate model), and each
+`docs/technical-notes/STAGE*_DESIGN_2026-06.md` (per-stage present state).
 
 ---
 
@@ -268,7 +278,3 @@ git commit -m "feat: Add new bell schedule parser"
 2. **COVID data exclusion** - Never use 2019-20 through 2022-23 data
 3. **Security blocks** - ONE-attempt rule for Cloudflare/WAF-protected sites
 4. **Temporal validation** - Data from multiple sources must span ≤3 years
-
----
-
-**Last Updated:** July 1, 2026

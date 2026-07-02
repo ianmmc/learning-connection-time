@@ -1,4 +1,14 @@
-# Instructional Minute Metric - Project Context
+# Instructional Minute Metric — Project Context
+
+> **Authority:** the project's mission, reframe, research questions, and 6-phase evolution roadmap — the
+> "story," not the mechanics or the current build state.
+> **Audience:** anyone new to the project (human or agent) who needs to understand *why* this exists before
+> diving into *how* it's built.
+> **Companions:** `docs/METHODOLOGY.md` (the LCT calculation mechanics), `docs/TERMINOLOGY.md` (vocabulary),
+> `docs/GETTING_STARTED.md` (dev setup + orientation to the live codebase), root `CLAUDE.md` (current build
+> status + durable operating rules), GitHub Issues/Projects (live task tracking).
+> **Update this when:** the mission, the reframe, a research question, or the phase roadmap changes — NOT
+> for build progress, which lives in `CLAUDE.md` and GitHub, not here.
 
 ## Mission
 
@@ -51,6 +61,8 @@ LCT = 18 minutes per student per day
 - Over a 180-day school year: 3,240 minutes = 54 hours total
 - This is a resource metric, not an outcome metric
 
+Full formulas, staffing scopes, SPED segmentation, and validation rules: `docs/METHODOLOGY.md`.
+
 ## Key Questions
 
 ### Primary Research Questions
@@ -67,67 +79,31 @@ LCT = 18 minutes per student per day
 - Temporal trends (year-over-year changes)
 - Relationship to outcomes (with appropriate caveats)
 
-## Current Status (2026-07-01 — root `CLAUDE.md` *Current Status* is always the live authority)
+## Where the project stands
 
-**Phase**: Phase 1.5 (bell-schedule enrichment) via the **9-stage per-school acquisition pipeline**
-(`infrastructure/acquisition/`), console-driven and **built through the Stage 6→7 seam** — the paid
-council extraction (Stage 7), per-band aggregation (Stage 8), and LCT-DB write (Stage 9) are next.
-**Metric**: **GROSS bell-to-bell minutes** (`end − start`, labeled `gross_bell_to_bell`; net
-deferred). Extractors read TIMES; deterministic code computes minutes + the per-band mode
-(REQ-054/055/056).
-**Extraction finding** (the durable one): on good inputs top cheap cloud models hit ~95–100% —
-**input quality, not the model, is the ceiling**; hence the pipeline's per-school targeting,
-tiered capture, and Stage-5 filtering. See `docs/EXTRACTION_BENCHMARK_FINDINGS.md`.
-**Discovery**: a deterministic SERP cascade (Bright Data SERP + Serper failover → Claude WebSearch
-residual) — **the search index predicts recall**; agent-led and own-index providers retired.
-**Coverage**: 17,842 U.S. school districts in PostgreSQL · **SEA Integrations**: 9/9 (FL, TX, CA,
-NY, IL, MI, PA, VA, MA) ✅ · **Data Sources**: Federal (NCES CCD, CRDC, IDEA 618) + bell schedules
-+ state agencies.
-**Architecture**: isolated `governance` Postgres = the working store; JSON artifacts = auditable
-receipts; cross-stage state = the `state_event` log; human gates are stage-numbered
-(`gate@1/5/6/7/8`).
-
-> **History note:** strategy evolved twice — cloud multi-tier (Firecrawl/Gemini) → the Jan-2026
-> local-first Crawlee+Ollama pivot → superseded 2026-06-13 when benchmarking showed paid-cloud
-> extraction is *cheap* (~$0.05–0.30/1M) and far more accurate. The Crawlee/Ollama stack is
-> archived (`data/archive/crawlee-ollama-era-superseded-20260625/`). Canonical learnings:
-> `docs/technical-notes/EXTRACTION_AND_DISCOVERY_LEARNINGS_2026-06.md`; decisions:
-> `docs/PROJECT_HISTORY.md`.
-
-### What We Have ✅
-- PostgreSQL database with 17,842 districts; 9/9 SEA crosswalks
-- LCT calculation engine with variants (8+2 staff scopes, grade-level breakdowns)
-- SPED segmentation (v3 self-contained focus) + data safeguards (7 validation flags)
-- QA dashboard and validation framework; interactive enrichment tools
-- Acquisition Stages 1–6 built + run live on real batches: gate@1 queue console, SERP discovery,
-  Playwright capture (fingerprinting, de-chrome, iframe/embed), local processing (pdftotext /
-  pdfplumber / camelot / tesseract), Stage-5 detector/combiner scoring + three-axis human
-  labeling (440 labels), Stage-6 routing/pricing/immutable dispatch (gate@6)
-- The measurement discipline: config-as-data + fingerprinted scorecards + tuning ledger
-  (nothing ships to scoring without harness measurement)
+LCT is currently in **Phase 1.5** of the evolution roadmap below (bell-schedule enrichment — moving from
+statutory-minimum fallbacks to actual collected instructional time). For what's built, what's running, and
+what's next: root `CLAUDE.md` is the current-status authority; day-to-day task tracking lives in GitHub
+Issues/Projects, not in this document.
 
 ## Evolution Strategy
 
 LCT is designed to evolve through six phases, addressing limitations while maintaining the core rhetorical power of the basic metric:
 
-### Phase 1: Basic LCT ✅ Complete
+### Phase 1: Basic LCT — complete
 - Uses available enrollment and staff data
 - Applies state statutory instructional minutes
 - Provides district-level comparisons
-- **Status:** Implemented with grade-level breakdowns
+- Implemented with grade-level breakdowns and multiple staffing-scope variants
 
-### Phase 1.5: Bell Schedule Enrichment & SPED Segmentation 🔄 In Progress
-- Actual instructional time collection (vs statutory fallback)
-- SPED segmentation (v3 self-contained focus):
-  - Three LCT scopes: core_sped, teachers_gened, instructional_sped
-  - Self-contained SPED vs mainstreamed SPED distinction
-  - Two-step ratio estimation using IDEA 618 + CRDC baselines
-  - See [SPED_SEGMENTATION_IMPLEMENTATION.md](SPED_SEGMENTATION_IMPLEMENTATION.md) for methodology
-- Data quality safeguards (6 validation flags)
-  - See [METHODOLOGY.md](METHODOLOGY.md#data-safeguards) for details
-- PostgreSQL database infrastructure
+### Phase 1.5: Bell Schedule Enrichment & SPED Segmentation — current
+- Actual instructional time collection (vs statutory fallback), via a 9-stage acquisition pipeline
+  (`docs/ACQUISITION_PIPELINE.md`) that finds, captures, and extracts real bell schedules
+- SPED segmentation: self-contained vs. mainstreamed SPED distinction, three dedicated LCT scopes
+  (`docs/METHODOLOGY.md` §SPED Segmentation)
+- Data quality safeguards (error/warning flags on every calculation)
 
-**Current Limitations**:
+**Known limitations carried into this phase**:
 - Individualization fallacy (assumes all time could be 1-on-1)
 - Time-as-quality assumption (more time ≠ better education)
 - Averaging deception (masks within-district disparities)
@@ -194,23 +170,6 @@ LCT is designed to evolve through six phases, addressing limitations while maint
 - **Strategic Reframing**: Moving from teacher burden to student opportunity
 - **Policy Language**: Development of equity-focused terminology
 
-## Success Criteria
-
-### Phase 1 (Initial Analysis) ✅ Mostly Complete
-- [x] Successfully calculate LCT for all districts in database
-- [x] Document data availability and limitations
-- [x] Enrich districts with actual bell schedules (campaign complete - 182 districts, 50 U.S. states)
-- [x] Implement SPED segmentation (v3)
-- [x] Create data quality safeguards
-- [ ] Identify 3-5 compelling equity stories (in progress)
-- [ ] Create visualization prototypes (pending)
-
-### Long-term
-- [ ] Establish LCT as recognized education metric
-- [ ] Integration into state/federal reporting
-- [ ] Policy changes informed by LCT analysis
-- [ ] Reduced educational opportunity gaps
-
 ## Ethical Considerations
 
 1. **Avoid Deficit Framing**: Never imply that students or communities are lacking
@@ -219,56 +178,12 @@ LCT is designed to evolve through six phases, addressing limitations while maint
 4. **Actionable Insights**: Connect findings to concrete policy recommendations
 5. **Stakeholder Engagement**: Involve educators and communities in interpretation
 
-## Technical Architecture
+## Success Criteria (the durable, long-horizon goals — not a build checklist)
 
-### Data Flow
-```
-Federal/State Sources
-    ↓
-[Download Scripts]
-    ↓
-Raw Data (with metadata)
-    ↓
-[Extract & Combine]
-    ↓
-[Normalize Schema]
-    ↓
-Processed Data
-    ↓
-[Calculate LCT]
-    ↓
-Enriched Data
-    ↓
-[Generate Reports]
-    ↓
-Outputs & Visualizations
-```
+- Establish LCT as a recognized, defensible education equity metric
+- Identify compelling, well-evidenced equity stories worth publishing
+- Enable district-to-district and state-to-state comparisons that hold up to scrutiny
+- Longer-term: integration into state/federal reporting conversations; policy changes informed by LCT
+  analysis; measurably reduced educational-opportunity-gap blind spots
 
-### Quality Assurance
-- Validation at every stage
-- Processing logs with full lineage
-- Test suite for calculations
-- Manual spot-checks of results
-
-## Next Steps (2026-07; live sequencing in root `CLAUDE.md` → "Next session")
-
-1. **Immediate**
-   - Complete the v2.1 re-tagging of the 440 Stage-5 labels (field observations →
-     `STAGE5_FILTER_DESIGN` §3a; fold in measured, never by eye)
-   - Facet-level per-detector scoring (as re-tagging fills the confounder facets)
-
-2. **Short-term**
-   - The council lab (`cost_benchmark`): measured token model + live OpenRouter pricing
-   - **Stage 7** (paid council + judge loop + request-more-evidence back-edges, budget-governed)
-   - Stage 8 (per-band modal aggregation + gate@8) → Stage 9 (LCT-DB write)
-
-3. **Medium-term**
-   - GT alignment into the pipeline (`batch_00000`) → council composition re-benchmark
-   - Scale batches toward the enrollment-weighted top districts; funnel/coverage analysis
-   - Equity-story analysis and visualization on enriched (gross bell-to-bell) LCT
-
----
-
-**Document Version**: 2.4
-**Last Updated**: July 1, 2026
-**Status**: Bell Schedule Acquisition — 9-stage pipeline built through the Stage 6→7 seam; Stage 7 (paid council extraction) next; 9/9 SEA integrations complete
+For what's actually done vs. in flight toward these goals, see `CLAUDE.md` and GitHub Issues/Projects.

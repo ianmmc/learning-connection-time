@@ -550,6 +550,64 @@ When valid districts show unusual LCT patterns:
 - If LCT-Core > LCT-Teachers: Pre-K data inconsistency
 - Investigate and flag for review
 
+### QA Dashboard: generating & interpreting reports
+
+`calculate_lct_variants.py` auto-generates a QA dashboard alongside every calculation run — this is the
+operational reference for reading it (validation *rules* are above; this is *how to run and act on* them).
+Consolidated 2026-07-02 from the former standalone `QA_DASHBOARD.md` (archived, `docs/archive/`).
+
+**Generate + view:**
+```bash
+python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2023-24
+cat data/enriched/lct-calculations/lct_qa_report_2023_24_<timestamp>.json | jq
+```
+
+**Console output** (abbreviated):
+```
+QA DASHBOARD
+Status: PASS · Pass Rate: 99.46%
+Hierarchy Checks: ✓ Secondary < Overall Teachers  ✓ Teachers < Core  ✓ Core < Instructional
+                  ✓ Instructional < Support  ✓ Support < All
+Outliers Detected: 20 (5 very low, 15 very high)
+State Coverage: 48 states/territories · Districts Processed: 14,314
+```
+
+**JSON report** (`data/enriched/lct-calculations/lct_qa_report_<year>_<timestamp>.json`) carries
+`metadata`, `data_quality` (total/valid/invalid/pass_rate), `scope_summary` (per-scope mean/median/min/max),
+`hierarchy_validation` (per-check pass/fail with the compared means), `state_coverage`, `outliers[]`
+(district_id/name/scope/issue/severity), and `overall_status`.
+
+**Interpreting status:** PASS = pass rate ≥95%, all hierarchy checks passing, outliers documented, adequate
+state coverage → proceed. Otherwise (pass rate <95%, any hierarchy failure, unexpected outliers, missing
+major-state data) → investigate before publishing.
+
+**Investigating a flagged outlier:**
+```python
+from infrastructure.database.connection import session_scope
+from infrastructure.database.models import District, LCTCalculation
+
+with session_scope() as session:
+    district = session.query(District).filter_by(nces_id="3900528").first()
+    lcts = session.query(LCTCalculation).filter_by(district_id="3900528", year="2023-24").all()
+    for lct in lcts:
+        print(f"{lct.scope}: {lct.lct_value} min (staff={lct.staff_count}, enrollment={lct.enrollment})")
+```
+
+**Common outlier patterns:** virtual/online schools (very low LCT, minimal staff — e.g. Findlay Digital
+Academy 0.4 min, document and consider excluding from equity analysis); Intermediate Units / IUs (very high
+LCT from specialized staffing — e.g. Berks County IU 14, 284.6 min — note as special-purpose, not a typical
+district); charter/alternative schools (highly variable ratios, verify data accuracy).
+
+**Thresholds** are constants in `calculate_lct_variants.py` (`LOW_LCT_THRESHOLD = 5`,
+`HIGH_LCT_THRESHOLD = 200`, `MIN_PASS_RATE = 0.95`) — adjust there, not in this doc.
+
+**Troubleshooting:**
+- No console output → confirm the script version has `generate_qa_report` (`grep generate_qa_report
+  infrastructure/scripts/analyze/calculate_lct_variants.py`).
+- JSON report missing → check output-directory permissions (`data/enriched/lct-calculations/`).
+- Hierarchy check failure → check the underlying enrollment/staffing data first, then whether a small
+  sample size is violating the expected pattern, then whether a scope definition changed.
+
 ### Data Source Transparency
 
 For mixed-year data (enrollment, staffing, and bell schedules from different years), document component years:
@@ -573,6 +631,56 @@ For mixed-year data (enrollment, staffing, and bell schedules from different yea
 - All published LCT values must include component year metadata
 - Data source must be documented for each component
 - Mixed-year calculations are acceptable with disclosure
+
+---
+
+## SPED Segmentation (self-contained vs. mainstreamed)
+
+Consolidated 2026-07-02 from the former standalone `SPED_SEGMENTATION_IMPLEMENTATION.md` (archived,
+`docs/archive/`). Implemented as of the v3 (2026-01-03) self-contained-focus design.
+
+**Key concept.** SPED students split into two groups with very different instructional relationships:
+**self-contained** (~6.7% of all SPED nationally — separate class, separate school, or inside regular class
+<40% of the day) are taught primarily by SPED teachers and are the correct denominator for SPED
+teacher-to-student ratios; **mainstreamed** (~93.3% — inside regular class 40%+ of the day) are taught
+primarily by GenEd teachers and belong in the GenEd population for LCT purposes.
+
+**Three SPED scopes:**
+
+| Scope | Formula | Purpose | Mean LCT (2023-24) |
+|---|---|---|---|
+| `core_sped` | SPED teachers / self-contained SPED enrollment | Primary SPED attention metric | 185.5 min |
+| `teachers_gened` | GenEd teachers / GenEd enrollment (incl. mainstreamed SPED) | Primary GenEd comparison | 27.2 min |
+| `instructional_sped` | (SPED teachers + SPED paras) / self-contained SPED enrollment | Fuller SPED support picture | 265.8 min |
+
+**Data sources (2017-18 pre-COVID baseline — exempt from the 3-year window rule, see Temporal Data
+Blending below):** IDEA 618 Personnel (`bpersonnel2017-18.csv` — SPED teacher/para FTE by state, ages 6-21),
+IDEA 618 Child Count & Educational Environments (`bchildcountandedenvironments2017-18.csv` — self-contained
+vs. mainstreamed split by state), CRDC 2017-18 Enrollment (`Enrollment.csv` — LEA-level total SPED count,
+no environment breakdown), CCD 2017-18 LEA Membership (LEA-level total enrollment).
+
+**Two-step estimation** (per current-year district): estimated all-SPED = total enrollment × LEA SPED
+proportion (CRDC/CCD, LEA-specific for 74% of districts, state-average fallback otherwise) → estimated
+self-contained SPED = all-SPED × state self-contained proportion (IDEA 618, national avg 6.7%, range
+6.6–9.9%) → GenEd enrollment = total − self-contained → SPED teachers = self-contained × state teacher
+ratio → SPED instructional = self-contained × state instructional ratio → GenEd teachers = total teachers
+− SPED teachers.
+
+**Audit validation (passes):** self-contained + GenEd = total enrollment; SPED teachers + GenEd teachers ≈
+total teachers; and critically, the **weighted average** of `core_sped` and `teachers_gened` LCT equals the
+overall `teachers_only` LCT (difference ≈ 0.00 — confirms the segmentation correctly partitions both
+enrollment and teachers, not just one side).
+
+**Database tables:** `sped_state_baseline` (56 states/territories, IDEA 618 ratios), `sped_lea_baseline`
+(18,606 LEAs, CRDC/CCD SPED proportion), `sped_estimates` (16,459 districts for 2023-24, the applied
+two-step estimate + `confidence` high/medium/low). Scripts: `infrastructure/database/migrations/
+import_sped_baseline.py`, `apply_sped_estimates.py`; consumed by `calculate_lct_variants.py`.
+
+**Known limitations:** the self-contained proportion is a state-level ratio applied to an LEA-level
+estimate (not directly measured per-LEA); it varies by state (6.6–9.9%); para allocation may not reflect
+LEA-level variation; ~6 districts show negative GenEd-teacher estimates (flagged low-confidence); ~940
+districts are skipped for missing state ratios (territories, etc.). See `WARN_SPED_RATIO_CAP` above for
+the related LCT-ceiling cap on high-ratio states (e.g. CT).
 
 ---
 
