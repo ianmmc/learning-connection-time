@@ -13,7 +13,8 @@ from infrastructure.database.migrations.sea_import_utils import (
     validate_enrollment_staff_ratio, is_sped_intensive,
     is_covid_year, validate_data_year,
     COVID_EXCLUDED_YEARS, VALID_DATA_YEARS,
-    SUPPRESSED_VALUES,
+    SUPPRESSED_VALUES, NUMERIC_SUPPRESSED_SENTINELS,
+    id_digits, il_rcdts_to_state_id, ma_district_code,
 )
 
 
@@ -66,6 +67,25 @@ class TestSafeFloat:
         """Negative values convert correctly."""
         assert safe_float(-42.5) == -42.5
         assert safe_float("-42.5") == -42.5
+
+    def test_numeric_masking_sentinels_return_none(self):
+        """TAPR-style numeric masking sentinels become None, never negative FTE
+        (issue #22): -1 masked, -2/-3 not applicable, -999 legacy missing."""
+        for sentinel in (-1, -2, -3, -999):
+            assert safe_float(sentinel) is None, sentinel
+            assert safe_float(float(sentinel)) is None, sentinel
+            assert safe_float(str(sentinel)) is None, sentinel
+            assert safe_int(sentinel) is None, sentinel
+
+    def test_sentinel_set_contents(self):
+        assert NUMERIC_SUPPRESSED_SENTINELS == frozenset({-1.0, -2.0, -3.0, -999.0})
+
+    def test_star_and_minus_one_both_none(self):
+        """A '*'-masked cell and a -1-masked cell coerce identically (issue #22)."""
+        assert safe_float('*') is None
+        assert safe_float(-1) is None
+        assert safe_int('*') is None
+        assert safe_int(-1) is None
 
 
 class TestSafeInt:
@@ -131,6 +151,49 @@ class TestFormatStateId:
         """Illinois RCDTS 15-digit to formatted."""
         # Chicago: 150162990250000 -> 15-016-2990-25
         assert format_state_id('IL', '150162990250000') == '15-016-2990-25'
+
+    def test_illinois_leading_zeros_restored(self):
+        """Regions 01-09 lose their leading zero to Excel numeric parsing; the
+        converter must zero-pad back to 15 digits (issue #23)."""
+        # As Excel int (14 digits after zero loss)
+        assert format_state_id('IL', 10162990250000) == '01-016-2990-25'
+        # As mangled string forms
+        assert format_state_id('IL', '10162990250000') == '01-016-2990-25'
+        assert format_state_id('IL', '10162990250000.0') == '01-016-2990-25'
+        # Full-width string unaffected
+        assert format_state_id('IL', '010162990250000') == '01-016-2990-25'
+        assert il_rcdts_to_state_id(10162990250000) == '01-016-2990-25'
+
+    def test_michigan_zero_padding(self):
+        """MI codes < 10000 must match the crosswalk's 5-digit padded form
+        (issue #23)."""
+        assert format_state_id('MI', 82015) == '82015'   # Detroit, unaffected
+        assert format_state_id('MI', 4010) == '04010'    # leading zero restored
+        assert format_state_id('MI', 4010.0) == '04010'  # Excel float form
+        assert format_state_id('MI', '04010') == '04010'
+
+    def test_massachusetts_converter(self):
+        """MA converter handles BOTH the 8-digit org code (DDDD0000) and the
+        4-digit district code; the old converter returned '0000' for its own
+        documented example '0035' (issue #23)."""
+        assert format_state_id('MA', 350000) == '0035'      # Excel-mangled org code
+        assert format_state_id('MA', '00350000') == '0035'  # full org code
+        assert format_state_id('MA', '0035') == '0035'      # documented example
+        assert format_state_id('MA', 35) == '0035'          # Excel-mangled district code
+        assert ma_district_code('00480000') == '0048'
+
+    def test_id_digits_normalization(self):
+        """id_digits canonicalizes Excel-mangled IDs and rejects garbage."""
+        assert id_digits(' 0123 ') == '0123'
+        assert id_digits('123.0') == '123'
+        assert id_digits(123) == '123'
+        assert id_digits(123.0) == '123'
+        with pytest.raises(ValueError):
+            id_digits(None)
+        with pytest.raises(ValueError):
+            id_digits(float('nan'))
+        with pytest.raises(ValueError):
+            id_digits('12-34')
 
     def test_new_york_beds_format(self):
         """New York BEDS codes."""

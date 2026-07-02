@@ -38,7 +38,7 @@ import logging
 from infrastructure.database.migrations.sea_import_utils import (
     safe_float, safe_int,
     load_state_crosswalk, get_district_name,
-    log_import_summary,
+    log_import_summary, format_state_id,
 )
 
 # Configure logging
@@ -56,6 +56,20 @@ MI_DATA_DIR = project_root / "data" / "raw" / "state" / "michigan"
 STAFFING_FILE = MI_DATA_DIR / "mi_staffing_2023_24.xlsx"
 ENROLLMENT_FILE = MI_DATA_DIR / "Spring_2024_Headcount.xlsx"
 SPECIAL_ED_FILE = MI_DATA_DIR / "mi_special_ed_2023_24.xlsx"
+
+
+def format_mi_district_code(raw):
+    """MDE district code -> 5-digit zero-padded crosswalk format, or None.
+
+    The crosswalk stores codes zero-padded to 5 digits; Excel parses the column as
+    numeric, so str(safe_int(...)) stripped leading zeros for codes < 10000 and those
+    districts were silently skipped (issue #23). Returns None for missing/invalid
+    codes so callers can skip the row explicitly.
+    """
+    try:
+        return format_state_id('MI', raw)
+    except (ValueError, TypeError):
+        return None
 
 
 def load_mi_crosswalk(session) -> dict:
@@ -223,9 +237,9 @@ def import_district_identifiers(session, crosswalk, staffing_df):
     skipped = 0
 
     for _, row in staffing_df.iterrows():
-        district_code = str(safe_int(row.get('DCODE')))
+        district_code = format_mi_district_code(row.get('DCODE'))
 
-        if district_code not in crosswalk:
+        if district_code is None or district_code not in crosswalk:
             skipped += 1
             continue
 
@@ -264,9 +278,9 @@ def import_staff_data(session, crosswalk, staffing_df):
     skipped = 0
 
     for _, row in staffing_df.iterrows():
-        district_code = str(safe_int(row.get('DCODE')))
+        district_code = format_mi_district_code(row.get('DCODE'))
 
-        if district_code not in crosswalk:
+        if district_code is None or district_code not in crosswalk:
             skipped += 1
             continue
 
@@ -310,9 +324,9 @@ def import_enrollment_data(session, crosswalk, enrollment_df):
     skipped = 0
 
     for _, row in enrollment_df.iterrows():
-        district_code = str(safe_int(row.get('District Code')))
+        district_code = format_mi_district_code(row.get('District Code'))
 
-        if district_code not in crosswalk:
+        if district_code is None or district_code not in crosswalk:
             skipped += 1
             continue
 
@@ -384,9 +398,9 @@ def import_special_ed_data(session, crosswalk, sped_df):
 
     for _, row in sped_df.iterrows():
         # SPED file uses DCODE.1 for district code
-        district_code = str(safe_int(row.get('DCODE.1')))
+        district_code = format_mi_district_code(row.get('DCODE.1'))
 
-        if district_code not in crosswalk:
+        if district_code is None or district_code not in crosswalk:
             skipped += 1
             continue
 

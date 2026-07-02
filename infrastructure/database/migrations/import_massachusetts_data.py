@@ -38,7 +38,7 @@ import logging
 from infrastructure.database.migrations.sea_import_utils import (
     safe_float, safe_int,
     load_state_crosswalk, get_district_name,
-    log_import_summary,
+    log_import_summary, ma_district_code,
 )
 
 # Configure logging
@@ -50,7 +50,11 @@ logger = logging.getLogger(__name__)
 
 # State configuration
 STATE_CODE = 'MA'
-DATA_YEAR = '2025-26'  # Primary data year (updated to 2025-26)
+# Label data with its ACTUAL year (issue #23): the DESE teacher-FTE file is the
+# 2024-25 export, the E2C Hub enrollment export is filtered to SY 2026 (= 2025-26).
+# The old single DATA_YEAR = '2025-26' mislabeled 2024-25 teacher FTE as 2025-26.
+TEACHER_DATA_YEAR = '2024-25'
+ENROLLMENT_DATA_YEAR = '2025-26'
 
 # Data file paths
 MA_DATA_DIR = project_root / "data" / "raw" / "state" / "massachusetts"
@@ -59,25 +63,21 @@ ENROLLMENT_FILE = MA_DATA_DIR / "Enrollment__Grade,_Race_Ethnicity,_Gender,_and_
 
 
 def format_ma_district_code(dist_code) -> str:
-    """Convert 8-digit integer code to 4-digit zero-padded crosswalk format.
+    """Convert a DESE code to the 4-digit zero-padded crosswalk format.
 
-    Massachusetts uses two formats:
-    - 8-digit in data files: 350000 or 00350000 (Boston)
-    - 4-digit in crosswalk: "0035" (Boston)
+    Massachusetts uses two shapes (issue #23):
+    - 8-digit org code in data files: DDDD0000, e.g. 350000 or 00350000 (Boston)
+    - 4-digit district code in the crosswalk: "0035" (Boston)
 
-    Conversion: Take first 4 digits after stripping trailing zeros up to 4 chars.
-    Actually: Remove trailing 0000 and zero-pad to 4 digits.
+    Delegates to the shared converter, which handles both shapes — the old
+    str(int(x)).zfill(8)[:4] returned '0000' for a 4-digit input like '0035'.
 
     Examples:
         350000 -> "0035"
-        00350000 -> "0035"
-        10000 -> "0001"  (hypothetical)
+        '00350000' -> "0035"
+        '0035' -> "0035"
     """
-    # Convert to string, zero-pad to 8 digits
-    code_str = str(int(dist_code)).zfill(8)
-    # Remove trailing 0000 and take first 4 chars
-    # But actually the format is DDDD0000, so we take first 4 digits of 8-digit padded
-    return code_str[:4]
+    return ma_district_code(dist_code)
 
 
 def load_ma_crosswalk(session) -> dict:
@@ -241,7 +241,7 @@ def import_district_identifiers(session, crosswalk, teacher_df, enrollment_df):
                 "nces_id": nces_id,
                 "dist_code": dist_code_4,
                 "name": district_name,
-                "year": DATA_YEAR
+                "year": TEACHER_DATA_YEAR  # names come from the 2024-25 teacher file
             })
             imported += 1
         except Exception as e:
@@ -297,7 +297,7 @@ def import_staff_data(session, crosswalk, teacher_df):
                     updated_at = CURRENT_TIMESTAMP
             """), {
                 "nces_id": nces_id,
-                "year": DATA_YEAR,
+                "year": TEACHER_DATA_YEAR,
                 "teachers": safe_float(row.get('teachers_fte')),
                 "pct_lic": safe_float(row.get('pct_licensed')),
                 "ratio": ratio_val,
@@ -352,7 +352,7 @@ def import_enrollment_data(session, crosswalk, enrollment_df):
                     updated_at = CURRENT_TIMESTAMP
             """), {
                 "nces_id": nces_id,
-                "year": DATA_YEAR,
+                "year": ENROLLMENT_DATA_YEAR,
                 "total": safe_int(row.get('TOTAL_CNT')),
                 "pk": safe_int(row.get('PK_CNT')),
                 "k": safe_int(row.get('K_CNT')),

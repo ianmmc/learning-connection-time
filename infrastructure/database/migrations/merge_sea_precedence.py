@@ -2,39 +2,45 @@
 """
 Merge SEA (State Education Agency) data into staff_counts_effective with precedence.
 
-This script implements the data precedence layer that prefers State over Federal sources:
-- Precedence: SEA data > NCES CCD data (when available and within 3-year window)
-- REQ-026: Enforces 3-year temporal blending window
-- REQ-027: Uses master crosswalk table for NCES↔SEA mappings
+**Precedence (REQ-023, decided 2026-07-01):**
+    year-matched NCES > year-matched SEA > older NCES > older SEA
 
-**Precedence Rules:**
-1. If SEA staff data exists for a district:
-   - AND year span ≤ 3 years → Use SEA data (update primary_source)
-   - AND year span > 3 years → Skip (ERR_SPAN_EXCEEDED, keep NCES)
-2. Otherwise → Use NCES baseline (already in staff_counts_effective)
+SEA NEVER unconditionally overwrites NCES. For a given field, SEA applies only when:
+- NCES lacks a value for the field, OR
+- the SEA year is STRICTLY newer than the NCES year,
+and always subject to:
+- the SEA year is not COVID-excluded (2019-20..2022-23; issue #14 / school_year module), and
+- the blend window: start-year span <= MAX_BLEND_SPAN (2, i.e. 3 consecutive school
+  years — REQ-026 as corrected; the old code allowed span <= 3), and
+- the SEA value is not suppressed (None values are never merged — issue #22).
 
-**Temporal Validation (REQ-026):**
-- Same year (0 span): No flags
-- 2-3 year span: WARN_YEAR_GAP flag
-- >3 year span: ERR_SPAN_EXCEEDED flag, data rejected
+The pure decision lives in decide_precedence(); the loop only applies it.
 
-**States with SEA Data (January 2026):**
-- CA: 2024-25 (997 districts, 2-year span = WARN_YEAR_GAP)
-- FL: 2024-25 (76 districts, 2-year span = WARN_YEAR_GAP)
-- IL: 2023-24 (864 districts, perfect match with NCES)
-- MA: 2025-26 (396 districts, 3-year span = WARN_YEAR_GAP)
-- MI: 2023-24 (836 districts, perfect match with NCES)
-- NY: 2023-24 (9298 staff records, perfect match with NCES)
-- PA: 2024-25 (777 districts, 2-year span = WARN_YEAR_GAP)
-- TX: 2024-25 (1,190 districts, 2-year span = WARN_YEAR_GAP)
-- VA: 2025-26 (131 districts, 3-year span = WARN_YEAR_GAP)
+**Coherence design choice (issue #14):**
+SEA staff tables supply ONLY a district-total teacher FTE (no per-level split), so this
+merge updates ONLY `teachers_total`. It does NOT touch `teachers_k12`, the per-level
+teacher fields, or any `scope_*` field, and it does NOT call calculate_scopes() —
+none of that computation's inputs changed, and the old code's pattern (set
+teachers_k12 = SEA total, then let calculate_scopes() silently recompute it from the
+NCES per-level fields) left rows claiming an SEA primary_source while every scope was
+NCES-derived. Provenance is instead recorded FIELD-LEVEL: `primary_source` keeps its
+NCES baseline value (the per-level fields and scopes that drive LCT remain NCES), and
+`sources_used` lists which fields each source supplied. This keeps every row
+internally consistent (teachers_k12 always matches its per-level inputs) and its
+provenance honest.
+
+**Temporal flags:**
+- span 0-1: no flags
+- span == 2: WARN_YEAR_GAP (edge of the blend window)
+- span > 2: ERR_SPAN_EXCEEDED, data rejected
 
 Usage:
     python merge_sea_precedence.py [--year 2023-24] [--dry-run]
 
 Reference:
     - docs/SEA_INTEGRATION_GUIDE.md
-    - docs/REQUIREMENTS.yaml (REQ-026, REQ-027)
+    - docs/REQUIREMENTS.yaml (REQ-023, REQ-026, REQ-027)
+    - infrastructure/database/school_year.py (single source of truth for years)
 """
 
 import argparse
@@ -49,6 +55,9 @@ sys.path.insert(0, str(project_root))
 
 from infrastructure.database.connection import session_scope
 from infrastructure.database.models import StaffCountsEffective
+from infrastructure.database.school_year import (
+    MAX_BLEND_SPAN, is_covid_year, start_year, year_span,
+)
 from sqlalchemy import text
 import logging
 
@@ -64,7 +73,7 @@ SEA_STATES = {
     'CA': {'year': '2024-25', 'table': 'ca_staff_data'},
     'FL': {'year': '2024-25', 'table': 'fl_staff_data'},
     'IL': {'year': '2023-24', 'table': 'il_staff_data'},
-    'MA': {'year': '2025-26', 'table': 'ma_staff_data'},
+    'MA': {'year': '2024-25', 'table': 'ma_staff_data'},  # teacher file is 2024-25 (issue #23)
     'MI': {'year': '2023-24', 'table': 'mi_staff_data'},
     'NY': {'year': '2023-24', 'table': 'ny_staff_data'},
     'PA': {'year': '2024-25', 'table': 'pa_staff_data'},
@@ -73,58 +82,99 @@ SEA_STATES = {
 }
 
 
-def calculate_year_span(year1: str, year2: str) -> int:
+def get_temporal_flags(span: int) -> List[str]:
     """
-    Calculate year span between two school years.
-
-    Args:
-        year1: School year in format "YYYY-YY"
-        year2: School year in format "YYYY-YY"
-
-    Returns:
-        Absolute difference in start years (0 = same year, 1 = adjacent years)
-
-    Examples:
-        >>> calculate_year_span("2023-24", "2023-24")
-        0
-        >>> calculate_year_span("2023-24", "2024-25")
-        1
-        >>> calculate_year_span("2023-24", "2025-26")
-        2
-        >>> calculate_year_span("2023-24", "2026-27")
-        3
-    """
-    # Extract starting year from each
-    start1 = int(year1.split('-')[0])
-    start2 = int(year2.split('-')[0])
-
-    # Return absolute difference (0 = same, 1 = adjacent, 2+ = gap)
-    return abs(start1 - start2)
-
-
-def get_temporal_flags(year_span: int) -> List[str]:
-    """
-    Get temporal validation flags based on year span.
-
-    Per REQ-026 (corrected):
-    - 0-1 years: No flags (same year or adjacent years like 2024-25 and 2023-24)
-    - 2-3 years: WARN_YEAR_GAP (1-2 year gap, e.g., 2025-26 and 2023-24)
-    - >3 years: ERR_SPAN_EXCEEDED (exceeds blending window)
-
-    Args:
-        year_span: Absolute difference in start years (0 = same, 1 = adjacent)
-
-    Returns:
-        List of flag strings
+    Get temporal validation flags based on year span (REQ-026, corrected window):
+    - 0-1: no flags (same year or adjacent years)
+    - == MAX_BLEND_SPAN (2): WARN_YEAR_GAP (edge of the 3-consecutive-year window)
+    - > MAX_BLEND_SPAN: ERR_SPAN_EXCEEDED (rejected)
     """
     flags = []
-
-    if year_span >= 2 and year_span <= 3:
+    if span == MAX_BLEND_SPAN:
         flags.append('WARN_YEAR_GAP')
-    elif year_span > 3:
+    elif span > MAX_BLEND_SPAN:
         flags.append('ERR_SPAN_EXCEEDED')
-
     return flags
+
+
+def decide_precedence(
+    nces_year: str,
+    sea_year: str,
+    nces_value: Optional[float],
+    sea_value: Optional[float],
+) -> Tuple[str, str]:
+    """
+    Pure REQ-023 precedence decision for one field of one district.
+
+        year-matched NCES > year-matched SEA > older NCES > older SEA
+
+    Returns (decision, reason) where decision is:
+    - 'sea':  apply the SEA value (NCES lacks the field, or SEA is strictly newer
+              within the blend window)
+    - 'nces': keep the NCES value (NCES is year-matched or newer and has a value)
+    - 'skip': SEA data inadmissible (suppressed, COVID year, malformed year, or
+              outside the blend window) — NCES baseline stays untouched
+    """
+    if sea_value is None:
+        return 'skip', 'SEA value suppressed/missing'
+    try:
+        nces_start = start_year(nces_year)
+        sea_start = start_year(sea_year)
+    except ValueError:
+        return 'skip', f'malformed school year (nces={nces_year!r}, sea={sea_year!r})'
+    if is_covid_year(sea_year):
+        return 'skip', f'SEA year {sea_year} is COVID-excluded'
+    span = abs(nces_start - sea_start)
+    if span > MAX_BLEND_SPAN:
+        return 'skip', f'span {span} exceeds blend window (max {MAX_BLEND_SPAN})'
+    if nces_value is not None and nces_start >= sea_start:
+        return 'nces', 'year-matched-or-newer NCES wins (REQ-023)'
+    if nces_value is None:
+        return 'sea', 'NCES lacks value; SEA supplements within blend window'
+    return 'sea', 'SEA strictly newer than NCES within blend window'
+
+
+def apply_sea_supplement(
+    effective: StaffCountsEffective,
+    state_code: str,
+    nces_year: str,
+    sea_year: str,
+    sea_teachers_fte: float,
+    reason: str,
+) -> None:
+    """
+    Apply an admissible SEA teachers_total to an effective row, keeping the row
+    internally coherent (see module docstring):
+
+    - ONLY teachers_total changes. Per-level teacher fields, teachers_k12, and all
+      scope_* fields remain NCES-derived; calculate_scopes() is deliberately NOT
+      called because none of its inputs changed.
+    - primary_source keeps its NCES baseline value; the SEA contribution is recorded
+      field-level in sources_used and resolution_notes.
+    """
+    span = year_span(nces_year, sea_year)
+    flags = get_temporal_flags(span)
+
+    effective.teachers_total = sea_teachers_fte
+    effective.sources_used = [
+        {
+            "source": "nces_ccd",
+            "year": nces_year,
+            "fields": [
+                "per-level teacher fields", "teachers_k12", "all scope_* fields",
+            ],
+        },
+        {
+            "source": f"{state_code.lower()}_sea",
+            "year": sea_year,
+            "fields": ["teachers_total"],
+        },
+    ]
+    effective.resolution_notes = (
+        f"teachers_total from {state_code} SEA ({sea_year}): {reason}; "
+        f"year_span={span}, flags={flags}; per-level fields, teachers_k12 and "
+        f"scopes remain NCES ({nces_year})"
+    )
 
 
 def load_sea_staff_data(session, state: str, sea_table: str) -> Dict[str, Dict]:
@@ -230,8 +280,9 @@ def merge_sea_into_effective(
     stats = {
         'total_checked': 0,
         'sea_updated': 0,
+        'nces_kept': 0,
+        'sea_rejected': 0,
         'year_span_warnings': 0,
-        'year_span_errors': 0,
         'no_sea_data': 0,
     }
 
@@ -282,43 +333,37 @@ def merge_sea_into_effective(
 
             sea_record = sea_data[effective.district_id]
             sea_year = sea_record['year']
+            sea_fte = sea_record['teachers_fte']
 
-            # Calculate year span
-            year_span = calculate_year_span(nces_year, sea_year)
+            nces_total = (
+                float(effective.teachers_total)
+                if effective.teachers_total is not None else None
+            )
 
-            # Check 3-year window (REQ-026)
-            if year_span > 3:
+            # REQ-023 precedence: year-matched NCES > year-matched SEA >
+            # older NCES > older SEA (COVID/suppressed/out-of-window SEA rejected)
+            decision, reason = decide_precedence(nces_year, sea_year, nces_total, sea_fte)
+
+            if decision == 'skip':
                 logger.warning(
-                    f"  {effective.district_id}: Year span {year_span} exceeds 3-year window "
-                    f"(NCES {nces_year}, SEA {sea_year}), skipping"
+                    f"  {effective.district_id}: SEA data rejected — {reason} "
+                    f"(NCES {nces_year}, SEA {sea_year})"
                 )
-                stats['year_span_errors'] += 1
+                stats['sea_rejected'] += 1
                 continue
 
-            # Get temporal flags
-            temporal_flags = get_temporal_flags(year_span)
+            if decision == 'nces':
+                stats['nces_kept'] += 1
+                continue
 
-            if 'WARN_YEAR_GAP' in temporal_flags:
+            # decision == 'sea'
+            if 'WARN_YEAR_GAP' in get_temporal_flags(year_span(nces_year, sea_year)):
                 stats['year_span_warnings'] += 1
 
-            # Update effective record with SEA data
             if not dry_run:
-                # Update teachers_total from SEA (this is the main staff field we have)
-                if sea_record['teachers_fte'] is not None:
-                    effective.teachers_total = sea_record['teachers_fte']
-                    # Also update teachers_k12 (calculated field)
-                    effective.teachers_k12 = sea_record['teachers_fte']
-
-                # Update metadata
-                effective.primary_source = f"{state_code.lower()}_sea"
-                effective.sources_used = [
-                    {"source": "nces_ccd", "year": nces_year},
-                    {"source": f"{state_code.lower()}_sea", "year": sea_year}
-                ]
-                effective.resolution_notes = f"SEA data merged from {state_code} ({sea_year}), year_span={year_span}, flags={temporal_flags}"
-
-                # Recalculate scopes with updated staff counts
-                effective.calculate_scopes()
+                apply_sea_supplement(
+                    effective, state_code, nces_year, sea_year, sea_fte, reason
+                )
 
             stats['sea_updated'] += 1
 
@@ -369,8 +414,9 @@ def main():
     logger.info("=" * 70)
     logger.info(f"Total districts checked: {stats['total_checked']:,}")
     logger.info(f"Updated with SEA data: {stats['sea_updated']:,}")
-    logger.info(f"Year span warnings (2-3 years): {stats['year_span_warnings']:,}")
-    logger.info(f"Year span errors (>3 years): {stats['year_span_errors']:,}")
+    logger.info(f"NCES kept (year-matched or newer): {stats['nces_kept']:,}")
+    logger.info(f"SEA rejected (suppressed/COVID/out-of-window): {stats['sea_rejected']:,}")
+    logger.info(f"Year span warnings (span == {MAX_BLEND_SPAN}): {stats['year_span_warnings']:,}")
     logger.info(f"No SEA data available: {stats['no_sea_data']:,}")
     logger.info("")
 

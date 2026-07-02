@@ -33,7 +33,14 @@ logger = logging.getLogger(__name__)
 # SAFE VALUE CONVERSION
 # =============================================================================
 
-SUPPRESSED_VALUES = ('*', '-', '', 'N/A', 'n/a', 'NA', 'null', 'NULL', None)
+SUPPRESSED_VALUES = ('*', '-', '', '.', 'N/A', 'n/a', 'NA', 'null', 'NULL', None)
+
+# Numeric masking sentinels (issue #22). TEA TAPR masks small cells with -1 and uses
+# -2/-3 for not-applicable/not-reported (all three observed in the 2024-25 TAPR district
+# files); -999 is a legacy missing-data convention. These must become None, never be
+# stored as real negative FTE/counts. Checked AFTER float conversion so both the numeric
+# form (-1) and the string form ('-1') are caught.
+NUMERIC_SUPPRESSED_SENTINELS = frozenset({-1.0, -2.0, -3.0, -999.0})
 
 
 def safe_float(val, suppressed_values: tuple = SUPPRESSED_VALUES) -> Optional[float]:
@@ -41,7 +48,9 @@ def safe_float(val, suppressed_values: tuple = SUPPRESSED_VALUES) -> Optional[fl
     Convert value to float, returning None for suppressed/invalid values.
 
     State education data commonly uses special characters for suppressed data
-    due to privacy rules (small cell sizes) or missing data.
+    due to privacy rules (small cell sizes) or missing data. Numeric masking
+    sentinels (-1, -2, -3, -999 — see NUMERIC_SUPPRESSED_SENTINELS) also
+    return None: FTE/count/percent fields are never legitimately negative.
 
     Args:
         val: Value to convert (can be str, int, float, None)
@@ -59,15 +68,22 @@ def safe_float(val, suppressed_values: tuple = SUPPRESSED_VALUES) -> Optional[fl
         None
         >>> safe_float('')
         None
+        >>> safe_float(-1)
+        None
+        >>> safe_float('-999')
+        None
     """
     if pd.isna(val):
         return None
     if isinstance(val, str) and val.strip() in suppressed_values:
         return None
     try:
-        return float(val)
+        f = float(val)
     except (ValueError, TypeError):
         return None
+    if f in NUMERIC_SUPPRESSED_SENTINELS:
+        return None
+    return f
 
 
 def safe_int(val, suppressed_values: tuple = SUPPRESSED_VALUES) -> Optional[int]:
@@ -196,6 +212,57 @@ def get_district_name(session, nces_id: str) -> Optional[str]:
 
 # State ID format converters
 # Each state uses a different format for district identifiers
+#
+# Leading-zero hazard (issue #23): Excel/pandas parse numeric-looking ID columns as
+# int64/float64, so '010162990250000' becomes 10162990250000 and str() silently drops
+# the leading zero -> crosswalk miss -> silent skip. All converters for fixed-width
+# codes therefore normalize through id_digits() and zero-pad to the state's canonical
+# width. Prefer reading ID columns with dtype=str at read_csv/read_excel time as well.
+
+
+def id_digits(raw) -> str:
+    """Canonical digit string from an Excel-mangled ID (int, float, '123.0', ' 0123 ').
+
+    Raises ValueError for missing (None/NaN) or non-numeric input so callers can skip
+    the row explicitly instead of matching on 'None' or 'nan'.
+    """
+    if raw is None or (not isinstance(raw, str) and pd.isna(raw)):
+        raise ValueError(f"missing district ID: {raw!r}")
+    if isinstance(raw, str):
+        s = raw.strip()
+        if s.endswith('.0'):
+            s = s[:-2]
+        if not s.isdigit():
+            raise ValueError(f"non-numeric district ID: {raw!r}")
+        return s
+    try:
+        return str(int(raw))
+    except (ValueError, TypeError, OverflowError) as e:
+        raise ValueError(f"non-numeric district ID: {raw!r}") from e
+
+
+def il_rcdts_to_state_id(rcdts) -> str:
+    """15-digit RCDTS -> crosswalk format RR-CCC-DDDD-TT, restoring leading zeros
+    for regions 01-09 that Excel numeric parsing strips (issue #23)."""
+    s = id_digits(rcdts).zfill(15)
+    return f'{s[0:2]}-{s[2:5]}-{s[5:9]}-{s[9:11]}'
+
+
+def ma_district_code(raw) -> str:
+    """DESE district code -> 4-digit zero-padded crosswalk format.
+
+    MA appears in two shapes: the 4-digit district code itself ('0035' for Boston,
+    often mangled to 35 by Excel) and the 8-digit org code DDDD0000 ('00350000',
+    mangled to 350000). Codes of <=4 digits are the district code (zfill to 4);
+    longer codes are the org code (zfill to 8, take the first 4 = district part).
+    The old converter str(int(x)).zfill(8)[:4] returned '0000' for its own
+    documented 4-digit example (issue #23).
+    """
+    s = id_digits(raw)
+    if len(s) <= 4:
+        return s.zfill(4)
+    return s.zfill(8)[:4]
+
 
 SEA_ID_FORMATS: Dict[str, Dict[str, Any]] = {
     'FL': {
@@ -214,7 +281,7 @@ SEA_ID_FORMATS: Dict[str, Dict[str, Any]] = {
         'name': 'ISBE RCDTS Code',
         'format': '15-digit → RR-CCC-DDDD-TT',
         'example': '150162990250000 → 15-016-2990-25 (Chicago)',
-        'converter': lambda rcdts: f'{str(rcdts)[0:2]}-{str(rcdts)[2:5]}-{str(rcdts)[5:9]}-{str(rcdts)[9:11]}',
+        'converter': il_rcdts_to_state_id,
     },
     'TX': {
         'name': 'TEA District Number',
@@ -230,9 +297,9 @@ SEA_ID_FORMATS: Dict[str, Dict[str, Any]] = {
     },
     'MI': {
         'name': 'MDE District Code',
-        'format': '5-digit',
+        'format': '5-digit zero-padded',
         'example': '82015 (Detroit)',
-        'converter': lambda x: str(int(x)).strip(),
+        'converter': lambda x: id_digits(x).zfill(5),
     },
     'PA': {
         'name': 'PDE AUN',
@@ -244,7 +311,7 @@ SEA_ID_FORMATS: Dict[str, Dict[str, Any]] = {
         'name': 'DESE District Code',
         'format': '4-digit zero-padded',
         'example': '0035 (Boston)',
-        'converter': lambda x: str(int(x)).zfill(8)[:4],
+        'converter': ma_district_code,
     },
     'VA': {
         'name': 'VDOE Division Number',
