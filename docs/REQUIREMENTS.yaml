@@ -1305,10 +1305,15 @@ requirements:
       ~27 GT districts remain in gt_curation CURATION_RECONCILED.json for validation."
 
   - id: REQ-058
-    description: "Per-school discovery via cost-ascending waves (Claude WebSearch -> OpenRouter gpt-4o-mini-search -> manual), stop-when-found"
+    description: "[SUPERSEDED 2026-06-28 by REQ-104 — Stage 2 re-architected to a deterministic SERP
+      cascade: Bright Data SERP Wave 1 + Serper failover -> Claude WebSearch Wave 2 on the residual;
+      the agent-orchestrated Claude/OpenRouter waves and the per-school-acquire skill are retired.
+      Still-good parts carried forward: domain scoping, cross-school dedup, sampling caps (REQ-052).]
+      Per-school discovery via cost-ascending waves (Claude WebSearch -> OpenRouter gpt-4o-mini-search -> manual), stop-when-found"
     type: functional
     priority: must
-    status: accepted
+    status: superseded
+    superseded_by: [REQ-104]
     acceptance_criteria:
       - Discovery runs in waves and stops once a district/school is satisfied; it does NOT run all tools on every school
       - Wave 1 = Claude WebSearch (Haiku subagent, subscription); Wave 2 = OpenRouter gpt-4o-mini-search on the residual only; then flag for manual
@@ -1321,10 +1326,11 @@ requirements:
       - tests/test_acquisition_stages.py::TestSampling::test_band_classifier_grade_span
       - tests/test_acquisition_stages.py::TestSampling::test_sample_size_censuses_small
     created: "2026-06-21T00:00:00Z"
-    updated: "2026-06-21T00:00:00Z"
-    notes: "Wave 1 needs the agent (spawns WebSearch subagent) -> orchestrated by the per-school-acquire
-      skill, not a bare script (agent-in-the-loop, not lights-out). school_sampling.py is built+testable now;
-      live wave orchestration is a skip stub until wired."
+    updated: "2026-07-01T00:00:00Z"
+    notes: "Superseded banner added 2026-07-01 (fable review — this req missed the banner pattern
+      042/046/048/057 got). Historical: Wave 1 was agent-orchestrated via the per-school-acquire skill;
+      REQ-104's deterministic cascade replaced it. TestWaves::test_wave_order_no_perplexity encodes the
+      OLD wave order — retire with the next test-hygiene pass."
 
   - id: REQ-059
     description: "Ground truth is human-verified per-school start/end times; models propose, human confirms"
@@ -2464,28 +2470,40 @@ requirements:
     description: Stage 6 Dispatch — route filtered representations to an OpenRouter council config and emit an immutable handoff_<hash>_<ts>.json dispatch record; gate@6
     type: functional
     priority: must
-    status: accepted
+    status: tested
     acceptance_criteria:
-      - Input = each district's filtered.json (Stage 5 projection); does NO extraction itself (that is Stage 7) — it is routing + release only
-      - A council_config is a first-class registered object (lean: config-as-data JSON with provenance, mirroring common/config/; assignment + cost are runtime/DB)
-      - Default routing assigns a config, cascade-style (start cheap-trio; escalate to accuracy-pair on no-consensus per REQ-056), never silent on low confidence
-      - Output is an immutable handoff_<hash>_<timestamp>.json dispatch record; a 'dispatched' state_event references the dispatch hash; re-dispatch writes a NEW file, prior untouched
-      - Cost estimate per config x per rep (OpenRouter price/1M x token estimate) feeds the gate@6 go/no-go and the budget governor (REQ-051)
-      - gate@6 manual/auto (auto = confidence-escalating, cost-gated)
+      - Input = the Stage-5 release decision read from the governance DB (record/representation/label + release.decide); filtered.json is the auditable receipt, not the transport; does NO extraction itself (that is Stage 7) — routing + release only
+      - A council_config is a first-class registered object (config-as-data JSON with provenance, common/config/council_configs.json); the validator enforces the HARD diversity rule — 2 voters from 2 different families, judge from a 3rd family
+      - Routing is per-REPRESENTATION, data-driven off each config's input_kinds + the capture-fidelity gate (visual_text_gap -> vision council, fidelity_suspect never auto-accepts on agreement)
+      - Output is an immutable handoff_<hash>_<timestamp>.json dispatch record with a price-independent identity hash; a 'dispatched' state_event references the dispatch hash atomically with the precious handoff index row; re-dispatch writes a NEW file, prior untouched
+      - Cost estimate per config x per rep feeds the gate@6 go/no-go (bootstrap cost model with provenance today; measured token model x live OpenRouter pricing is the council-lab track)
+      - gate@6 manual approve via the console (preview routed/priced package -> Approve & freeze); AUTO mode + the budget-governor cost-gate (REQ-051) DEFERRED
+    tests:
+      - tests/test_stage6_councils.py
+      - tests/test_stage6_routing.py
+      - tests/test_stage6_package.py
+      - tests/test_stage6_handoff_artifact.py
+      - tests/test_stage6_dispatch.py
+      - tests/test_stage6_dispatch_bridge.py
+      - tests/test_stage6_handoff_api.py
+      - tests/test_stage6_requests.py
     created: "2026-06-27T00:00:00Z"
-    updated: "2026-06-27T00:00:00Z"
-    notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §5/§9 (step 6) + STAGE6_DISPATCH_DESIGN_2026-06.md.
-      OPEN #1 (settle before build): council-config grain — per-district vs per-dispatch vs per-representation
-      (shapes the artifact + cost model). Also open: seed config sets (the candidate 6 models), judge in-config
-      vs fixed-stage, token-estimation method. For batch_00002 we STOP at gate@6 approval — no paid dispatch
-      (Stage 7 out of scope this pass). Acceptance criteria firm up as the design note's OPEN sections resolve;
-      tests authored at build time."
+    updated: "2026-07-01T00:00:00Z"
+    notes: "BUILT to the Stage 6->7 seam; merged PR #2 2026-06-30. Authority: STAGE6_DISPATCH_DESIGN_2026-06.md
+      §0 (as-built). OPEN #1 (config grain) RESOLVED by the build: per-representation. The cheap-trio/
+      accuracy-pair cascade question collapsed into the decided template (2 cross-family voters -> 3rd-family
+      judge); the cross-config cascade + composition stay open (council lab). Acceptance criteria updated
+      2026-07-01 (fable review) to match the as-built seam; original design-era criteria in git history.
+      Verified-only dispatch mode + per-rep council override added post-merge (330e43b, d50e9a6)."
 
   - id: REQ-102
-    description: Governance console gate@1 (CP-A) queue view + stage selector — review/approve a queued batch_*.json as a recorded gate@1 event; create the batch-of-record via a console action, not a direct script run
+    description: Governance console gate@1 queue view + stage selector — review/approve a queued batch as a recorded gate@1 event; create the batch-of-record via a console action, not a direct script run
     type: functional
     priority: must
-    status: accepted
+    status: tested
+    tests:
+      - tests/test_stage1_batch_store.py
+      - tests/test_gate1_api.py
     acceptance_criteria:
       - The wordmark becomes a stage selector that swaps per-stage views (gate@1 queue, gate@5 review, later gate@6 dispatch)
       - The gate@1 view presents the queued batch (districts / bands / per-band school selections + the NCES denominators) for human review
@@ -2493,8 +2511,10 @@ requirements:
       - A 'create batch' console action invokes queue_batch.py as a callable (actor=human, the §7a-B orchestration model); the batch-of-record is created HERE
       - Home view = an attention-queue projection over state_event current-state ('what needs my attention'), not a static stage tree
     created: "2026-06-27T00:00:00Z"
-    updated: "2026-06-27T00:00:00Z"
-    notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §7/§7b/§9 (step 7) + governance §11.
+    updated: "2026-07-01T00:00:00Z"
+    notes: "BUILT (backend 2026-06-27, frontend 2026-06-28); validated end-to-end — batch_00002 created ->
+      edited -> approved through the UI. Status bumped 2026-07-01 (fable review).
+      Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §7/§7b/§11h.
       FORCING FUNCTION (decided 2026-06-27): batch_00002 is created and advanced ONLY through the console,
       stage view by stage view, driving the console toward a self-governing/self-sustaining app under the
       ramp-up model (manual gates + high supervision now, easing back later). Hand-run queue_batch.py is for
@@ -2506,16 +2526,16 @@ requirements:
     priority: should
     status: tested
     acceptance_criteria:
-      - Each district's Wave 1 runs as a headless `claude -p ... --model haiku --allowedTools WebSearch --output-format json` agent; the orchestrator collects the JSON and runs the existing deterministic Wave-2 / gating / flatten unchanged
-      - Search providers sit behind one contract — given a school, return candidate URLs as JSON — so providers can be added/reordered/swapped (Claude CLI, OpenRouter gpt-4o-mini-search, future Bright Data / Brave) without touching gating/flatten/dedup
-      - No chat, no human-in-loop; schedulable overnight; uses subscription auth (no ANTHROPIC_API_KEY shadowing the subscription)
-      - VERIFY FIRST — WebSearch behavior + subscription rate limits at overnight ~17k-district volume, before converting
+      - Wave 1 is fully deterministic (no agent in the loop) — Bright Data SERP per school, site:-scoped; Serper failover ONLY on a Bright Data API failure (same Google index = uptime backup, not recall)
+      - Wave 2 = Claude WebSearch (headless claude -p, 75s timeout) on the genuine residual only (a different index, speculative); degrades to manual_flag, never halts
+      - Search providers sit behind one contract — given a school, return candidate URLs as JSON — so providers can be added/reordered/swapped without touching gating/flatten/dedup (this layer is what made the bake-off swap cheap)
+      - The existing deterministic gating / flatten / dedup / atomic-write / registry path is unchanged; runnable headless from the console (background job), no chat required
     created: "2026-06-27T00:00:00Z"
-    updated: "2026-06-27T00:00:00Z"
-    notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §7a/§9 (step 8). Lower priority for batch_00002 —
-      the current stage2-discover skill (subagent, concurrency cap 2) works for this batch; the headless
-      conversion is an efficiency/scale upgrade, not a blocker. Retires the 'subagent requires a chat open'
-      framing throughout the Stage 2 docs."
+    updated: "2026-07-01T00:00:00Z"
+    notes: "Authority: STAGE2_DISCOVER_DESIGN_2026-06.md §7. Acceptance criteria rewritten 2026-07-01 (fable
+      review) to the as-built SERP cascade — the original criteria described the claude-p-as-Wave-1 design
+      this req's own description records as replaced; originals in git history. The stage2-discover skill is
+      retired (see REQ-058 supersession)."
 
   - id: REQ-110
     description: "Stage 3 (Capture) console + the cross-stage cache as a LIVE working store — DONE 2026-06-28.
@@ -2629,7 +2649,7 @@ requirements:
       in docs/technical-notes/filtering-research/ (weak supervision; FrugalGPT/SUPG cascades)."
     type: functional
     priority: must
-    status: in_progress
+    status: tested
     acceptance_criteria:
       - detectors.py exposes pure labeling functions (signals)->{vote,confidence,reason}; combiner.py reduces votes to a send/suppress/review decision + a derived tier; both config-as-data driven
       - time signals compute over the max-evidence source (main ∪ footer/header segment ∪ best raw rep); a footer/OCR-only 'Hours:' target is no longer zeroed by de-chrome
@@ -2638,8 +2658,12 @@ requirements:
       - harness reports per-detector coverage/accuracy/overlap/conflict against the human facets/labels; a re-ingest before/after episode is recorded in the tuning ledger
     created: "2026-07-01T00:00:00Z"
     updated: "2026-07-01T00:00:00Z"
-    notes: "Design: STAGE5_FILTER_DESIGN_2026-06.md §2 (detectors/combiner) + §5 (harness). Branch
-      stage5-scoring-labeling-v2."
+    notes: "MERGED to main (PR #3, cde04e9). Measured over 440 labels: tier-A precision 0.79 / recall 0.88 /
+      tier-D 0-target leak / A+B recall 1.0. Design: STAGE5_FILTER_DESIGN_2026-06.md §2 (detectors/combiner)
+      + §5 (harness). Open follow-on: facet-level per-detector scoring (as v2.1 re-tagging fills facets).
+      NOTE (fable review 2026-07-01): the V1 remnants (tier_and_category / DEFAULT_TIER_PARAMS / frontier.py)
+      are still in-tree but dead on the ingest path — retire or re-point frontier at DEFAULT_DETECTOR_PARAMS;
+      REQ-093/096 still reference the V1 cascade and need reconciling."
 
   - id: REQ-114
     description: "Stage 5 labeling UI V2 — a facet questionnaire. V1 forced multi-purpose pages into one
@@ -2649,7 +2673,7 @@ requirements:
       confirm-or-correct (and yields the per-detector ground truth the harness needs). Adds a structured
       'where' (main/footer/header/table/image/feed-post) and a structured handbook page number
       (harvest_pages_labeled, guessed-vs-labeled like topology). ADDITIVE to the existing taxonomy — NOT a
-      reset (the 440 labels + 202 notes stay valid; user decision 2026-07-01). Free-text note retained."
+      reset (the 440 labels + 202 notes stay valid; user decision 2026-07-01). Free-text note retained.
       Built as v2.1 (2026-07-01): a THREE-AXIS label object — Axis 1 target SHAPE (school_start_end_list /
       school_bell_table / school_start_end_prose / district_hub_by_school / district_hub_by_band /
       explicit_instructional_time / target_other_shape + terminals target_absent / unusable); Axis 2 confounder
@@ -2684,11 +2708,13 @@ requirements:
       one). Schema.org OpeningHoursSpecification deliberately NOT chased (research: <5% on K-12 CMS)."
     type: functional
     priority: should
-    status: planned
+    status: tested
     acceptance_criteria:
       - capture_discovery.mjs records iframe_srcs[] (categorized by host) + embed_present per capture; unit-tested on the pure categorizer
       - cms_hint is threaded from captures.json fingerprint into the Stage-5 record signals_json at ingest
       - the iframe-innerText capture question is answered in the note (fixed if a gap, documented if not)
+    tests:
+      - infrastructure/scraper/capture_fingerprint.test.mjs (categorizeEmbedHost)
     created: "2026-07-01T00:00:00Z"
     updated: "2026-07-01T00:00:00Z"
     notes: "Design: STAGE5_FILTER_DESIGN_2026-06.md §6. Additive to Stage 3; applies to future captures
