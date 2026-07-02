@@ -18,6 +18,17 @@ the import-linter layering contract; the other is Stage 1's read). It is **ungat
 - (No standalone console stories were specified in the APGA review beyond the Stage-8 gate that precedes
   the write — Stage 9 is the mechanical write that follows an approved `gate@8`.)
 
+## 2a. Standing comparison obligation — the 18-district holdback (Ian, 2026-07-02)
+
+`data/benchmark/benchmark_holdback_18.json` records the ORIGINAL band-level findings for the
+18 districts of the 41-district benchmark manifest that are NOT in batch_00000's 27. When these
+districts eventually flow through the FULL pipeline (fresh discovery → Stage 9), compare the
+pipeline's final per-band gross minutes against those recorded values — a then-vs-now check on
+where we landed. Drift is expected (live re-capture, different school years) and is part of the
+comparison story; their frozen-era source files also survive in
+`data/archive/gt-benchmark-20260622T152627Z/raw_bell_schedule_pdfs/` if a drift-free
+benchmark-injection tranche (via `stage1_queue/benchmark_batch.py`) is ever wanted.
+
 ## 3. Open (to design when we reach this stage)
 - The target LCT tables/columns the band-level minutes land in, and how they join the existing
   enrollment/staff data for the LCT calculation (labeled `gross_bell_to_bell`).

@@ -1,0 +1,702 @@
+{
+ "created": "2026-07-02",
+ "purpose": "HOLDBACK COMPARISON SET (Ian, 2026-07-02): the 41-manifest districts NOT in batch_00000's 27 curated districts. Their band-level GT below is the ORIGINAL FINDING from the Crawlee/Ollama-era benchmark exercise. When these districts eventually flow through the FULL pipeline (Stages 1-9, once Stage 9 is built), compare the pipeline's final per-band gross minutes against these values \u2014 a then-vs-now check on where we landed. NOT benchmark-injected: these run fresh (live discovery/capture), so drift is expected and part of the comparison story.",
+ "provenance": {
+  "source": "data/benchmark/ground_truth_manifest.json (41 districts, band-level modal GT)",
+  "raw_artifacts": "data/archive/gt-benchmark-20260622T152627Z/raw_bell_schedule_pdfs/",
+  "note": "band-level human-provided values from the 2026-06 benchmark era; weaker than the 27's per-school GT (that set = batch_00000). Values are gross end-start."
+ },
+ "n_districts": 18,
+ "districts": [
+  {
+   "district_id": "0102430",
+   "district_name": "Montgomery County",
+   "state": "AL",
+   "schedules": [
+    {
+     "grade_level": "elementary",
+     "start_time": "08:10",
+     "end_time": "15:10",
+     "raw_start_time": "8:10 AM",
+     "raw_end_time": "3:10 PM",
+     "instructional_minutes": 360,
+     "school_name": null
+    },
+    {
+     "grade_level": "high",
+     "start_time": "07:15",
+     "end_time": "14:45",
+     "raw_start_time": "7:15 AM",
+     "raw_end_time": "2:45 PM",
+     "instructional_minutes": 360,
+     "school_name": null
+    },
+    {
+     "grade_level": "middle",
+     "start_time": "07:30",
+     "end_time": "14:45",
+     "raw_start_time": "7:30 AM",
+     "raw_end_time": "2:45 PM",
+     "instructional_minutes": 355,
+     "school_name": null
+    }
+   ],
+   "source_dir": "data/raw/bell_schedule_pdfs/AL/0102430_Montgomery_County",
+   "modality": [
+    "pdf"
+   ],
+   "ext_counts": {
+    ".pdf": 1,
+    ".json": 2
+   },
+   "has_active_txt": false,
+   "expected_grade_levels": [
+    "elementary",
+    "high",
+    "middle"
+   ]
+  },
+  {
+   "district_id": "0408800",
+   "district_name": "Tucson Unified District (4403)",
+   "state": "AZ",
+   "schedules": [
+    {
+     "grade_level": "high",
+     "start_time": "08:30",
+     "end_time": "15:15",
+     "raw_start_time": "8:30 AM",
+     "raw_end_time": "3:15 PM",
+     "instructional_minutes": 405,
+     "school_name": null
+    },
+    {
+     "grade_level": "middle",
+     "start_time": "08:50",
+     "end_time": "15:50",
+     "raw_start_time": "8:50 AM",
+     "raw_end_time": "3:50 PM",
+     "instructional_minutes": 420,
+     "school_name": null
+    }
+   ],
+   "source_dir": "data/raw/bell_schedule_pdfs/AZ/0408800_Tucson_Unified_District_4403",
+   "modality": [
+    "html",
+    "pdf"
+   ],
+   "ext_counts": {
+    ".pdf": 3,
+    ".html": 8,
+    ".json": 1
+   },
+   "has_active_txt": false,
+   "expected_grade_levels": [
+    "high",
+    "middle"
+   ]
+  },
+  {
+   "district_id": "0622710",
+   "district_name": "Los Angeles Unified",
+   "state": "CA",
+   "schedules": [
+    {
+     "grade_level": "elementary",
+     "start_time": "Varies",
+     "end_time": "Varies",
+     "raw_start_time": "Varies",
+     "raw_end_time": "Varies",
+     "instructional_minutes": 323,
+     "school_name": null
+    },
+    {
+     "grade_level": "high",
+     "start_time": "Varies",
+     "end_time": "Varies",
+     "raw_start_time": "Varies",
+     "raw_end_time": "Varies",
+     "instructional_minutes": 383,
+     "school_name": null
+    },
+    {
+     "grade_level": "middle",
+     "start_time": "Varies",
+     "end_time": "Varies",
+     "raw_start_time": "Varies",
+     "raw_end_time": "Varies",
+     "instructional_minutes": 383,
+     "school_name": null
+    }
+   ],
+   "source_dir": "data/raw/bell_schedule_pdfs/CA/0622710_Los_Angeles_Unified",
+   "modality": [
+    "pdf"
+   ],
+   "ext_counts": {
+    ".pdf": 7,
+    ".json": 1
+   },
+   "has_active_txt": false,
+   "expected_grade_levels": [
+    "elementary",
+    "high",
+    "middle"
+   ]
+  },
+  {
+   "district_id": "1100031",
+   "district_name": "KIPP DC PCS",
+   "state": "DC",
+   "schedules": [
+    {
+     "grade_level": "elementary",
+     "start_time": "08:00",
+     "end_time": "15:30",
+     "raw_start_time": "8:00 AM",
+     "raw_end_time": "3:30 PM",
+     "instructional_minutes": 375,
+     "school_name": null
+    },
+    {
+     "grade_level": "high",
+     "start_time": "08:15",
+     "end_time": "15:15",
+     "raw_start_time": "8:15 AM",
+     "raw_end_time": "3:15 PM",
+     "instructional_minutes": 345,
+     "school_name": null
+    },
+    {
+     "grade_level": "middle",
+     "start_time": "08:00",
+     "end_time": "15:30",
+     "raw_start_time": "8:00 AM",
+     "raw_end_time": "3:30 PM",
+     "instructional_minutes": 375,
+     "school_name": null
+    }
+   ],
+   "source_dir": "data/raw/bell_schedule_pdfs/DC/1100031_KIPP_DC_PCS",
+   "modality": [
+    "html"
+   ],
+   "ext_counts": {
+    ".html": 1,
+    ".json": 1
+   },
+   "has_active_txt": false,
+   "expected_grade_levels": [
+    "elementary",
+    "high",
+    "middle"
+   ]
+  },
+  {
+   "district_id": "1000200",
+   "district_name": "Christina School District",
+   "state": "DE",
+   "schedules": [
+    {
+     "grade_level": "elementary",
+     "start_time": "08:00",
+     "end_time": "15:00",
+     "raw_start_time": "8:00 AM",
+     "raw_end_time": "3:00 PM",
+     "instructional_minutes": 420,
+     "school_name": null
+    }
+   ],
+   "source_dir": "data/raw/bell_schedule_pdfs/DE/1000200_Christina_School_District",
+   "modality": [
+    "html"
+   ],
+   "ext_counts": {
+    ".html": 9,
+    ".json": 1
+   },
+   "has_active_txt": false,
+   "expected_grade_levels": [
+    "elementary"
+   ]
+  },
+  {
+   "district_id": "1001300",
+   "district_name": "Red Clay Consolidated School District",
+   "state": "DE",
+   "schedules": [
+    {
+     "grade_level": "elementary",
+     "start_time": "09:05",
+     "end_time": "15:50",
+     "raw_start_time": "9:05 AM",
+     "raw_end_time": "3:50 PM",
+     "instructional_minutes": 405,
+     "school_name": null
+    }
+   ],
+   "source_dir": "data/raw/bell_schedule_pdfs/DE/1001300_Red_Clay_Consolidated_School_District",
+   "modality": [
+    "html",
+    "pdf"
+   ],
+   "ext_counts": {
+    ".html": 6,
+    ".pdf": 2,
+    ".json": 1
+   },
+   "has_active_txt": false,
+   "expected_grade_levels": [
+    "elementary"
+   ]
+  },
+  {
+   "district_id": "1908970",
+   "district_name": "Des Moines Independent Comm School District",
+   "state": "IA",
+   "schedules": [
+    {
+     "grade_level": "elementary",
+     "start_time": "08:15",
+     "end_time": "15:15",
+     "raw_start_time": "8:15 AM",
+     "raw_end_time": "3:15 PM",
+     "instructional_minutes": 420,
+     "school_name": null
+    }
+   ],
+   "source_dir": "data/raw/bell_schedule_pdfs/IA/1908970_Des_Moines_Independent_Comm_School_District",
+   "modality": [
+    "html"
+   ],
+   "ext_counts": {
+    ".html": 1,
+    ".json": 1
+   },
+   "has_active_txt": false,
+   "expected_grade_levels": [
+    "elementary"
+   ]
+  },
+  {
+   "district_id": "1600930",
+   "district_name": "BONNEVILLE JOINT DISTRICT",
+   "state": "ID",
+   "schedules": [
+    {
+     "grade_level": "high",
+     "start_time": "08:40",
+     "end_time": "15:48",
+     "raw_start_time": "8:40 AM",
+     "raw_end_time": "3:48 PM",
+     "instructional_minutes": 428,
+     "school_name": null
+    }
+   ],
+   "source_dir": "data/raw/bell_schedule_pdfs/ID/1600930_BONNEVILLE_JOINT_DISTRICT",
+   "modality": [
+    "html",
+    "pdf"
+   ],
+   "ext_counts": {
+    ".pdf": 7,
+    ".html": 1,
+    ".json": 1
+   },
+   "has_active_txt": false,
+   "expected_grade_levels": [
+    "high"
+   ]
+  },
+  {
+   "district_id": "2507110",
+   "district_name": "Lynn",
+   "state": "MA",
+   "schedules": [
+    {
+     "grade_level": "elementary",
+     "start_time": "08:00",
+     "end_time": "14:00",
+     "raw_start_time": "8:00 AM",
+     "raw_end_time": "2:00 PM",
+     "instructional_minutes": 300,
+     "school_name": null
+    },
+    {
+     "grade_level": "high",
+     "start_time": "07:45",
+     "end_time": "14:30",
+     "raw_start_time": "7:45 AM",
+     "raw_end_time": "2:30 PM",
+     "instructional_minutes": 350,
+     "school_name": null
+    },
+    {
+     "grade_level": "middle",
+     "start_time": "07:30",
+     "end_time": "14:15",
+     "raw_start_time": "7:30 AM",
+     "raw_end_time": "2:15 PM",
+     "instructional_minutes": 345,
+     "school_name": null
+    }
+   ],
+   "source_dir": "data/raw/bell_schedule_pdfs/MA/2507110_Lynn",
+   "modality": [
+    "image"
+   ],
+   "ext_counts": {
+    ".png": 2,
+    ".json": 1
+   },
+   "has_active_txt": false,
+   "expected_grade_levels": [
+    "elementary",
+    "high",
+    "middle"
+   ]
+  },
+  {
+   "district_id": "2801320",
+   "district_name": "DESOTO CO SCHOOL DIST",
+   "state": "MS",
+   "schedules": [
+    {
+     "grade_level": "elementary",
+     "start_time": "08:30",
+     "end_time": "15:25",
+     "raw_start_time": "8:30 AM",
+     "raw_end_time": "3:25 PM",
+     "instructional_minutes": 415,
+     "school_name": null
+    },
+    {
+     "grade_level": "high",
+     "start_time": "08:25",
+     "end_time": "15:45",
+     "raw_start_time": "8:25 AM",
+     "raw_end_time": "3:45 PM",
+     "instructional_minutes": 440,
+     "school_name": null
+    },
+    {
+     "grade_level": "middle",
+     "start_time": "08:00",
+     "end_time": "15:40",
+     "raw_start_time": "8:00 AM",
+     "raw_end_time": "3:40 PM",
+     "instructional_minutes": 460,
+     "school_name": null
+    }
+   ],
+   "source_dir": "data/raw/bell_schedule_pdfs/MS/2801320_DESOTO_CO_SCHOOL_DIST",
+   "modality": [
+    "html"
+   ],
+   "ext_counts": {
+    ".mhtml": 1,
+    ".html": 1,
+    ".json": 1
+   },
+   "has_active_txt": false,
+   "expected_grade_levels": [
+    "elementary",
+    "high",
+    "middle"
+   ]
+  },
+  {
+   "district_id": "3200390",
+   "district_name": "Carson City",
+   "state": "NV",
+   "schedules": [
+    {
+     "grade_level": "elementary",
+     "start_time": "08:20",
+     "end_time": "15:15",
+     "raw_start_time": "8:20 AM",
+     "raw_end_time": "3:15 PM",
+     "instructional_minutes": 350,
+     "school_name": null
+    },
+    {
+     "grade_level": "high",
+     "start_time": "07:35",
+     "end_time": "14:07",
+     "raw_start_time": "7:35 AM",
+     "raw_end_time": "2:07 PM",
+     "instructional_minutes": 340,
+     "school_name": null
+    },
+    {
+     "grade_level": "middle",
+     "start_time": "07:45",
+     "end_time": "14:25",
+     "raw_start_time": "7:45 AM",
+     "raw_end_time": "2:25 PM",
+     "instructional_minutes": 350,
+     "school_name": null
+    }
+   ],
+   "source_dir": "data/raw/bell_schedule_pdfs/NV/3200390_Carson_City",
+   "modality": [
+    "office"
+   ],
+   "ext_counts": {
+    ".xlsx": 1,
+    ".json": 1
+   },
+   "has_active_txt": false,
+   "expected_grade_levels": [
+    "elementary",
+    "high",
+    "middle"
+   ]
+  },
+  {
+   "district_id": "3904375",
+   "district_name": "Cincinnati Public Schools",
+   "state": "OH",
+   "schedules": [
+    {
+     "grade_level": "elementary",
+     "start_time": "08:00",
+     "end_time": "14:30",
+     "raw_start_time": "8:00 AM",
+     "raw_end_time": "2:30 PM",
+     "instructional_minutes": 390,
+     "school_name": null
+    }
+   ],
+   "source_dir": "data/raw/bell_schedule_pdfs/OH/3904375_Cincinnati_Public_Schools",
+   "modality": [
+    "pdf"
+   ],
+   "ext_counts": {
+    ".pdf": 1,
+    ".json": 1
+   },
+   "has_active_txt": false,
+   "expected_grade_levels": [
+    "elementary"
+   ]
+  },
+  {
+   "district_id": "5000396",
+   "district_name": "Champlain Valley Unified Union School District #56",
+   "state": "VT",
+   "schedules": [
+    {
+     "grade_level": "elementary",
+     "start_time": "07:50",
+     "end_time": "13:45",
+     "raw_start_time": "7:50 AM",
+     "raw_end_time": "1:45 PM",
+     "instructional_minutes": 355,
+     "school_name": null
+    }
+   ],
+   "source_dir": "data/raw/bell_schedule_pdfs/VT/5000396_Champlain_Valley_Unified_Union_School_District_56",
+   "modality": [
+    "pdf"
+   ],
+   "ext_counts": {
+    ".pdf": 3,
+    ".md": 1,
+    ".json": 1
+   },
+   "has_active_txt": false,
+   "expected_grade_levels": [
+    "elementary"
+   ]
+  },
+  {
+   "district_id": "5002820",
+   "district_name": "Burlington School District",
+   "state": "VT",
+   "schedules": [
+    {
+     "grade_level": "elementary",
+     "start_time": "08:08",
+     "end_time": "14:50",
+     "raw_start_time": "8:08 AM",
+     "raw_end_time": "2:50 PM",
+     "instructional_minutes": 402,
+     "school_name": null
+    }
+   ],
+   "source_dir": "data/raw/bell_schedule_pdfs/VT/5002820_Burlington_School_District",
+   "modality": [
+    "pdf"
+   ],
+   "ext_counts": {
+    ".pdf": 4,
+    ".json": 1
+   },
+   "has_active_txt": false,
+   "expected_grade_levels": [
+    "elementary"
+   ]
+  },
+  {
+   "district_id": "5400060",
+   "district_name": "BERKELEY COUNTY SCHOOLS",
+   "state": "WV",
+   "schedules": [
+    {
+     "grade_level": "elementary",
+     "start_time": "07:55",
+     "end_time": "15:30",
+     "raw_start_time": "7:55 AM",
+     "raw_end_time": "3:30 PM",
+     "instructional_minutes": 455,
+     "school_name": null
+    },
+    {
+     "grade_level": "high",
+     "start_time": "07:28",
+     "end_time": "14:38",
+     "raw_start_time": "7:28 AM",
+     "raw_end_time": "2:38 PM",
+     "instructional_minutes": 430,
+     "school_name": null
+    },
+    {
+     "grade_level": "middle",
+     "start_time": "07:30",
+     "end_time": "14:30",
+     "raw_start_time": "7:30 AM",
+     "raw_end_time": "2:30 PM",
+     "instructional_minutes": 420,
+     "school_name": null
+    }
+   ],
+   "source_dir": "data/raw/bell_schedule_pdfs/WV/5400060_BERKELEY_COUNTY_SCHOOLS",
+   "modality": [
+    "html"
+   ],
+   "ext_counts": {
+    ".mhtml": 8,
+    ".json": 1
+   },
+   "has_active_txt": false,
+   "expected_grade_levels": [
+    "elementary",
+    "high",
+    "middle"
+   ]
+  },
+  {
+   "district_id": "5400180",
+   "district_name": "CABELL COUNTY SCHOOLS",
+   "state": "WV",
+   "schedules": [
+    {
+     "grade_level": "middle",
+     "start_time": "07:27",
+     "end_time": "15:06",
+     "raw_start_time": "7:27 AM",
+     "raw_end_time": "3:06 PM",
+     "instructional_minutes": 459,
+     "school_name": null
+    }
+   ],
+   "source_dir": "data/raw/bell_schedule_pdfs/WV/5400180_CABELL_COUNTY_SCHOOLS",
+   "modality": [
+    "html",
+    "image",
+    "pdf"
+   ],
+   "ext_counts": {
+    ".pdf": 2,
+    ".png": 1,
+    ".mhtml": 2,
+    ".json": 1
+   },
+   "has_active_txt": false,
+   "expected_grade_levels": [
+    "middle"
+   ]
+  },
+  {
+   "district_id": "5400600",
+   "district_name": "KANAWHA COUNTY SCHOOLS",
+   "state": "WV",
+   "schedules": [
+    {
+     "grade_level": "elementary",
+     "start_time": "07:15",
+     "end_time": "14:15",
+     "raw_start_time": "7:15 AM",
+     "raw_end_time": "2:15 PM",
+     "instructional_minutes": 420,
+     "school_name": null
+    }
+   ],
+   "source_dir": "data/raw/bell_schedule_pdfs/WV/5400600_KANAWHA_COUNTY_SCHOOLS",
+   "modality": [
+    "html",
+    "image",
+    "pdf"
+   ],
+   "ext_counts": {
+    ".mhtml": 2,
+    ".pdf": 6,
+    ".jpeg": 1,
+    ".json": 1
+   },
+   "has_active_txt": false,
+   "expected_grade_levels": [
+    "elementary"
+   ]
+  },
+  {
+   "district_id": "5600730",
+   "district_name": "Albany County School District #1",
+   "state": "WY",
+   "schedules": [
+    {
+     "grade_level": "elementary",
+     "start_time": "08:02",
+     "end_time": "15:00",
+     "raw_start_time": "8:02 AM",
+     "raw_end_time": "3:00 PM",
+     "instructional_minutes": 358,
+     "school_name": null
+    },
+    {
+     "grade_level": "high",
+     "start_time": "07:45",
+     "end_time": "15:45",
+     "raw_start_time": "7:45 AM",
+     "raw_end_time": "3:45 PM",
+     "instructional_minutes": 385,
+     "school_name": null
+    },
+    {
+     "grade_level": "middle",
+     "start_time": "08:00",
+     "end_time": "15:05",
+     "raw_start_time": "8:00 AM",
+     "raw_end_time": "3:05 PM",
+     "instructional_minutes": 350,
+     "school_name": null
+    }
+   ],
+   "source_dir": "data/raw/bell_schedule_pdfs/WY/5600730_Albany_County_School_District_1",
+   "modality": [
+    "pdf"
+   ],
+   "ext_counts": {
+    ".pdf": 3,
+    ".json": 1
+   },
+   "has_active_txt": false,
+   "expected_grade_levels": [
+    "elementary",
+    "high",
+    "middle"
+   ]
+  }
+ ]
+}

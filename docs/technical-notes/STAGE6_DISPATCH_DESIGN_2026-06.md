@@ -384,6 +384,16 @@ The **escalation_rate** (how often the judge fires) is an *accuracy/agreement* q
 this cost-only pass — until the accuracy benchmark exists, the estimator uses a conservative assumed rate,
 flagged as such.
 
+> **C.6 STATUS UPDATE (2026-07-02): batch_00000 is BUILT and ingested through Stage 5.** The 27
+> curated-GT districts were injected at the Stage-3 seam from their FROZEN gt_curation artifacts
+> (`stage1_queue/benchmark_batch.py`; Ian approved in-chat 2026-07-02): 95 records, 84 tier-A /
+> 11 tier-B, 83 send-eligible, `batch_type="benchmark"`. **THE WALL:** benchmark districts are
+> NEVER Stage-9-written and NEVER counted in funnel/enrichment stats (several source docs are
+> deliberately older school years) — enforce `batch_type == "benchmark"` checks at the Stage 7-9
+> build. The paragraph below is the original design rationale; its "check whether those raw
+> files survive" question resolved YES (the curation workspace + the full
+> `gt-benchmark-20260622T152627Z/raw_bell_schedule_pdfs/` archive both survive).
+
 **C.6 — Accuracy/composition is a SEPARATE later effort (GT must first be aligned into the pipeline).**
 The existing GT (`data/benchmark/gt_curation_20260621T060008Z`, 27 curated hard-case districts) has
 **human-confirmed numbers but ZERO district overlap with the current pipeline** (verified 2026-06-30), and
