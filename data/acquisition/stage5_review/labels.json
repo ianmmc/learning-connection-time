@@ -2109,10 +2109,10 @@
     "rec_key": "3609330:68637939c3",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"news_feed\": \"yes\"}",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:04:32Z"
+    "updated_at": "2026-07-02T02:39:06Z"
   },
   {
     "rec_key": "3609330:731793647a",
@@ -2199,10 +2199,10 @@
     "rec_key": "3609330:c8ba4c439a",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"news_feed\": \"yes\"}",
-    "note": "Also has community calendar at bottom.",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:05:36Z"
+    "updated_at": "2026-07-02T02:42:18Z"
   },
   {
     "rec_key": "3609330:cabf9b8c43",
@@ -2226,10 +2226,10 @@
     "rec_key": "3609330:d91335ea30",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"news_feed\": \"yes\"}",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:04:32Z"
+    "updated_at": "2026-07-02T02:39:06Z"
   },
   {
     "rec_key": "3609330:e66134866b",
@@ -2244,10 +2244,10 @@
     "rec_key": "3609330:e8026b5e7d",
     "primary_label": "target_absent",
     "flags_json": "[]",
-    "facets_json": "{\"news_feed\": \"yes\"}",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-06-29T08:04:32Z"
+    "updated_at": "2026-07-02T02:39:06Z"
   },
   {
     "rec_key": "3609330:febabd7885",
