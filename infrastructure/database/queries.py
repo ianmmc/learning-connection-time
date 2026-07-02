@@ -14,7 +14,7 @@ from sqlalchemy import and_, desc, func, or_, select
 from sqlalchemy.orm import Session
 
 from .models import BellSchedule, DataLineage, District, LCTCalculation, StateRequirement
-from .school_year import CURRENT_SCHOOL_YEAR, NCES_PRIMARY_YEAR
+from .school_year import CURRENT_SCHOOL_YEAR, NCES_PRIMARY_YEAR, is_acceptable_data_year
 from .verification import validate_schedule_plausibility
 
 
@@ -192,6 +192,7 @@ def add_bell_schedule(
     source_urls: Optional[List[str]] = None,
     confidence: str = "high",
     method: str = "human_provided",
+    minutes_basis: str = "gross_bell_to_bell",
     source_description: Optional[str] = None,
     notes: Optional[str] = None,
     created_by: str = "claude",
@@ -199,8 +200,23 @@ def add_bell_schedule(
     """
     Add or update a bell schedule record.
 
+    New writes always carry minutes_basis (issue #19; default 'gross_bell_to_bell'
+    per REQ-055 — pass 'statutory' for statutory-minimum fallbacks). On the update
+    path, optional fields left as None PRESERVE the existing values (issue #26:
+    a partial update used to erase lunch/passing/source data).
+
+    Raises ValueError for COVID-era or malformed years (issue #26 — the seam guard
+    for Stage 9 writes; Rule #2 COVID exclusion).
+
     Returns the created/updated BellSchedule instance.
     """
+    # Validate year at the seam: reject COVID-era (2019-20..2022-23) and malformed years
+    if not is_acceptable_data_year(year):
+        raise ValueError(
+            f"Unacceptable school year for bell schedule write: {year!r} "
+            f"(COVID-era years are excluded and years must be 'YYYY-YY')"
+        )
+
     # Normalize district ID
     normalized_id = district_id.zfill(7)   # pad, never strip (migration 015 / issue #20)
 
@@ -233,19 +249,31 @@ def add_bell_schedule(
     )
 
     if existing:
-        # Update existing record
+        # Update existing record. Only overwrite fields the caller actually
+        # provided — None means "not specified", so existing values are
+        # preserved (issue #26: a partial update used to null them out).
         existing.instructional_minutes = instructional_minutes
-        existing.start_time = start_time
-        existing.end_time = end_time
-        existing.lunch_duration = lunch_duration
-        existing.passing_periods = passing_periods
-        existing.recess_duration = recess_duration
-        existing.schools_sampled = schools_sampled or []
-        existing.source_urls = source_urls or []
+        if start_time is not None:
+            existing.start_time = start_time
+        if end_time is not None:
+            existing.end_time = end_time
+        if lunch_duration is not None:
+            existing.lunch_duration = lunch_duration
+        if passing_periods is not None:
+            existing.passing_periods = passing_periods
+        if recess_duration is not None:
+            existing.recess_duration = recess_duration
+        if schools_sampled is not None:
+            existing.schools_sampled = schools_sampled
+        if source_urls is not None:
+            existing.source_urls = source_urls
+        if source_description is not None:
+            existing.source_description = source_description
+        if notes is not None:
+            existing.notes = notes
         existing.confidence = confidence
         existing.method = method
-        existing.source_description = source_description
-        existing.notes = notes
+        existing.minutes_basis = minutes_basis
         existing.updated_at = datetime.utcnow()
         schedule = existing
         operation = "update"
@@ -265,6 +293,7 @@ def add_bell_schedule(
             source_urls=source_urls or [],
             confidence=confidence,
             method=method,
+            minutes_basis=minutes_basis,
             source_description=source_description,
             notes=notes,
         )

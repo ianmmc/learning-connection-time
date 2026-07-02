@@ -98,6 +98,7 @@ class ManualPDFMigrator:
             "districts_migrated": 0,
             "files_copied": 0,
             "districts_skipped_no_id": [],
+            "districts_skipped_ambiguous": [],
             "districts_skipped_no_files": [],
             "errors": []
         }
@@ -137,6 +138,10 @@ class ManualPDFMigrator:
                     stats["files_copied"] += result["files_copied"]
                 elif result.get("error") == "no_nces_id":
                     stats["districts_skipped_no_id"].append(district_dir.name)
+                elif result.get("error") == "ambiguous_match":
+                    stats["districts_skipped_ambiguous"].append(
+                        {"district": district_dir.name, "detail": result.get("detail")}
+                    )
                 elif result.get("error") == "no_files":
                     stats["districts_skipped_no_files"].append(district_dir.name)
                 else:
@@ -174,11 +179,13 @@ class ManualPDFMigrator:
         district_name = district_dir.name
         logger.info(f"  Processing: {district_name}")
 
-        # Find NCES ID for this district
-        nces_id = self._lookup_nces_id(district_name, state_code)
+        # Find NCES ID for this district (unique match or refusal — issue #26)
+        nces_id, refusal = self._lookup_nces_id(district_name, state_code)
         if not nces_id:
-            logger.warning(f"    No NCES ID found for: {district_name}")
-            return {"success": False, "error": "no_nces_id"}
+            logger.warning(f"    REFUSED {district_name}: {refusal}")
+            if refusal and refusal.startswith("ambiguous"):
+                return {"success": False, "error": "ambiguous_match", "detail": refusal}
+            return {"success": False, "error": "no_nces_id", "detail": refusal}
 
         # Find files to migrate
         files_to_copy = self._find_migratable_files(district_dir)
@@ -225,8 +232,33 @@ class ManualPDFMigrator:
             "files_copied": len(copied_files)
         }
 
-    def _lookup_nces_id(self, district_name: str, state_code: str) -> Optional[str]:
-        """Look up NCES ID from database"""
+    # A 7-digit NCES district id embedded in a folder name
+    NCES_ID_RE = re.compile(r'\b(\d{7})\b')
+
+    def _lookup_nces_id(self, district_name: str, state_code: str) -> Tuple[Optional[str], Optional[str]]:
+        """
+        Look up NCES ID from database — unique matches only.
+
+        Files migrated here get filed under an NCES id, so a wrong match poisons
+        the highest-trust data path (issue #26: the old cascade ended in a
+        first-words ilike + .first() with no ORDER BY). Rules:
+        - An exact 7-digit NCES id embedded in the folder name wins (must exist).
+        - Otherwise name+state stages must match EXACTLY ONE district;
+          more than one match = ambiguous = refusal.
+
+        Returns:
+            (nces_id, refusal_reason) — exactly one is non-None.
+        """
+        # 0. Exact NCES id present in the source data wins
+        id_match = self.NCES_ID_RE.search(district_name)
+        if id_match:
+            nces_id = id_match.group(1)
+            with session_scope() as session:
+                district = session.query(District).filter(District.nces_id == nces_id).first()
+                if district:
+                    return district.nces_id, None
+            return None, f"NCES id {nces_id} from folder name not found in database"
+
         # Clean district name for matching
         clean_name = district_name
 
@@ -239,37 +271,30 @@ class ManualPDFMigrator:
 
         clean_name = clean_name.strip()
 
+        stages = [
+            ("name contains", f"%{clean_name}%"),
+            ("name + Public Schools", f"%{clean_name}%Public Schools%"),
+        ]
+        first_words = ' '.join(clean_name.split()[:2])
+        if len(first_words) > 3:
+            stages.append(("first-words prefix", f"{first_words}%"))
+
         with session_scope() as session:
-            # Try exact match first
-            district = session.query(District).filter(
-                District.state == state_code,
-                District.name.ilike(f"%{clean_name}%")
-            ).first()
-
-            if district:
-                return district.nces_id
-
-            # Try with "Public Schools" added
-            district = session.query(District).filter(
-                District.state == state_code,
-                District.name.ilike(f"%{clean_name}%Public Schools%")
-            ).first()
-
-            if district:
-                return district.nces_id
-
-            # Try first few words
-            first_words = ' '.join(clean_name.split()[:2])
-            if len(first_words) > 3:
-                district = session.query(District).filter(
+            for stage_name, pattern in stages:
+                candidates = session.query(District).filter(
                     District.state == state_code,
-                    District.name.ilike(f"{first_words}%")
-                ).first()
+                    District.name.ilike(pattern)
+                ).order_by(District.nces_id).all()
 
-                if district:
-                    return district.nces_id
+                if len(candidates) == 1:
+                    return candidates[0].nces_id, None
+                if len(candidates) > 1:
+                    listing = "; ".join(f"{c.nces_id} {c.name}" for c in candidates[:5])
+                    return None, (
+                        f"ambiguous {stage_name} match ({len(candidates)} candidates): {listing}"
+                    )
 
-        return None
+        return None, "no matching district"
 
     def _find_migratable_files(self, district_dir: Path) -> List[Path]:
         """Find files that can be migrated (PDFs, DOCXs, HTMLs)"""
@@ -397,6 +422,12 @@ def main():
             print(f"  - {d}")
         if len(stats['districts_skipped_no_id']) > 10:
             print(f"  ... and {len(stats['districts_skipped_no_id']) - 10} more")
+
+    if stats['districts_skipped_ambiguous']:
+        print(f"\nDistricts REFUSED (ambiguous match — add the NCES id to the folder name): "
+              f"{len(stats['districts_skipped_ambiguous'])}")
+        for d in stats['districts_skipped_ambiguous'][:10]:
+            print(f"  - {d['district']}: {d['detail']}")
 
     if stats['errors']:
         print(f"\nErrors: {len(stats['errors'])}")

@@ -252,7 +252,66 @@ def normalize_district_name(name: str) -> str:
     return normalized.strip()
 
 
-def match_districts_to_db(districts: List[DistrictMatch], session) -> List[DistrictMatch]:
+# A 7-digit NCES district id embedded in a folder name (e.g. "Some District [0612345]")
+NCES_ID_RE = re.compile(r'\b(\d{7})\b')
+
+
+def match_district(session, state: str, name: str, folder_name: str = ""):
+    """
+    Match ONE source district to a database District — unique matches only.
+
+    Bell-schedule attachment is the highest-trust label, so this REFUSES rather
+    than guess (issue #26: the old cascade ended in a first-word ilike + .first()
+    with no ORDER BY, which could silently attach a schedule to the wrong district).
+
+    Rules:
+    - An exact 7-digit NCES id in the source data wins (and must exist in the DB).
+    - Otherwise match on name + state; each fallback stage must match EXACTLY ONE
+      district. More than one match at any stage = ambiguous = refusal.
+
+    Returns:
+        (district, refusal_reason): district is a District or None; when None,
+        refusal_reason says why (unmatched vs ambiguous, with candidates).
+    """
+    # 0. Exact NCES id present in the source data wins
+    id_match = NCES_ID_RE.search(folder_name or "")
+    if id_match:
+        nces_id = id_match.group(1)
+        district = session.query(District).filter(District.nces_id == nces_id).first()
+        if district:
+            return district, None
+        return None, f"NCES id {nces_id} from folder name not found in database"
+
+    # 1..4. Name+state stages, tightest first. Unique or refuse.
+    stages = [
+        ("exact name", [District.state == state, District.name == name]),
+        ("name contains", [District.state == state, District.name.ilike(f'%{name}%')]),
+    ]
+    normalized = normalize_district_name(name)
+    if normalized != name:
+        stages.append(
+            ("normalized prefix", [District.state == state, District.name.ilike(f'{normalized}%')])
+        )
+    words = name.split()[:2]
+    if len(words) >= 2:
+        stages.append(
+            ("two-word prefix", [District.state == state, District.name.ilike(f'{" ".join(words)}%')])
+        )
+
+    for stage_name, filters in stages:
+        candidates = session.query(District).filter(*filters).order_by(District.nces_id).all()
+        if len(candidates) == 1:
+            return candidates[0], None
+        if len(candidates) > 1:
+            listing = "; ".join(f"{c.nces_id} {c.name}" for c in candidates[:5])
+            return None, (
+                f"ambiguous {stage_name} match ({len(candidates)} candidates): {listing}"
+            )
+
+    return None, "no matching district"
+
+
+def match_districts_to_db(districts: List[DistrictMatch], session) -> Tuple[List[DistrictMatch], List[Dict]]:
     """
     Match discovered districts to database records.
 
@@ -261,9 +320,11 @@ def match_districts_to_db(districts: List[DistrictMatch], session) -> List[Distr
         session: Database session
 
     Returns:
-        List of DistrictMatch objects with nces_id populated
+        (matched, refusals): matched DistrictMatch objects with nces_id populated,
+        plus a report of refused/unmatched folders [{folder, state, name, reason}].
     """
     matched = []
+    refusals = []
 
     for item in districts:
         state = item.state
@@ -271,57 +332,26 @@ def match_districts_to_db(districts: List[DistrictMatch], session) -> List[Distr
 
         if not state:
             logger.warning(f"No state for {item.folder_name}")
+            refusals.append({
+                'folder': item.folder_name, 'state': None, 'name': name,
+                'reason': 'no state',
+            })
             continue
 
-        # Try exact match first
-        district = session.query(District).filter(
-            District.state == state,
-            District.name == name
-        ).first()
-
-        if not district:
-            # Try contains match
-            district = session.query(District).filter(
-                District.state == state,
-                District.name.ilike(f'%{name}%')
-            ).first()
-
-        if not district:
-            # Try normalized name match (strip suffixes)
-            normalized = normalize_district_name(name)
-            if normalized != name:
-                district = session.query(District).filter(
-                    District.state == state,
-                    District.name.ilike(f'{normalized}%')
-                ).first()
-
-        if not district:
-            # Try first two words match (e.g., "Los Angeles" from "Los Angeles Unified School District")
-            words = name.split()[:2]
-            if len(words) >= 2:
-                prefix = ' '.join(words)
-                district = session.query(District).filter(
-                    District.state == state,
-                    District.name.ilike(f'{prefix}%')
-                ).first()
-
-        if not district:
-            # Try first word match
-            first_word = name.split()[0] if name else ""
-            if first_word and len(first_word) > 3:
-                district = session.query(District).filter(
-                    District.state == state,
-                    District.name.ilike(f'{first_word}%')
-                ).first()
+        district, reason = match_district(session, state, name, item.folder_name)
 
         if district:
             item.nces_id = district.nces_id
             item.db_name = district.name
             matched.append(item)
         else:
-            logger.warning(f"No match for {state}: {name}")
+            logger.warning(f"REFUSED {state}: {name} — {reason}")
+            refusals.append({
+                'folder': item.folder_name, 'state': state, 'name': name,
+                'reason': reason,
+            })
 
-    return matched
+    return matched, refusals
 
 
 def process_district_files(
@@ -433,6 +463,7 @@ def import_bell_schedule(
         end_time=schedule.end_time,
         confidence="high",  # Manual collection is high confidence
         method="human_provided",
+        minutes_basis="gross_bell_to_bell",  # end - start, no deductions (REQ-055 / issue #19)
         source_description=f"Manual collection from: {', '.join(source_files[:3])}",
         schools_sampled=schedule.schools_sampled[:5] if schedule.schools_sampled else [],
         source_urls=[],
@@ -476,14 +507,18 @@ def main():
     # Match to database
     with session_scope() as session:
         logger.info("Matching to database districts...")
-        matched = match_districts_to_db(districts, session)
+        matched, refusals = match_districts_to_db(districts, session)
         logger.info(f"Matched {len(matched)} districts to database")
+        if refusals:
+            logger.warning(f"Refused/unmatched {len(refusals)} folders (see report below)")
 
     # Process and import
     content_parser = ContentParser(use_llm=False)  # Don't use LLM for manual files
 
     results = []
     total_imported = 0
+
+    failed_districts = []
 
     with session_scope() as session:
         for district in matched:
@@ -501,15 +536,25 @@ def main():
                 logger.warning(f"  No schedules extracted")
                 continue
 
-            # Import schedules
+            # Import schedules — commit PER DISTRICT so one bad row can't lose
+            # the whole batch (issue #26: the old single end-of-run commit did).
             imported = 0
             grade_levels = []
 
-            for sched in schedules:
-                if import_bell_schedule(session, district.nces_id, sched, source_files, args.dry_run):
-                    imported += 1
-                    grade_levels.append(sched.grade_level)
-                    logger.info(f"  Imported {sched.grade_level}: {sched.start_time} - {sched.end_time} ({sched.instructional_minutes} min)")
+            try:
+                for sched in schedules:
+                    if import_bell_schedule(session, district.nces_id, sched, source_files, args.dry_run):
+                        imported += 1
+                        grade_levels.append(sched.grade_level)
+                        logger.info(f"  Imported {sched.grade_level}: {sched.start_time} - {sched.end_time} ({sched.instructional_minutes} min)")
+
+                if not args.dry_run:
+                    session.commit()
+            except Exception as e:
+                session.rollback()
+                logger.error(f"  FAILED {district.db_name} ({district.nces_id}) — rolled back this district only: {e}")
+                failed_districts.append({'nces_id': district.nces_id, 'name': district.db_name, 'error': str(e)})
+                continue
 
             if imported > 0:
                 results.append(ImportResult(
@@ -521,9 +566,6 @@ def main():
                 ))
                 total_imported += imported
 
-        if not args.dry_run:
-            session.commit()
-
     # Summary
     logger.info("\n" + "=" * 60)
     logger.info("Import Summary")
@@ -531,6 +573,16 @@ def main():
     logger.info(f"Districts processed: {len(matched)}")
     logger.info(f"Districts with schedules: {len(results)}")
     logger.info(f"Total schedules imported: {total_imported}")
+
+    if refusals:
+        logger.warning(f"\nRefused/unmatched folders ({len(refusals)}) — resolve by adding the NCES id to the folder name:")
+        for r in refusals:
+            logger.warning(f"  - [{r['state']}] {r['folder']}: {r['reason']}")
+
+    if failed_districts:
+        logger.error(f"\nDistricts rolled back due to errors ({len(failed_districts)}):")
+        for f in failed_districts:
+            logger.error(f"  - {f['nces_id']} {f['name']}: {f['error']}")
 
     if results:
         logger.info("\nBy grade level:")

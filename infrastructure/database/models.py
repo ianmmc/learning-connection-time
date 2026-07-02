@@ -197,6 +197,45 @@ class StateRequirement(Base):
         }
 
 
+# Allowed bell_schedules.method values. Mirrors chk_method in the database
+# (migration 019). The long tail is legacy-era collection methods that exist in
+# the live constraint; 'council_extraction' is the Stage-9 pipeline write (issue #19).
+BELL_SCHEDULE_METHODS = (
+    "automated_enrichment",
+    "human_provided",
+    "statutory_fallback",
+    "web_scraping",
+    "fallback_statutory",
+    "pdf_extraction",
+    "manual_data_collection",
+    "district_policy",
+    "school_sample",
+    "district_standardized_schedule",
+    "school_specific_schedules",
+    "school_hours_with_estimation",
+    "state_requirement_with_validation",
+    "tier_1_firecrawl_regex",
+    "tier_1_firecrawl_table",
+    "tier_1_firecrawl_map",
+    "tier_1_pattern",
+    "tier_1_scraper",
+    "tier_1_fallback",
+    "tier_2_pattern",
+    "tier_2_html",
+    "tier_2_scraper",
+    "tier_3_pdf",
+    "tier_3_ocr",
+    "tier_3_document",
+    "tier_4_claude",
+    "tier_4_auto",
+    "tier_4_api",
+    "tier_5_gemini",
+    "tier_5_web_search",
+    "tier_5_mcp",
+    "council_extraction",
+)
+
+
 class BellSchedule(Base):
     """
     Enriched bell schedule data with actual instructional time.
@@ -233,6 +272,11 @@ class BellSchedule(Base):
     # Quality indicators
     confidence: Mapped[str] = mapped_column(String(10), default="high")
     method: Mapped[str] = mapped_column(String(30), nullable=False)
+    # What instructional_minutes measures (migration 019 / issue #19).
+    # 'gross_bell_to_bell' = end - start, no deductions (REQ-055);
+    # 'statutory' = state statutory-minimum fallback;
+    # NULL = unlabeled pre-pipeline legacy row, slated for removal (do NOT backfill).
+    minutes_basis: Mapped[Optional[str]] = mapped_column(String(30))
     source_description: Mapped[Optional[str]] = mapped_column(Text)
     notes: Mapped[Optional[str]] = mapped_column(Text)
 
@@ -259,8 +303,12 @@ class BellSchedule(Base):
         CheckConstraint("grade_level IN ('elementary', 'middle', 'high')", name="chk_grade_level"),
         CheckConstraint("confidence IN ('high', 'medium', 'low')", name="chk_confidence"),
         CheckConstraint(
-            "method IN ('automated_enrichment', 'human_provided', 'statutory_fallback')",
+            "method IN ({})".format(", ".join(f"'{m}'" for m in BELL_SCHEDULE_METHODS)),
             name="chk_method"
+        ),
+        CheckConstraint(
+            "minutes_basis IN ('gross_bell_to_bell', 'statutory') OR minutes_basis IS NULL",
+            name="chk_minutes_basis"
         ),
         CheckConstraint(
             "instructional_minutes BETWEEN 100 AND 600",
@@ -287,6 +335,7 @@ class BellSchedule(Base):
             "source_urls": self.source_urls,
             "confidence": self.confidence,
             "method": self.method,
+            "minutes_basis": self.minutes_basis,
             "source_description": self.source_description,
             "notes": self.notes,
         }

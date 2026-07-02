@@ -581,31 +581,49 @@ VALID_GRADE_LEVELS = {
     'primary', 'intermediate', 'secondary', 'junior-high'  # Aliases
 }
 
-# Time format pattern
+# Time format patterns: 12-hour with AM/PM, and 24-hour HH:MM (issue #66 —
+# the acquisition pipeline emits 24-hour times like '08:00' / '14:20')
 TIME_PATTERN = re.compile(r'^(\d{1,2}):(\d{2})\s*(AM|PM)$', re.IGNORECASE)
+TIME_24H_PATTERN = re.compile(r'^([01]?\d|2[0-3]):([0-5]\d)$')
+
+from infrastructure.database.school_year import (  # noqa: E402
+    GROSS_MINUTES_MIN,
+    GROSS_MINUTES_MAX,
+    DB_CHECK_MINUTES_MIN,
+    DB_CHECK_MINUTES_MAX,
+)
 
 # Plausible ranges (per Watson's review)
 PLAUSIBLE_START_RANGE = (6 * 60, 10 * 60 + 30)  # 6:00 AM - 10:30 AM in minutes from midnight
 PLAUSIBLE_END_RANGE = (14 * 60, 17 * 60 + 30)    # 2:00 PM - 5:30 PM in minutes from midnight
-PLAUSIBLE_INSTRUCTIONAL_RANGE = (300, 480)        # 5-8 hours
+# The ONE gross plausibility band (REQ-055 / issue #72): warn outside 240-510.
+# Hard error bounds stay the DB outer sanity band (100-600, chk_instructional_minutes).
+PLAUSIBLE_INSTRUCTIONAL_RANGE = (GROSS_MINUTES_MIN, GROSS_MINUTES_MAX)
 
 
 def _time_to_minutes(time_str: str) -> Optional[int]:
-    """Convert HH:MM AM/PM to minutes from midnight."""
-    match = TIME_PATTERN.match(time_str.strip())
-    if not match:
-        return None
+    """Convert 'HH:MM AM/PM' or 24-hour 'HH:MM' to minutes from midnight."""
+    time_str = time_str.strip()
 
-    hours = int(match.group(1))
-    minutes = int(match.group(2))
-    period = match.group(3).upper()
+    match = TIME_PATTERN.match(time_str)
+    if match:
+        hours = int(match.group(1))
+        minutes = int(match.group(2))
+        period = match.group(3).upper()
 
-    if hours == 12:
-        hours = 0 if period == 'AM' else 12
-    elif period == 'PM':
-        hours += 12
+        if hours == 12:
+            hours = 0 if period == 'AM' else 12
+        elif period == 'PM':
+            hours += 12
 
-    return hours * 60 + minutes
+        return hours * 60 + minutes
+
+    # 24-hour fallback (e.g. '08:00', '14:20')
+    match = TIME_24H_PATTERN.match(time_str)
+    if match:
+        return int(match.group(1)) * 60 + int(match.group(2))
+
+    return None
 
 
 def validate_schedule_plausibility(schedule: Dict) -> Dict:
@@ -624,20 +642,22 @@ def validate_schedule_plausibility(schedule: Dict) -> Dict:
     errors = []
     warnings = []
 
-    start_time = schedule.get('start_time', '')
-    end_time = schedule.get('end_time', '')
-    grade_level = schedule.get('grade_level', '').lower()
+    start_time = schedule.get('start_time') or ''
+    end_time = schedule.get('end_time') or ''
+    grade_level = (schedule.get('grade_level') or '').lower()
     instructional_minutes = schedule.get('instructional_minutes')
 
-    # 1. Validate time format
-    start_minutes = _time_to_minutes(start_time)
-    end_minutes = _time_to_minutes(end_time)
+    # 1. Validate time format. Times are OPTIONAL (issue #68): an enrichment may
+    # carry only instructional_minutes — absent times skip the time checks
+    # entirely rather than failing on a placeholder.
+    start_minutes = _time_to_minutes(start_time) if start_time else None
+    end_minutes = _time_to_minutes(end_time) if end_time else None
 
-    if start_minutes is None:
-        errors.append(f"Invalid start_time format: '{start_time}'. Expected HH:MM AM/PM")
+    if start_time and start_minutes is None:
+        errors.append(f"Invalid start_time format: '{start_time}'. Expected HH:MM AM/PM or 24-hour HH:MM")
 
-    if end_minutes is None:
-        errors.append(f"Invalid end_time format: '{end_time}'. Expected HH:MM AM/PM")
+    if end_time and end_minutes is None:
+        errors.append(f"Invalid end_time format: '{end_time}'. Expected HH:MM AM/PM or 24-hour HH:MM")
 
     # 2. Validate grade level
     if grade_level not in VALID_GRADE_LEVELS:
@@ -658,22 +678,31 @@ def validate_schedule_plausibility(schedule: Dict) -> Dict:
         if not (PLAUSIBLE_END_RANGE[0] <= end_minutes <= PLAUSIBLE_END_RANGE[1]):
             warnings.append(f"End time {end_time} outside typical range (2:00 PM - 5:30 PM)")
 
-    # 6. Validate instructional minutes range
+    # 6. Validate instructional minutes range. Parse ONCE — a non-numeric value is
+    # a single validation error, never an exception (issue #66: step 7 previously
+    # re-cast with a bare int() and crashed on input step 6 had already flagged).
+    stated_minutes: Optional[int] = None
     if instructional_minutes is not None:
         try:
-            minutes = int(instructional_minutes)
-            if not (PLAUSIBLE_INSTRUCTIONAL_RANGE[0] <= minutes <= PLAUSIBLE_INSTRUCTIONAL_RANGE[1]):
-                warnings.append(
-                    f"Instructional minutes ({minutes}) outside typical range "
-                    f"({PLAUSIBLE_INSTRUCTIONAL_RANGE[0]}-{PLAUSIBLE_INSTRUCTIONAL_RANGE[1]})"
-                )
+            stated_minutes = int(instructional_minutes)
         except (ValueError, TypeError):
             errors.append(f"Invalid instructional_minutes: '{instructional_minutes}'. Must be integer.")
 
+    if stated_minutes is not None:
+        if not (DB_CHECK_MINUTES_MIN <= stated_minutes <= DB_CHECK_MINUTES_MAX):
+            errors.append(
+                f"Instructional minutes ({stated_minutes}) outside sanity bounds "
+                f"({DB_CHECK_MINUTES_MIN}-{DB_CHECK_MINUTES_MAX})"
+            )
+        elif not (PLAUSIBLE_INSTRUCTIONAL_RANGE[0] <= stated_minutes <= PLAUSIBLE_INSTRUCTIONAL_RANGE[1]):
+            warnings.append(
+                f"Instructional minutes ({stated_minutes}) outside gross plausibility band "
+                f"({PLAUSIBLE_INSTRUCTIONAL_RANGE[0]}-{PLAUSIBLE_INSTRUCTIONAL_RANGE[1]})"
+            )
+
     # 7. Cross-validate: calculated duration vs stated instructional minutes
-    if start_minutes is not None and end_minutes is not None and instructional_minutes is not None:
+    if start_minutes is not None and end_minutes is not None and stated_minutes is not None:
         calculated_duration = end_minutes - start_minutes
-        stated_minutes = int(instructional_minutes) if isinstance(instructional_minutes, (int, float, str)) else 0
 
         # Allow some variance for lunch/passing time (30-90 minutes typically)
         max_expected = calculated_duration
