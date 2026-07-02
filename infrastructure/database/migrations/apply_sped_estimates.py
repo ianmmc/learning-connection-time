@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """
+LEDGER NOTE (2026-07-02, issue #21): this is a DATA backfill — it computes/UPDATEs sped_estimates rows (rebuild phase 5) — NOT a schema migration; it deliberately does not write schema_migrations. All DDL lives in the numbered NNN_*.sql files (migrate.py status = the ledger).
+
 Apply SPED baseline ratios to current year district data.
 
 This script:

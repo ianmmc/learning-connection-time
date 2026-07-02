@@ -37,6 +37,17 @@ for f in "${PRECIOUS_BACKUPS[@]}"; do
     fi
 done
 
+# REQUIREMENTS.yaml must parse when staged (issue #77 — it was once broken YAML for an
+# unknown period; the ledger being machine-readable is load-bearing)
+if git diff --cached --name-only | grep -q '^docs/REQUIREMENTS.yaml$'; then
+    if ! python3 -c "import yaml; yaml.safe_load(open('docs/REQUIREMENTS.yaml'))" 2>/dev/null; then
+        echo -e "${RED}docs/REQUIREMENTS.yaml does not parse as YAML — fix before committing${NC}"
+        python3 -c "import yaml; yaml.safe_load(open('docs/REQUIREMENTS.yaml'))" 2>&1 | head -5
+        exit 1
+    fi
+    echo -e "${GREEN}REQUIREMENTS.yaml parses OK${NC}"
+fi
+
 # Check if any documentation files are being committed
 DOC_FILES=$(git diff --cached --name-only | grep -E '\.(md|yaml|yml)$' || true)
 

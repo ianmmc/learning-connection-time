@@ -814,6 +814,22 @@ requirements:
     updated: "2026-01-23T21:30:00Z"
     notes: "SUPERSEDED 2026-06-26 — tests the OLD scraper→parser→DB→LCT contract (markdown/html scraper_response, ContentParser), i.e. the Crawlee-era architecture, not the 9-stage acquisition pipeline. The intent (cross-stage data contracts) now lives in the as-built stage REQs (068–083) and, going forward, the governance event log. CORRECTION 2026-06-26: an earlier draft of this note called content_parser.py 'likely dead code' — that is WRONG. content_parser.py is LIVE via the LCT-cluster manual-import path (rebuild_database.py phase 6 → import_manual_bell_schedules.py → ContentParser), tested by tests/test_content_parser.py (REQ-032). It is NOT retired. Only this orchestration test models the dead scraper contract. Original: E2E pipeline testing ensures data contracts maintained across all stages."
 
+  - id: REQ-034
+    description: "[SUPERSEDED — Firecrawl tier removed with the obsolete tier-based enrichment
+      system; this requirement and its tests (test_firecrawl_discovery.py) were DELETED outright
+      instead of banner-superseded, leaving an unexplained ID gap until the 2026-07-02 fable-review
+      hygiene pass restored this tombstone from git history (2a1ede4). Discovery now = the Stage-2
+      deterministic SERP cascade (REQ-104).] Firecrawl URL discovery and content extraction testing"
+    type: non-functional
+    priority: must
+    status: superseded
+    superseded_by: [REQ-104]
+    acceptance_criteria:
+      - (historical) Firecrawl /v1/map URL discovery + /v1/scrape extraction, ContentParser integration, Playwright fallback
+    created: "2026-01-23T21:30:00Z"
+    updated: "2026-07-02T00:00:00Z"
+    notes: "Tombstone restored 2026-07-02 (issue #74). Full original text: git show 2a1ede4:REQUIREMENTS.yaml."
+
   - id: REQ-035
     description: Enrichment count verification against database before documentation
     type: non-functional
@@ -2184,12 +2200,19 @@ requirements:
       is pursued; the tier still governs whether it is - a harvest on a non-target is harmless.)"
 
   - id: REQ-093
-    description: Stage 5 Tier-0 scoring refinements, each measured against labels via the harness
+    description: "[SUPERSEDED 2026-07-02 by REQ-113 (with REQ-091) — the V1 tier-cascade this
+      tuned was replaced by the detector/combiner architecture. What shipped here survives
+      (config-as-data keyword knobs; 'class schedule' keyword; the calendar-rescue principle);
+      the HOURS-regex idea was harness-DISPROVEN (see notes); and the 'main-only de-chrome
+      signal' criterion was INVERTED by V2's measured fix #1 (time signals over the MAX-evidence
+      source, never main-exclusively).] Stage 5 Tier-0 scoring refinements, each measured against
+      labels via the harness"
     type: functional
     priority: should
-    status: accepted
+    status: superseded
+    superseded_by: [REQ-113, REQ-091]
     acceptance_criteria:
-      - Detect instructional HOURS (not only minutes); stop dropping academic_calendar candidates; add a class-schedule positive keyword; consume the de-chrome main-only signal
+      - (historical) Detect instructional HOURS (not only minutes); stop dropping academic_calendar candidates; add a class-schedule positive keyword; consume the de-chrome main-only signal
       - Every change shows a before/after against the labels via REQ-090; no regression to tier precision-recall on batch_00001
       - Changes land as config edits (REQ-088), not new code literals
     tests:
@@ -2238,9 +2261,9 @@ requirements:
     priority: should
     status: tested
     acceptance_criteria:
-      - Re-scores labeled records under candidate threshold params WITHOUT re-ingest (reads stored signals_json + labels)
-      - Reuses build_signals.tier_and_category (parameterized) and harness.tier_target_metrics; nothing reimplemented
-      - tier_and_category refactor is behavior-preserving (defaults reproduce stored tiers exactly on the live DB)
+      - Re-scores labeled records under candidate params WITHOUT re-ingest (reads stored signals_json + labels)
+      - Reuses the LIVE V2 scoring path — the detector/combiner (combiner.score_record, parameterized over the detector/combiner config knobs) — and harness.tier_target_metrics; nothing reimplemented (criterion updated 2026-07-02, issue #56/#73 — originally pinned the deleted V1 tier_and_category)
+      - The parameterized path is behavior-preserving (defaults reproduce stored decisions/tiers exactly on stored signals)
       - Emits the precision/recall frontier filtered by a hard recall floor, ranked by precision, with per-record moves
       - LeaveOneGroupOut-by-district CV reported as an overfitting guard (never a gate)
       - Evaluates on CANONICAL records (cluster reps + singletons), not all labeled — operational send-set semantics
@@ -2270,7 +2293,10 @@ requirements:
     created: "2026-06-26T00:00:00Z"
     updated: "2026-06-26T00:00:00Z"
     notes: "Designed (research-backed: CUSUM+Wilson beat EWMA/Page-Hinkley for binary-proportion metrics; KS/chi-sq
-      are the wrong layer). Deferred until batch 2 exists to demonstrate against. Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §7a."
+      are the wrong layer). Original deferral ('until batch 2 exists') EXPIRED — batches 00002-00007 exist
+      (re-triaged 2026-07-02, issue #75): remains accepted/unbuilt by choice, best sequenced after the
+      facet-level per-detector scoring pass (its input series — the tuning ledger — gains V2-era episodes
+      there first). Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §7a."
 
   - id: REQ-098
     description: Package the acquisition tree + code move + wire the dependency/dead-code/architecture tooling baseline

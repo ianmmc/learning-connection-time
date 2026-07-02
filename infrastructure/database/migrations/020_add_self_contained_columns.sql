@@ -1,3 +1,6 @@
+-- LEDGERED RETROACTIVELY 2026-07-02 (issue #21): this file was applied out-of-band before
+-- the migrate.py ledger existed and sat un-numbered outside it. Numbered + backfilled;
+-- objects verified present in the live DB at numbering time. Do not re-run by hand.
 -- Migration: Add self-contained SPED columns
 -- Date: January 3, 2026
 -- Purpose: Support two-step ratio for self-contained SPED estimation
