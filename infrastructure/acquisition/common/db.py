@@ -74,9 +74,23 @@ def session_scope() -> Generator[Session, None, None]:
         session.close()
 
 
+# Additive, idempotent column migrations for the never-dropped PRECIOUS tables: create_all() creates a
+# missing table but does NOT add a new column to a table that already exists, so a column added to a model
+# after the table was first created must be ALTERed in. Raw SQL by table name (no stage-module import — the
+# layering contract is about imports, not table names). Keep additive-only; never drop/rename here.
+_PRECIOUS_ALTERS = [
+    "ALTER TABLE label ADD COLUMN IF NOT EXISTS facets_json text",   # REQ-114 (V2 facet questionnaire)
+]
+
+
 def init_precious_schema() -> None:
-    """Create the PRECIOUS tables registered on Base.metadata, if absent. Idempotent; never
-    drops/alters. The regenerable cache tables are NOT here — the ingest manages those via its own
-    DDL.  NOTE: the CALLER must import the precious model modules first (so they register on
-    Base.metadata) — common/ deliberately does not import stage modules (layering contract)."""
-    Base.metadata.create_all(get_engine())
+    """Create the PRECIOUS tables registered on Base.metadata, if absent, + apply additive column
+    migrations. Idempotent; never drops. The regenerable cache tables are NOT here — the ingest manages
+    those via its own DDL. NOTE: the CALLER must import the precious model modules first (so they register
+    on Base.metadata) — common/ deliberately does not import stage modules (layering contract)."""
+    from sqlalchemy import text as _text
+    eng = get_engine()
+    Base.metadata.create_all(eng)
+    with eng.begin() as con:
+        for ddl in _PRECIOUS_ALTERS:
+            con.execute(_text(ddl))

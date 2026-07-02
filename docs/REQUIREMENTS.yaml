@@ -1,6 +1,6 @@
 project: learning-connection-time
 description: Transform student-teacher ratios into Learning Connection Time (LCT) metrics for educational equity analysis
-last_updated: "2026-06-25T00:00:00Z"
+last_updated: "2026-07-01T00:00:00Z"
 
 requirements:
   - id: REQ-001
@@ -2610,3 +2610,86 @@ requirements:
       pass; lint-imports 3 kept/0 broken. UI self-verified with Playwright (default + grouped). DEFERRED: the
       harness attention-ordering metric (attention ≠ target-precision — needs a reason×label cross-tab). On
       branch stage5-attention-console; not yet merged to main."
+
+  - id: REQ-113
+    description: "Stage 5 scoring V2 — labeling-function decomposition + combiner + measured fixes.
+      The V1 tier cascade (single if/elif; additive score for sort only) drifted at scale (85%→69% tier-A
+      precision; tier-D leaked 10/110 targets, measured over 440 labels / 59 districts). V2 replaces the
+      cascade with independent DETECTORS (labeling functions, stage5_filter/detectors.py — pure fns over the
+      signal vector, config-driven) combined by a shallow transparent weighted vote (combiner.py) into a
+      send/suppress/review routing decision; tier letters A-D retained as a derived human-legible summary.
+      Fixes three measured V1 defects at ZERO recall cost on the 382 canonical labels: (1) de-chrome time
+      signal over the MAX-evidence source (main ∪ footer/header ∪ best raw rep), not page.main.txt exclusively
+      (recovers footer 'Hours:' + OCR/raster targets stuck at tier D); (2) weak-target detector requires a
+      proximity pair (was tier-B n_times_in_window>=2 with no positive requirement — drops 13/38 FPs);
+      (3) suppress floor = no in-window times (was n_times==0 — reclassifies 35/61 tier-C non-targets). New
+      deterministic signals from ALREADY-captured data: footer/header times, heading-adjacent hours (+ the
+      matched heading label), table time-density, cms_hint promotion (grouping key, not a score input). Harness
+      extended with per-detector diagnostics (coverage/accuracy/overlap/conflict — Snorkel LFAnalysis). Grounded
+      in docs/technical-notes/filtering-research/ (weak supervision; FrugalGPT/SUPG cascades)."
+    type: functional
+    priority: must
+    status: in_progress
+    acceptance_criteria:
+      - detectors.py exposes pure labeling functions (signals)->{vote,confidence,reason}; combiner.py reduces votes to a send/suppress/review decision + a derived tier; both config-as-data driven
+      - time signals compute over the max-evidence source (main ∪ footer/header segment ∪ best raw rep); a footer/OCR-only 'Hours:' target is no longer zeroed by de-chrome
+      - weak-target routing requires a proximity pair; the suppress floor is n_times_in_window==0; both verified to cost 0 targets on the canonical labels via the harness
+      - new signals (footer_times, header_times, heading_hours_hits + heading label, table_time_density, cms_hint) are stored in signals_json at ingest with no re-capture
+      - harness reports per-detector coverage/accuracy/overlap/conflict against the human facets/labels; a re-ingest before/after episode is recorded in the tuning ledger
+    created: "2026-07-01T00:00:00Z"
+    updated: "2026-07-01T00:00:00Z"
+    notes: "Design: STAGE5_FILTER_DESIGN_2026-06.md §2 (detectors/combiner) + §5 (harness). Branch
+      stage5-scoring-labeling-v2."
+
+  - id: REQ-114
+    description: "Stage 5 labeling UI V2 — a facet questionnaire. V1 forced multi-purpose pages into one
+      primary-label radio + a few flags, burying findings in free text. V2 turns labeling into a checklist
+      mirroring the detectors (REQ-113): a retained 'dominant content type' field PLUS detector-mirroring
+      tri-state facets (yes/no/unsure), each PRE-FILLED with the detector's own vote so labeling is
+      confirm-or-correct (and yields the per-detector ground truth the harness needs). Adds a structured
+      'where' (main/footer/header/table/image/feed-post) and a structured handbook page number
+      (harvest_pages_labeled, guessed-vs-labeled like topology). ADDITIVE to the existing taxonomy — NOT a
+      reset (the 440 labels + 202 notes stay valid; user decision 2026-07-01). Free-text note retained."
+      Built as v2.1 (2026-07-01): a THREE-AXIS label object — Axis 1 target SHAPE (school_start_end_list /
+      school_bell_table / school_start_end_prose / district_hub_by_school / district_hub_by_band /
+      explicit_instructional_time / target_other_shape + terminals target_absent / unusable); Axis 2 confounder
+      facets (multi-select — board/sports/calendars/transport/news_feed/office_building_hours); Axis 3 location
+      (buried_handbook + print-dialog page range, needs_vision, where). A fired detector HINTS ('flagged') but
+      never auto-checks. migrate_label_v21 moved all 440 labels (128 targets preserved; git = restore point).
+      Detail pane reordered text-first with a per-rep unique-times readout."
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - the label schema gains facets_json (precious, JSON-backed, additive migration in init_precious_schema) surviving re-ingest
+      - the labeling pane renders the 3 axes (shape radio / confounder checkboxes / location); a fired detector shows a 'flagged' hint but is NOT auto-checked; saving persists primary + facets + note atomically
+      - handbook page range accepts print-dialog syntax ('4, 7-9') and stores both the raw string and the parsed list [4,7,8,9]
+      - migrate_label_v21 maps every v2.0 label into the v2.1 vocabulary (targets renamed; non-targets -> target_absent + confounder facet); 128 targets preserved; unit-tested
+      - UI self-verified with Playwright before shipping (per the standing 'don't ship visuals blind' lesson)
+    created: "2026-07-01T00:00:00Z"
+    updated: "2026-07-01T00:00:00Z"
+    notes: "Design: STAGE5_FILTER_DESIGN_2026-06.md §4 (three-axis). Tests: test_stage5_scoring.py (migration),
+      test_stage5_facets_api.py (facets_json). Playwright-verified (3 axes render, migration seeds confounders,
+      page-range parses, detail pane text-first). Stage 6 verified clean (STAGE6_DISPATCH_DESIGN §0 ripple check).
+      Follow-on: facet-level per-detector scoring once re-tagging fills facets; harvest_slice using human pages."
+
+  - id: REQ-115
+    description: "Stage 3 iframe/embed capture + cms_hint promotion. Two V2 findings are structural not
+      heuristic: the embedded_feed pollution (live-feed pages) and the embedded-calendar clusters are usually
+      an <iframe>/<embed> or JS widget pointing at a known third-party host. Stage 3 (capture_discovery.mjs)
+      records iframe_srcs[] (categorized social-feed/calendar/doc-viewer/other) + embed_present alongside the
+      existing fingerprint — cheap, additive, future captures. Promotes cms_hint from the Stage-3 fingerprint
+      (console rollup only) into the Stage-5 record signal (the grouping key of REQ-113). Also verifies whether
+      Playwright reads same-origin iframe innerText today (a possible capture-completeness gap, not a filter
+      one). Schema.org OpeningHoursSpecification deliberately NOT chased (research: <5% on K-12 CMS)."
+    type: functional
+    priority: should
+    status: planned
+    acceptance_criteria:
+      - capture_discovery.mjs records iframe_srcs[] (categorized by host) + embed_present per capture; unit-tested on the pure categorizer
+      - cms_hint is threaded from captures.json fingerprint into the Stage-5 record signals_json at ingest
+      - the iframe-innerText capture question is answered in the note (fixed if a gap, documented if not)
+    created: "2026-07-01T00:00:00Z"
+    updated: "2026-07-01T00:00:00Z"
+    notes: "Design: STAGE5_FILTER_DESIGN_2026-06.md §6. Additive to Stage 3; applies to future captures
+      (existing captures backfill cms_hint only, which is already on disk)."

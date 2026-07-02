@@ -47,7 +47,8 @@ retired when the cross-stage cache became a live working store — REQ-110/111/1
 | class | what it is | home | properties |
 |---|---|---|---|
 | **STATE** | pipeline position; gate@1 approvals; gate@5 release; the re-discovery loop | **DB** (working store) | the `state_event` append-log + `current_state` view (§3); **precious** — JSON-backed, re-importable |
-| **SIGNALS** | tiers, categories, signal vectors, clusters, attention | **DB** (working store) | regenerable; a **never-dropped live store on the incremental path** (REQ-110/111/112) — full drop+rebuild only for schema changes / recovery |
+| **SIGNALS** | signal vectors, detector votes + the send/suppress/review decision, tier, category, clusters, attention (REQ-113 V2) | **DB** (working store) | regenerable; a **never-dropped live store on the incremental path** (REQ-110/111/112) — full drop+rebuild only for schema changes / recovery |
+| **FACETS** (v2.1) | the human's target-shape + confounder + location answers (`label.facets_json`, REQ-114) | **DB** (working store) | **precious** — JSON-backed with the label; the per-detector ground truth |
 | **CROSS-STAGE DATA** | the queryable projection of every stage's output — `discovery_school` / `candidate` / `capture` / `processed_doc` (`common/cache_ingest.py`) + `record` / `representation` / `district_target` (Stage 5) | **DB** (working store) | regenerable from disk; **what each stage reads to drive the next**, kept fresh by each stage's finish hook |
 | **LABELS / SPLITS / BATCHES / FLAGS** | human ground truth, cluster-split overrides, the queued/approved batch, follow-up flags | **DB** | **precious** — never in the ingest drop list; JSON-backed |
 | **CAPTURE BINARIES** | the captured PDFs / PNGs / extracted text files | **disk**, authoritative | regenerable from the **web** (not the DB); referenced by `filename` from `representation`; relocatable as one tree (REQ-087) |
@@ -341,10 +342,10 @@ view/controls. Once cross-stage STATE is in the DB, the app is the governance co
 (see §11 for the full gate model):
 
 - **Stage 1 / gate@1** — review & approve queued `batch_*.json` (today out-of-band); an approval event.
-- **Stage 5 / gate@5** — the **district-driven, attention-first** review/label console (REWORKED REQ-112,
-  2026-06-29). District-driven on purpose (the batch dissolved); per-URL representation review unchanged in
-  the center/right panes. `filtered.json` is an event-driven projection, not a Generate button (§6). Detail:
-  `STAGE5_FILTER_DESIGN` §A–D.
+- **Stage 5 / gate@5** — the **district-driven, attention-first** review/label console (REQ-112, 2026-06-29;
+  scoring V2 = labeling functions + combiner, REQ-113; **v2.1 three-axis labeling** — target shape / confounder
+  facets / location — REQ-114, 2026-07-01). District-driven on purpose (the batch dissolved). `filtered.json`
+  is an event-driven projection, not a Generate button (§6). Detail: `STAGE5_FILTER_DESIGN` (present-state rewrite).
 - **Stage 6 / gate@6** — approve the dispatch (which reps → which council config).
 - **Stage 7 / gate@7** — review the council's requests/recommendations.
 - **(later) Stage 8 / gate@8** — review per-band results before the mechanical Stage-9 DB write (the effective old "CP-C").

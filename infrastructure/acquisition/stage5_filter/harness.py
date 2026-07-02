@@ -93,18 +93,61 @@ def _r(x, p=4):
     return round(x, p) if isinstance(x, float) else x
 
 
+# ----------------------------- V2: per-detector diagnostics (REQ-113, Snorkel LFAnalysis) -----------------------------
+# Static polarity per labeling function (the direction it votes) — accuracy is scored against it.
+DETECTOR_POLARITY = {
+    "lf_explicit_minutes": "target", "lf_time_table": "target", "lf_prose_pair": "target",
+    "lf_footer_hours": "target", "lf_heading_hours": "target", "lf_weak_times": "target",
+    "lf_no_times": "negative", "lf_news_feed": "negative", "lf_calendar_widget": "negative",
+    "lf_nonstandard_day": "negative", "lf_office_hours": "negative",
+    "lf_board": "negative", "lf_sports": "negative", "lf_transport": "negative",
+}
+
+
+def detector_diagnostics(rows):
+    """rows: iterable of (fired: list[str], is_target: bool) over LABELED records. Per labeling function,
+    Snorkel-style diagnostics: COVERAGE (fraction of records it fires on), ACCURACY (when it fires, was its
+    polarity right — a target LF wants a target, a negative LF wants a non-target), and the raw split. Plus
+    per-record OVERLAP (≥2 LFs fired) and CONFLICT (a target LF and a negative LF both fired). This turns
+    'adjust the weights' into a data-grounded conversation and names the next detector to fix."""
+    rows = list(rows)
+    n = len(rows)
+    per = defaultdict(lambda: {"fires": 0, "on_target": 0, "on_nontarget": 0})
+    overlap = conflict = 0
+    for fired, is_target in rows:
+        if len(fired) >= 2:
+            overlap += 1
+        pols = {DETECTOR_POLARITY.get(nm) for nm in fired}
+        if "target" in pols and "negative" in pols:
+            conflict += 1
+        for name in fired:
+            per[name]["fires"] += 1
+            per[name]["on_target" if is_target else "on_nontarget"] += 1
+    out = {}
+    for name, d in sorted(per.items()):
+        pol = DETECTOR_POLARITY.get(name, "?")
+        correct = d["on_target"] if pol == "target" else d["on_nontarget"]
+        out[name] = {"polarity": pol, "coverage": _r(d["fires"] / n if n else None), "fires": d["fires"],
+                     "accuracy": _r(correct / d["fires"] if d["fires"] else None),
+                     "on_target": d["on_target"], "on_nontarget": d["on_nontarget"]}
+    return {"n": n, "overlap": overlap, "conflict": conflict, "per_detector": out}
+
+
 # ----------------------------- DB reading + fingerprints -----------------------------
 def _labeled_records(con):
     return con.execute(text(
-        """SELECT r.tier, r.category_hypothesis, l.primary_label
+        """SELECT r.tier, r.category_hypothesis, l.primary_label, r.signals_json
            FROM record r JOIN label l ON l.rec_key = r.rec_key
            WHERE l.status != 'unlabeled' AND l.primary_label IS NOT NULL""")).fetchall()
 
 
 def score(con):
     recs = _labeled_records(con)
-    tier_rows = [(t, lab in TARGET) for t, _cat, lab in recs]
-    cat_rows = [(cat, lab) for _t, cat, lab in recs]
+    tier_rows = [(t, lab in TARGET) for t, _cat, lab, _sj in recs]
+    cat_rows = [(cat, lab) for _t, cat, lab, _sj in recs]
+    # V2 (REQ-113): per-detector diagnostics from the fired votes stored in signals_json.
+    det_rows = [([v["name"] for v in (json.loads(sj or "{}").get("detectors") or [])], lab in TARGET)
+                for _t, _cat, lab, sj in recs]
     topo_rows = con.execute(text(
         "SELECT name, guessed_topology, labeled_topology FROM district ORDER BY name")).fetchall()
     n_rec = con.execute(text("SELECT COUNT(*) FROM record")).scalar()
@@ -114,6 +157,7 @@ def score(con):
                    "targets": sum(1 for _t, g in tier_rows if g)},
         "tier_vs_target": tier_target_metrics(tier_rows),
         "category_accuracy": category_accuracy(cat_rows),
+        "detectors": detector_diagnostics(det_rows),
         "topology": topology_report(topo_rows),
     }
 
@@ -168,6 +212,12 @@ def print_summary(card):
         print(f"    predict-target = tier {name:3}: precision={m['precision']} recall={m['recall']} f1={m['f1']}")
     ca = card["category_accuracy"]
     print(f"  category-guess accuracy: {ca['overall']} ({ca['correct']}/{ca['n']})")
+    det = card.get("detectors")
+    if det:
+        print(f"  detector diagnostics (n={det['n']}, overlap={det['overlap']}, conflict={det['conflict']}):")
+        for name, d in det["per_detector"].items():
+            print(f"    {name:22} {d['polarity']:8} cov={d['coverage']} acc={d['accuracy']} "
+                  f"(fires {d['fires']}: {d['on_target']} target / {d['on_nontarget']} non-target)")
     tp = card["topology"]
     print(f"  topology coarse hub/per-school agreement: {tp['coarse_agreement']} ({tp['coarse_agree']}/{tp['coarse_den']})")
     diverge = {k: v for k, v in tp["pairs"].items() if GUESS_COARSE.get(v[0], "?") != LABEL_COARSE.get(v[1], "?")}

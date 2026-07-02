@@ -26,7 +26,7 @@ def test_dispatch_handoff_freezes_writes_and_records(tmp_path, monkeypatch):
              "n_chars": 1200, "n_times": 4, "usable": 1}]
     records = [{"rec_key": "a", "url": "u", "tier": "A", "category": None,
                 "signals": {"visual_text_gap": False}, "is_emergent": 0, "intended_schools": [],
-                "label": "school_bell_schedule", "flags": [], "reps": reps}]
+                "label": "school_bell_table", "flags": [], "reps": reps}]
     monkeypatch.setattr(REL, "load_district",
                         lambda s, did: {"district_id": did, "name": "X", "district_dir": f"{did}_x",
                                         "labeled_topology": "per_school",

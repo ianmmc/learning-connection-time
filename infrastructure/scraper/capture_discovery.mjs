@@ -154,8 +154,33 @@ async function domFingerprint(page) {
       if (!raw) continue;
       try { const hn = new URL(raw, location.href).hostname.toLowerCase(); if (hn) hosts[hn] = 1; } catch { /* skip unparseable */ }
     }
-    return { meta_generator: gen ? (gen.getAttribute('content') || null) : null, resource_hosts: Object.keys(hosts) };
-  }).catch(() => ({ meta_generator: null, resource_hosts: [] }));
+    // REQ-115: iframe/embed/object src hostnames — a STRUCTURAL signal for feed/calendar widgets that
+    // Stage 5's URL/keyword guessing can't see reliably. Stored categorized in the fingerprint.
+    const iframeHosts = {};
+    for (const el of document.querySelectorAll('iframe[src],embed[src],object[data]')) {
+      const raw = el.getAttribute('src') || el.getAttribute('data');
+      if (!raw) continue;
+      try { const hn = new URL(raw, location.href).hostname.toLowerCase(); if (hn) iframeHosts[hn] = 1; } catch { /* skip */ }
+    }
+    return { meta_generator: gen ? (gen.getAttribute('content') || null) : null,
+             resource_hosts: Object.keys(hosts), iframe_hosts: Object.keys(iframeHosts) };
+  }).catch(() => ({ meta_generator: null, resource_hosts: [], iframe_hosts: [] }));
+}
+
+// Pure, unit-testable: categorize an embed/iframe host into the class Stage 5 routes on (REQ-115).
+// Deliberately small + high-precision; unknown hosts -> 'other' (not treated as a negative signal).
+export function categorizeEmbedHost(hostname) {
+  const h = (hostname || '').toLowerCase();
+  if (/facebook|twitter|x\.com|instagram|tiktok|youtube|linkedin|juicer|curator|elfsight|sociablekit|livewhale/.test(h)) return 'social';
+  if (/calendar|(?:^|\.)cal\.|teamup|localist|trumba|helloasso|fullcalendar|google\.com\/calendar/.test(h)) return 'calendar';
+  if (/docs\.google|drive\.google|scribd|issuu|flipsnack|smore|padlet|box\.com|onedrive|sharepoint|acrobat|documentcloud/.test(h)) return 'doc-viewer';
+  return 'other';
+}
+
+// The distinct categories present among a page's iframe/embed hosts (deduped, ordered).
+export function embedCategories(iframeHosts) {
+  const cats = new Set((iframeHosts || []).map(categorizeEmbedHost));
+  return [...cats].sort();
 }
 
 // DOM segmentation (REQ-091): split the rendered page into MAIN (body minus chrome) + the chrome
@@ -206,6 +231,10 @@ export function buildHtmlFingerprint({ finalHost, headers, dom, jsDependent }) {
     resource_hosts: resourceHosts,
     js_dependent: jsDependent,
     cms_hint: cmsHint([finalHost, ...resourceHosts]),
+    // REQ-115: categorized iframe/embed presence — a structural feed/calendar/doc-viewer signal for Stage 5.
+    iframe_hosts: (dom.iframe_hosts || []).slice(0, 20),
+    embed_hosts: embedCategories(dom.iframe_hosts),
+    embed_present: (dom.iframe_hosts || []).length > 0,
   };
 }
 

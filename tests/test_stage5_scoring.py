@@ -121,3 +121,38 @@ def test_build_harvest_slice_returns_none_when_empty():
     assert BS.build_harvest_slice([], lambda p: "") is None
     assert BS.build_harvest_slice([1, 2], lambda p: "") is None
     assert BS.build_harvest_slice([1, 2], lambda p: None) is None
+
+
+# ---- v2.1 label migration (REQ-114 v2.1) ----
+def test_migrate_label_v21_renames_targets_and_folds_nontargets():
+    # clean target renames
+    assert BS.migrate_label_v21("school_bell_schedule", [], {})[0] == "school_bell_table"
+    assert BS.migrate_label_v21("district_hub_schedule", [], {})[0] == "district_hub_by_school"
+    assert BS.migrate_label_v21("target_other_shape" if False else "nonstandard_format", [], {})[0] == "target_other_shape"
+    # unchanged targets
+    assert BS.migrate_label_v21("school_start_end_prose", [], {})[0] == "school_start_end_prose"
+    assert BS.migrate_label_v21("explicit_instructional_time", [], {})[0] == "explicit_instructional_time"
+    assert BS.migrate_label_v21("unusable", [], {})[0] == "unusable"
+
+
+def test_migrate_label_v21_nontarget_becomes_absent_plus_confounder_facet():
+    p, f = BS.migrate_label_v21("embedded_feed", [], {})
+    assert p == "target_absent" and f.get("news_feed") == "yes"
+    p, f = BS.migrate_label_v21("board_schedule", [], {})
+    assert p == "target_absent" and f.get("board") == "yes"
+
+
+def test_migrate_label_v21_folds_v20_flags_into_facets():
+    p, f = BS.migrate_label_v21("school_start_end_prose",
+                                ["building_hours_visible", "buried_in_long_doc", "target_image_only"], {})
+    assert p == "school_start_end_prose"      # a target keeps its shape
+    assert f.get("office_building_hours") == "yes" and f.get("buried_handbook") == "yes" and f.get("needs_vision") == "yes"
+
+
+def test_every_migrated_primary_is_in_the_v21_vocabulary():
+    vocab = BS.TARGET_LABELS | BS.NONTARGET_PRIMARIES
+    for old in ["school_bell_schedule", "district_hub_schedule", "nonstandard_format", "none",
+                "school_start_end_prose", "explicit_instructional_time", "unusable",
+                "embedded_feed", "board_schedule", "sports_schedule", "academic_calendar",
+                "community_calendar", "transportation_schedule", "other_schedule"]:
+        assert BS.migrate_label_v21(old, [], {})[0] in vocab, old

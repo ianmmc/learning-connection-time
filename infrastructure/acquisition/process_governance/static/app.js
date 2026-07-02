@@ -1,58 +1,65 @@
 "use strict";
 
-// ---- taxonomy (single source for the UI; mirrors the design note) ----
+// ---- v2.1 taxonomy (single source for the UI; mirrors STAGE5_FILTER_DESIGN §4) ----
+// AXIS 1 (radio, pick one): the target's SHAPE — each derives minutes + routes to Stage 6/7 differently.
 const TARGET = [
-  ["school_bell_schedule", "Bell schedule — period table/list"],
-  ["school_start_end_prose", "Start/end times in prose"],
-  ["district_hub_schedule", "District hub — per-school/band table"],
-  ["explicit_instructional_time", "Explicit instructional minutes"],
-  ["nonstandard_format", "Target info, un-enumerated shape"],
+  ["school_start_end_list", "Single school — start/end (list/footer, e.g. “Hours: 8:30–3:30”)"],
+  ["school_bell_table", "Single school — bell schedule table (Period 1…N)"],
+  ["school_start_end_prose", "Single school — start/end in prose"],
+  ["district_hub_by_school", "District hub — start/end by school"],
+  ["district_hub_by_band", "District hub — start/end by grade band"],
+  ["explicit_instructional_time", "Explicit instructional minutes (e.g. “147 days × 7.5 hrs”)"],
+  ["target_other_shape", "Target info — un-enumerated shape"],
 ];
-const NONTARGET = [
-  ["board_schedule", "School Board / Trustees"],
-  ["sports_schedule", "Athletics / sports"],
-  ["academic_calendar", "Academic calendar"],
-  ["community_calendar", "Community / events calendar"],
-  ["transportation_schedule", "Bus / transportation"],
-  ["embedded_feed", "Embedded social-media / blog feed"],
-  ["other_schedule", "Other activity schedule"],
-  ["none", "No schedule / instructional info"],
-  ["unusable", "Garbled / empty / uninterpretable"],
+// AXIS 1 terminals: no target here, or unreadable.
+const TERMINAL = [
+  ["target_absent", "Target information NOT present"],
+  ["unusable", "Unusable — can’t interpret (garbled / empty)"],
 ];
-const FLAGS = [
-  ["duplicate", "Duplicate of another record"],
-  ["buried_in_long_doc", "Target buried in a long doc (handbook)"],
-  ["building_hours_visible", "Building/office hours visible (start-end red herring)"],
+// AXIS 2 (checkboxes, multi): confounding signals PRESENT — usable whether or not a target is present,
+// and the ground truth for the negative detectors. `det` = the detector whose firing hints "check this."
+const CONFOUNDERS = [
+  ["board", "School Board / Trustees", "lf_board"],
+  ["sports", "Athletics / sports", "lf_sports"],
+  ["academic_calendar", "Academic calendar", "lf_calendar_widget"],
+  ["community_calendar", "Community / events calendar", "lf_calendar_widget"],
+  ["transportation", "Bus / transportation", "lf_transport"],
+  ["news_feed", "News / social feed", "lf_news_feed"],
+  ["office_building_hours", "Building / office hours (not the student day)", "lf_office_hours"],
 ];
-// The one human-only signal: the target is plainly visible in the image/PDF but NO text
-// extractor (pdftotext/camelot/tesseract) captured it -> this record needs vision at Stage 6/7.
-// Only meaningful when a Target-present label is chosen; sits next to the target shapes.
-const IMAGE_ONLY = ["target_image_only", "Target is in the image/PDF but missing from ALL text extractions — needs vision"];
+// AXIS 3 (checkboxes): where the target hides / how to read it. `sig` = the signal that hints it.
+const LOCATION = [
+  ["buried_handbook", "Buried in a long doc (handbook)", "is_handbook"],
+  ["needs_vision", "Visible in image/PDF but missing from ALL text — needs vision", "visual_text_gap"],
+];
+const FACET_WHERE = ["", "main body", "footer", "header", "table", "image/PDF", "feed post", "multiple"];
 const DEFS = {
-  school_bell_schedule: "A table or list that breaks the school day into periods.",
-  school_start_end_prose: "Sentence(s) declaring the start and end time of the school day.",
-  district_hub_schedule: "A table/list of start & end times for each school in a district, or each grade band.",
-  explicit_instructional_time: "A declaration like “Students receive XXX minutes of instruction every day.”",
-  nonstandard_format: "Contains bell-schedule / instructional-time info in a shape we haven't enumerated.",
-  board_schedule: "Scheduling/agenda info for the School Board / Board of Trustees.",
-  sports_schedule: "Scheduling for athletics/sports teams.",
+  school_start_end_list: "A single school's start/end shown as a labeled item/range (e.g. a footer “Hours: 8:30–3:30”), not a sentence and not a period table.",
+  school_bell_table: "A single school's period table (Period 1…N). School start = start of the first instructional period; end = end of the last.",
+  school_start_end_prose: "A single school's start/end declared in a sentence (“The school day starts at 8:30 and ends at 3:30…”).",
+  district_hub_by_school: "A table/list giving start & end times for each named school in the district (may appear on a district page or repeated across school feeds).",
+  district_hub_by_band: "Start & end times by grade band (“Elementary 8:30–3:30; Middle 8:15–3:45; High 8:00–4:00”).",
+  explicit_instructional_time: "A declaration like “Students receive XXX minutes of instruction every day” (or hours/day).",
+  target_other_shape: "Bell-schedule / instructional-time info in a shape we haven't enumerated.",
+  target_absent: "No student start/end, bell schedule, or instructional-time declaration is present.",
+  unusable: "Garbled, effectively empty, or impossible for a human to interpret.",
+  // confounders (Axis 2) — things that generate confusing signals; check any that are present.
+  board: "School Board / Trustees agenda or meeting content.",
+  sports: "Athletics / sports scheduling.",
   academic_calendar: "A school/district calendar (year, holidays, early-release) — time-bearing but not a schedule.",
-  community_calendar: "A community / events calendar (school or community events) — not the academic calendar, not a schedule.",
-  transportation_schedule: "Bus/transport times. Tricky boundary vs. legitimate start/end prose.",
-  embedded_feed: "An embedded social-media or blog feed is the dominant content — its date/time stamps are spurious signal, not a schedule.",
-  other_schedule: "Scheduling for some other school activity — the residual non-target bucket.",
-  none: "No discernible schedule or instructional-time info.",
-  unusable: "Garbled, effectively empty, or impossible to interpret.",
-  duplicate: "Byte-identical content to another record; label the canonical once.",
-  buried_in_long_doc: "Target info present but inside a multi-topic document (e.g. a handbook).",
-  building_hours_visible: "The page shows building/office hours (often a footer 'Building Hours 7:15–3:15') that mimic a start/end pair but are NOT the student day — a red herring to monitor.",
-  target_image_only: "You can see the target (bell schedule / start-end / instructional time) in the image or PDF, but NO text extractor captured it. The 'needs vision' signal — only tick it on a record that IS a target.",
+  community_calendar: "A community / events calendar — not the academic calendar, not a schedule.",
+  transportation: "Bus / transport times.",
+  news_feed: "A news / social-media feed whose post timestamps are spurious time signal.",
+  office_building_hours: "Building/office hours (often a footer “Building Hours 7:15–3:15”) that mimic a start/end pair but are NOT the student day.",
+  // location (Axis 3)
+  buried_handbook: "The target is present but inside a long multi-topic document (e.g. a handbook) — record the page(s).",
+  needs_vision: "You can see the target in the image/PDF, but NO text extractor captured it — needs vision at Stage 6/7.",
 };
 const TIER_DEF = {
-  A: "Strong target candidate — a time pair in the school-day window + schedule keywords.",
-  B: "Plausible — in-window times present, weaker keyword evidence.",
-  C: "Unlikely / negative-leaning — board/sports/calendar or all-after-5pm.",
-  D: "Drop-candidate — no times / unusable.",
+  A: "Send — a real target shape (or a confident prose/table pair).",
+  B: "Review — ambiguous target evidence; your call at gate@5.",
+  C: "Review — negative-leaning but not confident.",
+  D: "Suppress — no in-window times / a confident negative.",
 };
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -335,14 +342,24 @@ async function renderCenter(d) {
   const texts = reps.filter((r) => r.file_kind === "text" && r.usable);
   const emptyTexts = reps.filter((r) => r.file_kind === "text" && !r.usable);
 
-  // Visual first (so the eye lands on ground truth before possibly-lossy text).
-  visual.forEach((r) => {
-    const url = fileUrl(d, r.filename);
-    const body = r.file_kind === "pdf"
-      ? `<iframe src="${url}" title="${r.filename}"></iframe>`
-      : `<img src="${url}" alt="${r.filename}" loading="lazy" />`;
-    html += card(`${r.source} · ${r.filename}`, "", body);
+  // TEXT FIRST (REQ-114 v2.1): the council reads TEXT, so confirm the target appears in a text rep BEFORE
+  // the image can anchor you into "checking it off". Footer/header/nav segments first (the common hours
+  // spot); then the densest full text; then the rest — each annotated with what it uniquely adds (below).
+  const segRank = { "segment:footer": 0, "segment:header": 1, "segment:nav": 2, "segment:main": 3 };
+  const segs = texts.filter((r) => r.source.startsWith("segment:")).sort((a, b) => (segRank[a.source] ?? 9) - (segRank[b.source] ?? 9));
+  const fulls = texts.filter((r) => !r.source.startsWith("segment:")).sort((a, b) => (b.n_times || 0) - (a.n_times || 0));
+  const ordered = [...segs, ...fulls];
+  html += `<p class="text-first-note">Text first — the council reads text, so confirm the target is in at least one
+    <b>text</b> rep. Footer/header shown first (the common “Hours:” spot). If the target is <b>only</b> in the image/PDF below,
+    tick <b>needs vision</b>.</p>`;
+  ordered.forEach((r, i) => {
+    const openSeg = r.source.startsWith("segment:footer") || r.source.startsWith("segment:header");
+    const open = (openSeg || (segs.length === 0 && i === 0)) ? "open" : "";
+    html += `<details ${open} data-file="${r.filename}" data-src="${r.source}">
+      <summary><span class="rep-src">${r.source}</span><span class="rep-uniq" data-uniq="${r.filename}">·</span></summary>
+      <pre class="text" data-target="${r.filename}">loading…</pre></details>`;
   });
+  if (emptyTexts.length) html += `<div class="chip">${emptyTexts.length} below-bar/empty text rep(s) not shown</div>`;
 
   // Per-page n_times (handbook-harvest signal) if a multi-page PDF.
   if (s.pages && s.pages.length > 1) {
@@ -354,22 +371,59 @@ async function renderCenter(d) {
     html += card("Per-page time counts (handbook harvest)", meta, `<table class="pages-table">${rows}</table>`);
   }
 
-  // Text reps (best open). Content fetched lazily.
-  texts.sort((a, b) => (b.n_times || 0) - (a.n_times || 0));
-  for (let i = 0; i < texts.length; i++) {
-    const r = texts[i];
-    const open = i === 0 ? "open" : "";
-    html += `<details ${open} data-file="${r.filename}"><summary>${r.source} — ${r.n_times} times, ${r.n_chars} chars</summary>
-      <pre class="text" data-target="${r.filename}">loading…</pre></details>`;
-  }
-  if (emptyTexts.length) html += `<div class="chip">${emptyTexts.length} below-bar/empty text rep(s) not shown</div>`;
+  // VISUAL LAST — for confirming structure / catching an image-only target (→ needs vision).
+  visual.forEach((r) => {
+    const url = fileUrl(d, r.filename);
+    const body = r.file_kind === "pdf"
+      ? `<iframe src="${url}" title="${r.filename}"></iframe>`
+      : `<img src="${url}" alt="${r.filename}" loading="lazy" />`;
+    html += card(`${r.source} · ${r.filename}`, "image/PDF — confirm the target also appears in a text rep above", body);
+  });
 
   c.innerHTML = html;
   c.querySelectorAll("[data-go]").forEach((a) => a.onclick = (e) => { e.preventDefault(); selectRecord(a.dataset.go); });
-  // lazy-load text bodies
-  c.querySelectorAll("pre.text").forEach(async (pre) => {
+  // Lazy-load text bodies, then compute the per-rep SIGNAL-LEVEL "unique contribution" (times in this rep
+  // that the densest rep lacks) — so you never re-read a rep that adds nothing, but never miss one that does.
+  const bodies = {};
+  await Promise.all([...c.querySelectorAll("pre.text")].map(async (pre) => {
     const r = await fetch(fileUrl(d, pre.dataset.target));
-    pre.textContent = (await r.text()).slice(0, 20000) || "(empty)";
+    const t = await r.text();
+    bodies[pre.dataset.target] = t;
+    pre.textContent = t.slice(0, 20000) || "(empty)";
+  }));
+  annotateUniqueTimes(c, bodies, ordered);
+}
+
+// In-window (07:00–16:00) clock times in a text, as a set of canonical "h:mm(a/p)" strings.
+function inWindowTimes(text) {
+  const out = new Set();
+  const re = /\b(\d{1,2}):(\d{2})\s*([ap])?\.?m?\.?/gi;
+  let m;
+  while ((m = re.exec(text))) {
+    let h = +m[1]; const mm = +m[2]; const ap = (m[3] || "").toLowerCase();
+    if (ap === "p" && h !== 12) h += 12; else if (ap === "a" && h === 12) h = 0;
+    else if (!ap && h >= 1 && h <= 6) h += 12;
+    if (h > 23 || mm > 59) continue;
+    const mins = h * 60 + mm;
+    if (mins >= 420 && mins <= 960) out.add(`${+m[1]}:${m[2]}${ap ? ap + "m" : ""}`);
+  }
+  return out;
+}
+
+// Annotate each text rep with the in-window times it has that the DENSEST rep lacks (or "⊆ densest").
+function annotateUniqueTimes(c, bodies, ordered) {
+  const timeSets = {};
+  ordered.forEach((r) => { timeSets[r.filename] = inWindowTimes(bodies[r.filename] || ""); });
+  let best = null, bestN = -1;
+  ordered.forEach((r) => { const n = timeSets[r.filename].size; if (n > bestN) { bestN = n; best = r.filename; } });
+  ordered.forEach((r) => {
+    const el = c.querySelector(`.rep-uniq[data-uniq="${r.filename}"]`);
+    if (!el) return;
+    const mine = timeSets[r.filename], bestSet = timeSets[best] || new Set();
+    const uniq = [...mine].filter((t) => !bestSet.has(t));
+    if (r.filename === best) el.innerHTML = `<b>densest</b> · ${mine.size} in-window time(s)`;
+    else if (uniq.length) el.innerHTML = `<span class="uniq-hot">+${uniq.length} time(s) not in densest: ${uniq.slice(0, 6).join(", ")}</span>`;
+    else el.innerHTML = `<span class="uniq-sub">⊆ densest (nothing unique)</span>`;
   });
 }
 
@@ -397,26 +451,38 @@ function renderPanel(d) {
   <div class="sig-kw"><b>positive kw:</b> ${kw(s.positive_kw)}</div>
   <div class="sig-kw"><b>negative:</b> board ${kw(neg.board)} · sports ${kw(neg.sports)} · calendar ${kw(neg.calendar)} · transport ${kw(neg.transport)}</div>`;
 
-  const flags = JSON.parse(lab.flags_json || "[]");
-  if (d.duplicate_of && !flags.includes("duplicate")) flags.push("duplicate");
-
+  // v2.1 label state: the stored facets (Axis 2 confounders + Axis 3 location + where/pages) and the set
+  // of detectors that fired here (used only as a "flagged" HINT next to a facet — never auto-persisted).
+  const savedFacets = JSON.parse(lab.facets_json || "{}");
+  const fired = new Set(((d.signals && d.signals.detectors) || []).map((v) => v.name));
+  // AXIS 1 — the target shape (radio), plus the terminals.
   const radios = (list) => list.map(([v, t]) =>
     `<label class="radio-row"><input type="radio" name="primary" value="${v}" ${lab.primary_label === v ? "checked" : ""}/>
      <span>${t}</span></label>`).join("");
-  const checks = FLAGS.map(([v, t]) =>
-    `<label class="check-row"><input type="checkbox" name="flag" value="${v}" ${flags.includes(v) ? "checked" : ""}/>
-     <span>${t}</span></label>`).join("");
+  // AXIS 3 — location facets (checkbox + a detector/signal HINT that does NOT auto-persist — the human decides).
+  const check = (id, t, flagged) => `<label class="conf-row ${savedFacets[id] === "yes" ? "on" : ""}">
+      <input type="checkbox" name="facet" value="${id}" ${savedFacets[id] === "yes" ? "checked" : ""}/>
+      <span>${t}</span>${flagged ? `<em class="det-hint" title="a signal/detector flagged this — confirm or ignore">flagged</em>` : ""}</label>`;
+  const locChecks = LOCATION.map(([id, t, sigKey]) => check(id, t, !!(d.signals || {})[sigKey])).join("");
+  const whereSel = `<select id="facetWhere" class="facet-where">${
+    FACET_WHERE.map((w) => `<option value="${w}" ${savedFacets._where === w ? "selected" : ""}>${w || "where? (optional)"}</option>`).join("")}</select>`;
+  const pageInput = `<input id="facetPage" class="facet-page" type="text" placeholder="pages, e.g. 4, 7-9" value="${savedFacets._pages || ""}"/>`;
+  // AXIS 2 — confounders (checkbox multi-select; a fired negative detector HINTS but doesn't check it).
+  const confChecks = CONFOUNDERS.map(([id, t, det]) => check(id, t, fired.has(det))).join("");
 
   $("#panel").innerHTML = `
     ${provenanceBlock(d)}
     ${clusterBanner(d)}
     <div class="panel-section"><h3>Signals <span style="font-weight:400;font-size:var(--fs-xs);color:var(--text-secondary)">(objective)</span></h3>${sig}</div>
     <div class="panel-section"><h3>Label <span id="savedFlash" class="saved-flash"></span></h3>
-      <div class="axis-label">Target present — by shape</div>${radios(TARGET)}
-      <label class="check-row special"><input type="checkbox" name="flag" value="${IMAGE_ONLY[0]}" ${flags.includes(IMAGE_ONLY[0]) ? "checked" : ""}/>
-        <span>${IMAGE_ONLY[1]}</span></label>
-      <div class="axis-label">Non-target — by reason</div>${radios(NONTARGET)}
-      <div class="axis-label">Flags</div>${checks}
+      <div class="axis-label">Target shape — pick one</div>${radios(TARGET)}
+      <div class="loc-cluster">
+        <div class="axis-label sub">Where / how (if a target is present)</div>
+        ${locChecks}
+        <div class="facet-extra">${whereSel}${pageInput}</div>
+      </div>
+      ${radios(TERMINAL)}
+      <div class="axis-label">Confounding signals present — check all that apply</div>${confChecks}
       <div class="axis-label">Note (optional)</div>
       <textarea class="note" placeholder="anything worth recording…">${lab.note || ""}</textarea>
       <div class="btn-row"><button id="unsureBtn" class="btn btn-secondary">Mark reviewed — unsure</button></div>
@@ -424,8 +490,10 @@ function renderPanel(d) {
     </div>`;
 
   $("#panel").querySelectorAll('input[name="primary"]').forEach((el) => el.onchange = () => save("labeled"));
-  $("#panel").querySelectorAll('input[name="flag"]').forEach((el) => el.onchange = () => save(currentStatus()));
+  $("#panel").querySelectorAll('input[name="facet"]').forEach((el) => el.onchange = () => save(currentStatus()));
   $("#panel .note").onblur = () => save(currentStatus());
+  const fw = $("#facetWhere"); if (fw) fw.onchange = () => save(currentStatus());
+  const fp = $("#facetPage"); if (fp) fp.onblur = () => save(currentStatus());
   $("#unsureBtn").onclick = () => save("unsure");
   $("#panel").querySelectorAll("[data-go]").forEach((a) => a.onclick = (e) => { e.preventDefault(); selectRecord(a.dataset.go); });
   $("#panel").querySelectorAll("[data-split]").forEach((b) => b.onclick = (e) => { e.preventDefault(); splitRecord(b.dataset.split); });
@@ -493,17 +561,40 @@ function renderGuess(d, status) {
             : `<span class="guess-hidden">(no primary label chosen)</span>`);
 }
 
+// Parse print-dialog page syntax ("4, 7-9, 12") -> a sorted unique page list [4,7,8,9,12]. Tolerant of junk.
+function parsePages(s) {
+  const out = new Set();
+  for (const part of (s || "").split(",")) {
+    const m = part.trim().match(/^(\d+)(?:\s*-\s*(\d+))?$/);
+    if (!m) continue;
+    const a = +m[1], b = m[2] ? +m[2] : a;
+    for (let i = Math.min(a, b); i <= Math.max(a, b); i++) out.add(i);
+  }
+  return [...out].sort((x, y) => x - y);
+}
+
+function collectFacets() {
+  // Axis 2 + Axis 3 are checkboxes → each CHECKED one is stored "yes" (present); unchecked = absent (omitted).
+  // Only human checks persist (a "flagged" hint never auto-persists). Plus the structured where + page range
+  // (raw string kept for what you typed; parsed list for the harvester — the guessed-vs-labeled pattern).
+  const facets = {};
+  document.querySelectorAll('#panel input[name="facet"]:checked').forEach((e) => { facets[e.value] = "yes"; });
+  const w = $("#facetWhere"); if (w && w.value) facets._where = w.value;
+  const p = $("#facetPage"); if (p && p.value.trim()) { facets._pages = p.value.trim(); facets._pages_list = parsePages(p.value); }
+  return facets;
+}
+
 async function save(status) {
   if (!CURRENT) return;
   const primary = $('input[name="primary"]:checked')?.value || null;
-  const flags = [...$("#panel").querySelectorAll('input[name="flag"]:checked')].map((e) => e.value);
   const note = $("#panel .note").value;
+  const facets = collectFacets();
   const finalStatus = status === "unsure" ? "unsure" : (primary ? "labeled" : "unlabeled");
   await fetch(`/api/label/${CURRENT}`, {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ primary_label: primary, flags, note, status: finalStatus }),
+    body: JSON.stringify({ primary_label: primary, facets, note, status: finalStatus }),
   });
-  DATA.label = { primary_label: primary, flags_json: JSON.stringify(flags), note, status: finalStatus };
+  DATA.label = { primary_label: primary, facets_json: JSON.stringify(facets), note, status: finalStatus };
   flash();
   renderGuess(DATA, finalStatus);
   // update tree dot + progress
@@ -528,16 +619,19 @@ function buildGlossary() {
        build the deterministic Stage 5 filters — so judge the artifact yourself; the script's category guess
        stays hidden until you've labeled, on purpose.</p>
     <h4>Workflow</h4>
-    <ul><li>Left: districts → records, sorted by likelihood tier. Center: every representation (visual first).
+    <ul><li>Left: districts → records. Center: every representation (text first, then image/PDF).
       Right: the objective signals and your label controls.</li>
-      <li>Pick <b>one primary label</b> (the dominant content) + any <b>flags</b>. Add a note if useful. Autosaves.</li>
+      <li><b>Axis 1</b> — pick the target's <b>shape</b> (or “target not present” / “unusable”).
+        <b>Axis 2</b> — check any <b>confounding signals present</b> (multi-select). <b>Axis 3</b> — mark where it hides
+        (footer / handbook page / needs-vision). A “flagged” hint means a detector suspected it — you confirm or ignore. Autosaves.</li>
       <li>Not sure? “Mark reviewed — unsure” records that you looked but couldn't decide (distinct from un-reviewed).</li>
-      <li>Duplicates are pre-flagged and link to the canonical — label the canonical once.</li></ul>
+      <li>Duplicates link to the canonical — label the canonical once.</li></ul>
     <h4>Likelihood tiers (script-assigned, sortable)</h4>
     <dl>${Object.entries(TIER_DEF).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>
-    <h4>Primary labels — target present</h4>${dl(TARGET)}
-    <h4>Primary labels — non-target</h4>${dl(NONTARGET)}
-    <h4>Flags</h4>${dl([...FLAGS, IMAGE_ONLY])}`;
+    <h4>Target shapes (Axis 1)</h4>${dl(TARGET)}
+    <h4>Terminals</h4>${dl(TERMINAL)}
+    <h4>Confounding signals (Axis 2)</h4>${dl(CONFOUNDERS)}
+    <h4>Where / how (Axis 3)</h4>${dl(LOCATION)}`;
 }
 
 $("#glossaryBtn").onclick = () => $("#glossary").classList.remove("hidden");
