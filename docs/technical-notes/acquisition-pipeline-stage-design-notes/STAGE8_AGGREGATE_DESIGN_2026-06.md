@@ -1,8 +1,9 @@
 # Stage 8 — Aggregate: design (EARLY — modal aggregation prototyped)
 
 > **Authority:** none yet for the console/gate design (§2–3 below); `stage8_aggregate/aggregate.py`'s
-> mode-then-mean logic is a real, tested prototype, but the stage isn't wired end-to-end (depends on
-> Stage 7, not built).
+> mode-then-mean logic is a real, tested prototype and is already reused by Stage 7's own per-district
+> rollup (`STAGE7_EXTRACT_DESIGN_2026-06.md` §0) — but Stage 8 itself (a standalone stage: its own gate,
+> console, aggregation-record schema, and per-band satisfaction signal) isn't wired end-to-end.
 > **Audience:** whoever designs/builds Stage 8.
 > **Companions:** `ACQUISITION_PIPELINE.md` §8 (the slim map), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
 > §11 (gates/console; §11e cyclic back-edges), `METHODOLOGY.md` (the metric: gross bell-to-bell, the mode).

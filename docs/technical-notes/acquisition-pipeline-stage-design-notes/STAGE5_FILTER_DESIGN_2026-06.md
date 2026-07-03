@@ -252,10 +252,12 @@ episodes), config-as-data with `provenance`.
    often it fires), **accuracy** (precision when it fires), **polarity**, **overlap/conflict** (where two
    detectors disagree). This is the prerequisite for tuning anything, and it's what makes "you and me
    having chats to adjust weights" a data-grounded conversation instead of guesswork.
-2. **WHEN STAGE 7/8 LANDS: outcome feedback.** The real target metric is *did the representation we sent
-   actually extract correctly* — a stronger signal than "did the human confirm the detector." It flows
-   into the **same** ledger/harness (not a separate system): the deterministic decision becomes a *proxy*
-   whose calibration against the paid outcome is measured (the SUPG recall-floor discipline).
+2. **WHEN STAGE 8 LANDS: outcome feedback.** Stage 7's council extraction is now built and scored against
+   curated GT (`STAGE7_EXTRACT_DESIGN_2026-06.md` §0), so the *did the representation we sent actually
+   extract correctly* signal exists in principle — but it isn't wired into this harness yet, and Stage 8
+   (the per-band aggregation that would be the natural feedback point) isn't built. It flows into the
+   **same** ledger/harness (not a separate system) once wired: the deterministic decision becomes a
+   *proxy* whose calibration against the paid outcome is measured (the SUPG recall-floor discipline).
 3. **LATER (documented, deferred — the scale endgame, `STAGE5_TUNING_NOTES`):** a learned combiner
    (Snorkel `LabelModel`, inferring per-detector accuracy from agreement without gold labels for every
    point) replaces the hand-weighted vote **once diagnostics justify it**; hierarchical partial-pooling

@@ -111,6 +111,14 @@ live in the governance DB; `handoff_<hash>_<ts>.json` under `data/acquisition/ha
 `district_status.json` into every commit — on a fresh clone run `git config core.hooksPath .githooks`
 (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript (`GETTING_STARTED.md` §1a).
 
+**Current status (2026-07-03):** the console runs the pipeline live through **`gate@7`** — Stage 7
+council extraction + the gate@7 review console are BUILT and GT-validated (REQ-117, 95.2%/99.3%
+band/school on `batch_00000`); the request-more-evidence loop's detect/persist/review is built, its
+*execution* (firing the 7→6/3/2/1 back-edge) is not. Stages 8–9 remain designed, not built. **Next:**
+engineer's-discretion — either the request-loop execution wiring, or a Council Lab backlog item (GitHub
+#80 Council Lab infra, #81 spray A/B, #82 image-council judge not vision-capable). Full detail:
+`docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE7_EXTRACT_DESIGN_2026-06.md` §0.
+
 ---
 
 ## Current Data Years

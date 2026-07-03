@@ -21,9 +21,9 @@ The console is the **Acquisition Process Governance App** (`infrastructure/acqui
 
 **Not built:** a Pipeline Overview view, a Settings view, any manual/auto gate toggle, and any
 Start/Safe-Stop control. Nothing in `server.py` exposes `/api/overview` or `/api/settings`. Every gate
-today is **manual only** — gate@1, gate@6 require an explicit console approval; gate@5 is per-record
-labeling; gates@7/8 don't exist yet (Stages 7/8 aren't built). There is no code path that reads or writes
-a per-gate manual/auto flag.
+today is **manual only** — gate@1, gate@6, and gate@7 (`STAGE7_EXTRACT_DESIGN_2026-06.md` §0) require an
+explicit console approval; gate@5 is per-record labeling; gate@8 doesn't exist yet (Stage 8 isn't built).
+There is no code path that reads or writes a per-gate manual/auto flag.
 
 ---
 
