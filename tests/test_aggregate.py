@@ -18,8 +18,8 @@ from infrastructure.acquisition.stage8_aggregate import aggregate as A  # noqa: 
 # ---------------------------------------------------------------- REQ-055 gross
 class TestGross:
     def test_gross_is_end_minus_start(self):
-        rows = {"gemini-2.5-flash-lite": [{"grade_level": "elementary", "start_time": "08:00", "end_time": "14:30", "school_name": "A"}],
-                "mistral-small-24b":     [{"grade_level": "elementary", "start_time": "08:00", "end_time": "14:30", "school_name": "A"}]}
+        rows = {"google/gemini-2.5-flash-lite": [{"grade_level": "elementary", "start_time": "08:00", "end_time": "14:30", "school_name": "A"}],
+                "mistralai/mistral-small-24b-instruct-2501":     [{"grade_level": "elementary", "start_time": "08:00", "end_time": "14:30", "school_name": "A"}]}
         accepted, _ = A.consensus_school_facts(rows)
         assert accepted and accepted[0]["gross"] == 390  # 14:30-08:00 = 6h30 = 390, no deduction
 
@@ -31,12 +31,12 @@ class TestGross:
     def test_plausibility_gate_240_510(self):
         assert A.PLAUSIBLE == (240, 510)
         # a 500-min day (LA) is accepted; a 600-min one is not
-        ok = {"gemini-2.5-flash-lite": [{"grade_level": "high", "start_time": "07:30", "end_time": "15:50", "school_name": "H"}],
-              "deepseek-v3.2":          [{"grade_level": "high", "start_time": "07:30", "end_time": "15:50", "school_name": "H"}]}
+        ok = {"google/gemini-2.5-flash-lite": [{"grade_level": "high", "start_time": "07:30", "end_time": "15:50", "school_name": "H"}],
+              "deepseek/deepseek-v3.2":          [{"grade_level": "high", "start_time": "07:30", "end_time": "15:50", "school_name": "H"}]}
         acc, _ = A.consensus_school_facts(ok)
         assert acc and acc[0]["gross"] == 500
-        bad = {"gemini-2.5-flash-lite": [{"grade_level": "high", "start_time": "06:00", "end_time": "16:30", "school_name": "H"}],
-               "deepseek-v3.2":          [{"grade_level": "high", "start_time": "06:00", "end_time": "16:30", "school_name": "H"}]}
+        bad = {"google/gemini-2.5-flash-lite": [{"grade_level": "high", "start_time": "06:00", "end_time": "16:30", "school_name": "H"}],
+               "deepseek/deepseek-v3.2":          [{"grade_level": "high", "start_time": "06:00", "end_time": "16:30", "school_name": "H"}]}
         acc2, unres = A.consensus_school_facts(bad)
         assert not acc2 and any(u.get("reason") == "implausible" for u in unres)
 
@@ -48,34 +48,34 @@ class TestConsensus:
                 for m, (s, e) in models_times.items()}
 
     def test_cross_family_required(self):
-        rows = self._rows({"gemini-2.5-flash-lite": ("08:00", "14:30"),
-                           "mistral-small-24b": ("08:00", "14:30"),
-                           "qwen3-235b": ("09:00", "15:00")})
+        rows = self._rows({"google/gemini-2.5-flash-lite": ("08:00", "14:30"),
+                           "mistralai/mistral-small-24b-instruct-2501": ("08:00", "14:30"),
+                           "qwen/qwen3-235b-a22b-2507": ("09:00", "15:00")})
         acc, _ = A.consensus_school_facts(rows)
         assert len(acc) == 1 and acc[0]["gross"] == 390
-        assert {"gemini-2.5-flash-lite", "mistral-small-24b"} <= set(acc[0]["models"])
+        assert {"google/gemini-2.5-flash-lite", "mistralai/mistral-small-24b-instruct-2501"} <= set(acc[0]["models"])
 
     def test_same_family_not_consensus(self):
         # two GOOGLE models agree, qwen differs -> NOT cross-family -> unresolved (no judge)
-        rows = self._rows({"gemini-2.5-flash": ("08:00", "14:30"),
-                           "gemini-2.5-flash-lite": ("08:00", "14:30"),
-                           "qwen3-235b": ("09:10", "15:00")})
+        rows = self._rows({"google/gemini-2.5-flash": ("08:00", "14:30"),
+                           "google/gemini-2.5-flash-lite": ("08:00", "14:30"),
+                           "qwen/qwen3-235b-a22b-2507": ("09:10", "15:00")})
         acc, unres = A.consensus_school_facts(rows)
         assert acc == [] and len(unres) == 1
 
     def test_unresolved_held_out(self):
         # all three disagree -> held out, not counted
-        rows = self._rows({"gemini-2.5-flash-lite": ("08:00", "14:00"),
-                           "mistral-small-24b": ("08:30", "15:00"),
-                           "qwen3-235b": ("09:00", "16:00")})
+        rows = self._rows({"google/gemini-2.5-flash-lite": ("08:00", "14:00"),
+                           "mistralai/mistral-small-24b-instruct-2501": ("08:30", "15:00"),
+                           "qwen/qwen3-235b-a22b-2507": ("09:00", "16:00")})
         acc, unres = A.consensus_school_facts(rows)
         assert acc == [] and len(unres) == 1
 
     def test_consensus_on_times_not_minutes(self):
         """Same DURATION via different start/end must NOT form consensus (it's on the pair)."""
-        rows = self._rows({"gemini-2.5-flash-lite": ("08:00", "14:30"),   # 390
-                           "mistral-small-24b": ("07:30", "14:00"),        # 390 but different pair
-                           "qwen3-235b": ("09:00", "15:30")})              # 390 again, different pair
+        rows = self._rows({"google/gemini-2.5-flash-lite": ("08:00", "14:30"),   # 390
+                           "mistralai/mistral-small-24b-instruct-2501": ("07:30", "14:00"),        # 390 but different pair
+                           "qwen/qwen3-235b-a22b-2507": ("09:00", "15:30")})              # 390 again, different pair
         acc, unres = A.consensus_school_facts(rows)
         # durations all equal 390, but no two share a (start,end) pair -> NO consensus
         assert acc == [] and len(unres) == 1

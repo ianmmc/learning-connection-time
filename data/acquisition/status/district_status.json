@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-02T17:52:10Z",
+  "last_updated": "2026-07-03T00:00:19Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -516,9 +516,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T00:00:19Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-stage7-dev"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "cb8fabfc32ae"
     },
     "0405820": {
       "name": "Page Unified School District #8  (4196)",
@@ -1722,9 +1731,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T00:00:19Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-stage7-dev"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "cb8fabfc32ae"
     },
     "1100020": {
       "name": "Roots PCS",
@@ -6628,9 +6646,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T00:00:19Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-stage7-dev"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "cb8fabfc32ae"
     },
     "5000425": {
       "name": "Mt. Abraham Unified School District #61",

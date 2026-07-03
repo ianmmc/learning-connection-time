@@ -12,37 +12,17 @@ voters must be different families and the judge a third. An invalid config fails
 This module imports only `common` — it stays independent of the other stages (import-linter contract).
 """
 from infrastructure.acquisition.common import config_loader
+# The family map is the single source of truth in `common` — both Stage 6 validation (here) and the
+# Stage 7/8 consensus depend on it, and those stages may not import each other. Re-exported into this
+# namespace so `councils.FAMILY` / `councils.family_of` stay the module's public API.
+from infrastructure.acquisition.common.model_families import FAMILY, FAMILY_ALIAS, family_of  # noqa: F401
 from infrastructure.acquisition.stage6_handoff import prompts as P
 
 KNOB = "council_configs"
 
-# Model family buckets for our OpenRouter roster. The provider prefix IS the family for this set
-# (two Google Geminis are one family), so an uncatalogued id falls back to its provider prefix.
-FAMILY = {
-    "google/gemini-2.5-flash": "google",
-    "google/gemini-2.5-flash-lite": "google",
-    "mistralai/mistral-small-24b-instruct-2501": "mistral",
-    "mistralai/mistral-large-2512": "mistral",
-    "deepseek/deepseek-v3.2": "deepseek",
-    "qwen/qwen3-235b-a22b-2507": "qwen",
-}
-# Provider-prefix aliases for the fallback: OpenRouter's prefix is sometimes NOT the family bucket
-# name we catalog under ("mistralai/..." models are family "mistral"). Without this, a catalogued
-# Mistral voter + an uncatalogued mistralai/* voter would resolve to "mistral" vs "mistralai" and
-# slip past the diversity rule (issue #36).
-FAMILY_ALIAS = {"mistralai": "mistral"}
-
 
 class ConfigError(ValueError):
     """A council config violates the diversity constraint (or is malformed)."""
-
-
-def family_of(model_id: str) -> str:
-    """The model's family bucket — explicit map first, else the (alias-normalized) provider prefix."""
-    if model_id in FAMILY:
-        return FAMILY[model_id]
-    prefix = model_id.split("/", 1)[0]
-    return FAMILY_ALIAS.get(prefix, prefix)
 
 
 def validate(cfg: dict) -> None:
@@ -62,7 +42,7 @@ def validate(cfg: dict) -> None:
         if m not in FAMILY:
             raise ConfigError(
                 f"council '{cid}': model '{m}' is not in the FAMILY catalog — add it to "
-                f"councils.FAMILY (with its family bucket) before using it in a council config")
+                f"common.model_families.FAMILY (with its family bucket) before using it in a council config")
     vf = [family_of(v) for v in voters]
     if vf[0] == vf[1]:
         raise ConfigError(

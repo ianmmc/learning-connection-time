@@ -8,23 +8,19 @@ a district band value with the rule decided in ACQUISITION_PIPELINE.md:
   - Across schools, the district band value is the MODAL school value (ties/uncertain -> MEAN).
   - Mode-stability early-exit: stop sampling a band once the running mode is stable.
 
-Family buckets (must be cross-family for agreement to count):
-  google: gemini-2.5-flash, gemini-2.5-flash-lite | mistral: mistral-small-24b, mistral-large-2512
-  deepseek: deepseek-v3.2 | qwen: qwen3-235b
+Cross-family agreement (the family buckets) uses the canonical map in
+`common.model_families`, keyed by FULL OpenRouter model id — the ids the live Stage-7 path passes.
 """
 from collections import Counter
 from statistics import mean
 
+# Single source of truth for family buckets (REQ-056); aliased to `family` so `_cross_family` reads
+# naturally. Consumes FULL OpenRouter ids (e.g. "google/gemini-2.5-flash-lite").
+from infrastructure.acquisition.common.model_families import family_of as family
+
 TOL = 15          # minutes: two values "agree" if within +/-TOL
 BANDS = ("elementary", "middle", "high")
 PLAUSIBLE = (240, 510)   # gross bell-to-bell minutes/day sanity gate (real days run to ~8.5h)
-
-FAMILY = {
-    "gemini-2.5-flash": "google", "gemini-2.5-flash-lite": "google",
-    "mistral-small-24b": "mistral", "mistral-large-2512": "mistral",
-    "deepseek-v3.2": "deepseek", "qwen3-235b": "qwen",
-}
-def family(model): return FAMILY.get(model, model)
 
 def _cluster(values, tol=TOL):
     """Greedy cluster of (model, minutes) by within-tol proximity; return clusters sorted largest-first."""

@@ -2759,3 +2759,22 @@ requirements:
     created: "2026-07-01T00:00:00Z"
     updated: "2026-07-01T00:00:00Z"
     notes: "Design: STAGE6_DISPATCH_DESIGN_2026-06.md. The rationale here is that the presence of a district hub schedule renders the need for representations of other URLs moot. Sending more would needless add to cost. If more information is needed, the extraction council can request more representations and more URLs"
+
+  - id: REQ-117
+    description: "Stage 7 (Extract): execute a frozen gate@6 handoff's paid OpenRouter council calls per representation, parse per-school {start_time,end_time,grade_level,school_name} facts (REQ-054 read-times invariant), reach cross-family per-school consensus (±15 min, REQ-056) with a 3rd-family judge on disagreement, and persist per-school facts to a GOVERNANCE-DB working table (school_fact) — NEVER the LCT DB (benchmark batches are walled off; only Stage 9 promotes non-benchmark results). gate@7 reviews council requests/recommendations."
+    type: functional
+    priority: must
+    status: in_progress
+    acceptance_criteria:
+      - "stage7_extract is an independent stage package (common-only imports, import-linter KEPT); the cross-stage orchestration (Stage 6 request assembly + Stage 8 consensus) lives in the app layer (process_governance/stage7_run.py), mirroring stage6_dispatch.py"
+      - "The OpenRouter client (stage7_extract/openrouter.py) is gated on OPENROUTER_API_KEY, captures usage tokens + cost telemetry, and raises BillingAuthError on 401/402 (halt) while returning transient errors per-call"
+      - "The model-output parser (stage7_extract/parse.py) tolerates markdown fences + truncated JSON (salvage); the council reads TIMES only and deterministic code computes gross = end-start + the per-band mode (REQ-054/REQ-042)"
+      - "Consensus is cross-family on the per-school (start,end) pair within ±15 min (REQ-056), judge re-reads the page on disagreement; per-district band value = the exact mode over accepted per-school gross (REQ-055 gross bell-to-bell)"
+      - "Per-school facts persist to a governance-DB table with a stage=7 state_event + gate@7; benchmark (batch_type='benchmark') output is never Stage-9-written"
+      - "A validation harness scores per-school + per-band output vs gt_curation gt_proposals.json (±15 min) for batch_00000"
+    tests:
+      - tests/test_stage7_parse.py
+      - tests/test_stage7_content.py
+    created: "2026-07-02T00:00:00Z"
+    updated: "2026-07-02T00:00:00Z"
+    notes: "Design/present-state: STAGE7_EXTRACT_DESIGN_2026-06.md (rewritten present-state-first once built). Built in vertical slices against the frozen batch_00000 dev handoff (handoff_cb8fabfc32ae): slice 1 single-voter plumbing + slice 2 full council (2 voters -> consensus -> judge) both validated against GT (Appoquinimink 400/400/400, Mesa elem 390, Essex Westford elem 420 — all match gt_proposals.json). Image council (vision on raster_p PNGs) exercised via stage7_run.image_handoff_variant. Reuses stage6_handoff.requests/prompts (assembly) + stage8_aggregate.aggregate (consensus/mode). The two family maps (aggregate.py short-name vs councils.py full-id) were unified 2026-07-02 into common.model_families keyed on full OpenRouter ids (single source of truth; grimp-verified importers)."
