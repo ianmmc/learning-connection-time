@@ -459,3 +459,21 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 .rep-uniq { font-size: var(--fs-xs); color: var(--text-secondary); margin-left: 8px; }
 .uniq-hot { color: var(--accent-orange); font-weight: var(--fw-semibold); }
 .uniq-sub { color: var(--text-secondary); }
+
+/* ----------------------------- Stage 7 (gate@7) extraction review ----------------------------- */
+.s7-head { margin-bottom: var(--space-3); }
+.s7-head h3 { margin: 0; }
+.s7-tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); margin: var(--space-2) 0 var(--space-4); }
+.s7-tbl th { text-align: left; font-weight: 600; color: var(--text-secondary); font-size: var(--fs-xs);
+  text-transform: uppercase; padding: var(--space-1) var(--space-2); border-bottom: var(--border-hair) solid var(--border-subtle); }
+.s7-tbl td { padding: var(--space-1) var(--space-2); border-bottom: var(--border-hair) solid var(--border-subtle); }
+.s7-req { border: var(--border-hair) solid var(--border-subtle); border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3); margin-bottom: var(--space-2); background: var(--surface-card); }
+.s7-req-top { display: flex; align-items: center; gap: var(--space-2); }
+.s7-route { font-family: var(--font-mono, monospace); font-weight: 700; color: var(--text-brand);
+  background: var(--mmm-purple-100); padding: 1px 7px; border-radius: var(--radius-pill); font-size: var(--fs-xs); }
+.s7-req-reason { color: var(--text-secondary); font-size: var(--fs-sm); margin: var(--space-1) 0 var(--space-2); }
+.s7-rev { font-size: var(--fs-xs); margin-top: var(--space-1); }
+.s7-unres { display: flex; flex-wrap: wrap; gap: 4px; }
+.s7-chip { font-size: var(--fs-xs); padding: 1px 7px; border-radius: var(--radius-pill);
+  background: transparent; color: var(--text-secondary); border: var(--border-hair) solid var(--border-subtle); }
