@@ -32,6 +32,7 @@ from infrastructure.acquisition.stage7_extract import content as CONTENT
 from infrastructure.acquisition.stage7_extract import models as M7
 from infrastructure.acquisition.stage7_extract import openrouter as OR
 from infrastructure.acquisition.stage7_extract import parse as PARSE
+from infrastructure.acquisition.stage7_extract import requests as RQ
 from infrastructure.acquisition.stage7_extract import validate as VALID
 from infrastructure.acquisition.stage8_aggregate import aggregate as AGG
 
@@ -272,6 +273,7 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
             with gdb.session_scope() as s:
                 persist_run_session(s, {"handoff_hash": hh, "districts": {did: pd}},
                                     created_by=created_by, receipt_path=rp)
+                detect_and_persist_requests(s, pd, hh)   # request-more-evidence, same txn
         _print_district_progress(did, pd, gt_data)
         if on_district:
             on_district(did, pd)
@@ -466,6 +468,71 @@ def persist_run(results: dict, *, created_by: str = "auto:stage7", receipt_path=
         print(f"[warn] district_status.json backup refresh failed after persist "
               f"({type(e).__name__}: {e}); the DB is authoritative — re-export later")
     return summary
+
+
+# ---------------------------------------------------------------------------
+# The request-more-evidence loop: detect (pure) + persist (app-layer DB inputs)
+# ---------------------------------------------------------------------------
+def _district_request_inputs(session, result: dict):
+    """The DB-derived inputs the pure detector (`requests.detect_requests`) needs for one district:
+    claimed bands + the band's schools (`district_target`), and the alternate reps per sent record
+    (`representation`, the usable reps of a rec_key other than the one we sent — drives 7→6 vs 7→3)."""
+    did = result["district_id"]
+    sent = {}
+    for rep in result.get("reps", []):
+        sent.setdefault(rep["rec_key"], rep["file"])
+    row = session.execute(text("SELECT lea_claimed_bands_json, schools_by_band_json "
+                               "FROM district_target WHERE district_id = :d"), {"d": did}).fetchone()
+    claimed = json.loads(row[0]) if row and row[0] else []
+    sbb = json.loads(row[1]) if row and row[1] else {}
+    band_schools = {b: [x["name"] for x in (sbb.get(b, {}) or {}).get("schools", [])] for b in RQ.BANDS}
+    alts = {}
+    for rec_key, sent_file in sent.items():
+        for fn, kind in session.execute(
+                text("SELECT filename, file_kind FROM representation WHERE rec_key = :k AND usable = 1"),
+                {"k": rec_key}).all():
+            if fn != sent_file:
+                alts.setdefault(rec_key, []).append({"file": fn, "kind": kind})
+    return claimed, band_schools, alts
+
+
+def detect_and_persist_requests(session, result: dict, handoff_hash: str) -> int:
+    """Detect the request-more-evidence directives for one district's result and persist the NEW ones
+    (natural-key dedup on (handoff_hash, target, altitude, route, band) so a re-detect/backfill never
+    duplicates and never clobbers a human's review status). Returns the count newly persisted."""
+    claimed, band_schools, alts = _district_request_inputs(session, result)
+    reqs = RQ.detect_requests(result, claimed_bands=claimed, alternates_by_rec=alts,
+                              band_schools=band_schools)
+    n = 0
+    for r in reqs:
+        exists = session.execute(
+            text("SELECT 1 FROM extraction_request WHERE handoff_hash = :h AND target = :t "
+                 "AND altitude = :a AND route = :r AND band IS NOT DISTINCT FROM :b"),
+            {"h": handoff_hash, "t": r["target"], "a": r["altitude"], "r": r["route"], "b": r["band"]}
+        ).first()
+        if exists:
+            continue
+        session.add(M7.ExtractionRequest(
+            district_id=r["district_id"], handoff_hash=handoff_hash, altitude=r["altitude"],
+            route=r["route"], target=r["target"], band=r["band"],
+            params_json=json.dumps(r["params"]), reason=r["reason"]))
+        n += 1
+    return n
+
+
+def backfill_requests(handoff_hash: str, *, root=None) -> int:
+    """Detect + persist requests for every persisted district of a handoff, from its receipts on disk
+    — no re-extraction, no paid calls. Idempotent. Returns the count newly persisted."""
+    gdb.init_precious_schema()
+    d = Path(root) if root else (paths.ACQUISITION / "extractions")
+    total = 0
+    with gdb.session_scope() as s:
+        for f in sorted(d.glob(f"extraction_{handoff_hash}_*.json")):
+            doc = json.loads(f.read_text())
+            pd = doc.get("district")
+            if pd:
+                total += detect_and_persist_requests(s, pd, handoff_hash)
+    return total
 
 
 # ---------------------------------------------------------------------------

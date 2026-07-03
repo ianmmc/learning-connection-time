@@ -68,3 +68,27 @@ class SchoolFact(gdb.Base):
     source_file: Mapped[str | None] = mapped_column(String, nullable=True)
     human_determination: Mapped[str] = mapped_column(String, default="")       # gate@7/gate@8 verification
     created_at: Mapped[str] = mapped_column(String, default=utcnow)
+
+
+class ExtractionRequest(gdb.Base):
+    """A request-more-evidence directive emitted by the deterministic detector (`requests.py`) after a
+    run — the 7→6/3/2/1 back-edge to route. The derived fields (altitude/route/target/band/reason) are
+    regenerable from the extraction result; the REVIEW fields (status/reviewed_by/note) are the precious
+    gate@7 human decision. Natural key for idempotent re-detection: (handoff_hash, target, altitude,
+    route, band). Persisted on a re-detect only if absent — an existing row keeps its review status."""
+    __tablename__ = "extraction_request"
+
+    request_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    district_id: Mapped[str] = mapped_column(String, index=True)
+    handoff_hash: Mapped[str] = mapped_column(String, index=True)
+    altitude: Mapped[str] = mapped_column(String)          # representation | url | district
+    route: Mapped[str] = mapped_column(String)             # 7->6 | 7->3 | 7->2 | 7->1
+    target: Mapped[str] = mapped_column(String)            # rec_key (rep/url) or district_id
+    band: Mapped[str | None] = mapped_column(String, nullable=True)
+    params_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    reason: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String, default="pending")   # pending|approved|rejected|executed
+    created_at: Mapped[str] = mapped_column(String, default=utcnow)
+    reviewed_by: Mapped[str | None] = mapped_column(String, nullable=True)
+    reviewed_at: Mapped[str | None] = mapped_column(String, nullable=True)
+    review_note: Mapped[str | None] = mapped_column(Text, nullable=True)

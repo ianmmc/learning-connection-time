@@ -83,3 +83,34 @@ def test_persist_appends_new_extraction_on_rerun(gov_session):
     n = s.execute(text("SELECT COUNT(*) FROM extraction WHERE district_id='ZZTEST01' "
                        "AND handoff_hash='testhash7'")).scalar()
     assert n >= 2
+
+
+def test_detect_and_persist_requests_dedups(gov_session, monkeypatch):
+    """The request-loop persist path: NEW requests inserted, re-detect is idempotent (natural-key
+    dedup), human review status preserved. DB inputs mocked so no district_target/representation setup."""
+    gdb.init_precious_schema()
+    s = gov_session
+    # claimed elementary+high; high has no facts -> one district 7->2 request. No alternates.
+    monkeypatch.setattr(R7, "_district_request_inputs",
+                        lambda sess, res: (["elementary", "high"], {"high": ["A High"]}, {}))
+    result = {"district_id": "ZZREQ1", "reps": [],
+              "accepted": [{"band": "elementary", "school": "e"}], "unresolved": []}
+
+    n1 = R7.detect_and_persist_requests(s, result, "hhreqtest")
+    s.flush()
+    assert n1 == 1
+    row = s.execute(text("SELECT altitude, route, band, status FROM extraction_request "
+                         "WHERE handoff_hash = 'hhreqtest'")).one()
+    assert row.altitude == "district" and row.route == "7->2" and row.band == "high"
+    assert row.status == "pending"
+
+    # a human reviews it -> approved; a re-detect must NOT clobber that or duplicate
+    s.execute(text("UPDATE extraction_request SET status='approved', reviewed_by='zz' "
+                   "WHERE handoff_hash='hhreqtest'"))
+    s.flush()
+    n2 = R7.detect_and_persist_requests(s, result, "hhreqtest")
+    s.flush()
+    assert n2 == 0
+    still = s.execute(text("SELECT status, COUNT(*) c FROM extraction_request "
+                           "WHERE handoff_hash='hhreqtest' GROUP BY status")).all()
+    assert len(still) == 1 and still[0].status == "approved" and still[0].c == 1

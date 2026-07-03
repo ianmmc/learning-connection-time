@@ -39,7 +39,7 @@ from infrastructure.acquisition.stage6_handoff import handoff as HND6       # no
 from infrastructure.acquisition.common import paths                         # noqa: E402  (RAW_CAPTURES — rep inspect)
 from infrastructure.acquisition.stage6_handoff import councils as C6        # noqa: E402  (council registry — gate@6 override options)
 from infrastructure.acquisition.stage6_handoff.models import Handoff        # noqa: E402  (precious handoff index row)
-from infrastructure.acquisition.stage7_extract.models import Extraction, SchoolFact  # noqa: E402,F401  (precious Stage-7 results — register for init_precious_schema)
+from infrastructure.acquisition.stage7_extract.models import Extraction, SchoolFact, ExtractionRequest  # noqa: E402,F401  (precious Stage-7 results + request loop — register for init_precious_schema)
 
 
 def _refresh_filtered(con, district_id: str) -> None:
