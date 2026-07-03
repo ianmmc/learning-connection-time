@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-03T00:00:19Z",
+  "last_updated": "2026-07-03T01:29:30Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -472,12 +472,12 @@
     },
     "0404970": {
       "name": "Mesa Unified District (4235)",
-      "state": "AZ",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -525,6 +525,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian:batch0-stage7-dev"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T01:22:56Z"
         }
       ],
       "notes": "cb8fabfc32ae"
@@ -1679,12 +1685,12 @@
     },
     "1000080": {
       "name": "Appoquinimink School District",
-      "state": "DE",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -1740,6 +1746,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian:batch0-stage7-dev"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T01:22:56Z"
         }
       ],
       "notes": "cb8fabfc32ae"
@@ -6594,12 +6606,12 @@
     },
     "5000395": {
       "name": "Essex Westford Educational Community Unified Union SD #51",
-      "state": "VT",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -6655,6 +6667,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian:batch0-stage7-dev"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T01:22:56Z"
         }
       ],
       "notes": "cb8fabfc32ae"
