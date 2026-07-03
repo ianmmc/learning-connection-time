@@ -66,6 +66,12 @@ etc.) are regenerable, auditable receipts — never the transport between stages
 per-URL review gate) · `gate@6` (Dispatch) · `gate@7` (Extract) · `gate@8` (Aggregate — Stage 9 then
 auto-writes). Stages 2/3/4 + the Stage-9 write are ungated. Each gate is manual/auto (confidence-escalating).
 
+**Ramp-up model (standing operating posture):** the pipeline is built **high-supervision-first** — every
+gate manual now, easing toward auto (confidence-escalating) only as each gate's reliability is proven;
+the destination is a self-governing app. **So present gate output as a recommendation for human sign-off,
+not a done deal, until that gate is explicitly set to auto** — the human inspects real output at each gate
+and catches real-data bugs code review misses. (governance §11b.)
+
 **Three batch types (Stage 1):** `first-run`, `follow-up`, and `benchmark` (the 27 curated-GT districts
 injected as `batch_00000` — permanently walled off from Stage-9 writes and funnel/enrichment stats; see
 `STAGE1_QUEUE_DESIGN_2026-06.md` §2h).

@@ -717,6 +717,21 @@ Stage-9 DB write are ungated:
 **gate@8 is the effective CP-C** — once results are approved there, Stage 9 writes to the LCT DB mechanically.
 
 ### 11b. Settings: per-gate manual/auto (global default + overrides); AUTO is confidence-escalating
+
+**The ramp-up model (the governing philosophy — Ian, standing since 2026-06-22).** The gate toggles
+serve a deliberate strategy: **start with high human supervision (every gate manual) and ease toward
+automation only as each gate's reliability is measured** — the destination is a **self-governing,
+self-sustaining** pipeline, reached carefully, not assumed. Manual is the default posture *now*; a gate
+goes auto only once its confidence-escalation has earned it. Two consequences: **(1)** a judgment that a
+gate's output "looks right" is a **recommendation for human sign-off, never a fait accompli**, until
+that gate is explicitly set to auto (the human inspects real output at each gate — reading a real
+`batch_NNNNN.json` / extraction result line by line — and catches real-data bugs pure code review
+misses); **(2)** every new gate is **built manual-first**, its auto path (confidence thresholds,
+escalation) added and tuned afterward. gate@7's council-initiated **request-more-evidence loop** is this
+model applied to Stage 7: the *council* authors the request (the 7→6/3/2/1 back-edges); a human
+reviews/approves it at gate@7 under today's high-supervision setting; the toggle relaxes that to auto
+(confidence-escalating) later. The toggle below is the ramp-up's control surface.
+
 Each gate toggles **manual** (human acts) / **auto** (self-advance), via a **global default + per-gate
 overrides**. **Auto is never blind: auto-with-confidence-escalation** — auto-accept the high-confidence,
 auto-escalate-or-flag the low-confidence to manual (the same pattern as Stage 5, and the conceptual shape
