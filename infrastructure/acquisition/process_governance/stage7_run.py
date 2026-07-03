@@ -120,7 +120,8 @@ def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, u
     district happen here so the caller can persist it as a unit."""
     pd = {"district_id": did, "name": name, "reps": [], "accepted": [], "unresolved": [],
           "n_reps": 0, "n_judged": 0}
-    for rg in rep_groups:
+    n_total = len(rep_groups)
+    for i, rg in enumerate(rep_groups, 1):
         rec_key, file, kind, cid = rg["rec_key"], rg["file"], rg["kind"], rg["council_id"]
         content = resolve_content(ddir, rec_key, file, kind)
         cfg = councils.get(cid) or {}
@@ -153,6 +154,19 @@ def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, u
         pd["unresolved"].extend(unresolved)
         pd["n_reps"] += 1
         pd["n_judged"] += 1 if judged else 0
+
+        # Per-rep progress line (Ian, 2026-07-03): inside a big district (Baldwin = 12 reps) the
+        # [done] line can be many silent minutes away — if a run snags, the last [rep] line says
+        # exactly where. Pure print; the durability/resume boundary stays the district.
+        rep_cost = sum((c["cost_usd"] or 0.0) for c in calls)
+        rep_errs = sum(1 for c in calls if not c["ok"])
+        rep_trunc = sum(1 for c in calls if c.get("finish_reason") == "length")
+        line = (f"  [rep {i}/{n_total}] {did} {file[:28]:28s} ({kind}->{cid}) "
+                f"acc={len(accepted)} unres={len(unresolved)}"
+                f"{' judged' if judged else ''} err={rep_errs} ${rep_cost:.4f}")
+        if rep_trunc:
+            line += f"  ⚠ {rep_trunc} TRUNCATED"
+        print(line, flush=True)
 
     pd["bands"] = AGG.district_bands_from_facts(pd["accepted"])
     pd["telemetry"] = _rollup_tel(pd["reps"])
