@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-03T04:27:39Z",
+  "last_updated": "2026-07-03T07:03:10Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -63,9 +63,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T03:21:56Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:06:48Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "0100810": {
       "name": "Coffee County",
@@ -266,9 +272,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T03:28:46Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:13:00Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "0103390": {
       "name": "Tuscaloosa County",
@@ -386,9 +398,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T03:32:27Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:18:33Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "0200600": {
       "name": "Fairbanks North Star Borough School District",
@@ -451,9 +469,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T03:33:23Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:19:23Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "0400023": {
       "name": "Pinon Unified District (4390)",
@@ -606,9 +630,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T03:34:19Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:20:41Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "0405820": {
       "name": "Page Unified School District #8  (4196)",
@@ -893,9 +923,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T03:40:06Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:28:08Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "0513530": {
       "name": "VILONIA SCHOOL DISTRICT",
@@ -1438,9 +1474,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T03:50:35Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:38:03Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "0634320": {
       "name": "San Diego Unified",
@@ -1511,9 +1553,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T03:53:58Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:40:27Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "0806750": {
       "name": "Strasburg School District 31J",
@@ -1698,9 +1746,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T03:56:00Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:41:38Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "0902790": {
       "name": "New Haven School District",
@@ -1771,9 +1825,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T03:57:05Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:42:59Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "0904830": {
       "name": "Waterbury School District",
@@ -1844,9 +1904,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T03:58:39Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:44:19Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "1000080": {
       "name": "Appoquinimink School District",
@@ -1932,9 +1998,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T03:59:33Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:45:15Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "1100020": {
       "name": "Roots PCS",
@@ -2090,9 +2162,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T04:04:58Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:47:30Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "1600001": {
       "name": "WEST BONNER COUNTY DISTRICT",
@@ -2181,9 +2259,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T04:05:57Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:48:07Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "1713590": {
       "name": "Egyptian CUSD 5",
@@ -2828,9 +2912,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T04:06:28Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:48:37Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "1915840": {
       "name": "Knoxville Comm School District",
@@ -3186,9 +3276,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T04:07:33Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:49:23Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "2307320": {
       "name": "Lewiston Public Schools",
@@ -3259,9 +3355,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T04:08:15Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:50:12Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "2500587": {
       "name": "Old Sturbridge Academy Charter Public School",
@@ -3620,9 +3722,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T04:12:08Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:55:25Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "2600209": {
       "name": "Chandler Woods Charter Academy",
@@ -4344,9 +4452,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T04:14:32Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:57:25Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "3200480": {
       "name": "Washoe County",
@@ -4417,9 +4531,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T04:16:24Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:58:33Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "3300030": {
       "name": "North Country Charter Academy",
@@ -6449,9 +6569,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T04:24:56Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T07:00:23Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "4812640": {
       "name": "CAMERON ISD",
@@ -7018,9 +7144,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T04:26:44Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T07:02:17Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "5000425": {
       "name": "Mt. Abraham Unified School District #61",
@@ -7616,9 +7748,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T04:27:39Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T07:03:10Z"
         }
       ],
-      "notes": "a2bc80c004ca"
+      "notes": "a2bc80c004ca-image"
     },
     "5900038": {
       "name": "Circle of Life Academy",
