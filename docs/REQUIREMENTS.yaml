@@ -1300,7 +1300,7 @@ requirements:
     created: "2026-06-21T00:00:00Z"
     updated: "2026-06-21T00:00:00Z"
     notes: "aggregate.py consensus_school_facts + district_bands_from_facts + aggregate_band + mode_stable.
-      Cross-family rationale: docs/technical-notes/LLM_COUNCIL_RESEARCH_2026-06.md. The 380-not-381 case
+      Cross-family rationale: docs/technical-notes/models-and-council-composition/LLM_COUNCIL_RESEARCH_2026-06.md. The 380-not-381 case
       was a user-caught cluster-mean bug fixed 2026-06-21."
 
   - id: REQ-057

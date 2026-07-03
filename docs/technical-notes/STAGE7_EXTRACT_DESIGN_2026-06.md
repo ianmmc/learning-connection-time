@@ -6,7 +6,7 @@
 > yet rewritten present-state-first** (a follow-up). §2 (console stories) + §3 (remaining open items) are seed.
 > **Audience:** whoever builds the request loop + the gate@7 console; anyone tracing Stage 7's shape.
 > **Companions:** `ACQUISITION_PIPELINE.md` §7 (the slim map), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
-> §11 (gates/console; §11b the ramp-up model), `LLM_COUNCIL_RESEARCH_2026-06.md` (council research),
+> §11 (gates/console; §11b the ramp-up model), `docs/technical-notes/models-and-council-composition/LLM_COUNCIL_RESEARCH_2026-06.md` (council research),
 > `EXTRACTION_BENCHMARK_FINDINGS.md` (model leaderboard + costs). Upstream: `STAGE6_DISPATCH_DESIGN_2026-06.md`
 > §0a (the exact handoff shape Stage 7 consumes).
 > **Update this when:** Stage 7 design decisions are made (append below) or the stage is built (rewrite

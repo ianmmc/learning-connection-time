@@ -198,7 +198,7 @@ To access current design resources, use the claude_design MCP (https://api.anthr
 | **Per-stage present-state design notes** | `docs/technical-notes/STAGE*_DESIGN_2026-06.md` |
 | **Live pipeline code** | `infrastructure/acquisition/` (stage1_queue/ … stage9, process_governance/ console) |
 | Extraction leaderboard + costs | `docs/EXTRACTION_BENCHMARK_FINDINGS.md` |
-| Council design research | `docs/technical-notes/LLM_COUNCIL_RESEARCH_2026-06.md` |
+| Council design research | `docs/technical-notes/models-and-council-composition/LLM_COUNCIL_RESEARCH_2026-06.md` |
 | Decisions, lessons, project history | `docs/PROJECT_HISTORY.md` |
 | Data methodology (incl. SPED, QA dashboard) | `docs/METHODOLOGY.md` |
 | Database setup | `docs/DATABASE_SETUP.md` |
