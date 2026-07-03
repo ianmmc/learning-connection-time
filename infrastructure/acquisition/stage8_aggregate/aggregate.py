@@ -103,17 +103,15 @@ def aggregate_district(per_school):
 # agreed per-school gross values. Models never compute minutes or pick a mode.
 # ============================================================================
 import re as _re
+# School-name normalization is shared with the Stage-7 GT validator (they must match identically) —
+# one home in common (REQ-117). See common.school_match.
+from infrastructure.acquisition.common.school_match import norm_school as _norm_school
+
 def _to_min(t):
     if not t: return None
     m = _re.match(r"\s*(\d{1,2}):(\d{2})", str(t))
     if not m: return None
     return int(m.group(1)) * 60 + int(m.group(2))
-
-def _norm_school(name):
-    if not name: return ""
-    s = _re.sub(r"[^a-z0-9 ]", "", str(name).lower())
-    s = _re.sub(r"\b(elementary|middle|high|school|jr|junior|senior|academy|the|of|at)\b", "", s)
-    return _re.sub(r"\s+", " ", s).strip()
 
 def consensus_school_facts(model_rows, judge_rows=None):
     """model_rows: {model_name: [ {grade_level, start_time, end_time, school_name}, ... ]}.

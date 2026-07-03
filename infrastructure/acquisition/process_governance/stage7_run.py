@@ -32,6 +32,7 @@ from infrastructure.acquisition.stage7_extract import content as CONTENT
 from infrastructure.acquisition.stage7_extract import models as M7
 from infrastructure.acquisition.stage7_extract import openrouter as OR
 from infrastructure.acquisition.stage7_extract import parse as PARSE
+from infrastructure.acquisition.stage7_extract import validate as VALID
 from infrastructure.acquisition.stage8_aggregate import aggregate as AGG
 
 
@@ -332,6 +333,37 @@ def persist_run(results: dict, *, created_by: str = "auto:stage7", receipt_path=
 
 
 # ---------------------------------------------------------------------------
+# Slice 4 — GT scoring (batch_00000)
+# ---------------------------------------------------------------------------
+def default_gt_path():
+    """The newest curated `gt_proposals.json` under data/benchmark/gt_curation_*/ (or None)."""
+    import glob
+    hits = sorted(glob.glob(str(paths.DATA_ROOT / "benchmark" / "gt_curation_*" / "gt_proposals.json")))
+    return hits[-1] if hits else None
+
+
+def _print_scorecard(card_run: dict) -> None:
+    marks = {"hit": "HIT ", "miss": "MISS", "gap": "gap ", "extra": "xtra", "neither": "  - "}
+    print("\n=== GT SCORECARD (±%d min) ===" % VALID.TOL)
+    for c in card_run["cards"]:
+        print(f"  {c['district_id']}")
+        for b in c["bands"]:
+            if b["status"] == "neither":
+                continue
+            print(f"     {marks[b['status']]}  {b['band']:10s} ours={b['our']} gt={b['gt']}")
+        for s in c["schools"]:
+            if not s["matched"]:
+                continue
+            print(f"        {'HIT ' if s['hit'] else 'MISS'}  {s['band'][:4]}/{s['school'][:24]:24s} "
+                  f"ours={s['our']} gt={s['gt']}")
+    b, s = card_run["bands"], card_run["schools"]
+    print(f"\n  BANDS:   {b['hit']}/{b['compared']} hit = {b['pct']}%  "
+          f"(+{b['gap']} coverage gaps, {b['extra']} extra bands vs GT)")
+    print(f"  SCHOOLS: {s['hit']}/{s['matched']} matched-hit = {s['pct']}%  "
+          f"({s['matched']}/{s['total']} of our accepted schools matched a GT school)")
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 def main():
@@ -343,6 +375,9 @@ def main():
     ap.add_argument("--no-judge", action="store_true", help="skip judge escalation")
     ap.add_argument("--persist", action="store_true",
                     help="council/image: write the receipt + persist facts to the governance DB")
+    ap.add_argument("--validate", action="store_true",
+                    help="council/image: score the run vs the curated GT (gt_proposals.json)")
+    ap.add_argument("--gt", default=None, help="path to gt_proposals.json (default: newest gt_curation)")
     args = ap.parse_args()
 
     if args.mode == "plumbing":
@@ -371,6 +406,12 @@ def main():
         for d in summ["districts"]:
             print(f"  extraction #{d['extraction_id']} {d['district_id']}: "
                   f"{d['n_accepted']} accepted, {d['n_unresolved']} unresolved")
+
+    if args.validate:
+        gt_path = args.gt or default_gt_path()
+        if not gt_path:
+            raise SystemExit("no GT found — pass --gt <gt_proposals.json>")
+        _print_scorecard(VALID.score_run(out, VALID.load_gt(gt_path)))
 
 
 def _print_council(out: dict) -> None:
