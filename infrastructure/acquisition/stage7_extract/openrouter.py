@@ -66,6 +66,8 @@ class CallResult:
     error: Optional[str] = None
     error_kind: Optional[str] = None   # 'transient' | 'other' (billing/auth raises instead)
     finish_reason: Optional[str] = None  # 'stop' | 'length' (TRUNCATED) | 'error' | ...
+    generation_id: Optional[str] = None  # OpenRouter gen-... id (chunk.id) — the handle for
+    #                                      GET /api/v1/generation (fallback cost/stats + support)
 
     @property
     def truncated(self) -> bool:
@@ -131,10 +133,11 @@ def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DE
             "stream": True, "extra_body": {"usage": {"include": True}}}
     t0 = time.monotonic()
     parts: list = []
-    finish = usage = mid_err = None
+    finish = usage = mid_err = gen_id = None
     try:
         stream = client.chat.completions.create(**body)
         for chunk in stream:
+            gen_id = gen_id or getattr(chunk, "id", None)     # the gen-... generation id
             u = getattr(chunk, "usage", None)
             if u is not None:
                 usage = u                                     # the final chunk carries usage
@@ -152,19 +155,20 @@ def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DE
         if status in BILLING_AUTH_STATUS:
             raise BillingAuthError(f"{model}: HTTP {status} — {e}") from e
         return CallResult(model=model, ok=False, content="".join(parts), latency_ms=_ms(t0),
-                          error=str(e), error_kind="transient")
+                          error=str(e), error_kind="transient", generation_id=gen_id)
     except (openai.APITimeoutError, openai.APIConnectionError) as e:
         return CallResult(model=model, ok=False, content="".join(parts), latency_ms=_ms(t0),
-                          error=str(e), error_kind="transient")
+                          error=str(e), error_kind="transient", generation_id=gen_id)
     except Exception as e:  # noqa: BLE001 — any other SDK/parse error is a per-call miss, not a halt
         return CallResult(model=model, ok=False, content="".join(parts), latency_ms=_ms(t0),
-                          error=str(e), error_kind="other")
+                          error=str(e), error_kind="other", generation_id=gen_id)
 
     common = dict(
         model=model, content="".join(parts),
         prompt_tokens=(getattr(usage, "prompt_tokens", 0) or 0) if usage else 0,
         completion_tokens=(getattr(usage, "completion_tokens", 0) or 0) if usage else 0,
-        cost_usd=_usage_cost(usage), latency_ms=_ms(t0), finish_reason=finish)
+        cost_usd=_usage_cost(usage), latency_ms=_ms(t0), finish_reason=finish,
+        generation_id=gen_id)
     if mid_err or finish == "error":
         msg = (mid_err or {}).get("message") if isinstance(mid_err, dict) else str(mid_err or "stream error")
         return CallResult(ok=False, error=f"mid-stream: {msg}", error_kind="transient", **common)

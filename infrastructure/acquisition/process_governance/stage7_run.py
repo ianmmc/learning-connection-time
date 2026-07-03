@@ -184,7 +184,8 @@ def _call_record(model: str, role: str, res, facts: list) -> dict:
     return {"model": model, "role": role, "ok": res.ok, "error": res.error, "n_facts": len(facts),
             "facts": facts, "prompt_tokens": res.prompt_tokens,
             "completion_tokens": res.completion_tokens, "cost_usd": res.cost_usd,
-            "latency_ms": res.latency_ms, "finish_reason": res.finish_reason}
+            "latency_ms": res.latency_ms, "finish_reason": res.finish_reason,
+            "generation_id": res.generation_id}
 
 
 def _rollup_tel(reps: list) -> dict:

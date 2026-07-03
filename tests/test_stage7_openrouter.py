@@ -30,9 +30,10 @@ class _Usage:
 
 
 class _Chunk:
-    def __init__(self, choices=(), usage=None, error=None):
+    def __init__(self, choices=(), usage=None, error=None, id="gen-test-123"):
         self.choices = list(choices)
         self.usage = usage
+        self.id = id
         self.model_extra = {"error": error} if error else {}
 
 
@@ -75,6 +76,7 @@ def test_stream_accumulates_deltas_and_reads_final_usage(monkeypatch):
     assert res.ok and res.content == '{"schedules":[{"school_name":"A"}]}'
     assert res.finish_reason == "stop" and not res.truncated
     assert (res.prompt_tokens, res.completion_tokens, res.cost_usd) == (100, 40, 0.00012)
+    assert res.generation_id == "gen-test-123"   # the /api/v1/generation audit handle
     # the request actually asked for a stream + usage accounting + attribution headers
     assert captured["stream"] is True
     assert captured["extra_body"] == {"usage": {"include": True}}
