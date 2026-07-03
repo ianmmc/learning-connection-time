@@ -329,6 +329,14 @@ def image_handoff_variant(doc: dict, *, council_id: str = "image") -> dict:
             d["records"] = recs
             kept.append(d)
     v["districts"] = kept
+    # Distinct handoff_hash (Ian, 2026-07-03): the variant is a materially different package
+    # (different reps/council) from the text handoff it was built from — sharing the hash would
+    # make run_council_streaming's resume check see the text run's extraction rows and SKIP every
+    # district on the image pass, wrongly treating it as already done. Suffixed, not re-derived, so
+    # the lineage (which text handoff this probe came from) stays legible in the DB/receipts.
+    base_hash = v.get("handoff_hash")
+    if base_hash:
+        v["handoff_hash"] = f"{base_hash}-{council_id}"
     return v
 
 
