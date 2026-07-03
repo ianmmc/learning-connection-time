@@ -1300,7 +1300,7 @@ requirements:
     created: "2026-06-21T00:00:00Z"
     updated: "2026-06-21T00:00:00Z"
     notes: "aggregate.py consensus_school_facts + district_bands_from_facts + aggregate_band + mode_stable.
-      Cross-family rationale: docs/technical-notes/LLM_COUNCIL_RESEARCH_2026-06.md. The 380-not-381 case
+      Cross-family rationale: docs/technical-notes/models-and-council-composition/LLM_COUNCIL_RESEARCH_2026-06.md. The 380-not-381 case
       was a user-caught cluster-mean bug fixed 2026-06-21."
 
   - id: REQ-057
@@ -1652,7 +1652,7 @@ requirements:
       are evidence pulled from the outside world (same category as the NCES downloads already under
       data/raw/), not our own pipeline process state, so CLAUDE.md's 'never modify files in data/raw/' rule
       applies: discovery.json is write-once (see REQ-071). See ACQUISITION_PIPELINE.md Stage 2 and
-      docs/technical-notes/STAGE2_DISCOVER_DESIGN_2026-06.md §6 for the full design-session trail."
+      docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE2_DISCOVER_DESIGN_2026-06.md §6 for the full design-session trail."
 
   - id: REQ-070
     description: "Stage 2 wave dispatch - Wave 1 (Claude WebSearch subagent) with a strict dispatch contract, Wave 2 (OpenRouter) conditional on a residual"
@@ -1796,7 +1796,7 @@ requirements:
       - page.pdf() is captured unconditionally for every HTML page, alongside innerText (all frames) and a full-page screenshot - no multi-column-detection trigger, removing the need to ever define the Reader-Routing spec's previously-unsolved Tier 1->2 escalation trigger
       - A URL that is already a PDF (direct fetch branch) never goes through page.pdf() - that would be a lossy, pointless re-render of a PDF viewer's own rendering
     tests:
-      - (verified via local fixture + real-network smoke test during implementation - see docs/technical-notes/STAGE3_CAPTURE_DESIGN_2026-06.md §6 decision log; no automated test harness exists yet for capture_discovery.mjs, which has no test framework wired up - REQ-079 watch-item)
+      - (verified via local fixture + real-network smoke test during implementation - see docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE3_CAPTURE_DESIGN_2026-06.md §6 decision log; no automated test harness exists yet for capture_discovery.mjs, which has no test framework wired up - REQ-079 watch-item)
     created: "2026-06-23T00:00:00Z"
     updated: "2026-06-23T00:00:00Z"
     notes: "infrastructure/scraper/capture_discovery.mjs::dismissModals, setupPageDialogHandler, processTask.
@@ -1816,7 +1816,7 @@ requirements:
       - This path is explicitly intended to catch CDN-hosted materials (Finalsite, BoardDocs, SchoolWires/Blackboard, S3, etc. - discover.py's existing CMS_HOSTS set) that Discovery's domain-scoped search would never surface directly, not only Drive/Docs links - this must be reflected in test coverage, not left as an incidental side effect of Drive/Docs-focused cases
       - A duplicate URL already seen for a district (whether originally discovered or already-emergent) is never re-queued
     tests:
-      - (verified via local fixture during implementation: a 'Bell Schedule' link was correctly captured as emergent with source/found_on populated, while an unrelated 'About Us' link on the same page was correctly NOT picked up - see docs/technical-notes/STAGE3_CAPTURE_DESIGN_2026-06.md §6 decision log; no automated test harness exists yet for capture_discovery.mjs - REQ-079 watch-item)
+      - (verified via local fixture during implementation: a 'Bell Schedule' link was correctly captured as emergent with source/found_on populated, while an unrelated 'About Us' link on the same page was correctly NOT picked up - see docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE3_CAPTURE_DESIGN_2026-06.md §6 decision log; no automated test harness exists yet for capture_discovery.mjs - REQ-079 watch-item)
     created: "2026-06-23T00:00:00Z"
     updated: "2026-06-23T00:00:00Z"
     notes: "infrastructure/scraper/capture_discovery.mjs::findEmergentLinks, processTask. The CDN-hosted-
@@ -1887,7 +1887,7 @@ requirements:
     description: "Stage 4 (Local processing) reconciliation - registry consistency AND a new, finer-grained file-existence consistency check, both fail loud"
     type: functional
     priority: must
-    status: not_started
+    status: tested
     acceptance_criteria:
       - A district's processed.json existing on disk IS Stage-4-done for that district; the registry is a cache reconciled from disk, never the reverse - same shape as Stages 2/3's reconcile()
       - Registry-ahead-of-disk (claims furthest_stage>=4, processed.json missing) halts the ENTIRE run as a control failure, not a per-district skip
@@ -1897,8 +1897,10 @@ requirements:
     tests: []
     created: "2026-06-23T00:00:00Z"
     updated: "2026-06-23T00:00:00Z"
-    notes: "Designed 2026-06-23, not yet built. See ACQUISITION_PIPELINE.md Stage 4 section and the diagram
-      decision log for the full design conversation. The file-existence check is a deliberate escalation of
+    notes: "Built 2026-06-23; blast-radius tiered 2026-07-02 (fable review issue #78) - a structural
+      inconsistency now quarantines only the affected district rather than halting the whole run, and the
+      check only runs on about-to-be-processed districts. See
+      STAGE4_PROCESS_DESIGN_2026-06.md §2a. The file-existence check is a deliberate escalation of
       the existing CONTROL FAILURE principle to finer granularity, not a new principle."
 
   - id: REQ-081
@@ -2339,9 +2341,9 @@ requirements:
     updated: "2026-06-26T00:00:00Z"
     notes: "Authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §1a/§9 (step 2). Supersedes the SQLite decision in
       STAGE5_FILTER_DESIGN_2026-06.md. Later governance steps (REQ-100 trigger UI, REQ-101 dispatch, REQ-102 CP-A view,
-      REQ-104 Stage 2 headless) are enumerated in §9 and will be registered tests-first at build time.
-      DOC OBLIGATION (user 2026-06-26): on completion of this migration, update docs/DATABASE_SETUP.md and
-      docs/GETTING_STARTED.md for the new isolated governance DB. Deferred until the migration lands.
+      REQ-104 Stage 2 headless) are enumerated in §9 and were registered tests-first at build time.
+      Migration completed 2026-06-26; docs/DATABASE_SETUP.md and docs/GETTING_STARTED.md were updated for
+      the isolated governance DB per the doc obligation.
       DECISIONS LOCKED: scope = port + cross-stage cache together; ORM = models for precious / DDL for
       regenerable cache; tests = real Postgres fixture.
       IN PROGRESS — 103a DONE (commit 3c725f3): governance DB+user created, common/db.py (engine/session/Base,
@@ -2758,4 +2760,34 @@ requirements:
     tests:
     created: "2026-07-01T00:00:00Z"
     updated: "2026-07-01T00:00:00Z"
-    notes: "Design: STAGE6_DISPATCH_DESIGN_2026-06.md. The rationale here is that the presence of a district hub schedule renders the need for representations of other URLs moot. Sending more would needless add to cost. If more information is needed, the extraction council can request more representations and more URLs"
+    notes: "Design: STAGE6_DISPATCH_DESIGN_2026-06.md §4. The rationale here is that the presence of a district hub schedule renders the need for representations of other URLs moot. Sending more would needless add to cost. If more information is needed, the extraction council can request more representations and more URLs. Acceptance criteria + tests + implementation tracked: GitHub #83."
+
+  - id: REQ-117
+    description: "Stage 7 (Extract): execute a frozen gate@6 handoff's paid OpenRouter council calls per representation, parse per-school {start_time,end_time,grade_level,school_name} facts (REQ-054 read-times invariant), reach cross-family per-school consensus (±15 min, REQ-056) with a 3rd-family judge on disagreement, and persist per-school facts to a GOVERNANCE-DB working table (school_fact) — NEVER the LCT DB (benchmark batches are walled off; only Stage 9 promotes non-benchmark results). gate@7 reviews extraction results + council requests/recommendations."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "stage7_extract is an independent stage package (common-only imports, import-linter KEPT); the cross-stage orchestration (Stage 6 request assembly + Stage 8 consensus) lives in the app layer (process_governance/stage7_run.py), mirroring stage6_dispatch.py — MET"
+      - "The OpenRouter client (stage7_extract/openrouter.py) is gated on OPENROUTER_API_KEY, streams via SSE, captures usage tokens + cost telemetry + generation_id, and raises BillingAuthError on 401/402 (halt) while returning transient errors per-call — MET"
+      - "The model-output parser (stage7_extract/parse.py) tolerates markdown fences + truncated JSON (salvage) + drops prompt-example-leak rows; the council reads TIMES only and deterministic code computes gross = end-start + the per-band mode (REQ-054/REQ-042) — MET"
+      - "Consensus is cross-family on the per-school (start,end) pair within ±15 min (REQ-056), judge re-reads the page on disagreement; per-district band value = the exact mode over accepted per-school gross (REQ-055 gross bell-to-bell) — MET"
+      - "Per-school facts persist to a governance-DB table with a stage=7 state_event + gate@7; benchmark (batch_type='benchmark') output is never Stage-9-written — MET"
+      - "A validation harness scores per-school + per-band output vs gt_curation gt_proposals.json (±15 min) for batch_00000 — MET: full-batch run scored 95.2% band / 99.3% per-school (text), 88.5%/98.1% (image), 24 districts / 83 reps"
+      - "The council run is durable and resumable (per-district persistence, not end-of-batch) — MET (run_council_streaming)"
+      - "A deterministic request-more-evidence loop detects representation/URL/district-altitude insufficiency and routes 7->6/3/2/1, with zero model calls — MET (stage7_extract/requests.py), validated against real data with zero false positives across 20 covered districts"
+      - "gate@7 console: review extraction results (band rollup, accepted/unresolved facts) + approve/reject/reopen request-more-evidence directives; fact/band editing is OUT of scope (that's gate@8) — MET"
+      - "Request-more-evidence EXECUTION (an approved request firing the target stage's 7->6/3/2/1 back-edge machinery) — NOT MET, deferred; needs a non-benchmark-walled batch to exercise"
+    tests:
+      - tests/test_stage7_parse.py
+      - tests/test_stage7_content.py
+      - tests/test_stage7_persist.py
+      - tests/test_stage7_streaming.py
+      - tests/test_stage7_image_variant.py
+      - tests/test_stage7_openrouter.py
+      - tests/test_stage7_validate.py
+      - tests/test_stage7_requests.py
+      - tests/test_stage7_api.py
+    created: "2026-07-02T00:00:00Z"
+    updated: "2026-07-03T00:00:00Z"
+    notes: "Design/present-state: STAGE7_EXTRACT_DESIGN_2026-06.md §0 (rewritten present-state-first). Council extraction, GT scoring, durability/resume, the request-more-evidence detect/persist/review engine, and the gate@7 console are all built and validated against real batch_00000 data. Reuses stage6_handoff.requests/prompts (assembly) + stage8_aggregate.aggregate (consensus/mode). The two family maps (aggregate.py short-name vs councils.py full-id) were unified into common.model_families keyed on full OpenRouter ids (single source of truth; grimp-verified importers). Remaining work (request-loop execution; Council Lab items) tracked on GitHub: #80 (Council Lab), #81 (spray A/B), #82 (image-council judge not vision-capable)."

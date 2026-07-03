@@ -9,7 +9,7 @@ hypothesis. Writes to a SQLite DB that backs the review app.
 This is the heart of the Stage 5 data-collection exercise: the script classifies/tiers, the
 human supplies the ground-truth labels (a separate table), and labels are PRESERVED across
 re-ingest so heuristics can be refined without losing hand-entered judgments. See
-docs/technical-notes/STAGE5_FILTER_DESIGN_2026-06.md.
+docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE5_FILTER_DESIGN_2026-06.md.
 
 Usage:  python3 build_signals.py [--root data/raw/lea-website-captures] [--db <path>]
 """

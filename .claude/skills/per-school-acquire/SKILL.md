@@ -52,7 +52,7 @@ Orchestrates the validated per-school pipeline (see `docs/ACQUISITION_PIPELINE.m
 7. **Report.** Summarize per district: wave coverage (claude/openrouter/manual), distinct pages captured, judge escalation rate, per-band district values + GT match. Flag capture failures (0-time pages) and hub-routed bands explicitly.
 
 ## Notes
-- **Cross-family is mandatory** for council acceptance — same-family agreement (two Google, two Mistral) is NOT consensus. See `docs/technical-notes/LLM_COUNCIL_RESEARCH_2026-06.md`.
+- **Cross-family is mandatory** for council acceptance — same-family agreement (two Google, two Mistral) is NOT consensus. See `docs/technical-notes/models-and-council-composition/LLM_COUNCIL_RESEARCH_2026-06.md`.
 - **Dedup matters**: hub-dominant districts (e.g. Christina ~20/21 schools share one page) should capture/extract the hub once and fan values to covered schools — `flatten` handles this.
 - **Known gates**: capture fidelity (JS/image pages may render empty → manual flag) and unlabeled multi-school hub ambiguity (band row→school unclear). Surface these in the report, don't silently accept.
 - For pure plumbing tests without the subscription, Wave 1 can be skipped (empty `claude_urls.json`) and everything falls to Wave 2 — but note in the report that this is NOT the production config.

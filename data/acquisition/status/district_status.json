@@ -1,15 +1,15 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-02T17:52:10Z",
+  "last_updated": "2026-07-03T07:03:10Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
-      "state": "AL",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -48,9 +48,30 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T03:21:56Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:06:48Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "0100810": {
       "name": "Coffee County",
@@ -192,12 +213,12 @@
     },
     "0102370": {
       "name": "Mobile County",
-      "state": "AL",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -236,9 +257,30 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T03:28:46Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:13:00Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "0103390": {
       "name": "Tuscaloosa County",
@@ -297,12 +339,12 @@
     },
     "0200510": {
       "name": "Matanuska-Susitna Borough School District",
-      "state": "AK",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -341,18 +383,39 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T03:32:27Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:18:33Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "0200600": {
       "name": "Fairbanks North Star Borough School District",
-      "state": "AK",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -391,9 +454,30 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T03:33:23Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:19:23Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "0400023": {
       "name": "Pinon Unified District (4390)",
@@ -472,12 +556,12 @@
     },
     "0404970": {
       "name": "Mesa Unified District (4235)",
-      "state": "AZ",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -516,9 +600,45 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T00:00:19Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-stage7-dev"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T01:22:56Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T03:34:19Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:20:41Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "0405820": {
       "name": "Page Unified School District #8  (4196)",
@@ -736,12 +856,12 @@
     },
     "0512660": {
       "name": "SPRINGDALE SCHOOL DISTRICT",
-      "state": "AR",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -788,9 +908,30 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T03:40:06Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:28:08Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "0513530": {
       "name": "VILONIA SCHOOL DISTRICT",
@@ -1266,12 +1407,12 @@
     },
     "0626910": {
       "name": "New Haven Unified",
-      "state": "CA",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -1318,18 +1459,39 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T03:50:35Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:38:03Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "0634320": {
       "name": "San Diego Unified",
-      "state": "CA",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -1376,9 +1538,30 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T03:53:58Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:40:27Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "0806750": {
       "name": "Strasburg School District 31J",
@@ -1496,12 +1679,12 @@
     },
     "0900450": {
       "name": "Bridgeport School District",
-      "state": "CT",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -1548,18 +1731,39 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T03:56:00Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:41:38Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "0902790": {
       "name": "New Haven School District",
-      "state": "CT",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -1606,18 +1810,39 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T03:57:05Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:42:59Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "0904830": {
       "name": "Waterbury School District",
-      "state": "CT",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -1664,18 +1889,39 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T03:58:39Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:44:19Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "1000080": {
       "name": "Appoquinimink School District",
-      "state": "DE",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -1722,9 +1968,45 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T00:00:19Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-stage7-dev"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T01:22:56Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T03:59:33Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:45:15Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "1100020": {
       "name": "Roots PCS",
@@ -1813,12 +2095,12 @@
     },
     "1201440": {
       "name": "ORANGE",
-      "state": "FL",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -1865,9 +2147,30 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T04:04:58Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:47:30Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "1600001": {
       "name": "WEST BONNER COUNTY DISTRICT",
@@ -1889,12 +2192,12 @@
     },
     "1602100": {
       "name": "JOINT SCHOOL DISTRICT NO. 2",
-      "state": "ID",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -1941,9 +2244,30 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T04:05:57Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:48:07Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "1713590": {
       "name": "Egyptian CUSD 5",
@@ -2521,12 +2845,12 @@
     },
     "1906540": {
       "name": "Cedar Rapids Comm School District",
-      "state": "IA",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -2573,9 +2897,30 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T04:06:28Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:48:37Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "1915840": {
       "name": "Knoxville Comm School District",
@@ -2864,12 +3209,12 @@
     },
     "2302820": {
       "name": "Bangor Public Schools",
-      "state": "ME",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -2916,18 +3261,39 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T04:07:33Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:49:23Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "2307320": {
       "name": "Lewiston Public Schools",
-      "state": "ME",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -2974,9 +3340,30 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T04:08:15Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:50:12Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "2500587": {
       "name": "Old Sturbridge Academy Charter Public School",
@@ -3268,12 +3655,12 @@
     },
     "2513230": {
       "name": "Worcester",
-      "state": "MA",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -3320,9 +3707,30 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T04:12:08Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:55:25Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "2600209": {
       "name": "Chandler Woods Charter Academy",
@@ -3977,12 +4385,12 @@
     },
     "3172840": {
       "name": "LINCOLN PUBLIC SCHOOLS",
-      "state": "NE",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -4029,18 +4437,39 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T04:14:32Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:57:25Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "3200480": {
       "name": "Washoe County",
-      "state": "NV",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -4087,9 +4516,30 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T04:16:24Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T06:58:33Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "3300030": {
       "name": "North Country Charter Academy",
@@ -5350,12 +5800,12 @@
     },
     "3904378": {
       "name": "Cleveland Municipal",
-      "state": "OH",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -5402,9 +5852,24 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T04:21:03Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "3904817": {
       "name": "Midview Local",
@@ -6037,12 +6502,12 @@
     },
     "4700148": {
       "name": "Memphis-Shelby County Schools",
-      "state": "TN",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -6089,9 +6554,30 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T04:24:56Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T07:00:23Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "4812640": {
       "name": "CAMERON ISD",
@@ -6576,12 +7062,12 @@
     },
     "5000395": {
       "name": "Essex Westford Educational Community Unified Union SD #51",
-      "state": "VT",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -6628,9 +7114,45 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T00:00:19Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-stage7-dev"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T01:22:56Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T04:26:44Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T07:02:17Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "5000425": {
       "name": "Mt. Abraham Unified School District #61",
@@ -7159,12 +7681,12 @@
     },
     "5605302": {
       "name": "Sweetwater County School District #1",
-      "state": "WY",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00000",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -7211,9 +7733,30 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T04:27:39Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-03T07:03:10Z"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca-image"
     },
     "5900038": {
       "name": "Circle of Life Academy",

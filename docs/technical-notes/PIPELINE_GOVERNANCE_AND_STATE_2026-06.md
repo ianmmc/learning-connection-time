@@ -20,16 +20,19 @@ This note is the architecture for three coupled decisions that span every stage:
 3. **The app's scope** — a single **stage-selectable governance console** at
    `infrastructure/acquisition/process_governance/`, the human-in-the-loop surface for every gate (§7, §11).
 
-**Current build state (2026-07-02):** REQ-098/099/103/094 (packaging, state-event log, Postgres governance
+**Current build state (2026-07-03):** REQ-098/099/103/094 (packaging, state-event log, Postgres governance
 DB, event-driven `filtered.json`) are all COMPLETE — see §1b, §3, §6. The console is built and run live
-through **`gate@6`**: gate@1 (REQ-102), Stage 2 (REQ-104), Stage 3 (REQ-110), Stage 4 + the Stage 4→5
+through **`gate@7`**: gate@1 (REQ-102), Stage 2 (REQ-104), Stage 3 (REQ-110), Stage 4 + the Stage 4→5
 incremental handoff (REQ-111, §12), the Stage 5 district-driven console (REQ-112), Stage 6 dispatch/freeze
-through the Stage 6→7 seam (REQ-101) — stops before the paid call. **Gates are stage-numbered (§11):**
+through the Stage 6→7 seam (REQ-101), and Stage 7 council extraction + the gate@7 review console (REQ-117:
+extraction results + the request-more-evidence **detect/persist/review** loop — see
+`STAGE7_EXTRACT_DESIGN_2026-06.md` §0). **Not yet built: request-more-evidence *execution*** (an approved
+request firing the target stage's back-edge — STAGE7 §3F) and Stage 8/9. **Gates are stage-numbered (§11):**
 `gate@1` (queue) · `gate@5` (per-URL review) · `gate@6` (dispatch) · `gate@7` (council requests) · `gate@8`
 (results). §8, §9, and §9a below are **historical** — fully executed planning/sequencing docs kept in place
 because their section numbers (`governance §9a`, etc.) are cross-referenced elsewhere; see the banners on
-each. Next: Stage 7 (the paid council) + the council lab (`cost_benchmark`); still open: REQ-100 (staleness),
-gate@6 auto mode.
+each. Next: Stage 8 (aggregation) + the council lab (`cost_benchmark`); still open: REQ-100 (staleness),
+gate@6/gate@7 auto mode, the request-loop execution wiring.
 
 ---
 
@@ -711,12 +714,30 @@ Stage-9 DB write are ungated:
 | **gate@1** | 1 Queue | approve the batch (right districts/schools/bands) | CP-A |
 | **gate@5** | 5 Filter | per-URL representation review (labeling) | CP-B |
 | **gate@6** | 6 Dispatch | approve routing/dispatch (which reps → which council config); optional **verified-only** (labeled-targets-only) mode | *new* |
-| **gate@7** | 7 Extract | review council requests/recommendations | *new* |
+| **gate@7** | 7 Extract | review extraction results + council requests/recommendations | *new, BUILT* |
 | **gate@8** | 8 Aggregate | review per-band results; override needs a reason | *effective CP-C* |
 
 **gate@8 is the effective CP-C** — once results are approved there, Stage 9 writes to the LCT DB mechanically.
 
 ### 11b. Settings: per-gate manual/auto (global default + overrides); AUTO is confidence-escalating
+
+**The ramp-up model (the governing philosophy — Ian, standing since 2026-06-22).** The gate toggles
+serve a deliberate strategy: **start with high human supervision (every gate manual) and ease toward
+automation only as each gate's reliability is measured** — the destination is a **self-governing,
+self-sustaining** pipeline, reached carefully, not assumed. Manual is the default posture *now*; a gate
+goes auto only once its confidence-escalation has earned it. Two consequences: **(1)** a judgment that a
+gate's output "looks right" is a **recommendation for human sign-off, never a fait accompli**, until
+that gate is explicitly set to auto (the human inspects real output at each gate — reading a real
+`batch_NNNNN.json` / extraction result line by line — and catches real-data bugs pure code review
+misses); **(2)** every new gate is **built manual-first**, its auto path (confidence thresholds,
+escalation) added and tuned afterward. gate@7's council-initiated **request-more-evidence loop** is this
+model applied to Stage 7: the *council* authors the request (the 7→6/3/2/1 back-edges) via a deterministic
+detector, **built and validated** (`STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§4); a human reviews/approves it
+at gate@7 (**built**) under today's high-supervision setting; the toggle relaxes that to auto
+(confidence-escalating) later. **Execution** — an approved request actually firing the target stage's
+back-edge machinery — is the one piece not yet built (STAGE7 §3F). The toggle below is the ramp-up's
+control surface.
+
 Each gate toggles **manual** (human acts) / **auto** (self-advance), via a **global default + per-gate
 overrides**. **Auto is never blind: auto-with-confidence-escalation** — auto-accept the high-confidence,
 auto-escalate-or-flag the low-confidence to manual (the same pattern as Stage 5, and the conceptual shape
@@ -772,12 +793,16 @@ Stage-6 dispatch freeze is what keeps "what we sent" recoverable across these lo
   (preview the routed/priced package → Approve & freeze) → the immutable dispatch + a precious `handoff` index
   row + a per-district `dispatched` state_event; manual approve today (auto mode deferred). See
   `STAGE6_DISPATCH_DESIGN_2026-06.md` §0.
+- **Stage 7** — council extraction; **BUILT (REQ-117, 2026-07-03)**: the gate@7 console (district-first —
+  band rollup, accepted/unresolved facts, request-more-evidence cards with Approve/Reject/Reopen); read +
+  review only, no fact/band editing (that's gate@8). See `STAGE7_EXTRACT_DESIGN_2026-06.md` §0.
 
 ### 11g. Implications for what's built
 - `state_event.checkpoint` vocabulary: **`gate@1` | `gate@5` | `gate@6` | `gate@7` | `gate@8`** (was
   CP-A/B/C). Free-string column → no schema change; update recorded values + docs as gates get wired.
-  **`gate@1` and `gate@6` are now live** (in-band console approvals — gate@6 records a `dispatched` event
-  referencing the immutable dispatch hash; see 11h).
+  **`gate@1`, `gate@6`, and `gate@7` are now live** (in-band console approvals — gate@6 records a
+  `dispatched` event referencing the immutable dispatch hash; gate@7 records approve/reject/reopen on each
+  request-more-evidence directive; see 11h).
 - `filtered.json` carries **alternate target-flagged reps** (the winner + alternates) so gate@6 can offer
   representation override (REQ-094 follow-up; un-defers §4's "representation override deferred" lean).
 - The **console UI build needs its own design pass** (stage-by-stage, as we designed the pipeline) before
@@ -846,10 +871,18 @@ reframe and the batch_00002-forcing-function plan (the batch-of-record advances 
   Approval records the index row + a per-district `dispatched` state_event **atomically**, freezes the
   immutable artifact, and **stops at the seam — no paid call** (Stage 7). Manual approve today; auto mode +
   the budget-governor cost-gate (REQ-051) deferred. See `STAGE6_DISPATCH_DESIGN_2026-06.md` §0.
-- **Then:** **Stage 7 (the paid council + judge loop)** + the **council lab** (`cost_benchmark` — measured
-  token rates + live OpenRouter pricing; composition re-benchmark) + REQ-100 (staleness).
+- **Stage 7 + gate@7 BUILT (REQ-117, 2026-07-03)** — the council extraction (per-rep council →
+  cross-family consensus → judge-on-disagreement, durable/resumable per-district streaming, GT-scored
+  95.2%/99.3% band/per-school on `batch_00000`) + the deterministic request-more-evidence
+  **detect/persist/review** engine (validated, zero false positives on real data) + the gate@7 console
+  (district-first, band rollup + request approve/reject/reopen). **Not yet built:** request-more-evidence
+  **execution** (an approved request firing the 7→6/3/2/1 back-edge) and the Council Lab backlog (#80/81/82).
+  See `STAGE7_EXTRACT_DESIGN_2026-06.md` §0.
+- **Then:** **Stage 8 (aggregate)** + the **council lab** (`cost_benchmark` — measured token rates + live
+  OpenRouter pricing; composition re-benchmark) + REQ-100 (staleness).
   Per-stage detail: `STAGE1_QUEUE_DESIGN` §6 (gate@1), `STAGE2_DISCOVER_DESIGN` §7 (the SERP cascade),
-  `STAGE3_CAPTURE_DESIGN` §7, `STAGE4_PROCESS_DESIGN` §4a/§4b, `STAGE5_FILTER_DESIGN` §A–D, `STAGE6_DISPATCH_DESIGN` §0.
+  `STAGE3_CAPTURE_DESIGN` §7, `STAGE4_PROCESS_DESIGN` §4a/§4b, `STAGE5_FILTER_DESIGN` §A–D,
+  `STAGE6_DISPATCH_DESIGN` §0, `STAGE7_EXTRACT_DESIGN` §0.
 
 ---
 

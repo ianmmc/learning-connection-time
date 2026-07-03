@@ -66,6 +66,12 @@ etc.) are regenerable, auditable receipts — never the transport between stages
 per-URL review gate) · `gate@6` (Dispatch) · `gate@7` (Extract) · `gate@8` (Aggregate — Stage 9 then
 auto-writes). Stages 2/3/4 + the Stage-9 write are ungated. Each gate is manual/auto (confidence-escalating).
 
+**Ramp-up model (standing operating posture):** the pipeline is built **high-supervision-first** — every
+gate manual now, easing toward auto (confidence-escalating) only as each gate's reliability is proven;
+the destination is a self-governing app. **So present gate output as a recommendation for human sign-off,
+not a done deal, until that gate is explicitly set to auto** — the human inspects real output at each gate
+and catches real-data bugs code review misses. (governance §11b.)
+
 **Three batch types (Stage 1):** `first-run`, `follow-up`, and `benchmark` (the 27 curated-GT districts
 injected as `batch_00000` — permanently walled off from Stage-9 writes and funnel/enrichment stats; see
 `STAGE1_QUEUE_DESIGN_2026-06.md` §2h).
@@ -104,6 +110,14 @@ live in the governance DB; `handoff_<hash>_<ts>.json` under `data/acquisition/ha
 `saved_view` holds UI prefs. The tracked `.githooks/pre-commit` sweeps `labels.json` +
 `district_status.json` into every commit — on a fresh clone run `git config core.hooksPath .githooks`
 (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript (`GETTING_STARTED.md` §1a).
+
+**Current status (2026-07-03):** the console runs the pipeline live through **`gate@7`** — Stage 7
+council extraction + the gate@7 review console are BUILT and GT-validated (REQ-117, 95.2%/99.3%
+band/school on `batch_00000`); the request-more-evidence loop's detect/persist/review is built, its
+*execution* (firing the 7→6/3/2/1 back-edge) is not. Stages 8–9 remain designed, not built. **Next:**
+engineer's-discretion — either the request-loop execution wiring, or a Council Lab backlog item (GitHub
+#80 Council Lab infra, #81 spray A/B, #82 image-council judge not vision-capable). Full detail:
+`docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE7_EXTRACT_DESIGN_2026-06.md` §0.
 
 ---
 
@@ -192,7 +206,7 @@ To access current design resources, use the claude_design MCP (https://api.anthr
 | **Per-stage present-state design notes** | `docs/technical-notes/STAGE*_DESIGN_2026-06.md` |
 | **Live pipeline code** | `infrastructure/acquisition/` (stage1_queue/ … stage9, process_governance/ console) |
 | Extraction leaderboard + costs | `docs/EXTRACTION_BENCHMARK_FINDINGS.md` |
-| Council design research | `docs/technical-notes/LLM_COUNCIL_RESEARCH_2026-06.md` |
+| Council design research | `docs/technical-notes/models-and-council-composition/LLM_COUNCIL_RESEARCH_2026-06.md` |
 | Decisions, lessons, project history | `docs/PROJECT_HISTORY.md` |
 | Data methodology (incl. SPED, QA dashboard) | `docs/METHODOLOGY.md` |
 | Database setup | `docs/DATABASE_SETUP.md` |

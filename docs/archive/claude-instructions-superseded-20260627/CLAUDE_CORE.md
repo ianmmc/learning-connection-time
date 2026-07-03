@@ -42,7 +42,7 @@ Part of "Reducing the Ratio" educational equity initiative. Currently implementi
 
 ## Project Status (updated June 13, 2026)
 
-> **Current phase: acquisition pipeline design validated end-to-end** — extraction (cheap-cloud council; Gemini 2.5 Flash leads, input quality is the ceiling) *and* discovery (domain-scoped search) proven. See root `CLAUDE.md` Current Status + `docs/technical-notes/EXTRACTION_AND_DISCOVERY_LEARNINGS_2026-06.md` for the live picture. The list below is the prior baseline.
+> **Current phase: acquisition pipeline design validated end-to-end** — extraction (cheap-cloud council; Gemini 2.5 Flash leads, input quality is the ceiling) *and* discovery (domain-scoped search) proven. See root `CLAUDE.md` Current Status + `docs/technical-notes/models-and-council-composition/EXTRACTION_AND_DISCOVERY_LEARNINGS_2026-06.md` for the live picture. The list below is the prior baseline.
 
 - **Phase**: Bell Schedule Automation
 - **Bell Schedules**: ~65 districts enriched (always verify against the live DB — see Critical Rules)

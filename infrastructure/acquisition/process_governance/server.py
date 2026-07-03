@@ -39,6 +39,8 @@ from infrastructure.acquisition.stage6_handoff import handoff as HND6       # no
 from infrastructure.acquisition.common import paths                         # noqa: E402  (RAW_CAPTURES — rep inspect)
 from infrastructure.acquisition.stage6_handoff import councils as C6        # noqa: E402  (council registry — gate@6 override options)
 from infrastructure.acquisition.stage6_handoff.models import Handoff        # noqa: E402  (precious handoff index row)
+from infrastructure.acquisition.stage7_extract.models import Extraction, SchoolFact, ExtractionRequest, utcnow as _u7  # noqa: E402,F401  (precious Stage-7 results + request loop — register for init_precious_schema)
+from infrastructure.acquisition.stage8_aggregate import aggregate as AGG        # noqa: E402  (gate@7 band rollup from school_fact)
 
 
 def _refresh_filtered(con, district_id: str) -> None:
@@ -1152,6 +1154,82 @@ def handoff_inspect(district_id: str, rec_key: str, file: str):
                 return FileResponse(alt)
         raise HTTPException(404, f"file not found: {file}")
     return FileResponse(fp)
+
+
+@app.get("/api/extract/districts")
+def extract_districts():
+    """gate@7 left pane: districts with a Stage-7 extraction, each showing the LATEST run's summary +
+    its pending-request count. Attention-first (most pending requests, then most unresolved).
+    Excludes `*-image` handoffs — those are the vision-council A/B *probe* (image_handoff_variant, not a
+    production dispatch), not a review surface. (A first-class run-kind flag is a follow-up.)"""
+    with gdb.session_scope() as con:
+        rows = con.execute(text(
+            """SELECT e.district_id, e.handoff_hash, e.n_accepted, e.n_unresolved, e.cost_usd,
+                      e.n_reps, e.created_at, d.name, d.state,
+                      COALESCE(rq.n_pending, 0) AS n_pending, COALESCE(rq.n_requests, 0) AS n_requests
+               FROM extraction e
+               JOIN (SELECT district_id, MAX(extraction_id) mx FROM extraction
+                     WHERE handoff_hash NOT LIKE '%-image' GROUP BY district_id) L
+                 ON L.mx = e.extraction_id
+               LEFT JOIN district d ON d.district_id = e.district_id
+               LEFT JOIN (SELECT district_id, handoff_hash,
+                                 COUNT(*) FILTER (WHERE status = 'pending') n_pending, COUNT(*) n_requests
+                          FROM extraction_request GROUP BY district_id, handoff_hash) rq
+                 ON rq.district_id = e.district_id AND rq.handoff_hash = e.handoff_hash
+               ORDER BY n_pending DESC, e.n_unresolved DESC, e.district_id""")).mappings().all()
+        return [dict(r) for r in rows]
+
+
+@app.get("/api/extract/district/{district_id}")
+def extract_district(district_id: str):
+    """gate@7 detail: the district's LATEST extraction — computed band rollup + accepted/unresolved
+    per-school facts + its request-more-evidence directives (from the same run's handoff)."""
+    with gdb.session_scope() as con:
+        ext = con.execute(text(
+            "SELECT extraction_id, handoff_hash, created_at, created_by, cost_usd, "
+            "n_accepted, n_unresolved, n_reps FROM extraction "
+            "WHERE district_id = :d AND handoff_hash NOT LIKE '%-image' "
+            "ORDER BY extraction_id DESC LIMIT 1"), {"d": district_id}).mappings().first()
+        if not ext:
+            raise HTTPException(404, "no extraction for this district")
+        facts = con.execute(text(
+            "SELECT band, school, status, start_time, end_time, gross_minutes, method, "
+            "models_json, detail_json, rec_key, source_file FROM school_fact "
+            "WHERE extraction_id = :e ORDER BY status, band, school"),
+            {"e": ext["extraction_id"]}).mappings().all()
+        accepted = [dict(f) for f in facts if f["status"] == "accepted"]
+        unresolved = [dict(f) for f in facts if f["status"] == "unresolved"]
+        agg = [{"band": a["band"], "school": a["school"], "gross": a["gross_minutes"],
+                "start": a["start_time"], "end": a["end_time"],
+                "models": json.loads(a["models_json"] or "[]"), "method": a["method"]}
+               for a in accepted if a["gross_minutes"] is not None]
+        bands = AGG.district_bands_from_facts(agg)
+        reqs = con.execute(text(
+            "SELECT request_id, altitude, route, target, band, params_json, reason, status, "
+            "reviewed_by, reviewed_at, review_note, created_at FROM extraction_request "
+            "WHERE district_id = :d AND handoff_hash = :h ORDER BY altitude, route, band"),
+            {"d": district_id, "h": ext["handoff_hash"]}).mappings().all()
+        return {"extraction": dict(ext), "bands": bands, "accepted": accepted,
+                "unresolved": unresolved, "requests": [dict(r) for r in reqs]}
+
+
+@app.post("/api/extract/request/{request_id}")
+async def extract_request_review(request_id: int, payload: dict):
+    """gate@7 action: approve / reject / reopen a request-more-evidence directive (records
+    who/when/note). EXECUTION of an approved request — the 7→6/3/2/1 back-edge — is a later build;
+    this records the human decision under the ramp-up model (governance §11b)."""
+    status = payload.get("status")
+    if status not in ("approved", "rejected", "pending"):
+        raise HTTPException(400, "status must be approved | rejected | pending")
+    with gdb.session_scope() as con:
+        n = con.execute(text(
+            "UPDATE extraction_request SET status = :s, reviewed_by = :by, reviewed_at = :now, "
+            "review_note = :note WHERE request_id = :id"),
+            {"s": status, "by": payload.get("actor", "ian"), "now": _u7(),
+             "note": payload.get("note"), "id": request_id}).rowcount
+        if not n:
+            raise HTTPException(404, "no such request")
+    return {"request_id": request_id, "status": status}
 
 
 @app.get("/")

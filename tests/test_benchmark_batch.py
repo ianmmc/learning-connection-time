@@ -1,7 +1,8 @@
 """batch_00000 benchmark injection (stage1_queue/benchmark_batch.py) — the special-case batch.
 
-Pure parts tested against a synthetic gt_root; the real-GT loader test reads the tracked
-curation workspace (file reads only, no DB, no writes)."""
+Pure parts tested against a synthetic gt_root; the real-GT loader test reads the LOCAL (not
+git-tracked — large per-district raw captures) curation workspace, so it's marked `integration`
+like the other local-external-resource tests (file reads only, no DB, no writes)."""
 import json
 import hashlib
 from pathlib import Path
@@ -30,7 +31,10 @@ def test_capture_record_shape_matches_stage4_readers():
     assert pdf["source"] == "benchmark_gt" and pdf["err"] is None
 
 
+@pytest.mark.integration
 def test_load_curated_finds_all_27_real_dirs():
+    """Needs the local (not git-tracked) gt_curation_20260621T060008Z/{hub,per_school}/ raw
+    capture directories — CI has only the tracked manifest/proposals JSON, not the binaries."""
     curated = BB.load_curated()
     assert len(curated) == 27
     missing = [c["district_id"] for c in curated if c["gt_dir"] is None]

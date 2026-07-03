@@ -5,7 +5,7 @@
 > ground truth); §1–§4 hold the design rationale, with items still genuinely open flagged inline (chiefly
 > council **composition**, which awaits the measurement lab).
 > **Audience:** anyone building on or debugging Stage 6; anyone tracing a dispatch's routing/pricing/identity.
-> **Companions:** the Stage-6 **user stories are inline in §4**; `docs/technical-notes/LLM_COUNCIL_RESEARCH_2026-06.md`
+> **Companions:** the Stage-6 **user stories are inline in §4**; `docs/technical-notes/models-and-council-composition/LLM_COUNCIL_RESEARCH_2026-06.md`
 > (diversity > count, cross-family consensus, judge > voter, cost cascades); `EXTRACTION_BENCHMARK_FINDINGS.md`
 > (model leaderboard + measured costs); `STAGE5_FILTER_DESIGN_2026-06.md` (upstream); `STAGE7_EXTRACT_DESIGN`
 > (downstream); `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11/§12 (cross-stage architecture authority).
@@ -526,7 +526,7 @@ observation record (issues #60/#61's deferral note explains the measured-pass ru
 ## 5. References
 - Stage 6 user stories — now inline in §4 (migrated 2026-06-27 from the retired apga doc).
 - `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §4/§5 (release/dispatch), §7a (council out-of-process).
-- `LLM_COUNCIL_RESEARCH_2026-06.md` — cross-family consensus, judge, cost cascade.
+- `docs/technical-notes/models-and-council-composition/LLM_COUNCIL_RESEARCH_2026-06.md` — cross-family consensus, judge, cost cascade.
 - `EXTRACTION_BENCHMARK_FINDINGS.md` — model leaderboard + measured costs (the config candidates).
 - REQ-054 (read-times invariant), REQ-055 (gross metric), REQ-056 (cross-family consensus), REQ-051 (budget governor), REQ-094 (`filtered.json`).
 
