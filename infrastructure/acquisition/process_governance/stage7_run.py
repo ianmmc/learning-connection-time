@@ -164,16 +164,18 @@ def _call(model: str, prompt_id: str, kind: str, content) -> "OR.CallResult":
 
 
 def _call_record(model: str, role: str, res, facts: list) -> dict:
-    """One model call's audit row for the receipt/gate@7 — telemetry + what it read (no raw content)."""
+    """One model call's audit row for the receipt/gate@7 — telemetry + what it read (no raw content).
+    `finish_reason == "length"` marks a TRUNCATED reply (tail schools silently gone — the salvage
+    parser keeps only the head), surfaced through the telemetry rollup + progress line."""
     return {"model": model, "role": role, "ok": res.ok, "error": res.error, "n_facts": len(facts),
             "facts": facts, "prompt_tokens": res.prompt_tokens,
             "completion_tokens": res.completion_tokens, "cost_usd": res.cost_usd,
-            "latency_ms": res.latency_ms}
+            "latency_ms": res.latency_ms, "finish_reason": res.finish_reason}
 
 
 def _rollup_tel(reps: list) -> dict:
     """Sum per-call telemetry across a set of reps (per-district or global)."""
-    t = {"calls": 0, "judge_calls": 0, "errors": 0, "prompt_tokens": 0,
+    t = {"calls": 0, "judge_calls": 0, "errors": 0, "truncated": 0, "prompt_tokens": 0,
          "completion_tokens": 0, "cost_usd": 0.0}
     for rep in reps:
         for c in rep["calls"]:
@@ -183,6 +185,8 @@ def _rollup_tel(reps: list) -> dict:
             t["cost_usd"] += (c["cost_usd"] or 0.0)
             if not c["ok"]:
                 t["errors"] += 1
+            if c.get("finish_reason") == "length":
+                t["truncated"] += 1
             if c["role"] == "judge":
                 t["judge_calls"] += 1
     return t
@@ -365,6 +369,8 @@ def _print_district_progress(did: str, pd: dict, gt_data: dict = None) -> None:
     line = (f"[done]  {did} {pd['name'][:22]:22s} reps={pd['n_reps']:2d} "
             f"acc={len(pd['accepted']):2d} unres={len(pd['unresolved']):2d} "
             f"err={tel.get('errors', 0)} ${tel.get('cost_usd', 0):.4f} | {band_str}")
+    if tel.get("truncated"):
+        line += f"  ⚠ {tel['truncated']} TRUNCATED reply(s) — raise max_tokens / check tail loss"
     if gt_data and did in gt_data:
         card = VALID.score_district(pd, gt_data[did])
         hit = sum(1 for b in card["bands"] if b["status"] == "hit")
@@ -536,7 +542,8 @@ def _print_council(out: dict) -> None:
             print(f"    UNRESOLVED {u.get('band')}/{u.get('school')} {u.get('reason','disagree')}")
     print(f"\nTELEMETRY: {tel['calls']} calls ({tel['judge_calls']} judge), "
           f"{tel['prompt_tokens']}+{tel['completion_tokens']} tok, "
-          f"${tel['cost_usd']:.4f}, {tel['errors']} errors")
+          f"${tel['cost_usd']:.4f}, {tel['errors']} errors, "
+          f"{tel.get('truncated', 0)} truncated")
 
 
 if __name__ == "__main__":
