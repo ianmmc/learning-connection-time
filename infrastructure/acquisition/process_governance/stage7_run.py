@@ -96,16 +96,67 @@ def run_plumbing(handoff_path, *, limit: int = 1) -> list[dict]:
 # ---------------------------------------------------------------------------
 # Slice 2 — full council (2 voters → consensus → judge on disagreement) per rep
 # ---------------------------------------------------------------------------
-def _group_reps(plan: list) -> dict:
-    """Collapse the flat voter plan into one entry per (district, rec_key, file, kind, council),
-    carrying the voter models + their per-model prompt ids (the reps a council votes on together)."""
+def _group_reps_by_district(plan: list) -> dict:
+    """Collapse the flat voter plan to rep-groups (one per district/rec_key/file/kind/council with
+    its voters + per-model prompt ids), then bucket BY DISTRICT — so a run can process one district
+    fully and persist it before touching the next (durability, §incremental)."""
     groups = {}
     for p in plan:
         k = (p["district_id"], p["rec_key"], p["file"], p["kind"], p["council_id"])
         g = groups.setdefault(k, {"voters": [], "prompt_ids": {}})
         g["voters"].append(p["model"])
         g["prompt_ids"][p["model"]] = p["prompt_id"]
-    return groups
+    by_did = {}
+    for (did, rec_key, file, kind, cid), g in groups.items():
+        by_did.setdefault(did, []).append(
+            {"rec_key": rec_key, "file": file, "kind": kind, "council_id": cid,
+             "voters": g["voters"], "prompt_ids": g["prompt_ids"]})
+    return by_did
+
+
+def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, use_judge: bool) -> dict:
+    """Run the full council over ONE district's reps and return its result dict (reps + per-model
+    call detail, pooled accepted/unresolved facts, modal bands, telemetry). All the paid calls for a
+    district happen here so the caller can persist it as a unit."""
+    pd = {"district_id": did, "name": name, "reps": [], "accepted": [], "unresolved": [],
+          "n_reps": 0, "n_judged": 0}
+    for rg in rep_groups:
+        rec_key, file, kind, cid = rg["rec_key"], rg["file"], rg["kind"], rg["council_id"]
+        content = resolve_content(ddir, rec_key, file, kind)
+        cfg = councils.get(cid) or {}
+        model_rows, calls = {}, []
+        for model in rg["voters"]:
+            res = _call(model, rg["prompt_ids"][model], kind, content)
+            facts = PARSE.parse_schedules(res.content) if res.ok else []
+            model_rows[model] = facts
+            calls.append(_call_record(model, "voter", res, facts))
+
+        accepted, unresolved = AGG.consensus_school_facts(model_rows)
+        judged = False
+        if use_judge and unresolved and cfg.get("judge"):
+            jmodel = cfg["judge"]
+            jres = _call(jmodel, P6.select_prompt_id(cfg, jmodel), kind, content)
+            jfacts = PARSE.parse_schedules(jres.content) if jres.ok else []
+            calls.append(_call_record(jmodel, "judge", jres, jfacts))
+            accepted, unresolved = AGG.consensus_school_facts(model_rows, {jmodel: jfacts})
+            judged = True
+
+        for f in accepted:      # provenance: the rep each fact came from (consensus runs per rep)
+            f["rec_key"], f["source_file"] = rec_key, file
+        for u in unresolved:
+            u["rec_key"], u["source_file"] = rec_key, file
+
+        pd["reps"].append({"rec_key": rec_key, "file": file, "kind": kind, "council_id": cid,
+                           "judged": judged, "calls": calls,
+                           "accepted": accepted, "unresolved": unresolved})
+        pd["accepted"].extend(accepted)
+        pd["unresolved"].extend(unresolved)
+        pd["n_reps"] += 1
+        pd["n_judged"] += 1 if judged else 0
+
+    pd["bands"] = AGG.district_bands_from_facts(pd["accepted"])
+    pd["telemetry"] = _rollup_tel(pd["reps"])
+    return pd
 
 
 def _call(model: str, prompt_id: str, kind: str, content) -> "OR.CallResult":
@@ -154,67 +205,88 @@ def run_council(handoff_path, *, use_judge: bool = True) -> dict:
 
 
 def run_council_doc(doc: dict, *, use_judge: bool = True) -> dict:
-    """`run_council` on an already-loaded handoff doc (so a variant — e.g. the image-routed probe
-    below — can be fed directly without a file). Captures per-rep, per-model call detail so the run
-    can be persisted (`persist_run`) and written as a gate@7 receipt (`write_receipt`)."""
-    plan = R6.plan_requests(doc)
+    """Batch (in-memory) run over an already-loaded handoff doc — collect ALL districts, no persist.
+    Kept for tests + the image-variant probe. For real runs prefer `run_council_streaming` (persists
+    + streams per district so a mid-run failure keeps completed work). Both share `_run_district`."""
     councils = doc.get("councils") or {}
-    ddirs = district_dirs({p["district_id"] for p in plan})
+    by_district = _group_reps_by_district(R6.plan_requests(doc))
+    ddirs = district_dirs(by_district.keys())
     _require_key()
-
-    districts: dict = {}
-    for (did, rec_key, file, kind, cid), g in _group_reps(plan).items():
-        content = resolve_content(ddirs[did], rec_key, file, kind)
-        cfg = councils.get(cid) or {}
-        model_rows, calls = {}, []
-        for model in g["voters"]:
-            res = _call(model, g["prompt_ids"][model], kind, content)
-            facts = PARSE.parse_schedules(res.content) if res.ok else []
-            model_rows[model] = facts
-            calls.append(_call_record(model, "voter", res, facts))
-
-        accepted, unresolved = AGG.consensus_school_facts(model_rows)
-        judged = False
-        if use_judge and unresolved and cfg.get("judge"):
-            jmodel = cfg["judge"]
-            jres = _call(jmodel, P6.select_prompt_id(cfg, jmodel), kind, content)
-            jfacts = PARSE.parse_schedules(jres.content) if jres.ok else []
-            calls.append(_call_record(jmodel, "judge", jres, jfacts))
-            accepted, unresolved = AGG.consensus_school_facts(model_rows, {jmodel: jfacts})
-            judged = True
-
-        # Tag each fact with the rep it came from (consensus runs per rep) — provenance for gate@7.
-        for f in accepted:
-            f["rec_key"], f["source_file"] = rec_key, file
-        for u in unresolved:
-            u["rec_key"], u["source_file"] = rec_key, file
-
-        pd = districts.setdefault(did, {"district_id": did, "name": _district_name(doc, did),
-                                        "reps": [], "accepted": [], "unresolved": [],
-                                        "n_reps": 0, "n_judged": 0})
-        pd["reps"].append({"rec_key": rec_key, "file": file, "kind": kind, "council_id": cid,
-                           "judged": judged, "calls": calls,
-                           "accepted": accepted, "unresolved": unresolved})
-        pd["accepted"].extend(accepted)
-        pd["unresolved"].extend(unresolved)
-        pd["n_reps"] += 1
-        pd["n_judged"] += 1 if judged else 0
-
-    for pd in districts.values():
-        pd["bands"] = AGG.district_bands_from_facts(pd["accepted"])
-        pd["telemetry"] = _rollup_tel(pd["reps"])
+    districts = {did: _run_district(did, _district_name(doc, did), rg, councils, ddirs.get(did), use_judge)
+                 for did, rg in by_district.items()}
     all_reps = [rep for pd in districts.values() for rep in pd["reps"]]
     return {"handoff_hash": doc.get("handoff_hash"), "districts": districts,
             "telemetry": _rollup_tel(all_reps)}
 
 
-def image_handoff_variant(doc: dict, *, image_file: str = "raster_p-1.png",
-                          council_id: str = "image") -> dict:
-    """DEV/TEST probe (Ian, 2026-07-02): rewrite a text handoff so each record routes its
-    in-store rasterized page image (`raster_p-1.png`, produced by Stage 4) to the VISION `image`
-    council — a text-vs-vision comparison on the SAME documents. Records whose image isn't on disk
-    are dropped. NOT a production dispatch (it bypasses release/routing) — a controlled probe of the
-    vision path the user asked to exercise; a real image dispatch comes from routing on
+def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = False,
+                          gt_data: dict = None, created_by: str = "auto:stage7", resume: bool = True,
+                          on_district=None) -> dict:
+    """The DURABLE, RESUMABLE run: process ONE district at a time and, if `persist`, commit it
+    immediately (its extraction + school_fact rows + state_event + a per-district receipt) before
+    the next — so a crash / network drop / OpenRouter outage at district N keeps districts 1..N-1
+    and a re-run skips them (`resume` — query `extraction` for this handoff_hash). Streams a
+    per-district progress line (+ a mini GT scorecard when `gt_data` is given). Returns the
+    THIS-SESSION results (skipped districts are already durable in the DB, not re-collected)."""
+    councils = doc.get("councils") or {}
+    by_district = _group_reps_by_district(R6.plan_requests(doc))
+    ddirs = district_dirs(by_district.keys())
+    _require_key()
+    hh = doc.get("handoff_hash")
+
+    done = set()
+    if persist:
+        gdb.init_precious_schema()
+        if resume:
+            done = _already_extracted(hh)
+
+    results = {"handoff_hash": hh, "districts": {}}
+    for did in sorted(by_district):
+        if did in done:
+            print(f"[skip]  {did} — already extracted for handoff {hh}", flush=True)
+            continue
+        pd = _run_district(did, _district_name(doc, did), by_district[did], councils,
+                           ddirs.get(did), use_judge)
+        results["districts"][did] = pd
+        if persist:
+            rp = write_district_receipt(pd, hh)
+            with gdb.session_scope() as s:
+                persist_run_session(s, {"handoff_hash": hh, "districts": {did: pd}},
+                                    created_by=created_by, receipt_path=rp)
+        _print_district_progress(did, pd, gt_data)
+        if on_district:
+            on_district(did, pd)
+
+    if persist:
+        try:   # refresh the git-swept backup ONCE at the end (per-district would re-dump 24×)
+            with gdb.session_scope() as s:
+                DS.export_status(s)
+        except Exception as e:  # noqa: BLE001
+            print(f"[warn] district_status.json backup refresh failed ({type(e).__name__}: {e})")
+
+    results["telemetry"] = _rollup_tel(
+        [rep for pd in results["districts"].values() for rep in pd["reps"]])
+    return results
+
+
+def _pick_png(capture_dir: Path, *, preferred: str = "raster_p-1.png"):
+    """The best in-store PNG for a capture — `raster_p-1.png` (Stage-4's rasterized-PDF-page
+    rep) if present, else any other `.png` (e.g. a native image capture's `original.png`).
+    Deliberately PNG-only: never `.webp`/`.jpg`/`.jpeg` (Ian, 2026-07-03 — the pipeline doesn't
+    produce webp; jpg/jpeg-only captures are excluded from the image pathway, not converted)."""
+    pref = capture_dir / preferred
+    if pref.exists():
+        return pref.name
+    pngs = sorted(capture_dir.glob("*.png")) if capture_dir.exists() else []
+    return pngs[0].name if pngs else None
+
+
+def image_handoff_variant(doc: dict, *, council_id: str = "image") -> dict:
+    """Rewrite a text handoff so each record routes its best in-store PNG (`_pick_png` — Stage 4's
+    rasterized page, or a native PNG capture) to the VISION `image` council — a text-vs-vision
+    comparison on the SAME documents. Records with no PNG on disk (jpg/jpeg/webp-only captures)
+    are dropped, never converted. NOT a production dispatch (it bypasses release/routing) — a
+    controlled probe of the vision path; a real image dispatch comes from routing on
     `visual_text_gap`/`needs_vision`."""
     import copy
     v = copy.deepcopy(doc)
@@ -226,10 +298,11 @@ def image_handoff_variant(doc: dict, *, image_file: str = "raster_p-1.png",
         recs = []
         for rec in d["records"]:
             h = rec["rec_key"].split(":", 1)[1]
-            fp = (paths.RAW_CAPTURES / ddir / "captures" / h / image_file) if ddir else None
-            if fp and fp.exists():
+            capdir = (paths.RAW_CAPTURES / ddir / "captures" / h) if ddir else None
+            png = _pick_png(capdir) if capdir else None
+            if png:
                 rec = copy.deepcopy(rec)
-                rec["reps"] = [{"file": image_file, "kind": "image", "councils": [council_id],
+                rec["reps"] = [{"file": png, "kind": "image", "councils": [council_id],
                                 "fidelity_suspect": False, "route_reason": "image-test-override"}]
                 recs.append(rec)
         if recs:
@@ -265,6 +338,40 @@ def write_receipt(results: dict, *, root=None) -> str:
     path = d / f"extraction_{hh}_{_fs_ts()}.json"
     path.write_text(json.dumps(results, indent=2))
     return str(path)
+
+
+def write_district_receipt(pd: dict, handoff_hash: str, *, root=None) -> str:
+    """One district's run as an immutable receipt (`extraction_<hash>_<did>_<ts>.json`), written the
+    moment the district completes — durable independent of the rest of the batch (the streaming path)."""
+    d = Path(root) if root else (paths.ACQUISITION / "extractions")
+    d.mkdir(parents=True, exist_ok=True)
+    path = d / f"extraction_{handoff_hash or 'nohash'}_{pd['district_id']}_{_fs_ts()}.json"
+    path.write_text(json.dumps({"handoff_hash": handoff_hash, "district": pd}, indent=2))
+    return str(path)
+
+
+def _already_extracted(handoff_hash: str) -> set:
+    """District ids already persisted for this handoff (the resume skip-set). Schema must exist."""
+    with gdb.session_scope() as s:
+        return {r[0] for r in s.execute(
+            text("SELECT DISTINCT district_id FROM extraction WHERE handoff_hash = :h"),
+            {"h": handoff_hash or ""})}
+
+
+def _print_district_progress(did: str, pd: dict, gt_data: dict = None) -> None:
+    tel = pd.get("telemetry") or {}
+    bands = pd.get("bands") or {}
+    band_str = " ".join(f"{b[0].upper()}={v['gross_minutes']}" for b, v in bands.items()) or "(none)"
+    line = (f"[done]  {did} {pd['name'][:22]:22s} reps={pd['n_reps']:2d} "
+            f"acc={len(pd['accepted']):2d} unres={len(pd['unresolved']):2d} "
+            f"err={tel.get('errors', 0)} ${tel.get('cost_usd', 0):.4f} | {band_str}")
+    if gt_data and did in gt_data:
+        card = VALID.score_district(pd, gt_data[did])
+        hit = sum(1 for b in card["bands"] if b["status"] == "hit")
+        cmp = sum(1 for b in card["bands"] if b["status"] in ("hit", "miss"))
+        gap = sum(1 for b in card["bands"] if b["status"] == "gap")
+        line += f"  || GT bands {hit}/{cmp} hit, {gap} gap"
+    print(line, flush=True)
 
 
 def persist_run_session(s, results: dict, *, created_by: str = "auto:stage7",
@@ -378,6 +485,8 @@ def main():
     ap.add_argument("--validate", action="store_true",
                     help="council/image: score the run vs the curated GT (gt_proposals.json)")
     ap.add_argument("--gt", default=None, help="path to gt_proposals.json (default: newest gt_curation)")
+    ap.add_argument("--no-resume", action="store_true",
+                    help="council/image + persist: re-run districts already extracted for this handoff")
     args = ap.parse_args()
 
     if args.mode == "plumbing":
@@ -392,26 +501,27 @@ def main():
                       f"{f.get('end_time','?')} {f.get('school_name','?')}")
         return
 
+    doc = load_handoff(args.handoff)
     if args.mode == "image":
-        doc = image_handoff_variant(load_handoff(args.handoff))
-        out = run_council_doc(doc, use_judge=not args.no_judge)
-    else:
-        out = run_council(args.handoff, use_judge=not args.no_judge)
-    _print_council(out)
-
-    if args.persist:
-        rp = write_receipt(out)
-        summ = persist_run(out, created_by="ian:batch0-stage7-dev", receipt_path=rp)
-        print(f"\nPERSISTED to governance DB (receipt: {rp}):")
-        for d in summ["districts"]:
-            print(f"  extraction #{d['extraction_id']} {d['district_id']}: "
-                  f"{d['n_accepted']} accepted, {d['n_unresolved']} unresolved")
-
+        doc = image_handoff_variant(doc)
+    gt_data = None
     if args.validate:
         gt_path = args.gt or default_gt_path()
         if not gt_path:
             raise SystemExit("no GT found — pass --gt <gt_proposals.json>")
-        _print_scorecard(VALID.score_run(out, VALID.load_gt(gt_path)))
+        gt_data = VALID.load_gt(gt_path)
+
+    # The streaming/resumable path: each district is persisted + printed as it finishes, so a
+    # mid-run failure keeps completed districts and a re-run skips them.
+    print(f"Running {sum(len(v) for v in _group_reps_by_district(R6.plan_requests(doc)).values())} "
+          f"reps across {len(doc.get('districts', []))} districts "
+          f"(mode={args.mode}, persist={args.persist}, resume={not args.no_resume})...", flush=True)
+    out = run_council_streaming(doc, use_judge=not args.no_judge, persist=args.persist,
+                                gt_data=gt_data, created_by="ian:batch0-stage7-dev",
+                                resume=not args.no_resume)
+    _print_council(out)
+    if gt_data:
+        _print_scorecard(VALID.score_run(out, gt_data))
 
 
 def _print_council(out: dict) -> None:

@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-03T01:29:30Z",
+  "last_updated": "2026-07-03T02:49:44Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -48,9 +48,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "0100810": {
       "name": "Coffee County",
@@ -236,9 +245,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "0103390": {
       "name": "Tuscaloosa County",
@@ -341,9 +359,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "0200600": {
       "name": "Fairbanks North Star Borough School District",
@@ -391,9 +418,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "0400023": {
       "name": "Pinon Unified District (4390)",
@@ -531,9 +567,18 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T01:22:56Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "cb8fabfc32ae"
+      "notes": "a2bc80c004ca"
     },
     "0405820": {
       "name": "Page Unified School District #8  (4196)",
@@ -803,9 +848,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "0513530": {
       "name": "VILONIA SCHOOL DISTRICT",
@@ -1333,9 +1387,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "0634320": {
       "name": "San Diego Unified",
@@ -1391,9 +1454,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "0806750": {
       "name": "Strasburg School District 31J",
@@ -1563,9 +1635,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "0902790": {
       "name": "New Haven School District",
@@ -1621,9 +1702,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "0904830": {
       "name": "Waterbury School District",
@@ -1679,9 +1769,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "1000080": {
       "name": "Appoquinimink School District",
@@ -1752,9 +1851,18 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T01:22:56Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "cb8fabfc32ae"
+      "notes": "a2bc80c004ca"
     },
     "1100020": {
       "name": "Roots PCS",
@@ -1895,9 +2003,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "1600001": {
       "name": "WEST BONNER COUNTY DISTRICT",
@@ -1971,9 +2088,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "1713590": {
       "name": "Egyptian CUSD 5",
@@ -2603,9 +2729,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "1915840": {
       "name": "Knoxville Comm School District",
@@ -2946,9 +3081,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "2307320": {
       "name": "Lewiston Public Schools",
@@ -3004,9 +3148,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "2500587": {
       "name": "Old Sturbridge Academy Charter Public School",
@@ -3350,9 +3503,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "2600209": {
       "name": "Chandler Woods Charter Academy",
@@ -4059,9 +4221,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "3200480": {
       "name": "Washoe County",
@@ -4117,9 +4288,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "3300030": {
       "name": "North Country Charter Academy",
@@ -5432,9 +5612,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "3904817": {
       "name": "Midview Local",
@@ -6119,9 +6308,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "4812640": {
       "name": "CAMERON ISD",
@@ -6673,9 +6871,18 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T01:22:56Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "cb8fabfc32ae"
+      "notes": "a2bc80c004ca"
     },
     "5000425": {
       "name": "Mt. Abraham Unified School District #61",
@@ -7256,9 +7463,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T17:52:10Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-03T01:59:59Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian:batch0-fullrun"
         }
       ],
-      "notes": "benchmark injection: files copied from gt_curation, no fetching"
+      "notes": "a2bc80c004ca"
     },
     "5900038": {
       "name": "Circle of Life Academy",
