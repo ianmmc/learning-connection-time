@@ -18,6 +18,17 @@ import re
 # A single schedule object: a {...} span (no nested braces) that mentions a start time.
 _SCHED_OBJ = re.compile(r'\{[^{}]*?"start_time"[^{}]*?\}', re.DOTALL)
 
+# Prompt-example leak guard: names a model can only have copied from the system prompt's few-shot
+# example, never read from a document. "Fivay High" (the pre-2026-07-03 example, a real FL school)
+# leaked into live output at confidence=high; the example is now the self-evident "[SCHOOL NAME]".
+# A leaked row's name is unrecoverable — dropping it turns a fabricated consensus vote into an
+# honest absence.
+_PROMPT_LEAK_NAMES = {"[school name]", "fivay high"}
+
+
+def _is_prompt_leak(sched: dict) -> bool:
+    return str(sched.get("school_name", "")).strip().lower() in _PROMPT_LEAK_NAMES
+
 
 def _strip_fences(text: str) -> str:
     t = text.strip()
@@ -31,9 +42,11 @@ def _salvage(text: str) -> list[dict]:
     out = []
     for m in _SCHED_OBJ.finditer(text):
         try:
-            out.append(json.loads(m.group(0)))
+            obj = json.loads(m.group(0))
         except Exception:
-            pass
+            continue
+        if not _is_prompt_leak(obj):
+            out.append(obj)
     return out
 
 
@@ -53,4 +66,4 @@ def parse_schedules(content: str) -> list[dict]:
         scheds = obj
     else:
         scheds = []
-    return [s for s in scheds if isinstance(s, dict)]
+    return [s for s in scheds if isinstance(s, dict) and not _is_prompt_leak(s)]

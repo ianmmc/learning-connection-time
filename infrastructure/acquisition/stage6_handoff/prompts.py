@@ -18,8 +18,13 @@ Convert all times to 24-hour HH:MM ("8:30 AM"->"08:30", "3:15 PM"->"15:15").
 Infer grade level from school name: elementary/primary/ES/K-5 -> "elementary"; middle/junior/MS/6-8 -> "middle"; high/HS/9-12 -> "high". If the document covers elementary, middle, AND high, extract at least one of EACH.
 
 Output ONLY compact JSON. No commentary, no markdown fences, no raw_text_snippet:
-{"schedules":[{"grade_level":"high","start_time":"08:10","end_time":"14:35","school_name":"Fivay High","confidence":"high"}]}
+{"schedules":[{"grade_level":"high","start_time":"08:10","end_time":"14:35","school_name":"[SCHOOL NAME]","confidence":"high"}]}
 If none found: {"schedules":[]}"""
+# ^ The example school_name is a self-evident placeholder, NOT a real-looking name: the prior
+#   example ("Fivay High", a real FL school) leaked into live output — a judge reading a garbled
+#   table returned "Fivay High"@confidence=high for a CA district (batch_00000 full run,
+#   2026-07-03). A bracketed placeholder can't collide with any real school and is dropped by
+#   parse.py's leak guard if a model ever echoes it.
 
 # The vision-path variant — same rules, read from the rendered page image(s) (multi-column scans, fliers).
 _EXTRACT_VISION_V1 = _EXTRACT_V1.replace(
