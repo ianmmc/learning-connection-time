@@ -112,13 +112,23 @@ pass shows scripts miss real cases (the measured-pass discipline — memory `fee
   **budget governor** (REQ-051) on any paid re-extraction — the loop must provably terminate and never run
   up unbounded OpenRouter spend.
 
-### 4b. Motivating evidence (batch_00000 full run, 2026-07-03)
-Two of the three band misses were coverage/routing gaps this loop would **self-correct**:
-- **Essex high** — the real EHS bell-schedule rep (`Essex High School Bell Schedule.jpeg`) was **held at the
-  5/6 seam** (tier-B, unlabeled) and never dispatched; the council fabricated a high row by spraying another
-  school's hours. A **representation/7→6** request swaps the held image rep in.
-- **New Haven Unified high** — the flagship comprehensive HS was absent from what was sent (GT's high band
-  is only the continuation school). A **district/7→2 (or 7→1)** request goes and gets it.
+### 4b. Motivating evidence + a validated detector (batch_00000, 2026-07-03)
 
-The loop is the mechanism that would have caught both — which is why it's the highest-value next Stage-7
-build after the gate@7 console (which is its review surface).
+**The detector (`requests.py`) run over the real text results** flags exactly the **4 genuine coverage
+gaps** the scorecard showed — Mat-Su middle, Mesa high, Bangor elementary, Cleveland middle (the K-8
+band-split quirk) — each routed **7→2** with the band's known schools (from `schools_by_band_json`); it
+correctly stays silent on the 20 covered districts. So the district-altitude signal works on real data.
+
+**Interaction with the spray failure mode (important).** The one band *miss* that is NOT a detected gap is
+**Essex high** — because the spray *fabricated* a high row (another school's hours copied onto Essex High),
+the band looks "covered," so the coverage detector (0 facts ⇒ request) can't see it. **The spray masks the
+gap.** So the anti-spray fix (#81) and the request loop are **complementary**: fix the spray → Essex high
+becomes a genuine 0-fact gap → *then* the loop catches it and a **7→6** request swaps in the held
+`Essex High School Bell Schedule.jpeg` (currently tier-B, unlabeled at the 5/6 seam). Corrected from an
+earlier claim that 7→6 would catch Essex directly — it can't while the fabrication stands.
+
+**New Haven Unified high** — the flagship comprehensive HS was absent from what was sent (GT's high band is
+only the continuation school). This *is* a genuine coverage gap in kind, though our fabricated-adjacent read
+also partly masks it; a **district/7→2 (or 7→1)** request is the right recovery once the read is honest.
+
+The loop is the highest-value next Stage-7 build after the gate@7 console (its review surface).
