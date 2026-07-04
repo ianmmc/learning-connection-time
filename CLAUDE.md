@@ -119,9 +119,12 @@ Stage-1 follow-up batch, under the **REQ-051 budget governor** (`common/budget.p
 prerequisite) + a per-district×band depth guard. Execution is CLI + API today (`python3 -m
 infrastructure.acquisition.process_governance.stage7_execute {compose-followup|execute <id>}`; `POST
 /api/extract/{compose-followup, execute/{id}}`); the gate@7 console buttons + a live non-benchmark run of
-the loop are the remaining gaps. Stages 8–9 remain designed, not built. **Next:** engineer's-discretion —
-Stage 8 (aggregate), the gate@7 execution console buttons + a live loop run, or a Council Lab backlog item
-(GitHub #80 Council Lab infra, #81 spray A/B, #82 image-council judge not vision-capable). Full detail:
+the loop are the remaining gaps. Stages 8–9 remain designed, not built. The **Council Lab** is now in
+flight: the #82 image-judge fix landed (`6fd6a48` — vision-capability catalog + `councils.validate()`
+vision guard + judge swapped to the vision-capable `qwen/qwen3-vl-235b-a22b-instruct`, a stand-in pending
+A/B measurement). **Next:** engineer's-discretion — the Council Lab #80 A/B infra (measure the #82
+coverage recovery; then the #81 anti-spray prompt A/B), Stage 8 (aggregate), or the gate@7 execution
+console buttons + a live loop run. Full detail:
 `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§3F.
 
 ---
