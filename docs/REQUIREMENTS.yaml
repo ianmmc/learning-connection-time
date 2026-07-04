@@ -2825,3 +2825,24 @@ requirements:
     created: "2026-07-03T00:00:00Z"
     updated: "2026-07-03T00:00:00Z"
     notes: "Closes the request-more-evidence loop left open by REQ-117 (its last acceptance criterion) and STAGE7 §3F. Depends on REQ-051 (budget governor, built first). Design decisions (Ian, 2026-07-03): build BOTH mechanisms + all four routes; collect approved NEW-work requests into ONE follow-up batch; keep gate@7 approve as pure review with a separate compose step; build REQ-051 first as a hard prerequisite. The 'wrap NEW capture/discovery in a Stage-1 batch' rule (Ian) resolves the §3F-vs-§11d tension: only 7->6 (existing reps) is a true direct back-edge; 7->2/7->3/7->1 all converge on a Stage-1 follow-up batch. Authority: STAGE7_EXTRACT_DESIGN_2026-06.md §3F, PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §11b/§11d/§11e."
+
+  - id: REQ-119
+    description: External AI service (LLM) calls MUST stream results (SSE), never a single blocking read — a provider-agnostic contract
+    type: constraint
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "The live generative client (stage7_extract/openrouter.py) issues stream:true, accumulates deltas incrementally, and reads usage/finish_reason/generation_id off the stream (not a blocking response) — MET"
+      - "Streaming is NOT caller-controllable to False: no argument combination turns it off (the flag is fixed True in the request body) — MET"
+      - "Streaming survives long idle gaps: keep-alive/empty chunks are tolerated without content loss; a long multi-school generation reassembles in order across many chunks (not one un-chunked read) — MET"
+      - "Truncation (finish_reason == 'length') and mid-stream errors are surfaced with partial content preserved (the silent-tail-loss tripwire) — MET"
+      - "A provider-agnostic SOURCE GUARD flags any OpenAI-SDK chat-completion call in the acquisition code that is not streaming; a NEW blocking call anywhere fails the test — MET"
+      - "Deprecated, non-live call sites are an explicit, bounded allowlist (not a silent pass) — MET"
+      - "Any alternative provider adapter swapped in later must present the same streaming call() contract — enforced by the behavioral + source guards"
+    tests:
+      - tests/test_streaming_contract.py
+      - tests/test_stage7_openrouter.py::test_stream_accumulates_deltas_and_reads_final_usage
+      - tests/test_stage7_openrouter.py::test_mid_stream_error_keeps_partial_content
+    created: "2026-07-04T00:00:00Z"
+    updated: "2026-07-04T00:00:00Z"
+    notes: "Rationale (Ian, 2026-07-04): a non-streaming completion on a long generation (a big hub district returns a long single-shot JSON) idle-times-out the connection — a silent, load-bearing failure mode during automatic processing AT SCALE. Streaming keep-alive chunks hold the socket open, deltas arrive incrementally, and a mid-stream failure yields a partial + structured error instead of a dropped connection. The ONLY live generative call site is the council extraction client (already streams, REQ-117); the SERP providers (serper/brightdata) are search/data APIs (not token-generating, streaming N/A). DEPRECATED non-streaming site: common/discover.py openrouter_search (the retired ~$27/1K OpenRouter AI-search Wave provider, issue #41; sibling perplexity_search also deprecated) — allowlisted in the source guard, NOT in the live path. CLEANUP FOLLOW-UP: remove the deprecated openrouter_search/perplexity_search (they carry their own error-handling tests, so removal cascades into test_acquisition_stages.py — a scoped change, deferred)."
