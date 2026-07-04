@@ -1207,7 +1207,8 @@ def extract_district(district_id: str):
         bands = AGG.district_bands_from_facts(agg)
         reqs = con.execute(text(
             "SELECT request_id, altitude, route, target, band, params_json, reason, status, "
-            "reviewed_by, reviewed_at, review_note, created_at FROM extraction_request "
+            "reviewed_by, reviewed_at, review_note, created_at, executed_ref, executed_at "
+            "FROM extraction_request "
             "WHERE district_id = :d AND handoff_hash = :h ORDER BY altitude, route, band"),
             {"d": district_id, "h": ext["handoff_hash"]}).mappings().all()
         return {"extraction": dict(ext), "bands": bands, "accepted": accepted,
