@@ -7,13 +7,15 @@ packages themselves stay independent (import-linter). It reads the immutable han
 sent rep's content off disk (`RAW_CAPTURES/<district_dir>/captures/<hash>/<file>` — the same
 resolver gate@6's `inspect` uses), drives the paid calls, and runs the council.
 
-Slices present:
-  - `run_plumbing()` (slice 1): the first N planned VOTER calls, parsed facts + telemetry — a
+Entry points:
+  - `run_plumbing()` (diagnostics): the first N planned VOTER calls, parsed facts + telemetry — a
     single-call proof the whole path works.
-  - `run_council()` (slice 2): per rep, both voters → cross-family consensus
+  - `run_council_streaming()` (THE production run): per rep, both voters → cross-family consensus
     (`aggregate.consensus_school_facts`) → judge-on-disagreement (the council's 3rd-family model
-    re-reads the same page) → per-district modal bands (`aggregate.district_bands_from_facts`).
-Storage, state events, gate@7, and GT scoring come in later slices.
+    re-reads the same page) → per-district modal bands (`aggregate.district_bands_from_facts`) —
+    durable/resumable per-district persistence, REQ-051 budget-governed, image-council vision-checked.
+    (The old unguarded batch entry points run_council/run_council_doc were deleted, issue #146 —
+    they had no callers and bypassed the budget governor.)
 """
 from __future__ import annotations
 
@@ -25,6 +27,7 @@ from sqlalchemy import text
 from infrastructure.acquisition.common import budget as BUD
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
+from infrastructure.acquisition.common import model_families as MF
 from infrastructure.acquisition.common import paths
 from infrastructure.acquisition.stage6_handoff import cost as COST6
 from infrastructure.acquisition.stage6_handoff import councils as C6
@@ -210,35 +213,31 @@ def _rollup_tel(reps: list) -> dict:
     return t
 
 
-def run_council(handoff_path, *, use_judge: bool = True) -> dict:
-    """SLICE 2: run the full council over every sent rep in the handoff.
-
-    Per rep: call both voters, run cross-family per-school consensus
-    (`aggregate.consensus_school_facts`); if any (band,school) is unresolved and the council has a
-    judge, the judge (3rd family) re-reads the SAME page once and consensus is re-run with its rows.
-    Per district: pool the accepted per-school facts across its reps and take the modal band value
-    (`aggregate.district_bands_from_facts`). Returns {districts:{...}, telemetry:{...}}. No persist.
-
-    Consensus keys `model_rows` by the full OpenRouter model id, matching the canonical family map
-    (`common.model_families`, unified on full ids) that both `aggregate` and `councils` now share —
-    so cross-family counting is correct here, not merely coincidental.
-    """
-    return run_council_doc(load_handoff(handoff_path), use_judge=use_judge)
-
-
-def run_council_doc(doc: dict, *, use_judge: bool = True) -> dict:
-    """Batch (in-memory) run over an already-loaded handoff doc — collect ALL districts, no persist.
-    Kept for tests + the image-variant probe. For real runs prefer `run_council_streaming` (persists
-    + streams per district so a mid-run failure keeps completed work). Both share `_run_district`."""
+def _check_image_councils(doc: dict) -> None:
+    """Refuse a frozen handoff whose image-kind reps route to a council with a non-vision-capable
+    member (#138 / #82 recurrence guard). The `councils.validate()` vision guard runs only at
+    config-LOAD — a frozen handoff EMBEDS its configs, so a pre-swap doc still carries the dead
+    text-only image judge and would 404 every judge call while paying for the voters. Scoped to the
+    image hazard only (text councils validate at freeze time; test fixtures with synthetic text
+    models stay valid). Raises ValueError naming the blind model(s) — re-freeze under current configs."""
     councils = doc.get("councils") or {}
-    by_district = _group_reps_by_district(R6.plan_requests(doc))
-    ddirs = district_dirs(by_district.keys())
-    _require_key()
-    districts = {did: _run_district(did, _district_name(doc, did), rg, councils, ddirs.get(did), use_judge)
-                 for did, rg in by_district.items()}
-    all_reps = [rep for pd in districts.values() for rep in pd["reps"]]
-    return {"handoff_hash": doc.get("handoff_hash"), "districts": districts,
-            "telemetry": _rollup_tel(all_reps)}
+    blind = {}
+    for d in doc.get("districts", []):
+        for rec in d.get("records", []):
+            for rep in rec.get("reps", []):
+                if not CONTENT.is_image_kind(rep.get("kind")):
+                    continue
+                for cid in rep.get("councils", []):
+                    cfg = councils.get(cid) or {}
+                    for m in list(cfg.get("voters") or []) + [cfg.get("judge")]:
+                        if m and not MF.is_vision_capable(m):
+                            blind.setdefault(cid, set()).add(m)
+    if blind:
+        detail = "; ".join(f"council '{cid}': {sorted(ms)}" for cid, ms in sorted(blind.items()))
+        raise ValueError(
+            f"frozen handoff routes image reps to non-vision-capable model(s) — {detail}. "
+            f"Every call would 404 ('No endpoints found that support image input', #82). "
+            f"Re-freeze the dispatch under the current council configs instead of re-running this doc.")
 
 
 def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = False,
@@ -250,6 +249,7 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
     and a re-run skips them (`resume` — query `extraction` for this handoff_hash). Streams a
     per-district progress line (+ a mini GT scorecard when `gt_data` is given). Returns the
     THIS-SESSION results (skipped districts are already durable in the DB, not re-collected)."""
+    _check_image_councils(doc)      # #82-recurrence guard: fail BEFORE any paid call or key check
     councils = doc.get("councils") or {}
     by_district = _group_reps_by_district(R6.plan_requests(doc))
     ddirs = district_dirs(by_district.keys())
@@ -562,20 +562,27 @@ def _district_request_inputs(session, result: dict):
     claimed bands + the band's schools (`district_target`), and the alternate reps per sent record
     (`representation`, the usable reps of a rec_key other than the one we sent — drives 7→6 vs 7→3)."""
     did = result["district_id"]
-    sent = {}
+    # ALL files sent per rec_key (#145): Stage 6 may dispatch several reps of one record, and a rep we
+    # already sent (and that just failed) must never be offered back as its own 7->6 "alternate".
+    sent: dict = {}
     for rep in result.get("reps", []):
-        sent.setdefault(rep["rec_key"], rep["file"])
+        sent.setdefault(rep["rec_key"], set()).add(rep["file"])
     row = session.execute(text("SELECT lea_claimed_bands_json, schools_by_band_json "
                                "FROM district_target WHERE district_id = :d"), {"d": did}).fetchone()
     claimed = json.loads(row[0]) if row and row[0] else []
     sbb = json.loads(row[1]) if row and row[1] else {}
     band_schools = {b: [x["name"] for x in (sbb.get(b, {}) or {}).get("schools", [])] for b in RQ.BANDS}
     alts = {}
-    for rec_key, sent_file in sent.items():
+    for rec_key, sent_files in sent.items():
+        # Dispatchable kinds only (#140): binaries (pdf/bin) and chrome segments are usable=1 in the
+        # Stage-4 sense ("produced"), but a 7->6 alternate must be something a council can READ —
+        # a pdf alternate would route to the text council and be read as raw bytes (paid mojibake).
         for fn, kind in session.execute(
-                text("SELECT filename, file_kind FROM representation WHERE rec_key = :k AND usable = 1"),
+                text("SELECT filename, file_kind FROM representation WHERE rec_key = :k "
+                     "AND usable = 1 AND file_kind IN ('text', 'image') "
+                     "AND source NOT LIKE 'segment:%'"),
                 {"k": rec_key}).all():
-            if fn != sent_file:
+            if fn not in sent_files:
                 alts.setdefault(rec_key, []).append({"file": fn, "kind": kind})
     return claimed, band_schools, alts
 

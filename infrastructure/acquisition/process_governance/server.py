@@ -1173,10 +1173,10 @@ def extract_districts():
                      WHERE handoff_hash NOT LIKE '%-image' GROUP BY district_id) L
                  ON L.mx = e.extraction_id
                LEFT JOIN district d ON d.district_id = e.district_id
-               LEFT JOIN (SELECT district_id, handoff_hash,
+               LEFT JOIN (SELECT district_id,
                                  COUNT(*) FILTER (WHERE status = 'pending') n_pending, COUNT(*) n_requests
-                          FROM extraction_request GROUP BY district_id, handoff_hash) rq
-                 ON rq.district_id = e.district_id AND rq.handoff_hash = e.handoff_hash
+                          FROM extraction_request GROUP BY district_id) rq
+                 ON rq.district_id = e.district_id
                ORDER BY n_pending DESC, e.n_unresolved DESC, e.district_id""")).mappings().all()
         return [dict(r) for r in rows]
 
@@ -1205,12 +1205,15 @@ def extract_district(district_id: str):
                 "models": json.loads(a["models_json"] or "[]"), "method": a["method"]}
                for a in accepted if a["gross_minutes"] is not None]
         bands = AGG.district_bands_from_facts(agg)
+        # ALL of the district's directives, across every handoff (#137): pinning to the latest
+        # extraction's handoff_hash made pending directives from an earlier handoff invisible (and
+        # unreviewable) the moment a newer extraction landed — e.g. right after a 7->6 re-dispatch ran.
         reqs = con.execute(text(
-            "SELECT request_id, altitude, route, target, band, params_json, reason, status, "
-            "reviewed_by, reviewed_at, review_note, created_at, executed_ref, executed_at "
+            "SELECT request_id, handoff_hash, altitude, route, target, band, params_json, reason, "
+            "status, reviewed_by, reviewed_at, review_note, created_at, executed_ref, executed_at "
             "FROM extraction_request "
-            "WHERE district_id = :d AND handoff_hash = :h ORDER BY altitude, route, band"),
-            {"d": district_id, "h": ext["handoff_hash"]}).mappings().all()
+            "WHERE district_id = :d ORDER BY status = 'pending' DESC, altitude, route, band"),
+            {"d": district_id}).mappings().all()
         return {"extraction": dict(ext), "bands": bands, "accepted": accepted,
                 "unresolved": unresolved, "requests": [dict(r) for r in reqs]}
 
@@ -1225,13 +1228,23 @@ async def extract_request_review(request_id: int, payload: dict):
     if status not in ("approved", "rejected", "pending"):
         raise HTTPException(400, "status must be approved | rejected | pending")
     with gdb.session_scope() as con:
+        # 'executed' is TERMINAL (#135): a fired directive must never be reopened/re-approved — the
+        # depth guard COUNTS rows whose current status is 'executed', so a reopen would decrement the
+        # safety counter and allow unlimited paid re-fires (and overwrite the lineage of the first
+        # firing). The UI hides the button; this WHERE clause is the actual gate.
         n = con.execute(text(
             "UPDATE extraction_request SET status = :s, reviewed_by = :by, reviewed_at = :now, "
-            "review_note = :note WHERE request_id = :id"),
+            "review_note = :note WHERE request_id = :id AND status != 'executed'"),
             {"s": status, "by": payload.get("actor", "ian"), "now": _u7(),
              "note": payload.get("note"), "id": request_id}).rowcount
         if not n:
-            raise HTTPException(404, "no such request")
+            cur = con.execute(text(
+                "SELECT status FROM extraction_request WHERE request_id = :id"),
+                {"id": request_id}).scalar()
+            if cur is None:
+                raise HTTPException(404, "no such request")
+            raise HTTPException(409, "executed directives are terminal — they cannot be reopened "
+                                     "(the depth guard and lineage key off the executed status)")
     return {"request_id": request_id, "status": status}
 
 

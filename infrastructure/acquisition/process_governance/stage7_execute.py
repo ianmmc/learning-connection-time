@@ -42,10 +42,12 @@ from infrastructure.acquisition.stage6_handoff import handoff as HND
 from infrastructure.acquisition.stage6_handoff import package as PKG6
 from infrastructure.acquisition.stage7_extract import content as CONTENT
 from infrastructure.acquisition.stage7_extract import models as M7
+from infrastructure.acquisition.stage7_extract import requests as RQ
 
 # The routes that need NEW capture/discovery and therefore route through a Stage-1 follow-up batch.
 # 7->6 (existing reps) is the direct-dispatch path (execute_alternate_dispatch), NOT a batch route.
-NEWWORK_ROUTES = ("7->2", "7->3", "7->1")
+# Imported from the detector's canonical constants (issue #147) — never re-spell route strings.
+NEWWORK_ROUTES = (RQ.ROUTE_REDISCOVER, RQ.ROUTE_RECAPTURE, RQ.ROUTE_ADD_SCHOOLS)
 
 
 # ---------------------------------------------------------------------------
@@ -131,84 +133,143 @@ def _claimed_bands(session, district_ids: list) -> dict:
     return out
 
 
-def _executed_rounds(session) -> dict:
-    """{(district_id, band): count} of already-EXECUTED directives — the depth-guard history."""
+def _executed_rounds(session, district_ids: list) -> dict:
+    """{(district_id, band): count} of already-EXECUTED directives — the depth-guard history,
+    scoped to the districts under consideration (issue #148: never a full-table aggregate)."""
+    if not district_ids:
+        return {}
     rows = session.execute(text(
         "SELECT district_id, band, COUNT(*) FROM extraction_request "
-        "WHERE status = 'executed' GROUP BY district_id, band"))
+        "WHERE status = 'executed' AND district_id = ANY(:d) GROUP BY district_id, band"),
+        {"d": list(district_ids)})
     return {(r[0], r[1]): r[2] for r in rows}
 
 
+def _benchmark_district_ids(session, district_ids: list) -> set:
+    """The subset of `district_ids` belonging to any batch_type='benchmark' batch (batch_00000 —
+    permanently WALLED OFF from Stage-9 writes and funnel/enrichment stats, CLAUDE.md). Request
+    execution must never rebadge these into a follow-up batch (issue #134)."""
+    if not district_ids:
+        return set()
+    rows = session.execute(text(
+        "SELECT DISTINCT bd.district_id FROM batch_district bd "
+        "JOIN batch b ON b.batch_id = bd.batch_id "
+        "WHERE b.batch_type = 'benchmark' AND bd.district_id = ANY(:d)"),
+        {"d": list(district_ids)})
+    return {r[0] for r in rows}
+
+
 def _gather(session, handoff_hash: str) -> tuple:
-    """Read the detector inputs on `session`: the approved NEW-work rows, per-district claimed bands
-    (band-less expansion), the executed-round history (depth guard), and the next free batch id."""
+    """Read the detector inputs on `session`: the approved NEW-work rows (benchmark districts
+    EXCLUDED — the wall, #134), per-district claimed bands (band-less expansion), the executed-round
+    history (depth guard), and the next free batch id.
+
+    Returns (rows, claimed, exec_rounds, batch_id, benchmark_excluded)."""
     rows = _approved_newwork(session, handoff_hash)
     if not rows:
-        return rows, {}, {}, None
+        return rows, {}, {}, None, []
+    dids = sorted({r["district_id"] for r in rows})
+    bm = _benchmark_district_ids(session, dids)
+    benchmark_excluded = [{"district_id": r["district_id"], "request_id": r["request_id"],
+                           "reason": "benchmark district (batch_00000) — walled off from execution"}
+                          for r in rows if r["district_id"] in bm]
+    rows = [r for r in rows if r["district_id"] not in bm]
+    if not rows:
+        return rows, {}, {}, None, benchmark_excluded
     dids = sorted({r["district_id"] for r in rows})
     claimed = _claimed_bands(session, dids)
-    exec_rounds = _executed_rounds(session)
+    exec_rounds = _executed_rounds(session, dids)
     batch_id = f"batch_{BSTORE.next_batch_number(session):05d}"
-    return rows, claimed, exec_rounds, batch_id
+    return rows, claimed, exec_rounds, batch_id, benchmark_excluded
 
 
-def _flip(session, swept_ids: list, batch_id: str) -> None:
-    """Flip the swept directives to 'executed' with the follow-up batch as their `executed_ref`,
-    guarded on status='approved' so a partial retry never double-flips (idempotency)."""
+def _flip(session, swept_ids: list, executed_ref: str) -> None:
+    """Flip the swept directives to 'executed' with `executed_ref` (the follow-up batch_id, or the
+    7->6 dispatch's handoff_hash) as their lineage, guarded on status='approved' so a partial retry
+    never double-flips (idempotency). The ONE home for this statement (issue #147)."""
     session.execute(text(
         "UPDATE extraction_request SET status = 'executed', executed_ref = :b, executed_at = :t "
         "WHERE request_id = ANY(:ids) AND status = 'approved'"),
-        {"b": batch_id, "t": M7.utcnow(), "ids": list(swept_ids)})
+        {"b": executed_ref, "t": M7.utcnow(), "ids": list(swept_ids)})
 
 
 def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff_hash: str = None,
                            cap: int = 12, session=None) -> dict:
     """Sweep APPROVED 7->2/7->3/7->1 directives into ONE targeted, DRAFT Stage-1 follow-up batch
     (reviewable at gate@1), flipping the swept directives to 'executed' with the batch_id as their
-    `executed_ref`. Idempotent: only 'approved' rows are swept, so a re-run with nothing approved is a
-    no-op. Scope to one run with `handoff_hash`, else all approved NEW-work directives.
+    `executed_ref`. Benchmark (batch_00000) districts are EXCLUDED — the wall (#134). Scope to one
+    run with `handoff_hash`, else all approved NEW-work directives.
 
-    Reuses the tested Q1.persist_batch path (first-run is untouched). `session` is an optional injected
-    Session (the batch_store idiom) — when given, the read + the request-flip run on it (so a test's
-    rolling-back session isolates them); when None, each runs in its own committing transaction.
-    Returns {batch_id, n_requests, n_districts, targets, spilled, blocked, skipped}."""
+    ATOMICITY (#139): the batch rows + the directive flip commit in ONE transaction (batch_store on
+    the same session), so a crash can never leave a batch persisted with its directives still
+    'approved' (the duplicate-batch hazard). Only directives whose district actually made it into the
+    batch are flipped — a district build_followup_batch skips stays 'approved' and re-sweepable
+    (#136). The regenerable receipt file + the registry updates happen AFTER commit (file-last, like
+    dispatch_handoff), best-effort. `session` = the inject-or-own idiom: an injected (test) session
+    does the DB work only — no receipt/registry side effects escape a rollback.
+    Returns {batch_id, n_requests, n_districts, targets, spilled, blocked, skipped, benchmark_excluded}."""
     b = BUD.load_budget()
+
+    def _work(s) -> dict:
+        rows, claimed, exec_rounds, batch_id, bm_excluded = _gather(s, handoff_hash)
+        if not rows:
+            return {**_empty_result(), "benchmark_excluded": bm_excluded}
+
+        plan = plan_followup(rows, claimed_bands=claimed, executed_rounds=exec_rounds,
+                             cap=cap, max_rounds=b.max_request_rounds)
+        if not plan["targets"]:
+            return {**_empty_result(), "spilled": plan["spilled"], "blocked": plan["blocked"],
+                    "benchmark_excluded": bm_excluded}
+
+        batch_doc, skipped = Q1.build_followup_batch(year, batch_id, plan["targets"])
+        if not batch_doc["districts"]:            # every target district was un-buildable (no coverage)
+            return {**_empty_result(), "spilled": plan["spilled"], "blocked": plan["blocked"],
+                    "skipped": skipped, "benchmark_excluded": bm_excluded}
+
+        # Rows + flip on ONE session (atomic, #139). Flip ONLY the directives whose district made it
+        # into the batch (#136) — a skipped district's directive stays 'approved', re-sweepable.
+        BSTORE.create_batch(s, batch_doc, batch_type="follow-up", actor=actor)
+        built = {d["district_id"] for d in batch_doc["districts"]}
+        did_by_id = {r["request_id"]: r["district_id"] for r in rows}
+        flip_ids = [i for i in plan["swept_ids"] if did_by_id[i] in built]
+        _flip(s, flip_ids, batch_id)
+        return {"batch_id": batch_id, "n_requests": len(flip_ids),
+                "n_districts": len(batch_doc["districts"]), "targets": plan["targets"],
+                "spilled": plan["spilled"], "blocked": plan["blocked"], "skipped": skipped,
+                "benchmark_excluded": bm_excluded,
+                "_batch_districts": [{"district_id": d["district_id"], "name": d.get("name", ""),
+                                      "state": d.get("state", "")} for d in batch_doc["districts"]]}
+
     if session is not None:
-        rows, claimed, exec_rounds, batch_id = _gather(session, handoff_hash)
-    else:
-        gdb.init_precious_schema()                # ensure executed_ref/executed_at columns exist
-        with gdb.session_scope() as s:
-            rows, claimed, exec_rounds, batch_id = _gather(s, handoff_hash)
-    if not rows:
-        return _empty_result()
+        out = _work(session)                      # DB-only; a rolling-back test session leaks nothing
+        out.pop("_batch_districts", None)
+        return out
 
-    plan = plan_followup(rows, claimed_bands=claimed, executed_rounds=exec_rounds,
-                         cap=cap, max_rounds=b.max_request_rounds)
-    if not plan["targets"]:
-        return {**_empty_result(), "spilled": plan["spilled"], "blocked": plan["blocked"]}
-
-    batch_doc, skipped = Q1.build_followup_batch(year, batch_id, plan["targets"])
-    if not batch_doc["districts"]:                # every target district was un-buildable (no coverage)
-        return {**_empty_result(), "spilled": plan["spilled"], "blocked": plan["blocked"],
-                "skipped": skipped}
-
-    # Persist as a DRAFT follow-up batch via the SAME tested path first-run uses, then flip the swept
-    # directives to 'executed'.
-    Q1.persist_batch(batch_doc, DS.load(), batch_type="follow-up", actor=actor)
-    if session is not None:
-        _flip(session, plan["swept_ids"], batch_id)
-    else:
-        with gdb.session_scope() as s:
-            _flip(s, plan["swept_ids"], batch_id)
-
-    return {"batch_id": batch_id, "n_requests": len(plan["swept_ids"]),
-            "n_districts": len(batch_doc["districts"]), "targets": plan["targets"],
-            "spilled": plan["spilled"], "blocked": plan["blocked"], "skipped": skipped}
+    gdb.init_precious_schema()                    # ensure executed_ref/executed_at columns exist
+    with gdb.session_scope() as s:
+        out = _work(s)
+    batch_districts = out.pop("_batch_districts", None)
+    if out["batch_id"] and batch_districts:
+        # Post-commit, best-effort (file-last, like dispatch_handoff): the receipt is regenerable
+        # FROM the committed rows; the registry backup is regenerable from the DB.
+        try:
+            with gdb.session_scope() as s:
+                BSTORE.write_receipt(s, out["batch_id"])
+            registry = DS.load()
+            for d in batch_districts:
+                DS.record_stage(registry, d["district_id"], d["name"], d["state"],
+                                stage=1, stage_name="queue", outcome="queued",
+                                batch_id=out["batch_id"])
+            DS.save(registry)
+        except Exception as e:  # noqa: BLE001 — receipts/registry are regenerable; the DB committed
+            print(f"[warn] follow-up receipt/registry refresh failed ({type(e).__name__}: {e}); "
+                  f"the DB is authoritative — regenerate later")
+    return out
 
 
 def _empty_result() -> dict:
     return {"batch_id": None, "n_requests": 0, "n_districts": 0, "targets": {},
-            "spilled": [], "blocked": [], "skipped": []}
+            "spilled": [], "blocked": [], "skipped": [], "benchmark_excluded": []}
 
 
 # ===========================================================================
@@ -216,11 +277,16 @@ def _empty_result() -> dict:
 # ===========================================================================
 def pick_alternate(alternate_reps: list) -> dict | None:
     """Choose which already-captured alternate rep to re-dispatch — prefer an IMAGE rep (the common
-    text→vision escalation the detector flags), else the first alternate. None if there are none."""
+    text→vision escalation the detector flags), else the first TEXT alternate. None if none is
+    dispatchable. Defensive kind filter (#140): a binary rep (kind 'pdf'/'bin') must never be chosen —
+    it would route to the text council and be read as raw bytes (paid mojibake)."""
     if not alternate_reps:
         return None
     imgs = [a for a in alternate_reps if CONTENT.is_image_kind(a.get("kind"))]
-    return imgs[0] if imgs else alternate_reps[0]
+    if imgs:
+        return imgs[0]
+    texts = [a for a in alternate_reps if a.get("kind") == "text"]
+    return texts[0] if texts else None
 
 
 def build_alternate_input(meta: dict, rec: dict, alt: dict, *, council_id: str = None) -> tuple:
@@ -270,10 +336,14 @@ def execute_alternate_dispatch(request_id: int, *, actor: str = "ian", council_i
         req = _load_request(s, request_id)
         if not req:
             return {"ok": False, "reason": f"no such request {request_id}"}
-        if req["route"] != "7->6":
+        if req["route"] != RQ.ROUTE_ALT_REP:
             return {"ok": False, "reason": f"request {request_id} is {req['route']}, not a 7->6 re-dispatch"}
         if req["status"] != "approved":
             return {"ok": False, "reason": f"request {request_id} is {req['status']}, not approved"}
+        if _benchmark_district_ids(s, [req["district_id"]]):
+            # The wall (#134): benchmark (batch_00000) districts never execute — measurement only.
+            return {"ok": False, "reason": f"district {req['district_id']} is a benchmark district "
+                                           f"(batch_00000) — walled off from request execution"}
 
         b = BUD.load_budget()
         used = _executed_count(s, req["district_id"], req["band"])
@@ -292,7 +362,8 @@ def execute_alternate_dispatch(request_id: int, *, actor: str = "ian", council_i
         params = json.loads(req["params_json"] or "{}")
         alt = pick_alternate(params.get("alternate_reps") or [])
         if not alt:
-            return {"ok": False, "reason": f"request {request_id} names no alternate rep to re-dispatch"}
+            return {"ok": False, "reason": f"request {request_id} names no dispatchable alternate rep "
+                                           f"(text/image) to re-dispatch"}
 
         councils = C6.load_configs()
         cost_model = COST6.load_cost_model()
@@ -304,12 +375,17 @@ def execute_alternate_dispatch(request_id: int, *, actor: str = "ian", council_i
         fps = {did: REL.district_fingerprints(s, did)}
         doc = HND.freeze(package, councils, fps, created_by=actor)
         path = (Path(root) if root else HND.DEFAULT_ROOT) / HND.handoff_filename(doc)
+        # Commit-order (#143, mirrors dispatch_handoff): every DB statement FIRST (index row +
+        # state_events + the directive flip), the immutable file LAST — a DB failure rolls back
+        # cleanly with no orphaned file, and a file failure rolls the DB back with it.
         H6.record_dispatch(s, doc, path, actor=actor, metas={did: meta})
+        _flip(s, [request_id], doc["handoff_hash"])
         HND.write(doc, root=root)
-        s.execute(text(
-            "UPDATE extraction_request SET status = 'executed', executed_ref = :hh, executed_at = :t "
-            "WHERE request_id = :id AND status = 'approved'"),
-            {"hh": doc["handoff_hash"], "t": M7.utcnow(), "id": request_id})
+        try:                                       # best-effort backup refresh, like dispatch_handoff
+            DS.export_status(s)
+        except Exception as e:  # noqa: BLE001
+            print(f"[warn] district_status.json refresh failed after 7->6 dispatch "
+                  f"({type(e).__name__}: {e}); the DB is authoritative")
         return {"ok": True, "handoff_hash": doc["handoff_hash"], "path": str(path),
                 "alt_file": alt["file"], "council": overrides or "auto-routed"}
 
@@ -351,6 +427,8 @@ def main():
             print(f"  blocked (depth guard): req {bl['request_id']} {bl['district_id']}/{bl['band']}")
         for sk in out.get("skipped", []):
             print(f"  skipped: {sk['district_id']} ({sk['reason']})")
+        for bm in out.get("benchmark_excluded", []):
+            print(f"  benchmark-excluded: req {bm['request_id']} {bm['district_id']} ({bm['reason']})")
     elif a.cmd == "execute":
         out = execute_alternate_dispatch(a.request_id, actor=a.actor, council_id=a.council)
         if out["ok"]:

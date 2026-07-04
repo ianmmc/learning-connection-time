@@ -101,12 +101,11 @@ def test_compose_flips_approved_to_executed(gov_session, monkeypatch):
     _seed_req(s, hh, "ZZC3", "7->6", None)          # existing-rep route — must NOT be swept
     s.flush()
 
-    # stub the NCES/LCT-heavy build + persist (their own tests cover them); return both target districts
+    # stub the NCES-heavy build + the row writer (their own tests cover them); both districts built
     monkeypatch.setattr(EX.Q1, "build_followup_batch",
                         lambda year, bid, targets: ({"batch_id": bid, "districts":
                             [{"district_id": d} for d in targets]}, []))
-    monkeypatch.setattr(EX.Q1, "persist_batch", lambda doc, reg, **k: None)
-    monkeypatch.setattr(EX.DS, "load", lambda: {})
+    monkeypatch.setattr(EX.BSTORE, "create_batch", lambda sess, doc, **k: None)
 
     out = EX.compose_followup_batch(handoff_hash=hh, actor="zz", session=s)
     s.flush()
@@ -129,7 +128,7 @@ def test_compose_nothing_approved_is_noop(gov_session, monkeypatch):
     s = gov_session
     _seed_req(s, "zznoop", "ZZN1", "7->2", "high", status="pending")   # not approved
     s.flush()
-    monkeypatch.setattr(EX.Q1, "persist_batch", lambda *a, **k: pytest.fail("must not persist"))
+    monkeypatch.setattr(EX.BSTORE, "create_batch", lambda *a, **k: pytest.fail("must not persist"))
     out = EX.compose_followup_batch(handoff_hash="zznoop", session=s)
     assert out["batch_id"] is None and out["n_requests"] == 0
 
@@ -227,3 +226,79 @@ def test_execute_alternate_dispatch_depth_guard_blocks(gov_session, monkeypatch)
                          "AND district_id='ZZ76G'")).scalar()
     out = EX.execute_alternate_dispatch(rid, session=s)
     assert out["ok"] is False and out.get("blocked") is True
+
+
+@govdb
+def test_compose_excludes_benchmark_districts(gov_session, monkeypatch):
+    """#134 — the WALL: a benchmark (batch_00000) district's approved directive must never be swept
+    into a follow-up batch (which would rebadge it past every downstream batch_type check)."""
+    from infrastructure.acquisition.stage1_queue.models import Batch, BatchDistrict
+    gdb.init_precious_schema()
+    s = gov_session
+    hh = "zzbmwall"
+    _seed_req(s, hh, "ZZBM1", "7->2", "high")      # benchmark district
+    _seed_req(s, hh, "ZZBM2", "7->2", "middle")    # ordinary district
+    s.add(Batch(batch_id="batch_zztest_bm", batch_type="benchmark", status="approved",
+                nces_year="2024_25", created_at="t", created_by="zz", meta_json={}))
+    s.add(BatchDistrict(batch_id="batch_zztest_bm", district_id="ZZBM1", ord=0, name="BM", state="AK",
+                        domain="", enrollment_k12=None, lea_claimed_bands=[],
+                        nces_school_counts={}, band_processing_order=[], band_meta={}, included=True))
+    s.flush()
+
+    monkeypatch.setattr(EX.Q1, "build_followup_batch",
+                        lambda year, bid, targets: ({"batch_id": bid, "districts":
+                            [{"district_id": d} for d in targets]}, []))
+    monkeypatch.setattr(EX.BSTORE, "create_batch", lambda sess, doc, **k: None)
+
+    out = EX.compose_followup_batch(handoff_hash=hh, session=s)
+    s.flush()
+    assert set(out["targets"]) == {"ZZBM2"}                       # benchmark district never targeted
+    assert [b["district_id"] for b in out["benchmark_excluded"]] == ["ZZBM1"]
+    statuses = {r[0]: r[1] for r in s.execute(text(
+        "SELECT district_id, status FROM extraction_request WHERE handoff_hash=:h"), {"h": hh})}
+    assert statuses["ZZBM1"] == "approved"                        # untouched, never executed
+    assert statuses["ZZBM2"] == "executed"
+
+
+@govdb
+def test_compose_does_not_flip_skipped_districts(gov_session, monkeypatch):
+    """#136: a district build_followup_batch SKIPS (missing NCES coverage) must stay 'approved' and
+    re-sweepable — never flipped 'executed' with lineage pointing at a batch that excludes it."""
+    gdb.init_precious_schema()
+    s = gov_session
+    hh = "zzskipflip"
+    _seed_req(s, hh, "ZZSK1", "7->2", "high")     # will be SKIPPED by the builder
+    _seed_req(s, hh, "ZZSK2", "7->2", "middle")   # will be built
+    s.flush()
+
+    monkeypatch.setattr(EX.Q1, "build_followup_batch",
+                        lambda year, bid, targets: (
+                            {"batch_id": bid, "districts": [{"district_id": "ZZSK2"}]},
+                            [{"district_id": "ZZSK1", "reason": "not in NCES lea_info for the year"}]))
+    monkeypatch.setattr(EX.BSTORE, "create_batch", lambda sess, doc, **k: None)
+
+    out = EX.compose_followup_batch(handoff_hash=hh, session=s)
+    s.flush()
+    assert out["n_requests"] == 1 and out["n_districts"] == 1
+    assert [sk["district_id"] for sk in out["skipped"]] == ["ZZSK1"]
+    statuses = {r[0]: r[1] for r in s.execute(text(
+        "SELECT district_id, status FROM extraction_request WHERE handoff_hash=:h"), {"h": hh})}
+    assert statuses["ZZSK1"] == "approved"        # re-sweepable next compose
+    assert statuses["ZZSK2"] == "executed"
+
+
+def test_pick_alternate_never_picks_a_binary_rep():
+    """#140: a pdf/bin alternate would route to the text council and be read as raw bytes — prefer
+    image, else a TEXT alternate, else nothing."""
+    assert EX.pick_alternate([{"file": "original.pdf", "kind": "pdf"}]) is None
+    assert EX.pick_alternate([{"file": "original.pdf", "kind": "pdf"},
+                              {"file": "alt.txt", "kind": "text"}])["file"] == "alt.txt"
+    assert EX.pick_alternate([{"file": "original.pdf", "kind": "pdf"},
+                              {"file": "raster_p-1.png", "kind": "image"}])["file"] == "raster_p-1.png"
+
+
+def test_newwork_routes_come_from_the_detector_constants():
+    """#147 (route vocabulary): stage7_execute must never re-spell route strings — a new/renamed
+    route in the detector must flow through automatically."""
+    from infrastructure.acquisition.stage7_extract import requests as RQ7
+    assert EX.NEWWORK_ROUTES == (RQ7.ROUTE_REDISCOVER, RQ7.ROUTE_RECAPTURE, RQ7.ROUTE_ADD_SCHOOLS)

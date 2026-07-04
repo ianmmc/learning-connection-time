@@ -34,3 +34,34 @@ def test_tag_attaches_rep_provenance():
     facts = [{"band": "high", "school": "A", "gross": 400}]
     tagged = CL._tag(facts, _rep())
     assert tagged[0]["rec_key"] == "D1:abc" and tagged[0]["source_file"] == "raster_p-1.png"
+
+
+def test_load_receipts_skips_aggregate_shape(tmp_path):
+    """#141: the glob also matches write_receipt's AGGREGATE receipt (no 'district' key) — it must be
+    skipped, not crash the replay with KeyError."""
+    import json
+    (tmp_path / "extraction_zzhash_0100270_20260703T000001Z.json").write_text(json.dumps(
+        {"handoff_hash": "zzhash", "district": {"district_id": "0100270", "reps": []}}))
+    (tmp_path / "extraction_zzhash_20260703T000002Z.json").write_text(json.dumps(
+        {"handoff_hash": "zzhash", "districts": {}, "telemetry": {}}))     # aggregate — no 'district'
+    docs = CL.load_receipts("zzhash", root=tmp_path)
+    assert [d["district_id"] for d in docs] == ["0100270"]
+
+
+def test_replay_refuses_text_only_judge_on_image_reps(tmp_path, monkeypatch):
+    """#142 (the #82 shape): a CLI --judge candidate bypasses councils.validate() — the replay must
+    refuse a non-vision-capable judge BEFORE any paid call when the receipts carry image reps."""
+    import json
+    import pytest
+    from infrastructure.acquisition.process_governance import stage7_run as R7
+    (tmp_path / "extraction_zzimg_0100270_20260703T000001Z.json").write_text(json.dumps(
+        {"handoff_hash": "zzimg", "district": {"district_id": "0100270", "reps": [
+            {"rec_key": "0100270:aa", "file": "raster_p-1.png", "kind": "image", "judged": True,
+             "calls": []}]}}))
+    monkeypatch.setattr(R7, "_require_key", lambda: None)
+    monkeypatch.setattr(R7, "district_dirs", lambda ids: {})
+    called = []
+    monkeypatch.setattr(R7, "_call", lambda *a, **k: called.append(a) or None)
+    with pytest.raises(ValueError, match="not vision-capable"):
+        CL.replay_judge("zzimg", judge_model="deepseek/deepseek-v3.2", root=tmp_path)
+    assert called == []      # refused BEFORE any paid call

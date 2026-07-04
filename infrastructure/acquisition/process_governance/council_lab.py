@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from infrastructure.acquisition.common import model_families as MF
 from infrastructure.acquisition.common import paths
 from infrastructure.acquisition.process_governance import stage7_run as R7
 from infrastructure.acquisition.stage6_handoff import councils as C6
@@ -29,12 +30,16 @@ from infrastructure.acquisition.stage8_aggregate import aggregate as AGG
 
 
 def load_receipts(handoff_hash: str, root=None) -> list:
-    """The latest per-district receipt for a persisted run — [{district...}], newest wins per district."""
+    """The latest per-district receipt for a persisted run — [{district...}], newest wins per district.
+    The glob also matches AGGREGATE receipts (`write_receipt`'s `extraction_<hash>_<ts>.json`, whose
+    top level has `districts`, not `district`) — skip those instead of crashing (#141; same defensive
+    shape as `backfill_requests`)."""
     d = Path(root) if root else (paths.ACQUISITION / "extractions")
     latest: dict = {}
     for f in sorted(d.glob(f"extraction_{handoff_hash}_*.json")):   # sorted → later ts wins
-        pd = json.loads(f.read_text())["district"]
-        latest[pd["district_id"]] = pd
+        pd = json.loads(f.read_text()).get("district")
+        if pd:
+            latest[pd["district_id"]] = pd
     return list(latest.values())
 
 
@@ -61,6 +66,16 @@ def replay_judge(handoff_hash: str, *, judge_model: str = None, council_id: str 
     R7._require_key()
 
     docs = load_receipts(handoff_hash, root)
+    # #142 (the #82 shape, again): a CLI-passed --judge candidate never passes councils.validate()'s
+    # vision guard — refuse a non-vision-capable judge BEFORE the first paid call if this run's reps
+    # include images, instead of burning 33 escalations on 404s.
+    if any(rep.get("kind") == "image" for pd in docs for rep in pd.get("reps", [])) \
+            and not MF.is_vision_capable(judge_model):
+        raise ValueError(
+            f"judge candidate '{judge_model}' is not vision-capable (common.model_families."
+            f"VISION_CAPABLE) but handoff {handoff_hash} contains image reps — every judge call "
+            f"would 404 (#82). Pick a vision-capable candidate, or add the model to the allowlist "
+            f"if it genuinely reads images.")
     ddirs = R7.district_dirs([pd["district_id"] for pd in docs])
     gt = VALID.load_gt(gt_path) if gt_path else None
 
