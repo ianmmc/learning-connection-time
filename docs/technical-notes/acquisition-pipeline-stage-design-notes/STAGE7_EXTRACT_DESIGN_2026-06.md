@@ -21,7 +21,7 @@ approved directive firing the target stage's back-edge — is now **built** (REQ
 alternate-rep re-dispatch, and the 7→2/7→3/7→1 → Stage-1 follow-up-batch path, both gated by the REQ-051
 budget governor + a per-district×band depth guard; see §3F. **Not yet run end-to-end on live non-benchmark
 data** (batch_00000 is benchmark-walled) — the execution paths are unit/govdb-tested, not yet exercised
-against a real request round-trip.
+against a real request round-trip. (tracked: #122)
 
 ---
 
@@ -126,7 +126,7 @@ results, approve/reject.
 Built (§0): district-first list, band rollup, accepted/unresolved facts, request cards with
 approve/reject/reopen. **Still open** (deferred, not designed):
 - Retrieve the screen-capped PNG / PDF for a given URL and view it inline from the console (currently a
-  reviewer would go to disk).
+  reviewer would go to disk). (tracked: #99)
 - Recapture or redo-discovery actions triggered *directly* from the console UI, rather than via the
   request-approval → (future) execution path.
 
@@ -223,7 +223,7 @@ the cyclic loop provably terminates. The paid 7→6 re-extraction is budget-gate
 **Surfaces:** CLI `python3 -m infrastructure.acquisition.process_governance.stage7_execute
 {compose-followup|execute <request_id>}` (CLI-first per the ramp-up model) + the server endpoints
 `POST /api/extract/compose-followup` and `POST /api/extract/execute/{request_id}`. Console buttons on
-`stage7.js` are deferred (the review console renders the directives; execution is CLI/API today).
+`stage7.js` are deferred (the review console renders the directives; execution is CLI/API today). (tracked: #99)
 
 - **Still open — not built:** the console execute buttons; the narrow model "referenced-but-unread"
   detector signal (deferred per the measured-pass discipline); a live non-benchmark end-to-end run.

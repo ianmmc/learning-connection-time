@@ -257,7 +257,7 @@ episodes), config-as-data with `provenance`.
    extract correctly* signal exists in principle — but it isn't wired into this harness yet, and Stage 8
    (the per-band aggregation that would be the natural feedback point) isn't built. It flows into the
    **same** ledger/harness (not a separate system) once wired: the deterministic decision becomes a
-   *proxy* whose calibration against the paid outcome is measured (the SUPG recall-floor discipline).
+   *proxy* whose calibration against the paid outcome is measured (the SUPG recall-floor discipline). (tracked: #91)
 3. **LATER (documented, deferred — the scale endgame, `STAGE5_TUNING_NOTES`):** a learned combiner
    (Snorkel `LabelModel`, inferring per-detector accuracy from agreement without gold labels for every
    point) replaces the hand-weighted vote **once diagnostics justify it**; hierarchical partial-pooling
@@ -329,7 +329,7 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 | `migrate_labels_v21` re-run guard (refuses a second real run without `force=True`) | **BUILT 2026-07-02** |
 | Harvest slices relocated out of `data/raw/` to `data/acquisition/harvest_slices/` (read-fallback to legacy location) | **BUILT 2026-07-02** |
 | Stage-3 iframe/embed capture + `cms_hint` promotion + iframe-innerText check | **BUILT (REQ-115)** |
-| **Facet-level per-detector scoring** (negative detectors vs. confounder facets) — accrues as re-tagging fills facets | **NEXT (harness follow-on)** |
+| **Facet-level per-detector scoring** (negative detectors vs. confounder facets) — accrues as re-tagging fills facets (tracked: #108) | **NEXT (harness follow-on)** |
 | Learned `LabelModel` combiner · hierarchical/vendor pooling · online-FDR drift · Stage-7/8 outcome feedback | **DEFERRED (scale endgame)** |
 
 ---

@@ -143,10 +143,10 @@ same elements Stage 3/4 use, so a label rename is one edit. The active batch's c
 header during a run.
 
 **User stories (not yet built):**
-- Review search-query templates and propose new ones.
+- Review search-query templates and propose new ones. (tracked: #102)
 - Insights into how effective combinations of search services + queries are at yielding bell-schedule
   representations by the end of Stage 5 (the measurement-harness pattern extended upstream — attribute
-  each target-labeled record back to its discovery tool via `candidate_tools_json`).
+  each target-labeled record back to its discovery tool via `candidate_tools_json`). (tracked: #118)
 
 ---
 

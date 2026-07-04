@@ -68,7 +68,7 @@ against the migrated set (108 verified targets, preview assembles + prices norma
 constant was deleted entirely in favor of a bound list param computed per request, issue #62.)* One
 remaining wrinkle, not a defect: the human now records the real handbook **page range**
 (`facets_json._pages_list`), but the `harvest_slice` still materializes off the *auto* `harvest_pages` — a
-worthwhile future edge (prefer the human-labeled pages once they accrue), tracked as a follow-up.
+worthwhile future edge (prefer the human-labeled pages once they accrue), tracked as a follow-up. (tracked: #109)
 
 **The seam:** everything needed to POST is assembled here; **Stage 7** makes the paid call, runs the
 judge-on-disagreement loop, and the "request more evidence" back-edges (§3F). **Deferred (own tracks):**
@@ -297,7 +297,7 @@ flowchart LR
 **The cascade is the open lever (not the grain).** Within a council, the pair+judge *is* a mini-cascade.
 The open question is whether to also cascade *across* configs — start a rep on the cheap council, escalate
 to a stronger/specialized one only on no-consensus (FrugalGPT/UCCI) — vs. route straight to the right
-council by content type. Decided empirically by measured escalation + yield on real captured inputs.
+council by content type. Decided empirically by measured escalation + yield on real captured inputs. (tracked: #110)
 
 **Capture fidelity is a routing/accept signal, not just a content type (council research, the New Haven
 refinement).** Cross-family agreement is strong evidence *only when the input is clean*. When a rep is
@@ -401,7 +401,7 @@ dispatch is what makes this recoverable) into a fresh call with an appropriate f
 or may not persist in the OpenRouter session; the dispatch freeze + per-model prompts (§3A) are the
 mechanisms for reconstituting context if they don't.
 
-### G. Recency preference in bell-schedule documentation (OPEN — a DISPATCH decision; Ian, 2026-07-02)
+### G. Recency preference in bell-schedule documentation (OPEN — a DISPATCH decision; Ian, 2026-07-02) (tracked: #107)
 
 **The problem, from live data (batch_00008):** Marshall WI's tier-gated auto-send set included a
 **2021-2022 HS Handbook (COVID-era)** and a **2018-2019 MES Handbook** alongside the current

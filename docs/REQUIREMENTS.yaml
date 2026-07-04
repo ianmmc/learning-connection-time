@@ -1056,6 +1056,7 @@ requirements:
       headless `claude -p` (REQ-104) — see PIPELINE_GOVERNANCE_AND_STATE_2026-06.md."
 
   - id: REQ-044
+    github_issue: "#107 — school-year currency gate/dispatch (doc-migration 2026-07)"
     description: Classify each captured candidate as a current bell schedule before extraction (relevance + recency gate)
     type: functional
     priority: must
@@ -1144,6 +1145,7 @@ requirements:
       Direction set by EXTRACTION_BENCHMARK_FINDINGS (dual-path consensus + human review of disagreements)."
 
   - id: REQ-049
+    github_issue: "#94 — statutory fallback at Stage 9 write (doc-migration 2026-07)"
     description: Fail loud and fall back to statutory minimums when acquisition or extraction fails or is low-confidence; never fabricate
     type: constraint
     priority: must
@@ -1158,6 +1160,7 @@ requirements:
     notes: "Codifies the integrity lesson from the twice-repeated phantom-districts hallucination."
 
   - id: REQ-050
+    github_issue: "#95 — provenance+confidence per band (doc-migration 2026-07)"
     description: Every district-band instructional-minutes value carries a complete provenance and confidence record
     type: non-functional
     priority: must
@@ -1173,6 +1176,7 @@ requirements:
       confidence, method)."
 
   - id: REQ-051
+    github_issue: "#105 — WAF one-attempt rule (remaining sub-item; governor core built) (doc-migration 2026-07)"
     description: Bound API spend and effort per district and globally, with a resumable batch (budget governor)
     type: constraint
     priority: must
@@ -1856,6 +1860,7 @@ requirements:
       link' content today. Tier 2 (OAuth Drive API) is REQ-078, not yet built."
 
   - id: REQ-078
+    github_issue: "#115 — Drive Tier-2 OAuth capture (doc-migration 2026-07)"
     description: "Stage 3 Google Drive Tier 2 - OAuth Drive API for folder enumeration and Tier-1 fallback (DELIBERATELY DEFERRED, not just blocked)"
     type: functional
     priority: should
@@ -1877,6 +1882,7 @@ requirements:
       a placeholder bug."
 
   - id: REQ-079
+    github_issue: "#127 — capture_discovery.mjs test harness (doc-migration 2026-07)"
     description: "WATCH-ITEM: capture_discovery.mjs has no automated test harness beyond capture_drive.mjs's pure-function tests"
     type: functional
     priority: should
@@ -2293,6 +2299,7 @@ requirements:
       REQ-090 (harness) / REQ-095 (ledger). Bootstrap-stability + min-group-support + Optuna escalation deferred."
 
   - id: REQ-097
+    github_issue: "#75 — Stage-5 drift detector (reopened) (doc-migration 2026-07)"
     description: Stage 5 drift detector — alert when newly-labeled data degrades the live config enough to warrant a retune
     type: functional
     priority: should
@@ -2459,6 +2466,7 @@ requirements:
       (= the 32 canonical TARGET-labeled records); 5 none_found districts send 0."
 
   - id: REQ-108
+    github_issue: "#104 — per-gate manual/auto + AUTO (doc-migration 2026-07)"
     description: Stage-numbered human-review gates (gate@N) + per-gate manual/auto Settings — replaces the CP-A/B/C checkpoint model
     type: functional
     priority: must
@@ -2476,6 +2484,7 @@ requirements:
       views) needs its own design pass first. Replaces 'CP-A/B/C / 3 checkpoints' language throughout the docs."
 
   - id: REQ-109
+    github_issue: "#90 — per-band satisfaction / completion grain (doc-migration 2026-07)"
     description: Two batch types (first-run / follow-up) + completion grain = district x BAND; the pipeline is cyclic
     type: functional
     priority: must
@@ -2493,6 +2502,7 @@ requirements:
       case (one captured page stated band-level minutes, schools became moot) is why the grain is band, not school."
 
   - id: REQ-100
+    github_issue: "#100 — console staleness surface (doc-migration 2026-07)"
     description: Console staleness surface for filtered.json — show new/current/stale per district from the three stamped fingerprints (config, labels, data), filterable by which changed
     type: functional
     priority: should

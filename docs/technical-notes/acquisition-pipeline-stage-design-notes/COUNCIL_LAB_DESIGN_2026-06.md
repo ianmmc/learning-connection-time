@@ -116,7 +116,7 @@ harness/tuning_ledger precedent, memory `feedback-explore-before-scoring-changes
 5. **Composition re-benchmark (§4)** — membership is a bootstrap; re-test voters/judge/panel-size on clean
    data (judge is high-leverage — ~47% escalation, ~21% of facts on batch_00000).
 6. **Route-by-modality, measured** — which reps genuinely need vision vs text (text dominates native digital;
-   quantify the crossover).
+   quantify the crossover). (tracked: #132)
 
 ---
 

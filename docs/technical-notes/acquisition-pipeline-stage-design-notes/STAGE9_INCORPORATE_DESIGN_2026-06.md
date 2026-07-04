@@ -10,7 +10,7 @@
 > crosses into the separate production LCT database). Upstream: `STAGE8_AGGREGATE_DESIGN_2026-06.md`.
 > **Update this when:** Stage 9 design decisions are made (append below) or the stage is built.
 
-**Status: DESIGN — not started for the write logic; the landing zone is ready.** Seeded from the APGA
+**Status: DESIGN — not started for the write logic; the landing zone is ready.** (tracked: #93) Seeded from the APGA
 console user stories (migrated here 2026-06-27 from the retired
 `docs/scratch-paper/apga_console_application_stage_view.md`).
 
@@ -41,5 +41,5 @@ benchmark-injection tranche (via `stage1_queue/benchmark_batch.py`) is ever want
 - The target LCT tables/columns the band-level minutes land in, and how they join the existing
   enrollment/staff data for the LCT calculation (labeled `gross_bell_to_bell`).
 - Idempotency + provenance of the write (fail-loud on mismatch, Rule #6 verify-in-DB), and how a re-ingest
-  / corrected aggregation updates an already-written value.
+  / corrected aggregation updates an already-written value. (tracked: #95)
 - Whether Stage 9 emits a `state_event` (`incorporated`) closing the district's per-band lifecycle.

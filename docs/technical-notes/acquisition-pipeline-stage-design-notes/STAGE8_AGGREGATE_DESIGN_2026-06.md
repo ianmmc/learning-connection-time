@@ -3,7 +3,7 @@
 > **Authority:** none yet for the console/gate design (§2–3 below); `stage8_aggregate/aggregate.py`'s
 > mode-then-mean logic is a real, tested prototype and is already reused by Stage 7's own per-district
 > rollup (`STAGE7_EXTRACT_DESIGN_2026-06.md` §0) — but Stage 8 itself (a standalone stage: its own gate,
-> console, aggregation-record schema, and per-band satisfaction signal) isn't wired end-to-end.
+> console, aggregation-record schema, and per-band satisfaction signal) isn't wired end-to-end. (tracked: #89)
 > **Audience:** whoever designs/builds Stage 8.
 > **Companions:** `ACQUISITION_PIPELINE.md` §8 (the slim map), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
 > §11 (gates/console; §11e cyclic back-edges), `METHODOLOGY.md` (the metric: gross bell-to-bell, the mode).
@@ -34,6 +34,6 @@ mechanical Stage-9 DB write; this is the **effective old "CP-C."** Completion gr
 
 ## 3. Open (to design when we reach this stage)
 - The per-band satisfaction signal (what makes a band "confident" / "satisfied") — needed for follow-up
-  batch creation (Stage 1 §5) and the drift detector (REQ-097).
+  batch creation (Stage 1 §5) and the drift detector (REQ-097). (tracked: #90)
 - The aggregation record schema + how a manual override (with required reason) is stored and audited.
 - `gate@8` manual/auto (auto = confidence-escalating; never writes minutes without confidence, governance §11b).
