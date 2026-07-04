@@ -45,6 +45,10 @@ def _mock_env(monkeypatch, already):
     monkeypatch.setattr(R7.gdb, "init_precious_schema", lambda: None)
     monkeypatch.setattr(R7.gdb, "session_scope", lambda: contextlib.nullcontext(None))
     monkeypatch.setattr(R7, "_already_extracted", lambda hh: set(already))
+    # REQ-051 governor seeds (DB SUM(cost_usd)) — stub like the other DB reads; the shipped budget.json
+    # caps ($25/run) don't trip on this test's $0.001/district, so the governor is inert here.
+    monkeypatch.setattr(R7, "_run_spend", lambda hh: 0.0)
+    monkeypatch.setattr(R7, "_district_spend", lambda hh: {})
     monkeypatch.setattr(R7, "write_district_receipt", lambda pd, hh, **k: "/tmp/r.json")
     monkeypatch.setattr(R7.DS, "export_status", lambda s: None)
     # the request-loop detect/persist runs in the same persist txn — no-op it here (its own tests cover it)
@@ -87,3 +91,22 @@ def test_no_persist_makes_no_db_calls(monkeypatch):
     out = R7.run_council_streaming(DOC, persist=False, resume=True)
     assert persisted == []                        # persist=False → nothing written, nothing skipped
     assert set(out["districts"]) == {"ZZS1", "ZZS2"}
+
+
+def test_budget_run_cap_halts_before_paid_district(monkeypatch):
+    """REQ-051: the run halts cleanly at the run cap — the already-spent prior run seeds the governor
+    over ceiling, so NO further district is extracted (durability: nothing new persisted)."""
+    persisted = _mock_env(monkeypatch, already=set())
+    monkeypatch.setattr(R7, "_run_spend", lambda hh: 999.0)       # prior spend already over any cap
+    out = R7.run_council_streaming(DOC, persist=True, resume=True)
+    assert persisted == []                        # halted before the first paid district
+    assert out["districts"] == {}
+
+
+def test_budget_district_cap_skips_but_run_continues(monkeypatch):
+    """REQ-051: a per-district ceiling skips the over-budget district and continues to the next."""
+    persisted = _mock_env(monkeypatch, already=set())
+    monkeypatch.setattr(R7, "_district_spend", lambda hh: {"ZZS1": 999.0})   # ZZS1 already over cap
+    out = R7.run_council_streaming(DOC, persist=True, resume=True)
+    assert persisted == ["ZZS2"]                  # ZZS1 skipped, ZZS2 still runs
+    assert set(out["districts"]) == {"ZZS2"}

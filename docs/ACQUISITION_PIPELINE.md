@@ -148,33 +148,61 @@ flowchart TD
         P_OUT --> P_REG
     end
 
-    S5["5. Local filter — DISTRICT-DRIVEN, ATTENTION-FIRST console (REQ-112)<br/>scoring V2: labeling-function detectors + combiner -> send/suppress/review (REQ-113)<br/>labeling v2.1: 3-axis (target SHAPE / confounder facets / location) (REQ-114)<br/>detail pane text-first + per-rep unique-times readout<br/> -> filtered.json (event-driven projection)"]
-    CPB{{"gate@5 — per-URL review (was Checkpoint B)<br/>legible, relevant input; the critical gate before paid extraction"}}
-    S6["6. Dispatch — BUILT to the seam (REQ-101)<br/>per-rep route -> council (data-driven off input_kinds<br/>+ capture-fidelity gate); price; freeze immutable<br/>handoff_&lt;hash&gt;_&lt;ts&gt;.json + dispatched event;<br/>assemble OpenRouter requests — STOP before the paid call"]
-    G6{{"gate@6 — dispatch / dispatch approval — BUILT (manual)<br/>console: preview routed/priced package -> Approve &amp; freeze<br/>send set tier-gated (targets + tier-A; B/C held; handbook harvest_slice)<br/>+ verified-only mode (labeled targets only, training-grade)<br/>(auto mode + budget cost-gate deferred)"}}
-    S7["7. Extract — BUILT (REQ-117)<br/>per-rep council -> cross-family consensus -> judge on disagreement<br/>durable/resumable per-district streaming; GT-scored 95.2%/99.3%<br/>band/school on batch_00000; request-more-evidence DETECT built,<br/>EXECUTION not yet built"]
-    G7{{"gate@7 — review extraction results + council requests — BUILT (manual)<br/>console: district-first, band rollup + accepted/unresolved facts<br/>+ request approve/reject/reopen (fact/band editing is gate@8)"}}
-    S8[8. Aggregate<br/>start/end -> daily instructional minutes by band;<br/>manual override requires a reason]
+    subgraph STAGE5 ["Stage 5 — Local filter · DISTRICT-DRIVEN, attention-first console (BUILT — REQ-112/113/114)"]
+        direction TB
+        F_ING["Stage 4→5 handoff: build_signals.ingest_batch() — batch-scoped ingest into<br/>the governance signal + cross-stage cache tables (no full-corpus rebuild)"]
+        F_SCORE["Scoring V2 (REQ-113): labeling-function detectors + combiner<br/>-> per-record tier (A / B / C / D)"]
+        F_DECIDE["release.decide per canonical record: label + tier -> send / hold / reject.<br/>best_send picks the WINNER rep; alternates() keeps the OTHER usable<br/>reps of the same URL (the label attaches to the RECORD, so all reps inherit it)"]
+        F_OUT["filtered.json (EVENT-DRIVEN projection) — carries the winner<br/>+ ALTERNATE target-flagged reps (REQ-094 follow-up), so gate@6 can<br/>offer representation override and the 7→6 back-edge has reps to pick"]
+        F_ING --> F_SCORE --> F_DECIDE --> F_OUT
+    end
+    G5{{"gate@5 — per-URL representation review (was Checkpoint B) — BUILT<br/>labeling v2.1: 3-axis (target SHAPE / confounder facets / location);<br/>detail pane text-first + per-rep unique-times readout.<br/>The critical gate before any PAID extraction"}}
+
+    subgraph STAGE6 ["Stage 6 — Dispatch · BUILT to the seam (REQ-101)"]
+        direction TB
+        H_IN["district_release_input: read the release decision from the DB;<br/>enrich each send rep with the size signals routing + cost need"]
+        H_ROUTE["Per-rep route -> council (data-driven off input_kinds + the<br/>capture-fidelity gate); price on the bootstrap cost model"]
+        H_FREEZE["Freeze the IMMUTABLE handoff_&lt;hash&gt;_&lt;ts&gt;.json + the precious handoff<br/>index row + a per-district 'dispatched' state_event (atomic)"]
+        H_REQ["Assemble the OpenRouter requests — STOP before the paid call"]
+        H_IN --> H_ROUTE --> H_FREEZE --> H_REQ
+    end
+    G6{{"gate@6 — dispatch approval — BUILT (manual)<br/>console: preview routed/priced package -> Approve &amp; freeze<br/>send set tier-gated (targets + tier-A; B/C held; handbook harvest_slice)<br/>+ verified-only mode (labeled targets only); auto + budget cost-gate deferred"}}
+
+    subgraph STAGE7 ["Stage 7 — Extract · council + the request-loop, EXECUTION BUILT (REQ-117 + REQ-118)"]
+        direction TB
+        X_BUD["REQ-051 budget governor (PRE-district): run cap HALTS, per-district cap SKIPS;<br/>seeded from durable SUM(extraction.cost_usd) so a resumed run stays under the same ceiling"]
+        X_COUNCIL["Per rep: 2 cross-family voters -> consensus on the per-school (start,end) pair<br/>±15 min (REQ-056) -> 3rd-family JUDGE on disagreement. Models read TIMES only;<br/>code computes gross bell-to-bell + the per-band MODE (REQ-054/055)"]
+        X_PERSIST["Persist per-school school_fact + the extraction rollup<br/>(durable, RESUMABLE per-district streaming) + a stage=7 state_event"]
+        X_DETECT["Request-more-evidence DETECT (deterministic, zero model calls): 0-fact rep w/<br/>alternate -> 7→6 · URL exhausted -> 7→3 · claimed band 0 facts -> 7→2"]
+        X_BUD --> X_COUNCIL --> X_PERSIST --> X_DETECT
+    end
+    G7{{"gate@7 — review results + directives — BUILT (manual, PURE review)<br/>district-first: band rollup + accepted/unresolved facts<br/>+ directive approve/reject/reopen (fact/band editing is gate@8)"}}
+    X_EXEC["Request EXECUTION (REQ-118) — a SEPARATE step from gate@7 approval:<br/>· 7→6 execute_alternate_dispatch: re-dispatch the named already-captured alternate rep<br/>&nbsp;&nbsp;(no new capture; bypasses Stage 1 + Stage 5) -> a NEW Stage-6 dispatch<br/>· 7→2/7→3/7→1 compose_followup_batch: collect approved directives into ONE targeted<br/>&nbsp;&nbsp;DRAFT Stage-1 follow-up batch (12-cap, spillover)<br/>depth-guarded (budget max_request_rounds); flips each directive -> executed (lineage)"]
+
+    S8[8. Aggregate — DESIGNED, not built<br/>per-band modal daily minutes; manual override requires a reason]
     G8{{"gate@8 — review results (the effective CP-C;<br/>Stage 9 DB write is mechanical, no gate)"}}
-    S9[9. Incorporate -> LCT DB]
+    S9[9. Incorporate — DESIGNED, not built -> LCT DB]
 
     Q_OUT --> CPA --> D_RECON
     D_REG --> C_RECON
     D_SKIP --> C_RECON
     C_REG --> P_RECON
     C_SKIP --> P_RECON
-    P_REG -->|"batch FULLY resolved -> Stage 4→5 handoff (REQ-111):<br/>build_signals.ingest_batch() — batch-scoped Stage-5 ingest<br/>(no full-corpus rebuild) + filtered.json + furthest_stage→5 event.<br/>THE BATCH DISSOLVES HERE; the district becomes the unit"| S5
-    P_SKIP --> S5
-    S5 --> CPB --> S6 --> G6 --> S7 --> G7 --> S8 --> G8 --> S9
+    P_REG -->|"batch FULLY resolved -> Stage 4→5 handoff (REQ-111):<br/>ingest_batch() + filtered.json + furthest_stage→5 event.<br/>THE BATCH DISSOLVES HERE; the district becomes the unit"| F_ING
+    P_SKIP --> F_ING
+    F_OUT --> G5 --> H_IN
+    H_REQ --> G6 --> X_BUD
+    X_DETECT --> G7 --> X_EXEC
+    X_EXEC --> S8 --> G8 --> S9
 
     %% feedback loops — the acquisition pipeline is CYCLIC, not a DAG (dashed = back-edge).
-    %% Anything needing NEW capture/discovery routes back to Stage 1 as a reviewable follow-up batch
-    %% (batch_*.json is created at the return to Stage 1, never directly by 7/8). Only re-routing
-    %% EXISTING representations (re-extract / add-to-dispatch) bypasses Stage 1.
-    S7 -.->|"re-extract existing reps via a different council config"| S6
-    S7 -.->|"directions: re-discover / recapture -> follow-up batch (reviewable)"| Q_SRC
+    %% Only TWO execution mechanisms (REQ-118): 7→6 re-routes EXISTING already-labeled reps straight to a
+    %% new Stage-6 dispatch (no new capture, no gate@5); 7→2/7→3/7→1 need NEW evidence (never labeled) so
+    %% they wrap in a Stage-1 follow-up batch that walks 1→2→3→4→5→6→7 (reviewable at gate@1). 8→1 / 8→6 mirror this.
+    X_EXEC -.->|"7→6: re-dispatch the alternate rep via a (possibly different) council"| H_IN
+    X_EXEC -.->|"7→2/7→3/7→1: NEW discovery/capture -> DRAFT follow-up batch (gate@1)"| Q_SRC
     S8 -.->|"band-coverage gap -> follow-up batch (district×band)"| Q_SRC
-    S8 -.->|"add an existing-rep URL to a new dispatch"| S6
+    S8 -.->|"add an existing-rep URL to a new dispatch"| H_IN
 ```
 
 ### 1 · Queue — built 2026-06-22 · gate@1 console (backend + frontend) built + validated 2026-06-28 (REQ-102) · deep design + decision log: `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE1_QUEUE_DESIGN_2026-06.md`

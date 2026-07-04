@@ -14,11 +14,14 @@
 > **Update this when:** Stage 7's code behavior changes. Design turns and superseded approaches
 > belong in §6 (Provenance / decision log), not here.
 
-**Status: BUILT through gate@7 review.** Council extraction, per-school persistence, GT scoring, the
-deterministic request-more-evidence **detection + routing + review** engine, and the gate@7 console are
-all built and validated against real `batch_00000` data. **Not yet built:** request **execution** — an
-approved request flipping a DB flag does not yet fire the target stage's back-edge machinery (7→6/3/2/1);
-see §3F.
+**Status: BUILT through gate@7 review + request EXECUTION.** Council extraction, per-school persistence,
+GT scoring, the deterministic request-more-evidence **detection + routing + review** engine, and the
+gate@7 console are all built and validated against real `batch_00000` data. Request **execution** — an
+approved directive firing the target stage's back-edge — is now **built** (REQ-118): the 7→6 direct
+alternate-rep re-dispatch, and the 7→2/7→3/7→1 → Stage-1 follow-up-batch path, both gated by the REQ-051
+budget governor + a per-district×band depth guard; see §3F. **Not yet run end-to-end on live non-benchmark
+data** (batch_00000 is benchmark-walled) — the execution paths are unit/govdb-tested, not yet exercised
+against a real request round-trip.
 
 ---
 
@@ -143,8 +146,9 @@ approve/reject/reopen. **Still open** (deferred, not designed):
 ## 4. The request-more-evidence loop
 
 **When the council can't confidently answer, the pipeline gets more evidence via cyclic back-edges
-(7→6/3/2/1).** Detection + routing are **built and validated** (§0); **execution is not** (§3F below is
-folded from the old design note — kept here as the one legitimately-open item).
+(7→6/3/2/1).** Detection + routing are **built and validated** (§0); **execution is now built too**
+(REQ-118, §3F). The whole loop — detect → route → gate@7 review → execute — is code; what remains is a
+live non-benchmark run to exercise it.
 
 **(a) Routing = deterministic scripts, not the model — the REQ-054 read-vs-decide split, extended.** The
 council reads/assesses; deterministic local code decides what to do about insufficiency. Rationale
@@ -178,24 +182,53 @@ a genuine 0-fact gap → the loop then catches it via `7→6` (swap in the held 
 real detector output, correcting an earlier assumption that `7→6` would catch Essex directly (it can't
 while the fabrication stands).
 
-### 3F. Request execution — NOT YET BUILT
+### 3F. Request execution — BUILT (REQ-118)
 
-An approved request currently only flips `ExtractionRequest.status` in the DB — nothing yet fires the
-target stage's back-edge machinery. When built:
-- **`7→6`** — a new Stage-6 re-dispatch of the alternate rep (STAGE6 stories 58/59): no new capture.
-- **`7→3`** — a Stage-3 capture of the specific URL.
-- **`7→2`** — a targeted Stage-2 discovery query for the district/band.
-- **`7→1`** — a reviewable follow-up batch created at the return to Stage 1 (gate@1) — never created by
-  Stage 6/7/8 directly (governance §11d).
-- Results re-enter Stage 7 through the normal dispatch → extract path.
-- **Must-have before this ships:** a per-district request-depth guard (max re-request rounds) + the
-  budget governor (REQ-051) on any paid re-extraction, so the loop provably terminates and never runs up
-  unbounded OpenRouter spend.
+An approved directive now fires the target stage's back-edge. The key architectural collapse (Ian,
+2026-07-03): **anything needing NEW capture/discovery routes through a Stage-1 follow-up batch, so there
+are only TWO execution mechanisms, not four** — matching governance §11d ("directions route through
+Stage 1; only re-routing EXISTING representations bypasses it"):
+
+- **`7→6` — DIRECT alternate-rep re-dispatch** (`stage7_execute.execute_alternate_dispatch`). The
+  alternate reps are **already captured, processed, AND labeled** — the gate@5 label attaches to the
+  *record* (the URL/`rec_key`), not to an individual rep, so every rep of an already-reviewed record
+  inherits it (`filtered.json` even carries "winner + alternates", the REQ-094 follow-up). So 7→6 needs
+  **no new capture and no Stage-5 round-trip**: it synthesizes a one-record dispatch input from the named
+  alternate rep (`build_alternate_input`, prefers the image rep for the text→vision escalation, defaults
+  it to the `image` council), builds a NEW immutable Stage-6 dispatch via the pure `package.assemble_package`
+  / `handoff.freeze` / `stage6_dispatch.record_dispatch` path (the prior dispatch untouched — history
+  preserved), and it re-enters Stage 7 through the normal extract path. This is the one back-edge that
+  bypasses **both** Stage 1 and Stage 5.
+- **`7→2` / `7→3` / `7→1` — via a Stage-1 FOLLOW-UP BATCH** (`stage7_execute.compose_followup_batch` +
+  `stage1_queue.build_followup_batch`). These need NEW discovery/capture → NEW representations that have
+  **never been labeled** → they MUST flow through gate@5, so they are wrapped in a targeted, DRAFT
+  follow-up batch (batch_type='follow-up', reviewable at gate@1) that walks 1→2→3→4→5→6→7 normally. A
+  **compose step** (kept separate from gate@7 approval — Ian: gate@7 stays pure review) sweeps all
+  approved NEW-work directives into ONE batch (union of districts + unsatisfied bands; a band-less 7→3/7→1
+  expands to the district's claimed bands), honoring the **12-district hard cap** (overflow spills to the
+  next compose), then flips the swept directives to `executed` with the batch_id as their `executed_ref`
+  (lineage + idempotency). `build_followup_batch` is TARGETED (not stratified) and deliberately
+  re-includes already-attempted districts; **`build_batch` (first-run) is untouched.**
+
+**Guards (the must-haves, built):** the **REQ-051 budget governor** (`common/budget.py` +
+`common/config/budget.json`) bounds per-district + per-run OpenRouter spend — enforced pre-district in
+`run_council_streaming` (run cap halts, district cap skips), seeded from durable `SUM(extraction.cost_usd)`
+so resume stays under the same ceiling; its `max_request_rounds` is the **per-district×band depth guard**
+(derived from executed-directive history) so the cyclic loop provably terminates. The paid 7→6
+re-extraction is budget-gated when its new handoff is run.
+
+**Surfaces:** CLI `python3 -m infrastructure.acquisition.process_governance.stage7_execute
+{compose-followup|execute <request_id>}` (CLI-first per the ramp-up model) + the server endpoints
+`POST /api/extract/compose-followup` and `POST /api/extract/execute/{request_id}`. Console buttons on
+`stage7.js` are deferred (the review console renders the directives; execution is CLI/API today).
+
+- **Still open — not built:** the console execute buttons; the narrow model "referenced-but-unread"
+  detector signal (deferred per the measured-pass discipline); a live non-benchmark end-to-end run.
 - **Open research question, unresolved:** the OpenRouter session/context question — can an API session
   stay open across a request round-trip, or must every re-entry re-pass frozen context (the immutable
-  dispatch) into a fresh call? See `STAGE6_DISPATCH_DESIGN` §3F.
-
-This is the highest-value next Stage-7 build.
+  dispatch) into a fresh call? See `STAGE6_DISPATCH_DESIGN` §3F. (Today the re-entry re-passes the frozen
+  dispatch — a fresh call — which is correct regardless of the answer; a persisted session would only be
+  an optimization.)
 
 ---
 
@@ -257,6 +290,19 @@ image-vs-text comparison → the request-detection engine → gate@7 console. Ke
   call 404s (0/33 resolved in the full run); Ian: "Whoops! Incorrect assumption on my part." Filed as
   GitHub #82, not yet fixed; the image-council accuracy numbers in §0 stand despite this (the judge
   simply never resolves a disagreement, leaving those cases at 2-voter agreement or unresolved).
+- **Request execution built (REQ-118, 2026-07-03), two mechanisms not four.** Ian's framing collapsed
+  the design: "Any requests that go to stages 2, 3, or 4 will probably need to be wrapped in a batch using
+  Stage 1." That resolved the §3F-vs-governance-§11d tension — only 7→6 (existing, already-labeled reps)
+  is a true direct back-edge; 7→2/7→3/7→1 all converge on a Stage-1 follow-up batch (new evidence must
+  pass gate@5). Ian's four build decisions: build BOTH mechanisms + all four routes; **collect** approved
+  NEW-work directives into ONE follow-up batch (12-cap, spillover); keep gate@7 approval **pure review**
+  with a **separate compose step**; build **REQ-051 first** as a hard prerequisite. Ian also confirmed the
+  Stage-5 question directly ("all of the alternate representations are already available in Stage 6… am I
+  understanding correctly?" — yes: the label is on the record, so alternates inherit it). Built additively:
+  `common/budget.py` + `budget.json` knob (REQ-051), `stage1_queue.build_followup_batch` (targeted;
+  `build_batch` untouched), `process_governance/stage7_execute.py` (the app-layer executor), two
+  `extraction_request` lineage columns via the sanctioned `_PRECIOUS_ALTERS` additive migration, server
+  endpoints + a CLI. Full suite + govdb green; first-run flow proven intact.
 - **GT quality questions surfaced, not yet resolved:** New Haven Unified High and West Ada/Joint SD2
   showed extraction misses that on inspection look like they may trace to GT-derivation issues (New Haven
   Unified's GT high band appears to cover only the continuation school, not the comprehensive HS; West

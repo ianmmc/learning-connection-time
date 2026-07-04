@@ -113,11 +113,16 @@ live in the governance DB; `handoff_<hash>_<ts>.json` under `data/acquisition/ha
 
 **Current status (2026-07-03):** the console runs the pipeline live through **`gate@7`** — Stage 7
 council extraction + the gate@7 review console are BUILT and GT-validated (REQ-117, 95.2%/99.3%
-band/school on `batch_00000`); the request-more-evidence loop's detect/persist/review is built, its
-*execution* (firing the 7→6/3/2/1 back-edge) is not. Stages 8–9 remain designed, not built. **Next:**
-engineer's-discretion — either the request-loop execution wiring, or a Council Lab backlog item (GitHub
-#80 Council Lab infra, #81 spray A/B, #82 image-council judge not vision-capable). Full detail:
-`docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE7_EXTRACT_DESIGN_2026-06.md` §0.
+band/school on `batch_00000`). The request-more-evidence loop is now **built end-to-end**: detect/persist/
+review + **execution** (REQ-118) — 7→6 direct alternate-rep re-dispatch and 7→2/7→3/7→1 wrapped in a
+Stage-1 follow-up batch, under the **REQ-051 budget governor** (`common/budget.py`, built as the
+prerequisite) + a per-district×band depth guard. Execution is CLI + API today (`python3 -m
+infrastructure.acquisition.process_governance.stage7_execute {compose-followup|execute <id>}`; `POST
+/api/extract/{compose-followup, execute/{id}}`); the gate@7 console buttons + a live non-benchmark run of
+the loop are the remaining gaps. Stages 8–9 remain designed, not built. **Next:** engineer's-discretion —
+Stage 8 (aggregate), the gate@7 execution console buttons + a live loop run, or a Council Lab backlog item
+(GitHub #80 Council Lab infra, #81 spray A/B, #82 image-council judge not vision-capable). Full detail:
+`docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§3F.
 
 ---
 

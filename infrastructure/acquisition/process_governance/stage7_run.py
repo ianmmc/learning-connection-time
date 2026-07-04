@@ -22,9 +22,11 @@ from pathlib import Path
 
 from sqlalchemy import text
 
+from infrastructure.acquisition.common import budget as BUD
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import paths
+from infrastructure.acquisition.stage6_handoff import cost as COST6
 from infrastructure.acquisition.stage6_handoff import councils as C6
 from infrastructure.acquisition.stage6_handoff import prompts as P6
 from infrastructure.acquisition.stage6_handoff import requests as R6
@@ -260,13 +262,34 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
         if resume:
             done = _already_extracted(hh)
 
+    # REQ-051 budget governor: seed from DURABLE recorded spend (so a resumed run continues under the
+    # SAME ceiling) when persisting; else count only this session. A null cap disables its dimension.
+    gov = BUD.BudgetGovernor(BUD.load_budget(),
+                             run_spent=_run_spend(hh) if persist else 0.0,
+                             district_spent=_district_spend(hh) if persist else None)
+    try:
+        cost_model = COST6.load_cost_model()
+    except Exception:  # noqa: BLE001 — estimate is advisory (see _estimate_district_cost)
+        cost_model = None
+
     results = {"handoff_hash": hh, "districts": {}}
     for did in sorted(by_district):
         if did in done:
             print(f"[skip]  {did} — already extracted for handoff {hh}", flush=True)
             continue
+        est = _estimate_district_cost(by_district[did], councils, cost_model)
+        if gov.run_would_exceed(est):
+            print(f"[budget] run cap ${gov.budget.per_run_usd:.2f} reached "
+                  f"(spent ${gov.run_spent:.4f}, est +${est:.4f}) — HALTING before {did}", flush=True)
+            break
+        if gov.district_would_exceed(did, est):
+            print(f"[budget] district {did} cap ${gov.budget.per_district_usd:.2f} would be exceeded "
+                  f"(spent ${gov.district_spent.get(did, 0.0):.4f}, est +${est:.4f}) — SKIPPING",
+                  flush=True)
+            continue
         pd = _run_district(did, _district_name(doc, did), by_district[did], councils,
                            ddirs.get(did), use_judge)
+        gov.record(did, (pd.get("telemetry") or {}).get("cost_usd", 0.0))
         results["districts"][did] = pd
         if persist:
             rp = write_district_receipt(pd, hh)
@@ -385,6 +408,44 @@ def _already_extracted(handoff_hash: str) -> set:
         return {r[0] for r in s.execute(
             text("SELECT DISTINCT district_id FROM extraction WHERE handoff_hash = :h"),
             {"h": handoff_hash or ""})}
+
+
+def _run_spend(handoff_hash: str) -> float:
+    """Durable spend already recorded for this handoff (the budget-governor resume seed, REQ-051) —
+    SUM(extraction.cost_usd). A resumed run continues under the SAME run ceiling, not a fresh count."""
+    with gdb.session_scope() as s:
+        v = s.execute(
+            text("SELECT COALESCE(SUM(cost_usd), 0.0) FROM extraction WHERE handoff_hash = :h"),
+            {"h": handoff_hash or ""}).scalar()
+    return float(v or 0.0)
+
+
+def _district_spend(handoff_hash: str) -> dict:
+    """Per-district durable spend for this handoff — {district_id: SUM(cost_usd)}. Seeds the
+    governor's per-district ceilings on resume (kept consistent with `_already_extracted`'s scope)."""
+    with gdb.session_scope() as s:
+        rows = s.execute(
+            text("SELECT district_id, COALESCE(SUM(cost_usd), 0.0) FROM extraction "
+                 "WHERE handoff_hash = :h GROUP BY district_id"),
+            {"h": handoff_hash or ""})
+        return {r[0]: float(r[1] or 0.0) for r in rows}
+
+
+def _estimate_district_cost(rep_groups: list, councils: dict, cost_model) -> float:
+    """Best-effort pre-run cost estimate for one district (the per-rep council estimate summed) — the
+    number the governor checks BEFORE a paid district so a per-district/run cap can pre-empt rather
+    than only halt after a breach. Best-effort: any estimator gap ⇒ 0.0 (the actuals-recorded run-cap
+    halt is the hard guarantee), so a missing/broken cost model never blocks a legitimate run."""
+    if not cost_model:
+        return 0.0
+    total = 0.0
+    for rg in rep_groups:
+        cfg = councils.get(rg["council_id"]) or {}
+        try:
+            total += COST6.estimate_council_cost({"n_chars": 0, "n_schools": 1}, cfg, cost_model)
+        except Exception:  # noqa: BLE001 — estimate is advisory; never let it abort the run
+            return 0.0
+    return total
 
 
 def _print_district_progress(did: str, pd: dict, gt_data: dict = None) -> None:

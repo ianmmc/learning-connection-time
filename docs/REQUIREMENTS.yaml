@@ -1176,17 +1176,27 @@ requirements:
     description: Bound API spend and effort per district and globally, with a resumable batch (budget governor)
     type: constraint
     priority: must
-    status: accepted
+    status: in-progress
     acceptance_criteria:
       - Enforces per-district caps on API spend and/or search+extraction attempts, stopping once enough bands are confidently found
       - Enforces a global run budget cap; the run halts or degrades to fallback when exceeded
       - Enforces the ONE-attempt rule on WAF/CDN blocks (Rule 3) at the governor level
       - Batch is checkpointed, resumable, and idempotent per district (re-running does not duplicate; REQ-041 pattern)
       - Per-district and per-run cost/usage are recorded
+    tests:
+      - tests/test_budget.py
+      - tests/test_stage7_streaming.py::test_budget_run_cap_halts_before_paid_district
+      - tests/test_stage7_streaming.py::test_budget_district_cap_skips_but_run_continues
     created: "2026-06-13T00:00:00Z"
-    updated: "2026-06-13T00:00:00Z"
+    updated: "2026-07-03T00:00:00Z"
     notes: "New requirement introduced by the shift to paid APIs; prevents an agentic search/extract loop
-      from running up cost on hard districts. Cost-minimization itself is deferred (do-it-right-first)."
+      from running up cost on hard districts. Cost-minimization itself is deferred (do-it-right-first).
+      BUILT 2026-07-03 as the prerequisite for Stage-7 request-execution (REQ-118): common/budget.py (pure
+      per-district + per-run + max_request_rounds caps) + the config-as-data budget knob
+      (common/config/budget.json, bootstrap) + pre-district enforcement in run_council_streaming (run cap
+      HALTS, per-district cap SKIPS), seeded from durable SUM(extraction.cost_usd) so resume continues under
+      the same ceiling. STILL OPEN: the WAF one-attempt rule at governor level, and enforcement on the paid
+      re-extraction back-edge (7->6) — lands with REQ-118 Slice 4."
 
   - id: REQ-052
     description: Define the school-sampling policy and document its representativeness limitation
@@ -2791,3 +2801,26 @@ requirements:
     created: "2026-07-02T00:00:00Z"
     updated: "2026-07-03T00:00:00Z"
     notes: "Design/present-state: STAGE7_EXTRACT_DESIGN_2026-06.md §0 (rewritten present-state-first). Council extraction, GT scoring, durability/resume, the request-more-evidence detect/persist/review engine, and the gate@7 console are all built and validated against real batch_00000 data. Reuses stage6_handoff.requests/prompts (assembly) + stage8_aggregate.aggregate (consensus/mode). The two family maps (aggregate.py short-name vs councils.py full-id) were unified into common.model_families keyed on full OpenRouter ids (single source of truth; grimp-verified importers). Remaining work (request-loop execution; Council Lab items) tracked on GitHub: #80 (Council Lab), #81 (spray A/B), #82 (image-council judge not vision-capable)."
+
+  - id: REQ-118
+    description: "Stage 7 request-more-evidence EXECUTION: an approved gate@7 ExtractionRequest fires the target stage's back-edge. Two mechanisms — (a) 7->6 DIRECT re-dispatch of an already-captured alternate representation (no new capture, bypasses Stage 1); (b) 7->2/7->3/7->1 wrapped in a Stage-1 FOLLOW-UP BATCH (any NEW capture/discovery routes through Stage 1 and stays reviewable at gate@1 — governance §11d), collected into one batch honoring the 12-district cap. Guarded by the REQ-051 budget governor + a per-district×band request-depth guard so the cyclic loop provably terminates."
+    type: functional
+    priority: must
+    status: in-progress
+    acceptance_criteria:
+      - "Approving a request at gate@7 stays PURE review (status->approved); a SEPARATE compose step materializes work — gate@7 is not coupled to batch/dispatch creation"
+      - "compose_followup_batch sweeps APPROVED 7->2/7->3/7->1 requests into ONE draft Stage-1 batch (batch_type='follow-up') targeting the union of districts + unsatisfied bands (+ school/URL seeds), 12-district hard cap with spillover, flips those requests to 'executed', and links batch<->request for lineage; the batch is a DRAFT reviewable at gate@1 (never auto-approved)"
+      - "A follow-up batch is TARGETED (explicit districts/bands), not stratified — Stage 1 grows a targeted-batch builder distinct from build_batch's cold-start draw"
+      - "7->6 execution builds a NEW immutable dispatch from the NAMED alternate reps (params.alternate_reps) with the routed council, re-entering Stage 7 via the normal extract path; the prior dispatch is untouched (history preserved); the request flips to 'executed'"
+      - "The paid 7->6 re-extraction is gated by the REQ-051 budget governor (per-district + per-run caps) BEFORE any OpenRouter call"
+      - "The request-depth guard (budget max_request_rounds) blocks a district×band that has already fired the max re-request rounds, derived from executed ExtractionRequest history — the loop terminates"
+      - "Execution is idempotent: re-running compose/execute does not duplicate batches/dispatches or re-fire an already-executed request"
+      - "Server endpoints (compose-followup + execute/{request_id}) expose both mechanisms; CLI-first, console buttons follow"
+    tests:
+      - tests/test_stage7_execute.py
+      - tests/test_stage7_api.py::test_compose_followup_endpoint
+      - tests/test_stage7_api.py::test_execute_endpoint_success
+      - tests/test_stage7_api.py::test_execute_endpoint_refused_is_409
+    created: "2026-07-03T00:00:00Z"
+    updated: "2026-07-03T00:00:00Z"
+    notes: "Closes the request-more-evidence loop left open by REQ-117 (its last acceptance criterion) and STAGE7 §3F. Depends on REQ-051 (budget governor, built first). Design decisions (Ian, 2026-07-03): build BOTH mechanisms + all four routes; collect approved NEW-work requests into ONE follow-up batch; keep gate@7 approve as pure review with a separate compose step; build REQ-051 first as a hard prerequisite. The 'wrap NEW capture/discovery in a Stage-1 batch' rule (Ian) resolves the §3F-vs-§11d tension: only 7->6 (existing reps) is a true direct back-edge; 7->2/7->3/7->1 all converge on a Stage-1 follow-up batch. Authority: STAGE7_EXTRACT_DESIGN_2026-06.md §3F, PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §11b/§11d/§11e."

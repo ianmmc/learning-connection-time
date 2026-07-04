@@ -226,6 +226,64 @@ def build_batch(year: str, n: int, batch_id: str, registry: dict) -> tuple[dict,
     return batch_doc, gap_excluded, len(pool)
 
 
+def build_followup_batch(year: str, batch_id: str, targets: dict) -> tuple[dict, list]:
+    """Build a TARGETED follow-up batch (batch_type='follow-up') from explicit district×band targets —
+    the Stage-1 landing point for the request-more-evidence back-edges 7->2/7->3/7->1 (governance §11d:
+    any NEW capture/discovery routes through a reviewable Stage-1 batch, never straight to discovery).
+
+    UNLIKE build_batch this is NOT stratified and deliberately RE-INCLUDES already-attempted districts —
+    a follow-up re-targets *unsatisfied bands* on districts that have already been through the pipeline,
+    so the eligible_pool exclusions (already-attempted, enrollment floor) do NOT apply here. It reuses
+    the SAME per-band school selection (`select_schools`, same seed/logic) as build_batch, just over a
+    school index restricted to the target bands. Does NO I/O (reads NCES via school_sampling only); the
+    caller persists via persist_batch(..., batch_type='follow-up'). build_batch is untouched — the
+    first-run flow does not route through here.
+
+    targets: {district_id: [band, ...]} — the bands to re-target per district (order preserved). A band
+    with no school-level coverage in the NCES index is dropped; a district with no usable target band is
+    skipped (reported). Returns (batch_doc, skipped) where skipped = [{district_id, reason}]."""
+    lea = S.lea_info(year)
+    sch_idx = S.school_index(year)
+    level_counts = S.school_level_counts(year)
+    enrollment = load_enrollment()
+
+    districts_out, skipped = [], []
+    for did in targets:                         # preserve caller order (attention-sorted upstream)
+        info = lea.get(did)
+        if not info:
+            skipped.append({"district_id": did, "reason": "not in NCES lea_info for the year"})
+            continue
+        dsi = sch_idx.get(did, {})
+        want = [b for b in BANDS if b in set(targets[did]) and dsi.get(b)]   # normalize + drop empties
+        if not want:
+            skipped.append({"district_id": did, "reason": "no school-level coverage for the target bands"})
+            continue
+        restricted = {b: dsi[b] for b in want}                              # only the target bands
+        order, schools_by_band = select_schools(batch_id, did, restricted)
+        web = info["website"] or ""
+        domain = host_of(web if "//" in web else "http://" + web) if web else ""
+        districts_out.append({
+            "district_id": did,
+            "name": info["name"],
+            "state": info["state"],
+            "domain": domain,
+            "enrollment_k12": enrollment.get(did),   # may be None for a follow-up; not a filter here
+            "lea_claimed_bands": sorted(info["claimed_bands"]),
+            "nces_school_counts": level_counts.get(did, {"total": 0, "by_level": {}}),
+            "band_processing_order": order,
+            "schools_by_band": schools_by_band,
+        })
+
+    batch_doc = {
+        "batch_id": batch_id,
+        "created": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "n": len(districts_out),
+        "nces_year": year,
+        "districts": districts_out,
+    }
+    return batch_doc, skipped
+
+
 def persist_batch(batch_doc: dict, registry: dict, *, batch_type: str = "first-run",
                   actor: str = "cli") -> Path:
     """Persist a freshly-built batch: write the DB WORKING STORE (batch_store rows) + regenerate the

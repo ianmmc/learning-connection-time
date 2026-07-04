@@ -92,3 +92,8 @@ class ExtractionRequest(gdb.Base):
     reviewed_by: Mapped[str | None] = mapped_column(String, nullable=True)
     reviewed_at: Mapped[str | None] = mapped_column(String, nullable=True)
     review_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Execution lineage (REQ-118): set when an APPROVED directive is executed — the follow-up
+    # batch_id (7->2/7->3/7->1) or the new dispatch handoff_hash (7->6) it fired. Gives idempotency
+    # (an 'executed' row is never re-fired) + traceability from the directive to the work it created.
+    executed_ref: Mapped[str | None] = mapped_column(String, nullable=True)
+    executed_at: Mapped[str | None] = mapped_column(String, nullable=True)

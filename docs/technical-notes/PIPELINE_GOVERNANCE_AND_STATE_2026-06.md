@@ -26,13 +26,14 @@ through **`gate@7`**: gate@1 (REQ-102), Stage 2 (REQ-104), Stage 3 (REQ-110), St
 incremental handoff (REQ-111, §12), the Stage 5 district-driven console (REQ-112), Stage 6 dispatch/freeze
 through the Stage 6→7 seam (REQ-101), and Stage 7 council extraction + the gate@7 review console (REQ-117:
 extraction results + the request-more-evidence **detect/persist/review** loop — see
-`STAGE7_EXTRACT_DESIGN_2026-06.md` §0). **Not yet built: request-more-evidence *execution*** (an approved
-request firing the target stage's back-edge — STAGE7 §3F) and Stage 8/9. **Gates are stage-numbered (§11):**
+`STAGE7_EXTRACT_DESIGN_2026-06.md` §0), and the request-more-evidence **execution** (REQ-118: 7→6 direct
+re-dispatch + 7→2/7→3/7→1 via a Stage-1 follow-up batch, under the REQ-051 budget governor — STAGE7 §3F).
+**Not yet built: Stage 8/9.** **Gates are stage-numbered (§11):**
 `gate@1` (queue) · `gate@5` (per-URL review) · `gate@6` (dispatch) · `gate@7` (council requests) · `gate@8`
 (results). §8, §9, and §9a below are **historical** — fully executed planning/sequencing docs kept in place
 because their section numbers (`governance §9a`, etc.) are cross-referenced elsewhere; see the banners on
 each. Next: Stage 8 (aggregation) + the council lab (`cost_benchmark`); still open: REQ-100 (staleness),
-gate@6/gate@7 auto mode, the request-loop execution wiring.
+gate@6/gate@7 auto mode, the gate@7 execution console buttons + a live non-benchmark run of the loop.
 
 ---
 
@@ -734,8 +735,11 @@ escalation) added and tuned afterward. gate@7's council-initiated **request-more
 model applied to Stage 7: the *council* authors the request (the 7→6/3/2/1 back-edges) via a deterministic
 detector, **built and validated** (`STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§4); a human reviews/approves it
 at gate@7 (**built**) under today's high-supervision setting; the toggle relaxes that to auto
-(confidence-escalating) later. **Execution** — an approved request actually firing the target stage's
-back-edge machinery — is the one piece not yet built (STAGE7 §3F). The toggle below is the ramp-up's
+(confidence-escalating) later. **Execution** — an approved directive firing the target stage's back-edge —
+is now **built too** (REQ-118, STAGE7 §3F): 7→6 direct alternate-rep re-dispatch, and 7→2/7→3/7→1 wrapped
+in a Stage-1 follow-up batch, both under the **REQ-051 budget governor** (`common/budget.py`, built as the
+prerequisite) + a per-district×band depth guard. Approval stays pure review; a **separate compose step**
+materializes the batch (so gate@7 isn't coupled to batch creation). The toggle below is the ramp-up's
 control surface.
 
 Each gate toggles **manual** (human acts) / **auto** (self-advance), via a **global default + per-gate
@@ -875,9 +879,11 @@ reframe and the batch_00002-forcing-function plan (the batch-of-record advances 
   cross-family consensus → judge-on-disagreement, durable/resumable per-district streaming, GT-scored
   95.2%/99.3% band/per-school on `batch_00000`) + the deterministic request-more-evidence
   **detect/persist/review** engine (validated, zero false positives on real data) + the gate@7 console
-  (district-first, band rollup + request approve/reject/reopen). **Not yet built:** request-more-evidence
-  **execution** (an approved request firing the 7→6/3/2/1 back-edge) and the Council Lab backlog (#80/81/82).
-  See `STAGE7_EXTRACT_DESIGN_2026-06.md` §0.
+  (district-first, band rollup + request approve/reject/reopen). Request-more-evidence **execution** is
+  now built too (REQ-118): 7→6 direct alternate-rep re-dispatch + 7→2/7→3/7→1 via a Stage-1 follow-up batch,
+  under the **REQ-051 budget governor** (built as the prerequisite) + a depth guard; CLI + endpoints, gate@7
+  console buttons deferred. **Not yet built:** Stage 8/9 and the Council Lab backlog (#80/81/82). See
+  `STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§3F.
 - **Then:** **Stage 8 (aggregate)** + the **council lab** (`cost_benchmark` — measured token rates + live
   OpenRouter pricing; composition re-benchmark) + REQ-100 (staleness).
   Per-stage detail: `STAGE1_QUEUE_DESIGN` §6 (gate@1), `STAGE2_DISCOVER_DESIGN` §7 (the SERP cascade),

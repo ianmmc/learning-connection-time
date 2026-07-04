@@ -35,6 +35,7 @@ from infrastructure.acquisition.stage2_discover import headless as H2       # no
 from infrastructure.acquisition.stage3_capture import headless as H3       # noqa: E402  (Stage 3 capture runner + DB-cache status)
 from infrastructure.acquisition.stage4_process import headless as H4       # noqa: E402  (Stage 4 process runner + DB-cache status)
 from infrastructure.acquisition.process_governance import stage6_dispatch as H6  # noqa: E402  (Stage 6 routing/release bridge — REQ-101)
+from infrastructure.acquisition.process_governance import stage7_execute as EX  # noqa: E402  (Stage 7 request-more-evidence execution — REQ-118)
 from infrastructure.acquisition.stage6_handoff import handoff as HND6       # noqa: E402  (immutable handoff filename helper)
 from infrastructure.acquisition.common import paths                         # noqa: E402  (RAW_CAPTURES — rep inspect)
 from infrastructure.acquisition.stage6_handoff import councils as C6        # noqa: E402  (council registry — gate@6 override options)
@@ -1216,8 +1217,9 @@ def extract_district(district_id: str):
 @app.post("/api/extract/request/{request_id}")
 async def extract_request_review(request_id: int, payload: dict):
     """gate@7 action: approve / reject / reopen a request-more-evidence directive (records
-    who/when/note). EXECUTION of an approved request — the 7→6/3/2/1 back-edge — is a later build;
-    this records the human decision under the ramp-up model (governance §11b)."""
+    who/when/note). This stays PURE review under the ramp-up model (governance §11b) — approving a
+    directive does NOT execute it. EXECUTION is a separate, explicit step (REQ-118): 7→6 via
+    POST /api/extract/execute/{id}; 7→2/7→3/7→1 collected via POST /api/extract/compose-followup."""
     status = payload.get("status")
     if status not in ("approved", "rejected", "pending"):
         raise HTTPException(400, "status must be approved | rejected | pending")
@@ -1230,6 +1232,40 @@ async def extract_request_review(request_id: int, payload: dict):
         if not n:
             raise HTTPException(404, "no such request")
     return {"request_id": request_id, "status": status}
+
+
+@app.post("/api/extract/compose-followup")
+async def extract_compose_followup(payload: dict):
+    """REQ-118 execution (7→2/7→3/7→1): sweep APPROVED NEW-work directives into ONE targeted, DRAFT
+    Stage-1 follow-up batch (reviewable at gate@1), flipping those directives to 'executed'. Anything
+    needing new capture/discovery routes through Stage 1 (governance §11d) — this does NOT run
+    discovery, it queues a batch. Scope to one run with `handoff_hash`, else all approved NEW-work."""
+    try:
+        out = EX.compose_followup_batch(
+            year=payload.get("year", "2024_25"), actor=payload.get("actor", "ian"),
+            handoff_hash=payload.get("handoff_hash"), cap=int(payload.get("cap", 12)))
+    except Exception as e:  # noqa: BLE001 — surface the failure to the operator, don't 500 opaquely
+        raise HTTPException(400, f"compose-followup failed: {type(e).__name__}: {e}")
+    return out
+
+
+@app.post("/api/extract/execute/{request_id}")
+async def extract_execute(request_id: int, payload: dict):
+    """REQ-118 execution (7→6): fire an APPROVED alternate-rep directive — build a NEW immutable Stage-6
+    dispatch of the already-captured alternate rep (no new capture; bypasses Stage 1/5), so it re-enters
+    Stage 7 via the normal extract path. Depth-guarded (REQ-051 max_request_rounds). Returns the new
+    handoff_hash on success; the paid re-extraction is a subsequent Stage-7 run (separately budget-gated)."""
+    payload = payload or {}
+    try:
+        out = EX.execute_alternate_dispatch(
+            request_id, actor=payload.get("actor", "ian"), council_id=payload.get("council_id"))
+    except FileExistsError:
+        raise HTTPException(409, "an identical alternate dispatch was just created — the prior one stands")
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(400, f"execute failed: {type(e).__name__}: {e}")
+    if not out.get("ok"):
+        raise HTTPException(409, out.get("reason", "execution refused"))
+    return out
 
 
 @app.get("/")
