@@ -1192,11 +1192,12 @@ requirements:
     notes: "New requirement introduced by the shift to paid APIs; prevents an agentic search/extract loop
       from running up cost on hard districts. Cost-minimization itself is deferred (do-it-right-first).
       BUILT 2026-07-03 as the prerequisite for Stage-7 request-execution (REQ-118): common/budget.py (pure
-      per-district + per-run + max_request_rounds caps) + the config-as-data budget knob
-      (common/config/budget.json, bootstrap) + pre-district enforcement in run_council_streaming (run cap
-      HALTS, per-district cap SKIPS), seeded from durable SUM(extraction.cost_usd) so resume continues under
-      the same ceiling. STILL OPEN: the WAF one-attempt rule at governor level, and enforcement on the paid
-      re-extraction back-edge (7->6) — lands with REQ-118 Slice 4."
+      caps: per-district PER-RUN, per-district TOTAL cumulative-across-all-handoffs, per-run, and
+      max_request_rounds) + the config-as-data budget knob (common/config/budget.json, bootstrap) +
+      pre-district enforcement in run_council_streaming (run cap HALTS; per-run and total per-district caps
+      SKIP), seeded from durable SUM(extraction.cost_usd) — per-run scoped to the handoff, TOTAL across all
+      handoffs so a hard district can't run up unbounded spend over many follow-up rounds. STILL OPEN: the
+      WAF one-attempt rule at governor level."
 
   - id: REQ-052
     description: Define the school-sampling policy and document its representativeness limitation

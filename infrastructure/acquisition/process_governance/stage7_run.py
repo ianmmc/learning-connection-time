@@ -266,7 +266,9 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
     # SAME ceiling) when persisting; else count only this session. A null cap disables its dimension.
     gov = BUD.BudgetGovernor(BUD.load_budget(),
                              run_spent=_run_spend(hh) if persist else 0.0,
-                             district_spent=_district_spend(hh) if persist else None)
+                             district_spent=_district_spend(hh) if persist else None,
+                             district_total_spent=(_district_total_spend(by_district.keys())
+                                                   if persist else None))
     try:
         cost_model = COST6.load_cost_model()
     except Exception:  # noqa: BLE001 — estimate is advisory (see _estimate_district_cost)
@@ -283,9 +285,14 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
                   f"(spent ${gov.run_spent:.4f}, est +${est:.4f}) — HALTING before {did}", flush=True)
             break
         if gov.district_would_exceed(did, est):
-            print(f"[budget] district {did} cap ${gov.budget.per_district_usd:.2f} would be exceeded "
-                  f"(spent ${gov.district_spent.get(did, 0.0):.4f}, est +${est:.4f}) — SKIPPING",
+            print(f"[budget] district {did} per-run cap ${gov.budget.per_district_usd:.2f} would be "
+                  f"exceeded (spent ${gov.district_spent.get(did, 0.0):.4f}, est +${est:.4f}) — SKIPPING",
                   flush=True)
+            continue
+        if gov.district_total_would_exceed(did, est):
+            print(f"[budget] district {did} TOTAL acquisition cap ${gov.budget.per_district_total_usd:.2f} "
+                  f"would be exceeded (cumulative ${gov.district_total_spent.get(did, 0.0):.4f}, "
+                  f"est +${est:.4f}) — SKIPPING", flush=True)
             continue
         pd = _run_district(did, _district_name(doc, did), by_district[did], councils,
                            ddirs.get(did), use_judge)
@@ -422,12 +429,28 @@ def _run_spend(handoff_hash: str) -> float:
 
 def _district_spend(handoff_hash: str) -> dict:
     """Per-district durable spend for this handoff — {district_id: SUM(cost_usd)}. Seeds the
-    governor's per-district ceilings on resume (kept consistent with `_already_extracted`'s scope)."""
+    governor's per-RUN per-district ceiling on resume (kept consistent with `_already_extracted`'s scope)."""
     with gdb.session_scope() as s:
         rows = s.execute(
             text("SELECT district_id, COALESCE(SUM(cost_usd), 0.0) FROM extraction "
                  "WHERE handoff_hash = :h GROUP BY district_id"),
             {"h": handoff_hash or ""})
+        return {r[0]: float(r[1] or 0.0) for r in rows}
+
+
+def _district_total_spend(district_ids) -> dict:
+    """CUMULATIVE per-district spend across ALL handoffs — {district_id: SUM(cost_usd)} for the given
+    districts. Seeds the governor's per-district TOTAL acquisition ceiling (REQ-051): unlike
+    `_district_spend`, NOT scoped to one handoff, so it bounds a hard district's total spend across
+    every follow-up round it has ever triggered."""
+    ids = list(district_ids)
+    if not ids:
+        return {}
+    with gdb.session_scope() as s:
+        rows = s.execute(
+            text("SELECT district_id, COALESCE(SUM(cost_usd), 0.0) FROM extraction "
+                 "WHERE district_id = ANY(:d) GROUP BY district_id"),
+            {"d": ids})
         return {r[0]: float(r[1] or 0.0) for r in rows}
 
 

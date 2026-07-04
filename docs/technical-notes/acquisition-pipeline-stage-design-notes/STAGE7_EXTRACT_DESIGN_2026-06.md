@@ -211,11 +211,14 @@ Stage 1; only re-routing EXISTING representations bypasses it"):
   re-includes already-attempted districts; **`build_batch` (first-run) is untouched.**
 
 **Guards (the must-haves, built):** the **REQ-051 budget governor** (`common/budget.py` +
-`common/config/budget.json`) bounds per-district + per-run OpenRouter spend — enforced pre-district in
-`run_council_streaming` (run cap halts, district cap skips), seeded from durable `SUM(extraction.cost_usd)`
-so resume stays under the same ceiling; its `max_request_rounds` is the **per-district×band depth guard**
-(derived from executed-directive history) so the cyclic loop provably terminates. The paid 7→6
-re-extraction is budget-gated when its new handoff is run.
+`common/config/budget.json`) bounds OpenRouter spend on three axes — **per-run** (halts the run),
+**per-district per-run** (skips the district in this handoff), and **per-district TOTAL** (cumulative
+across ALL handoffs — the real request-loop guard: a hard district that keeps failing + re-requesting can't
+run up unbounded spend over many follow-up rounds, since each round is a fresh handoff). All enforced
+pre-district in `run_council_streaming`, seeded from durable `SUM(extraction.cost_usd)` (per-run scoped to
+the handoff, total across all of the district's handoffs) so resume stays under the same ceilings. Its
+`max_request_rounds` is the **per-district×band depth guard** (derived from executed-directive history) so
+the cyclic loop provably terminates. The paid 7→6 re-extraction is budget-gated when its new handoff is run.
 
 **Surfaces:** CLI `python3 -m infrastructure.acquisition.process_governance.stage7_execute
 {compose-followup|execute <request_id>}` (CLI-first per the ramp-up model) + the server endpoints

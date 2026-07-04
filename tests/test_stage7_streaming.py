@@ -49,6 +49,7 @@ def _mock_env(monkeypatch, already):
     # caps ($25/run) don't trip on this test's $0.001/district, so the governor is inert here.
     monkeypatch.setattr(R7, "_run_spend", lambda hh: 0.0)
     monkeypatch.setattr(R7, "_district_spend", lambda hh: {})
+    monkeypatch.setattr(R7, "_district_total_spend", lambda ids: {})
     monkeypatch.setattr(R7, "write_district_receipt", lambda pd, hh, **k: "/tmp/r.json")
     monkeypatch.setattr(R7.DS, "export_status", lambda s: None)
     # the request-loop detect/persist runs in the same persist txn — no-op it here (its own tests cover it)
@@ -104,9 +105,20 @@ def test_budget_run_cap_halts_before_paid_district(monkeypatch):
 
 
 def test_budget_district_cap_skips_but_run_continues(monkeypatch):
-    """REQ-051: a per-district ceiling skips the over-budget district and continues to the next."""
+    """REQ-051: a per-district (per-run) ceiling skips the over-budget district, continues to the next."""
     persisted = _mock_env(monkeypatch, already=set())
     monkeypatch.setattr(R7, "_district_spend", lambda hh: {"ZZS1": 999.0})   # ZZS1 already over cap
     out = R7.run_council_streaming(DOC, persist=True, resume=True)
     assert persisted == ["ZZS2"]                  # ZZS1 skipped, ZZS2 still runs
+    assert set(out["districts"]) == {"ZZS2"}
+
+
+def test_budget_district_TOTAL_cap_skips_across_handoffs(monkeypatch):
+    """REQ-051: the CUMULATIVE per-district cap (all handoffs) skips a district whose lifetime spend is
+    over ceiling, even though THIS handoff's per-run spend is 0 — the request-loop runaway guard."""
+    persisted = _mock_env(monkeypatch, already=set())
+    monkeypatch.setattr(R7, "_district_spend", lambda hh: {})               # this run: nothing yet
+    monkeypatch.setattr(R7, "_district_total_spend", lambda ids: {"ZZS1": 999.0})  # lifetime: over cap
+    out = R7.run_council_streaming(DOC, persist=True, resume=True)
+    assert persisted == ["ZZS2"]                  # ZZS1 skipped on the TOTAL cap; ZZS2 still runs
     assert set(out["districts"]) == {"ZZS2"}
