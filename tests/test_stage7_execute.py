@@ -199,6 +199,12 @@ def test_execute_alternate_dispatch_flips_and_records(gov_session, monkeypatch):
     monkeypatch.setattr(EX.HND, "handoff_filename", lambda doc: "handoff_NEW76_t.json")
     monkeypatch.setattr(EX.HND, "write", lambda doc, root=None: None)
     monkeypatch.setattr(EX.H6, "record_dispatch", lambda sess, doc, path, actor, metas: "hid")
+    # The best-effort district_status refresh reads the `current_state` VIEW (absent in a fresh CI DB)
+    # and must NEVER run on the injected/shared transaction — a failure there would poison the txn and
+    # roll back the committed dispatch (the CI failure that motivated the post-commit/separate-session
+    # fix). Fail loudly if it's ever called on this path.
+    monkeypatch.setattr(EX.DS, "export_status",
+                        lambda sess: pytest.fail("export_status must not run on the injected transaction"))
 
     out = EX.execute_alternate_dispatch(rid, actor="zz", session=s)
     s.flush()

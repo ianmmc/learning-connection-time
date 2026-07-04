@@ -377,23 +377,32 @@ def execute_alternate_dispatch(request_id: int, *, actor: str = "ian", council_i
         path = (Path(root) if root else HND.DEFAULT_ROOT) / HND.handoff_filename(doc)
         # Commit-order (#143, mirrors dispatch_handoff): every DB statement FIRST (index row +
         # state_events + the directive flip), the immutable file LAST — a DB failure rolls back
-        # cleanly with no orphaned file, and a file failure rolls the DB back with it.
+        # cleanly with no orphaned file, and a file failure rolls the DB back with it. The
+        # district_status backup refresh is NOT here — it's best-effort and must never share this
+        # transaction (see below).
         H6.record_dispatch(s, doc, path, actor=actor, metas={did: meta})
         _flip(s, [request_id], doc["handoff_hash"])
         HND.write(doc, root=root)
-        try:                                       # best-effort backup refresh, like dispatch_handoff
-            DS.export_status(s)
-        except Exception as e:  # noqa: BLE001
-            print(f"[warn] district_status.json refresh failed after 7->6 dispatch "
-                  f"({type(e).__name__}: {e}); the DB is authoritative")
         return {"ok": True, "handoff_hash": doc["handoff_hash"], "path": str(path),
                 "alt_file": alt["file"], "council": overrides or "auto-routed"}
 
     if session is not None:
-        return _run(session)
+        return _run(session)      # injected: DB-only; no receipt/registry side effects escape a rollback
     gdb.init_precious_schema()
     with gdb.session_scope() as s:
-        return _run(s)
+        out = _run(s)
+    if out.get("ok"):
+        # Best-effort backup refresh AFTER the dispatch commits, on a SEPARATE session (the altitude
+        # lesson, #143/#139): export_status reads the `current_state` view, so ANY failure there
+        # (e.g. a fresh DB without the view) would poison the load-bearing transaction and roll back
+        # the committed dispatch. Post-commit + separate session makes that impossible.
+        try:
+            with gdb.session_scope() as s2:
+                DS.export_status(s2)
+        except Exception as e:  # noqa: BLE001 — the DB is authoritative; the backup regenerates
+            print(f"[warn] district_status.json refresh failed after 7->6 dispatch "
+                  f"({type(e).__name__}: {e}); the DB is authoritative — regenerate later")
+    return out
 
 
 # ---------------------------------------------------------------------------
