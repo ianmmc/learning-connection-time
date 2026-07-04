@@ -29,7 +29,7 @@ There is no code path that reads or writes a per-gate manual/auto flag.
 
 ## 2. Planned (not yet built) — design intent, seeded from the APGA console user stories
 
-### 2a. Pipeline Overview
+### 2a. Pipeline Overview (tracked: #97)
 **"What just happened / what needs attention" — a projection over the `state_event` log**, NOT a live
 "what's processing right now" feed (governance §11c: the durable event log is deliberately
 completion-only, no interim in-flight markers, so an ephemeral live layer was explicitly dropped). Planned
@@ -44,7 +44,7 @@ User stories this would satisfy:
 - See percentage yields and fallout from the chained stages 1–5, by batch (the measurement-harness/funnel
   pattern surfaced per batch — governance §11f).
 
-### 2b. Settings — per-gate manual/auto
+### 2b. Settings — per-gate manual/auto (tracked: #104)
 Toggle each human review gate (governance §11a: gate@1/5/6/7/8) between **manual** (human acts) and
 **automatic** (self-advancing). **Global default + per-gate overrides**; auto would be
 **confidence-escalating** (auto-accept high confidence, auto-escalate/flag low confidence — governance

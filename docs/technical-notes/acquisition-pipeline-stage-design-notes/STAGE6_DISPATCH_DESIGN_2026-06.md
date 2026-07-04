@@ -68,7 +68,7 @@ against the migrated set (108 verified targets, preview assembles + prices norma
 constant was deleted entirely in favor of a bound list param computed per request, issue #62.)* One
 remaining wrinkle, not a defect: the human now records the real handbook **page range**
 (`facets_json._pages_list`), but the `harvest_slice` still materializes off the *auto* `harvest_pages` — a
-worthwhile future edge (prefer the human-labeled pages once they accrue), tracked as a follow-up.
+worthwhile future edge (prefer the human-labeled pages once they accrue), tracked as a follow-up. (tracked: #109)
 
 **The seam:** everything needed to POST is assembled here; **Stage 7** makes the paid call, runs the
 judge-on-disagreement loop, and the "request more evidence" back-edges (§3F). **Deferred (own tracks):**
@@ -166,20 +166,16 @@ over time** as the corpus grows, OpenRouter prices move, and new models/configs 
 | **Runtime dispatch path** | `councils` registry · `routing` · `cost` estimator · `package` · `stage6_dispatch` bridge · dispatch writer · dispatch · gate@6 | **per dispatch** | the **consumer** — routes + prices + freezes + dispatches |
 | **The council lab** | the model benchmark (`cost_benchmark`) · the measured **token model** · live **pricing** cache · a fingerprinted **run ledger** · later: accuracy/agreement scoring, routing-hypothesis tests | **periodic / on-demand** | the **producer** — measures, fits, and updates the config-as-data the runtime path reads |
 
-**The lab unifies three things the doc had as separate ideas** — §1's "benchmark/testing mode"
-(single-model calls), §3C's cost benchmark, and §3A's "membership open — re-benchmark composition on clean
-data." They are **one model/council evaluation lab**: run candidate models against representations → emit
-read-outs (cost now; accuracy/agreement when GT is aligned, §3C C.6) → update the artifacts the runtime
-reads. It mirrors the **Stage-5 tuning loop** (`stage5_filter/{harness,tuning_ledger,frontier}.py` +
-config-as-data + fingerprinted scorecards): **append each run to a ledger** (fingerprinted by corpus +
-model set + date), retain history for trend analysis, promote a "current best" — **not** overwrite-and-forget.
-
-**The contract between the layers is the config-as-data artifact + its `provenance`** — already built into
-the cost model (slice 3), so the runtime path is indifferent to bootstrap-vs-measured and the lab can keep
-improving the numbers underneath it. **Placement:** the lab lives in `stage6_handoff` (beside the stage,
-as `stage5_filter` keeps its tuning infra). **Build order:** the runtime path reaches the seam on the
-bootstrap; the lab is its own later track (and the home for Stage-7 composition prep) — nothing in the
-runtime path changes to enable it.
+**The producer ("the Council Lab") is now its own concern — see `COUNCIL_LAB_DESIGN_2026-06.md`.** It
+emerged here but is genuinely cross-stage (Stage 4 reader-routing, Stage 6 councils/routing/cost, Stage 7
+prompts/judge, the Stage-8-grown GT yardstick), so its design — the cost benchmark (was §3C C.1–C.6, now
+that note §3), the composition re-benchmark (§3A "membership open", now that note §4), the prompt A/B, the
+judge/vision fix, the run ledger, and the (agreed, later) dedicated console view — lives there. What stays
+here is the **runtime consumer**: the council registry + validator (§3A), routing (§3B), the estimator on a
+bootstrap cost model (§3C/C.0). **The contract between the layers is the config-as-data artifact + its
+`provenance`** — built into the cost model (slice 3), so the runtime path is indifferent to
+bootstrap-vs-measured and the Lab improves the numbers underneath it; nothing in the runtime path changes to
+enable the Lab.
 
 ---
 
@@ -301,7 +297,7 @@ flowchart LR
 **The cascade is the open lever (not the grain).** Within a council, the pair+judge *is* a mini-cascade.
 The open question is whether to also cascade *across* configs — start a rep on the cheap council, escalate
 to a stronger/specialized one only on no-consensus (FrugalGPT/UCCI) — vs. route straight to the right
-council by content type. Decided empirically by measured escalation + yield on real captured inputs.
+council by content type. Decided empirically by measured escalation + yield on real captured inputs. (tracked: #110)
 
 **Capture fidelity is a routing/accept signal, not just a content type (council research, the New Haven
 refinement).** Cross-family agreement is strong evidence *only when the input is clean*. When a rep is
@@ -351,81 +347,16 @@ the ledger can attribute a cost move to *us* (tokens) vs *OpenRouter* (price) se
 > later emit an accuracy read-out, but we do **not** wire accuracy now. Single-model calls here = the
 > **benchmark/testing mode** of §1 (in production we dispatch to councils, not lone models).
 
-**C.1 — The harness.** `stage6_handoff/cost_benchmark.py` (a script, *not* CI — gated on `OPENROUTER_API_KEY`,
-like the Stage-2 reliability harness). For each (model × representation) it issues one chat completion with
-the **real extraction prompt** (the archived `LEAN_SYSTEM_PROMPT` — reads TIMES only, returns
-`{schedules:[{grade_level,start_time,end_time,school_name,confidence}]}`; honors the REQ-054 invariant), then
-records the telemetry below. Reuses the OpenRouter chat-client shape from the archived `council_extract.py`.
-Output → `data/acquisition/diagnostics/stage6_cost/` (raw per-call JSONL) + a fitted
-`common/config/council_token_model.json` (measured **token** rates, config-as-data the estimator reads).
-*Pricing is a separate live concern* (C.0): a `pricing` fetcher caches OpenRouter `/api/v1/models` into
-`council_pricing.json` (`fetched_at`), refreshed on its own cadence — not produced by this benchmark.
-*(Restructure note: slice 3 shipped a combined `council_cost_model.json` with a flat bootstrap; the
-target splits it into the token model above + the live pricing cache, estimator does `tokens × price`.)*
-
-**C.2 — What we capture per call** (the real numbers, not estimates):
-- `model`, `rec_key`, `source`, `file_kind`, `content_type`, `n_chars`, `n_times` (school-count proxy);
-- **`prompt_tokens` / `completion_tokens`** — from the response `usage` object (native counts);
-- **`total_cost` ($)** — from OpenRouter's per-generation telemetry (`GET /api/v1/generation?id=…`, or
-  `usage:{include:true}` on the request). *Verify the exact field against OpenRouter docs at build time.*
-  Captured for **corroboration only** — the *stored* output is token consumption; dollars are derived at
-  estimate time from the live price cache (C.0), so a later reprice doesn't invalidate the measured tokens.
-- `latency_ms`; `parsed_ok` (did it return valid schedule JSON); `n_schedules`.
-
-**C.3 — The representation sample** (stratified, seeded, drawn from the DB `representation`/`record` tables
-+ the files on disk — our existing batch_00001+ corpus, 73 district dirs, with labels). Cells to cover:
-
-| dimension | strata | why it matters to cost |
-|---|---|---|
-| `file_kind` | text · pdf · **image** | vision tokens price differently from text tokens |
-| content type | school page · district **hub** table · **handbook** (`is_handbook`) · **image-only** (`visual_text_gap`) | drives input size + which council |
-| size (`n_chars`) | S <2k · M 2–8k · L 8–16k · XL >16k | input tokens ≈ f(size); XL is the Orange-truncation zone |
-| school count (`n_times`) | low · high | **output** tokens scale with schools returned (per-school facts) |
-
-Target ~3–5 reps per non-empty cell (seeded sample over the labeled canonical reps), ≈ 40–60 reps to start.
-
-**C.4 — The models.** The candidate-6 on text reps (`google/gemini-2.5-flash`,
-`google/gemini-2.5-flash-lite`, `mistralai/mistral-small-24b-instruct-2501`,
-`mistralai/mistral-large-2512`, `deepseek/deepseek-v3.2`, `qwen/qwen3-235b-a22b-2507`); the **vision-capable
-subset** (Gemini Flash, Mistral Large) additionally on image reps. **Volume:** ~60 reps × 6 models (text) +
-image-reps × 2 ≈ **300–400 calls**; at sub-cent/call this is **a few dollars total** to run — cheap enough
-to repeat as the corpus grows.
-
-**C.5 — The TOKEN model it produces** (what grounds the estimator; dollars come from live pricing, C.0).
-Per model, fit from the measured points:
-- **input:** `prompt_tokens ≈ α + β·n_chars` (text — the per-model tokenizer slope) / `≈ f(image dims)` (vision);
-- **output:** `completion_tokens ≈ γ·n_schools + δ` (output scales with schools on the page);
-- → estimate: `cost(rep, council) = Σ_voters (in·price_in + out·price_out) + escalation_rate · judge`,
-  where `in`/`out` come from this **measured token model** and `price_in`/`price_out` from the **live
-  OpenRouter price cache** (C.0) — not from this file.
-The **escalation_rate** (how often the judge fires) is an *accuracy/agreement* quantity, NOT measured by
-this cost-only pass — until the accuracy benchmark exists, the estimator uses a conservative assumed rate,
-flagged as such.
-
-> **C.6 STATUS UPDATE (2026-07-02): batch_00000 is BUILT and ingested through Stage 5.** The 27
-> curated-GT districts were injected at the Stage-3 seam from their FROZEN gt_curation artifacts
-> (`stage1_queue/benchmark_batch.py`; Ian approved in-chat 2026-07-02): 95 records, 84 tier-A /
-> 11 tier-B, 83 send-eligible, `batch_type="benchmark"`. **THE WALL:** benchmark districts are
-> NEVER Stage-9-written and NEVER counted in funnel/enrichment stats (several source docs are
-> deliberately older school years) — enforce `batch_type == "benchmark"` checks at the Stage 7-9
-> build. The paragraph below is the original design rationale; its "check whether those raw
-> files survive" question resolved YES (the curation workspace + the full
-> `gt-benchmark-20260622T152627Z/raw_bell_schedule_pdfs/` archive both survive).
-
-**C.6 — Accuracy/composition is a SEPARATE later effort (GT must first be aligned into the pipeline).**
-The existing GT (`data/benchmark/gt_curation_20260621T060008Z`, 27 curated hard-case districts) has
-**human-confirmed numbers but ZERO district overlap with the current pipeline** (verified 2026-06-30), and
-its representations are old/messy-pipeline artifacts — so it does **not** pair with current clean reps for
-scoring. **Decision (Ian, deferred):** when we do accuracy, *align the prior GT work into the current
-pipeline* rather than scoring against a parallel data island — e.g. a large **`batch_00000`** that runs the
-27 GT districts through Stages 1–5 so the confirmed numbers pair with current-format reps (re-*process* the
-retained raw captures where possible — no re-capture, no site drift; check whether those raw files survive).
-Only then does the shared harness emit an accuracy/escalation read-out.
-
-**C.6b — Cost-pass open knobs (decide after a first run):** exact per-cell sample size (~3–5 default,
-confirmed OK); how often to re-measure (corpus drift). The estimator's *consumption* of
-`council_cost_model.json` is built in slice 3; this benchmark *populates/calibrates* it (slice 3 ships a
-clearly-labeled bootstrap until then).
+**C.1–C.6 — the cost-benchmark harness design MIGRATED to `COUNCIL_LAB_DESIGN_2026-06.md` §3** (the
+Council Lab is the producer that measures the token model; §2a). In brief, so this section stays
+self-contained: `stage6_handoff/cost_benchmark.py` (a script, gated on `OPENROUTER_API_KEY`) issues one
+real-extraction-prompt call per (model × rep) over a stratified sample (~40–60 reps across
+file_kind/content-type/size/school-count cells), captures native `usage` tokens + per-generation cost, and
+fits a per-model **token model** (`council_token_model.json`, config-as-data) that the estimator reads ×
+the **live** OpenRouter price cache. **DESIGNED, cost-only, not yet run.** The clean-data
+accuracy/composition re-benchmark (§3A) is separate and was unblocked by `batch_00000` (the 27 curated-GT
+districts injected `batch_type="benchmark"`, Stage-9-walled) — full detail + the growing-GT-yardstick
+consequence in the Council Lab note §3/§4/§5.
 
 ### D. The dispatch artifact schema (mostly designed — pin it)
 `handoff_<hash>_<timestamp>.json` (immutable), organized by district for review but **assigned per
@@ -470,7 +401,7 @@ dispatch is what makes this recoverable) into a fresh call with an appropriate f
 or may not persist in the OpenRouter session; the dispatch freeze + per-model prompts (§3A) are the
 mechanisms for reconstituting context if they don't.
 
-### G. Recency preference in bell-schedule documentation (OPEN — a DISPATCH decision; Ian, 2026-07-02)
+### G. Recency preference in bell-schedule documentation (OPEN — a DISPATCH decision; Ian, 2026-07-02) (tracked: #107)
 
 **The problem, from live data (batch_00008):** Marshall WI's tier-gated auto-send set included a
 **2021-2022 HS Handbook (COVID-era)** and a **2018-2019 MES Handbook** alongside the current

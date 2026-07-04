@@ -210,7 +210,7 @@ discovery), not the individual district; rejecting districts/schools happens *be
 
 ## 5. Open decisions
 - **Manual batch construction** (hand-pick untouched NCES districts; APGA story 32) and **follow-up /
-  re-queue batches** (stories 33–35; need the Stage-8 per-band satisfaction signal, not built) — deferred.
+  re-queue batches** (stories 33–35; need the Stage-8 per-band satisfaction signal, not built) — deferred. (tracked: #98)
   First-run stratified draw + soft edits is what's built.
 - **gate@1 auto mode** — confidence-escalating auto-approve (governance §11b); manual-only today.
 - **Extraction-time early-exit** — §3, deferred to Stage 7.

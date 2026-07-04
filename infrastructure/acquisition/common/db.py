@@ -80,6 +80,8 @@ def session_scope() -> Generator[Session, None, None]:
 # layering contract is about imports, not table names). Keep additive-only; never drop/rename here.
 _PRECIOUS_ALTERS = [
     "ALTER TABLE label ADD COLUMN IF NOT EXISTS facets_json text",   # REQ-114 (V2 facet questionnaire)
+    "ALTER TABLE extraction_request ADD COLUMN IF NOT EXISTS executed_ref text",   # REQ-118 (execution lineage)
+    "ALTER TABLE extraction_request ADD COLUMN IF NOT EXISTS executed_at text",    # REQ-118 (execution lineage)
 ]
 
 

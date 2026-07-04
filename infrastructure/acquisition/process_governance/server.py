@@ -35,6 +35,7 @@ from infrastructure.acquisition.stage2_discover import headless as H2       # no
 from infrastructure.acquisition.stage3_capture import headless as H3       # noqa: E402  (Stage 3 capture runner + DB-cache status)
 from infrastructure.acquisition.stage4_process import headless as H4       # noqa: E402  (Stage 4 process runner + DB-cache status)
 from infrastructure.acquisition.process_governance import stage6_dispatch as H6  # noqa: E402  (Stage 6 routing/release bridge — REQ-101)
+from infrastructure.acquisition.process_governance import stage7_execute as EX  # noqa: E402  (Stage 7 request-more-evidence execution — REQ-118)
 from infrastructure.acquisition.stage6_handoff import handoff as HND6       # noqa: E402  (immutable handoff filename helper)
 from infrastructure.acquisition.common import paths                         # noqa: E402  (RAW_CAPTURES — rep inspect)
 from infrastructure.acquisition.stage6_handoff import councils as C6        # noqa: E402  (council registry — gate@6 override options)
@@ -1172,10 +1173,10 @@ def extract_districts():
                      WHERE handoff_hash NOT LIKE '%-image' GROUP BY district_id) L
                  ON L.mx = e.extraction_id
                LEFT JOIN district d ON d.district_id = e.district_id
-               LEFT JOIN (SELECT district_id, handoff_hash,
+               LEFT JOIN (SELECT district_id,
                                  COUNT(*) FILTER (WHERE status = 'pending') n_pending, COUNT(*) n_requests
-                          FROM extraction_request GROUP BY district_id, handoff_hash) rq
-                 ON rq.district_id = e.district_id AND rq.handoff_hash = e.handoff_hash
+                          FROM extraction_request GROUP BY district_id) rq
+                 ON rq.district_id = e.district_id
                ORDER BY n_pending DESC, e.n_unresolved DESC, e.district_id""")).mappings().all()
         return [dict(r) for r in rows]
 
@@ -1204,11 +1205,15 @@ def extract_district(district_id: str):
                 "models": json.loads(a["models_json"] or "[]"), "method": a["method"]}
                for a in accepted if a["gross_minutes"] is not None]
         bands = AGG.district_bands_from_facts(agg)
+        # ALL of the district's directives, across every handoff (#137): pinning to the latest
+        # extraction's handoff_hash made pending directives from an earlier handoff invisible (and
+        # unreviewable) the moment a newer extraction landed — e.g. right after a 7->6 re-dispatch ran.
         reqs = con.execute(text(
-            "SELECT request_id, altitude, route, target, band, params_json, reason, status, "
-            "reviewed_by, reviewed_at, review_note, created_at FROM extraction_request "
-            "WHERE district_id = :d AND handoff_hash = :h ORDER BY altitude, route, band"),
-            {"d": district_id, "h": ext["handoff_hash"]}).mappings().all()
+            "SELECT request_id, handoff_hash, altitude, route, target, band, params_json, reason, "
+            "status, reviewed_by, reviewed_at, review_note, created_at, executed_ref, executed_at "
+            "FROM extraction_request "
+            "WHERE district_id = :d ORDER BY status = 'pending' DESC, altitude, route, band"),
+            {"d": district_id}).mappings().all()
         return {"extraction": dict(ext), "bands": bands, "accepted": accepted,
                 "unresolved": unresolved, "requests": [dict(r) for r in reqs]}
 
@@ -1216,20 +1221,65 @@ def extract_district(district_id: str):
 @app.post("/api/extract/request/{request_id}")
 async def extract_request_review(request_id: int, payload: dict):
     """gate@7 action: approve / reject / reopen a request-more-evidence directive (records
-    who/when/note). EXECUTION of an approved request — the 7→6/3/2/1 back-edge — is a later build;
-    this records the human decision under the ramp-up model (governance §11b)."""
+    who/when/note). This stays PURE review under the ramp-up model (governance §11b) — approving a
+    directive does NOT execute it. EXECUTION is a separate, explicit step (REQ-118): 7→6 via
+    POST /api/extract/execute/{id}; 7→2/7→3/7→1 collected via POST /api/extract/compose-followup."""
     status = payload.get("status")
     if status not in ("approved", "rejected", "pending"):
         raise HTTPException(400, "status must be approved | rejected | pending")
     with gdb.session_scope() as con:
+        # 'executed' is TERMINAL (#135): a fired directive must never be reopened/re-approved — the
+        # depth guard COUNTS rows whose current status is 'executed', so a reopen would decrement the
+        # safety counter and allow unlimited paid re-fires (and overwrite the lineage of the first
+        # firing). The UI hides the button; this WHERE clause is the actual gate.
         n = con.execute(text(
             "UPDATE extraction_request SET status = :s, reviewed_by = :by, reviewed_at = :now, "
-            "review_note = :note WHERE request_id = :id"),
+            "review_note = :note WHERE request_id = :id AND status != 'executed'"),
             {"s": status, "by": payload.get("actor", "ian"), "now": _u7(),
              "note": payload.get("note"), "id": request_id}).rowcount
         if not n:
-            raise HTTPException(404, "no such request")
+            cur = con.execute(text(
+                "SELECT status FROM extraction_request WHERE request_id = :id"),
+                {"id": request_id}).scalar()
+            if cur is None:
+                raise HTTPException(404, "no such request")
+            raise HTTPException(409, "executed directives are terminal — they cannot be reopened "
+                                     "(the depth guard and lineage key off the executed status)")
     return {"request_id": request_id, "status": status}
+
+
+@app.post("/api/extract/compose-followup")
+async def extract_compose_followup(payload: dict):
+    """REQ-118 execution (7→2/7→3/7→1): sweep APPROVED NEW-work directives into ONE targeted, DRAFT
+    Stage-1 follow-up batch (reviewable at gate@1), flipping those directives to 'executed'. Anything
+    needing new capture/discovery routes through Stage 1 (governance §11d) — this does NOT run
+    discovery, it queues a batch. Scope to one run with `handoff_hash`, else all approved NEW-work."""
+    try:
+        out = EX.compose_followup_batch(
+            year=payload.get("year", "2024_25"), actor=payload.get("actor", "ian"),
+            handoff_hash=payload.get("handoff_hash"), cap=int(payload.get("cap", 12)))
+    except Exception as e:  # noqa: BLE001 — surface the failure to the operator, don't 500 opaquely
+        raise HTTPException(400, f"compose-followup failed: {type(e).__name__}: {e}")
+    return out
+
+
+@app.post("/api/extract/execute/{request_id}")
+async def extract_execute(request_id: int, payload: dict):
+    """REQ-118 execution (7→6): fire an APPROVED alternate-rep directive — build a NEW immutable Stage-6
+    dispatch of the already-captured alternate rep (no new capture; bypasses Stage 1/5), so it re-enters
+    Stage 7 via the normal extract path. Depth-guarded (REQ-051 max_request_rounds). Returns the new
+    handoff_hash on success; the paid re-extraction is a subsequent Stage-7 run (separately budget-gated)."""
+    payload = payload or {}
+    try:
+        out = EX.execute_alternate_dispatch(
+            request_id, actor=payload.get("actor", "ian"), council_id=payload.get("council_id"))
+    except FileExistsError:
+        raise HTTPException(409, "an identical alternate dispatch was just created — the prior one stands")
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(400, f"execute failed: {type(e).__name__}: {e}")
+    if not out.get("ok"):
+        raise HTTPException(409, out.get("reason", "execution refused"))
+    return out
 
 
 @app.get("/")

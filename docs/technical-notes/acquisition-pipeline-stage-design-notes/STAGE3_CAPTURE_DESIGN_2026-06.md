@@ -192,13 +192,13 @@ carried forward into `capture_drive.mjs`).
 
 ## 5. Open decisions
 - **Drive Tier 2 (OAuth Drive API) — deferred, not blocked** (REQ-078, `must`→`should`). Build it when a
-  real Drive link actually needs it; zero real links have needed it so far.
+  real Drive link actually needs it; zero real links have needed it so far. (tracked: #115)
 - **Duplicate-PDF dedup — deliberately NOT built.** A cross-directory content-hash scan for a negligible
   current benefit; recorded watch-item.
 - **Partial-retry.** A recovered/partial district has a `captures.json`, so reconcile treats it as done —
-  its `not_attempted`/`not_recovered` candidates don't auto-retry. Natural follow-up, not blocking.
+  its `not_attempted`/`not_recovered` candidates don't auto-retry. Natural follow-up, not blocking. (tracked: #116)
 - **Emergent recovery.** Reconstruction can't recover emergent captures (no URL); a future capture could
-  write an incremental per-task JSONL line so even a hard kill preserves emergent URLs.
+  write an incremental per-task JSONL line so even a hard kill preserves emergent URLs. (tracked: #117)
 - **Politeness / rate-limiting.** A capture burst can trigger transient stalls on a target site; consider
   a small per-request delay or lower per-district concurrency if this recurs.
 

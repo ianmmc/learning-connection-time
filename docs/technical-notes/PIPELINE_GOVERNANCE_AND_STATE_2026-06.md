@@ -26,13 +26,14 @@ through **`gate@7`**: gate@1 (REQ-102), Stage 2 (REQ-104), Stage 3 (REQ-110), St
 incremental handoff (REQ-111, §12), the Stage 5 district-driven console (REQ-112), Stage 6 dispatch/freeze
 through the Stage 6→7 seam (REQ-101), and Stage 7 council extraction + the gate@7 review console (REQ-117:
 extraction results + the request-more-evidence **detect/persist/review** loop — see
-`STAGE7_EXTRACT_DESIGN_2026-06.md` §0). **Not yet built: request-more-evidence *execution*** (an approved
-request firing the target stage's back-edge — STAGE7 §3F) and Stage 8/9. **Gates are stage-numbered (§11):**
+`STAGE7_EXTRACT_DESIGN_2026-06.md` §0), and the request-more-evidence **execution** (REQ-118: 7→6 direct
+re-dispatch + 7→2/7→3/7→1 via a Stage-1 follow-up batch, under the REQ-051 budget governor — STAGE7 §3F).
+**Not yet built: Stage 8/9.** (tracked: #89, #93) **Gates are stage-numbered (§11):**
 `gate@1` (queue) · `gate@5` (per-URL review) · `gate@6` (dispatch) · `gate@7` (council requests) · `gate@8`
 (results). §8, §9, and §9a below are **historical** — fully executed planning/sequencing docs kept in place
 because their section numbers (`governance §9a`, etc.) are cross-referenced elsewhere; see the banners on
-each. Next: Stage 8 (aggregation) + the council lab (`cost_benchmark`); still open: REQ-100 (staleness),
-gate@6/gate@7 auto mode, the request-loop execution wiring.
+each. Next: Stage 8 (aggregation) + the council lab (`cost_benchmark`); still open: REQ-100 (staleness) (tracked: #100),
+gate@6/gate@7 auto mode (tracked: #104), the gate@7 execution console buttons (tracked: #99) + a live non-benchmark run of the loop (tracked: #122).
 
 ---
 
@@ -113,7 +114,7 @@ enforces this — keep it that way).
 
 **All of REQ-103 is now done.** 103a committed `3c725f3`; **103b–f committed `bbd0f66`**; **103c +
 103g** in the follow-up pass. The old `data/acquisition/stage5_review/review.db` (SQLite) is **kept
-on disk as the 103f reference** — retire it (and `paths.REVIEW_DB`) once you're confident.
+on disk as the 103f reference** — retire it (and `paths.REVIEW_DB`) once you're confident (tracked: #126).
 **Next build step: REQ-099** (state event-log; §3).
 
 ### ✅ 103a DONE & committed (3c725f3) — additive, the live SQLite path is untouched
@@ -159,7 +160,7 @@ on disk as the 103f reference** — retire it (and `paths.REVIEW_DB`) once you'r
 
 **The 4 (now 5) governance-DB consumers:** `build_signals.py`, `harness.py`, `frontier.py`,
 `process_governance/server.py` (+ the `gov_session` test fixture). `paths.REVIEW_DB` / the old
-SQLite file are retained as the 103f reference until retired.
+SQLite file are retained as the 103f reference until retired (tracked: #126).
 
 ---
 
@@ -328,7 +329,7 @@ doesn't mark it stale). Because generation is event-driven, a district is normal
 fingerprint stamp exists so the console (REQ-100) and the **Stage-6 dispatch** can detect drift between
 *what was generated* and *what was last dispatched to the council* (the request-more-evidence loop). A
 fuller `state_event`-subscription projector (regenerate exactly the affected districts off the log) is the
-natural REQ-100 generalization of today's two inline hooks.
+natural REQ-100 generalization of today's two inline hooks (tracked: #100).
 
 **Open (deferred to REQ-100):** should a *config* retune eagerly regenerate all districts (honest, noisy)
 or be surfaced as a separate "config drifted" signal? Lean: stamp all three fingerprints, let the console
@@ -671,7 +672,7 @@ would mostly surface `sys.path` noise; **package first, then the tools light up.
 |---|---|---|
 | **Intra-Python graph + contracts** | `import-linter` (contracts: layers/forbidden/independence) on `grimp` (queryable graph); `vulture` (dead code) | **now** (REQ-098) |
 | **Intra-Node graph + contracts** | `dependency-cruiser` (rule engine + schema-validated JSON; the import-linter analog for `.mjs`/TS) | **now** (REQ-098) |
-| **Cross-boundary edges** (Python→subprocess→Node/CLI · shared `config/*.json` read by both · file-based stage dispatches) | **no tool** → a hand-declared `arch-manifest.json` + **fitness-function tests** (AST scan of `subprocess.*` / config-path reads, asserted against the manifest); `datacontract-cli` for stage-dispatch schema validation | **manifest+tests grown alongside the build; datacontract-cli when REQ-094/101 land** |
+| **Cross-boundary edges** (Python→subprocess→Node/CLI · shared `config/*.json` read by both · file-based stage dispatches) | **no tool** → a hand-declared `arch-manifest.json` + **fitness-function tests** (AST scan of `subprocess.*` / config-path reads, asserted against the manifest); `datacontract-cli` for stage-dispatch schema validation | **manifest+tests grown alongside the build; datacontract-cli when REQ-094/101 land (tracked: #124)** |
 
 **Concrete contracts to encode (import-linter), once packaged:** stage *layering* (1→…→9); *forbidden* —
 no stage imports the production LCT/database layer's internals (enforces the STATE-vs-DATA + DB isolation
@@ -734,8 +735,11 @@ escalation) added and tuned afterward. gate@7's council-initiated **request-more
 model applied to Stage 7: the *council* authors the request (the 7→6/3/2/1 back-edges) via a deterministic
 detector, **built and validated** (`STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§4); a human reviews/approves it
 at gate@7 (**built**) under today's high-supervision setting; the toggle relaxes that to auto
-(confidence-escalating) later. **Execution** — an approved request actually firing the target stage's
-back-edge machinery — is the one piece not yet built (STAGE7 §3F). The toggle below is the ramp-up's
+(confidence-escalating) later. **Execution** — an approved directive firing the target stage's back-edge —
+is now **built too** (REQ-118, STAGE7 §3F): 7→6 direct alternate-rep re-dispatch, and 7→2/7→3/7→1 wrapped
+in a Stage-1 follow-up batch, both under the **REQ-051 budget governor** (`common/budget.py`, built as the
+prerequisite) + a per-district×band depth guard. Approval stays pure review; a **separate compose step**
+materializes the batch (so gate@7 isn't coupled to batch creation). The toggle below is the ramp-up's
 control surface.
 
 Each gate toggles **manual** (human acts) / **auto** (self-advance), via a **global default + per-gate
@@ -788,10 +792,10 @@ Stage-6 dispatch freeze is what keeps "what we sent" recoverable across these lo
 - **Stages 2 & 4 effectiveness** — the **measurement-harness pattern extended upstream**: attribute each
   target-labeled record back to its discovery tool (`candidate_tools_json`) and its winning representation's
   source (`representation.source`). Same fingerprinted-scorecard discipline as Stage 5, applied to discovery
-  and processing.
+  and processing (tracked: #118).
 - **Stage 6** — routing / release; **BUILT to the seam (REQ-101, merged 2026-06-30)**: the gate@6 console
   (preview the routed/priced package → Approve & freeze) → the immutable dispatch + a precious `handoff` index
-  row + a per-district `dispatched` state_event; manual approve today (auto mode deferred). See
+  row + a per-district `dispatched` state_event; manual approve today (auto mode deferred) (tracked: #104). See
   `STAGE6_DISPATCH_DESIGN_2026-06.md` §0.
 - **Stage 7** — council extraction; **BUILT (REQ-117, 2026-07-03)**: the gate@7 console (district-first —
   band rollup, accepted/unresolved facts, request-more-evidence cards with Approve/Reject/Reopen); read +
@@ -870,15 +874,18 @@ reframe and the batch_00002-forcing-function plan (the batch-of-record advances 
   console view (`static/stage6.js` + `/api/handoff/*`: preview the routed/priced package → Approve & freeze).
   Approval records the index row + a per-district `dispatched` state_event **atomically**, freezes the
   immutable artifact, and **stops at the seam — no paid call** (Stage 7). Manual approve today; auto mode +
-  the budget-governor cost-gate (REQ-051) deferred. See `STAGE6_DISPATCH_DESIGN_2026-06.md` §0.
+  the budget-governor cost-gate (REQ-051) deferred (tracked: #104). See `STAGE6_DISPATCH_DESIGN_2026-06.md` §0.
 - **Stage 7 + gate@7 BUILT (REQ-117, 2026-07-03)** — the council extraction (per-rep council →
   cross-family consensus → judge-on-disagreement, durable/resumable per-district streaming, GT-scored
   95.2%/99.3% band/per-school on `batch_00000`) + the deterministic request-more-evidence
   **detect/persist/review** engine (validated, zero false positives on real data) + the gate@7 console
-  (district-first, band rollup + request approve/reject/reopen). **Not yet built:** request-more-evidence
-  **execution** (an approved request firing the 7→6/3/2/1 back-edge) and the Council Lab backlog (#80/81/82).
-  See `STAGE7_EXTRACT_DESIGN_2026-06.md` §0.
-- **Then:** **Stage 8 (aggregate)** + the **council lab** (`cost_benchmark` — measured token rates + live
+  (district-first, band rollup + request approve/reject/reopen). Request-more-evidence **execution** is
+  now built too (REQ-118): 7→6 direct alternate-rep re-dispatch + 7→2/7→3/7→1 via a Stage-1 follow-up batch,
+  under the **REQ-051 budget governor** (built as the prerequisite) + a depth guard; CLI + endpoints, gate@7
+  console buttons deferred (tracked: #99). **Not yet built:** Stage 8/9 (tracked: #89, #93) and the Council Lab backlog (#80/81/82). See
+  `STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§3F.
+- **Then:** **Stage 8 (aggregate)** + the **Council Lab** (its own note now — `COUNCIL_LAB_DESIGN_2026-06.md`;
+  `cost_benchmark` — measured token rates + live
   OpenRouter pricing; composition re-benchmark) + REQ-100 (staleness).
   Per-stage detail: `STAGE1_QUEUE_DESIGN` §6 (gate@1), `STAGE2_DISCOVER_DESIGN` §7 (the SERP cascade),
   `STAGE3_CAPTURE_DESIGN` §7, `STAGE4_PROCESS_DESIGN` §4a/§4b, `STAGE5_FILTER_DESIGN` §A–D,
@@ -931,7 +938,7 @@ action (top attention tier), **DB-backed saved views**, and **re-fetch-on-show**
 the (unchanged) center/right panes, now reached through this list. The plumbing finished too (SQLite vestige
 retired; signal tables a never-dropped live working store on the incremental path). **Still open (carried):**
 the **recency gate (REQ-044)**; a full **`state_event`-subscription projector** generalizing the two inline
-`release.generate` hooks (§6); the **harness attention-ordering metric** (deferred — attention ≠ target-precision;
+`release.generate` hooks (§6) (tracked: #100); the **harness attention-ordering metric** (deferred — attention ≠ target-precision;
 needs a reason×label cross-tab); the **"District Investigator"** holistic-journey view (the data model — `district_id`
-+ the event log — already supports it; out of scope here). NCES **locale** facet descoped (not in our CCD data).
++ the event log — already supports it; out of scope here) (tracked: #101). NCES **locale** facet descoped (not in our CCD data).
 Authority for the as-built: `STAGE5_FILTER_DESIGN` §A–D.

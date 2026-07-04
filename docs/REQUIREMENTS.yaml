@@ -1056,6 +1056,7 @@ requirements:
       headless `claude -p` (REQ-104) — see PIPELINE_GOVERNANCE_AND_STATE_2026-06.md."
 
   - id: REQ-044
+    github_issue: "#107 — school-year currency gate/dispatch (doc-migration 2026-07)"
     description: Classify each captured candidate as a current bell schedule before extraction (relevance + recency gate)
     type: functional
     priority: must
@@ -1144,6 +1145,7 @@ requirements:
       Direction set by EXTRACTION_BENCHMARK_FINDINGS (dual-path consensus + human review of disagreements)."
 
   - id: REQ-049
+    github_issue: "#94 — statutory fallback at Stage 9 write (doc-migration 2026-07)"
     description: Fail loud and fall back to statutory minimums when acquisition or extraction fails or is low-confidence; never fabricate
     type: constraint
     priority: must
@@ -1158,6 +1160,7 @@ requirements:
     notes: "Codifies the integrity lesson from the twice-repeated phantom-districts hallucination."
 
   - id: REQ-050
+    github_issue: "#95 — provenance+confidence per band (doc-migration 2026-07)"
     description: Every district-band instructional-minutes value carries a complete provenance and confidence record
     type: non-functional
     priority: must
@@ -1173,20 +1176,32 @@ requirements:
       confidence, method)."
 
   - id: REQ-051
+    github_issue: "#105 — WAF one-attempt rule (remaining sub-item; governor core built) (doc-migration 2026-07)"
     description: Bound API spend and effort per district and globally, with a resumable batch (budget governor)
     type: constraint
     priority: must
-    status: accepted
+    status: in-progress
     acceptance_criteria:
       - Enforces per-district caps on API spend and/or search+extraction attempts, stopping once enough bands are confidently found
       - Enforces a global run budget cap; the run halts or degrades to fallback when exceeded
       - Enforces the ONE-attempt rule on WAF/CDN blocks (Rule 3) at the governor level
       - Batch is checkpointed, resumable, and idempotent per district (re-running does not duplicate; REQ-041 pattern)
       - Per-district and per-run cost/usage are recorded
+    tests:
+      - tests/test_budget.py
+      - tests/test_stage7_streaming.py::test_budget_run_cap_halts_before_paid_district
+      - tests/test_stage7_streaming.py::test_budget_district_cap_skips_but_run_continues
     created: "2026-06-13T00:00:00Z"
-    updated: "2026-06-13T00:00:00Z"
+    updated: "2026-07-03T00:00:00Z"
     notes: "New requirement introduced by the shift to paid APIs; prevents an agentic search/extract loop
-      from running up cost on hard districts. Cost-minimization itself is deferred (do-it-right-first)."
+      from running up cost on hard districts. Cost-minimization itself is deferred (do-it-right-first).
+      BUILT 2026-07-03 as the prerequisite for Stage-7 request-execution (REQ-118): common/budget.py (pure
+      caps: per-district PER-RUN, per-district TOTAL cumulative-across-all-handoffs, per-run, and
+      max_request_rounds) + the config-as-data budget knob (common/config/budget.json, bootstrap) +
+      pre-district enforcement in run_council_streaming (run cap HALTS; per-run and total per-district caps
+      SKIP), seeded from durable SUM(extraction.cost_usd) — per-run scoped to the handoff, TOTAL across all
+      handoffs so a hard district can't run up unbounded spend over many follow-up rounds. STILL OPEN: the
+      WAF one-attempt rule at governor level."
 
   - id: REQ-052
     description: Define the school-sampling policy and document its representativeness limitation
@@ -1845,6 +1860,7 @@ requirements:
       link' content today. Tier 2 (OAuth Drive API) is REQ-078, not yet built."
 
   - id: REQ-078
+    github_issue: "#115 — Drive Tier-2 OAuth capture (doc-migration 2026-07)"
     description: "Stage 3 Google Drive Tier 2 - OAuth Drive API for folder enumeration and Tier-1 fallback (DELIBERATELY DEFERRED, not just blocked)"
     type: functional
     priority: should
@@ -1866,6 +1882,7 @@ requirements:
       a placeholder bug."
 
   - id: REQ-079
+    github_issue: "#127 — capture_discovery.mjs test harness (doc-migration 2026-07)"
     description: "WATCH-ITEM: capture_discovery.mjs has no automated test harness beyond capture_drive.mjs's pure-function tests"
     type: functional
     priority: should
@@ -2282,6 +2299,7 @@ requirements:
       REQ-090 (harness) / REQ-095 (ledger). Bootstrap-stability + min-group-support + Optuna escalation deferred."
 
   - id: REQ-097
+    github_issue: "#75 — Stage-5 drift detector (reopened) (doc-migration 2026-07)"
     description: Stage 5 drift detector — alert when newly-labeled data degrades the live config enough to warrant a retune
     type: functional
     priority: should
@@ -2448,6 +2466,7 @@ requirements:
       (= the 32 canonical TARGET-labeled records); 5 none_found districts send 0."
 
   - id: REQ-108
+    github_issue: "#104 — per-gate manual/auto + AUTO (doc-migration 2026-07)"
     description: Stage-numbered human-review gates (gate@N) + per-gate manual/auto Settings — replaces the CP-A/B/C checkpoint model
     type: functional
     priority: must
@@ -2465,6 +2484,7 @@ requirements:
       views) needs its own design pass first. Replaces 'CP-A/B/C / 3 checkpoints' language throughout the docs."
 
   - id: REQ-109
+    github_issue: "#90 — per-band satisfaction / completion grain (doc-migration 2026-07)"
     description: Two batch types (first-run / follow-up) + completion grain = district x BAND; the pipeline is cyclic
     type: functional
     priority: must
@@ -2482,6 +2502,7 @@ requirements:
       case (one captured page stated band-level minutes, schools became moot) is why the grain is band, not school."
 
   - id: REQ-100
+    github_issue: "#100 — console staleness surface (doc-migration 2026-07)"
     description: Console staleness surface for filtered.json — show new/current/stale per district from the three stamped fingerprints (config, labels, data), filterable by which changed
     type: functional
     priority: should
@@ -2791,3 +2812,47 @@ requirements:
     created: "2026-07-02T00:00:00Z"
     updated: "2026-07-03T00:00:00Z"
     notes: "Design/present-state: STAGE7_EXTRACT_DESIGN_2026-06.md §0 (rewritten present-state-first). Council extraction, GT scoring, durability/resume, the request-more-evidence detect/persist/review engine, and the gate@7 console are all built and validated against real batch_00000 data. Reuses stage6_handoff.requests/prompts (assembly) + stage8_aggregate.aggregate (consensus/mode). The two family maps (aggregate.py short-name vs councils.py full-id) were unified into common.model_families keyed on full OpenRouter ids (single source of truth; grimp-verified importers). Remaining work (request-loop execution; Council Lab items) tracked on GitHub: #80 (Council Lab), #81 (spray A/B), #82 (image-council judge not vision-capable)."
+
+  - id: REQ-118
+    description: "Stage 7 request-more-evidence EXECUTION: an approved gate@7 ExtractionRequest fires the target stage's back-edge. Two mechanisms — (a) 7->6 DIRECT re-dispatch of an already-captured alternate representation (no new capture, bypasses Stage 1); (b) 7->2/7->3/7->1 wrapped in a Stage-1 FOLLOW-UP BATCH (any NEW capture/discovery routes through Stage 1 and stays reviewable at gate@1 — governance §11d), collected into one batch honoring the 12-district cap. Guarded by the REQ-051 budget governor + a per-district×band request-depth guard so the cyclic loop provably terminates."
+    type: functional
+    priority: must
+    status: in-progress
+    acceptance_criteria:
+      - "Approving a request at gate@7 stays PURE review (status->approved); a SEPARATE compose step materializes work — gate@7 is not coupled to batch/dispatch creation"
+      - "compose_followup_batch sweeps APPROVED 7->2/7->3/7->1 requests into ONE draft Stage-1 batch (batch_type='follow-up') targeting the union of districts + unsatisfied bands (+ school/URL seeds), 12-district hard cap with spillover, flips those requests to 'executed', and links batch<->request for lineage; the batch is a DRAFT reviewable at gate@1 (never auto-approved)"
+      - "A follow-up batch is TARGETED (explicit districts/bands), not stratified — Stage 1 grows a targeted-batch builder distinct from build_batch's cold-start draw"
+      - "7->6 execution builds a NEW immutable dispatch from the NAMED alternate reps (params.alternate_reps) with the routed council, re-entering Stage 7 via the normal extract path; the prior dispatch is untouched (history preserved); the request flips to 'executed'"
+      - "The paid 7->6 re-extraction is gated by the REQ-051 budget governor (per-district + per-run caps) BEFORE any OpenRouter call"
+      - "The request-depth guard (budget max_request_rounds) blocks a district×band that has already fired the max re-request rounds, derived from executed ExtractionRequest history — the loop terminates"
+      - "Execution is idempotent: re-running compose/execute does not duplicate batches/dispatches or re-fire an already-executed request"
+      - "Server endpoints (compose-followup + execute/{request_id}) expose both mechanisms; CLI-first, console buttons follow"
+    tests:
+      - tests/test_stage7_execute.py
+      - tests/test_stage7_api.py::test_compose_followup_endpoint
+      - tests/test_stage7_api.py::test_execute_endpoint_success
+      - tests/test_stage7_api.py::test_execute_endpoint_refused_is_409
+    created: "2026-07-03T00:00:00Z"
+    updated: "2026-07-03T00:00:00Z"
+    notes: "Closes the request-more-evidence loop left open by REQ-117 (its last acceptance criterion) and STAGE7 §3F. Depends on REQ-051 (budget governor, built first). Design decisions (Ian, 2026-07-03): build BOTH mechanisms + all four routes; collect approved NEW-work requests into ONE follow-up batch; keep gate@7 approve as pure review with a separate compose step; build REQ-051 first as a hard prerequisite. The 'wrap NEW capture/discovery in a Stage-1 batch' rule (Ian) resolves the §3F-vs-§11d tension: only 7->6 (existing reps) is a true direct back-edge; 7->2/7->3/7->1 all converge on a Stage-1 follow-up batch. Authority: STAGE7_EXTRACT_DESIGN_2026-06.md §3F, PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §11b/§11d/§11e."
+
+  - id: REQ-119
+    description: External AI service (LLM) calls MUST stream results (SSE), never a single blocking read — a provider-agnostic contract
+    type: constraint
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "The live generative client (stage7_extract/openrouter.py) issues stream:true, accumulates deltas incrementally, and reads usage/finish_reason/generation_id off the stream (not a blocking response) — MET"
+      - "Streaming is NOT caller-controllable to False: no argument combination turns it off (the flag is fixed True in the request body) — MET"
+      - "Streaming survives long idle gaps: keep-alive/empty chunks are tolerated without content loss; a long multi-school generation reassembles in order across many chunks (not one un-chunked read) — MET"
+      - "Truncation (finish_reason == 'length') and mid-stream errors are surfaced with partial content preserved (the silent-tail-loss tripwire) — MET"
+      - "A provider-agnostic SOURCE GUARD flags any OpenAI-SDK chat-completion call in the acquisition code that is not streaming; a NEW blocking call anywhere fails the test — MET"
+      - "Deprecated, non-live call sites are an explicit, bounded allowlist (not a silent pass) — MET"
+      - "Any alternative provider adapter swapped in later must present the same streaming call() contract — enforced by the behavioral + source guards"
+    tests:
+      - tests/test_streaming_contract.py
+      - tests/test_stage7_openrouter.py::test_stream_accumulates_deltas_and_reads_final_usage
+      - tests/test_stage7_openrouter.py::test_mid_stream_error_keeps_partial_content
+    created: "2026-07-04T00:00:00Z"
+    updated: "2026-07-04T00:00:00Z"
+    notes: "Rationale (Ian, 2026-07-04): a non-streaming completion on a long generation (a big hub district returns a long single-shot JSON) idle-times-out the connection — a silent, load-bearing failure mode during automatic processing AT SCALE. Streaming keep-alive chunks hold the socket open, deltas arrive incrementally, and a mid-stream failure yields a partial + structured error instead of a dropped connection. The ONLY live generative call site is the council extraction client (already streams, REQ-117); the SERP providers (serper/brightdata) are search/data APIs (not token-generating, streaming N/A). DEPRECATED non-streaming site: common/discover.py openrouter_search (the retired ~$27/1K OpenRouter AI-search Wave provider, issue #41; sibling perplexity_search also deprecated) — allowlisted in the source guard, NOT in the live path. CLEANUP FOLLOW-UP: remove the deprecated openrouter_search/perplexity_search (they carry their own error-handling tests, so removal cascades into test_acquisition_stages.py — a scoped change, deferred)."

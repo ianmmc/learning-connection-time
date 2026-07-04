@@ -10,9 +10,13 @@ client = TestClient(SRV.app)
 
 
 class _Result:
-    def __init__(self, rows=None, rowcount=1):
+    def __init__(self, rows=None, rowcount=1, scalar=None):
         self._rows = [dict(r) for r in (rows or [])]
         self.rowcount = rowcount
+        self._scalar = scalar
+
+    def scalar(self):
+        return self._scalar
 
     def mappings(self):
         return self
@@ -93,5 +97,44 @@ def test_review_rejects_bad_status(monkeypatch):
 
 
 def test_review_404_when_no_such_request(monkeypatch):
-    _use(monkeypatch, _Con([_Result(rowcount=0)]))
+    # rowcount=0 -> the endpoint disambiguates via a status SELECT; no row -> 404
+    _use(monkeypatch, _Con([_Result(rowcount=0), _Result(scalar=None)]))
     assert client.post("/api/extract/request/999", json={"status": "rejected"}).status_code == 404
+
+
+def test_review_executed_is_terminal_409(monkeypatch):
+    """#135: an 'executed' directive must never be reopened/re-approved — the depth guard counts
+    rows whose CURRENT status is executed, so a reopen would decrement the safety counter and allow
+    unlimited paid re-fires. rowcount=0 + current status 'executed' -> 409, not a silent flip."""
+    _use(monkeypatch, _Con([_Result(rowcount=0), _Result(scalar="executed")]))
+    r = client.post("/api/extract/request/7", json={"status": "pending"})
+    assert r.status_code == 409 and "terminal" in r.json()["detail"]
+
+
+# ------------------------------- execution endpoints (REQ-118) -------------------------------
+def test_compose_followup_endpoint(monkeypatch):
+    captured = {}
+    def _fake(**kw):
+        captured.update(kw)
+        return {"batch_id": "batch_00042", "n_requests": 3, "n_districts": 2,
+                "targets": {"D1": ["high"], "D2": ["middle"]}, "spilled": [], "blocked": [], "skipped": []}
+    monkeypatch.setattr(SRV.EX, "compose_followup_batch", _fake)
+    r = client.post("/api/extract/compose-followup", json={"handoff_hash": "h", "actor": "zz", "cap": 5})
+    assert r.status_code == 200
+    assert r.json()["batch_id"] == "batch_00042" and r.json()["n_requests"] == 3
+    assert captured["handoff_hash"] == "h" and captured["actor"] == "zz" and captured["cap"] == 5
+
+
+def test_execute_endpoint_success(monkeypatch):
+    monkeypatch.setattr(SRV.EX, "execute_alternate_dispatch",
+                        lambda rid, **kw: {"ok": True, "handoff_hash": "NEW", "path": "/x",
+                                           "alt_file": "raster_p-1.png", "council": {"k": "image"}})
+    r = client.post("/api/extract/execute/7", json={"actor": "zz"})
+    assert r.status_code == 200 and r.json()["handoff_hash"] == "NEW"
+
+
+def test_execute_endpoint_refused_is_409(monkeypatch):
+    monkeypatch.setattr(SRV.EX, "execute_alternate_dispatch",
+                        lambda rid, **kw: {"ok": False, "blocked": True, "reason": "depth guard: max rounds"})
+    r = client.post("/api/extract/execute/7", json={})
+    assert r.status_code == 409 and "depth guard" in r.json()["detail"]

@@ -45,6 +45,11 @@ def _mock_env(monkeypatch, already):
     monkeypatch.setattr(R7.gdb, "init_precious_schema", lambda: None)
     monkeypatch.setattr(R7.gdb, "session_scope", lambda: contextlib.nullcontext(None))
     monkeypatch.setattr(R7, "_already_extracted", lambda hh: set(already))
+    # REQ-051 governor seeds (DB SUM(cost_usd)) — stub like the other DB reads; the shipped budget.json
+    # caps ($25/run) don't trip on this test's $0.001/district, so the governor is inert here.
+    monkeypatch.setattr(R7, "_run_spend", lambda hh: 0.0)
+    monkeypatch.setattr(R7, "_district_spend", lambda hh: {})
+    monkeypatch.setattr(R7, "_district_total_spend", lambda ids: {})
     monkeypatch.setattr(R7, "write_district_receipt", lambda pd, hh, **k: "/tmp/r.json")
     monkeypatch.setattr(R7.DS, "export_status", lambda s: None)
     # the request-loop detect/persist runs in the same persist txn — no-op it here (its own tests cover it)
@@ -87,3 +92,61 @@ def test_no_persist_makes_no_db_calls(monkeypatch):
     out = R7.run_council_streaming(DOC, persist=False, resume=True)
     assert persisted == []                        # persist=False → nothing written, nothing skipped
     assert set(out["districts"]) == {"ZZS1", "ZZS2"}
+
+
+def test_budget_run_cap_halts_before_paid_district(monkeypatch):
+    """REQ-051: the run halts cleanly at the run cap — the already-spent prior run seeds the governor
+    over ceiling, so NO further district is extracted (durability: nothing new persisted)."""
+    persisted = _mock_env(monkeypatch, already=set())
+    monkeypatch.setattr(R7, "_run_spend", lambda hh: 999.0)       # prior spend already over any cap
+    out = R7.run_council_streaming(DOC, persist=True, resume=True)
+    assert persisted == []                        # halted before the first paid district
+    assert out["districts"] == {}
+
+
+def test_budget_district_cap_skips_but_run_continues(monkeypatch):
+    """REQ-051: a per-district (per-run) ceiling skips the over-budget district, continues to the next."""
+    persisted = _mock_env(monkeypatch, already=set())
+    monkeypatch.setattr(R7, "_district_spend", lambda hh: {"ZZS1": 999.0})   # ZZS1 already over cap
+    out = R7.run_council_streaming(DOC, persist=True, resume=True)
+    assert persisted == ["ZZS2"]                  # ZZS1 skipped, ZZS2 still runs
+    assert set(out["districts"]) == {"ZZS2"}
+
+
+def test_budget_district_TOTAL_cap_skips_across_handoffs(monkeypatch):
+    """REQ-051: the CUMULATIVE per-district cap (all handoffs) skips a district whose lifetime spend is
+    over ceiling, even though THIS handoff's per-run spend is 0 — the request-loop runaway guard."""
+    persisted = _mock_env(monkeypatch, already=set())
+    monkeypatch.setattr(R7, "_district_spend", lambda hh: {})               # this run: nothing yet
+    monkeypatch.setattr(R7, "_district_total_spend", lambda ids: {"ZZS1": 999.0})  # lifetime: over cap
+    out = R7.run_council_streaming(DOC, persist=True, resume=True)
+    assert persisted == ["ZZS2"]                  # ZZS1 skipped on the TOTAL cap; ZZS2 still runs
+    assert set(out["districts"]) == {"ZZS2"}
+
+
+def test_frozen_handoff_with_blind_image_judge_refused(monkeypatch):
+    """#138 (the #82-recurrence guard): a frozen handoff EMBEDS its council configs, so a pre-swap
+    image handoff still names the dead text-only judge — the run must refuse BEFORE any paid call
+    (re-freeze under current configs), not 404 every judge call while paying for voters."""
+    import copy
+    import pytest
+    doc = copy.deepcopy(DOC)
+    doc["councils"]["image"] = {"voters": ["google/gemini-2.5-flash", "mistralai/mistral-large-2512"],
+                                "judge": "deepseek/deepseek-v3.2",        # text-only — the #82 bug
+                                "prompts": {"default": "stage6.extract.vision.v1"}}
+    doc["districts"][0]["records"][0]["reps"] = [
+        {"file": "raster_p-1.png", "kind": "image", "councils": ["image"]}]
+    called = []
+    monkeypatch.setattr(R7, "_run_district", lambda *a, **k: called.append(a) or None)
+    with pytest.raises(ValueError, match="not vision-capable|404"):
+        R7.run_council_streaming(doc, persist=False)
+    assert called == []      # refused before any district ran
+
+
+def test_current_image_council_passes_the_vision_check():
+    """The amended (post-#82) image council — Qwen-VL judge — must pass the frozen-doc check."""
+    from infrastructure.acquisition.stage6_handoff import councils as C6
+    doc = {"councils": {"image": C6.get("image")},
+           "districts": [{"district_id": "Z", "records": [
+               {"rec_key": "Z:a", "reps": [{"file": "p.png", "kind": "image", "councils": ["image"]}]}]}]}
+    R7._check_image_councils(doc)     # must not raise

@@ -19,11 +19,14 @@ import re
 _SCHED_OBJ = re.compile(r'\{[^{}]*?"start_time"[^{}]*?\}', re.DOTALL)
 
 # Prompt-example leak guard: names a model can only have copied from the system prompt's few-shot
-# example, never read from a document. "Fivay High" (the pre-2026-07-03 example, a real FL school)
-# leaked into live output at confidence=high; the example is now the self-evident "[SCHOOL NAME]".
-# A leaked row's name is unrecoverable — dropping it turns a fabricated consensus vote into an
-# honest absence.
-_PROMPT_LEAK_NAMES = {"[school name]", "fivay high"}
+# example, never read from a document. "Fivay High" (the pre-2026-07-03 example) leaked into live
+# output at confidence=high; the DEEP fix was replacing the example with the self-evident
+# "[SCHOOL NAME]" (prompts.py), which is all this guard now needs to match. "fivay high" was REMOVED
+# from this set (#144): Fivay High is a REAL school (Pasco County FL, a top-100 district squarely in
+# our target universe) — blacklisting it permanently blinded extraction to a real school, while the
+# current prompt no longer contains the string so that leak cannot recur. Never add a real school
+# name here; fix the prompt instead and keep only self-evident placeholders.
+_PROMPT_LEAK_NAMES = {"[school name]"}
 
 
 def _is_prompt_leak(sched: dict) -> bool:

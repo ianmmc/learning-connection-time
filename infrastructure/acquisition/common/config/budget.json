@@ -1,0 +1,12 @@
+{
+  "knob": "budget",
+  "description": "REQ-051 budget governor caps — bound OpenRouter spend per district and per run, and the request-more-evidence loop depth. Read by common/budget.py; enforced pre-district in the Stage-7 executor (run cap halts, district cap skips) and in the request-execution back-edges (max_request_rounds is the 7->6/3/2/1 depth guard). Authority: STAGE7_EXTRACT_DESIGN_2026-06.md §3F, PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §11b.",
+  "governance": "BOOTSTRAP caps under the ramp-up model (governance §11b): set conservatively — generous enough not to block a legitimate full batch (batch_00000 = 24 districts / $0.065 total, ~$0.003/district actual) yet low enough to catch a runaway (a truncation-retry storm, an unbounded re-request loop). Tuned up/down as the paid stages' reliability is measured; a null cap disables that dimension. per_district_usd is per-RUN (one handoff); per_district_total_usd is CUMULATIVE across ALL handoffs — the real ceiling on how much a single hard district may cost over many follow-up rounds. max_request_rounds bounds the cyclic back-edges so the loop provably terminates.",
+  "provenance": "bootstrap",
+  "caps": {
+    "per_district_usd": 1.0,
+    "per_district_total_usd": 3.0,
+    "per_run_usd": 25.0,
+    "max_request_rounds": 2
+  }
+}

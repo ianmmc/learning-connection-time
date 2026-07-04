@@ -48,22 +48,33 @@ def test_non_dict_members_dropped():
     assert len(out) == 1 and out[0]["school_name"] == "ok"
 
 
-def test_prompt_leak_names_dropped():
-    """A model echoing the prompt's example school name fabricated a consensus vote (the observed
-    'Fivay High'@confidence=high leak, batch_00000 full run) — such rows must never survive parse."""
+def test_prompt_leak_placeholder_dropped_real_school_survives():
+    """The leak guard drops the prompt's self-evident placeholder — and ONLY that (#144): 'Fivay
+    High' is a REAL school (Pasco County FL), and the prompt no longer contains it, so a row naming
+    it is far more likely real data than a leak. Blacklisting a real school name permanently blinded
+    extraction to it; never add real names here — fix the prompt instead."""
     out = P.parse_schedules(
         '{"schedules":['
         '{"grade_level":"high","start_time":"08:30","end_time":"15:35","school_name":"Fivay High"},'
         '{"grade_level":"high","start_time":"08:10","end_time":"14:35","school_name":"[SCHOOL NAME]"},'
         '{"grade_level":"high","start_time":"08:40","end_time":"15:15","school_name":"Essex High"}]}')
-    assert [s["school_name"] for s in out] == ["Essex High"]
+    assert [s["school_name"] for s in out] == ["Fivay High", "Essex High"]
 
 
 def test_prompt_leak_dropped_in_salvage_path():
-    # truncated JSON → salvage; the leaked row is dropped there too (the garbled-input path is
-    # exactly where the leak happened)
+    # truncated JSON → salvage; the placeholder leak is dropped there too (the garbled-input path is
+    # exactly where the original leak happened)
     truncated = ('{"schedules":[{"grade_level":"high","start_time":"08:30","end_time":"15:35",'
-                 '"school_name":"Fivay High"},{"grade_level":"middle","start_time":"07:30",'
+                 '"school_name":"[SCHOOL NAME]"},{"grade_level":"middle","start_time":"07:30",'
                  '"end_time":"14:10","school_name":"Real Middle"},{"grade_level":"eleme')
     out = P.parse_schedules(truncated)
     assert [s["school_name"] for s in out] == ["Real Middle"]
+
+
+def test_no_real_school_names_in_leak_blacklist():
+    """Regression guard for #144: the blacklist may contain only self-evident placeholders (bracketed
+    tokens) — a real school name here silently blinds extraction to that school forever."""
+    for name in P._PROMPT_LEAK_NAMES:
+        assert name.startswith("[") and name.endswith("]"), (
+            f"_PROMPT_LEAK_NAMES contains a non-placeholder entry {name!r} — real school names must "
+            f"never be blacklisted (fix the prompt instead, #144)")

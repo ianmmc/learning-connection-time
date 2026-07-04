@@ -66,6 +66,12 @@
     det.querySelectorAll("[data-review]").forEach((btn) => {
       btn.onclick = () => reviewRequest(Number(btn.dataset.id), btn.dataset.review, did);
     });
+    det.querySelectorAll("[data-execute]").forEach((btn) => {
+      btn.onclick = () => executeRequest(Number(btn.dataset.execute), did);
+    });
+    det.querySelectorAll("[data-compose]").forEach((btn) => {
+      btn.onclick = () => composeFollowup(btn.dataset.compose, did);
+    });
   }
 
   function bandTable(bands) {
@@ -77,14 +83,31 @@
                 : `<div class="empty">No band resolved.</div>`;
   }
 
+  // Routes needing NEW capture/discovery are wrapped in a Stage-1 follow-up batch (a SWEEP action, not
+  // per-card); 7->6 re-routes an EXISTING rep, so it executes on its own. (REQ-118; mirrors §3F.)
+  const isNewWork = (route) => route === "7->2" || route === "7->3" || route === "7->1";
+
   function requestCard(r) {
     const badge = r.status === "approved" ? `<span class="badge badge-success">approved</span>`
                 : r.status === "rejected" ? `<span class="badge badge-neutral">rejected</span>`
+                : r.status === "executed" ? `<span class="badge badge-accent">executed</span>`
                 : `<span class="badge badge-warn">pending</span>`;
-    const actions = r.status === "pending"
-      ? `<button class="btn btn-secondary btn-mini" data-review="approved" data-id="${r.request_id}">Approve</button>
-         <button class="btn btn-ghost btn-mini" data-review="rejected" data-id="${r.request_id}">Reject</button>`
-      : `<button class="btn btn-ghost btn-mini" data-review="pending" data-id="${r.request_id}">Reopen</button>`;
+    let actions;
+    if (r.status === "pending") {
+      actions = `<button class="btn btn-secondary btn-mini" data-review="approved" data-id="${r.request_id}">Approve</button>
+         <button class="btn btn-ghost btn-mini" data-review="rejected" data-id="${r.request_id}">Reject</button>`;
+    } else if (r.status === "approved" && r.route === "7->6") {
+      // existing-rep re-dispatch — a single-directive action, fires a new Stage-6 dispatch
+      actions = `<button class="btn btn-primary btn-mini" data-execute="${r.request_id}">Execute re-dispatch</button>
+         <button class="btn btn-ghost btn-mini" data-review="pending" data-id="${r.request_id}">Reopen</button>`;
+    } else if (r.status === "approved" && isNewWork(r.route)) {
+      actions = `<span class="muted s7-hint">→ queued for a follow-up batch (use “Compose follow-up batch”)</span>
+         <button class="btn btn-ghost btn-mini" data-review="pending" data-id="${r.request_id}">Reopen</button>`;
+    } else if (r.status === "executed") {
+      actions = r.executed_ref ? `<span class="muted s7-hint">→ ${esc(r.executed_ref)}</span>` : "";
+    } else {
+      actions = `<button class="btn btn-ghost btn-mini" data-review="pending" data-id="${r.request_id}">Reopen</button>`;
+    }
     const rev = r.reviewed_by ? `<div class="s7-rev muted">${esc(r.status)} by ${esc(r.reviewed_by)}${r.reviewed_at ? " · " + esc(r.reviewed_at) : ""}</div>` : "";
     return `<div class="s7-req">
       <div class="s7-req-top"><span class="s7-route">${esc(r.route)}</span> <span class="muted">${esc(r.altitude)}${r.band ? " · " + esc(r.band) : ""}</span> ${badge}</div>
@@ -99,8 +122,13 @@
   function renderDetail(x) {
     const e = x.extraction, reqs = x.requests || [];
     const pending = reqs.filter((r) => r.status === "pending").length;
+    // a "Compose follow-up batch" sweep is offered when ≥1 approved NEW-work (7->2/3/1) directive awaits
+    const approvedNewWork = reqs.filter((r) => r.status === "approved" && isNewWork(r.route)).length;
+    const composeBtn = approvedNewWork
+      ? `<button class="btn btn-primary btn-mini" data-compose="${esc(e.handoff_hash || "")}">Compose follow-up batch (${approvedNewWork} approved)</button>`
+      : "";
     const reqSection = reqs.length
-      ? `<h4>Request more evidence <span class="muted">(${pending} pending / ${reqs.length})</span></h4>${reqs.map(requestCard).join("")}`
+      ? `<h4>Request more evidence <span class="muted">(${pending} pending / ${reqs.length})</span> ${composeBtn}</h4>${reqs.map(requestCard).join("")}`
       : `<h4>Request more evidence</h4><div class="empty">None — all claimed bands covered, no barren reps.</div>`;
     const acc = x.accepted || [], unres = x.unresolved || [];
     return `
@@ -122,5 +150,33 @@
     catch (e) { alert("Review failed: " + e.message); return; }
     openDistrict(did);          // re-render detail with the new status
     loadDistricts();            // refresh the left-pane pending badge
+  }
+
+  // 7->6: fire an approved alternate-rep re-dispatch (a new Stage-6 dispatch; re-enters Stage 7).
+  async function executeRequest(id, did) {
+    if (!confirm("Re-dispatch the alternate representation? This creates a new Stage-6 dispatch to re-extract (a subsequent, budget-gated Stage-7 run).")) return;
+    let out;
+    try { out = await api(`/api/extract/execute/${id}`, postJSON({ actor: "ian" })); }
+    catch (e) { alert("Execute failed: " + e.message); return; }
+    alert(`Re-dispatched ${out.alt_file || "the alternate rep"} → new handoff ${out.handoff_hash}. Run Stage 7 on it to extract (budget-gated).`);
+    openDistrict(did);
+    loadDistricts();
+  }
+
+  // 7->2/7->3/7->1: sweep approved NEW-work directives (this run) into ONE draft follow-up batch.
+  async function composeFollowup(handoffHash, did) {
+    if (!confirm("Compose a follow-up batch from the approved 7->2/7->3/7->1 directives? It lands as a DRAFT for review at gate@1 (Stage 1).")) return;
+    let out;
+    try { out = await api(`/api/extract/compose-followup`, postJSON({ handoff_hash: handoffHash || null, actor: "ian" })); }
+    catch (e) { alert("Compose failed: " + e.message); return; }
+    if (!out.batch_id) { alert("Nothing composed — no approved NEW-work directives."); }
+    else {
+      let msg = `Draft follow-up ${out.batch_id}: ${out.n_districts} district(s), ${out.n_requests} directive(s) executed. Review at gate@1.`;
+      if (out.spilled && out.spilled.length) msg += `\nSpilled ${out.spilled.length} district(s) past the 12-cap (compose again for the next batch).`;
+      if (out.blocked && out.blocked.length) msg += `\nBlocked ${out.blocked.length} by the depth guard.`;
+      alert(msg);
+    }
+    openDistrict(did);
+    loadDistricts();
   }
 })();
