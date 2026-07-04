@@ -32,8 +32,11 @@ re-dispatch + 7→2/7→3/7→1 via a Stage-1 follow-up batch, under the REQ-051
 `gate@1` (queue) · `gate@5` (per-URL review) · `gate@6` (dispatch) · `gate@7` (council requests) · `gate@8`
 (results). §8, §9, and §9a below are **historical** — fully executed planning/sequencing docs kept in place
 because their section numbers (`governance §9a`, etc.) are cross-referenced elsewhere; see the banners on
-each. Next: Stage 8 (aggregation) + the council lab (`cost_benchmark`); still open: REQ-100 (staleness) (tracked: #100),
-gate@6/gate@7 auto mode (tracked: #104), the gate@7 execution console buttons (tracked: #99) + a live non-benchmark run of the loop (tracked: #122).
+each. **Council Lab BUILT, first experiment MEASURED (2026-07-04)** — the judge-replay harness
+(`council_lab.py`) validated the Qwen-VL image-judge swap (#82, closed); see `COUNCIL_LAB_DESIGN_2026-06.md`.
+Next: Stage 8 (aggregation) + the Lab's remaining backlog (`cost_benchmark`, prompt A/B, tracked: #80/#81);
+still open: REQ-100 (staleness) (tracked: #100), gate@6/gate@7 auto mode (tracked: #104), the gate@7
+execution console buttons (tracked: #99) + a live non-benchmark run of the loop (tracked: #122).
 
 ---
 
@@ -749,6 +752,12 @@ of Stage 8). Especially gate@8: extracted minutes never reach the LCT DB without
 through the paid stages (6/7) is cost-gated by the budget governor (REQ-051)** — full-auto must not run up
 unbounded OpenRouter spend.
 
+**REQ-119 — external AI calls must stream (built, tested), a cross-cutting constraint.** Every external
+generative call anywhere in the acquisition tree issues `stream: true` and is not caller-toggleable to a
+blocking call; enforced two ways — behavioral tests on the live client, and an AST source-guard
+(`tests/test_streaming_contract.py`) that fails CI on any *new* blocking OpenAI-SDK completion call added
+anywhere in the tree. Applies pipeline-wide (any future paid stage/provider), not just Stage 7.
+
 ### 11c. Pipeline Overview = "what just happened" (an event-log projection)
 The Overview visualizes the **`state_event` log** — per stage, what just completed + the **attention queue**
 (§7b). It is **NOT a live in-flight feed**: the durable log is deliberately completion-only (no interim
@@ -882,11 +891,17 @@ reframe and the batch_00002-forcing-function plan (the batch-of-record advances 
   (district-first, band rollup + request approve/reject/reopen). Request-more-evidence **execution** is
   now built too (REQ-118): 7→6 direct alternate-rep re-dispatch + 7→2/7→3/7→1 via a Stage-1 follow-up batch,
   under the **REQ-051 budget governor** (built as the prerequisite) + a depth guard; CLI + endpoints, gate@7
-  console buttons deferred (tracked: #99). **Not yet built:** Stage 8/9 (tracked: #89, #93) and the Council Lab backlog (#80/81/82). See
-  `STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§3F.
-- **Then:** **Stage 8 (aggregate)** + the **Council Lab** (its own note now — `COUNCIL_LAB_DESIGN_2026-06.md`;
-  `cost_benchmark` — measured token rates + live
-  OpenRouter pricing; composition re-benchmark) + REQ-100 (staleness).
+  console buttons deferred (tracked: #99). A 2026-07-04 code review found + fixed 13 correctness issues
+  in the execution path (epic #133, children #134–#146, all closed; root theme: the new path had
+  re-implemented invariants — the benchmark wall, the executed-terminal status, transaction atomicity —
+  instead of inheriting them); #147/#148 (cleanup/efficiency) remain open. **Not yet built:** Stage 8/9
+  (tracked: #89, #93). See `STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§3F/§6.
+- **Council Lab BUILT, first experiment MEASURED (2026-07-04)** — its own note now,
+  `COUNCIL_LAB_DESIGN_2026-06.md`: the judge-replay harness (`council_lab.py`) validated the image
+  council's Qwen-VL judge swap (#82, closed — the prior DeepSeek V3.2 judge was non-vision-capable and
+  404'd on every image call). Remaining backlog (tracked: #80/#81): `cost_benchmark` — measured token
+  rates + live OpenRouter pricing; composition re-benchmark.
+- **Then:** **Stage 8 (aggregate)** + REQ-100 (staleness).
   Per-stage detail: `STAGE1_QUEUE_DESIGN` §6 (gate@1), `STAGE2_DISCOVER_DESIGN` §7 (the SERP cascade),
   `STAGE3_CAPTURE_DESIGN` §7, `STAGE4_PROCESS_DESIGN` §4a/§4b, `STAGE5_FILTER_DESIGN` §A–D,
   `STAGE6_DISPATCH_DESIGN` §0, `STAGE7_EXTRACT_DESIGN` §0.

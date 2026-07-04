@@ -35,7 +35,10 @@ There is no code path that reads or writes a per-gate manual/auto flag.
 completion-only, no interim in-flight markers, so an ephemeral live layer was explicitly dropped). Planned
 controls: **Start** (kick off full-auto advance) and **Safe-Stop** (let in-flight work complete, with a
 progress bar) — **Pause** was considered and dropped as not worth the complexity. Auto-advance through the
-paid stages (6/7) would be cost-gated by the budget governor (REQ-051, also not built).
+paid stages (6/7) would be cost-gated by the budget governor — the governor's core is now BUILT
+(`common/budget.py`: per-run, per-district, per-district-total, and a request-depth cap; wired into
+Stage 7's `run_council_streaming` and `stage7_execute`); it's the Overview's auto-advance UI itself
+(and the per-gate manual/auto toggle below) that is not built.
 
 User stories this would satisfy:
 - See, across the nine stages, what just happened and what needs human attention — which

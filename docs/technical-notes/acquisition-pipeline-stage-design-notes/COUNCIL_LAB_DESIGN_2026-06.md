@@ -14,14 +14,16 @@
 > **Update this when:** the Lab's code behavior, artifacts, or workload backlog changes. Design turns and
 > superseded approaches belong in §7 (Provenance / decision log), not here.
 
-**Status: EMERGING — first experiment BUILT.** The Council Lab crystallized from the Stage 6/7 build as a
-distinct, cross-stage concern (it was first imagined as a Stage-6 module — STAGE6 §2a — but its scope now
-spans Stage 4 reader-routing, Stage 6 councils/routing/cost, Stage 7 prompts/judge/extraction quality, and
-the Stage-8-grown GT yardstick). BUILT today: the config-as-data it produces (council configs + validator,
-the bootstrap cost model, the prompt registry) and the **judge-replay harness** (`council_lab.py`, the #82
-first workload) + the Stage-7 GT scorer it reuses. **Not yet built:** the append-only run **ledger**, the
-**cost benchmark** (`cost_benchmark`, §3), clean-data **composition** re-benchmarking (§4), and the
-dedicated **console view** (§6 — sequenced after the ledger + a few experiments).
+**Status: EMERGING — first experiment BUILT AND MEASURED (#82 validated + closed, 2026-07-04).** The
+Council Lab crystallized from the Stage 6/7 build as a distinct, cross-stage concern (it was first
+imagined as a Stage-6 module — STAGE6 §2a — but its scope now spans Stage 4 reader-routing, Stage 6
+councils/routing/cost, Stage 7 prompts/judge/extraction quality, and the Stage-8-grown GT yardstick).
+BUILT today: the config-as-data it produces (council configs + validator, the bootstrap cost model, the
+prompt registry) and the **judge-replay harness** (`council_lab.py`, the #82 first workload) + the
+Stage-7 GT scorer it reuses. The harness has now RUN for real: the Qwen-VL image-judge swap was measured
+end-to-end (§0 "First result") and #82 closed on the evidence. **Not yet built:** the append-only run
+**ledger**, the **cost benchmark** (`cost_benchmark`, §3), clean-data **composition** re-benchmarking
+(§4), and the dedicated **console view** (§6 — sequenced after the ledger + a few experiments).
 
 ---
 
@@ -114,10 +116,12 @@ misrepresents its scope. (Console view: §6.)
 Hypotheses to **test**, not adopt — the measured-pass discipline (never tune by eye; the Stage-5
 harness/tuning_ledger precedent, memory `feedback-explore-before-scoring-changes`):
 
-1. **Fix + validate the image judge (#82) — IN PROGRESS.** deepseek-v3.2 was text-only and 404'd on every
-   image escalation; swapped to the vision-capable, third-family `qwen/qwen3-vl-235b-a22b-instruct`
-   (Qwen — a family already in our roster as the text judge) + the `councils.validate()` vision guard. A
-   **stand-in** pending measurement — the judge-replay harness (§0) quantifies the coverage recovered.
+1. **Fix + validate the image judge (#82) — DONE, 2026-07-04.** deepseek-v3.2 was text-only and 404'd on
+   every image escalation; swapped to the vision-capable, third-family `qwen/qwen3-vl-235b-a22b-instruct`
+   (Qwen — a family already in our roster as the text judge) + the `councils.validate()` vision guard.
+   The judge-replay harness (§0) measured the coverage recovered (32/33 calls ok, 21/145 disagreements
+   resolved, bands 88.5%→89.1%, schools 98.1%→98.2%) — the swap is validated, not merely a stand-in;
+   benchmarking further vision-judge candidates is now ordinary Council Lab composition work (#80).
 2. **The cost benchmark (§3)** — replace the bootstrap cost model with a measured token model + live pricing.
 3. **Reader-routing: camelot vs pdftotext for big hub tables (#85)** — does the camelot table-structured rep
    beat linearized text on dense hub tables, and which Stage-5 signal predicts it. A Stage-6 representation

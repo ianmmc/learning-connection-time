@@ -163,7 +163,10 @@ for queries + expected sampling units), so a district is "satisfied" when every 
 minutes, not when every school is covered (e.g. Dunseith: one captured page stated "elementary 435 min /
 high 450 min" and the schools became moot). Follow-up batches are created at the **return to Stage 1**
 from a `gate@8`/`gate@7` direction (never minted straight to discovery by 7/8), so they stay reviewable at
-`gate@1`.
+`gate@1`. **BUILT (REQ-118, 2026-07-04):** the concrete targeted builder is `build_followup_batch(year,
+batch_id, targets)` in `queue_batch.py` — distinct from `build_batch()`'s stratified cold-start draw —
+called by `stage7_execute.compose_followup_batch()` when a human approves a 7→2/7→3/7→1 directive at
+gate@7 (`STAGE7_EXTRACT_DESIGN_2026-06.md` §3F).
 
 ### 2h. `batch_type="benchmark"` — the special case (`batch_00000`, 2026-07-02)
 A third batch type, built for the 27 curated-GT districts: `stage1_queue/benchmark_batch.py` builds a

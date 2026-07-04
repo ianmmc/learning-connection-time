@@ -187,7 +187,9 @@ enable the Lab.
 > `input_kinds` + the fidelity gate); the *cross-config cascade* OPEN. **§3C** cost = BUILT on a bootstrap;
 > the *measured token×live-price* model DESIGNED. **§3D** dispatch schema = BUILT. **§3E** gate@6 = *manual*
 > BUILT (console); *auto* DEFERRED. **§3F** request-more-evidence = Stage 7 (deferred). **§3G** recency
-> preference = OPEN (a dispatch decision; batch_00008 evidence).
+> preference = OPEN (a dispatch decision; batch_00008 evidence). **§3F** request-more-evidence: detection
++ routing + execution are all BUILT (REQ-117/118, Stage 7 — see `STAGE7_EXTRACT_DESIGN` §3F); the
+OpenRouter session-persistence question below remains open research, not a blocker.
 
 ### A. What *is* a council configuration? (the heart of Stage 6)
 A first-class, registered object (stories 62–66: view/create/assign/override; default assignment). The
@@ -208,12 +210,16 @@ fill each slot, settled by re-benchmarking on clean data) and **storage**. Schem
 | config | voters (2 families) | judge |
 |---|---|---|
 | **low-cost text** | Gemini 2.5 Flash-Lite + Mistral Small 24B | Qwen3-235B-2507 |
-| **image** | Gemini 2.5 Flash + Mistral Large 2512 | DeepSeek V3.2 |
+| **image** | Gemini 2.5 Flash + Mistral Large 2512 | ~~DeepSeek V3.2~~ **Qwen3-VL-235B** (swapped 2026-07-04) |
 
 These are *starting* configs on the candidate-6 roster, **to be re-validated** — the prior model picks were
 made against a heavily-polluted input pool; now that Stages 1–5 deliver clean reps, Stage 7 re-benchmarks
 available OpenRouter models per content structure before composition hardens (§3 preamble: the config
-machinery exists to enable exactly this).
+machinery exists to enable exactly this). **Amendment (GitHub #82, fixed 2026-07-04):** DeepSeek V3.2 is
+text-only and 404'd on every image judge call in the batch_00000 run; the image council's judge was
+swapped to `qwen/qwen3-vl-235b-a22b-instruct` (vision-capable, still a third family distinct from the
+Google/Mistral voters), and `councils.validate()` now hard-refuses any non-vision-capable model on an
+image-input council. Measured result: `COUNCIL_LAB_DESIGN_2026-06.md` §0.
 
 **Per-model prompt variation (new requirement).** The same facts may need different prompt shaping per
 model. `prompts` is therefore per-model within a config, not one shared prompt — design the dispatch so a
@@ -230,8 +236,9 @@ by id* from the immutable dispatch; §3D).
 from both voters). This is not stylistic — the research is unambiguous: two wrong models agree on the *same*
 wrong answer ~60% of the time (vs 33% chance), same-family far worse, and a judge that re-reads beats an
 extra voter (−35.9% hallucination vs +32.7% for majority vote). Family buckets for our roster: **Google**
-(Flash, Flash-Lite) · **Mistral** (Small 24B, Large 2512) · **DeepSeek** (V3.2) · **Qwen** (235B-2507). Both
-seed councils satisfy this (low-cost: Google+Mistral→Qwen; image: Google+Mistral→DeepSeek). *The first test
+(Flash, Flash-Lite) · **Mistral** (Small 24B, Large 2512) · **DeepSeek** (V3.2) · **Qwen** (235B-2507,
+235B-VL-instruct — the latter added 2026-07-04, the #82 image-judge swap). Both seed councils satisfy this
+(low-cost: Google+Mistral→Qwen; image: Google+Mistral→Qwen-VL, was DeepSeek). *The first test
 in slice 1 is this validator.* (Why 2-and-a-judge, not a standing 3-voter panel: the research's "3>2" result
 is for a *fixed parallel* council; ours is a **cascade** — 2 voters on the easy majority, the third-family
 judge only on disagreement — which is the research's own preferred cost shape, §4.)

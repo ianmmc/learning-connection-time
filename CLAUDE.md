@@ -111,21 +111,28 @@ live in the governance DB; `handoff_<hash>_<ts>.json` under `data/acquisition/ha
 `district_status.json` into every commit — on a fresh clone run `git config core.hooksPath .githooks`
 (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-03):** the console runs the pipeline live through **`gate@7`** — Stage 7
-council extraction + the gate@7 review console are BUILT and GT-validated (REQ-117, 95.2%/99.3%
-band/school on `batch_00000`). The request-more-evidence loop is now **built end-to-end**: detect/persist/
-review + **execution** (REQ-118) — 7→6 direct alternate-rep re-dispatch and 7→2/7→3/7→1 wrapped in a
-Stage-1 follow-up batch, under the **REQ-051 budget governor** (`common/budget.py`, built as the
-prerequisite) + a per-district×band depth guard. Execution is CLI + API today (`python3 -m
-infrastructure.acquisition.process_governance.stage7_execute {compose-followup|execute <id>}`; `POST
-/api/extract/{compose-followup, execute/{id}}`); the gate@7 console buttons + a live non-benchmark run of
-the loop are the remaining gaps. Stages 8–9 remain designed, not built. The **Council Lab** is now in
-flight: the #82 image-judge fix landed (`6fd6a48` — vision-capability catalog + `councils.validate()`
-vision guard + judge swapped to the vision-capable `qwen/qwen3-vl-235b-a22b-instruct`, a stand-in pending
-A/B measurement). **Next:** engineer's-discretion — the Council Lab #80 A/B infra (measure the #82
-coverage recovery; then the #81 anti-spray prompt A/B), Stage 8 (aggregate), or the gate@7 execution
-console buttons + a live loop run. Full detail:
-`docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§3F.
+**Current status (2026-07-04):** the console runs the pipeline live through **`gate@7`**, and the
+request-more-evidence loop is now **fully built end-to-end** — detect/persist/review (REQ-117) +
+**execution** (REQ-118: 7→6 direct alternate-rep re-dispatch, and 7→2/7→3/7→1 wrapped in a Stage-1
+follow-up batch), under the **REQ-051 budget governor** (`common/budget.py` — per-run/per-district/
+per-district-total spend caps + a request-depth guard). gate@7 approval stays pure review; execution is a
+separate compose/execute step — CLI + API + **console buttons** (all built). A high-effort code review
+of the whole branch found 13 correctness bugs sharing one root cause (**"the new path re-implemented
+invariants instead of inheriting them"** — GitHub epic #133) — all fixed with regression tests; #147/#148
+(cleanup/efficiency) remain open, not blocking. The **Council Lab** shipped its first experiment: the
+image council's judge (`deepseek-v3.2`, non-vision-capable, 404'd on every image call) was swapped to
+`qwen/qwen3-vl-235b-a22b-instruct` + a `councils.validate()` vision guard (**GitHub #82, closed**) — the
+judge-replay harness (`council_lab.py`) measured the fix (32/33 calls ok, GT bands 88.5%→89.1%, schools
+98.1%→98.2%, $0.045 total). REQ-119 (external AI calls must stream) is now a standing, tested,
+provider-agnostic constraint (behavioral tests + an AST source-guard). Stages 8–9 remain designed, not
+built. A backlog sweep moved ~45 open to-dos into the GitHub tracker (9 epics, issue #86, closed) — **new
+standing practice: track bugs/deferred/planned work as GitHub issues, not doc to-dos.** This CLAUDE.md
+status + all design-note/governance/pipeline docs were verified against current code and refreshed in
+this same pass (docs/PROJECT_HISTORY.md carries the distilled entry). **Next:** engineer's-discretion —
+Stage 8 (aggregate), the Council Lab's remaining backlog (`cost_benchmark`, the #81 anti-spray prompt A/B;
+tracked #80/#81), or a live non-benchmark run of the request loop (tracked #122). Full detail:
+`docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§3F/§6,
+`COUNCIL_LAB_DESIGN_2026-06.md`.
 
 ---
 
