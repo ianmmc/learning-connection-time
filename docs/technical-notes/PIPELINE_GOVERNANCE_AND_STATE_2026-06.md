@@ -884,7 +884,8 @@ reframe and the batch_00002-forcing-function plan (the batch-of-record advances 
   under the **REQ-051 budget governor** (built as the prerequisite) + a depth guard; CLI + endpoints, gate@7
   console buttons deferred. **Not yet built:** Stage 8/9 and the Council Lab backlog (#80/81/82). See
   `STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§3F.
-- **Then:** **Stage 8 (aggregate)** + the **council lab** (`cost_benchmark` — measured token rates + live
+- **Then:** **Stage 8 (aggregate)** + the **Council Lab** (its own note now — `COUNCIL_LAB_DESIGN_2026-06.md`;
+  `cost_benchmark` — measured token rates + live
   OpenRouter pricing; composition re-benchmark) + REQ-100 (staleness).
   Per-stage detail: `STAGE1_QUEUE_DESIGN` §6 (gate@1), `STAGE2_DISCOVER_DESIGN` §7 (the SERP cascade),
   `STAGE3_CAPTURE_DESIGN` §7, `STAGE4_PROCESS_DESIGN` §4a/§4b, `STAGE5_FILTER_DESIGN` §A–D,

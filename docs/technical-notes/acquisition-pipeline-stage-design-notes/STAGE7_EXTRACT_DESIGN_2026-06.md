@@ -245,7 +245,9 @@ the cyclic loop provably terminates. The paid 7→6 re-extraction is budget-gate
   `EXTRACTION_BENCHMARK_FINDINGS.md`.
 - REQ-054 (read-times invariant), REQ-055 (gross metric), REQ-056 (cross-family consensus), REQ-051
   (budget governor), REQ-117 (this build).
-- GitHub #80 (Council Lab), #81 (spray A/B), #82 (image-council judge is not vision-capable).
+- **Council Lab** (the producer that tunes the councils/prompts/cost the request loop routes on): design in
+  `COUNCIL_LAB_DESIGN_2026-06.md`; GitHub #80 (infra), #81 (spray A/B), #82 (image-council vision judge —
+  fixed), #85 (camelot reader-routing).
 
 ---
 
