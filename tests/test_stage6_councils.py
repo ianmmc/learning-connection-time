@@ -124,3 +124,48 @@ def test_get_by_id():
     assert councils.get("image")["id"] == "image"
     with pytest.raises(KeyError):
         councils.get("no-such-config")
+
+
+# --------------------------- the vision guard (#82) ---------------------------
+def _img_cfg(voters, judge, cid="img"):
+    return {"id": cid, "name": cid, "voters": list(voters), "judge": judge,
+            "input_kinds": ["image"], "prompts": {"default": "stage6.extract.vision.v1"}}
+
+
+def test_image_council_with_text_only_judge_rejected():
+    # the #82 bug: a text-only judge on an image council 404s on every image call — must fail at load
+    cfg = _img_cfg(["google/gemini-2.5-flash", "mistralai/mistral-large-2512"],
+                   "deepseek/deepseek-v3.2")   # deepseek is text-only
+    with pytest.raises(councils.ConfigError, match="vision-capable"):
+        councils.validate(cfg)
+
+
+def test_image_council_with_text_only_voter_rejected():
+    cfg = _img_cfg(["google/gemini-2.5-flash", "qwen/qwen3-235b-a22b-2507"],   # qwen3 (text) is a voter
+                   "mistralai/mistral-large-2512")
+    with pytest.raises(councils.ConfigError, match="vision-capable"):
+        councils.validate(cfg)
+
+
+def test_valid_image_council_passes():
+    # the #82 FIX composition: Google + Mistral vision voters -> Qwen-VL vision judge (all distinct)
+    cfg = _img_cfg(["google/gemini-2.5-flash", "mistralai/mistral-large-2512"],
+                   "qwen/qwen3-vl-235b-a22b-instruct")
+    councils.validate(cfg)   # must not raise
+
+
+def test_text_council_not_subject_to_vision_guard():
+    # a text council may (and does) use text-only members — the guard only fires on input_kinds image
+    cfg = {"id": "t", "name": "t", "input_kinds": ["text"],
+           "voters": ["google/gemini-2.5-flash-lite", "mistralai/mistral-small-24b-instruct-2501"],
+           "judge": "qwen/qwen3-235b-a22b-2507", "prompts": {"default": "stage6.extract.v1"}}
+    councils.validate(cfg)   # text-only judge on a text council is fine
+
+
+def test_is_vision_capable_catalog():
+    from infrastructure.acquisition.common import model_families as MF
+    assert MF.is_vision_capable("qwen/qwen3-vl-235b-a22b-instruct") is True
+    assert MF.is_vision_capable("google/gemini-2.5-flash") is True
+    assert MF.is_vision_capable("deepseek/deepseek-v3.2") is False       # text-only (the #82 model)
+    assert MF.is_vision_capable("qwen/qwen3-235b-a22b-2507") is False     # text reasoning model, not VL
+    assert MF.is_vision_capable("some/uncatalogued-model") is False       # conservative default

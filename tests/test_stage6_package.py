@@ -4,7 +4,7 @@ Turns a per-district release decision (the Stage-5 records, each carrying its `s
 routing needs) into the in-memory handoff package: every send rep routed to its council(s) and priced.
 PURE (dicts in/out) — the DB read of the release decision + the app-layer wiring (so stage6 never
 imports stage5) come in slice 5. Uses the SHIPPED councils + bootstrap cost model, so the dollar
-assertions are exact (flat bootstrap): clean text -> 0.00102, image -> 0.00484.
+assertions are exact (flat bootstrap): clean text -> 0.00102, image -> 0.004755.
 """
 import math
 
@@ -17,7 +17,8 @@ COUNCILS = councils.load_configs()
 COST_MODEL = cost.load_cost_model()
 
 CLEAN_TEXT = 0.00050 + 0.00022 + 0.5 * 0.00060   # low-cost-text voters + 0.5*judge = 0.00102
-IMAGE = 0.00168 + 0.00265 + 0.5 * 0.00102         # image voters + 0.5*judge = 0.00484
+# image judge swapped deepseek-v3.2 (0.00102) -> qwen3-vl-235b-a22b-instruct (0.00085) for #82:
+IMAGE = 0.00168 + 0.00265 + 0.5 * 0.00085         # image voters + 0.5*judge = 0.004755
 
 
 def _rec(rec_key, decision, send, signals=None, reason="r"):

@@ -21,7 +21,30 @@ FAMILY = {
     "mistralai/mistral-large-2512": "mistral",
     "deepseek/deepseek-v3.2": "deepseek",
     "qwen/qwen3-235b-a22b-2507": "qwen",
+    "qwen/qwen3-vl-235b-a22b-instruct": "qwen",   # the vision judge for the image council (#82 fix)
 }
+
+# Per-model VISION capability — a curated ALLOWLIST (a model is treated as vision-capable only if it is
+# listed here). It exists because GitHub #82 shipped a TEXT-ONLY judge (deepseek-v3.2) into the `image`
+# council, where every judge call 404'd ("No endpoints found that support image input") — invisible
+# until run against real image reps. `councils.validate()` now uses this to refuse an image-input
+# council whose voters/judge aren't all vision-capable. Membership is grounded in the council research
+# (models-and-council-composition/) + empirical confirmation (mistral-large-2512 + gemini-2.5-flash read
+# image reps in the batch_00000 run; deepseek-v3.2 404'd). DeepSeek is the notable text-only family
+# (input_modalities == ["text"]) and can never be a vision member.
+VISION_CAPABLE = {
+    "google/gemini-2.5-flash",
+    "google/gemini-2.5-flash-lite",
+    "mistralai/mistral-large-2512",
+    "qwen/qwen3-vl-235b-a22b-instruct",
+}
+
+
+def is_vision_capable(model_id: str) -> bool:
+    """True only if `model_id` is a known vision-capable model (the curated VISION_CAPABLE allowlist).
+    Conservative by design: an uncatalogued id is treated as NOT vision-capable, so a model must be
+    proven vision-capable before it can serve on an image-input council (the #82 guard)."""
+    return model_id in VISION_CAPABLE
 
 # Provider-prefix aliases for the fallback: OpenRouter's prefix is sometimes NOT the family bucket we
 # catalog under ("mistralai/..." models are family "mistral"). Without this a catalogued Mistral

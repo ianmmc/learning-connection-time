@@ -15,6 +15,7 @@
     "qwen/qwen3-235b-a22b-2507":                 {"per_call_usd": 0.00060, "source": "extraction-benchmark-update4 (old inputs; flat)"},
     "deepseek/deepseek-v3.2":                    {"per_call_usd": 0.00102, "source": "extraction-benchmark-update4 (old inputs; flat)"},
     "google/gemini-2.5-flash":                   {"per_call_usd": 0.00168, "source": "extraction-benchmark-update4 (old inputs; flat)"},
-    "mistralai/mistral-large-2512":              {"per_call_usd": 0.00265, "source": "extraction-benchmark-update4 (old inputs; flat)"}
+    "mistralai/mistral-large-2512":              {"per_call_usd": 0.00265, "source": "extraction-benchmark-update4 (old inputs; flat)"},
+    "qwen/qwen3-vl-235b-a22b-instruct":          {"per_call_usd": 0.00085, "source": "RESEARCH ESTIMATE (compass artifact: $0.20/$0.88 per Mtok @ ~2800 in/330 out); the #82 stand-in vision judge, PENDING Council Lab measurement — NOT a measured rate"}
   }
 }

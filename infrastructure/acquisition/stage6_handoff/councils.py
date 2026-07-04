@@ -15,7 +15,8 @@ from infrastructure.acquisition.common import config_loader
 # The family map is the single source of truth in `common` — both Stage 6 validation (here) and the
 # Stage 7/8 consensus depend on it, and those stages may not import each other. Re-exported into this
 # namespace so `councils.FAMILY` / `councils.family_of` stay the module's public API.
-from infrastructure.acquisition.common.model_families import FAMILY, FAMILY_ALIAS, family_of  # noqa: F401
+from infrastructure.acquisition.common.model_families import (  # noqa: F401
+    FAMILY, FAMILY_ALIAS, family_of, is_vision_capable)
 from infrastructure.acquisition.stage6_handoff import prompts as P
 
 KNOB = "council_configs"
@@ -53,6 +54,17 @@ def validate(cfg: dict) -> None:
         raise ConfigError(
             f"council '{cid}': the judge must be a third family distinct from both voters "
             f"(judge '{judge}' is '{jf}', which collides with a voter)")
+    # Vision guard (GitHub #82): an image-input council read image reps, so EVERY member — both voters
+    # and the judge — must be vision-capable. This is the check that would have caught the dead
+    # deepseek-v3.2 image judge (text-only → every judge call 404'd) at config-load instead of at run.
+    if "image" in (cfg.get("input_kinds") or []):
+        blind = [m for m in voters + [judge] if not is_vision_capable(m)]
+        if blind:
+            raise ConfigError(
+                f"council '{cid}': input_kinds includes 'image' but these members are not "
+                f"vision-capable: {blind}. An image council's voters AND judge must all read images "
+                f"(add the model to common.model_families.VISION_CAPABLE if it genuinely is, or pick a "
+                f"vision-capable model — a text-only judge 404s on every image call, #82)")
     # Every voter AND the judge must resolve to a KNOWN prompt — else request assembly (Stage 7,
     # the expensive moment) would KeyError on SYSTEM_PROMPTS[None]. Validate it here at config-load.
     for m in voters + [judge]:
