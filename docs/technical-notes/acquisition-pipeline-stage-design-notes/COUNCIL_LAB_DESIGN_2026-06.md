@@ -64,7 +64,18 @@ dedicated **console view** (§6 — sequenced after the ledger + a few experimen
   school** on the image run before any judge is added.
 - CLI: `python3 -m infrastructure.acquisition.process_governance.council_lab <handoff_hash> [--judge …]
   [--limit N] [--gt …]`.
-- **First result (Qwen-VL image judge, #82):** _(pending the full 33-rep run — folded in when it lands)._
+- **First result (Qwen-VL image judge, #82, 2026-07-04):** replayed all 33 escalated reps, $0.045.
+  The swapped-in `qwen/qwen3-vl-235b-a22b-instruct` judge made **32/33** successful calls (1 transient
+  provider error, no capability 404s) vs deepseek-v3.2's **0/33** (all "no endpoints support image
+  input"). It **recovered coverage without hurting accuracy** — the #82 question: GT bands 88.5%
+  (12 gap) → **89.1% (9 gap)**, GT schools 98.1% → **98.2%**, resolving **21/145** disagreements (the
+  tie-breaks are correct, not hallucinated). Two secondary reads: the 14.5% resolution rate concentrates
+  on SMALL disagreements — big hub-table reps (18-, 37-school ties) stay unresolved because the judge
+  emits few facts on dense pages (the reader-routing/hub concern, #85/#121, not a judge defect); and the
+  image council overall (89.1%/98.2%) still trails the TEXT council (95.2%/99.3%) on native-digital reps,
+  reinforcing the route-by-modality experiment (#132). Qwen-VL stands as a validated **stand-in**;
+  benchmarking alternative vision judges is composition work (#80). Record:
+  `data/acquisition/council_lab/judge_replay_a2bc80c004ca-image_partial.json`.
 
 **The runtime/consumer side lives elsewhere** — `STAGE6_DISPATCH_DESIGN` §0/§3 (councils/routing/cost) and
 `STAGE7_EXTRACT_DESIGN` §0. The Lab NEVER changes the runtime path to run; the contract is the
