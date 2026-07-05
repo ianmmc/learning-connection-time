@@ -570,8 +570,10 @@ def persist_run(results: dict, *, created_by: str = "auto:stage7", receipt_path=
 # ---------------------------------------------------------------------------
 def _district_request_inputs(session, result: dict):
     """The DB-derived inputs the pure detector (`requests.detect_requests`) needs for one district:
-    claimed bands + the band's schools (`district_target`), and the alternate reps per sent record
-    (`representation`, the usable reps of a rec_key other than the one we sent — drives 7→6 vs 7→3)."""
+    claimed bands + the band's schools (`district_target`), the alternate reps per sent record
+    (`representation`, the usable reps of a rec_key other than the one we sent — drives 7→6 vs 7→3),
+    and the district-wide covered bands (`school_fact` across all extractions — so a partial result
+    can't fabricate band gaps). Returns (claimed, band_schools, alts, covered)."""
     did = result["district_id"]
     # ALL files sent per rec_key (#145): Stage 6 may dispatch several reps of one record, and a rep we
     # already sent (and that just failed) must never be offered back as its own 7->6 "alternate".
@@ -596,16 +598,23 @@ def _district_request_inputs(session, result: dict):
                 {"k": rec_key}).all():
             if fn not in sent_files:
                 alts.setdefault(rec_key, []).append({"file": fn, "kind": kind, "n_times": nt})
-    return claimed, band_schools, alts
+    # District-WIDE band coverage across ALL extractions (this run's facts are already flushed on
+    # this session by persist_run_session, so they're visible too). Without this, a PARTIAL result
+    # (a 1-record 7->6 re-dispatch) fabricates a gap for every claimed band the single record
+    # doesn't cover — the live Las Cruces #285-287/#289-291 spurious 7->2s.
+    covered = {b for (b,) in session.execute(
+        text("SELECT DISTINCT band FROM school_fact WHERE district_id = :d AND status = 'accepted'"),
+        {"d": did}).all()}
+    return claimed, band_schools, alts, covered
 
 
 def detect_and_persist_requests(session, result: dict, handoff_hash: str) -> int:
     """Detect the request-more-evidence directives for one district's result and persist the NEW ones
     (natural-key dedup on (handoff_hash, target, altitude, route, band) so a re-detect/backfill never
     duplicates and never clobbers a human's review status). Returns the count newly persisted."""
-    claimed, band_schools, alts = _district_request_inputs(session, result)
+    claimed, band_schools, alts, covered = _district_request_inputs(session, result)
     reqs = RQ.detect_requests(result, claimed_bands=claimed, alternates_by_rec=alts,
-                              band_schools=band_schools)
+                              band_schools=band_schools, covered_bands=covered)
     n = 0
     for r in reqs:
         exists = session.execute(

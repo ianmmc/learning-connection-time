@@ -51,6 +51,29 @@ def test_band_7to2_fires_normally_when_no_pending_7to6():
     assert "DEFER" not in band["reason"] and "targeted rediscover" in band["reason"]
 
 
+def test_partial_result_with_covered_bands_fabricates_no_band_gaps():
+    # F5 (review of 1f45ed5) — the Las Cruces shape: a 1-record 7->6 re-dispatch result covers
+    # nothing by itself, but the district ALREADY has all three bands covered from prior
+    # extractions. Without covered_bands this emitted a spurious 7->2 per claimed band
+    # (live rows #285-287/#289-291).
+    res = _result(reps=[{"rec_key": "D1:x", "file": "raster_p-01.png", "accepted": []}], accepted=[])
+    reqs = RQ.detect_requests(
+        res, claimed_bands=["elementary", "middle", "high"],
+        covered_bands={"elementary", "middle", "high"})
+    assert [r for r in reqs if r["altitude"] == "district"] == []   # no fabricated gaps
+    # the 7->3 for the barren rep itself still fires (no alternates given) — that part is real
+    assert [r["route"] for r in reqs] == ["7->3"]
+
+
+def test_covered_bands_only_fills_known_bands_not_all():
+    # partial coverage: elementary known district-wide; high still genuinely empty -> exactly one 7->2
+    res = _result(reps=[], accepted=[])
+    reqs = RQ.detect_requests(res, claimed_bands=["elementary", "high"],
+                              covered_bands={"elementary"})
+    bands = [r["band"] for r in reqs if r["altitude"] == "district"]
+    assert bands == ["high"]
+
+
 def test_barren_rep_with_alternate_routes_7to6():
     res = _result(
         reps=[{"rec_key": "D1:aa", "file": "harvest_slice.txt", "accepted": []}],

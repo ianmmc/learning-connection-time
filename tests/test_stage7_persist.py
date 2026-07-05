@@ -93,7 +93,7 @@ def test_detect_and_persist_requests_dedups(gov_session, monkeypatch):
     s = gov_session
     # claimed elementary+high; high has no facts -> one district 7->2 request. No alternates.
     monkeypatch.setattr(R7, "_district_request_inputs",
-                        lambda sess, res: (["elementary", "high"], {"high": ["A High"]}, {}))
+                        lambda sess, res: (["elementary", "high"], {"high": ["A High"]}, {}, set()))
     result = {"district_id": "ZZREQ1", "reps": [],
               "accepted": [{"band": "elementary", "school": "e"}], "unresolved": []}
 
