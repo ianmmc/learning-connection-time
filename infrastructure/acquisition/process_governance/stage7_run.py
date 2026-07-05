@@ -588,13 +588,14 @@ def _district_request_inputs(session, result: dict):
         # Dispatchable kinds only (#140): binaries (pdf/bin) and chrome segments are usable=1 in the
         # Stage-4 sense ("produced"), but a 7->6 alternate must be something a council can READ —
         # a pdf alternate would route to the text council and be read as raw bytes (paid mojibake).
-        for fn, kind in session.execute(
-                text("SELECT filename, file_kind FROM representation WHERE rec_key = :k "
+        # n_times drives the yield-aware ranking (#155): a fuller text extraction beats a raster image.
+        for fn, kind, nt in session.execute(
+                text("SELECT filename, file_kind, n_times FROM representation WHERE rec_key = :k "
                      "AND usable = 1 AND file_kind IN ('text', 'image') "
                      "AND source NOT LIKE 'segment:%'"),
                 {"k": rec_key}).all():
             if fn not in sent_files:
-                alts.setdefault(rec_key, []).append({"file": fn, "kind": kind})
+                alts.setdefault(rec_key, []).append({"file": fn, "kind": kind, "n_times": nt})
     return claimed, band_schools, alts
 
 

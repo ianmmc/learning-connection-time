@@ -29,7 +29,7 @@ def test_no_gap_when_all_claimed_bands_present():
 
 def test_barren_rep_with_alternate_routes_7to6():
     res = _result(
-        reps=[{"rec_key": "D1:aa", "file": "pdftotext.txt", "accepted": []}],
+        reps=[{"rec_key": "D1:aa", "file": "harvest_slice.txt", "accepted": []}],
         accepted=[])
     reqs = RQ.detect_requests(res, claimed_bands=[],
                               alternates_by_rec={"D1:aa": [{"file": "raster_p-1.png", "kind": "image"}]})
@@ -37,7 +37,33 @@ def test_barren_rep_with_alternate_routes_7to6():
     assert len(rep_reqs) == 1
     r = rep_reqs[0]
     assert r["route"] == "7->6" and r["target"] == "D1:aa"
+    # only an image alternate exists -> vision escalation, honest reason
     assert r["params"]["alternate_reps"][0]["kind"] == "image"
+    assert "VISION" in r["reason"]
+
+
+def test_7to6_prefers_higher_yield_text_over_image():
+    # the Marion/Pittsylvania case (#155): a failed slice, with a full pdftotext AND a raster image
+    # available — the fuller text must rank first, NOT the image.
+    res = _result(reps=[{"rec_key": "D1:mhs", "file": "harvest_slice.txt", "accepted": []}], accepted=[])
+    alts = [
+        {"file": "raster_p-01.png", "kind": "image", "n_times": None},
+        {"file": "pdftotext.txt", "kind": "text", "n_times": 86},
+        {"file": "pdfplumber_lines.txt", "kind": "text", "n_times": 0},
+        {"file": "camelot_hybrid.txt", "kind": "text", "n_times": 67},
+    ]
+    reqs = RQ.detect_requests(res, claimed_bands=[], alternates_by_rec={"D1:mhs": alts})
+    ranked = [a["file"] for a in reqs[0]["params"]["alternate_reps"]]
+    # high-yield text (desc n_times) -> image -> zero-yield text
+    assert ranked == ["pdftotext.txt", "camelot_hybrid.txt", "raster_p-01.png", "pdfplumber_lines.txt"]
+    assert "higher-yield TEXT" in reqs[0]["reason"] and "pdftotext.txt" in reqs[0]["reason"]
+
+
+def test_rank_alternates_is_pure_and_stable():
+    alts = [{"file": "b.png", "kind": "image", "n_times": None},
+            {"file": "a.txt", "kind": "text", "n_times": 10}]
+    assert [a["file"] for a in RQ.rank_alternates(alts)] == ["a.txt", "b.png"]
+    assert [a["file"] for a in RQ.rank_alternates([])] == []
 
 
 def test_barren_rep_without_alternate_routes_7to3():

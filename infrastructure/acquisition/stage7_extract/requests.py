@@ -49,6 +49,42 @@ def _bands_with_facts(result: dict) -> set:
     return {f.get("band") for f in (result.get("accepted") or []) if f.get("band") in BANDS}
 
 
+def rank_alternates(alts: list) -> list:
+    """Order 7->6 alternate reps BEST-FIRST (#155) — pure. The escalation ladder is
+    partial-text → FULLER text → vision, NOT "prefer image": a richer text extraction of the same
+    document is the cheapest high-yield retry, and vision is the escalation tried when text is
+    exhausted. So:
+      1. readable TEXT with usable yield (n_times > 0), highest n_times first;
+      2. IMAGE reps (the vision escalation);
+      3. text with no extractable times (n_times 0/None) — near-useless, last.
+    (Live evidence #122/#155: Marion's MHS rep failed as `camelot_hybrid.txt` while `pdftotext.txt`
+    n_times=57 sat unused; Pittsylvania's `harvest_slice.txt` failed while `pdftotext.txt` n_times=86
+    was available — the old image-first pick sent `raster_p-01.png` and recovered nothing.)"""
+    def key(a):
+        kind = a.get("kind")
+        nt = a.get("n_times") or 0
+        if kind == "text" and nt > 0:
+            return (0, -nt)
+        if kind == "image":
+            return (1, 0)
+        return (2, 0)
+    return sorted(alts, key=key)
+
+
+def _alt_reason(sent: str, ranked: list) -> str:
+    """Honest 7->6 reason describing the TOP-ranked alternate (#155) — 'try another modality' only
+    when the pick actually IS another modality (vision); otherwise name the higher-yield text retry."""
+    top = ranked[0]
+    n = len(ranked)
+    if top.get("kind") == "image":
+        return (f"sent rep '{sent}' yielded 0 accepted facts; escalate to VISION on '{top['file']}' "
+                f"({n} alternate rep(s) available) — text is exhausted for this URL")
+    nt = top.get("n_times")
+    yield_note = f" (n_times={nt})" if nt else ""
+    return (f"sent rep '{sent}' yielded 0 accepted facts; retry with a higher-yield TEXT extraction "
+            f"'{top['file']}'{yield_note} before escalating to vision ({n} alternate rep(s) available)")
+
+
 def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = None,
                     band_schools: dict = None) -> list:
     """Emit routed request objects for one district's extraction `result` (a `run_council_streaming`
@@ -75,12 +111,12 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
         alts = alternates_by_rec.get(rec_key) or []
         sent = files.get(rec_key)
         if alts:
+            ranked = rank_alternates(alts)   # #155: best-first (higher-yield text before vision)
             reqs.append({
                 "district_id": did, "altitude": "representation", "route": ROUTE_ALT_REP,
                 "target": rec_key, "band": None,
-                "params": {"sent_file": sent, "alternate_reps": alts},
-                "reason": f"sent rep '{sent}' yielded 0 accepted facts; "
-                          f"{len(alts)} alternate rep(s) available for this URL — try another modality"})
+                "params": {"sent_file": sent, "alternate_reps": ranked},
+                "reason": _alt_reason(sent, ranked)})
         else:
             reqs.append({
                 "district_id": did, "altitude": "url", "route": ROUTE_RECAPTURE,
