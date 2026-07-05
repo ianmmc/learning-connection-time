@@ -285,6 +285,9 @@ async def split_record(rec_key: str):
                          "ON CONFLICT (rec_key) DO NOTHING"), {"rk": rec_key, "ts": ts})
         cid = rec["cluster_id"]
         if cid:
+            # Split-out record + collapse-to-singleton below become SINGLETONS: their duplicate_of
+            # (if any) is legitimate content-dedup state and is preserved — a singleton dup is
+            # correctly suppressed while its first-seen partner stays canonical (#158 scope note).
             con.execute(text("UPDATE record SET cluster_id=NULL, is_cluster_rep=1, cluster_size=1 WHERE rec_key=:rk"),
                         {"rk": rec_key})
             rest = [row[0] for row in con.execute(text(
@@ -296,8 +299,14 @@ async def split_record(rec_key: str):
                                 {"rk": rk})
             else:                # promote a new representative; refresh sizes
                 for i, rk in enumerate(rest):
-                    con.execute(text("UPDATE record SET is_cluster_rep=:rep, cluster_size=:sz WHERE rec_key=:rk"),
-                                {"rep": 1 if i == 0 else 0, "sz": len(rest), "rk": rk})
+                    is_rep = 1 if i == 0 else 0
+                    # #158 invariant: a MULTI-MEMBER cluster's rep must NOT carry duplicate_of (the
+                    # rep is the cluster's one canonical member) — else CANONICAL_RECORD_WHERE
+                    # matches NO member and the whole cluster silently drops from release/dispatch.
+                    con.execute(text("UPDATE record SET is_cluster_rep=:rep, cluster_size=:sz"
+                                     + (", duplicate_of=NULL" if is_rep else "")
+                                     + " WHERE rec_key=:rk"),
+                                {"rep": is_rep, "sz": len(rest), "rk": rk})
         BS.recompute_labeled_topology(con, rec["district_id"])
         BS.recompute_attention(con, rec["district_id"])   # label/split changed canonical/resolved state -> refresh attention
         con.commit()   # persist before exporting, so the JSON backup only reflects committed state

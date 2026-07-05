@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-04T11:59:26Z",
+  "last_updated": "2026-07-04T20:53:47Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -278,9 +278,27 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-03T06:13:00Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-04T16:46:36Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-04T16:47:12Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "a2bc80c004ca-image"
+      "notes": "3315c46d2ce7"
     },
     "0103390": {
       "name": "Tuscaloosa County",
@@ -2551,10 +2569,10 @@
     },
     "1737350": {
       "name": "Triad CUSD 2",
-      "state": "IL",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_partial",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -2614,16 +2632,31 @@
           "stage_name": "process",
           "outcome": "processed_partial",
           "at": "2026-06-29T07:12:01Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-04T17:09:00Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-04T17:15:59Z"
         }
       ],
-      "notes": "gate@1 approved batch_00002"
+      "notes": "bdefebeba6c3"
     },
     "1739960": {
       "name": "Urbana SD 116",
-      "state": "IL",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_all",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -2656,9 +2689,24 @@
           "stage_name": "process",
           "outcome": "processed_all",
           "at": "2026-06-24T04:47:00Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-04T17:09:00Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-04T17:16:36Z"
         }
       ],
-      "notes": ""
+      "notes": "bdefebeba6c3"
     },
     "1800048": {
       "name": "East Chicago Urban Enterprise Academy",
@@ -2994,11 +3042,11 @@
     "1918690": {
       "name": "Marion Independent School District",
       "state": "IA",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_all",
+      "furthest_stage": 7,
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00009",
       "history": [
         {
           "stage": 1,
@@ -3029,9 +3077,30 @@
           "stage_name": "process",
           "outcome": "processed_all",
           "at": "2026-06-24T04:41:39Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-04T17:09:00Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-04T17:16:40Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-04T20:47:08Z"
         }
       ],
-      "notes": ""
+      "notes": "bdefebeba6c3"
     },
     "1928020": {
       "name": "Tri-County Comm School District",
@@ -4849,10 +4918,10 @@
     },
     "3501500": {
       "name": "LAS CRUCES",
-      "state": "NM",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_partial",
+      "state": null,
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -4920,9 +4989,54 @@
           "stage_name": "process",
           "outcome": "processed_partial",
           "at": "2026-06-29T08:54:21Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-04T17:09:00Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-04T17:19:00Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-04T20:45:19Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-04T20:45:29Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-04T20:53:40Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-04T20:53:47Z"
         }
       ],
-      "notes": "50 not_recovered (capture interrupted before completion)"
+      "notes": "0246e8a041a8"
     },
     "3502280": {
       "name": "ROY",
@@ -7254,11 +7368,11 @@
     "5102940": {
       "name": "Pittsylvania County Public Schools",
       "state": "VA",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_partial",
+      "furthest_stage": 7,
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00009",
       "history": [
         {
           "stage": 1,
@@ -7289,9 +7403,30 @@
           "stage_name": "process",
           "outcome": "processed_partial",
           "at": "2026-06-24T04:57:09Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-04T17:09:00Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-04T17:19:09Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-04T20:47:08Z"
         }
       ],
-      "notes": ""
+      "notes": "bdefebeba6c3"
     },
     "5103480": {
       "name": "Scott County Public Schools",
