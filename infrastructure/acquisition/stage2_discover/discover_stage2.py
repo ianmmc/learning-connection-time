@@ -25,6 +25,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from infrastructure.acquisition.common import cache_ingest as CI
+from infrastructure.acquisition.common import config_loader as CFG
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import paths
 
@@ -43,6 +44,19 @@ def lea_dir(district_id: str, name: str) -> Path:
 
 def query_for(school: str, state: str) -> str:
     return f"{school} {state} bell schedule start and end times"
+
+
+def differentiated_queries(school: str, state: str) -> list:
+    """The differentiated SERP query set for a 7->2 REDISCOVER follow-up (#160): materially different
+    phrasings from the default `query_for` wave-1 query, rendered per school. A 7->2 round casts the
+    WHOLE set at once (cheap SERP, max recall in one round). Config-as-data
+    (`common/config/stage2_query_templates.json`) so it's tunable without code and the judge can later
+    feed the same seam. Order preserved (config order); templates use only {school} + {state}.
+
+    FOUNDATION ONLY (Chunk 2, epic #163): NOT yet consumed by discovery — the follow-up builder threads
+    these in and Stage-2 discovery consumes them in Chunk 4."""
+    return [tmpl.format(school=school, state=state)
+            for tmpl in CFG.values("stage2_query_templates")]
 
 
 def load_batch(path) -> dict:

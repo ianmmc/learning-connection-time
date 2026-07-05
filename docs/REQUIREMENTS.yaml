@@ -1670,10 +1670,11 @@ requirements:
       docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE2_DISCOVER_DESIGN_2026-06.md §6 for the full design-session trail."
 
   - id: REQ-070
-    description: "Stage 2 wave dispatch - Wave 1 (Claude WebSearch subagent) with a strict dispatch contract, Wave 2 (OpenRouter) conditional on a residual"
+    description: "[SUPERSEDED 2026-07-04 by REQ-104 — describes the retired Wave-1=Claude-WebSearch-subagent / Wave-2=OpenRouter-conditional dispatch model; Stage 2 was re-architected to the deterministic SERP cascade (Bright Data → Serper → Claude WebSearch residual). Mirrors the REQ-058 supersession. CARRIES FORWARD: the billing/auth/rate-limit HARD-STOP invariant (HTTP 401/402/429 → CONTROL FAILURE halt, never silent degrade to manual_flag) is still live — now in the OpenRouter client's BillingAuthError and the SERP cascade; do not lose this thread.] Stage 2 wave dispatch - Wave 1 (Claude WebSearch subagent) with a strict dispatch contract, Wave 2 (OpenRouter) conditional on a residual"
     type: functional
     priority: must
-    status: tested
+    status: superseded
+    superseded_by: [REQ-104]
     acceptance_criteria:
       - "Wave 1 (Claude WebSearch) runs as one Haiku subagent PER DISTRICT, never multiple districts in one subagent - the subagent returns a single strictly-formatted JSON result (district_id, domain, per-school urls), never prose for the orchestrator to read and hand-transcribe"
       - The subagent's result MUST echo the district_id and domain it was given - a mismatch on either fails loud (SystemExit) rather than being silently accepted, since a wrong-district result would contaminate discovery.json with another district's URLs

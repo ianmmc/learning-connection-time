@@ -1,0 +1,44 @@
+{
+  "knob": "stage2_query_templates",
+  "description": "Differentiated SERP query TEMPLATES for a Stage-2 REDISCOVER (a 7->2 follow-up, #160) — materially different phrasings from the default wave-1 query (discover_stage2.query_for = '{school} {state} bell schedule start and end times'). Rendered per school with the {school} and {state} placeholders. A 7->2 round casts the WHOLE set at once (cheap SERP, max recall in one round; #160). NOT consumed by first-run discovery — wired into the follow-up path in Chunk 4 (epic #163). Read by the Python reader (discover_stage2.differentiated_queries) and available to the Node scraper via the same file.",
+  "governance": "STARTER set, APPROVED by Ian 2026-07-04 (Chunk 2 checkpoint, epic #163). Templates COMPOSE with the existing domain scoping (discover.brightdata_search/serper_search append `site:{district_domain}` to whatever query they're given — REQ-104), which follow-ups inherit unchanged: e.g. 'X bell schedule filetype:pdf' becomes 'X bell schedule filetype:pdf site:district.org', a valid query for on-domain PDFs. NOTE the residual gap (not a template's job): OFF-domain CMS PDFs (thrillshare/5il.co) are NOT reachable by any domain-scoped SERP query — they arrive via the emergent-capture path + the CMS_HOSTS gate (verified #122: Marion's bell table is is_emergent=1, no SERP provider). Widening the follow-up to off-domain CMS hosts is a separate DOMAIN-SCOPING lever for the Chunk-4 discovery design. Tune by measurement, not guesswork (memory: explore-before-scoring-changes). FUTURE (#160, deferred): let the judge model contribute a query into this same seam. Every template renders with ONLY {school} + {state}.",
+  "provenance": "bootstrap",
+  "entries": [
+    {
+      "value": "{school} {state} bell schedule filetype:pdf",
+      "id": "pdf_direct",
+      "added": "2026-07-04",
+      "rationale": "Bias toward the schedule PDF itself (on-domain: district.org/handbook.pdf) — a common publishing pattern the default HTML-biased query buries below calendar/news pages. Composes with site: scoping; does NOT reach off-domain CMS PDFs (that's the domain-scoping lever, see governance).",
+      "evidence": "#122: schedules frequently live in a handbook/bell-table PDF rather than an HTML page.",
+      "approved_by": "Ian McCullough",
+      "loop_tier": 2
+    },
+    {
+      "value": "{school} {state} student handbook daily schedule",
+      "id": "handbook_scoped",
+      "added": "2026-07-04",
+      "rationale": "Scope to the student handbook, where a large share of schools embed the daily bell schedule (often the only published source).",
+      "evidence": "#122: Pittsylvania CHS/DRHS schedules were inside student-handbook PDFs.",
+      "approved_by": "Ian McCullough",
+      "loop_tier": 2
+    },
+    {
+      "value": "{school} {state} school hours first bell dismissal time",
+      "id": "alt_vocab_hours",
+      "added": "2026-07-04",
+      "rationale": "Alternate vocabulary — many schools label the same information 'school hours' / 'first bell' / 'dismissal' rather than 'bell schedule', so the default query misses them.",
+      "evidence": "Stage-5 label taxonomy shows school_start_end_list/prose pages that use 'hours'/'dismissal' phrasing, distinct from bell-table pages.",
+      "approved_by": "Ian McCullough",
+      "loop_tier": 2
+    },
+    {
+      "value": "{school} {state} daily schedule start time end time",
+      "id": "start_end_explicit",
+      "added": "2026-07-04",
+      "rationale": "Explicit start/end phrasing scoped to the daily schedule — targets the exact two published numbers the gross bell-to-bell metric needs (REQ-055).",
+      "evidence": "The metric is gross end-start; a query naming 'start time end time' biases toward pages stating both.",
+      "approved_by": "Ian McCullough",
+      "loop_tier": 2
+    }
+  ]
+}

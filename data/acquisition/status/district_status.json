@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-04T20:53:47Z",
+  "last_updated": "2026-07-05T02:18:51Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -3041,12 +3041,12 @@
     },
     "1918690": {
       "name": "Marion Independent School District",
-      "state": "IA",
+      "state": null,
       "furthest_stage": 7,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00009",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -3098,9 +3098,24 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-04T20:47:08Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-05T02:18:29Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian-158-recovery"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-05T02:18:51Z"
         }
       ],
-      "notes": "bdefebeba6c3"
+      "notes": "77d066cb5324"
     },
     "1928020": {
       "name": "Tri-County Comm School District",
