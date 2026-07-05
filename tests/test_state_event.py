@@ -100,6 +100,32 @@ def test_current_state_projects_max_stage_and_latest_snapshot(gov_session):
     gov_session.rollback()
 
 
+def test_current_state_name_state_survive_null_writers(gov_session):
+    """#165 — name/state resolve to the latest NON-NULL value across all events, so a writer that
+    doesn't carry them (the old stage-7 extract wrote state NULL; gate@6 writes name='') can't null
+    the header. batch_id deliberately STAYS event-accurate (the latest stage event's value, NULL
+    included) — batch membership's authority is batch_district."""
+    DS.ensure_schema()
+    did = "TST0165"
+    _insert(gov_session, did, stage=1, stage_name="queue", outcome="queued",
+            name="Marionville", state="IA", batch_id="batch_TST",
+            event_type="queued", created_at="2026-07-04T00:00:01Z")
+    # a gate@6 checkpoint event with empty name + NULL state (the old writer shape)
+    _insert(gov_session, did, name="", state=None, checkpoint="gate@6",
+            event_type="dispatched", created_at="2026-07-04T00:00:02Z")
+    # a stage-7 extract event with state NULL and batch_id NULL (the exact #165 shape)
+    _insert(gov_session, did, name="Marionville", state=None, stage=7, stage_name="extract",
+            outcome="extracted", event_type="extracted", created_at="2026-07-04T00:00:03Z")
+    r = gov_session.execute(text(
+        "SELECT name, state, furthest_stage, stage_name, batch_id "
+        "FROM current_state WHERE district_id=:d"), {"d": did}).mappings().first()
+    assert r["name"] == "Marionville"
+    assert r["state"] == "IA"                    # survived two null/empty-state writers
+    assert r["furthest_stage"] == 7 and r["stage_name"] == "extract"
+    assert r["batch_id"] is None                 # event-accurate by design (not latest-non-null)
+    gov_session.rollback()
+
+
 def test_save_then_load_round_trips_through_db(gov_session):
     """record_stage -> the buffered events INSERT into state_event -> current_state reflects them.
     Done on the rolled-back session (no commit, no save()) so the live data is untouched."""

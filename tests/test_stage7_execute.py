@@ -61,6 +61,22 @@ def test_depth_guard_none_max_never_blocks():
     assert plan["swept_ids"] == [1] and plan["blocked"] == []
 
 
+def test_defer_holds_7to2_while_district_has_unexecuted_7to6():
+    # #159 — D1 has an un-executed 7->6 -> its 7->2 is HELD (not swept); D2 has none -> composed
+    reqs = [_req(1, "D1", "7->2", "high"), _req(2, "D2", "7->2", "middle")]
+    plan = EX.plan_followup(reqs, claimed_bands={}, defer_76={"D1"})
+    assert plan["targets"] == {"D2": ["middle"]}
+    assert plan["swept_ids"] == [2]
+    assert [d["request_id"] for d in plan["deferred"]] == [1]
+    assert "7->6" in plan["deferred"][0]["reason"]
+
+
+def test_no_defer_when_district_not_in_defer_set():
+    reqs = [_req(1, "D1", "7->2", "high")]
+    plan = EX.plan_followup(reqs, claimed_bands={}, defer_76=set())
+    assert plan["swept_ids"] == [1] and plan["deferred"] == []
+
+
 def test_empty_requests_is_empty_plan():
     plan = EX.plan_followup([], claimed_bands={})
     assert plan["targets"] == {} and plan["swept_ids"] == [] and plan["spilled"] == []
@@ -84,6 +100,65 @@ from infrastructure.acquisition.stage7_extract import models as _M7  # noqa: E40
 govdb = pytest.mark.govdb
 
 
+
+@govdb
+def test_executed_rounds_counts_distinct_refs_not_rows(gov_session):
+    """Review R1 (#153): a bundle flips N directives to ONE executed_ref = one round. The compose-side
+    depth-guard history must count DISTINCT executed_ref, not rows — else one bundled round of three
+    7->6s (band NULL) depth-blocks a later band-less 7->3/7->1 at used=3."""
+    gdb.init_precious_schema()
+    s = gov_session
+    for i in range(3):     # ONE bundled round: three rows sharing one executed_ref
+        s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                       "target, band, reason, status, executed_ref, created_at) VALUES ('ZZR1', 'h', "
+                       "'representation', '7->6', :t, NULL, 'r', 'executed', 'bundle_x', :ts)"),
+                  {"t": f"ZZR1:r{i}", "ts": _M7.utcnow()})
+    s.flush()
+    assert EX._executed_rounds(s, ["ZZR1"]) == {("ZZR1", None): 1}    # one round, not three
+
+
+@govdb
+def test_attempted_schools_excludes_draft_batches(gov_session):
+    """Review of a9c4486 (#162): a DRAFT batch never ran discovery — its schools were NOT attempted,
+    and an abandoned draft (batch_00009) must not poison the untried set forever. Only non-draft
+    (approved/committed) batches count."""
+    from infrastructure.acquisition.stage1_queue.models import Batch, BatchSchool
+    gdb.init_precious_schema()
+    s = gov_session
+    for bid, status, sid in (("batch_zzatt_a", "approved", "SA"), ("batch_zzatt_d", "draft", "SD")):
+        s.add(Batch(batch_id=bid, batch_type="follow-up", status=status, nces_year="2024_25",
+                    created_at="t", created_by="zz", meta_json={}))
+        s.add(BatchSchool(batch_id=bid, district_id="ZZATT", school_id=sid, name="S",
+                          is_charter="No", level="High", gslo="09", gshi="12",
+                          bands=["high"], included=True, source="stratified"))
+    s.flush()
+    assert EX._attempted_schools(s, ["ZZATT"]) == {"ZZATT": {"SA"}}   # draft's SD not counted
+
+
+@govdb
+def test_defer_excludes_rounds_exhausted_districts(gov_session):
+    """Review R2 (#159): a district whose 7->6 ROUNDS are exhausted must NOT defer — its un-executed
+    7->6s are depth-blocked zombies that can never fire, so deferring would hold its rediscovery
+    forever (the live Las Cruces deadlock)."""
+    gdb.init_precious_schema()
+    s = gov_session
+    # ZZR2A: un-executed 7->6, 0 rounds spent -> defers. ZZR2B: un-executed 7->6 BUT 2/2 rounds spent -> free.
+    for did, refs in (("ZZR2A", []), ("ZZR2B", ["ra", "rb"])):
+        s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                       "target, band, reason, status, created_at) VALUES (:d, 'h', 'representation', "
+                       "'7->6', :t, NULL, 'r', 'approved', :ts)"),
+                  {"d": did, "t": f"{did}:x", "ts": _M7.utcnow()})
+        for ref in refs:
+            s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                           "target, band, reason, status, executed_ref, created_at) VALUES (:d, 'h', "
+                           "'representation', '7->6', :t, NULL, 'r', 'executed', :ref, :ts)"),
+                      {"d": did, "t": f"{did}:y", "ref": ref, "ts": _M7.utcnow()})
+    s.flush()
+    assert EX._defer_76_districts(s, ["ZZR2A", "ZZR2B"], max_rounds=2) == {"ZZR2A"}
+    # with no cap, both defer (nothing is a zombie when rounds are unlimited)
+    assert EX._defer_76_districts(s, ["ZZR2A", "ZZR2B"], max_rounds=None) == {"ZZR2A", "ZZR2B"}
+
+
 def _seed_req(s, hh, did, route, band, status="approved"):
     s.execute(text(
         "INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, target, band, "
@@ -103,7 +178,7 @@ def test_compose_flips_approved_to_executed(gov_session, monkeypatch):
 
     # stub the NCES-heavy build + the row writer (their own tests cover them); both districts built
     monkeypatch.setattr(EX.Q1, "build_followup_batch",
-                        lambda year, bid, targets: ({"batch_id": bid, "districts":
+                        lambda year, bid, targets, **kw: ({"batch_id": bid, "districts":
                             [{"district_id": d} for d in targets]}, []))
     monkeypatch.setattr(EX.BSTORE, "create_batch", lambda sess, doc, **k: None)
 
@@ -123,6 +198,32 @@ def test_compose_flips_approved_to_executed(gov_session, monkeypatch):
 
 
 @govdb
+def test_compose_dry_run_previews_without_persist(gov_session, monkeypatch):
+    """#154 modal: dry_run returns the preview (districts + per-band query_strategy) and flips NOTHING —
+    create_batch is never called and the directives stay 'approved'."""
+    gdb.init_precious_schema()
+    s = gov_session
+    hh = "zzdry"
+    _seed_req(s, hh, "ZZD1", "7->2", "high")
+    s.flush()
+    created = {"called": False}
+    monkeypatch.setattr(EX.BSTORE, "create_batch", lambda *a, **k: created.__setitem__("called", True))
+    monkeypatch.setattr(EX.Q1, "build_followup_batch", lambda year, bid, targets, **kw: (
+        {"batch_id": bid, "districts": [{"district_id": "ZZD1", "name": "Dryville", "state": "IA",
+         "schools_by_band": {"high": {"query_strategy": "widen_queries",
+                                      "schools": [{"school_id": "s1"}]}}}]}, []))
+
+    out = EX.compose_followup_batch(handoff_hash=hh, actor="zz", session=s, dry_run=True)
+
+    assert out["dry_run"] is True and out["n_districts"] == 1
+    assert out["preview"][0]["district_id"] == "ZZD1"
+    assert out["preview"][0]["bands"][0]["query_strategy"] == "widen_queries"
+    assert created["called"] is False                      # NOTHING persisted
+    assert s.execute(text("SELECT status FROM extraction_request WHERE handoff_hash=:h"),
+                     {"h": hh}).scalar() == "approved"     # directive NOT flipped
+
+
+@govdb
 def test_compose_nothing_approved_is_noop(gov_session, monkeypatch):
     gdb.init_precious_schema()
     s = gov_session
@@ -134,11 +235,30 @@ def test_compose_nothing_approved_is_noop(gov_session, monkeypatch):
 
 
 # --- 7->6 direct alternate-rep re-dispatch ---
-def test_pick_alternate_prefers_image():
-    alts = [{"file": "pdftotext.txt", "kind": "text"}, {"file": "raster_p-1.png", "kind": "image"}]
-    assert EX.pick_alternate(alts)["file"] == "raster_p-1.png"
-    assert EX.pick_alternate([{"file": "a.txt", "kind": "text"}])["file"] == "a.txt"   # no image -> first
+def test_pick_alternate_prefers_higher_yield_text_over_image():
+    # #155: yield-ranked, NOT image-first — a full text extraction beats a raster page (Marion/Pittsylvania)
+    alts = [{"file": "pdftotext.txt", "kind": "text", "n_times": 86},
+            {"file": "raster_p-1.png", "kind": "image", "n_times": None}]
+    assert EX.pick_alternate(alts)["file"] == "pdftotext.txt"
+    # only an image alternate -> vision (the escalation, correctly chosen when text is exhausted)
+    assert EX.pick_alternate([{"file": "raster_p-1.png", "kind": "image"}])["file"] == "raster_p-1.png"
     assert EX.pick_alternate([]) is None
+
+
+def test_live_alternates_excludes_sent_unusable_and_binaries():
+    rec = {"reps": [
+        {"source": "capture:text", "filename": "harvest_slice.txt", "file_kind": "text", "n_times": 42, "usable": 1},
+        {"source": "capture:text", "filename": "pdftotext.txt", "file_kind": "text", "n_times": 86, "usable": 1},
+        {"source": "capture:bin", "filename": "original.pdf", "file_kind": "pdf", "n_times": None, "usable": 1},
+        {"source": "segment:main", "filename": "page.main.txt", "file_kind": "text", "n_times": 5, "usable": 1},
+        {"source": "raster", "filename": "raster_p-01.png", "file_kind": "image", "n_times": None, "usable": 1},
+        {"source": "capture:text", "filename": "broken.txt", "file_kind": "text", "n_times": 0, "usable": 0},
+    ]}
+    got = EX.live_alternates(rec, sent_files={"harvest_slice.txt"})
+    files = {a["file"] for a in got}
+    assert files == {"pdftotext.txt", "raster_p-01.png"}   # sent/pdf/segment/unusable all excluded
+    # feeding the live set to pick_alternate -> the full text wins over the raster
+    assert EX.pick_alternate(got)["file"] == "pdftotext.txt"
 
 
 def test_build_alternate_input_synthesizes_send_and_image_override():
@@ -184,7 +304,8 @@ def test_execute_alternate_dispatch_flips_and_records(gov_session, monkeypatch):
                                                                   "name": "Z", "state": "AK"})
     monkeypatch.setattr(EX.REL, "load_district_records", lambda sess, d: [
         {"rec_key": "ZZ76D:abc", "url": "http://x", "signals": {}, "intended_schools": [],
-         "reps": [{"filename": "raster_p-1.png", "file_kind": "image", "n_chars": None, "n_times": None}]}])
+         "reps": [{"source": "raster", "filename": "raster_p-1.png", "file_kind": "image",
+                   "n_chars": None, "n_times": None, "usable": 1}]}])
     monkeypatch.setattr(EX.REL, "district_fingerprints", lambda sess, d: {"config": "c", "labels": "l", "data": "x"})
     monkeypatch.setattr(EX.C6, "load_configs", lambda: {"image": {"voters": ["v1", "v2"], "judge": "j",
                                                                   "prompts": {"default": "p"}}})
@@ -218,11 +339,13 @@ def test_execute_alternate_dispatch_flips_and_records(gov_session, monkeypatch):
 def test_execute_alternate_dispatch_depth_guard_blocks(gov_session, monkeypatch):
     gdb.init_precious_schema()
     s = gov_session
-    # two prior EXECUTED 7->6 rounds for ZZ76G/None -> at the default max_request_rounds (2) -> blocked
-    for _ in range(2):
+    # two prior EXECUTED 7->6 ROUNDS = two DISTINCT executed_ref (#153: rounds, not rows — several
+    # bundled rows share one executed_ref) -> at the default max_request_rounds (2) -> blocked.
+    for ref in ("round_a", "round_b"):
         s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
-                       "target, band, reason, status, created_at) VALUES ('ZZ76G', 'h', 'representation', "
-                       "'7->6', 'ZZ76G:x', NULL, 'r', 'executed', :ts)"), {"ts": _M7.utcnow()})
+                       "target, band, reason, status, executed_ref, created_at) VALUES ('ZZ76G', 'h', "
+                       "'representation', '7->6', 'ZZ76G:x', NULL, 'r', 'executed', :ref, :ts)"),
+                  {"ref": ref, "ts": _M7.utcnow()})
     s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, target, "
                    "band, params_json, reason, status, created_at) VALUES ('ZZ76G', 'h2', 'representation', "
                    "'7->6', 'ZZ76G:x', NULL, :p, 'r', 'approved', :ts)"),
@@ -232,6 +355,55 @@ def test_execute_alternate_dispatch_depth_guard_blocks(gov_session, monkeypatch)
                          "AND district_id='ZZ76G'")).scalar()
     out = EX.execute_alternate_dispatch(rid, session=s)
     assert out["ok"] is False and out.get("blocked") is True
+
+
+@govdb
+def test_bundle_multiple_7to6_into_one_round(gov_session, monkeypatch):
+    """#153 — two approved 7->6s for one district ride ONE handoff and share ONE executed_ref (one
+    round), and each record picks its yield-ranked alternate."""
+    gdb.init_precious_schema()
+    s = gov_session
+    for tgt, sent in (("ZZB:r1", "harvest_slice.txt"), ("ZZB:r2", "harvest_slice.txt")):
+        s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                       "target, band, params_json, reason, status, created_at) VALUES ('ZZB', 'hb', "
+                       "'representation', '7->6', :t, NULL, :p, 'r', 'approved', :ts)"),
+                  {"t": tgt, "p": json.dumps({"sent_file": sent}), "ts": _M7.utcnow()})
+    s.flush()
+
+    def _recs(sess, d):
+        return [{"rec_key": f"ZZB:{r}", "url": f"http://{r}", "signals": {}, "intended_schools": [],
+                 "reps": [{"source": "capture:text", "filename": "pdftotext.txt", "file_kind": "text",
+                           "n_chars": 9, "n_times": 80, "usable": 1},
+                          {"source": "raster", "filename": "raster_p-1.png", "file_kind": "image",
+                           "n_chars": None, "n_times": None, "usable": 1}]} for r in ("r1", "r2")]
+    monkeypatch.setattr(EX.REL, "load_district", lambda sess, d: {"district_id": d, "district_dir": "dd",
+                                                                  "name": "Z", "state": "AK"})
+    monkeypatch.setattr(EX.REL, "load_district_records", _recs)
+    monkeypatch.setattr(EX.REL, "district_fingerprints", lambda sess, d: {"config": "c", "labels": "l", "data": "x"})
+    monkeypatch.setattr(EX.C6, "load_configs", lambda: {"image": {"voters": ["v"], "judge": "j", "prompts": {"default": "p"}}})
+    monkeypatch.setattr(EX.COST6, "load_cost_model", lambda: {"provenance": "t", "assumptions": {}, "models": {}})
+    captured = {}
+    def _assemble(di, c, cm, ov):
+        (m, records), = di
+        captured["n_records"] = len(records)
+        captured["files"] = [r["send"][0]["file"] for r in records]
+        return {"districts": [{"district_id": "ZZB"}], "cost": {"total_usd": 0.01, "n_reps": len(records), "provenance": "t"}, "generated_at": "t"}
+    monkeypatch.setattr(EX.PKG6, "assemble_package", _assemble)
+    monkeypatch.setattr(EX.HND, "freeze", lambda pkg, c, fp, created_by: {"handoff_hash": "BUND1",
+                        "created_at": "t", "created_by": created_by, "districts": pkg["districts"], "cost": pkg["cost"], "councils": c})
+    monkeypatch.setattr(EX.HND, "handoff_filename", lambda doc: "handoff_BUND1_t.json")
+    monkeypatch.setattr(EX.HND, "write", lambda doc, root=None: None)
+    monkeypatch.setattr(EX.H6, "record_dispatch", lambda sess, doc, path, actor, metas: "hid")
+
+    out = EX.compose_alternate_bundle("ZZB", actor="zz", session=s)
+    s.flush()
+    assert out["ok"] and out["n_bundled"] == 2 and out["handoff_hash"] == "BUND1"
+    assert captured["n_records"] == 2                          # ONE handoff, both records
+    assert captured["files"] == ["pdftotext.txt", "pdftotext.txt"]   # each picked the full text, not raster
+    # BOTH directives flipped to executed, sharing ONE executed_ref = one round
+    refs = [r[0] for r in s.execute(text(
+        "SELECT executed_ref FROM extraction_request WHERE district_id='ZZB' AND status='executed'")).all()]
+    assert refs == ["BUND1", "BUND1"]
 
 
 @govdb
@@ -252,7 +424,7 @@ def test_compose_excludes_benchmark_districts(gov_session, monkeypatch):
     s.flush()
 
     monkeypatch.setattr(EX.Q1, "build_followup_batch",
-                        lambda year, bid, targets: ({"batch_id": bid, "districts":
+                        lambda year, bid, targets, **kw: ({"batch_id": bid, "districts":
                             [{"district_id": d} for d in targets]}, []))
     monkeypatch.setattr(EX.BSTORE, "create_batch", lambda sess, doc, **k: None)
 
@@ -278,7 +450,7 @@ def test_compose_does_not_flip_skipped_districts(gov_session, monkeypatch):
     s.flush()
 
     monkeypatch.setattr(EX.Q1, "build_followup_batch",
-                        lambda year, bid, targets: (
+                        lambda year, bid, targets, **kw: (
                             {"batch_id": bid, "districts": [{"district_id": "ZZSK2"}]},
                             [{"district_id": "ZZSK1", "reason": "not in NCES lea_info for the year"}]))
     monkeypatch.setattr(EX.BSTORE, "create_batch", lambda sess, doc, **k: None)

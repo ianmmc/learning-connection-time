@@ -25,6 +25,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from infrastructure.acquisition.common import cache_ingest as CI
+from infrastructure.acquisition.common import config_loader as CFG
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import paths
 
@@ -45,6 +46,19 @@ def query_for(school: str, state: str) -> str:
     return f"{school} {state} bell schedule start and end times"
 
 
+def differentiated_queries(school: str, state: str) -> list:
+    """The differentiated SERP query set for a 7->2 REDISCOVER follow-up (#160): materially different
+    phrasings from the default `query_for` wave-1 query, rendered per school. A 7->2 round casts the
+    WHOLE set at once (cheap SERP, max recall in one round). Config-as-data
+    (`common/config/stage2_query_templates.json`) so it's tunable without code and the judge can later
+    feed the same seam. Order preserved (config order); templates use only {school} + {state}.
+
+    FOUNDATION ONLY (Chunk 2, epic #163): NOT yet consumed by discovery — the follow-up builder threads
+    these in and Stage-2 discovery consumes them in Chunk 4."""
+    return [tmpl.format(school=school, state=state)
+            for tmpl in CFG.values("stage2_query_templates")]
+
+
 def load_batch(path) -> dict:
     return json.loads(Path(path).read_text())
 
@@ -59,18 +73,31 @@ def find_district(batch: dict, district_id: str) -> dict:
 def build_roster(district: dict) -> list:
     """Per-school targeting list from a Stage 1 batch district entry's schools_by_band --
     NEVER recomputed from NCES CSV. One row per distinct school_id (a school spanning
-    multiple bands appears once, with all its bands listed)."""
-    by_school = {}
+    multiple bands appears once, with all its bands listed). Each row carries `query` (the default
+    wave-1 query, kept for provenance + Wave 2) and `queries` (the list Wave 1 actually runs).
+
+    #160: a follow-up band tagged `query_strategy=='widen_queries'` (its untried schools exhausted)
+    casts the WIDER net — the school's `queries` gain the differentiated SERP set. `new_schools`
+    (untried schools to try) and first-run batches keep the single default query."""
+    by_school, widen = {}, set()
     for band in BANDS:
-        for s in district.get("schools_by_band", {}).get(band, {}).get("schools", []):
+        bd = district.get("schools_by_band", {}).get(band, {})
+        strat = bd.get("query_strategy")
+        for s in bd.get("schools", []):
             row = by_school.setdefault(
                 s["school_id"], {"school_id": s["school_id"], "school": s["name"], "bands": []}
             )
             if band not in row["bands"]:
                 row["bands"].append(band)
+            if strat == "widen_queries":
+                widen.add(s["school_id"])
     roster = list(by_school.values())
+    state = district["state"]
     for r in roster:
-        r["query"] = query_for(r["school"], district["state"])
+        r["query"] = query_for(r["school"], state)
+        r["queries"] = [r["query"]]
+        if r["school_id"] in widen:
+            r["queries"] += differentiated_queries(r["school"], state)
     return roster
 
 
@@ -174,15 +201,23 @@ def run_wave1(roster: list, domain: str, search_fn) -> list:
     attribute. The name lands in `wave1_provider` and flows through flatten() into candidates.json."""
     default_provider = getattr(search_fn, "provider_name", "unknown_wave1")
     for r in roster:
-        provider = default_provider
-        try:
-            res = search_fn(r["query"], domain)
-            provider, urls = res if isinstance(res, tuple) else (default_provider, res)
-        except SystemExit:
-            raise
-        except Exception as e:
-            urls = []
-            print(f"   [w1/{r['school'][:24]}] ERR {str(e)[:60]}")
+        provider = default_provider   # NOTE: with multiple queries (#160), the LAST query's provider
+        seen, urls = set(), []        # wins wave1_provider — per-school provenance, lossy on mid-set failover
+        # run every query for the school (#160: a widen-strategy follow-up school has the default +
+        # the differentiated set), UNIONing the URLs (order-preserving dedup).
+        for q in r.get("queries") or [r["query"]]:
+            try:
+                res = search_fn(q, domain)
+                provider, qurls = res if isinstance(res, tuple) else (default_provider, res)
+            except SystemExit:
+                raise
+            except Exception as e:
+                qurls = []
+                print(f"   [w1/{r['school'][:24]}] ERR {str(e)[:60]}")
+            for u in qurls:
+                if u not in seen:
+                    seen.add(u)
+                    urls.append(u)
         r["wave1_raw_urls"] = urls
         r["wave1_provider"] = provider
         r["wave1_gated"] = gate_urls(urls, domain)
@@ -307,11 +342,21 @@ def write_discovery(district: dict, roster: list, batch_id: str) -> Path:
     }
     disc_path.write_text(json.dumps(discovery_doc, indent=2))
 
+    candidates = flatten(roster)
+    # #161: seed URLs (7->3 recapture directives carried on the follow-up batch) are pre-specified
+    # capture targets — inject them into the candidate list (deduped by normalized URL, tool
+    # 'seed_7to3') so Stage 3 captures them through the existing candidates.json pipe, no discovery and
+    # no Stage-3 change. Dormant today (no producer of seed_urls), wired for when the judge feeds them.
+    have = {_normalize_url(c["url"]) for c in candidates}
+    for u in district.get("seed_urls") or []:
+        if _normalize_url(u) not in have:
+            candidates.append({"url": u, "schools": [], "tools": ["seed_7to3"]})
+            have.add(_normalize_url(u))
     candidates_doc = {
         "district_id": district["district_id"],
         "name": district["name"],
         "domain": district.get("domain", ""),
-        "candidates": flatten(roster),
+        "candidates": candidates,
     }
     cand_path.write_text(json.dumps(candidates_doc, indent=2))
     return d

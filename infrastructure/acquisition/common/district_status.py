@@ -69,8 +69,13 @@ class StateEvent(gdb.Base):
 
 # current_state: the derived snapshot (one row per district). furthest_stage = MAX(stage) ever
 # reached (drives already_attempted, monotonic even if a re-discovery event has a lower stage);
-# the displayed snapshot comes from the latest STAGE event; name/state fall back to the latest
-# event of any kind. event_id (serial) is the definitive ordering tiebreaker within a second.
+# the displayed snapshot comes from the latest STAGE event. name/state resolve to the latest
+# NON-NULL/non-empty value across ALL events (#165: not every writer carries them, and the old
+# latest-row-wins fallback nulled the header for exactly the districts furthest along — every
+# extracted district read state NULL). batch_id deliberately stays event-accurate (the latest
+# stage event's value, NULL included): batch membership's authority is batch_district, and
+# faking the last-seen batch onto an ad-hoc dispatch's extraction would mislead. event_id
+# (serial) is the definitive ordering tiebreaker within a second.
 CURRENT_STATE_VIEW = """
 CREATE OR REPLACE VIEW current_state AS
 WITH max_stage AS (
@@ -78,24 +83,36 @@ WITH max_stage AS (
 ),
 latest_stage AS (
   SELECT DISTINCT ON (district_id)
-    district_id, name, state, stage_name, outcome, topology, batch_id
+    district_id, stage_name, outcome, topology, batch_id
   FROM state_event WHERE stage IS NOT NULL
+  ORDER BY district_id, event_id DESC
+),
+latest_name AS (
+  SELECT DISTINCT ON (district_id) district_id, name
+  FROM state_event WHERE name IS NOT NULL AND name <> ''
+  ORDER BY district_id, event_id DESC
+),
+latest_state_val AS (
+  SELECT DISTINCT ON (district_id) district_id, state
+  FROM state_event WHERE state IS NOT NULL AND state <> ''
   ORDER BY district_id, event_id DESC
 ),
 latest_any AS (
   SELECT DISTINCT ON (district_id)
-    district_id, name AS any_name, state AS any_state,
+    district_id,
     event_type AS last_event_type, checkpoint AS last_checkpoint, created_at AS last_event_at
   FROM state_event ORDER BY district_id, event_id DESC
 )
 SELECT m.district_id,
-       COALESCE(ls.name, la.any_name)  AS name,
-       COALESCE(ls.state, la.any_state) AS state,
+       ln.name,
+       lsv.state,
        m.furthest_stage, ls.stage_name, ls.outcome, ls.topology, ls.batch_id,
        la.last_event_type, la.last_checkpoint, la.last_event_at
 FROM max_stage m
-LEFT JOIN latest_stage ls ON ls.district_id = m.district_id
-LEFT JOIN latest_any   la ON la.district_id = m.district_id
+LEFT JOIN latest_stage     ls  ON ls.district_id  = m.district_id
+LEFT JOIN latest_name      ln  ON ln.district_id  = m.district_id
+LEFT JOIN latest_state_val lsv ON lsv.district_id = m.district_id
+LEFT JOIN latest_any       la  ON la.district_id  = m.district_id
 """
 
 INSERT_STATE_EVENT = text(

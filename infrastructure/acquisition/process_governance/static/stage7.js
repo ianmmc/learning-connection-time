@@ -92,26 +92,43 @@
                 : r.status === "rejected" ? `<span class="badge badge-neutral">rejected</span>`
                 : r.status === "executed" ? `<span class="badge badge-accent">executed</span>`
                 : `<span class="badge badge-warn">pending</span>`;
+    const lin = r.lineage || null;                       // #154: where it went / why it can't
+    const blocked = lin && lin.blocked;
     let actions;
-    if (r.status === "pending") {
+    if (blocked) {
+      // a depth-exhausted (zombie) 7->6 — never executable; only rejectable/reopenable
+      actions = `<button class="btn btn-ghost btn-mini" data-review="rejected" data-id="${r.request_id}">Reject</button>`;
+    } else if (r.status === "pending") {
       actions = `<button class="btn btn-secondary btn-mini" data-review="approved" data-id="${r.request_id}">Approve</button>
          <button class="btn btn-ghost btn-mini" data-review="rejected" data-id="${r.request_id}">Reject</button>`;
     } else if (r.status === "approved" && r.route === "7->6") {
-      // existing-rep re-dispatch — a single-directive action, fires a new Stage-6 dispatch
+      // existing-rep re-dispatch — executes the district's approved 7->6s as ONE bundle (#153)
       actions = `<button class="btn btn-primary btn-mini" data-execute="${r.request_id}">Execute re-dispatch</button>
          <button class="btn btn-ghost btn-mini" data-review="pending" data-id="${r.request_id}">Reopen</button>`;
     } else if (r.status === "approved" && isNewWork(r.route)) {
       actions = `<span class="muted s7-hint">→ queued for a follow-up batch (use “Compose follow-up batch”)</span>
          <button class="btn btn-ghost btn-mini" data-review="pending" data-id="${r.request_id}">Reopen</button>`;
     } else if (r.status === "executed") {
-      actions = r.executed_ref ? `<span class="muted s7-hint">→ ${esc(r.executed_ref)}</span>` : "";
+      actions = "";                                      // lineage line below shows where it went
     } else {
       actions = `<button class="btn btn-ghost btn-mini" data-review="pending" data-id="${r.request_id}">Reopen</button>`;
     }
+    // lineage line: executed -> its target + live state; blocked/deferred -> why it can't fire
+    let lineage = "";
+    if (lin && lin.kind === "handoff") {
+      lineage = `<div class="s7-lineage muted">→ handoff <code>${esc(lin.ref)}</code> · ${esc(lin.state)}${lin.n_districts ? ` (${lin.n_extracted}/${lin.n_districts})` : ""}</div>`;
+    } else if (lin && lin.kind === "batch") {
+      lineage = `<div class="s7-lineage muted">→ follow-up <code>${esc(lin.ref)}</code> · ${esc(lin.state)}</div>`;
+    } else if (blocked) {
+      lineage = `<div class="s7-lineage s7-blocked">⛔ ${esc(lin.reason)}</div>`;
+    } else if (lin && lin.deferred) {
+      lineage = `<div class="s7-lineage s7-deferred">⏸ ${esc(lin.reason)}</div>`;
+    }
     const rev = r.reviewed_by ? `<div class="s7-rev muted">${esc(r.status)} by ${esc(r.reviewed_by)}${r.reviewed_at ? " · " + esc(r.reviewed_at) : ""}</div>` : "";
-    return `<div class="s7-req">
+    return `<div class="s7-req${blocked ? " s7-req-blocked" : ""}">
       <div class="s7-req-top"><span class="s7-route">${esc(r.route)}</span> <span class="muted">${esc(r.altitude)}${r.band ? " · " + esc(r.band) : ""}</span> ${badge}</div>
       <div class="s7-req-reason">${esc(r.reason)}</div>
+      ${lineage}
       <div class="btn-row">${actions}</div>${rev}</div>`;
   }
 
@@ -152,31 +169,97 @@
     loadDistricts();            // refresh the left-pane pending badge
   }
 
-  // 7->6: fire an approved alternate-rep re-dispatch (a new Stage-6 dispatch; re-enters Stage 7).
+  // 7->6: fire the district's approved alternate-rep re-dispatches as ONE BUNDLE (#153: a single
+  // new Stage-6 dispatch = one depth-guard round; re-enters Stage 7). The consent copy must say so —
+  // clicking Execute on one card executes ALL of this district's approved 7->6s together.
   async function executeRequest(id, did) {
-    if (!confirm("Re-dispatch the alternate representation? This creates a new Stage-6 dispatch to re-extract (a subsequent, budget-gated Stage-7 run).")) return;
+    if (!confirm("Execute this district's approved 7->6 re-dispatches as ONE bundle? All approved alternate-rep directives for this district ride a single new Stage-6 dispatch (= one depth-guard round), re-extracted by a subsequent, budget-gated Stage-7 run.")) return;
     let out;
     try { out = await api(`/api/extract/execute/${id}`, postJSON({ actor: "ian" })); }
     catch (e) { alert("Execute failed: " + e.message); return; }
-    alert(`Re-dispatched ${out.alt_file || "the alternate rep"} → new handoff ${out.handoff_hash}. Run Stage 7 on it to extract (budget-gated).`);
+    const files = (out.alt_files || []).join(", ") || "the alternate rep(s)";
+    let msg = `Bundled ${out.n_bundled || 1} re-dispatch(es) (${files}) → new handoff ${out.handoff_hash} = one round. Run Stage 7 on it to extract (budget-gated).`;
+    if (out.skipped && out.skipped.length) msg += `\nSkipped ${out.skipped.length} directive(s) with no dispatchable alternate left.`;
+    alert(msg);
     openDistrict(did);
     loadDistricts();
   }
 
-  // 7->2/7->3/7->1: sweep approved NEW-work directives (this run) into ONE draft follow-up batch.
+  // 7->2/7->3/7->1: PREVIEW the follow-up in a modal (#154), then compose on confirm (cancel = no-op).
   async function composeFollowup(handoffHash, did) {
-    if (!confirm("Compose a follow-up batch from the approved 7->2/7->3/7->1 directives? It lands as a DRAFT for review at gate@1 (Stage 1).")) return;
+    let prev;
+    try { prev = await api(`/api/extract/compose-followup/preview`, postJSON({ handoff_hash: handoffHash || null, actor: "ian" })); }
+    catch (e) { alert("Compose preview failed: " + e.message); return; }
+    showComposeModal(prev, handoffHash, did);
+  }
+
+  let composeEscHandler = null;   // one live ESC handler per open modal — removed on ANY close path
+  function closeComposeModal() {
+    const m = $g("#s7-compose-modal"); if (m) m.remove();
+    if (composeEscHandler) { document.removeEventListener("keydown", composeEscHandler); composeEscHandler = null; }
+  }
+
+  function showComposeModal(prev, handoffHash, did) {
+    closeComposeModal();
+    const districts = (prev.preview || []).map((d) => {
+      const bands = d.bands.map((b) => `${esc(b.band)}${b.query_strategy === "widen_queries" ? " <span class=\"s7-strat\">widen queries</span>" : b.query_strategy === "new_schools" ? " <span class=\"s7-strat\">new schools</span>" : ""} <span class=\"muted\">(${b.n_schools})</span>`).join(", ");
+      const seeds = (d.seed_urls && d.seed_urls.length) ? ` · ${d.seed_urls.length} seed URL(s)` : "";
+      return `<li><b>${esc(d.name || d.district_id)}</b> <span class="muted">${esc(d.state)}</span> — ${bands}${seeds}</li>`;
+    }).join("");
+    const notes = [];
+    if (prev.spilled && prev.spilled.length) notes.push(`${prev.spilled.length} district(s) spill past the 12-cap (compose again for the next batch)`);
+    if (prev.deferred && prev.deferred.length) notes.push(`${prev.deferred.length} deferred — execute the district's 7->6 first (#159)`);
+    if (prev.blocked && prev.blocked.length) notes.push(`${prev.blocked.length} blocked by the depth guard`);
+    if (prev.benchmark_excluded && prev.benchmark_excluded.length) notes.push(`${prev.benchmark_excluded.length} benchmark-walled (batch_00000)`);
+    const nothing = !prev.batch_id || !prev.n_districts;
+    const body = nothing
+      ? `<div class="empty">Nothing to compose — no approved NEW-work directives make it into a batch.${notes.length ? "<br/>" + esc(notes.join("; ")) + "." : ""}</div>`
+      : `<p>This will compose <b>${prev.batch_id}</b>: <b>${prev.n_districts}</b> district(s), <b>${prev.n_requests}</b> directive(s), then <b>auto-flow to gate@5</b> (gate@1 auto-pass → discovery → capture → process; gate@6 dispatch stays manual).</p>
+         <ul class="s7-compose-list">${districts}</ul>
+         ${notes.length ? `<div class="s7-compose-notes muted">Also: ${esc(notes.join("; "))}.</div>` : ""}`;
+    const overlay = document.createElement("div");
+    overlay.id = "s7-compose-modal";
+    overlay.className = "s7-modal";
+    overlay.innerHTML = `<div class="s7-modal-card">
+      <div class="s7-modal-head"><span class="s7-modal-title">Compose follow-up batch</span>
+        <button class="btn btn-ghost btn-mini" data-close>Close</button></div>
+      <div class="s7-modal-body">${body}</div>
+      <div class="s7-modal-foot">
+        <button class="btn btn-ghost" data-cancel>Cancel</button>
+        ${nothing ? "" : `<button class="btn btn-primary" data-confirm>Compose &amp; auto-flow to gate@5</button>`}
+      </div></div>`;
+    overlay.querySelector("[data-close]").onclick = closeComposeModal;
+    overlay.querySelector("[data-cancel]").onclick = closeComposeModal;   // cancel: no side effect
+    overlay.onclick = (e) => { if (e.target === overlay) closeComposeModal(); };  // click-out cancels
+    const confirmBtn = overlay.querySelector("[data-confirm]");
+    if (confirmBtn) confirmBtn.onclick = () => { closeComposeModal(); doCompose(handoffHash, did); };
+    composeEscHandler = (ev) => { if (ev.key === "Escape") closeComposeModal(); };
+    document.addEventListener("keydown", composeEscHandler);
+    (VIEWS_stage7() || document.body).appendChild(overlay);
+  }
+
+  function VIEWS_stage7() { return document.getElementById("stage7view"); }
+
+  async function doCompose(handoffHash, did) {
     let out;
     try { out = await api(`/api/extract/compose-followup`, postJSON({ handoff_hash: handoffHash || null, actor: "ian" })); }
     catch (e) { alert("Compose failed: " + e.message); return; }
-    if (!out.batch_id) { alert("Nothing composed — no approved NEW-work directives."); }
-    else {
-      let msg = `Draft follow-up ${out.batch_id}: ${out.n_districts} district(s), ${out.n_requests} directive(s) executed. Review at gate@1.`;
-      if (out.spilled && out.spilled.length) msg += `\nSpilled ${out.spilled.length} district(s) past the 12-cap (compose again for the next batch).`;
-      if (out.blocked && out.blocked.length) msg += `\nBlocked ${out.blocked.length} by the depth guard.`;
-      alert(msg);
-    }
+    let msg = `Draft follow-up ${out.batch_id}: ${out.n_districts} district(s), ${out.n_requests} directive(s) executed.`;
+    if (out.autoflow_started) msg += `\n\nAuto-flowing to gate@5 in the background… (watch Stage 1/2/3/4, review at gate@5).`;
+    alert(msg);
+    if (out.autoflow_started) pollAutoflow(out.batch_id);
     openDistrict(did);
     loadDistricts();
+  }
+
+  // #157: poll the follow-up auto-flow until it lands at gate@5 (or halts), then notify.
+  async function pollAutoflow(batchId) {
+    let st;
+    try { st = await api(`/api/followup/autoflow/${batchId}`); }
+    catch (_) { return; }
+    if (st.state === "running") { setTimeout(() => pollAutoflow(batchId), 3000); return; }
+    if (st.state === "done") alert(`Follow-up ${batchId} reached gate@5 (discovery→capture→process done). Review + label at Stage 5, then dispatch at gate@6.`);
+    else if (st.state === "halted") alert(`Follow-up ${batchId} auto-flow HALTED: ${st.error || ""}`);
+    else if (st.state === "error") alert(`Follow-up ${batchId} auto-flow error: ${st.error || ""}`);
   }
 })();

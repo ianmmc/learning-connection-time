@@ -27,6 +27,10 @@ class _Result:
     def first(self):
         return self._rows[0] if self._rows else None
 
+    def __iter__(self):
+        # direct iteration (e.g. _defer_76_districts's `{r[0] for r in rows}`) — tuple-ish rows
+        return iter([tuple(r.values()) for r in self._rows])
+
 
 class _Con:
     """Returns queued results in call order (one per execute)."""

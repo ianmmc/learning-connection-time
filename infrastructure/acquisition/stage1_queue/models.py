@@ -59,6 +59,9 @@ class BatchDistrict(gdb.Base):
     # recomputed from included batch_school rows when the receipt/view is built.
     band_meta: Mapped[dict] = mapped_column(JSON, default=dict)
     included: Mapped[bool] = mapped_column(Boolean, default=True)          # soft-reject (gate@1 edit)
+    # follow-up shaping (#161): per-district {"seed_urls": [...]} for a 7->3 recapture directive.
+    # Nullable (only follow-up batches set it); additive column via common/db.py _PRECIOUS_ALTERS.
+    followup_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
 
 class BatchSchool(gdb.Base):

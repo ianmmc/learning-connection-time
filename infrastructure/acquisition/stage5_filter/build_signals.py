@@ -362,6 +362,34 @@ def cluster_district(items: list, splits: set):
     return out
 
 
+def canonical_invariant_violations(sess) -> list:
+    """The rec_keys that break the canonical invariant (#158): a MULTI-MEMBER cluster's
+    REPRESENTATIVE (is_cluster_rep=1, cluster_id set) that ALSO carries duplicate_of. Such a record —
+    and every sibling in its cluster — is silently dropped from release/dispatch
+    (CANONICAL_RECORD_WHERE matches neither). Empty list == healthy.
+    NOT a violation: a SINGLETON (cluster_id NULL) carrying duplicate_of — that's the normal shape of
+    an unclustered exact content-dup (correctly suppressed; its first-seen partner is canonical), and
+    singletons also carry is_cluster_rep=1 (cluster_district emits (None,1,1)).
+    Used by the repair below and its regression test."""
+    return [r[0] for r in sess.execute(text(
+        "SELECT rec_key FROM record WHERE is_cluster_rep = 1 AND cluster_id IS NOT NULL "
+        "AND duplicate_of IS NOT NULL"))]
+
+
+def repair_canonical_invariant(sess) -> int:
+    """Backfill-repair existing violations (#158): clear duplicate_of on every MULTI-MEMBER cluster
+    representative that still carries it, restoring exactly one canonical member per cluster.
+    Scoped to cluster_id IS NOT NULL — singleton duplicate_of rows are legitimate dedup state and are
+    never touched. Idempotent — a second run finds nothing. Returns the number of records repaired.
+    The forward path (the cluster-write above) already enforces the invariant on ingest; this heals
+    rows written before the fix."""
+    n = sess.execute(text(
+        "UPDATE record SET duplicate_of = NULL "
+        "WHERE is_cluster_rep = 1 AND cluster_id IS NOT NULL "
+        "AND duplicate_of IS NOT NULL")).rowcount
+    return n
+
+
 # ----------------------------- labeled topology -----------------------------
 def derive_labeled_topology(primaries: list, nces_count) -> str:
     """primaries: primary_label strings for a district's labeled CANONICAL records (non-dup,
@@ -995,8 +1023,22 @@ def ingest_district(sess, ddir: Path, *, splits: set, batches: dict, nces: dict)
 
     # near-duplicate clustering (content-similarity; honors human splits) -> UPDATE records
     for rk, (cid, is_rep, size) in cluster_district(cluster_items, splits).items():
-        sess.execute(text("UPDATE record SET cluster_id=:cid, is_cluster_rep=:rep, "
-                          "cluster_size=:sz WHERE rec_key=:rk"),
+        # INVARIANT (#158): a MULTI-MEMBER cluster's REPRESENTATIVE is the canonical record for its
+        # cluster, so it must NOT itself carry duplicate_of. Content-hash dedup (duplicate_of,
+        # first-seen wins) and shingle clustering (is_cluster_rep, by tier/score) pick their keeper
+        # INDEPENDENTLY and can disagree — when the chosen rep happens to be a content-dup of a
+        # cluster sibling, the release CANONICAL_RECORD_WHERE
+        # (`duplicate_of IS NULL AND (is_cluster_rep=1 OR cluster_id IS NULL)`) matches NEITHER
+        # member and the whole cluster is silently dropped from dispatch. Clearing the rep's
+        # duplicate_of makes it the one canonical member; non-reps are excluded by cluster membership
+        # regardless. SCOPE: multi-member reps ONLY (cid is not None) — singletons also arrive here
+        # with is_rep=1 (cluster_district emits (None,1,1)), and a singleton carrying duplicate_of is
+        # a LEGITIMATE state (an unclustered exact content-dup, correctly suppressed while its
+        # first-seen partner is canonical); clearing those would wipe content-hash dedup on every
+        # re-ingest. Deterministic (rep choice unchanged) and idempotent across re-ingest.
+        sess.execute(text("UPDATE record SET cluster_id=:cid, is_cluster_rep=:rep, cluster_size=:sz"
+                          + (", duplicate_of=NULL" if (is_rep and cid is not None) else "")
+                          + " WHERE rec_key=:rk"),
                      {"cid": cid, "rep": is_rep, "sz": size, "rk": rk})
 
     # guessed topology (coarse, deterministic, from SIGNALS — noisy; kept to measure the heuristic)

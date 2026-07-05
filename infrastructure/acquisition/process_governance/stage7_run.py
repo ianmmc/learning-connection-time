@@ -296,6 +296,7 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
             continue
         pd = _run_district(did, _district_name(doc, did), by_district[did], councils,
                            ddirs.get(did), use_judge)
+        pd["state"] = _district_state(doc, did)   # onto pd BEFORE receipt/persist (#165)
         gov.record(did, (pd.get("telemetry") or {}).get("cost_usd", 0.0))
         results["districts"][did] = pd
         if persist:
@@ -377,6 +378,16 @@ def _district_name(doc: dict, did: str) -> str:
         if d.get("district_id") == did:
             return d.get("name", "")
     return ""
+
+
+def _district_state(doc: dict, did: str) -> str | None:
+    """The district's US state from the frozen handoff entry — carried onto pd so the persist
+    path's state_event doesn't write state NULL (#165: the old NULL nulled the current_state
+    header for every extracted district)."""
+    for d in doc.get("districts", []):
+        if d.get("district_id") == did:
+            return d.get("state") or None
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -524,7 +535,7 @@ def persist_run_session(s, results: dict, *, created_by: str = "auto:stage7",
                 detail_json=json.dumps({k: u[k] for k in ("starts", "ends", "gross") if k in u}),
                 rec_key=u.get("rec_key"), source_file=u.get("source_file")))
         s.execute(DS.INSERT_STATE_EVENT, {
-            "district_id": did, "name": pd.get("name", ""), "state": None, "stage": 7,
+            "district_id": did, "name": pd.get("name", ""), "state": pd.get("state"), "stage": 7,
             "stage_name": "extract", "checkpoint": None, "event_type": "extracted",
             "outcome": "extracted", "topology": None, "batch_id": None,
             "fingerprints_json": None, "actor": created_by, "note": hh,
@@ -559,8 +570,10 @@ def persist_run(results: dict, *, created_by: str = "auto:stage7", receipt_path=
 # ---------------------------------------------------------------------------
 def _district_request_inputs(session, result: dict):
     """The DB-derived inputs the pure detector (`requests.detect_requests`) needs for one district:
-    claimed bands + the band's schools (`district_target`), and the alternate reps per sent record
-    (`representation`, the usable reps of a rec_key other than the one we sent — drives 7→6 vs 7→3)."""
+    claimed bands + the band's schools (`district_target`), the alternate reps per sent record
+    (`representation`, the usable reps of a rec_key other than the one we sent — drives 7→6 vs 7→3),
+    and the district-wide covered bands (`school_fact` across all extractions — so a partial result
+    can't fabricate band gaps). Returns (claimed, band_schools, alts, covered)."""
     did = result["district_id"]
     # ALL files sent per rec_key (#145): Stage 6 may dispatch several reps of one record, and a rep we
     # already sent (and that just failed) must never be offered back as its own 7->6 "alternate".
@@ -577,23 +590,31 @@ def _district_request_inputs(session, result: dict):
         # Dispatchable kinds only (#140): binaries (pdf/bin) and chrome segments are usable=1 in the
         # Stage-4 sense ("produced"), but a 7->6 alternate must be something a council can READ —
         # a pdf alternate would route to the text council and be read as raw bytes (paid mojibake).
-        for fn, kind in session.execute(
-                text("SELECT filename, file_kind FROM representation WHERE rec_key = :k "
+        # n_times drives the yield-aware ranking (#155): a fuller text extraction beats a raster image.
+        for fn, kind, nt in session.execute(
+                text("SELECT filename, file_kind, n_times FROM representation WHERE rec_key = :k "
                      "AND usable = 1 AND file_kind IN ('text', 'image') "
                      "AND source NOT LIKE 'segment:%'"),
                 {"k": rec_key}).all():
             if fn not in sent_files:
-                alts.setdefault(rec_key, []).append({"file": fn, "kind": kind})
-    return claimed, band_schools, alts
+                alts.setdefault(rec_key, []).append({"file": fn, "kind": kind, "n_times": nt})
+    # District-WIDE band coverage across ALL extractions (this run's facts are already flushed on
+    # this session by persist_run_session, so they're visible too). Without this, a PARTIAL result
+    # (a 1-record 7->6 re-dispatch) fabricates a gap for every claimed band the single record
+    # doesn't cover — the live Las Cruces #285-287/#289-291 spurious 7->2s.
+    covered = {b for (b,) in session.execute(
+        text("SELECT DISTINCT band FROM school_fact WHERE district_id = :d AND status = 'accepted'"),
+        {"d": did}).all()}
+    return claimed, band_schools, alts, covered
 
 
 def detect_and_persist_requests(session, result: dict, handoff_hash: str) -> int:
     """Detect the request-more-evidence directives for one district's result and persist the NEW ones
     (natural-key dedup on (handoff_hash, target, altitude, route, band) so a re-detect/backfill never
     duplicates and never clobbers a human's review status). Returns the count newly persisted."""
-    claimed, band_schools, alts = _district_request_inputs(session, result)
+    claimed, band_schools, alts, covered = _district_request_inputs(session, result)
     reqs = RQ.detect_requests(result, claimed_bands=claimed, alternates_by_rec=alts,
-                              band_schools=band_schools)
+                              band_schools=band_schools, covered_bands=covered)
     n = 0
     for r in reqs:
         exists = session.execute(

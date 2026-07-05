@@ -36,7 +36,13 @@
     const which = sel.value;
     Object.entries(VIEWS).forEach(([k, el]) => { if (el) el.classList.toggle("hidden", k !== which); });
     if (prog) prog.style.display = which === "stage5" ? "" : "none";   // the labeled-count is Stage-5 only
-    if (which === "stage1" && !loaded1) { loaded1 = true; renderShell(); loadBatches(); }
+    // #156: render the shell ONCE, but re-fetch the batch list on EVERY show — else a batch created
+    // after first page-load (a compose-followup, or another session) is invisible until a full reload.
+    // (Mirrors stage2/5's re-fetch-on-show; keeps CURRENT selection via loadBatches' active-row logic.)
+    if (which === "stage1") {
+      if (!loaded1) { loaded1 = true; renderShell(); }
+      loadBatches(CURRENT);
+    }
     if (which === "stage2" && window.initStage2) window.initStage2();  // stage2.js guards its own re-init
     if (which === "stage3" && window.initStage3) window.initStage3();  // stage3.js guards its own re-init
     if (which === "stage4" && window.initStage4) window.initStage4();  // stage4.js guards its own re-init

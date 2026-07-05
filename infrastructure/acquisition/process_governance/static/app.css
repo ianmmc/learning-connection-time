@@ -474,6 +474,29 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
   background: var(--mmm-purple-100); padding: 1px 7px; border-radius: var(--radius-pill); font-size: var(--fs-xs); }
 .s7-req-reason { color: var(--text-secondary); font-size: var(--fs-sm); margin: var(--space-1) 0 var(--space-2); }
 .s7-rev { font-size: var(--fs-xs); margin-top: var(--space-1); }
+/* #154 request-loop lineage / blocked / deferred */
+.s7-lineage { font-size: var(--fs-xs); margin: 0 0 var(--space-2); }
+.s7-lineage code { font-family: var(--font-mono, monospace); background: var(--mmm-purple-100);
+  padding: 0 4px; border-radius: var(--radius-sm); }
+.s7-blocked { color: var(--text-danger, #b42318); font-weight: 600; }
+.s7-deferred { color: var(--text-warn, #b54708); }
+.s7-req-blocked { opacity: 0.72; border-style: dashed; }
+/* #154 compose modal (in-Stage-7 review, no view-flipping; cancel/ESC/click-out all close) */
+.s7-modal { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.44);
+  display: flex; align-items: center; justify-content: center; padding: var(--space-4); }
+.s7-modal-card { background: var(--surface-card); border-radius: var(--radius-md); max-width: 640px;
+  width: 100%; max-height: 82vh; display: flex; flex-direction: column;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.28); }
+.s7-modal-head { display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-3); border-bottom: var(--border-hair) solid var(--border-subtle); }
+.s7-modal-title { font-weight: 700; }
+.s7-modal-body { padding: var(--space-3); overflow-y: auto; }
+.s7-modal-foot { display: flex; justify-content: flex-end; gap: var(--space-2);
+  padding: var(--space-3); border-top: var(--border-hair) solid var(--border-subtle); }
+.s7-compose-list { margin: var(--space-2) 0; padding-left: var(--space-4); line-height: 1.7; }
+.s7-compose-notes { font-size: var(--fs-sm); margin-top: var(--space-2); }
+.s7-strat { font-size: var(--fs-xs); padding: 0 6px; border-radius: var(--radius-pill);
+  background: var(--mmm-purple-100); color: var(--text-brand); }
 .s7-unres { display: flex; flex-wrap: wrap; gap: 4px; }
 .s7-chip { font-size: var(--fs-xs); padding: 1px 7px; border-radius: var(--radius-pill);
   background: transparent; color: var(--text-secondary); border: var(--border-hair) solid var(--border-subtle); }

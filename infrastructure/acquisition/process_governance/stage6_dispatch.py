@@ -120,7 +120,7 @@ def _record_dispatched_events(session, doc: dict, actor: str, metas: dict) -> No
         meta = metas.get(did) or {}
         fp = (doc.get("fingerprints") or {}).get(did)
         session.execute(DS.INSERT_STATE_EVENT, {
-            "district_id": did, "name": meta.get("name", ""), "state": None,
+            "district_id": did, "name": meta.get("name", ""), "state": meta.get("state"),
             "stage": None, "stage_name": None, "checkpoint": "gate@6",
             "event_type": "dispatched", "outcome": None, "topology": meta.get("labeled_topology"),
             "batch_id": None, "fingerprints_json": json.dumps(fp) if fp else None,
