@@ -36,6 +36,7 @@ from infrastructure.acquisition.stage3_capture import headless as H3       # noq
 from infrastructure.acquisition.stage4_process import headless as H4       # noqa: E402  (Stage 4 process runner + DB-cache status)
 from infrastructure.acquisition.process_governance import stage6_dispatch as H6  # noqa: E402  (Stage 6 routing/release bridge — REQ-101)
 from infrastructure.acquisition.process_governance import stage7_execute as EX  # noqa: E402  (Stage 7 request-more-evidence execution — REQ-118)
+from infrastructure.acquisition.process_governance import stage7_run as R7      # noqa: E402  (Stage 7 council extraction runner — #152)
 from infrastructure.acquisition.stage6_handoff import handoff as HND6       # noqa: E402  (immutable handoff filename helper)
 from infrastructure.acquisition.common import paths                         # noqa: E402  (RAW_CAPTURES — rep inspect)
 from infrastructure.acquisition.stage6_handoff import councils as C6        # noqa: E402  (council registry — gate@6 override options)
@@ -1125,12 +1126,91 @@ async def handoff_dispatch(payload: dict):
 
 @app.get("/api/handoffs")
 def handoff_list():
-    """The dispatched handoffs index (newest first)."""
+    """The dispatched handoffs index (newest first). `n_extracted` = districts already extracted for
+    this handoff (so the UI can show run/re-run/done); `running` = a live extraction job (#152)."""
     with gdb.session_scope() as con:
         rows = con.execute(text(
-            "SELECT handoff_id, created_at, created_by, status, n_districts, n_reps, total_usd, "
-            "cost_provenance FROM handoff ORDER BY created_at DESC")).mappings().all()
-        return [dict(r) for r in rows]
+            "SELECT handoff_hash, handoff_id, created_at, created_by, status, n_districts, n_reps, "
+            "total_usd, cost_provenance FROM handoff ORDER BY created_at DESC")).mappings().all()
+        out = []
+        for r in rows:
+            d = dict(r)
+            d["n_extracted"] = con.execute(text(
+                "SELECT COUNT(*) FROM extraction WHERE handoff_hash = :h"), {"h": r["handoff_hash"]}).scalar()
+            job = _EXTRACT_JOBS.get(r["handoff_hash"])
+            d["running"] = bool(job and job["state"] == "running")
+            out.append(d)
+        return out
+
+
+# In-process extraction job board (single-user localhost), keyed by handoff_hash. Ephemeral by
+# design — the DURABLE record is the `extraction`/`school_fact` rows run_council_streaming persists
+# per district; this is just the live progress feed (mirrors _DISCOVER_JOBS, issue #47 pattern).
+_EXTRACT_JOBS: dict = {}
+
+
+def _extract_job_view(hh: str) -> dict | None:
+    j = _EXTRACT_JOBS.get(hh)
+    if not j:
+        return None
+    return {"state": j["state"], "started_at": j["started_at"], "finished_at": j["finished_at"],
+            "actor": j["actor"], "error": j["error"], "summary": j["summary"],
+            "n_events": len(j["events"]), "events": j["events"][-30:]}
+
+
+@app.get("/api/extract/run/{handoff_hash}")
+def extract_run_status(handoff_hash: str):
+    """Live status of a Stage-7 extraction background job (#152). {state:'idle'} if none seen."""
+    return _extract_job_view(handoff_hash) or {"state": "idle"}
+
+
+@app.post("/api/extract/{handoff_hash}/run")
+async def extract_run(handoff_hash: str, payload: dict):
+    """Run the PAID Stage-7 council extraction for a DISPATCHED handoff as a BACKGROUND job (#152).
+    The gate@6 dispatch approval IS the go-ahead — no separate approval. Resolves the frozen handoff
+    file, runs `run_council_streaming` (durable/resumable per district, REQ-051 budget-gated, benchmark
+    output still walled from Stage-9), streaming per-district progress into _EXTRACT_JOBS. Resumable:
+    a re-run skips districts already extracted for this handoff. Returns immediately."""
+    payload = payload or {}
+    actor = payload.get("actor", "ian")
+    with gdb.session_scope() as con:
+        row = con.execute(text("SELECT path, status FROM handoff WHERE handoff_hash = :h"),
+                          {"h": handoff_hash}).mappings().first()
+    if not row:
+        raise HTTPException(404, f"no such handoff {handoff_hash}")
+    existing = _EXTRACT_JOBS.get(handoff_hash)
+    if existing and existing["state"] == "running":
+        raise HTTPException(409, f"extraction already running for {handoff_hash}")
+
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    job = {"state": "running", "started_at": now, "actor": actor, "events": [],
+           "summary": None, "error": None, "finished_at": None}
+    _EXTRACT_JOBS[handoff_hash] = job
+
+    def _on_district(did, pd):
+        bands = pd.get("bands") or {}
+        job["events"].append({
+            "district_id": did, "name": pd.get("name"),
+            "n_accepted": len(pd.get("accepted") or []), "n_unresolved": len(pd.get("unresolved") or []),
+            "bands": {b: (v or {}).get("gross_minutes") for b, v in bands.items()},
+            "cost_usd": (pd.get("telemetry") or {}).get("cost_usd")})
+
+    def _work():
+        try:
+            doc = R7.load_handoff(row["path"])
+            summ = R7.run_council_streaming(doc, persist=True, created_by=actor, on_district=_on_district)
+            job["summary"] = {"n_districts": len(summ.get("districts", {}))}
+            job["state"] = "done"
+        except SystemExit as e:   # no key / billing halt / #82 vision guard — surface, don't hide
+            job["state"], job["error"] = "halted", f"CONTROL FAILURE: {e}"
+        except Exception as e:    # noqa: BLE001
+            job["state"], job["error"] = "error", f"{type(e).__name__}: {e}"
+        finally:
+            job["finished_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    threading.Thread(target=_work, name=f"extract-{handoff_hash}", daemon=True).start()
+    return {"started": True, "handoff_hash": handoff_hash}
 
 
 @app.get("/api/handoff/councils")
