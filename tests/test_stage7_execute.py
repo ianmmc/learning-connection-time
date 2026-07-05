@@ -100,6 +100,47 @@ from infrastructure.acquisition.stage7_extract import models as _M7  # noqa: E40
 govdb = pytest.mark.govdb
 
 
+
+@govdb
+def test_executed_rounds_counts_distinct_refs_not_rows(gov_session):
+    """Review R1 (#153): a bundle flips N directives to ONE executed_ref = one round. The compose-side
+    depth-guard history must count DISTINCT executed_ref, not rows — else one bundled round of three
+    7->6s (band NULL) depth-blocks a later band-less 7->3/7->1 at used=3."""
+    gdb.init_precious_schema()
+    s = gov_session
+    for i in range(3):     # ONE bundled round: three rows sharing one executed_ref
+        s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                       "target, band, reason, status, executed_ref, created_at) VALUES ('ZZR1', 'h', "
+                       "'representation', '7->6', :t, NULL, 'r', 'executed', 'bundle_x', :ts)"),
+                  {"t": f"ZZR1:r{i}", "ts": _M7.utcnow()})
+    s.flush()
+    assert EX._executed_rounds(s, ["ZZR1"]) == {("ZZR1", None): 1}    # one round, not three
+
+
+@govdb
+def test_defer_excludes_rounds_exhausted_districts(gov_session):
+    """Review R2 (#159): a district whose 7->6 ROUNDS are exhausted must NOT defer — its un-executed
+    7->6s are depth-blocked zombies that can never fire, so deferring would hold its rediscovery
+    forever (the live Las Cruces deadlock)."""
+    gdb.init_precious_schema()
+    s = gov_session
+    # ZZR2A: un-executed 7->6, 0 rounds spent -> defers. ZZR2B: un-executed 7->6 BUT 2/2 rounds spent -> free.
+    for did, refs in (("ZZR2A", []), ("ZZR2B", ["ra", "rb"])):
+        s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                       "target, band, reason, status, created_at) VALUES (:d, 'h', 'representation', "
+                       "'7->6', :t, NULL, 'r', 'approved', :ts)"),
+                  {"d": did, "t": f"{did}:x", "ts": _M7.utcnow()})
+        for ref in refs:
+            s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                           "target, band, reason, status, executed_ref, created_at) VALUES (:d, 'h', "
+                           "'representation', '7->6', :t, NULL, 'r', 'executed', :ref, :ts)"),
+                      {"d": did, "t": f"{did}:y", "ref": ref, "ts": _M7.utcnow()})
+    s.flush()
+    assert EX._defer_76_districts(s, ["ZZR2A", "ZZR2B"], max_rounds=2) == {"ZZR2A"}
+    # with no cap, both defer (nothing is a zombie when rounds are unlimited)
+    assert EX._defer_76_districts(s, ["ZZR2A", "ZZR2B"], max_rounds=None) == {"ZZR2A", "ZZR2B"}
+
+
 def _seed_req(s, hh, did, route, band, status="approved"):
     s.execute(text(
         "INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, target, band, "

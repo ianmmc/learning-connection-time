@@ -144,12 +144,15 @@ def _claimed_bands(session, district_ids: list) -> dict:
 
 
 def _executed_rounds(session, district_ids: list) -> dict:
-    """{(district_id, band): count} of already-EXECUTED directives — the depth-guard history,
-    scoped to the districts under consideration (issue #148: never a full-table aggregate)."""
+    """{(district_id, band): ROUNDS} of already-EXECUTED directives — the depth-guard history,
+    scoped to the districts under consideration (issue #148: never a full-table aggregate).
+    Rounds = DISTINCT executed_ref, NOT rows (#153): a bundle/compose flips N directives to ONE
+    executed_ref (one handoff / one batch = one round); COUNT(*) would over-count and depth-block a
+    band-less request after a single bundled round of the district's 7->6s."""
     if not district_ids:
         return {}
     rows = session.execute(text(
-        "SELECT district_id, band, COUNT(*) FROM extraction_request "
+        "SELECT district_id, band, COUNT(DISTINCT executed_ref) FROM extraction_request "
         "WHERE status = 'executed' AND district_id = ANY(:d) GROUP BY district_id, band"),
         {"d": list(district_ids)})
     return {(r[0], r[1]): r[2] for r in rows}
@@ -169,20 +172,27 @@ def _benchmark_district_ids(session, district_ids: list) -> set:
     return {r[0] for r in rows}
 
 
-def _defer_76_districts(session, district_ids: list) -> set:
-    """Districts with an UN-EXECUTED 7->6 (status pending or approved) — #159: their NEW-work (7->2)
-    requests are HELD at compose so the cheap in-hand alternate rep is tried before new discovery.
-    A rejected or executed 7->6 does not defer."""
+def _defer_76_districts(session, district_ids: list, max_rounds=None) -> set:
+    """Districts with an UN-EXECUTED 7->6 (status pending or approved) that CAN STILL EXECUTE —
+    #159: their NEW-work (7->2) requests are HELD at compose so the cheap in-hand alternate rep is
+    tried before new discovery. A rejected or executed 7->6 does not defer. NEITHER does a district
+    whose 7->6 ROUNDS are exhausted (review R2): its un-executed 7->6s are depth-blocked zombies that
+    can never fire — deferring on them would hold the district's rediscovery FOREVER (live case:
+    Las Cruces, 2/2 rounds spent, #279/#284/#288 un-executed). Exhausted -> the correct escalation is
+    to let the 7->2 proceed."""
     if not district_ids:
         return set()
     rows = session.execute(text(
         "SELECT DISTINCT district_id FROM extraction_request "
         "WHERE route = :r AND status IN ('pending', 'approved') AND district_id = ANY(:d)"),
         {"r": RQ.ROUTE_ALT_REP, "d": list(district_ids)})
-    return {r[0] for r in rows}
+    cands = {r[0] for r in rows}
+    if max_rounds is None:
+        return cands
+    return {d for d in cands if _executed_rounds_76(session, d) < max_rounds}
 
 
-def _gather(session, handoff_hash: str) -> tuple:
+def _gather(session, handoff_hash: str, max_rounds=None) -> tuple:
     """Read the detector inputs on `session`: the approved NEW-work rows (benchmark districts
     EXCLUDED — the wall, #134), per-district claimed bands (band-less expansion), the executed-round
     history (depth guard), the districts to defer (un-executed 7->6, #159), and the next free batch id.
@@ -202,7 +212,7 @@ def _gather(session, handoff_hash: str) -> tuple:
     dids = sorted({r["district_id"] for r in rows})
     claimed = _claimed_bands(session, dids)
     exec_rounds = _executed_rounds(session, dids)
-    defer_76 = _defer_76_districts(session, dids)
+    defer_76 = _defer_76_districts(session, dids, max_rounds)
     batch_id = f"batch_{BSTORE.next_batch_number(session):05d}"
     return rows, claimed, exec_rounds, defer_76, batch_id, benchmark_excluded
 
@@ -235,7 +245,8 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
     b = BUD.load_budget()
 
     def _work(s) -> dict:
-        rows, claimed, exec_rounds, defer_76, batch_id, bm_excluded = _gather(s, handoff_hash)
+        rows, claimed, exec_rounds, defer_76, batch_id, bm_excluded = _gather(s, handoff_hash,
+                                                                              b.max_request_rounds)
         if not rows:
             return {**_empty_result(), "benchmark_excluded": bm_excluded}
 

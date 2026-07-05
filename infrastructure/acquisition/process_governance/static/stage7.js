@@ -152,13 +152,18 @@
     loadDistricts();            // refresh the left-pane pending badge
   }
 
-  // 7->6: fire an approved alternate-rep re-dispatch (a new Stage-6 dispatch; re-enters Stage 7).
+  // 7->6: fire the district's approved alternate-rep re-dispatches as ONE BUNDLE (#153: a single
+  // new Stage-6 dispatch = one depth-guard round; re-enters Stage 7). The consent copy must say so —
+  // clicking Execute on one card executes ALL of this district's approved 7->6s together.
   async function executeRequest(id, did) {
-    if (!confirm("Re-dispatch the alternate representation? This creates a new Stage-6 dispatch to re-extract (a subsequent, budget-gated Stage-7 run).")) return;
+    if (!confirm("Execute this district's approved 7->6 re-dispatches as ONE bundle? All approved alternate-rep directives for this district ride a single new Stage-6 dispatch (= one depth-guard round), re-extracted by a subsequent, budget-gated Stage-7 run.")) return;
     let out;
     try { out = await api(`/api/extract/execute/${id}`, postJSON({ actor: "ian" })); }
     catch (e) { alert("Execute failed: " + e.message); return; }
-    alert(`Re-dispatched ${out.alt_file || "the alternate rep"} → new handoff ${out.handoff_hash}. Run Stage 7 on it to extract (budget-gated).`);
+    const files = (out.alt_files || []).join(", ") || "the alternate rep(s)";
+    let msg = `Bundled ${out.n_bundled || 1} re-dispatch(es) (${files}) → new handoff ${out.handoff_hash} = one round. Run Stage 7 on it to extract (budget-gated).`;
+    if (out.skipped && out.skipped.length) msg += `\nSkipped ${out.skipped.length} directive(s) with no dispatchable alternate left.`;
+    alert(msg);
     openDistrict(did);
     loadDistricts();
   }
