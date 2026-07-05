@@ -1274,14 +1274,14 @@ async def extract_compose_followup(payload: dict):
 
 @app.post("/api/extract/execute/{request_id}")
 async def extract_execute(request_id: int, payload: dict):
-    """REQ-118 execution (7→6): fire an APPROVED alternate-rep directive — build a NEW immutable Stage-6
-    dispatch of the already-captured alternate rep (no new capture; bypasses Stage 1/5), so it re-enters
-    Stage 7 via the normal extract path. Depth-guarded (REQ-051 max_request_rounds). Returns the new
-    handoff_hash on success; the paid re-extraction is a subsequent Stage-7 run (separately budget-gated)."""
+    """REQ-118 execution (7→6): fire an APPROVED alternate-rep directive — bundling its whole
+    district's approved 7→6s into ONE immutable Stage-6 dispatch = one round (#153), of the
+    yield-ranked alternate reps (no new capture; bypasses Stage 1/5), so it re-enters Stage 7 via the
+    normal extract path. Depth-guarded by ROUNDS (REQ-051 max_request_rounds). Returns the new
+    handoff_hash + n_bundled/swept/skipped; the paid re-extraction is a subsequent Stage-7 run."""
     payload = payload or {}
     try:
-        out = EX.execute_alternate_dispatch(
-            request_id, actor=payload.get("actor", "ian"), council_id=payload.get("council_id"))
+        out = EX.execute_alternate_dispatch(request_id, actor=payload.get("actor", "ian"))
     except FileExistsError:
         raise HTTPException(409, "an identical alternate dispatch was just created — the prior one stands")
     except Exception as e:  # noqa: BLE001

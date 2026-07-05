@@ -332,23 +332,147 @@ def _load_request(session, request_id: int) -> dict | None:
     return dict(row) if row else None
 
 
-def _executed_count(session, district_id: str, band) -> int:
+def _executed_rounds_76(session, district_id: str) -> int:
+    """DISTINCT executed handoffs (ROUNDS, not rows) for a district's 7->6s (#153): a bundle flips N
+    requests to ONE `executed_ref`, so counting rows would over-count and trip the depth guard after a
+    single bundled round — count distinct executed_ref. 7->6 band is always NULL, so it's per-district."""
     return session.execute(text(
-        "SELECT COUNT(*) FROM extraction_request WHERE status = 'executed' "
-        "AND district_id = :d AND band IS NOT DISTINCT FROM :b"),
-        {"d": district_id, "b": band}).scalar() or 0
+        "SELECT COUNT(DISTINCT executed_ref) FROM extraction_request WHERE status = 'executed' "
+        "AND route = :r AND district_id = :d"),
+        {"r": RQ.ROUTE_ALT_REP, "d": district_id}).scalar() or 0
 
 
-def execute_alternate_dispatch(request_id: int, *, actor: str = "ian", council_id: str = None,
-                               root=None, session=None) -> dict:
-    """Fire an APPROVED 7->6 directive: build a NEW immutable Stage-6 dispatch of the named alternate
-    rep (no new capture — it bypasses Stage 1), so it re-enters Stage 7 via the normal extract path.
-    The prior dispatch is untouched (history preserved). Depth-guarded by the REQ-051 governor's
-    max_request_rounds (per district×band) so the loop terminates; the PAID re-extraction is separately
-    budget-gated when the new handoff is run (run_council_streaming, REQ-051). Flips the directive to
-    'executed' with the new handoff_hash as its `executed_ref`. `session` follows the inject-or-own
-    idiom. Returns {ok, handoff_hash?, path?, reason?}."""
-    def _run(s) -> dict:
+def _sent_files_by_rec(session, district_id: str) -> dict:
+    """{rec_key: {failed files}} for the district — the union of `sent_file` across ALL its 7->6
+    requests (F4: a rep that failed once, and so generated a 7->6, must never be re-dispatched — not
+    even in a later round for a different rec-key request). DB-only: a failed-and-requested rep is
+    exactly some 7->6's sent_file, so no handoff-doc I/O is needed."""
+    out: dict = {}
+    for target, pj in session.execute(text(
+            "SELECT target, params_json FROM extraction_request WHERE district_id = :d AND route = :r"),
+            {"d": district_id, "r": RQ.ROUTE_ALT_REP}).all():
+        sf = (json.loads(pj or "{}")).get("sent_file")
+        if sf:
+            out.setdefault(target, set()).add(sf)
+    return out
+
+
+def build_alternate_bundle_input(meta: dict, selections: list) -> tuple:
+    """ONE multi-record dispatch input for a district's BUNDLED 7->6 (#153) — selections =
+    [(rec, alt), ...]. Reuses `build_alternate_input` per record and merges into a single
+    (meta, [records]) + merged council overrides, so N alternate-rep re-dispatches ride ONE immutable
+    handoff = ONE round (the depth guard counts rounds, not reps)."""
+    records, overrides = [], {}
+    for rec, alt in selections:
+        (di, ov) = build_alternate_input(meta, rec, alt)
+        (_m, recs), = di
+        records.extend(recs)
+        overrides.update(ov)
+    return [(meta, records)], overrides
+
+
+def _bundle_alternate(s, district_id: str, actor: str, root) -> dict:
+    """Core (session-in): bundle ALL approved 7->6 directives for one district into a SINGLE Stage-6
+    dispatch = one round. Benchmark-walled (#134), depth-guarded by ROUNDS (#153), each record's rep
+    chosen yield-ranked from live reps excluding every already-failed file (#155/F4). Flips every
+    bundled directive to 'executed' with the one handoff_hash. Returns the bundle result."""
+    if _benchmark_district_ids(s, [district_id]):
+        return {"ok": False, "reason": f"district {district_id} is a benchmark district (batch_00000) "
+                                       f"— walled off from request execution"}
+    reqs = s.execute(text(
+        "SELECT request_id, target FROM extraction_request "
+        "WHERE district_id = :d AND route = :r AND status = 'approved' ORDER BY request_id"),
+        {"d": district_id, "r": RQ.ROUTE_ALT_REP}).mappings().all()
+    if not reqs:
+        return {"ok": False, "reason": f"no approved 7->6 directive for district {district_id}"}
+
+    b = BUD.load_budget()
+    used = _executed_rounds_76(s, district_id)
+    if b.max_request_rounds is not None and used >= b.max_request_rounds:
+        return {"ok": False, "blocked": True,
+                "reason": f"depth guard: {used} round(s) already executed for {district_id} 7->6 "
+                          f"(max {b.max_request_rounds})"}
+
+    meta = REL.load_district(s, district_id)
+    if not meta:
+        return {"ok": False, "reason": f"district {district_id} not in the release store"}
+    recs_by_key = {r["rec_key"]: r for r in REL.load_district_records(s, district_id)}
+    sent_by_rec = _sent_files_by_rec(s, district_id)
+
+    selections, swept, skipped = [], [], []
+    for req in reqs:
+        rec = recs_by_key.get(req["target"])
+        if not rec:
+            skipped.append({"request_id": req["request_id"], "target": req["target"],
+                            "reason": "record not found in the release store"})
+            continue
+        alt = pick_alternate(live_alternates(rec, sent_by_rec.get(req["target"], set())))
+        if not alt:
+            skipped.append({"request_id": req["request_id"], "target": req["target"],
+                            "reason": "no dispatchable alternate rep left (all reps sent/exhausted)"})
+            continue
+        selections.append((rec, alt))
+        swept.append(req["request_id"])
+    if not selections:
+        return {"ok": False, "skipped": skipped,
+                "reason": f"no dispatchable alternate across the {len(reqs)} approved 7->6(s)"}
+
+    councils = C6.load_configs()
+    cost_model = COST6.load_cost_model()
+    districts_input, overrides = build_alternate_bundle_input(meta, selections)
+    package = PKG6.assemble_package(districts_input, councils, cost_model, overrides)
+    if not package["cost"]["n_reps"]:
+        return {"ok": False, "reason": "the bundled alternates produced an empty dispatch package"}
+    package["verified_only"] = False
+    fps = {district_id: REL.district_fingerprints(s, district_id)}
+    doc = HND.freeze(package, councils, fps, created_by=actor)
+    path = (Path(root) if root else HND.DEFAULT_ROOT) / HND.handoff_filename(doc)
+    # Commit-order (#143, mirrors dispatch_handoff): every DB statement FIRST (index row +
+    # state_events + the directive flips), the immutable file LAST — a DB failure rolls back cleanly
+    # with no orphaned file. The district_status backup refresh is post-commit (below), never here.
+    H6.record_dispatch(s, doc, path, actor=actor, metas={district_id: meta})
+    _flip(s, swept, doc["handoff_hash"])          # ALL bundled directives -> one executed_ref = one round
+    HND.write(doc, root=root)
+    return {"ok": True, "handoff_hash": doc["handoff_hash"], "path": str(path),
+            "n_bundled": len(selections), "swept": swept, "skipped": skipped,
+            "alt_files": [a["file"] for _, a in selections]}
+
+
+def _run_bundle_or_own(work_fn, session):
+    """inject-or-own + post-commit best-effort district_status export, shared by the 7->6 bundle entry
+    points. An injected (test) session does DB-only work — no receipt/registry side effects escape a
+    rollback. The export runs AFTER commit on a SEPARATE session (the altitude lesson #143/#139:
+    export_status reads the current_state view; a failure there must never poison the load-bearing
+    dispatch transaction)."""
+    if session is not None:
+        return work_fn(session)
+    gdb.init_precious_schema()
+    with gdb.session_scope() as s:
+        out = work_fn(s)
+    if out.get("ok"):
+        try:
+            with gdb.session_scope() as s2:
+                DS.export_status(s2)
+        except Exception as e:  # noqa: BLE001 — the DB is authoritative; the backup regenerates
+            print(f"[warn] district_status.json refresh failed after 7->6 bundle "
+                  f"({type(e).__name__}: {e}); the DB is authoritative — regenerate later")
+    return out
+
+
+def compose_alternate_bundle(district_id: str, *, actor: str = "ian", root=None, session=None) -> dict:
+    """Bundle ALL approved 7->6 directives for a district into ONE immutable Stage-6 dispatch = one
+    round (#153) and re-enter Stage 7 via the normal extract path (no new capture; bypasses Stage 1).
+    The prior dispatches are untouched (history preserved). The PAID re-extraction is a separate,
+    budget-gated Stage-7 run. `session` follows the inject-or-own idiom."""
+    return _run_bundle_or_own(lambda s: _bundle_alternate(s, district_id, actor, root), session)
+
+
+def execute_alternate_dispatch(request_id: int, *, actor: str = "ian", root=None, session=None) -> dict:
+    """Fire an APPROVED 7->6 directive — by bundling its WHOLE district's approved 7->6s into one round
+    (#153: approve the several you want, execute one, they all go as a single cyclic round so the depth
+    guard bounds cycles, not components). A thin resolver over `compose_alternate_bundle`; the request
+    is validated (exists / is a 7->6 / is approved) before the district bundle runs."""
+    def work(s) -> dict:
         req = _load_request(s, request_id)
         if not req:
             return {"ok": False, "reason": f"no such request {request_id}"}
@@ -356,74 +480,8 @@ def execute_alternate_dispatch(request_id: int, *, actor: str = "ian", council_i
             return {"ok": False, "reason": f"request {request_id} is {req['route']}, not a 7->6 re-dispatch"}
         if req["status"] != "approved":
             return {"ok": False, "reason": f"request {request_id} is {req['status']}, not approved"}
-        if _benchmark_district_ids(s, [req["district_id"]]):
-            # The wall (#134): benchmark (batch_00000) districts never execute — measurement only.
-            return {"ok": False, "reason": f"district {req['district_id']} is a benchmark district "
-                                           f"(batch_00000) — walled off from request execution"}
-
-        b = BUD.load_budget()
-        used = _executed_count(s, req["district_id"], req["band"])
-        if b.max_request_rounds is not None and used >= b.max_request_rounds:
-            return {"ok": False, "blocked": True,
-                    "reason": f"depth guard: {used} round(s) already executed for "
-                              f"{req['district_id']}/{req['band']} (max {b.max_request_rounds})"}
-
-        did, rec_key = req["district_id"], req["target"]
-        meta = REL.load_district(s, did)
-        if not meta:
-            return {"ok": False, "reason": f"district {did} not in the release store"}
-        rec = next((r for r in REL.load_district_records(s, did) if r["rec_key"] == rec_key), None)
-        if not rec:
-            return {"ok": False, "reason": f"record {rec_key} not found for {did}"}
-        params = json.loads(req["params_json"] or "{}")
-        # Derive alternates from the LIVE record (#155): yield-ranked, robust to a request persisted
-        # before ranking. Exclude the file this request already tried (params.sent_file). NOTE (F4,
-        # Chunk-4 bundle): a rep sent in a DIFFERENT handoff for this rec_key is not excluded here —
-        # bounded by the depth guard; the bundle rebuild (#153) adds full cross-handoff exclusion.
-        sent = {params.get("sent_file")} - {None}
-        alt = pick_alternate(live_alternates(rec, sent))
-        if not alt:
-            return {"ok": False, "reason": f"request {request_id} names no dispatchable alternate rep "
-                                           f"(text/image) to re-dispatch"}
-
-        councils = C6.load_configs()
-        cost_model = COST6.load_cost_model()
-        districts_input, overrides = build_alternate_input(meta, rec, alt, council_id=council_id)
-        package = PKG6.assemble_package(districts_input, councils, cost_model, overrides)
-        if not package["cost"]["n_reps"]:
-            return {"ok": False, "reason": "the alternate rep produced an empty dispatch package"}
-        package["verified_only"] = False
-        fps = {did: REL.district_fingerprints(s, did)}
-        doc = HND.freeze(package, councils, fps, created_by=actor)
-        path = (Path(root) if root else HND.DEFAULT_ROOT) / HND.handoff_filename(doc)
-        # Commit-order (#143, mirrors dispatch_handoff): every DB statement FIRST (index row +
-        # state_events + the directive flip), the immutable file LAST — a DB failure rolls back
-        # cleanly with no orphaned file, and a file failure rolls the DB back with it. The
-        # district_status backup refresh is NOT here — it's best-effort and must never share this
-        # transaction (see below).
-        H6.record_dispatch(s, doc, path, actor=actor, metas={did: meta})
-        _flip(s, [request_id], doc["handoff_hash"])
-        HND.write(doc, root=root)
-        return {"ok": True, "handoff_hash": doc["handoff_hash"], "path": str(path),
-                "alt_file": alt["file"], "council": overrides or "auto-routed"}
-
-    if session is not None:
-        return _run(session)      # injected: DB-only; no receipt/registry side effects escape a rollback
-    gdb.init_precious_schema()
-    with gdb.session_scope() as s:
-        out = _run(s)
-    if out.get("ok"):
-        # Best-effort backup refresh AFTER the dispatch commits, on a SEPARATE session (the altitude
-        # lesson, #143/#139): export_status reads the `current_state` view, so ANY failure there
-        # (e.g. a fresh DB without the view) would poison the load-bearing transaction and roll back
-        # the committed dispatch. Post-commit + separate session makes that impossible.
-        try:
-            with gdb.session_scope() as s2:
-                DS.export_status(s2)
-        except Exception as e:  # noqa: BLE001 — the DB is authoritative; the backup regenerates
-            print(f"[warn] district_status.json refresh failed after 7->6 dispatch "
-                  f"({type(e).__name__}: {e}); the DB is authoritative — regenerate later")
-    return out
+        return _bundle_alternate(s, req["district_id"], actor, root)
+    return _run_bundle_or_own(work, session)
 
 
 # ---------------------------------------------------------------------------
@@ -438,10 +496,13 @@ def main():
     c.add_argument("--year", default="2024_25")
     c.add_argument("--actor", default="cli")
     c.add_argument("--cap", type=int, default=12)
-    e = sub.add_parser("execute", help="fire an approved 7->6 alternate-rep re-dispatch")
+    e = sub.add_parser("execute", help="fire an approved 7->6 — bundles its whole district's approved "
+                                       "7->6s into one round (#153)")
     e.add_argument("request_id", type=int)
-    e.add_argument("--council", help="council id override (default: image council for an image alt)")
     e.add_argument("--actor", default="cli")
+    eb = sub.add_parser("execute-bundle", help="bundle a DISTRICT's approved 7->6s into one round")
+    eb.add_argument("district_id")
+    eb.add_argument("--actor", default="cli")
     a = ap.parse_args()
 
     if a.cmd == "compose-followup":
@@ -459,11 +520,15 @@ def main():
             print(f"  skipped: {sk['district_id']} ({sk['reason']})")
         for bm in out.get("benchmark_excluded", []):
             print(f"  benchmark-excluded: req {bm['request_id']} {bm['district_id']} ({bm['reason']})")
-    elif a.cmd == "execute":
-        out = execute_alternate_dispatch(a.request_id, actor=a.actor, council_id=a.council)
+    elif a.cmd in ("execute", "execute-bundle"):
+        out = (execute_alternate_dispatch(a.request_id, actor=a.actor) if a.cmd == "execute"
+               else compose_alternate_bundle(a.district_id, actor=a.actor))
         if out["ok"]:
-            print(f"Re-dispatched {out['alt_file']} → new handoff {out['handoff_hash']}. "
+            print(f"Bundled {out['n_bundled']} alternate-rep re-dispatch(es) "
+                  f"({', '.join(out['alt_files'])}) → new handoff {out['handoff_hash']} = one round. "
                   f"Run Stage 7 on it to extract (budget-gated).")
+            for sk in out.get("skipped", []):
+                print(f"  skipped: req {sk['request_id']} {sk['target']} ({sk['reason']})")
         else:
             print(f"Refused: {out['reason']}")
 

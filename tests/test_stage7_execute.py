@@ -238,11 +238,13 @@ def test_execute_alternate_dispatch_flips_and_records(gov_session, monkeypatch):
 def test_execute_alternate_dispatch_depth_guard_blocks(gov_session, monkeypatch):
     gdb.init_precious_schema()
     s = gov_session
-    # two prior EXECUTED 7->6 rounds for ZZ76G/None -> at the default max_request_rounds (2) -> blocked
-    for _ in range(2):
+    # two prior EXECUTED 7->6 ROUNDS = two DISTINCT executed_ref (#153: rounds, not rows — several
+    # bundled rows share one executed_ref) -> at the default max_request_rounds (2) -> blocked.
+    for ref in ("round_a", "round_b"):
         s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
-                       "target, band, reason, status, created_at) VALUES ('ZZ76G', 'h', 'representation', "
-                       "'7->6', 'ZZ76G:x', NULL, 'r', 'executed', :ts)"), {"ts": _M7.utcnow()})
+                       "target, band, reason, status, executed_ref, created_at) VALUES ('ZZ76G', 'h', "
+                       "'representation', '7->6', 'ZZ76G:x', NULL, 'r', 'executed', :ref, :ts)"),
+                  {"ref": ref, "ts": _M7.utcnow()})
     s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, target, "
                    "band, params_json, reason, status, created_at) VALUES ('ZZ76G', 'h2', 'representation', "
                    "'7->6', 'ZZ76G:x', NULL, :p, 'r', 'approved', :ts)"),
@@ -252,6 +254,55 @@ def test_execute_alternate_dispatch_depth_guard_blocks(gov_session, monkeypatch)
                          "AND district_id='ZZ76G'")).scalar()
     out = EX.execute_alternate_dispatch(rid, session=s)
     assert out["ok"] is False and out.get("blocked") is True
+
+
+@govdb
+def test_bundle_multiple_7to6_into_one_round(gov_session, monkeypatch):
+    """#153 — two approved 7->6s for one district ride ONE handoff and share ONE executed_ref (one
+    round), and each record picks its yield-ranked alternate."""
+    gdb.init_precious_schema()
+    s = gov_session
+    for tgt, sent in (("ZZB:r1", "harvest_slice.txt"), ("ZZB:r2", "harvest_slice.txt")):
+        s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                       "target, band, params_json, reason, status, created_at) VALUES ('ZZB', 'hb', "
+                       "'representation', '7->6', :t, NULL, :p, 'r', 'approved', :ts)"),
+                  {"t": tgt, "p": json.dumps({"sent_file": sent}), "ts": _M7.utcnow()})
+    s.flush()
+
+    def _recs(sess, d):
+        return [{"rec_key": f"ZZB:{r}", "url": f"http://{r}", "signals": {}, "intended_schools": [],
+                 "reps": [{"source": "capture:text", "filename": "pdftotext.txt", "file_kind": "text",
+                           "n_chars": 9, "n_times": 80, "usable": 1},
+                          {"source": "raster", "filename": "raster_p-1.png", "file_kind": "image",
+                           "n_chars": None, "n_times": None, "usable": 1}]} for r in ("r1", "r2")]
+    monkeypatch.setattr(EX.REL, "load_district", lambda sess, d: {"district_id": d, "district_dir": "dd",
+                                                                  "name": "Z", "state": "AK"})
+    monkeypatch.setattr(EX.REL, "load_district_records", _recs)
+    monkeypatch.setattr(EX.REL, "district_fingerprints", lambda sess, d: {"config": "c", "labels": "l", "data": "x"})
+    monkeypatch.setattr(EX.C6, "load_configs", lambda: {"image": {"voters": ["v"], "judge": "j", "prompts": {"default": "p"}}})
+    monkeypatch.setattr(EX.COST6, "load_cost_model", lambda: {"provenance": "t", "assumptions": {}, "models": {}})
+    captured = {}
+    def _assemble(di, c, cm, ov):
+        (m, records), = di
+        captured["n_records"] = len(records)
+        captured["files"] = [r["send"][0]["file"] for r in records]
+        return {"districts": [{"district_id": "ZZB"}], "cost": {"total_usd": 0.01, "n_reps": len(records), "provenance": "t"}, "generated_at": "t"}
+    monkeypatch.setattr(EX.PKG6, "assemble_package", _assemble)
+    monkeypatch.setattr(EX.HND, "freeze", lambda pkg, c, fp, created_by: {"handoff_hash": "BUND1",
+                        "created_at": "t", "created_by": created_by, "districts": pkg["districts"], "cost": pkg["cost"], "councils": c})
+    monkeypatch.setattr(EX.HND, "handoff_filename", lambda doc: "handoff_BUND1_t.json")
+    monkeypatch.setattr(EX.HND, "write", lambda doc, root=None: None)
+    monkeypatch.setattr(EX.H6, "record_dispatch", lambda sess, doc, path, actor, metas: "hid")
+
+    out = EX.compose_alternate_bundle("ZZB", actor="zz", session=s)
+    s.flush()
+    assert out["ok"] and out["n_bundled"] == 2 and out["handoff_hash"] == "BUND1"
+    assert captured["n_records"] == 2                          # ONE handoff, both records
+    assert captured["files"] == ["pdftotext.txt", "pdftotext.txt"]   # each picked the full text, not raster
+    # BOTH directives flipped to executed, sharing ONE executed_ref = one round
+    refs = [r[0] for r in s.execute(text(
+        "SELECT executed_ref FROM extraction_request WHERE district_id='ZZB' AND status='executed'")).all()]
+    assert refs == ["BUND1", "BUND1"]
 
 
 @govdb
