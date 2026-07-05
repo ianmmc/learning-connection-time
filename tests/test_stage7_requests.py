@@ -27,6 +27,30 @@ def test_no_gap_when_all_claimed_bands_present():
     assert [r for r in reqs if r["altitude"] == "district"] == []
 
 
+def test_band_7to2_defers_when_district_has_pending_7to6():
+    # #159 — Marion's shape: MHS record failed (a 7->6 exists) AND the high band has 0 facts.
+    # The band-gap 7->2 must be flagged DEFER (try the existing alternate rep first), not fired blind.
+    res = _result(
+        reps=[{"rec_key": "D1:mhs", "file": "harvest_slice.txt", "accepted": []}],
+        accepted=[])   # nothing extracted -> high band empty AND the record is barren
+    reqs = RQ.detect_requests(
+        res, claimed_bands=["high"],
+        alternates_by_rec={"D1:mhs": [{"file": "pdftotext.txt", "kind": "text", "n_times": 57}]})
+    band = [r for r in reqs if r["altitude"] == "district"][0]
+    assert band["route"] == "7->2"
+    assert band["params"]["pending_alt_reps"] == 1        # the 7->6 counted
+    assert "DEFER" in band["reason"]
+
+
+def test_band_7to2_fires_normally_when_no_pending_7to6():
+    # a band with no facts and NO existing-rep remedy -> a plain rediscover (no defer)
+    res = _result(accepted=[{"band": "elementary", "school": "a"}])
+    reqs = RQ.detect_requests(res, claimed_bands=["elementary", "high"])
+    band = [r for r in reqs if r["altitude"] == "district"][0]
+    assert band["band"] == "high" and "pending_alt_reps" not in band["params"]
+    assert "DEFER" not in band["reason"] and "targeted rediscover" in band["reason"]
+
+
 def test_barren_rep_with_alternate_routes_7to6():
     res = _result(
         reps=[{"rec_key": "D1:aa", "file": "harvest_slice.txt", "accepted": []}],

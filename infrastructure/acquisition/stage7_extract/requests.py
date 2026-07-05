@@ -125,17 +125,33 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
                 "reason": f"sent rep '{sent}' yielded 0 accepted facts and no alternate rep exists — "
                           f"recapture the URL"})
 
+    # #159: how many records in this district have an UNEXHAUSTED existing rep (a 7->6 remedy)?
+    # A band-gap 7->2 is premature while these exist — re-extracting an already-captured alternate
+    # (free of new discovery/capture) may fill the band. We DEFER the rediscover rather than spend on
+    # new discovery. This is a DISTRICT-level signal, deliberately NOT per-band attribution: the
+    # motivating case (Marion's MHS bell table) is an EMERGENT record with empty intended_schools —
+    # unattributable to a band pre-extraction — and name-matching the 76% that do carry intended
+    # schools is fragile and wouldn't cover it. The compose step (Chunk 4) reads `pending_alt_reps`
+    # and holds the 7->2 until the district's 7->6s are executed; then re-detection re-emits any band
+    # still empty. (Per-band suppression via name-matching was considered and rejected as fragile.)
+    n_alt_rep = sum(1 for r in reqs if r["route"] == ROUTE_ALT_REP)
+
     # --- district altitude: a claimed band has no accepted facts anywhere ---
     have = _bands_with_facts(result)
     for band in claimed_bands or []:
         if band not in BANDS or band in have:
             continue
         schools = band_schools.get(band) or []
+        params = {"band": band, "schools": schools}
+        reason = (f"claimed band '{band}' has 0 accepted facts across all URLs"
+                  + (f" ({len(schools)} school(s) known)" if schools else ""))
+        if n_alt_rep:
+            params["pending_alt_reps"] = n_alt_rep
+            reason += (f" — DEFER: {n_alt_rep} unexhausted existing rep(s) (7->6) to try first; "
+                       f"rediscover only if the band is still empty after")
+        else:
+            reason += " — targeted rediscover for that band"
         reqs.append({
             "district_id": did, "altitude": "district", "route": ROUTE_REDISCOVER,
-            "target": did, "band": band,
-            "params": {"band": band, "schools": schools},
-            "reason": f"claimed band '{band}' has 0 accepted facts across all URLs"
-                      + (f" ({len(schools)} school(s) known)" if schools else "")
-                      + " — targeted rediscover for that band"})
+            "target": did, "band": band, "params": params, "reason": reason})
     return reqs
