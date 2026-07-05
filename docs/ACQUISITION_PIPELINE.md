@@ -13,17 +13,23 @@
 > **Update this when:** a stage's purpose/IO changes, a new stage is built, or the flow diagram needs a new
 > edge — for implementation detail within an already-mapped stage, update that stage's own design note instead.
 
-**Current build state (2026-07-03):** the console runs the pipeline live through **`gate@7`** — Stage 1
+**Current build state (2026-07-05):** the console runs the pipeline live through **`gate@7`** — Stage 1
 queue (`gate@1`, REQ-102), Stage 2 deterministic SERP cascade (REQ-104), Stage 3 capture + resilience
 (REQ-110), Stage 4 process + the Stage 4→5 incremental handoff (REQ-111), Stage 5 district-driven
 attention-first filter with the V2 detector/combiner scoring + v2.1 three-axis labeling (REQ-112/113/114/115),
 Stage 6 dispatch/freeze through the Stage 6→7 seam (REQ-101), and Stage 7 council extraction + the gate@7
 review console (REQ-117) — GT-scored 95.2%/99.3% band/per-school on `batch_00000`'s 24 districts. The
-request-more-evidence loop's **detect/persist/review** AND **execution** (an approved directive firing the
-7→6/3/2/1 back-edge — REQ-118) are built; a live non-benchmark run of the loop is the remaining gap
-(tracked: #122). Stages 8–9 are designed, not built (tracked: #89, #93). Detail on each stage's
-present state is in its own `STAGE*_DESIGN_2026-06.md`; the governance/DB/gate architecture that ties them
-together is `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`.
+request-more-evidence loop's **detect → rank/defer → review → execute** cycle (REQ-118) is **built and
+hardened (epic #163, PR #167, merged 2026-07-05)**: 7→6 bundles a district's approved alternate-rep
+re-dispatches into ONE round and picks the yield-ranked alternate (not image-first); 7→2/7→3/7→1 shape
+their own follow-up discovery (untried-schools-first, else a widened SERP query set) and **auto-flow**
+through gate@1 + Stages 2→3→4 to gate@5 (gate@6 stays manual); gate@7 now shows request **lineage** +
+blocked/deferred state and an in-Stage-7 compose-preview modal; Stage 6 gained a **"Run extraction"**
+trigger. A clean live non-benchmark end-to-end pass of the now-corrected loop in one sitting is the
+remaining gap (tracked: #122) — the epic's shakedown exercised most of the loop in pieces against real
+districts while finding and fixing what it then hardened. Stages 8–9 are designed, not built (tracked:
+#89, #93). Detail on each stage's present state is in its own `STAGE*_DESIGN_2026-06.md`; the
+governance/DB/gate architecture that ties them together is `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`.
 
 > **What this replaces.** The Jan-2026 "production ready" design on this page — Crawlee *blind-maps* a district site → Ollama *ranks* URLs → Ollama *triages* PDFs — was superseded on 2026-06-13 after benchmarking. **Blind crawling does not find schedules; local Ollama extraction topped out ~37%; the Ollama models were deleted.** The validated design is **search-led discovery → tiered capture → local filtering → cheap-cloud council extraction → modal aggregation → fail-loud statutory fallback.** The salvageable implementation detail from the old design (modal dismissal, Google-Drive handling, edge-case/anti-bot rules, the Crawlee service itself re-cast as a *one-hop fetcher / school enumerator*) is retained below; the dead parts (blind mapping, Ollama rank/triage, the learning loop) are archived in git history.
 
@@ -61,7 +67,7 @@ flowchart TD
         Q_OUT["persist_batch: write the batch WORKING STORE in the governance DB<br/>(batch / batch_district / batch_school — normalized, PRECIOUS;<br/>included flag = soft-reject, source = stratified/manual_add)<br/>+ regenerate batch_NNNNN.json FROM the rows as the RECEIPT<br/>(structured params only, no prompts; + nces_school_counts {total, by_level})<br/>+ stage=1 'queued' state_events"]
         Q_SRC --> Q_EXCL1 --> Q_EXCL2 --> Q_EXCL3 --> Q_EXCL4 --> Q_STRAT --> Q_SCHOOLS --> Q_OUT
     end
-    CPA{{"gate@1 — IN-BAND console approval (was Checkpoint A) — BUILT (UI + API)<br/>BATCH-level: batch.status draft -> approved + per-district gate@1 events<br/>soft + REVERSIBLE + audited edits: reject/restore district & school, add school<br/>(included flips / row inserts; locked once approved, reopen to edit)<br/>batch-of-record created + advanced ONLY via the console (CLI = dev/test)"}}
+    CPA{{"gate@1 — IN-BAND console approval (was Checkpoint A) — BUILT (UI + API)<br/>BATCH-level: batch.status draft -> approved + per-district gate@1 events<br/>soft + REVERSIBLE + audited edits: reject/restore district & school, add school<br/>(included flips / row inserts; locked once approved, reopen to edit)<br/>batch-of-record created + advanced ONLY via the console (CLI = dev/test)<br/>FOLLOW-UP batches AUTO-PASS this gate + auto-chain Stages 2->3->4 to gate@5<br/>(REQ-118/#157 — a follow-up carries an already-approved gate@7 decision;<br/>first-run batches are unaffected, still fully manual)"}}
 
     subgraph STAGE2 ["Stage 2 — Discover (deterministic SERP cascade; re-architected + run live via console 2026-06-28, REQ-104)"]
         direction TB
@@ -167,18 +173,18 @@ flowchart TD
         H_REQ["Assemble the OpenRouter requests — STOP before the paid call"]
         H_IN --> H_ROUTE --> H_FREEZE --> H_REQ
     end
-    G6{{"gate@6 — dispatch approval — BUILT (manual)<br/>console: preview routed/priced package -> Approve &amp; freeze<br/>send set tier-gated (targets + tier-A; B/C held; handbook harvest_slice)<br/>+ verified-only mode (labeled targets only); auto + budget cost-gate deferred"}}
+    G6{{"gate@6 — dispatch approval — BUILT (manual)<br/>console: preview routed/priced package -> Approve &amp; freeze<br/>send set tier-gated (targets + tier-A; B/C held; handbook harvest_slice)<br/>+ verified-only mode (labeled targets only); + a 'Run extraction' trigger<br/>on the dispatch list (REQ-118/#152 — the gate@6 approval IS the go-ahead)<br/>auto + budget cost-gate deferred"}}
 
-    subgraph STAGE7 ["Stage 7 — Extract · council + the request-loop, EXECUTION BUILT (REQ-117 + REQ-118)"]
+    subgraph STAGE7 ["Stage 7 — Extract · council + the request-loop, EXECUTION BUILT + HARDENED (REQ-117 + REQ-118, epic #163)"]
         direction TB
         X_BUD["REQ-051 budget governor (PRE-district): run cap HALTS, per-district cap SKIPS;<br/>seeded from durable SUM(extraction.cost_usd) so a resumed run stays under the same ceiling"]
         X_COUNCIL["Per rep: 2 cross-family voters -> consensus on the per-school (start,end) pair<br/>±15 min (REQ-056) -> 3rd-family JUDGE on disagreement. Models read TIMES only;<br/>code computes gross bell-to-bell + the per-band MODE (REQ-054/055)"]
         X_PERSIST["Persist per-school school_fact + the extraction rollup<br/>(durable, RESUMABLE per-district streaming) + a stage=7 state_event"]
-        X_DETECT["Request-more-evidence DETECT (deterministic, zero model calls): 0-fact rep w/<br/>alternate -> 7→6 · URL exhausted -> 7→3 · claimed band 0 facts -> 7→2"]
+        X_DETECT["Request-more-evidence DETECT (deterministic, zero model calls): 0-fact rep w/<br/>alternate -> 7→6 (alternates RANKED yield-first, text before vision) · URL exhausted -> 7→3<br/>· claimed band 0 facts (district-wide, not just this result) -> 7→2, DEFERRED<br/>if the district has a cheaper unexhausted 7→6 remedy"]
         X_BUD --> X_COUNCIL --> X_PERSIST --> X_DETECT
     end
-    G7{{"gate@7 — review results + directives — BUILT (manual, PURE review)<br/>district-first: band rollup + accepted/unresolved facts<br/>+ directive approve/reject/reopen (fact/band editing is gate@8)"}}
-    X_EXEC["Request EXECUTION (REQ-118) — a SEPARATE step from gate@7 approval:<br/>· 7→6 execute_alternate_dispatch: re-dispatch the named already-captured alternate rep<br/>&nbsp;&nbsp;(no new capture; bypasses Stage 1 + Stage 5) -> a NEW Stage-6 dispatch<br/>· 7→2/7→3/7→1 compose_followup_batch: collect approved directives into ONE targeted<br/>&nbsp;&nbsp;DRAFT Stage-1 follow-up batch (12-cap, spillover)<br/>depth-guarded (budget max_request_rounds); flips each directive -> executed (lineage)"]
+    G7{{"gate@7 — review results + directives — BUILT (manual, PURE review)<br/>district-first: band rollup + accepted/unresolved facts<br/>+ directive approve/reject/reopen + EXECUTE/compose-preview<br/>+ request LINEAGE (where an executed directive went, live state)<br/>+ blocked (depth-exhausted)/deferred badges (fact/band editing is gate@8)"}}
+    X_EXEC["Request EXECUTION (REQ-118, hardened epic #163) — a SEPARATE step from gate@7 approval:<br/>· 7→6: BUNDLE a district's whole approved 7→6 set into ONE Stage-6 dispatch = ONE round<br/>&nbsp;&nbsp;(no new capture; bypasses Stage 1 + Stage 5); picks each record's alternate yield-ranked<br/>· 7→2/7→3/7→1 compose_followup_batch (+ preview/dry-run): collect approved directives into<br/>&nbsp;&nbsp;ONE targeted DRAFT Stage-1 follow-up batch (12-cap, spillover), SHAPED — untried NCES<br/>&nbsp;&nbsp;schools preferred, else a widened SERP query set; dormant 7→3 seed-URL plumbing<br/>depth-guarded by ROUNDS not rows (budget max_request_rounds); flips each directive -> executed (lineage)"]
 
     S8[8. Aggregate — DESIGNED, not built<br/>per-band modal daily minutes; manual override requires a reason]
     G8{{"gate@8 — review results (the effective CP-C;<br/>Stage 9 DB write is mechanical, no gate)"}}
@@ -197,11 +203,13 @@ flowchart TD
     X_EXEC --> S8 --> G8 --> S9
 
     %% feedback loops — the acquisition pipeline is CYCLIC, not a DAG (dashed = back-edge).
-    %% Only TWO execution mechanisms (REQ-118): 7→6 re-routes EXISTING already-labeled reps straight to a
-    %% new Stage-6 dispatch (no new capture, no gate@5); 7→2/7→3/7→1 need NEW evidence (never labeled) so
-    %% they wrap in a Stage-1 follow-up batch that walks 1→2→3→4→5→6→7 (reviewable at gate@1). 8→1 / 8→6 mirror this.
-    X_EXEC -.->|"7→6: re-dispatch the alternate rep via a (possibly different) council"| H_IN
-    X_EXEC -.->|"7→2/7→3/7→1: NEW discovery/capture -> DRAFT follow-up batch (gate@1)"| Q_SRC
+    %% Only TWO execution mechanisms (REQ-118, hardened epic #163): 7→6 re-routes EXISTING already-labeled
+    %% reps straight to a new Stage-6 dispatch as ONE BUNDLED round per district (no new capture, no gate@5);
+    %% 7→2/7→3/7→1 need NEW evidence (never labeled) so they wrap in a Stage-1 follow-up batch that AUTO-FLOWS
+    %% gate@1 -> 2 -> 3 -> 4 to gate@5 (#157 — a follow-up carries an already-approved gate@7 decision), then
+    %% walks 5->6->7 manually as usual. 8→1 / 8→6 mirror this shape once Stage 8 exists (not built yet).
+    X_EXEC -.->|"7→6: BUNDLE the district's approved alternate-rep set into ONE dispatch/round"| H_IN
+    X_EXEC -.->|"7→2/7→3/7→1: NEW discovery/capture -> SHAPED DRAFT follow-up batch, AUTO-FLOWS gate@1+2+3+4 to gate@5 (#157)"| Q_SRC
     S8 -.->|"band-coverage gap -> follow-up batch (district×band)"| Q_SRC
     S8 -.->|"add an existing-rep URL to a new dispatch"| H_IN
 ```

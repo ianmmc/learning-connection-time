@@ -25,18 +25,22 @@ DB, event-driven `filtered.json`) are all COMPLETE — see §1b, §3, §6. The c
 through **`gate@7`**: gate@1 (REQ-102), Stage 2 (REQ-104), Stage 3 (REQ-110), Stage 4 + the Stage 4→5
 incremental handoff (REQ-111, §12), the Stage 5 district-driven console (REQ-112), Stage 6 dispatch/freeze
 through the Stage 6→7 seam (REQ-101), and Stage 7 council extraction + the gate@7 review console (REQ-117:
-extraction results + the request-more-evidence **detect/persist/review** loop — see
-`STAGE7_EXTRACT_DESIGN_2026-06.md` §0), and the request-more-evidence **execution** (REQ-118: 7→6 direct
-re-dispatch + 7→2/7→3/7→1 via a Stage-1 follow-up batch, under the REQ-051 budget governor — STAGE7 §3F).
+extraction results + the request-more-evidence **detect/rank/defer/review** loop — see
+`STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§4), and the request-more-evidence **execution + console maturation**
+(REQ-118, hardened epic #163, PR #167 merged 2026-07-05: 7→6 bundles a district's approved alternate-rep
+re-dispatches into one round + 7→2/7→3/7→1 via a shaped Stage-1 follow-up batch that auto-flows to gate@5,
+under the REQ-051 budget governor + a per-district rounds depth guard — STAGE7 §3F; gate@7 now has
+execute/compose buttons, request lineage, and a preview modal, §11h/§11i).
 **Not yet built: Stage 8/9.** (tracked: #89, #93) **Gates are stage-numbered (§11):**
 `gate@1` (queue) · `gate@5` (per-URL review) · `gate@6` (dispatch) · `gate@7` (council requests) · `gate@8`
-(results). §8, §9, and §9a below are **historical** — fully executed planning/sequencing docs kept in place
-because their section numbers (`governance §9a`, etc.) are cross-referenced elsewhere; see the banners on
-each. **Council Lab BUILT, first experiment MEASURED (2026-07-04)** — the judge-replay harness
-(`council_lab.py`) validated the Qwen-VL image-judge swap (#82, closed); see `COUNCIL_LAB_DESIGN_2026-06.md`.
-Next: Stage 8 (aggregation) + the Lab's remaining backlog (`cost_benchmark`, prompt A/B, tracked: #80/#81);
-still open: REQ-100 (staleness) (tracked: #100), gate@6/gate@7 auto mode (tracked: #104), the gate@7
-execution console buttons (tracked: #99) + a live non-benchmark run of the loop (tracked: #122).
+(results) — **1/5/8 structural (permanent), 6/7 supervision (first to relax) — §11i.** §8, §9, and §9a
+below are **historical** — fully executed planning/sequencing docs kept in place because their section
+numbers (`governance §9a`, etc.) are cross-referenced elsewhere; see the banners on each. **Council Lab
+BUILT, first experiment MEASURED (2026-07-04)** — the judge-replay harness (`council_lab.py`) validated the
+Qwen-VL image-judge swap (#82, closed); see `COUNCIL_LAB_DESIGN_2026-06.md`. Next: Stage 8 (aggregation) +
+the Lab's remaining backlog (`cost_benchmark`, prompt A/B, tracked: #80/#81); still open: REQ-100
+(staleness) (tracked: #100), gate@6 auto mode (tracked: #104), the gate@7 inline PNG/PDF viewer (tracked:
+#151), and a clean live non-benchmark end-to-end pass of the request loop in one sitting (tracked: #122).
 
 ---
 
@@ -713,15 +717,18 @@ wireframed — it needs its own design pass before build.**
 The 3 checkpoints become **5 stage-numbered gates**; the deterministic stages (2/3/4) and the mechanical
 Stage-9 DB write are ungated:
 
-| gate | stage | the human judgment | was |
-|---|---|---|---|
-| **gate@1** | 1 Queue | approve the batch (right districts/schools/bands) | CP-A |
-| **gate@5** | 5 Filter | per-URL representation review (labeling) | CP-B |
-| **gate@6** | 6 Dispatch | approve routing/dispatch (which reps → which council config); optional **verified-only** (labeled-targets-only) mode | *new* |
-| **gate@7** | 7 Extract | review extraction results + council requests/recommendations | *new, BUILT* |
-| **gate@8** | 8 Aggregate | review per-band results; override needs a reason | *effective CP-C* |
+| gate | stage | the human judgment | was | kind (§11i) |
+|---|---|---|---|---|
+| **gate@1** | 1 Queue | approve the batch (right districts/schools/bands) | CP-A | structural |
+| **gate@5** | 5 Filter | per-URL representation review (labeling) | CP-B | structural |
+| **gate@6** | 6 Dispatch | approve routing/dispatch (which reps → which council config); optional **verified-only** (labeled-targets-only) mode | *new* | supervision |
+| **gate@7** | 7 Extract | review extraction results + council requests/recommendations | *new, BUILT* | supervision |
+| **gate@8** | 8 Aggregate | review per-band results; override needs a reason | *effective CP-C* | structural |
 
 **gate@8 is the effective CP-C** — once results are approved there, Stage 9 writes to the LCT DB mechanically.
+**Structural vs. supervision — see §11i (decided 2026-07-04):** 1/5/8 were the ORIGINAL three-gate design
+(CP-A/B/C) and decide something genuinely new each time; they're permanent. 6/7 emerged later, from
+API-spend caution during a context-clear cycle, not first-principles design — they're the first to relax.
 
 ### 11b. Settings: per-gate manual/auto (global default + overrides); AUTO is confidence-escalating
 
@@ -739,11 +746,14 @@ model applied to Stage 7: the *council* authors the request (the 7→6/3/2/1 bac
 detector, **built and validated** (`STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§4); a human reviews/approves it
 at gate@7 (**built**) under today's high-supervision setting; the toggle relaxes that to auto
 (confidence-escalating) later. **Execution** — an approved directive firing the target stage's back-edge —
-is now **built too** (REQ-118, STAGE7 §3F): 7→6 direct alternate-rep re-dispatch, and 7→2/7→3/7→1 wrapped
-in a Stage-1 follow-up batch, both under the **REQ-051 budget governor** (`common/budget.py`, built as the
-prerequisite) + a per-district×band depth guard. Approval stays pure review; a **separate compose step**
-materializes the batch (so gate@7 isn't coupled to batch creation). The toggle below is the ramp-up's
-control surface.
+is **built and hardened** (REQ-118, STAGE7 §3F, epic #163, 2026-07-04/05): **7→6** bundles a district's
+approved alternate-rep re-dispatches into ONE round and picks the yield-ranked alternate (not
+image-first), and **7→2/7→3/7→1** wrap in a Stage-1 follow-up batch that **shapes its own discovery**
+(untried-schools-first, else a widened SERP query set) and **defers** live while a cheaper 7→6 remedy is
+still executable — both under the **REQ-051 budget governor** (`common/budget.py`) + a per-district
+**rounds** depth guard (not rows — a hardening fix). Approval stays pure review; a **separate compose
+step** materializes the batch (so gate@7 isn't coupled to batch creation), and now **previews** it
+(dry-run, no persistence) before the operator commits. The toggle below is the ramp-up's control surface.
 
 Each gate toggles **manual** (human acts) / **auto** (self-advance), via a **global default + per-gate
 overrides**. **Auto is never blind: auto-with-confidence-escalation** — auto-accept the high-confidence,
@@ -780,11 +790,20 @@ progress bar). **Pause dropped** (not worth the complexity).
 - **Directions route through Stage 1.** Anything needing NEW capture/discovery (re-discover, recapture,
   band-gap fill) returns to Stage 1, where the follow-up `batch_*.json` is created and stays reviewable at
   gate@1 — 7/8 never create a batch straight to discovery. Only re-routing EXISTING representations bypasses
-  Stage 1 (7→6 re-extract via a different config; 8→6 add an existing-rep URL to a new dispatch).
+  Stage 1 (7→6 re-extract via a different config; 8→6, once Stage 8 exists, would add an existing-rep URL
+  to a new dispatch the same way). **Built (REQ-118, epic #163):** the follow-up batch now shapes its own
+  discovery rather than repeating the same query blind — prefers untried NCES schools for the re-targeted
+  band, falls back to a widened SERP query set when none remain, and can carry pre-specified seed URLs for
+  a 7→3 recapture (dormant plumbing). See `STAGE7_EXTRACT_DESIGN_2026-06.md` §3F.
 
 ### 11e. The pipeline is CYCLIC (back-edges) — detail in the flow diagram
-Four back-edges: **7→6**, **7→1**, **8→1**, **8→6** (see the flow diagram in `ACQUISITION_PIPELINE.md`). The immutable
-Stage-6 dispatch freeze is what keeps "what we sent" recoverable across these loops.
+**As originally sketched, then as BUILT (REQ-118, updated 2026-07-05):** the four back-edges off Stage 7
+are **7→6** (direct alternate-rep re-dispatch, bundled per district), **7→3** (recapture the URL), **7→2**
+(targeted rediscover for a band), and **7→1** (a follow-up batch adding schools) — all built, all routing
+through a Stage-1 follow-up batch except 7→6 (§3F/§11d). The Stage-8 back-edges this subsection originally
+anticipated (8→1, 8→6) are **not yet real** — Stage 8 isn't built (tracked #89) — and will be documented
+here once designed; don't treat them as built today. See the flow diagram in `ACQUISITION_PIPELINE.md`.
+The immutable Stage-6 dispatch freeze is what keeps "what we sent" recoverable across these loops.
 
 ### 11f. Per-stage console notes
 - **Stage 3** — a thin **health / emergent readout**: emergent URLs, capture failures (WAF/security
@@ -884,18 +903,25 @@ reframe and the batch_00002-forcing-function plan (the batch-of-record advances 
   Approval records the index row + a per-district `dispatched` state_event **atomically**, freezes the
   immutable artifact, and **stops at the seam — no paid call** (Stage 7). Manual approve today; auto mode +
   the budget-governor cost-gate (REQ-051) deferred (tracked: #104). See `STAGE6_DISPATCH_DESIGN_2026-06.md` §0.
-- **Stage 7 + gate@7 BUILT (REQ-117, 2026-07-03)** — the council extraction (per-rep council →
-  cross-family consensus → judge-on-disagreement, durable/resumable per-district streaming, GT-scored
-  95.2%/99.3% band/per-school on `batch_00000`) + the deterministic request-more-evidence
-  **detect/persist/review** engine (validated, zero false positives on real data) + the gate@7 console
-  (district-first, band rollup + request approve/reject/reopen). Request-more-evidence **execution** is
-  now built too (REQ-118): 7→6 direct alternate-rep re-dispatch + 7→2/7→3/7→1 via a Stage-1 follow-up batch,
-  under the **REQ-051 budget governor** (built as the prerequisite) + a depth guard; CLI + endpoints, gate@7
-  console buttons deferred (tracked: #99). A 2026-07-04 code review found + fixed 13 correctness issues
-  in the execution path (epic #133, children #134–#146, all closed; root theme: the new path had
-  re-implemented invariants — the benchmark wall, the executed-terminal status, transaction atomicity —
-  instead of inheriting them); #147/#148 (cleanup/efficiency) remain open. **Not yet built:** Stage 8/9
-  (tracked: #89, #93). See `STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§3F/§6.
+- **Stage 7 + gate@7 BUILT + HARDENED (REQ-117/REQ-118, 2026-07-03 through epic #163, 2026-07-05)** — the
+  council extraction (per-rep council → cross-family consensus → judge-on-disagreement, durable/resumable
+  per-district streaming, GT-scored 95.2%/99.3% band/per-school on `batch_00000`) + the deterministic
+  request-more-evidence **detect → rank/defer → review → execute** loop (§0/§3F/§4/§6 of
+  `STAGE7_EXTRACT_DESIGN_2026-06.md` for the full build + decision log). Execution: 7→6 bundles a
+  district's approved alternate-rep re-dispatches into ONE round (picking the yield-ranked alternate, not
+  image-first) + 7→2/7→3/7→1 collect into a Stage-1 follow-up batch that shapes its own discovery
+  (untried-schools-first, else widened SERP queries) and defers live while a cheaper 7→6 remedy is
+  unexhausted — under the **REQ-051 budget governor** + a per-district **rounds** depth guard. The gate@7
+  console now has execute/compose buttons, request lineage (where an executed directive went + its live
+  state), blocked/deferred badges, and an in-Stage-7 preview modal; Stage 6's dispatch list has a "Run
+  extraction" trigger; a follow-up's compose auto-flows gate@1 + Stages 2→3→4 to gate@5 (§11i). Two
+  hardening passes: the 2026-07-04 review (epic #133, children #134–#146, all closed; root theme: the new
+  execution path had re-implemented invariants instead of inheriting them) and epic #163 (2026-07-04/05,
+  PR #167, 21 commits — the console-maturation + loop-correctness pass, each commit adversarially
+  reviewed before the next). #147/#148 (cleanup/efficiency) remain open. **Not yet built:** Stage 8/9
+  (tracked: #89, #93). **Not yet run:** a clean live non-benchmark end-to-end pass of the fully-corrected
+  loop in one sitting (#122) — exercised repeatedly in pieces against real districts during epic #163's
+  shakedown, which is what surfaced most of what it then fixed.
 - **Council Lab BUILT, first experiment MEASURED (2026-07-04)** — its own note now,
   `COUNCIL_LAB_DESIGN_2026-06.md`: the judge-replay harness (`council_lab.py`) validated the image
   council's Qwen-VL judge swap (#82, closed — the prior DeepSeek V3.2 judge was non-vision-capable and
@@ -905,6 +931,38 @@ reframe and the batch_00002-forcing-function plan (the batch-of-record advances 
   Per-stage detail: `STAGE1_QUEUE_DESIGN` §6 (gate@1), `STAGE2_DISCOVER_DESIGN` §7 (the SERP cascade),
   `STAGE3_CAPTURE_DESIGN` §7, `STAGE4_PROCESS_DESIGN` §4a/§4b, `STAGE5_FILTER_DESIGN` §A–D,
   `STAGE6_DISPATCH_DESIGN` §0, `STAGE7_EXTRACT_DESIGN` §0.
+
+### 11i. Gate taxonomy — structural vs. supervision; the follow-up gate posture (DECIDED 2026-07-04, epic #163)
+
+**Structural vs. supervision gates.** The *canonical* gate design was only **three checkpoints — gate@1,
+gate@5, gate@8** (the original CP-A/B/C, §11a). Each decides something genuinely NEW every time it fires
+(the right targets / is this URL real schedule data / is this the final answer) — they are **permanent**,
+surviving even into a fully self-governing pipeline. **gate@6 and gate@7 EMERGED later**, from API-spend
+caution during a context-clear cycle, not first-principles design (Ian, confirming this directly: "gate@6
+and gate@7 emerged as a result of context clears and my caution around API spending"). They are
+**supervision gates** — still "the right thing to have when running with high supervision," but the FIRST
+candidates to relax as reliability is proven, per the ramp-up model (§11b).
+
+**Follow-up gate posture — a prior approval justifies auto-advancing REDUNDANT gates, never new-decision
+ones.** A follow-up batch (7→2/7→3/7→1 → Stage 1) originates from an **already-approved gate@7 decision** —
+re-approving it downstream is redundant *where the downstream gate would re-decide the same thing*, but
+not where it decides something new:
+- **gate@1 auto-passes for a follow-up**, and the Stage 1→2→3→4 de-facto "click Start" gates auto-chain
+  (the follow-up **auto-flow**, REQ-118/#157, built) — the targets were deterministically derived from the
+  approved request; there's nothing new to approve.
+- **gate@5 stays manual** — a follow-up produces brand-new, never-labeled URLs; this is the one truly
+  structural, data-quality gate in the chain, and auto-advancing it would be re-deciding something new
+  without review. (gate@5 already auto-passes tier-A records per its OWN defined rule, `release.decide()`
+  — confirmed still correctly enforced during epic #163's audit; that is gate@5's existing selective
+  automation, not a new relaxation.)
+- **gate@6 stays manual** — the spend gate, Ian's explicit call, unrelated to the follow-up-origin logic.
+- **Receipts are written at every stage regardless of auto-advance** — the auto-flow doesn't trade away
+  transparency, only the click.
+
+This is NOT "follow-ups get weaker supervision" — it's the general principle that **a gate whose decision
+was already made upstream can auto-advance; a gate deciding something genuinely new cannot**, applied
+consistently. See `STAGE7_EXTRACT_DESIGN_2026-06.md` §3F for the built auto-flow supervisor
+(`process_governance/server.py`'s `_autoflow_followup`) and its govdb tests.
 
 ---
 

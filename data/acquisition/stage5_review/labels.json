@@ -952,6 +952,54 @@
     "updated_at": "2026-07-04T05:45:32Z"
   },
   {
+    "rec_key": "0806750:2d448e34f3",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-05T19:35:48Z"
+  },
+  {
+    "rec_key": "0806750:43f183c24c",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\", \"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-05T19:40:34Z"
+  },
+  {
+    "rec_key": "0806750:63da78916c",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\", \"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-05T19:40:34Z"
+  },
+  {
+    "rec_key": "0806750:72be9003bb",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-05T19:40:49Z"
+  },
+  {
+    "rec_key": "0806750:73f79d0595",
+    "primary_label": "target_absent",
+    "facets_json": "{\"board\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-05T19:34:18Z"
+  },
+  {
+    "rec_key": "0806750:ef4764c812",
+    "primary_label": "target_absent",
+    "facets_json": "{\"board\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-05T19:38:14Z"
+  },
+  {
     "rec_key": "0900450:d5fa191574",
     "primary_label": "district_hub_by_school",
     "facets_json": "{}",
@@ -3536,12 +3584,124 @@
     "updated_at": "2026-06-25T00:37:28Z"
   },
   {
+    "rec_key": "3901302:0e7861bf1f",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{\"academic_calendar\": \"yes\", \"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-05T17:06:31Z"
+  },
+  {
+    "rec_key": "3901302:14ad8c359d",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-05T17:05:18Z"
+  },
+  {
+    "rec_key": "3901302:339ff9f813",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{}",
+    "note": "Has both list format in side nav and in prose.\n\nTARDIES AND DISMISSALS\n\nArrival is from 7:45am - 8:00am\n\nStudents arriving after 8:00am MUST BE ESCORTED BY THE PARENT OR GUARDIAN.  You must walk in with your child and sign them in.  STUDENTS ARE NOT ALLOWED TO WALK IN WITHOUT AN ADULT after 8:00am.\n\nDismissal is at 2:50",
+    "status": "labeled",
+    "updated_at": "2026-07-05T17:06:09Z"
+  },
+  {
+    "rec_key": "3901302:57798314f7",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-05T17:04:29Z"
+  },
+  {
+    "rec_key": "3901302:5b4dd684d3",
+    "primary_label": "target_absent",
+    "facets_json": "{\"academic_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-05T17:07:21Z"
+  },
+  {
+    "rec_key": "3901302:b8ee8887b0",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{\"academic_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-05T17:06:41Z"
+  },
+  {
+    "rec_key": "3901302:ba8ac53b43",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-05T17:07:08Z"
+  },
+  {
+    "rec_key": "3901302:e26f3c6d06",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{\"academic_calendar\": \"yes\", \"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-05T17:06:53Z"
+  },
+  {
     "rec_key": "3904378:e51613860e",
     "primary_label": "district_hub_by_school",
     "facets_json": "{}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-04T05:33:51Z"
+  },
+  {
+    "rec_key": "4000766:2f764d7fa2",
+    "primary_label": "school_start_end_prose",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"_pages\": \"9-10\", \"_pages_list\": [9, 10]}",
+    "note": "Superseded by more recent https://kippok.org/wp-content/uploads/2024/02/KIPP-OKC-Student-Parent-Handbook-2023-24.docx.pdf",
+    "status": "labeled",
+    "updated_at": "2026-07-05T17:01:27Z"
+  },
+  {
+    "rec_key": "4000766:57960f9d80",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-05T17:00:31Z"
+  },
+  {
+    "rec_key": "4000766:97161c6a76",
+    "primary_label": "school_bell_table",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"14-16\", \"_pages_list\": [14, 15, 16]}",
+    "note": "Tables are on pages 14-16. On pages 8-9, there is also prose encoding of the school day.\n\nScholar Commitment:\n| fully commit to KIPP OKC College Preparatory in the following ways:\n\n| will arrive at KIPP OKC every day by 7:30 A.M. (Monday - Friday).\n\n| will remain at KIPP OKC until 4:00 P.M. (5th-8th) 3:00 P.M. (Pre-K, Kinder, 1st Grade) (Monday,\nTuesday, Wednesday, and Thursday) and until 2:30 P.M. on Friday.",
+    "status": "labeled",
+    "updated_at": "2026-07-05T16:59:56Z"
+  },
+  {
+    "rec_key": "4000766:d79d3846af",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-05T17:02:00Z"
+  },
+  {
+    "rec_key": "4000766:d8904b912d",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-05T17:00:50Z"
+  },
+  {
+    "rec_key": "4000766:ed15e79065",
+    "primary_label": "target_absent",
+    "facets_json": "{\"academic_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-05T17:00:19Z"
   },
   {
     "rec_key": "4026640:d58d6a4928",
@@ -4830,6 +4990,30 @@
     "note": "News stories contain an array of schedule-related information, including first day of school, registration, athletics, and extracurricular activities",
     "status": "labeled",
     "updated_at": "2026-07-02T06:09:03Z"
+  },
+  {
+    "rec_key": "5508790:6cc3deb70a",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-05T19:45:20Z"
+  },
+  {
+    "rec_key": "5508790:dde6ec4060",
+    "primary_label": "school_bell_table",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"10\", \"_pages_list\": [10]}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-05T19:44:34Z"
+  },
+  {
+    "rec_key": "5508790:df1b53f1b0",
+    "primary_label": "school_bell_table",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"9-10\", \"_pages_list\": [9, 10]}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-05T19:41:43Z"
   },
   {
     "rec_key": "5510620:0d6537b4d0",

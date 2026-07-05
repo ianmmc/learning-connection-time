@@ -14,14 +14,24 @@
 > **Update this when:** Stage 7's code behavior changes. Design turns and superseded approaches
 > belong in §6 (Provenance / decision log), not here.
 
-**Status: BUILT through gate@7 review + request EXECUTION.** Council extraction, per-school persistence,
-GT scoring, the deterministic request-more-evidence **detection + routing + review** engine, and the
-gate@7 console are all built and validated against real `batch_00000` data. Request **execution** — an
-approved directive firing the target stage's back-edge — is now **built** (REQ-118): the 7→6 direct
-alternate-rep re-dispatch, and the 7→2/7→3/7→1 → Stage-1 follow-up-batch path, both gated by the REQ-051
-budget governor + a per-district×band depth guard; see §3F. **Not yet run end-to-end on live non-benchmark
-data** (batch_00000 is benchmark-walled) — the execution paths are unit/govdb-tested, not yet exercised
-against a real request round-trip. (tracked: #122)
+**Status: BUILT through gate@7 review + request EXECUTION + console maturation (epic #163).** Council
+extraction, per-school persistence, GT scoring, the request-more-evidence **detection → routing → review
+→ execution** loop, and the gate@7 console are all built. Request **execution** fires the target stage's
+back-edge (REQ-118): **7→6 bundles a district's approved alternate-rep re-dispatches into ONE round**
+(#153) and picks the **yield-ranked** alternate, not image-first (#155); **7→2/7→3/7→1** collect into a
+Stage-1 follow-up batch that now **shapes** its own discovery (untried-schools-first, else a widened SERP
+query set — #160/#162 — plus dormant 7→3 seed-URL plumbing, #161) and **auto-flows** through gate@1 +
+Stages 2→3→4 to gate@5 (#157); a 7→2 **defers** live while the district's 7→6s are un-executed (#159).
+The console now drives the whole loop: a "Run extraction" trigger on a dispatched handoff (#152), gate@7
+request cards with **lineage** (where an executed directive went + its live state) and **blocked/deferred**
+badges (#154), and an in-Stage-7 **preview modal** before composing (#154). All gated by the REQ-051
+budget governor + a per-district round depth guard (rounds, not rows — the #153 fix).
+
+**Live-exercised, not yet a full clean end-to-end pass:** the shakedown that produced epic #163 ran real
+(non-benchmark) districts — Marion, Pittsylvania, Las Cruces — through much of this loop repeatedly while
+building it, surfacing and fixing real bugs (the #158 release cluster-drop, the image-first picker, the
+row-vs-round depth guard, a live defer-deadlock). The *corrected* code has not yet been run start-to-finish
+on a fresh live batch in one pass. (tracked: #122)
 
 ---
 
@@ -43,7 +53,16 @@ against a real request round-trip. (tracked: #122)
 - `content.py` — `image_data_url()` (base64 data-URL; `.webp`→PNG conversion exists but the picker never
   selects `.webp` — PNG-only, per Ian) and `is_image_kind()`.
 - `requests.py` — the request-more-evidence **detection/routing engine** (§4): pure, no DB/network,
-  fully unit-testable.
+  fully unit-testable (confirmed import-pure by grimp during epic #163 — no `infrastructure.*` imports).
+  `rank_alternates()` orders a 7→6's alternate reps best-first (#155): higher-yield TEXT (by `n_times`,
+  descending) → IMAGE (the vision escalation, tried only once text is exhausted) → zero-yield text last;
+  `_alt_reason()` names the actual top pick honestly ("higher-yield TEXT…" vs "escalate to VISION…", never
+  a blanket "try another modality"). `detect_requests()` takes an optional `covered_bands` (district-wide
+  accepted bands across ALL prior extractions, not just this result) so a **partial** result — e.g. a
+  1-record 7→6 re-dispatch — can't fabricate a band gap for bands already covered elsewhere. A district
+  band-gap 7→2 carries `params.pending_alt_reps` + a **DEFER** reason when the district has barren records
+  with an unexhausted 7→6 remedy (#159) — deliberately a **district-level** signal, not per-band
+  attribution (the motivating case, an emergent record, has no `intended_schools` to attribute a band from).
 - `validate.py` — the GT-scoring harness: `load_gt()`, `score_district()` (per-band hit/miss/gap/extra +
   per-school hit/miss via the shared `common.school_match.norm_school`), `score_run()` (aggregate).
 - `models.py` — SQLAlchemy models on the governance DB (`gdb.Base`), all **precious** (append-only,
@@ -80,19 +99,59 @@ against a real request round-trip. (tracked: #122)
 - `main()` CLI: `--mode {plumbing,council,image}`, `--persist`, `--validate --gt <path>`, `--no-resume`,
   `--no-judge`, `--limit`.
 
-**gate@7 console** (`process_governance/server.py` + `static/stage7.js`):
+**Execution layer:** `process_governance/stage7_execute.py` (REQ-118, hardened epic #163) — turns
+APPROVED directives into real back-edge work. Two mechanisms (§3F):
+- **7→6 bundle** (`execute_alternate_dispatch` → `compose_alternate_bundle` → `_bundle_alternate`): fires
+  a district's **whole approved 7→6 set as ONE Stage-6 dispatch = one depth-guard round** (#153) — approve
+  several, execute once. `pick_alternate()` + `live_alternates()` derive the candidate from the record's
+  **live** representation rows (not the request's stored params, so a pre-#155 request still picks
+  correctly) and rank yield-first; `_sent_files_by_rec()` unions every already-failed file across ALL of
+  the district's 7→6 history so a round never re-offers a rep that already failed (F4). `_run_bundle_or_own`
+  is the inject-or-own idiom + post-commit best-effort `district_status` export (mirrors `dispatch_handoff`'s
+  commit-order lesson, #143).
+- **7→2/7→3/7→1 follow-up batch** (`compose_followup_batch` → `plan_followup` (pure) →
+  `stage1_queue.build_followup_batch`): collects approved NEW-work into one targeted DRAFT batch. `plan_followup`
+  now also **defers** (holds) a district's NEW-work while it has an un-executed 7→6 that could still fire —
+  computed from `_defer_76_districts`, which excludes **rounds-exhausted** districts (a district whose 7→6s
+  are depth-blocked zombies must not defer forever; #159). `compose_followup_batch(dry_run=True)` runs the
+  full gather→plan→build pipeline **read-only** (no `create_batch`, no directive flip) for the console's
+  preview modal (#154) — returns `preview` (districts × target bands × `query_strategy` × seed-URL count).
+  `_attempted_schools()` feeds the follow-up builder which schools were already tried, **excluding draft
+  batches** (an abandoned draft must not poison the untried set — review finding, epic #163).
+- **Depth guard is rounds, not rows, everywhere**: `_executed_rounds`/`_executed_rounds_76` count
+  `COUNT(DISTINCT executed_ref)` — a bundle flips N directives to one `executed_ref`, so counting rows
+  would trip the guard after a single bundled round.
+
+**gate@6/7 console** (`process_governance/server.py` + `static/stage6.js`/`stage7.js`):
+- `GET /api/handoffs` — dispatched handoffs, now carrying `n_extracted` + `running` (#152) so Stage 6's
+  list shows Run / Resume / **✓ extracted** per handoff (never a "Re-run" that would silently no-op —
+  the run is resume-by-default).
+- `POST /api/extract/{handoff_hash}/run` + `GET /api/extract/run/{handoff_hash}` (#152) — a background job
+  (the issue-#47 thread + job-board pattern) runs `run_council_streaming` for a **dispatched** handoff; the
+  gate@6 approval IS the go-ahead, no separate approval gate.
 - `GET /api/extract/districts` — attention-sorted (most pending requests first) list; excludes
   `-image` probe handoffs (the district-first view shows the primary/text extraction).
 - `GET /api/extract/district/{district_id}` — the latest non-image extraction: computed band rollup
   (via `AGG.district_bands_from_facts`), accepted/unresolved facts, and the request directives for
-  that district.
+  that district — each now carrying a `lineage` object (#154, `_request_lineage` + `_district_loop_ctx`,
+  computed once per detail call from the SAME live checks compose runs, so the card can never disagree
+  with what compose would actually do): an executed 7→6 → its handoff + live extraction state; an executed
+  7→2/3/1 → its follow-up batch + auto-flow state; an approved 7→6 with rounds exhausted → `blocked` +
+  reason; a 7→2 held behind a live un-executed 7→6 → `deferred` + reason.
 - `POST /api/extract/request/{request_id}` — approve/reject/reopen, recording `reviewed_by`/
-  `reviewed_at`/`review_note`.
+  `reviewed_at`/`review_note`. `executed` is terminal (#135) — a reopen attempt 409s.
+- `POST /api/extract/compose-followup/preview` (#154, dry-run) + `POST /api/extract/compose-followup` —
+  the modal previews before it commits.
+- `POST /api/extract/execute/{request_id}` — fires the district bundle (see above).
+- `GET /api/followup/autoflow/{batch_id}` (#157) — status of a follow-up's gate@1-auto-pass →
+  Stage 2→3→4 auto-run, landing at gate@5 (§3F).
 - `stage7.js` — district-first left pane (Ian's UI call: "organize by district with requests related to
   them"), attention-sorted with an "N REQ" badge; detail pane shows the band rollup (labeled as
-  Stage-8-owned/authoritative — Stage 7's rollup is a preview), request cards with Approve/Reject/Reopen,
-  accepted-school and unresolved-fact tables. **Fact/band editing is out of scope for gate@7** (Ian:
-  "Fact/band review is Stage 8: Aggregation") — gate@7 is read + the request accept/reject action only.
+  Stage-8-owned/authoritative — Stage 7's rollup is a preview), request cards with Approve/Reject/Reopen
+  **+ lineage/blocked/deferred badges**, accepted-school and unresolved-fact tables, and the **compose
+  preview modal** (cancel/ESC/click-outside all dismiss with no side effect). **Fact/band editing is out
+  of scope for gate@7** (Ian: "Fact/band review is Stage 8: Aggregation") — gate@7 is read + request
+  review/execute + compose-preview, never fact/band edits.
 
 **Results (the `batch_00000` full-batch validation run, 24 districts / 83 reps, 2026-07-03):**
 - **Text council** (Gemini 2.5 Flash-Lite + Mistral Small 24B → Qwen3-235B judge): **95.2% band /
@@ -134,11 +193,13 @@ results, approve/reject.
 ## 2. Console — what's built vs. still open
 
 Built (§0): district-first list, band rollup, accepted/unresolved facts, request cards with
-approve/reject/reopen. **Still open** (deferred, not designed):
+approve/reject/reopen/execute, lineage/blocked/deferred visibility, the compose preview modal, a
+"Run extraction" trigger on gate@6's dispatch list, and the follow-up auto-flow to gate@5.
+**Still open** (deferred, not designed):
 - Retrieve the screen-capped PNG / PDF for a given URL and view it inline from the console (currently a
-  reviewer would go to disk). (tracked: #99)
-- Recapture or redo-discovery actions triggered *directly* from the console UI, rather than via the
-  request-approval → (future) execution path.
+  reviewer would go to disk). (tracked: #151, split from the original #99)
+- A narrower recapture/redo-discovery trigger scoped to ONE record/URL directly from the console, as
+  distinct from the district-level compose/execute actions already built.
 
 ## 3. Escalation & gate posture
 
@@ -149,16 +210,24 @@ approve/reject/reopen. **Still open** (deferred, not designed):
   is simply held as `unresolved`, surfaced at gate@7, not auto-escalated.
 - **`gate@7` is manual today** (review + approve/reject requests; no fact/band editing). It follows the
   ramp-up model: manual now, auto-with-confidence-escalation later, once reliability is proven
-  (governance §11b).
+  (governance §11b). **Gate taxonomy (Ian, 2026-07-04, governance §11b):** the canonical design was only
+  three gates — 1/5/8 (the old CP-A/B/C) — which decide something genuinely *new* each time and are
+  permanent. **gate@6 and gate@7 are supervision gates**, added later from API-spend caution during a
+  context-clear cycle, not first-principles design; they're the first candidates to relax as reliability
+  is proven. This is why a **follow-up** batch (which carries an already-approved gate@7 decision) can
+  auto-pass gate@1 and auto-flow Stages 2→3→4 (§3F, #157) while gate@5 (new URLs = data quality, a
+  structural gate) and gate@6 (spend, a supervision gate Ian still wants manual) do not auto-advance.
 
 ---
 
 ## 4. The request-more-evidence loop
 
 **When the council can't confidently answer, the pipeline gets more evidence via cyclic back-edges
-(7→6/3/2/1).** Detection + routing are **built and validated** (§0); **execution is now built too**
-(REQ-118, §3F). The whole loop — detect → route → gate@7 review → execute — is code; what remains is a
-live non-benchmark run to exercise it.
+(7→6/3/2/1).** Detection + routing are **built and validated** (§0); **execution is built and hardened**
+(REQ-118, §3F, epic #163). The whole loop — detect → rank/defer → gate@7 review (with lineage) → bundled
+execute / previewed compose → auto-flow to gate@5 — is code, and has been exercised repeatedly against
+real districts during the epic #163 shakedown; what remains is a single clean end-to-end pass on a fresh
+live batch with the now-corrected code (#122).
 
 **(a) Routing = deterministic scripts, not the model — the REQ-054 read-vs-decide split, extended.** The
 council reads/assesses; deterministic local code decides what to do about insufficiency. Rationale
@@ -192,22 +261,38 @@ a genuine 0-fact gap → the loop then catches it via `7→6` (swap in the held 
 real detector output, correcting an earlier assumption that `7→6` would catch Essex directly (it can't
 while the fabrication stands).
 
-### 3F. Request execution — BUILT (REQ-118)
+**(e) Rediscover DEFERS while a cheaper existing-evidence remedy is unexhausted (#159, epic #163).** A
+district-altitude 0-facts band doesn't automatically mean "spend on new discovery" — if the district also
+has a barren record with an unexhausted 7→6 alternate, `requests.py` tags the 7→2 with
+`params.pending_alt_reps` and a DEFER reason (§0). Deliberately a **district-level**, not per-band, signal:
+the motivating case (an emergent record, no `intended_schools`) can't be attributed to a band
+pre-extraction, and name-matching the ~76% of records that do carry intended schools was considered and
+rejected as fragile. `stage7_execute.plan_followup`/`_defer_76_districts` re-check this **live** at
+compose time (never the request's stale detect-time params — a live-vs-cached-state bug found + fixed
+during epic #163) and exclude districts whose 7→6s are rounds-exhausted, so the defer can't deadlock a
+district's rediscovery forever.
 
-An approved directive now fires the target stage's back-edge. The key architectural collapse (Ian,
-2026-07-03): **anything needing NEW capture/discovery routes through a Stage-1 follow-up batch, so there
-are only TWO execution mechanisms, not four** — matching governance §11d ("directions route through
-Stage 1; only re-routing EXISTING representations bypasses it"):
+### 3F. Request execution — BUILT + HARDENED (REQ-118, epic #163)
 
-- **`7→6` — DIRECT alternate-rep re-dispatch** (`stage7_execute.execute_alternate_dispatch`). The
+An approved directive fires the target stage's back-edge. The architectural collapse (Ian, 2026-07-03):
+**anything needing NEW capture/discovery routes through a Stage-1 follow-up batch, so there are only TWO
+execution mechanisms, not four** — matching governance §11d ("directions route through Stage 1; only
+re-routing EXISTING representations bypasses it"):
+
+- **`7→6` — a district's approved alternate-rep re-dispatches, BUNDLED into ONE round** (#153,
+  `stage7_execute.execute_alternate_dispatch` → `compose_alternate_bundle` → `_bundle_alternate`). The
   alternate reps are **already captured, processed, AND labeled** — the gate@5 label attaches to the
-  *record* (the URL/`rec_key`), not to an individual rep, so every rep of an already-reviewed record
-  inherits it (`filtered.json` even carries "winner + alternates", the REQ-094 follow-up). So 7→6 needs
-  **no new capture and no Stage-5 round-trip**: it synthesizes a one-record dispatch input from the named
-  alternate rep (`build_alternate_input`, prefers the image rep for the text→vision escalation, defaults
-  it to the `image` council), builds a NEW immutable Stage-6 dispatch via the pure `package.assemble_package`
-  / `handoff.freeze` / `stage6_dispatch.record_dispatch` path (the prior dispatch untouched — history
-  preserved), and it re-enters Stage 7 through the normal extract path. This is the one back-edge that
+  *record*, not an individual rep, so every rep of an already-reviewed record inherits it. So 7→6 needs
+  **no new capture and no Stage-5 round-trip**. Originally one dispatch per approved directive (each its
+  own depth-guard round); reworked so **the whole district's approved 7→6 set rides ONE Stage-6 dispatch
+  = one round** — approve several alternate-rep requests, execute one, they all go together
+  (`build_alternate_bundle_input` merges per-record inputs into a single multi-record package). Each
+  record's alternate is chosen **yield-ranked** (`pick_alternate`/`live_alternates`, #155: higher-yield
+  text before vision, never image-first), reading the record's **live** representation rows so a request
+  persisted before ranking landed still picks correctly, and excluding **every already-failed file across
+  the district's whole 7→6 history** (`_sent_files_by_rec`, F4) so a later round never re-offers a rep
+  that already failed. Builds a NEW immutable Stage-6 dispatch (the prior dispatches untouched — history
+  preserved) and re-enters Stage 7 through the normal extract path. This is the one back-edge that
   bypasses **both** Stage 1 and Stage 5.
 - **`7→2` / `7→3` / `7→1` — via a Stage-1 FOLLOW-UP BATCH** (`stage7_execute.compose_followup_batch` +
   `stage1_queue.build_followup_batch`). These need NEW discovery/capture → NEW representations that have
@@ -218,9 +303,29 @@ Stage 1; only re-routing EXISTING representations bypasses it"):
   expands to the district's claimed bands), honoring the **12-district hard cap** (overflow spills to the
   next compose), then flips the swept directives to `executed` with the batch_id as their `executed_ref`
   (lineage + idempotency). `build_followup_batch` is TARGETED (not stratified) and deliberately
-  re-includes already-attempted districts; **`build_batch` (first-run) is untouched.**
+  re-includes already-attempted districts; **`build_batch` (first-run) is untouched.** Compose now also
+  **defers** (holds) a district's NEW-work while it has a live, still-executable 7→6 (§4-e below) — checked
+  LIVE at compose time, never from the request's stale detect-time params.
+- **Follow-up shaping (#160/#161/#162, epic #163):** `build_followup_batch` prefers **untried NCES
+  schools** for a re-targeted band (schools not yet selected in any non-draft batch — an abandoned draft
+  must never count as "attempted"); when every eligible school was already tried, it falls back to the
+  full set and tags the band `query_strategy='widen_queries'`. Stage 2's `build_roster` reads that tag and
+  runs the school's default query **plus** a differentiated SERP set
+  (`common/config/stage2_query_templates.json` — phrasing variations only; they compose with the existing
+  `site:{domain}` scoping, so they never hardcode a search operator that would collide); `run_wave1` runs
+  every query per school and unions the URLs. A 7→3's `params.target_urls` (dormant — no producer yet)
+  carry through as `seed_urls` on the district entry into Stage 2's `write_discovery`, which injects them
+  into `candidates.json` (tool `seed_7to3`) so Stage 3 captures them through the existing pipe, no Stage-3
+  change.
+- **Follow-up auto-flow (#157, epic #163):** composing a follow-up batch now **auto-flows** it —
+  `POST /api/extract/compose-followup` kicks off a background supervisor that auto-approves gate@1 (a
+  follow-up carries an already-approved gate@7 decision, so re-gating it is redundant — governance §11b)
+  then runs Stage 2 → Stage 3 → Stage 4 in sequence, **stopping at gate@5** (data quality — new URLs still
+  need human review) with **gate@6 never auto-crossed** (the spend gate stays manual). Holds the per-batch
+  run lock across the whole chain; any stage failure halts the chain and records where. `GET
+  /api/followup/autoflow/{batch_id}` streams the live stage.
 
-**Guards (the must-haves, built):** the **REQ-051 budget governor** (`common/budget.py` +
+**Guards (the must-haves, built + hardened):** the **REQ-051 budget governor** (`common/budget.py` +
 `common/config/budget.json`) bounds OpenRouter spend/effort on **four caps** — three money axes plus a
 depth guard: **per-run** (halts the run), **per-district per-run** (skips the district in this handoff),
 **per-district TOTAL** (cumulative across ALL handoffs — the real request-loop guard: a hard district that
@@ -228,17 +333,27 @@ keeps failing + re-requesting can't run up unbounded spend over many follow-up r
 a fresh handoff), and **`max_request_rounds`** (the non-spend depth guard, below). The three money caps are
 enforced pre-district in `run_council_streaming`, seeded from durable `SUM(extraction.cost_usd)` (per-run
 scoped to the handoff, total across all of the district's handoffs) so resume stays under the same
-ceilings. Its
-`max_request_rounds` is the **per-district×band depth guard** (derived from executed-directive history) so
-the cyclic loop provably terminates. The paid 7→6 re-extraction is budget-gated when its new handoff is run.
+ceilings. `max_request_rounds` is the **per-district×band depth guard** — counted as `COUNT(DISTINCT
+executed_ref)` **everywhere** (a live bug found + fixed during epic #163: counting rows instead of distinct
+refs would trip the guard after a single bundled round of several 7→6s), so the cyclic loop provably
+terminates. The paid 7→6 re-extraction is budget-gated when its new handoff is run. A district whose 7→6
+rounds are exhausted is excluded from the compose-defer set (`_defer_76_districts`) — otherwise its
+un-executable ("zombie") 7→6s would hold its rediscovery forever, a live deadlock found + fixed on Las
+Cruces during the shakedown.
 
 **Surfaces:** CLI `python3 -m infrastructure.acquisition.process_governance.stage7_execute
-{compose-followup|execute <request_id>}` (CLI-first per the ramp-up model) + the server endpoints
-`POST /api/extract/compose-followup` and `POST /api/extract/execute/{request_id}`. Console buttons on
-`stage7.js` are deferred (the review console renders the directives; execution is CLI/API today). (tracked: #99)
+{compose-followup|execute <request_id>|execute-bundle <district_id>}` (CLI-first per the ramp-up model) +
+the server endpoints `POST /api/extract/compose-followup[/preview]` and
+`POST /api/extract/execute/{request_id}` + **console UI**: gate@7's "Execute re-dispatch" per approved
+7→6 card fires the whole district's bundle; "Compose follow-up batch" opens the **preview modal**
+(`dry_run=True` — no persistence) before committing; Stage 6's dispatch list carries a "Run extraction"
+trigger (§0) — all surfaces call the same underlying functions.
 
-- **Still open — not built:** the console execute buttons; the narrow model "referenced-but-unread"
-  detector signal (deferred per the measured-pass discipline); a live non-benchmark end-to-end run.
+- **Still open — not built:** the narrow model "referenced-but-unread" detector signal (deferred per the
+  measured-pass discipline); a clean live non-benchmark end-to-end run of the FULLY-CORRECTED loop in one
+  pass (#122) — the shakedown that produced epic #163 exercised most of this loop repeatedly against real
+  districts (Marion, Pittsylvania, Las Cruces) while finding and fixing the bugs above, but hasn't yet run
+  start-to-finish on a fresh batch with the corrected code.
 - **Open research question, unresolved:** the OpenRouter session/context question — can an API session
   stay open across a request round-trip, or must every re-entry re-pass frozen context (the immutable
   dispatch) into a fresh call? See `STAGE6_DISPATCH_DESIGN` §3F. (Today the re-entry re-passes the frozen
@@ -256,10 +371,16 @@ the cyclic loop provably terminates. The paid 7→6 re-extraction is budget-gate
   `models-and-council-composition/models-and-council-composition.md` (the batch_00000 report),
   `EXTRACTION_BENCHMARK_FINDINGS.md`.
 - REQ-054 (read-times invariant), REQ-055 (gross metric), REQ-056 (cross-family consensus), REQ-051
-  (budget governor), REQ-117 (this build).
+  (budget governor), REQ-117 (this build), REQ-118 (request execution).
 - **Council Lab** (the producer that tunes the councils/prompts/cost the request loop routes on): design in
   `COUNCIL_LAB_DESIGN_2026-06.md`; GitHub #80 (infra), #81 (spray A/B), #82 (image-council vision judge —
   fixed), #85 (camelot reader-routing).
+- **Epic #163** (request-loop hardening + gate@7 console maturation, PR #167, closed) and its sub-issues:
+  #158 (release cluster-drop, HIGH), #165 (current_state null-state), #160 (query-template config),
+  #155/#159 (detector ranking + defer), #153/#161/#162 (bundle + seed-URL/eligible-schools shaping),
+  #152/#156/#157 (console run-extraction, gate@1 refresh, follow-up auto-flow), #154 (lineage + compose
+  modal). Follow-on, still open: #151 (inline PNG/PDF viewer), #122 (the live end-to-end run), #164
+  (geo-scoped rediscover queries, future).
 
 ---
 
@@ -372,3 +493,71 @@ image-vs-text comparison → the request-detection engine → gate@7 console. Ke
   council on native-digital reps, reinforcing the route-by-modality experiment (#132). Full scorecard:
   `COUNCIL_LAB_DESIGN_2026-06.md` §0; persisted record at
   `data/acquisition/council_lab/judge_replay_a2bc80c004ca-image_partial.json`.
+- **Epic #163 — request-loop hardening + gate@7 console maturation (2026-07-04/05), PR #167 merged.**
+  Triggered by Ian's manual shakedown of the request loop against real (non-benchmark) districts — the
+  first live exercise since REQ-118 landed. Built as 6 sequenced, independently-reviewed chunks (each
+  functional commit followed by an adversarial review pass; findings fixed with regression tests before
+  moving on) — the discipline itself a direct response to the #133 "re-implemented invariants" lesson.
+
+  **Chunk 1 — #158, [HIGH], the load-bearing find.** Investigating why Marion/Pittsylvania's high/middle
+  bands stayed empty despite discovered bell tables traced to a genuine data-loss bug, not a Stage-7
+  problem: content-hash dedup (`duplicate_of`) and shingle clustering (`is_cluster_rep`) pick their
+  canonical keeper INDEPENDENTLY; when they disagreed (a cluster rep whose `duplicate_of` pointed at a
+  sibling), release's `CANONICAL_RECORD_WHERE` matched NEITHER member and the whole cluster silently
+  never reached dispatch. Triggers on the common pattern of a schedule PDF mirrored at two URLs (site +
+  a `5il.co`/thrillshare host). Fixed at the write sites (not the 4 read-side consumers, per a grimp
+  dependency check first); backfill-repaired the 7 existing bad clusters. **Verified live:** re-dispatching
+  Marion's now-reachable tier-A bell tables recovered its middle band from empty to 425 min — a real
+  before/after on real data, not a unit test. A code review of the first-pass fix caught scope bugs (would
+  have wiped legitimate singleton content-dedup on every re-ingest); corrected before merge.
+
+  **Chunk 2 — #160 (config foundation).** A differentiated SERP query-template set
+  (`common/config/stage2_query_templates.json`) for a 7→2 rediscover to cast wider than the default query.
+  Ian's review catch, mid-build: an initial draft dropped a `filetype:pdf` template on the mistaken belief
+  it conflicted with domain scoping — it doesn't (`site:` composes fine with a search operator); restored
+  after Ian pushed back directly ("why drop filetype:pdf? That's not in conflict with domain scoping").
+
+  **Chunk 3 — #155, #159 (pure detector intelligence, zero paid calls).** Root-caused from the Chunk-1
+  recovery: Marion's now-dispatched MHS bell table STILL returned 0 facts because the release layer sent
+  the noisy OCR rep over the clean full-text rep, and the detector's alternate-rep pick was image-first
+  regardless of yield — Pittsylvania showed the identical shape (a truncated handbook slice sent instead
+  of the full `pdftotext.txt`, n_times 86 vs. 42, ignored). Fixed via `rank_alternates()` (yield-ranked,
+  text-before-vision) + an honest reason string. Also: a district-altitude 7→2 now DEFERS while a cheaper
+  7→6 remedy is unexhausted (§4-e). A live evidence trail (Marion's own re-extraction, Las Cruces's
+  partial re-dispatch results) grounded both fixes in real detector output, not hypothesis.
+
+  **Chunk 4 — #153, #160/#161/#162 exec (the biggest chunk).** Bundled a district's 7→6s into one round
+  (depth guard counts rounds, not components — the original #153 complaint); wired the query-strategy
+  signal and seed-URL plumbing from Stage 1 through Stage 2/3 consumption, verified live (Pittsylvania's
+  Chatham High: 1 query → 5). Two review rounds found real defects: the compose-side depth-guard query
+  still counted ROWS after the executor moved to counting ROUNDS (would have depth-blocked a follow-up
+  after one real bundled round); the live-defer check didn't exclude rounds-exhausted districts, which
+  would have DEADLOCKED Las Cruces's rediscovery forever (verified: it was already in that state);
+  `_attempted_schools` counted schools from DRAFT batches, so the abandoned `batch_00009` was poisoning
+  the untried-schools set for Pittsylvania.
+
+  **Chunk 5 — #152, #156, #157 (console orchestration).** A "Run extraction" trigger (reusing the
+  issue-#47 background-job pattern verbatim); the gate@1 stale-list bug (`loaded1` guard fetched once per
+  page load); and the follow-up auto-flow, which encodes a governance decision made mid-epic: the
+  canonical gate design was only **1/5/8** (permanent, structural); **gate@6/7 are supervision gates**
+  that emerged later from API-spend caution during a context-clear cycle — the first to relax as
+  reliability is proven (governance §11b). So a follow-up (carrying an already-approved gate@7 decision)
+  auto-passes gate@1 and auto-runs Stages 2→3→4, landing at gate@5 (still manual — new URLs, data
+  quality) with gate@6 untouched (still manual — spend, Ian's explicit call). Review caught a done handoff
+  still offering "Re-run extraction" — a resume-by-default run that would silently no-op; fixed to an
+  honest "✓ extracted" marker.
+
+  **Chunk 6 — #154 (closing the loop's visibility gap).** The literal complaint that named epic #163:
+  "I'm not sure what status is" after firing executions from the console. Added per-request lineage
+  (executed → its handoff/batch + live state), a ⛔ blocked badge for depth-exhausted zombies, a ⏸
+  deferred note, and an in-Stage-7 preview modal before composing (cancel/ESC/click-out all no-op) — Ian's
+  standing preference for reviewable derived actions, without leaving Stage 7's view. Review caught the
+  deferred note reading the request's stale detect-time params instead of the same live check compose
+  runs — exactly the class of bug lineage exists to prevent, since a stale card would disagree with what
+  compose actually does.
+
+  **Verification discipline held throughout:** every functional commit got its own adversarial review pass
+  before the next chunk started (not batched at the end); real bugs found in 4 of 6 chunks despite each
+  commit shipping with its own tests and a green suite — the review step, not the tests alone, is what
+  caught them. Final: 974 DB-free + 64 govdb tests, `lint-imports` 3 kept/0 broken, console changes
+  Playwright self-verified live against the running server. 21 commits, ~2.4k lines, PR #167.

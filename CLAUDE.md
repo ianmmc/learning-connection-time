@@ -111,28 +111,33 @@ live in the governance DB; `handoff_<hash>_<ts>.json` under `data/acquisition/ha
 `district_status.json` into every commit — on a fresh clone run `git config core.hooksPath .githooks`
 (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-04):** the console runs the pipeline live through **`gate@7`**, and the
-request-more-evidence loop is now **fully built end-to-end** — detect/persist/review (REQ-117) +
-**execution** (REQ-118: 7→6 direct alternate-rep re-dispatch, and 7→2/7→3/7→1 wrapped in a Stage-1
-follow-up batch), under the **REQ-051 budget governor** (`common/budget.py` — per-run/per-district/
-per-district-total spend caps + a request-depth guard). gate@7 approval stays pure review; execution is a
-separate compose/execute step — CLI + API + **console buttons** (all built). A high-effort code review
-of the whole branch found 13 correctness bugs sharing one root cause (**"the new path re-implemented
-invariants instead of inheriting them"** — GitHub epic #133) — all fixed with regression tests; #147/#148
-(cleanup/efficiency) remain open, not blocking. The **Council Lab** shipped its first experiment: the
-image council's judge (`deepseek-v3.2`, non-vision-capable, 404'd on every image call) was swapped to
-`qwen/qwen3-vl-235b-a22b-instruct` + a `councils.validate()` vision guard (**GitHub #82, closed**) — the
-judge-replay harness (`council_lab.py`) measured the fix (32/33 calls ok, GT bands 88.5%→89.1%, schools
-98.1%→98.2%, $0.045 total). REQ-119 (external AI calls must stream) is now a standing, tested,
-provider-agnostic constraint (behavioral tests + an AST source-guard). Stages 8–9 remain designed, not
-built. A backlog sweep moved ~45 open to-dos into the GitHub tracker (9 epics, issue #86, closed) — **new
-standing practice: track bugs/deferred/planned work as GitHub issues, not doc to-dos.** This CLAUDE.md
-status + all design-note/governance/pipeline docs were verified against current code and refreshed in
-this same pass (docs/PROJECT_HISTORY.md carries the distilled entry). **Next:** engineer's-discretion —
-Stage 8 (aggregate), the Council Lab's remaining backlog (`cost_benchmark`, the #81 anti-spray prompt A/B;
-tracked #80/#81), or a live non-benchmark run of the request loop (tracked #122). Full detail:
-`docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§3F/§6,
-`COUNCIL_LAB_DESIGN_2026-06.md`.
+**Current status (2026-07-05):** the console runs the pipeline live through **`gate@7`**, and the
+request-more-evidence loop is now **built AND hardened end-to-end** (epic #163, PR #167, merged). A manual
+shakedown of the loop against real (non-benchmark) districts surfaced a **HIGH-severity release bug
+(#158)**: content-hash dedup and shingle clustering picked their canonical record independently, so a
+schedule PDF mirrored at two URLs could silently vanish from dispatch entirely — fixed + backfilled, with
+a real recovered-band verification. That finding drove a 6-chunk hardening pass, each commit
+adversarially reviewed before the next: **7→6 now bundles a district's whole approved alternate-rep set
+into ONE dispatch/round** (picking the yield-ranked alternate, not image-first — #153/#155); **7→2/7→3/7→1
+shape their own follow-up discovery** (untried-schools-first, else a widened SERP query set — #160/#162)
+**and defer live while a cheaper 7→6 remedy is unexhausted** (#159); a follow-up **auto-flows** gate@1 +
+Stages 2→3→4 to gate@5 (#157 — a governance decision: gates **1/5/8 are structural/permanent**, **6/7 are
+supervision gates** that emerged from spend caution and are the first to relax); the console gained a
+"Run extraction" trigger (#152), gate@7 request **lineage** + blocked/deferred visibility, and an
+in-Stage-7 compose-preview modal (#154). 974 DB-free + 64 govdb tests green; console changes
+Playwright-verified live. **Not yet done:** a clean live non-benchmark end-to-end pass of the
+now-corrected loop in one sitting (tracked #122 — the epic's shakedown exercised most of it in pieces
+while finding what it then fixed, but hasn't run start-to-finish since). Stages 8–9 remain designed, not
+built. All 4 docs in the tower (this file, `STAGE7_EXTRACT_DESIGN`, `PIPELINE_GOVERNANCE_AND_STATE`,
+`ACQUISITION_PIPELINE` incl. its Mermaid diagram) were refreshed against current code in this same pass;
+`docs/PROJECT_HISTORY.md` carries the distilled entry. All epic #163 sub-issues closed individually
+against their commits (not bulk-closed); **#151** (inline PNG/PDF viewer) and **#164** (future geo-scoped
+rediscover queries) remain open follow-on work; **#166** (pre-existing, unrelated Stage-4 test drift) was
+found + logged, not fixed. **Next:** engineer's-discretion — a live non-benchmark end-to-end run of the
+request loop (#122, now the most natural next exercise since the loop is freshly hardened), Stage 8
+(aggregate), or the Council Lab's remaining backlog (`cost_benchmark`, the #81 anti-spray prompt A/B;
+tracked #80/#81). Full detail: `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE7_EXTRACT_DESIGN_2026-06.md`
+§0/§3F/§4/§6, `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11i, `COUNCIL_LAB_DESIGN_2026-06.md`.
 
 ---
 
