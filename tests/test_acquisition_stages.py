@@ -556,6 +556,8 @@ class TestRosterBuilding:
         roster = D2.build_roster(_synthetic_district())
         q = next(r["query"] for r in roster if r["school_id"] == "9999999001")
         assert q == "Test Elementary ZZ bell schedule start and end times"
+        # (widen-query consumption lives in tests/test_stage2_query_templates.py — CI-collected,
+        #  since this module is @pytest.mark.integration and deselected from the DB-free job.)
 
 
 class TestReconcile:

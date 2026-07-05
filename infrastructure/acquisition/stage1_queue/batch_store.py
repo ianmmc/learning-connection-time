@@ -46,14 +46,20 @@ def create_batch(sess, batch_doc: dict, *, batch_type: str = "first-run", actor:
     for i, d in enumerate(batch_doc["districts"]):
         sbb = d.get("schools_by_band", {})
         order = d.get("band_processing_order") or list(sbb.keys())
-        band_meta = {b: {k: sbb[b].get(k) for k in ("n_candidates", "n_unclaimed_at_selection", "n_selected")}
+        # follow-up shaping travels in the EXISTING per-band JSON (no migration): query_strategy is
+        # persisted alongside the selection facts and reconstructed into schools_by_band by _district_doc
+        # (#160/#162). seed_urls (per-district, #161) rides the additive followup_json column.
+        band_meta = {b: {k: sbb[b].get(k)
+                         for k in ("n_candidates", "n_unclaimed_at_selection", "n_selected", "query_strategy")}
                      for b in sbb}
+        seed_urls = d.get("seed_urls") or []
         sess.add(BatchDistrict(
             batch_id=bid, district_id=d["district_id"], ord=i, name=d["name"], state=d["state"],
             domain=d.get("domain", ""), enrollment_k12=d.get("enrollment_k12"),
             lea_claimed_bands=d.get("lea_claimed_bands", []),
             nces_school_counts=d.get("nces_school_counts", {}),
             band_processing_order=order, band_meta=band_meta, included=True,
+            followup_json=({"seed_urls": seed_urls} if seed_urls else None),
         ))
         by_school: dict = {}
         for b in order:
@@ -98,12 +104,17 @@ def _district_doc(sess, d: BatchDistrict, *, included_only: bool, with_flags: bo
             "n_selected": sum(1 for s in band_schools if s.included),   # LIVE
             "schools": [_school_dict(s, with_flags) for s in band_schools],
         }
+        if meta.get("query_strategy"):                     # follow-up widen/new-schools signal (#160)
+            sbb[b]["query_strategy"] = meta["query_strategy"]
     doc = {
         "district_id": d.district_id, "name": d.name, "state": d.state, "domain": d.domain,
         "enrollment_k12": d.enrollment_k12, "lea_claimed_bands": d.lea_claimed_bands,
         "nces_school_counts": d.nces_school_counts, "band_processing_order": d.band_processing_order,
         "schools_by_band": sbb,
     }
+    seed_urls = (d.followup_json or {}).get("seed_urls")   # 7->3 recapture URLs (#161)
+    if seed_urls:
+        doc["seed_urls"] = seed_urls
     if with_flags:
         doc["included"] = d.included
     return doc

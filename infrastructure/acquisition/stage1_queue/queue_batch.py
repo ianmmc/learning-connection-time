@@ -288,6 +288,8 @@ def build_followup_batch(year: str, batch_id: str, targets: dict, *,
                 restricted[b] = dsi[b]
                 query_strategy[b] = "widen_queries"    # -> Stage 2 differentiated_queries (#160)
         order, schools_by_band = select_schools(batch_id, did, restricted)
+        for b in schools_by_band:                          # #162/#160: the per-band signal Stage 2 reads
+            schools_by_band[b]["query_strategy"] = query_strategy.get(b)
         web = info["website"] or ""
         domain = host_of(web if "//" in web else "http://" + web) if web else ""
         districts_out.append({
@@ -300,7 +302,6 @@ def build_followup_batch(year: str, batch_id: str, targets: dict, *,
             "nces_school_counts": level_counts.get(did, {"total": 0, "by_level": {}}),
             "band_processing_order": order,
             "schools_by_band": schools_by_band,
-            "followup_query_strategy": query_strategy,     # {band: new_schools|widen_queries} (#162/#160)
             "seed_urls": seed_urls_by_did.get(did, []),    # explicit 7->3 recapture URLs (#161)
         })
 

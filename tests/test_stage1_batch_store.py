@@ -65,6 +65,22 @@ class TestRoundTrip:
         assert d1["schools_by_band"]["elementary"]["n_selected"] == 2
         assert rec["n"] == 2
 
+    def test_followup_shaping_round_trips(self, sess):
+        # #160/#161: query_strategy (per band) + seed_urls (per district) survive create -> receipt
+        doc = _doc("batch_test_followup")
+        doc["districts"][0]["schools_by_band"]["high"]["query_strategy"] = "widen_queries"
+        doc["districts"][0]["schools_by_band"]["elementary"]["query_strategy"] = "new_schools"
+        doc["districts"][0]["seed_urls"] = ["http://x/handbook.pdf"]
+        BS.create_batch(sess, doc, actor="t")
+        rec = BS.to_receipt_doc(sess, "batch_test_followup")
+        d1 = rec["districts"][0]
+        assert d1["schools_by_band"]["high"]["query_strategy"] == "widen_queries"
+        assert d1["schools_by_band"]["elementary"]["query_strategy"] == "new_schools"
+        assert d1["seed_urls"] == ["http://x/handbook.pdf"]
+        # a plain (first-run) district carries neither key
+        assert "query_strategy" not in rec["districts"][1]["schools_by_band"]["elementary"]
+        assert "seed_urls" not in rec["districts"][1]
+
     def test_multiband_school_collapses_to_one_row(self, sess):
         doc = _doc("batch_test_mb")
         # the high school also serves middle -> appears in both bands

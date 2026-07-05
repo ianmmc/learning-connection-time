@@ -48,3 +48,62 @@ class TestDifferentiatedQueries:
         # a template must never hardcode its own site: operator, which would collide.
         for q in D2.differentiated_queries("S", "ST"):
             assert "site:" not in q
+
+
+# ----------------------------- #160 consumption in Stage 2 discovery (Chunk 4) -----------------------------
+def _fu_district(strategy=None):
+    band = {"schools": [{"school_id": "s1", "name": "Fresh High", "level": "High"}]}
+    if strategy:
+        band["query_strategy"] = strategy
+    return {"district_id": "D1", "name": "D", "state": "IA", "domain": "d.org",
+            "schools_by_band": {"high": band}}
+
+
+class TestFollowUpQueryConsumption:
+    def test_first_run_school_runs_only_the_default_query(self):
+        r = D2.build_roster(_fu_district())[0]           # no strategy -> single default query
+        assert r["queries"] == [r["query"]]
+
+    def test_widen_queries_band_adds_the_differentiated_set(self):
+        r = D2.build_roster(_fu_district("widen_queries"))[0]
+        assert r["queries"][0] == r["query"]             # default first
+        assert r["queries"][1:] == D2.differentiated_queries("Fresh High", "IA")
+        assert any("filetype:pdf" in q for q in r["queries"])
+
+    def test_new_schools_band_keeps_single_default(self):
+        r = D2.build_roster(_fu_district("new_schools"))[0]
+        assert r["queries"] == [r["query"]]              # untried schools -> default query, not widened
+
+    def test_run_wave1_runs_every_query_and_unions_dedup(self):
+        roster = D2.build_roster(_fu_district("widen_queries"))
+        calls = []
+
+        def fake_search(q, domain):
+            calls.append(q)
+            return ("brightdata", [f"http://d.org/{len(calls)}", "http://d.org/shared"])
+
+        D2.run_wave1(roster, "d.org", fake_search)
+        assert len(calls) == len(roster[0]["queries"]) > 1          # every widened query ran
+        raw = roster[0]["wave1_raw_urls"]
+        assert raw.count("http://d.org/shared") == 1                # order-preserving dedup across queries
+
+
+class TestSeedUrlInjection:
+    def test_seed_urls_land_in_candidates_json(self, tmp_path, monkeypatch):
+        # #161: a district's seed_urls are injected as capture targets (tool 'seed_7to3') so Stage 3
+        # captures them through the existing candidates.json pipe — no discovery, no Stage-3 change.
+        import json
+        monkeypatch.setattr(D2, "RAW_DIR", tmp_path)
+        district = {"district_id": "D1", "name": "Testville", "state": "IA", "domain": "d.org",
+                    "seed_urls": ["http://d.org/handbook.pdf"]}
+        d = D2.write_discovery(district, roster=[], batch_id="batch_00099")
+        cands = json.loads((d / "candidates.json").read_text())["candidates"]
+        seed = [c for c in cands if c["url"] == "http://d.org/handbook.pdf"]
+        assert len(seed) == 1 and seed[0]["tools"] == ["seed_7to3"]
+
+    def test_no_seed_urls_is_a_noop(self, tmp_path, monkeypatch):
+        import json
+        monkeypatch.setattr(D2, "RAW_DIR", tmp_path)
+        district = {"district_id": "D2", "name": "Plainville", "state": "IA", "domain": "p.org"}
+        d = D2.write_discovery(district, roster=[], batch_id="batch_00099")
+        assert json.loads((d / "candidates.json").read_text())["candidates"] == []

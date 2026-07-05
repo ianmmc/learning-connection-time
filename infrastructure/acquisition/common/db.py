@@ -82,6 +82,7 @@ _PRECIOUS_ALTERS = [
     "ALTER TABLE label ADD COLUMN IF NOT EXISTS facets_json text",   # REQ-114 (V2 facet questionnaire)
     "ALTER TABLE extraction_request ADD COLUMN IF NOT EXISTS executed_ref text",   # REQ-118 (execution lineage)
     "ALTER TABLE extraction_request ADD COLUMN IF NOT EXISTS executed_at text",    # REQ-118 (execution lineage)
+    "ALTER TABLE batch_district ADD COLUMN IF NOT EXISTS followup_json json",      # #161 (7->3 seed URLs)
 ]
 
 

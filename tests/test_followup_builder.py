@@ -26,7 +26,7 @@ def test_untried_schools_preferred_and_strategy_is_new_schools(monkeypatch):
     d = doc["districts"][0]
     picked = [s["school_id"] for s in d["schools_by_band"]["high"]["schools"]]
     assert picked == ["s2"]                                     # only the UNTRIED school
-    assert d["followup_query_strategy"] == {"high": "new_schools"}
+    assert d["schools_by_band"]["high"]["query_strategy"] == "new_schools"
 
 
 def test_all_attempted_falls_back_to_widen_queries(monkeypatch):
@@ -37,7 +37,7 @@ def test_all_attempted_falls_back_to_widen_queries(monkeypatch):
     d = doc["districts"][0]
     picked = {s["school_id"] for s in d["schools_by_band"]["high"]["schools"]}
     assert picked == {"s1", "s2"}                               # no untried -> fall back to the full set
-    assert d["followup_query_strategy"] == {"high": "widen_queries"}   # -> Stage 2 differentiated queries
+    assert d["schools_by_band"]["high"]["query_strategy"] == "widen_queries"   # -> Stage 2 differentiated
 
 
 def test_seed_urls_carried_onto_the_district(monkeypatch):
@@ -56,4 +56,4 @@ def test_no_shaping_args_is_backward_compatible(monkeypatch):
     doc, _ = Q1.build_followup_batch("2024_25", "batch_00099", {"D1": ["high"]})
     d = doc["districts"][0]
     assert [s["school_id"] for s in d["schools_by_band"]["high"]["schools"]] == ["s1"]
-    assert d["followup_query_strategy"] == {"high": "new_schools"} and d["seed_urls"] == []
+    assert d["schools_by_band"]["high"]["query_strategy"] == "new_schools" and d["seed_urls"] == []
