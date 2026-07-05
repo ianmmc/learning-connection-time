@@ -193,7 +193,11 @@
     showComposeModal(prev, handoffHash, did);
   }
 
-  function closeComposeModal() { const m = $g("#s7-compose-modal"); if (m) m.remove(); }
+  let composeEscHandler = null;   // one live ESC handler per open modal — removed on ANY close path
+  function closeComposeModal() {
+    const m = $g("#s7-compose-modal"); if (m) m.remove();
+    if (composeEscHandler) { document.removeEventListener("keydown", composeEscHandler); composeEscHandler = null; }
+  }
 
   function showComposeModal(prev, handoffHash, did) {
     closeComposeModal();
@@ -229,9 +233,8 @@
     overlay.onclick = (e) => { if (e.target === overlay) closeComposeModal(); };  // click-out cancels
     const confirmBtn = overlay.querySelector("[data-confirm]");
     if (confirmBtn) confirmBtn.onclick = () => { closeComposeModal(); doCompose(handoffHash, did); };
-    document.addEventListener("keydown", function esc(ev) {
-      if (ev.key === "Escape") { closeComposeModal(); document.removeEventListener("keydown", esc); }
-    });
+    composeEscHandler = (ev) => { if (ev.key === "Escape") closeComposeModal(); };
+    document.addEventListener("keydown", composeEscHandler);
     (VIEWS_stage7() || document.body).appendChild(overlay);
   }
 

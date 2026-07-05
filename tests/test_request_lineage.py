@@ -44,7 +44,8 @@ def env():
 
 
 def _lin(server, con, req):
-    return server._request_lineage(con, DID, dict(req))
+    ctx = server._district_loop_ctx(con, DID)
+    return server._request_lineage(con, DID, dict(req), ctx)
 
 
 def test_executed_7to6_points_to_its_handoff(env):
@@ -79,11 +80,29 @@ def test_approved_7to6_is_blocked_when_rounds_exhausted(env):
     assert lin and lin.get("blocked") and "depth guard" in lin["reason"]
 
 
-def test_pending_7to2_with_pending_alt_reps_is_deferred(env):
+def test_7to2_defer_is_LIVE_not_detect_time_params(env):
+    """R8 (review of 9e3b085): the deferred note must track the LIVE compose check
+    (_defer_76_districts), never the request's detect-time params — once the district's 7->6s are
+    resolved, the stale params must not show a forever-deferred card."""
     server, con = env
+    # detect-time params SAY deferred, but there is NO live un-executed 7->6 -> no defer note
     r = _req(con, "7->2", "pending", params={"pending_alt_reps": 2})
+    assert _lin(server, con, r) is None
+    # now a LIVE pending 7->6 exists -> the same 7->2 shows deferred (count from live state)
+    _req(con, "7->6", "pending")
     lin = _lin(server, con, r)
-    assert lin and lin.get("deferred") and "7->6" in lin["reason"]
+    assert lin and lin.get("deferred") and "1 un-executed 7->6" in lin["reason"]
+
+
+def test_7to2_not_deferred_when_the_76s_are_zombies(env):
+    """R2 interplay: rounds exhausted -> the district's un-executed 7->6s can never fire, compose
+    does NOT hold the 7->2 — so neither does the card."""
+    server, con = env
+    _req(con, "7->6", "executed", ref="ra")
+    _req(con, "7->6", "executed", ref="rb")        # 2/2 rounds spent
+    _req(con, "7->6", "pending")                   # a zombie
+    r = _req(con, "7->2", "pending", params={"pending_alt_reps": 1})
+    assert _lin(server, con, r) is None            # compose would sweep it; card must agree
 
 
 def test_ordinary_pending_request_has_no_lineage(env):

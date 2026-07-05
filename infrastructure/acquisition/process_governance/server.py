@@ -1270,10 +1270,26 @@ def extract_districts():
         return [dict(r) for r in rows]
 
 
-def _request_lineage(con, district_id: str, req: dict) -> dict | None:
+def _district_loop_ctx(con, district_id: str) -> dict:
+    """#154: the per-DISTRICT request-loop state, computed ONCE per detail call (not per request):
+    the depth cap, rounds spent, and whether compose would LIVE-defer this district's NEW-work
+    (EX._defer_76_districts — the same check compose runs, so the card never disagrees with compose)."""
+    maxr = EX.BUD.load_budget().max_request_rounds
+    rounds = EX._executed_rounds_76(con, district_id)
+    defer_set = EX._defer_76_districts(con, [district_id], maxr)
+    n_unexec_76 = con.execute(text(
+        "SELECT COUNT(*) FROM extraction_request WHERE district_id = :d AND route = :r "
+        "AND status IN ('pending', 'approved')"),
+        {"d": district_id, "r": EX.RQ.ROUTE_ALT_REP}).scalar()
+    return {"maxr": maxr, "rounds_76": rounds, "defers": district_id in defer_set,
+            "n_unexec_76": n_unexec_76}
+
+
+def _request_lineage(con, district_id: str, req: dict, ctx: dict) -> dict | None:
     """#154: make the request loop legible — WHERE an executed directive went (+ the target's live
-    state) and WHY an approved/pending one can't fire yet. Returns a small dict the card renders, or
-    None for an ordinary pending/reviewable request."""
+    state) and WHY an approved/pending one can't fire yet. `ctx` = _district_loop_ctx (LIVE state —
+    never the request's detect-time params, which go stale once the district's 7->6s run or are
+    rejected). Returns a small dict the card renders, or None for an ordinary reviewable request."""
     route, status, ref = req["route"], req["status"], req.get("executed_ref")
     if status == "executed" and ref:
         if route == EX.RQ.ROUTE_ALT_REP:                       # 7->6 -> a new Stage-6 handoff
@@ -1294,15 +1310,13 @@ def _request_lineage(con, district_id: str, req: dict) -> dict | None:
                  else (b["status"] if b else "batch gone"))
         return {"kind": "batch", "ref": ref, "state": state, "batch_status": b["status"] if b else None}
     if route == EX.RQ.ROUTE_ALT_REP and status in ("approved", "pending"):
-        maxr = EX.BUD.load_budget().max_request_rounds
-        if maxr is not None and EX._executed_rounds_76(con, district_id) >= maxr:
-            return {"blocked": True, "reason": f"depth guard: {maxr}/{maxr} 7->6 rounds spent — "
-                                               f"this alternate-rep re-dispatch can no longer execute"}
-    if route == EX.RQ.ROUTE_REDISCOVER and status in ("approved", "pending"):
-        n = json.loads(req.get("params_json") or "{}").get("pending_alt_reps")
-        if n:
-            return {"deferred": True, "reason": f"{n} unexhausted 7->6 for this district — "
-                                                f"compose holds this rediscover until they run (#159)"}
+        if ctx["maxr"] is not None and ctx["rounds_76"] >= ctx["maxr"]:
+            return {"blocked": True, "reason": f"depth guard: {ctx['rounds_76']}/{ctx['maxr']} 7->6 "
+                                               f"rounds spent — this alternate-rep re-dispatch can "
+                                               f"no longer execute"}
+    if route == EX.RQ.ROUTE_REDISCOVER and status in ("approved", "pending") and ctx["defers"]:
+        return {"deferred": True, "reason": f"{ctx['n_unexec_76']} un-executed 7->6 for this district — "
+                                            f"compose holds this rediscover until they run (#159)"}
     return None
 
 
@@ -1339,10 +1353,11 @@ def extract_district(district_id: str):
             "FROM extraction_request "
             "WHERE district_id = :d ORDER BY status = 'pending' DESC, altitude, route, band"),
             {"d": district_id}).mappings().all()
+        ctx = _district_loop_ctx(con, district_id)                 # #154: LIVE loop state, once
         req_dicts = []
         for r in reqs:
             d = dict(r)
-            d["lineage"] = _request_lineage(con, district_id, d)   # #154: where it went / why it can't
+            d["lineage"] = _request_lineage(con, district_id, d, ctx)  # where it went / why it can't
             req_dicts.append(d)
         return {"extraction": dict(ext), "bands": bands, "accepted": accepted,
                 "unresolved": unresolved, "requests": req_dicts}
