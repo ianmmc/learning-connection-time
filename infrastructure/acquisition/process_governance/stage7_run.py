@@ -296,6 +296,7 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
             continue
         pd = _run_district(did, _district_name(doc, did), by_district[did], councils,
                            ddirs.get(did), use_judge)
+        pd["state"] = _district_state(doc, did)   # onto pd BEFORE receipt/persist (#165)
         gov.record(did, (pd.get("telemetry") or {}).get("cost_usd", 0.0))
         results["districts"][did] = pd
         if persist:
@@ -377,6 +378,16 @@ def _district_name(doc: dict, did: str) -> str:
         if d.get("district_id") == did:
             return d.get("name", "")
     return ""
+
+
+def _district_state(doc: dict, did: str) -> str | None:
+    """The district's US state from the frozen handoff entry — carried onto pd so the persist
+    path's state_event doesn't write state NULL (#165: the old NULL nulled the current_state
+    header for every extracted district)."""
+    for d in doc.get("districts", []):
+        if d.get("district_id") == did:
+            return d.get("state") or None
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -524,7 +535,7 @@ def persist_run_session(s, results: dict, *, created_by: str = "auto:stage7",
                 detail_json=json.dumps({k: u[k] for k in ("starts", "ends", "gross") if k in u}),
                 rec_key=u.get("rec_key"), source_file=u.get("source_file")))
         s.execute(DS.INSERT_STATE_EVENT, {
-            "district_id": did, "name": pd.get("name", ""), "state": None, "stage": 7,
+            "district_id": did, "name": pd.get("name", ""), "state": pd.get("state"), "stage": 7,
             "stage_name": "extract", "checkpoint": None, "event_type": "extracted",
             "outcome": "extracted", "topology": None, "batch_id": None,
             "fingerprints_json": None, "actor": created_by, "note": hh,

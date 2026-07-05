@@ -17,7 +17,7 @@ def _synthetic_run():
         "handoff_hash": "testhash7",
         "districts": {
             "ZZTEST01": {
-                "district_id": "ZZTEST01", "name": "Testville", "n_reps": 1, "n_judged": 1,
+                "district_id": "ZZTEST01", "name": "Testville", "state": "IA", "n_reps": 1, "n_judged": 1,
                 "telemetry": {"calls": 3, "judge_calls": 1, "errors": 0,
                               "prompt_tokens": 100, "completion_tokens": 40, "cost_usd": 0.0012},
                 "accepted": [
@@ -66,9 +66,10 @@ def test_persist_writes_extraction_facts_and_event(gov_session):
     assert unresolved.school == "special program" and unresolved.method == "disagree"
     assert json.loads(unresolved.detail_json)["starts"]["m2"] == "08:20"
 
-    ev = s.execute(text("SELECT stage, stage_name, event_type, note FROM state_event "
+    ev = s.execute(text("SELECT stage, stage_name, event_type, note, state FROM state_event "
                         "WHERE district_id = 'ZZTEST01' AND event_type = 'extracted'")).one()
     assert ev.stage == 7 and ev.stage_name == "extract" and ev.note == "testhash7"
+    assert ev.state == "IA"    # #165: the extract event must carry the district state
 
 
 def test_persist_appends_new_extraction_on_rerun(gov_session):

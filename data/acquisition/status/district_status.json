@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-05T02:18:51Z",
+  "last_updated": "2026-07-05T03:55:27Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
-      "state": null,
+      "state": "AL",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -213,7 +213,7 @@
     },
     "0102370": {
       "name": "Mobile County",
-      "state": null,
+      "state": "AL",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -357,7 +357,7 @@
     },
     "0200510": {
       "name": "Matanuska-Susitna Borough School District",
-      "state": null,
+      "state": "AK",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -428,7 +428,7 @@
     },
     "0200600": {
       "name": "Fairbanks North Star Borough School District",
-      "state": null,
+      "state": "AK",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -574,7 +574,7 @@
     },
     "0404970": {
       "name": "Mesa Unified District (4235)",
-      "state": null,
+      "state": "AZ",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -874,7 +874,7 @@
     },
     "0512660": {
       "name": "SPRINGDALE SCHOOL DISTRICT",
-      "state": null,
+      "state": "AR",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -1425,7 +1425,7 @@
     },
     "0626910": {
       "name": "New Haven Unified",
-      "state": null,
+      "state": "CA",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -1504,7 +1504,7 @@
     },
     "0634320": {
       "name": "San Diego Unified",
-      "state": null,
+      "state": "CA",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -1697,7 +1697,7 @@
     },
     "0900450": {
       "name": "Bridgeport School District",
-      "state": null,
+      "state": "CT",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -1776,7 +1776,7 @@
     },
     "0902790": {
       "name": "New Haven School District",
-      "state": null,
+      "state": "CT",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -1855,7 +1855,7 @@
     },
     "0904830": {
       "name": "Waterbury School District",
-      "state": null,
+      "state": "CT",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -1934,7 +1934,7 @@
     },
     "1000080": {
       "name": "Appoquinimink School District",
-      "state": null,
+      "state": "DE",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -2113,7 +2113,7 @@
     },
     "1201440": {
       "name": "ORANGE",
-      "state": null,
+      "state": "FL",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -2210,7 +2210,7 @@
     },
     "1602100": {
       "name": "JOINT SCHOOL DISTRICT NO. 2",
-      "state": null,
+      "state": "ID",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -2569,7 +2569,7 @@
     },
     "1737350": {
       "name": "Triad CUSD 2",
-      "state": null,
+      "state": "IL",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -2653,7 +2653,7 @@
     },
     "1739960": {
       "name": "Urbana SD 116",
-      "state": null,
+      "state": "IL",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -2893,7 +2893,7 @@
     },
     "1906540": {
       "name": "Cedar Rapids Comm School District",
-      "state": null,
+      "state": "IA",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -3041,7 +3041,7 @@
     },
     "1918690": {
       "name": "Marion Independent School District",
-      "state": null,
+      "state": "IA",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -3293,7 +3293,7 @@
     },
     "2302820": {
       "name": "Bangor Public Schools",
-      "state": null,
+      "state": "ME",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -3372,7 +3372,7 @@
     },
     "2307320": {
       "name": "Lewiston Public Schools",
-      "state": null,
+      "state": "ME",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -3739,7 +3739,7 @@
     },
     "2513230": {
       "name": "Worcester",
-      "state": null,
+      "state": "MA",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -4469,7 +4469,7 @@
     },
     "3172840": {
       "name": "LINCOLN PUBLIC SCHOOLS",
-      "state": null,
+      "state": "NE",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -4548,7 +4548,7 @@
     },
     "3200480": {
       "name": "Washoe County",
-      "state": null,
+      "state": "NV",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -4933,7 +4933,7 @@
     },
     "3501500": {
       "name": "LAS CRUCES",
-      "state": null,
+      "state": "NM",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -5929,7 +5929,7 @@
     },
     "3904378": {
       "name": "Cleveland Municipal",
-      "state": null,
+      "state": "OH",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -6631,7 +6631,7 @@
     },
     "4700148": {
       "name": "Memphis-Shelby County Schools",
-      "state": null,
+      "state": "TN",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -7191,7 +7191,7 @@
     },
     "5000395": {
       "name": "Essex Westford Educational Community Unified Union SD #51",
-      "state": null,
+      "state": "VT",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
@@ -7831,7 +7831,7 @@
     },
     "5605302": {
       "name": "Sweetwater County School District #1",
-      "state": null,
+      "state": "WY",
       "furthest_stage": 7,
       "stage_name": "extract",
       "outcome": "extracted",
