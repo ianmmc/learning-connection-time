@@ -118,7 +118,7 @@ def plan_followup(requests: list, *, claimed_bands: dict, executed_rounds: dict 
 # DB glue — read approved directives, plan, build + persist a DRAFT follow-up batch, flip requests
 # ---------------------------------------------------------------------------
 def _approved_newwork(session, handoff_hash: str = None) -> list:
-    q = ("SELECT request_id, district_id, route, band FROM extraction_request "
+    q = ("SELECT request_id, district_id, route, band, params_json FROM extraction_request "
          "WHERE status = 'approved' AND route = ANY(:routes)")
     params = {"routes": list(NEWWORK_ROUTES)}
     if handoff_hash:
@@ -126,6 +126,33 @@ def _approved_newwork(session, handoff_hash: str = None) -> list:
         params["h"] = handoff_hash
     q += " ORDER BY request_id"
     return [dict(m) for m in session.execute(text(q), params).mappings()]
+
+
+def _attempted_schools(session, district_ids: list) -> dict:
+    """{district_id: {school_id, ...}} already selected in ANY batch (#162): the follow-up builder
+    prefers UNTRIED NCES schools for a re-targeted band. `included` filters out human-rejected schools."""
+    if not district_ids:
+        return {}
+    out: dict = {}
+    for did, sid in session.execute(text(
+            "SELECT DISTINCT district_id, school_id FROM batch_school "
+            "WHERE district_id = ANY(:d) AND included IS TRUE"), {"d": list(district_ids)}).all():
+        out.setdefault(did, set()).add(sid)
+    return out
+
+
+def _seed_urls_by_district(rows: list) -> dict:
+    """{district_id: [url, ...]} from approved 7->3 (recapture) directives' params.target_urls (#161).
+    Dormant today (no producer of target_urls yet), but the plumbing carries them if present."""
+    out: dict = {}
+    for r in rows:
+        if r["route"] != RQ.ROUTE_RECAPTURE:
+            continue
+        for u in (json.loads(r.get("params_json") or "{}").get("target_urls") or []):
+            out.setdefault(r["district_id"], [])
+            if u not in out[r["district_id"]]:
+                out[r["district_id"]].append(u)
+    return out
 
 
 def _claimed_bands(session, district_ids: list) -> dict:
@@ -256,7 +283,12 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
             return {**_empty_result(), "spilled": plan["spilled"], "blocked": plan["blocked"],
                     "deferred": plan["deferred"], "benchmark_excluded": bm_excluded}
 
-        batch_doc, skipped = Q1.build_followup_batch(year, batch_id, plan["targets"])
+        # Follow-up shaping inputs (#162 untried schools, #161 seed URLs), scoped to the plan's targets.
+        target_dids = list(plan["targets"])
+        attempted = _attempted_schools(s, target_dids)
+        seed_urls = _seed_urls_by_district([r for r in rows if r["district_id"] in set(target_dids)])
+        batch_doc, skipped = Q1.build_followup_batch(year, batch_id, plan["targets"],
+                                                     attempted_by_did=attempted, seed_urls_by_did=seed_urls)
         if not batch_doc["districts"]:            # every target district was un-buildable (no coverage)
             return {**_empty_result(), "spilled": plan["spilled"], "blocked": plan["blocked"],
                     "deferred": plan["deferred"], "skipped": skipped, "benchmark_excluded": bm_excluded}

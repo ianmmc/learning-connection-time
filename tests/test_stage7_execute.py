@@ -160,7 +160,7 @@ def test_compose_flips_approved_to_executed(gov_session, monkeypatch):
 
     # stub the NCES-heavy build + the row writer (their own tests cover them); both districts built
     monkeypatch.setattr(EX.Q1, "build_followup_batch",
-                        lambda year, bid, targets: ({"batch_id": bid, "districts":
+                        lambda year, bid, targets, **kw: ({"batch_id": bid, "districts":
                             [{"district_id": d} for d in targets]}, []))
     monkeypatch.setattr(EX.BSTORE, "create_batch", lambda sess, doc, **k: None)
 
@@ -380,7 +380,7 @@ def test_compose_excludes_benchmark_districts(gov_session, monkeypatch):
     s.flush()
 
     monkeypatch.setattr(EX.Q1, "build_followup_batch",
-                        lambda year, bid, targets: ({"batch_id": bid, "districts":
+                        lambda year, bid, targets, **kw: ({"batch_id": bid, "districts":
                             [{"district_id": d} for d in targets]}, []))
     monkeypatch.setattr(EX.BSTORE, "create_batch", lambda sess, doc, **k: None)
 
@@ -406,7 +406,7 @@ def test_compose_does_not_flip_skipped_districts(gov_session, monkeypatch):
     s.flush()
 
     monkeypatch.setattr(EX.Q1, "build_followup_batch",
-                        lambda year, bid, targets: (
+                        lambda year, bid, targets, **kw: (
                             {"batch_id": bid, "districts": [{"district_id": "ZZSK2"}]},
                             [{"district_id": "ZZSK1", "reason": "not in NCES lea_info for the year"}]))
     monkeypatch.setattr(EX.BSTORE, "create_batch", lambda sess, doc, **k: None)

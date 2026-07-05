@@ -226,7 +226,8 @@ def build_batch(year: str, n: int, batch_id: str, registry: dict) -> tuple[dict,
     return batch_doc, gap_excluded, len(pool)
 
 
-def build_followup_batch(year: str, batch_id: str, targets: dict) -> tuple[dict, list]:
+def build_followup_batch(year: str, batch_id: str, targets: dict, *,
+                         attempted_by_did: dict = None, seed_urls_by_did: dict = None) -> tuple[dict, list]:
     """Build a TARGETED follow-up batch (batch_type='follow-up') from explicit district×band targets —
     the Stage-1 landing point for the request-more-evidence back-edges 7->2/7->3/7->1 (governance §11d:
     any NEW capture/discovery routes through a reviewable Stage-1 batch, never straight to discovery).
@@ -241,7 +242,23 @@ def build_followup_batch(year: str, batch_id: str, targets: dict) -> tuple[dict,
 
     targets: {district_id: [band, ...]} — the bands to re-target per district (order preserved). A band
     with no school-level coverage in the NCES index is dropped; a district with no usable target band is
-    skipped (reported). Returns (batch_doc, skipped) where skipped = [{district_id, reason}]."""
+    skipped (reported).
+
+    Follow-up shaping (epic #163):
+      * attempted_by_did {district_id: {school_id, ...}} (#162): per target band, PREFER the NCES
+        schools NOT yet attempted (a band came up empty — try schools we haven't discovered/captured).
+        If a band has untried schools, select over those and tag `query_strategy='new_schools'`; if
+        the untried set is empty (small district, all schools already tried), fall back to the full
+        set and tag `query_strategy='widen_queries'` — the signal Stage 2 reads to run the
+        differentiated SERP query set (#160) instead of the default. (Rendering stays in Stage 2:
+        the stages are independent layers — Stage 1 must not import Stage 2's query renderer.)
+      * seed_urls_by_did {district_id: [url, ...]} (#161): explicit URLs to capture (from 7->3
+        recapture directives) — carried onto the district entry for Stage 3 to capture directly,
+        skipping discovery. Dormant plumbing today (no producer of target_urls yet, per Ian) but wired.
+
+    Returns (batch_doc, skipped) where skipped = [{district_id, reason}]."""
+    attempted_by_did = attempted_by_did or {}
+    seed_urls_by_did = seed_urls_by_did or {}
     lea = S.lea_info(year)
     sch_idx = S.school_index(year)
     level_counts = S.school_level_counts(year)
@@ -258,7 +275,18 @@ def build_followup_batch(year: str, batch_id: str, targets: dict) -> tuple[dict,
         if not want:
             skipped.append({"district_id": did, "reason": "no school-level coverage for the target bands"})
             continue
-        restricted = {b: dsi[b] for b in want}                              # only the target bands
+        # #162: per band prefer UNTRIED schools; fall back to the full set (and widen queries) when
+        # every eligible school has already been attempted.
+        attempted = attempted_by_did.get(did, set())
+        restricted, query_strategy = {}, {}
+        for b in want:
+            untried = [c for c in dsi[b] if c["school_id"] not in attempted]
+            if untried:
+                restricted[b] = untried
+                query_strategy[b] = "new_schools"
+            else:
+                restricted[b] = dsi[b]
+                query_strategy[b] = "widen_queries"    # -> Stage 2 differentiated_queries (#160)
         order, schools_by_band = select_schools(batch_id, did, restricted)
         web = info["website"] or ""
         domain = host_of(web if "//" in web else "http://" + web) if web else ""
@@ -272,6 +300,8 @@ def build_followup_batch(year: str, batch_id: str, targets: dict) -> tuple[dict,
             "nces_school_counts": level_counts.get(did, {"total": 0, "by_level": {}}),
             "band_processing_order": order,
             "schools_by_band": schools_by_band,
+            "followup_query_strategy": query_strategy,     # {band: new_schools|widen_queries} (#162/#160)
+            "seed_urls": seed_urls_by_did.get(did, []),    # explicit 7->3 recapture URLs (#161)
         })
 
     batch_doc = {
