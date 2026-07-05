@@ -474,6 +474,13 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
   background: var(--mmm-purple-100); padding: 1px 7px; border-radius: var(--radius-pill); font-size: var(--fs-xs); }
 .s7-req-reason { color: var(--text-secondary); font-size: var(--fs-sm); margin: var(--space-1) 0 var(--space-2); }
 .s7-rev { font-size: var(--fs-xs); margin-top: var(--space-1); }
+/* #154 request-loop lineage / blocked / deferred */
+.s7-lineage { font-size: var(--fs-xs); margin: 0 0 var(--space-2); }
+.s7-lineage code { font-family: var(--font-mono, monospace); background: var(--mmm-purple-100);
+  padding: 0 4px; border-radius: var(--radius-sm); }
+.s7-blocked { color: var(--text-danger, #b42318); font-weight: 600; }
+.s7-deferred { color: var(--text-warn, #b54708); }
+.s7-req-blocked { opacity: 0.72; border-style: dashed; }
 .s7-unres { display: flex; flex-wrap: wrap; gap: 4px; }
 .s7-chip { font-size: var(--fs-xs); padding: 1px 7px; border-radius: var(--radius-pill);
   background: transparent; color: var(--text-secondary); border: var(--border-hair) solid var(--border-subtle); }

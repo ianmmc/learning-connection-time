@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-05T14:01:26Z",
+  "last_updated": "2026-07-05T14:21:36Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -8012,6 +8012,33 @@
           "stage_name": "queue",
           "outcome": null,
           "at": "2026-07-05T14:01:26Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-05T14:21:36Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-05T14:21:36Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-05T14:21:36Z",
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"

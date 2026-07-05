@@ -92,26 +92,43 @@
                 : r.status === "rejected" ? `<span class="badge badge-neutral">rejected</span>`
                 : r.status === "executed" ? `<span class="badge badge-accent">executed</span>`
                 : `<span class="badge badge-warn">pending</span>`;
+    const lin = r.lineage || null;                       // #154: where it went / why it can't
+    const blocked = lin && lin.blocked;
     let actions;
-    if (r.status === "pending") {
+    if (blocked) {
+      // a depth-exhausted (zombie) 7->6 — never executable; only rejectable/reopenable
+      actions = `<button class="btn btn-ghost btn-mini" data-review="rejected" data-id="${r.request_id}">Reject</button>`;
+    } else if (r.status === "pending") {
       actions = `<button class="btn btn-secondary btn-mini" data-review="approved" data-id="${r.request_id}">Approve</button>
          <button class="btn btn-ghost btn-mini" data-review="rejected" data-id="${r.request_id}">Reject</button>`;
     } else if (r.status === "approved" && r.route === "7->6") {
-      // existing-rep re-dispatch — a single-directive action, fires a new Stage-6 dispatch
+      // existing-rep re-dispatch — executes the district's approved 7->6s as ONE bundle (#153)
       actions = `<button class="btn btn-primary btn-mini" data-execute="${r.request_id}">Execute re-dispatch</button>
          <button class="btn btn-ghost btn-mini" data-review="pending" data-id="${r.request_id}">Reopen</button>`;
     } else if (r.status === "approved" && isNewWork(r.route)) {
       actions = `<span class="muted s7-hint">→ queued for a follow-up batch (use “Compose follow-up batch”)</span>
          <button class="btn btn-ghost btn-mini" data-review="pending" data-id="${r.request_id}">Reopen</button>`;
     } else if (r.status === "executed") {
-      actions = r.executed_ref ? `<span class="muted s7-hint">→ ${esc(r.executed_ref)}</span>` : "";
+      actions = "";                                      // lineage line below shows where it went
     } else {
       actions = `<button class="btn btn-ghost btn-mini" data-review="pending" data-id="${r.request_id}">Reopen</button>`;
     }
+    // lineage line: executed -> its target + live state; blocked/deferred -> why it can't fire
+    let lineage = "";
+    if (lin && lin.kind === "handoff") {
+      lineage = `<div class="s7-lineage muted">→ handoff <code>${esc(lin.ref)}</code> · ${esc(lin.state)}${lin.n_districts ? ` (${lin.n_extracted}/${lin.n_districts})` : ""}</div>`;
+    } else if (lin && lin.kind === "batch") {
+      lineage = `<div class="s7-lineage muted">→ follow-up <code>${esc(lin.ref)}</code> · ${esc(lin.state)}</div>`;
+    } else if (blocked) {
+      lineage = `<div class="s7-lineage s7-blocked">⛔ ${esc(lin.reason)}</div>`;
+    } else if (lin && lin.deferred) {
+      lineage = `<div class="s7-lineage s7-deferred">⏸ ${esc(lin.reason)}</div>`;
+    }
     const rev = r.reviewed_by ? `<div class="s7-rev muted">${esc(r.status)} by ${esc(r.reviewed_by)}${r.reviewed_at ? " · " + esc(r.reviewed_at) : ""}</div>` : "";
-    return `<div class="s7-req">
+    return `<div class="s7-req${blocked ? " s7-req-blocked" : ""}">
       <div class="s7-req-top"><span class="s7-route">${esc(r.route)}</span> <span class="muted">${esc(r.altitude)}${r.band ? " · " + esc(r.band) : ""}</span> ${badge}</div>
       <div class="s7-req-reason">${esc(r.reason)}</div>
+      ${lineage}
       <div class="btn-row">${actions}</div>${rev}</div>`;
   }
 

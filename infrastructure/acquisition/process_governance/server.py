@@ -1270,6 +1270,42 @@ def extract_districts():
         return [dict(r) for r in rows]
 
 
+def _request_lineage(con, district_id: str, req: dict) -> dict | None:
+    """#154: make the request loop legible — WHERE an executed directive went (+ the target's live
+    state) and WHY an approved/pending one can't fire yet. Returns a small dict the card renders, or
+    None for an ordinary pending/reviewable request."""
+    route, status, ref = req["route"], req["status"], req.get("executed_ref")
+    if status == "executed" and ref:
+        if route == EX.RQ.ROUTE_ALT_REP:                       # 7->6 -> a new Stage-6 handoff
+            h = con.execute(text("SELECT status, n_districts FROM handoff WHERE handoff_hash = :h"),
+                            {"h": ref}).mappings().first()
+            n_ext = con.execute(text("SELECT COUNT(*) FROM extraction WHERE handoff_hash = :h"),
+                                {"h": ref}).scalar()
+            job = _EXTRACT_JOBS.get(ref)
+            state = ("extracting…" if job and job["state"] == "running"
+                     else "extracted" if n_ext else "dispatched — run extraction at Stage 6")
+            return {"kind": "handoff", "ref": ref, "state": state, "n_extracted": n_ext,
+                    "n_districts": h["n_districts"] if h else None}
+        b = con.execute(text("SELECT status FROM batch WHERE batch_id = :b"), {"b": ref}).mappings().first()
+        af = _AUTOFLOW_JOBS.get(ref)
+        state = (f"auto-flow: {af['stage']}" if af and af["state"] == "running"
+                 else "auto-flow done → gate@5" if af and af["state"] == "done"
+                 else f"auto-flow {af['state']}" if af
+                 else (b["status"] if b else "batch gone"))
+        return {"kind": "batch", "ref": ref, "state": state, "batch_status": b["status"] if b else None}
+    if route == EX.RQ.ROUTE_ALT_REP and status in ("approved", "pending"):
+        maxr = EX.BUD.load_budget().max_request_rounds
+        if maxr is not None and EX._executed_rounds_76(con, district_id) >= maxr:
+            return {"blocked": True, "reason": f"depth guard: {maxr}/{maxr} 7->6 rounds spent — "
+                                               f"this alternate-rep re-dispatch can no longer execute"}
+    if route == EX.RQ.ROUTE_REDISCOVER and status in ("approved", "pending"):
+        n = json.loads(req.get("params_json") or "{}").get("pending_alt_reps")
+        if n:
+            return {"deferred": True, "reason": f"{n} unexhausted 7->6 for this district — "
+                                                f"compose holds this rediscover until they run (#159)"}
+    return None
+
+
 @app.get("/api/extract/district/{district_id}")
 def extract_district(district_id: str):
     """gate@7 detail: the district's LATEST extraction — computed band rollup + accepted/unresolved
@@ -1303,8 +1339,13 @@ def extract_district(district_id: str):
             "FROM extraction_request "
             "WHERE district_id = :d ORDER BY status = 'pending' DESC, altitude, route, band"),
             {"d": district_id}).mappings().all()
+        req_dicts = []
+        for r in reqs:
+            d = dict(r)
+            d["lineage"] = _request_lineage(con, district_id, d)   # #154: where it went / why it can't
+            req_dicts.append(d)
         return {"extraction": dict(ext), "bands": bands, "accepted": accepted,
-                "unresolved": unresolved, "requests": [dict(r) for r in reqs]}
+                "unresolved": unresolved, "requests": req_dicts}
 
 
 @app.post("/api/extract/request/{request_id}")
