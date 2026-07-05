@@ -54,24 +54,33 @@ NEWWORK_ROUTES = (RQ.ROUTE_REDISCOVER, RQ.ROUTE_RECAPTURE, RQ.ROUTE_ADD_SCHOOLS)
 # Pure planner (no DB/network) — the collect / depth-guard / cap / band-expand logic
 # ---------------------------------------------------------------------------
 def plan_followup(requests: list, *, claimed_bands: dict, executed_rounds: dict = None,
-                  cap: int = 12, max_rounds: int = None) -> dict:
+                  cap: int = 12, max_rounds: int = None, defer_76: set = None) -> dict:
     """Decide the follow-up batch from approved NEW-work request dicts — PURE (unit-testable, the real
-    logic). Steps: filter to NEW-work routes → apply the per-district×band DEPTH guard → group by
-    district in first-seen order (upstream attention sort preserved) → apply the 12-district cap
-    (overflow spills, its requests left un-swept) → per kept district, the union of target bands (an
-    explicit `band` from 7->2; a band-less 7->3/7->1 expands to the district's claimed bands).
+    logic). Steps: filter to NEW-work routes → HOLD a request whose district still has an un-executed
+    7->6 (#159: try the cheap in-hand alternate rep before spending on new discovery) → apply the
+    per-district×band DEPTH guard → group by district in first-seen order (upstream attention sort
+    preserved) → apply the 12-district cap (overflow spills, un-swept) → per kept district, the union
+    of target bands (an explicit `band` from 7->2; a band-less 7->3/7->1 expands to claimed bands).
 
     requests:        [{request_id, district_id, route, band}]  (band may be None)
     claimed_bands:   {district_id: [band, ...]}                 (for band-less expansion)
     executed_rounds: {(district_id, band): n_already_executed}  (depth guard; band key may be None)
-    Returns {targets: {did: [band,...]}, swept_ids: [...], spilled: [{district_id, reason}],
-             blocked: [{request_id, district_id, band, reason}]}."""
+    defer_76:        {district_id, ...} with an un-executed 7->6 — their NEW-work requests are HELD
+    Returns {targets, swept_ids, spilled, blocked, deferred: [{request_id, district_id, reason}]}."""
     executed_rounds = executed_rounds or {}
-    blocked, eligible = [], []
+    defer_76 = defer_76 or set()
+    blocked, deferred, eligible = [], [], []
     for r in requests:
         if r["route"] not in NEWWORK_ROUTES:
             continue
         did, band = r["district_id"], r.get("band")
+        if did in defer_76:
+            # #159: an un-executed 7->6 (an already-captured alternate rep) may fill the band for free;
+            # rediscovering NOW would spend on new discovery/capture prematurely. Held until the
+            # district's 7->6s are executed (or rejected); re-detection then re-emits any still-empty band.
+            deferred.append({"request_id": r["request_id"], "district_id": did,
+                             "reason": "un-executed 7->6 (alternate rep) for this district — try it first"})
+            continue
         used = executed_rounds.get((did, band), 0)
         if max_rounds is not None and used >= max_rounds:
             blocked.append({"request_id": r["request_id"], "district_id": did, "band": band,
@@ -101,7 +110,8 @@ def plan_followup(requests: list, *, claimed_bands: dict, executed_rounds: dict 
                         bands.append(b)
             swept_ids.append(r["request_id"])
         targets[did] = bands
-    return {"targets": targets, "swept_ids": swept_ids, "spilled": spilled, "blocked": blocked}
+    return {"targets": targets, "swept_ids": swept_ids, "spilled": spilled,
+            "blocked": blocked, "deferred": deferred}
 
 
 # ---------------------------------------------------------------------------
@@ -159,15 +169,28 @@ def _benchmark_district_ids(session, district_ids: list) -> set:
     return {r[0] for r in rows}
 
 
+def _defer_76_districts(session, district_ids: list) -> set:
+    """Districts with an UN-EXECUTED 7->6 (status pending or approved) — #159: their NEW-work (7->2)
+    requests are HELD at compose so the cheap in-hand alternate rep is tried before new discovery.
+    A rejected or executed 7->6 does not defer."""
+    if not district_ids:
+        return set()
+    rows = session.execute(text(
+        "SELECT DISTINCT district_id FROM extraction_request "
+        "WHERE route = :r AND status IN ('pending', 'approved') AND district_id = ANY(:d)"),
+        {"r": RQ.ROUTE_ALT_REP, "d": list(district_ids)})
+    return {r[0] for r in rows}
+
+
 def _gather(session, handoff_hash: str) -> tuple:
     """Read the detector inputs on `session`: the approved NEW-work rows (benchmark districts
     EXCLUDED — the wall, #134), per-district claimed bands (band-less expansion), the executed-round
-    history (depth guard), and the next free batch id.
+    history (depth guard), the districts to defer (un-executed 7->6, #159), and the next free batch id.
 
-    Returns (rows, claimed, exec_rounds, batch_id, benchmark_excluded)."""
+    Returns (rows, claimed, exec_rounds, defer_76, batch_id, benchmark_excluded)."""
     rows = _approved_newwork(session, handoff_hash)
     if not rows:
-        return rows, {}, {}, None, []
+        return rows, {}, {}, set(), None, []
     dids = sorted({r["district_id"] for r in rows})
     bm = _benchmark_district_ids(session, dids)
     benchmark_excluded = [{"district_id": r["district_id"], "request_id": r["request_id"],
@@ -175,12 +198,13 @@ def _gather(session, handoff_hash: str) -> tuple:
                           for r in rows if r["district_id"] in bm]
     rows = [r for r in rows if r["district_id"] not in bm]
     if not rows:
-        return rows, {}, {}, None, benchmark_excluded
+        return rows, {}, {}, set(), None, benchmark_excluded
     dids = sorted({r["district_id"] for r in rows})
     claimed = _claimed_bands(session, dids)
     exec_rounds = _executed_rounds(session, dids)
+    defer_76 = _defer_76_districts(session, dids)
     batch_id = f"batch_{BSTORE.next_batch_number(session):05d}"
-    return rows, claimed, exec_rounds, batch_id, benchmark_excluded
+    return rows, claimed, exec_rounds, defer_76, batch_id, benchmark_excluded
 
 
 def _flip(session, swept_ids: list, executed_ref: str) -> None:
@@ -211,20 +235,20 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
     b = BUD.load_budget()
 
     def _work(s) -> dict:
-        rows, claimed, exec_rounds, batch_id, bm_excluded = _gather(s, handoff_hash)
+        rows, claimed, exec_rounds, defer_76, batch_id, bm_excluded = _gather(s, handoff_hash)
         if not rows:
             return {**_empty_result(), "benchmark_excluded": bm_excluded}
 
         plan = plan_followup(rows, claimed_bands=claimed, executed_rounds=exec_rounds,
-                             cap=cap, max_rounds=b.max_request_rounds)
+                             cap=cap, max_rounds=b.max_request_rounds, defer_76=defer_76)
         if not plan["targets"]:
             return {**_empty_result(), "spilled": plan["spilled"], "blocked": plan["blocked"],
-                    "benchmark_excluded": bm_excluded}
+                    "deferred": plan["deferred"], "benchmark_excluded": bm_excluded}
 
         batch_doc, skipped = Q1.build_followup_batch(year, batch_id, plan["targets"])
         if not batch_doc["districts"]:            # every target district was un-buildable (no coverage)
             return {**_empty_result(), "spilled": plan["spilled"], "blocked": plan["blocked"],
-                    "skipped": skipped, "benchmark_excluded": bm_excluded}
+                    "deferred": plan["deferred"], "skipped": skipped, "benchmark_excluded": bm_excluded}
 
         # Rows + flip on ONE session (atomic, #139). Flip ONLY the directives whose district made it
         # into the batch (#136) — a skipped district's directive stays 'approved', re-sweepable.
@@ -235,8 +259,8 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
         _flip(s, flip_ids, batch_id)
         return {"batch_id": batch_id, "n_requests": len(flip_ids),
                 "n_districts": len(batch_doc["districts"]), "targets": plan["targets"],
-                "spilled": plan["spilled"], "blocked": plan["blocked"], "skipped": skipped,
-                "benchmark_excluded": bm_excluded,
+                "spilled": plan["spilled"], "blocked": plan["blocked"], "deferred": plan["deferred"],
+                "skipped": skipped, "benchmark_excluded": bm_excluded,
                 "_batch_districts": [{"district_id": d["district_id"], "name": d.get("name", ""),
                                       "state": d.get("state", "")} for d in batch_doc["districts"]]}
 
@@ -269,7 +293,7 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
 
 def _empty_result() -> dict:
     return {"batch_id": None, "n_requests": 0, "n_districts": 0, "targets": {},
-            "spilled": [], "blocked": [], "skipped": [], "benchmark_excluded": []}
+            "spilled": [], "blocked": [], "deferred": [], "skipped": [], "benchmark_excluded": []}
 
 
 # ===========================================================================
@@ -516,6 +540,8 @@ def main():
             print(f"  spilled: {sp['district_id']} ({sp['reason']})")
         for bl in out.get("blocked", []):
             print(f"  blocked (depth guard): req {bl['request_id']} {bl['district_id']}/{bl['band']}")
+        for df in out.get("deferred", []):
+            print(f"  deferred (#159): req {df['request_id']} {df['district_id']} ({df['reason']})")
         for sk in out.get("skipped", []):
             print(f"  skipped: {sk['district_id']} ({sk['reason']})")
         for bm in out.get("benchmark_excluded", []):

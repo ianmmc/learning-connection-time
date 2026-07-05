@@ -61,6 +61,22 @@ def test_depth_guard_none_max_never_blocks():
     assert plan["swept_ids"] == [1] and plan["blocked"] == []
 
 
+def test_defer_holds_7to2_while_district_has_unexecuted_7to6():
+    # #159 — D1 has an un-executed 7->6 -> its 7->2 is HELD (not swept); D2 has none -> composed
+    reqs = [_req(1, "D1", "7->2", "high"), _req(2, "D2", "7->2", "middle")]
+    plan = EX.plan_followup(reqs, claimed_bands={}, defer_76={"D1"})
+    assert plan["targets"] == {"D2": ["middle"]}
+    assert plan["swept_ids"] == [2]
+    assert [d["request_id"] for d in plan["deferred"]] == [1]
+    assert "7->6" in plan["deferred"][0]["reason"]
+
+
+def test_no_defer_when_district_not_in_defer_set():
+    reqs = [_req(1, "D1", "7->2", "high")]
+    plan = EX.plan_followup(reqs, claimed_bands={}, defer_76=set())
+    assert plan["swept_ids"] == [1] and plan["deferred"] == []
+
+
 def test_empty_requests_is_empty_plan():
     plan = EX.plan_followup([], claimed_bands={})
     assert plan["targets"] == {} and plan["swept_ids"] == [] and plan["spilled"] == []
