@@ -118,6 +118,24 @@ def test_executed_rounds_counts_distinct_refs_not_rows(gov_session):
 
 
 @govdb
+def test_attempted_schools_excludes_draft_batches(gov_session):
+    """Review of a9c4486 (#162): a DRAFT batch never ran discovery — its schools were NOT attempted,
+    and an abandoned draft (batch_00009) must not poison the untried set forever. Only non-draft
+    (approved/committed) batches count."""
+    from infrastructure.acquisition.stage1_queue.models import Batch, BatchSchool
+    gdb.init_precious_schema()
+    s = gov_session
+    for bid, status, sid in (("batch_zzatt_a", "approved", "SA"), ("batch_zzatt_d", "draft", "SD")):
+        s.add(Batch(batch_id=bid, batch_type="follow-up", status=status, nces_year="2024_25",
+                    created_at="t", created_by="zz", meta_json={}))
+        s.add(BatchSchool(batch_id=bid, district_id="ZZATT", school_id=sid, name="S",
+                          is_charter="No", level="High", gslo="09", gshi="12",
+                          bands=["high"], included=True, source="stratified"))
+    s.flush()
+    assert EX._attempted_schools(s, ["ZZATT"]) == {"ZZATT": {"SA"}}   # draft's SD not counted
+
+
+@govdb
 def test_defer_excludes_rounds_exhausted_districts(gov_session):
     """Review R2 (#159): a district whose 7->6 ROUNDS are exhausted must NOT defer — its un-executed
     7->6s are depth-blocked zombies that can never fire, so deferring would hold its rediscovery

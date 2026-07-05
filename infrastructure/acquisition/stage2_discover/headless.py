@@ -74,7 +74,12 @@ def build_wave1_prompt(district: dict, roster: list) -> str:
     in `.claude/skills/stage2-discover/SKILL.md` (the WebSearch-is-deferred ToolSearch step, the
     "never put the school_id in the query" guard, the domain-scoping rule, the no-guessing rule, the
     every-school-must-appear rule). The school_id labels output ONLY; D2.query_for() already built
-    each `query` from the school NAME, never its id."""
+    each `query` from the school NAME, never its id.
+
+    NOTE (#160): this agent path uses the SINGLE default `query` per school — a widened follow-up's
+    differentiated `queries` set is consumed only by the SERP path (D2.run_wave1). If this fallback
+    provider is ever used for a widen_queries follow-up, the widened net silently degrades to the
+    default query; extend the brief before relying on it there."""
     domain = district.get("domain", "") or ""
     dlabel = domain if domain else "none"
     lines = [

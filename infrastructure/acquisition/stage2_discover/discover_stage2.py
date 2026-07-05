@@ -201,8 +201,8 @@ def run_wave1(roster: list, domain: str, search_fn) -> list:
     attribute. The name lands in `wave1_provider` and flows through flatten() into candidates.json."""
     default_provider = getattr(search_fn, "provider_name", "unknown_wave1")
     for r in roster:
-        provider = default_provider
-        seen, urls = set(), []
+        provider = default_provider   # NOTE: with multiple queries (#160), the LAST query's provider
+        seen, urls = set(), []        # wins wave1_provider — per-school provenance, lossy on mid-set failover
         # run every query for the school (#160: a widen-strategy follow-up school has the default +
         # the differentiated set), UNIONing the URLs (order-preserving dedup).
         for q in r.get("queries") or [r["query"]]:
