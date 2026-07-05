@@ -134,11 +134,30 @@ def test_compose_nothing_approved_is_noop(gov_session, monkeypatch):
 
 
 # --- 7->6 direct alternate-rep re-dispatch ---
-def test_pick_alternate_prefers_image():
-    alts = [{"file": "pdftotext.txt", "kind": "text"}, {"file": "raster_p-1.png", "kind": "image"}]
-    assert EX.pick_alternate(alts)["file"] == "raster_p-1.png"
-    assert EX.pick_alternate([{"file": "a.txt", "kind": "text"}])["file"] == "a.txt"   # no image -> first
+def test_pick_alternate_prefers_higher_yield_text_over_image():
+    # #155: yield-ranked, NOT image-first — a full text extraction beats a raster page (Marion/Pittsylvania)
+    alts = [{"file": "pdftotext.txt", "kind": "text", "n_times": 86},
+            {"file": "raster_p-1.png", "kind": "image", "n_times": None}]
+    assert EX.pick_alternate(alts)["file"] == "pdftotext.txt"
+    # only an image alternate -> vision (the escalation, correctly chosen when text is exhausted)
+    assert EX.pick_alternate([{"file": "raster_p-1.png", "kind": "image"}])["file"] == "raster_p-1.png"
     assert EX.pick_alternate([]) is None
+
+
+def test_live_alternates_excludes_sent_unusable_and_binaries():
+    rec = {"reps": [
+        {"source": "capture:text", "filename": "harvest_slice.txt", "file_kind": "text", "n_times": 42, "usable": 1},
+        {"source": "capture:text", "filename": "pdftotext.txt", "file_kind": "text", "n_times": 86, "usable": 1},
+        {"source": "capture:bin", "filename": "original.pdf", "file_kind": "pdf", "n_times": None, "usable": 1},
+        {"source": "segment:main", "filename": "page.main.txt", "file_kind": "text", "n_times": 5, "usable": 1},
+        {"source": "raster", "filename": "raster_p-01.png", "file_kind": "image", "n_times": None, "usable": 1},
+        {"source": "capture:text", "filename": "broken.txt", "file_kind": "text", "n_times": 0, "usable": 0},
+    ]}
+    got = EX.live_alternates(rec, sent_files={"harvest_slice.txt"})
+    files = {a["file"] for a in got}
+    assert files == {"pdftotext.txt", "raster_p-01.png"}   # sent/pdf/segment/unusable all excluded
+    # feeding the live set to pick_alternate -> the full text wins over the raster
+    assert EX.pick_alternate(got)["file"] == "pdftotext.txt"
 
 
 def test_build_alternate_input_synthesizes_send_and_image_override():
@@ -184,7 +203,8 @@ def test_execute_alternate_dispatch_flips_and_records(gov_session, monkeypatch):
                                                                   "name": "Z", "state": "AK"})
     monkeypatch.setattr(EX.REL, "load_district_records", lambda sess, d: [
         {"rec_key": "ZZ76D:abc", "url": "http://x", "signals": {}, "intended_schools": [],
-         "reps": [{"filename": "raster_p-1.png", "file_kind": "image", "n_chars": None, "n_times": None}]}])
+         "reps": [{"source": "raster", "filename": "raster_p-1.png", "file_kind": "image",
+                   "n_chars": None, "n_times": None, "usable": 1}]}])
     monkeypatch.setattr(EX.REL, "district_fingerprints", lambda sess, d: {"config": "c", "labels": "l", "data": "x"})
     monkeypatch.setattr(EX.C6, "load_configs", lambda: {"image": {"voters": ["v1", "v2"], "judge": "j",
                                                                   "prompts": {"default": "p"}}})

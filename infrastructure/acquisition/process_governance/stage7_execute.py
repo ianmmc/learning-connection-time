@@ -276,17 +276,33 @@ def _empty_result() -> dict:
 # 7->6 — DIRECT alternate-representation re-dispatch (existing reps; bypasses Stage 1)
 # ===========================================================================
 def pick_alternate(alternate_reps: list) -> dict | None:
-    """Choose which already-captured alternate rep to re-dispatch — prefer an IMAGE rep (the common
-    text→vision escalation the detector flags), else the first TEXT alternate. None if none is
-    dispatchable. Defensive kind filter (#140): a binary rep (kind 'pdf'/'bin') must never be chosen —
-    it would route to the text council and be read as raw bytes (paid mojibake)."""
-    if not alternate_reps:
-        return None
-    imgs = [a for a in alternate_reps if CONTENT.is_image_kind(a.get("kind"))]
-    if imgs:
-        return imgs[0]
-    texts = [a for a in alternate_reps if a.get("kind") == "text"]
-    return texts[0] if texts else None
+    """Choose which already-captured alternate rep to re-dispatch — the yield-RANKED top
+    (`requests.rank_alternates` (#155): higher-yield TEXT before vision before dregs, NOT image-first).
+    Defensive kind filter (#140): a binary rep (kind 'pdf'/'bin') is never dispatchable — it would
+    route to the text council and be read as raw bytes (paid mojibake). Feed LIVE reps carrying
+    n_times (see `live_alternates`) so ranking is correct even for a request persisted before ranking
+    landed (its stored alternate_reps lack n_times)."""
+    readable = [a for a in (alternate_reps or [])
+                if a.get("kind") == "text" or CONTENT.is_image_kind(a.get("kind"))]
+    ranked = RQ.rank_alternates(readable)
+    return ranked[0] if ranked else None
+
+
+def live_alternates(rec: dict, sent_files: set) -> list:
+    """Dispatchable alternate reps of a record, read LIVE from `rec['reps']` (release-loader shape:
+    source/filename/file_kind/n_times/usable) — NOT the request's stored params, so old requests
+    (persisted before the #155 ranking + n_times) still pick correctly. Excludes already-sent files,
+    non-usable reps, chrome segments, and non-readable kinds (#140). Carries n_times for the ranker."""
+    out = []
+    for rp in rec.get("reps") or []:
+        fn, kind = rp.get("filename"), rp.get("file_kind")
+        if fn in sent_files or not rp.get("usable"):
+            continue
+        if (rp.get("source") or "").startswith("segment:"):
+            continue
+        if kind == "text" or CONTENT.is_image_kind(kind):
+            out.append({"file": fn, "kind": kind, "n_times": rp.get("n_times")})
+    return out
 
 
 def build_alternate_input(meta: dict, rec: dict, alt: dict, *, council_id: str = None) -> tuple:
@@ -360,7 +376,12 @@ def execute_alternate_dispatch(request_id: int, *, actor: str = "ian", council_i
         if not rec:
             return {"ok": False, "reason": f"record {rec_key} not found for {did}"}
         params = json.loads(req["params_json"] or "{}")
-        alt = pick_alternate(params.get("alternate_reps") or [])
+        # Derive alternates from the LIVE record (#155): yield-ranked, robust to a request persisted
+        # before ranking. Exclude the file this request already tried (params.sent_file). NOTE (F4,
+        # Chunk-4 bundle): a rep sent in a DIFFERENT handoff for this rec_key is not excluded here —
+        # bounded by the depth guard; the bundle rebuild (#153) adds full cross-handoff exclusion.
+        sent = {params.get("sent_file")} - {None}
+        alt = pick_alternate(live_alternates(rec, sent))
         if not alt:
             return {"ok": False, "reason": f"request {request_id} names no dispatchable alternate rep "
                                            f"(text/image) to re-dispatch"}
