@@ -198,6 +198,32 @@ def test_compose_flips_approved_to_executed(gov_session, monkeypatch):
 
 
 @govdb
+def test_compose_dry_run_previews_without_persist(gov_session, monkeypatch):
+    """#154 modal: dry_run returns the preview (districts + per-band query_strategy) and flips NOTHING —
+    create_batch is never called and the directives stay 'approved'."""
+    gdb.init_precious_schema()
+    s = gov_session
+    hh = "zzdry"
+    _seed_req(s, hh, "ZZD1", "7->2", "high")
+    s.flush()
+    created = {"called": False}
+    monkeypatch.setattr(EX.BSTORE, "create_batch", lambda *a, **k: created.__setitem__("called", True))
+    monkeypatch.setattr(EX.Q1, "build_followup_batch", lambda year, bid, targets, **kw: (
+        {"batch_id": bid, "districts": [{"district_id": "ZZD1", "name": "Dryville", "state": "IA",
+         "schools_by_band": {"high": {"query_strategy": "widen_queries",
+                                      "schools": [{"school_id": "s1"}]}}}]}, []))
+
+    out = EX.compose_followup_batch(handoff_hash=hh, actor="zz", session=s, dry_run=True)
+
+    assert out["dry_run"] is True and out["n_districts"] == 1
+    assert out["preview"][0]["district_id"] == "ZZD1"
+    assert out["preview"][0]["bands"][0]["query_strategy"] == "widen_queries"
+    assert created["called"] is False                      # NOTHING persisted
+    assert s.execute(text("SELECT status FROM extraction_request WHERE handoff_hash=:h"),
+                     {"h": hh}).scalar() == "approved"     # directive NOT flipped
+
+
+@govdb
 def test_compose_nothing_approved_is_noop(gov_session, monkeypatch):
     gdb.init_precious_schema()
     s = gov_session

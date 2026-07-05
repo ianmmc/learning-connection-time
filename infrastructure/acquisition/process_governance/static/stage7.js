@@ -185,23 +185,66 @@
     loadDistricts();
   }
 
-  // 7->2/7->3/7->1: sweep approved NEW-work directives (this run) into ONE draft follow-up batch.
+  // 7->2/7->3/7->1: PREVIEW the follow-up in a modal (#154), then compose on confirm (cancel = no-op).
   async function composeFollowup(handoffHash, did) {
-    // #157: composing AUTO-FLOWS the follow-up (gate@1 auto-pass -> Stages 2-4 -> gate@5). Say so.
-    if (!confirm("Compose a follow-up batch from the approved 7->2/7->3/7->1 directives?\n\nIt auto-passes gate@1 and auto-runs discovery -> capture -> process, stopping at gate@5 for your review (gate@6 dispatch stays manual).")) return;
+    let prev;
+    try { prev = await api(`/api/extract/compose-followup/preview`, postJSON({ handoff_hash: handoffHash || null, actor: "ian" })); }
+    catch (e) { alert("Compose preview failed: " + e.message); return; }
+    showComposeModal(prev, handoffHash, did);
+  }
+
+  function closeComposeModal() { const m = $g("#s7-compose-modal"); if (m) m.remove(); }
+
+  function showComposeModal(prev, handoffHash, did) {
+    closeComposeModal();
+    const districts = (prev.preview || []).map((d) => {
+      const bands = d.bands.map((b) => `${esc(b.band)}${b.query_strategy === "widen_queries" ? " <span class=\"s7-strat\">widen queries</span>" : b.query_strategy === "new_schools" ? " <span class=\"s7-strat\">new schools</span>" : ""} <span class=\"muted\">(${b.n_schools})</span>`).join(", ");
+      const seeds = (d.seed_urls && d.seed_urls.length) ? ` · ${d.seed_urls.length} seed URL(s)` : "";
+      return `<li><b>${esc(d.name || d.district_id)}</b> <span class="muted">${esc(d.state)}</span> — ${bands}${seeds}</li>`;
+    }).join("");
+    const notes = [];
+    if (prev.spilled && prev.spilled.length) notes.push(`${prev.spilled.length} district(s) spill past the 12-cap (compose again for the next batch)`);
+    if (prev.deferred && prev.deferred.length) notes.push(`${prev.deferred.length} deferred — execute the district's 7->6 first (#159)`);
+    if (prev.blocked && prev.blocked.length) notes.push(`${prev.blocked.length} blocked by the depth guard`);
+    if (prev.benchmark_excluded && prev.benchmark_excluded.length) notes.push(`${prev.benchmark_excluded.length} benchmark-walled (batch_00000)`);
+    const nothing = !prev.batch_id || !prev.n_districts;
+    const body = nothing
+      ? `<div class="empty">Nothing to compose — no approved NEW-work directives make it into a batch.${notes.length ? "<br/>" + esc(notes.join("; ")) + "." : ""}</div>`
+      : `<p>This will compose <b>${prev.batch_id}</b>: <b>${prev.n_districts}</b> district(s), <b>${prev.n_requests}</b> directive(s), then <b>auto-flow to gate@5</b> (gate@1 auto-pass → discovery → capture → process; gate@6 dispatch stays manual).</p>
+         <ul class="s7-compose-list">${districts}</ul>
+         ${notes.length ? `<div class="s7-compose-notes muted">Also: ${esc(notes.join("; "))}.</div>` : ""}`;
+    const overlay = document.createElement("div");
+    overlay.id = "s7-compose-modal";
+    overlay.className = "s7-modal";
+    overlay.innerHTML = `<div class="s7-modal-card">
+      <div class="s7-modal-head"><span class="s7-modal-title">Compose follow-up batch</span>
+        <button class="btn btn-ghost btn-mini" data-close>Close</button></div>
+      <div class="s7-modal-body">${body}</div>
+      <div class="s7-modal-foot">
+        <button class="btn btn-ghost" data-cancel>Cancel</button>
+        ${nothing ? "" : `<button class="btn btn-primary" data-confirm>Compose &amp; auto-flow to gate@5</button>`}
+      </div></div>`;
+    overlay.querySelector("[data-close]").onclick = closeComposeModal;
+    overlay.querySelector("[data-cancel]").onclick = closeComposeModal;   // cancel: no side effect
+    overlay.onclick = (e) => { if (e.target === overlay) closeComposeModal(); };  // click-out cancels
+    const confirmBtn = overlay.querySelector("[data-confirm]");
+    if (confirmBtn) confirmBtn.onclick = () => { closeComposeModal(); doCompose(handoffHash, did); };
+    document.addEventListener("keydown", function esc(ev) {
+      if (ev.key === "Escape") { closeComposeModal(); document.removeEventListener("keydown", esc); }
+    });
+    (VIEWS_stage7() || document.body).appendChild(overlay);
+  }
+
+  function VIEWS_stage7() { return document.getElementById("stage7view"); }
+
+  async function doCompose(handoffHash, did) {
     let out;
     try { out = await api(`/api/extract/compose-followup`, postJSON({ handoff_hash: handoffHash || null, actor: "ian" })); }
     catch (e) { alert("Compose failed: " + e.message); return; }
-    if (!out.batch_id) { alert("Nothing composed — no approved NEW-work directives."); }
-    else {
-      let msg = `Draft follow-up ${out.batch_id}: ${out.n_districts} district(s), ${out.n_requests} directive(s) executed.`;
-      if (out.spilled && out.spilled.length) msg += `\nSpilled ${out.spilled.length} district(s) past the 12-cap (compose again for the next batch).`;
-      if (out.blocked && out.blocked.length) msg += `\nBlocked ${out.blocked.length} by the depth guard.`;
-      if (out.deferred && out.deferred.length) msg += `\nDeferred ${out.deferred.length} — execute the district's 7->6 first (#159).`;
-      if (out.autoflow_started) msg += `\n\nAuto-flowing to gate@5 in the background… (watch Stage 1/2/3/4, review at gate@5).`;
-      alert(msg);
-      if (out.autoflow_started) pollAutoflow(out.batch_id);
-    }
+    let msg = `Draft follow-up ${out.batch_id}: ${out.n_districts} district(s), ${out.n_requests} directive(s) executed.`;
+    if (out.autoflow_started) msg += `\n\nAuto-flowing to gate@5 in the background… (watch Stage 1/2/3/4, review at gate@5).`;
+    alert(msg);
+    if (out.autoflow_started) pollAutoflow(out.batch_id);
     openDistrict(did);
     loadDistricts();
   }

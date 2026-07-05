@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-05T14:21:36Z",
+  "last_updated": "2026-07-05T14:26:57Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -8039,6 +8039,60 @@
           "stage_name": "queue",
           "outcome": null,
           "at": "2026-07-05T14:21:36Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-05T14:25:14Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-05T14:25:14Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-05T14:25:14Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-05T14:26:57Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-05T14:26:57Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-05T14:26:57Z",
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"

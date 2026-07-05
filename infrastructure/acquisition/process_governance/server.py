@@ -1455,6 +1455,19 @@ def _autoflow_followup(batch_id: str, actor: str) -> None:
         job["finished_at"] = _now()
 
 
+@app.post("/api/extract/compose-followup/preview")
+async def extract_compose_followup_preview(payload: dict):
+    """#154 modal: a DRY-RUN of compose — what the follow-up batch WOULD contain (districts, target
+    bands + query strategy, seed URLs) and what's spilled/blocked/deferred/benchmark-excluded — with
+    NO create_batch and NO directive flip. Lets the operator review before committing in-place."""
+    try:
+        return EX.compose_followup_batch(
+            year=payload.get("year", "2024_25"), actor=payload.get("actor", "ian"),
+            handoff_hash=payload.get("handoff_hash"), cap=int(payload.get("cap", 12)), dry_run=True)
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(400, f"compose preview failed: {type(e).__name__}: {e}")
+
+
 @app.post("/api/extract/compose-followup")
 async def extract_compose_followup(payload: dict):
     """REQ-118 execution (7→2/7→3/7→1): sweep APPROVED NEW-work directives into ONE targeted DRAFT

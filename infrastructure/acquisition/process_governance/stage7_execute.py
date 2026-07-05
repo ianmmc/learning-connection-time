@@ -260,8 +260,22 @@ def _flip(session, swept_ids: list, executed_ref: str) -> None:
         {"b": executed_ref, "t": M7.utcnow(), "ids": list(swept_ids)})
 
 
+def _preview_districts(batch_doc: dict) -> list:
+    """A compact per-district preview of a would-be follow-up batch (#154 compose modal): the target
+    bands, each band's query_strategy (#160 new_schools|widen_queries) + school count, and seed URLs."""
+    out = []
+    for d in batch_doc.get("districts", []):
+        sbb = d.get("schools_by_band", {})
+        out.append({
+            "district_id": d["district_id"], "name": d.get("name", ""), "state": d.get("state", ""),
+            "bands": [{"band": b, "query_strategy": sbb[b].get("query_strategy"),
+                       "n_schools": len(sbb[b].get("schools", []))} for b in sbb],
+            "seed_urls": d.get("seed_urls", [])})
+    return out
+
+
 def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff_hash: str = None,
-                           cap: int = 12, session=None) -> dict:
+                           cap: int = 12, session=None, dry_run: bool = False) -> dict:
     """Sweep APPROVED 7->2/7->3/7->1 directives into ONE targeted, DRAFT Stage-1 follow-up batch
     (reviewable at gate@1), flipping the swept directives to 'executed' with the batch_id as their
     `executed_ref`. Benchmark (batch_00000) districts are EXCLUDED — the wall (#134). Scope to one
@@ -298,6 +312,16 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
         if not batch_doc["districts"]:            # every target district was un-buildable (no coverage)
             return {**_empty_result(), "spilled": plan["spilled"], "blocked": plan["blocked"],
                     "deferred": plan["deferred"], "skipped": skipped, "benchmark_excluded": bm_excluded}
+
+        if dry_run:                               # #154 modal preview — NO create_batch, NO flip
+            built = {d["district_id"] for d in batch_doc["districts"]}
+            did_by_id = {r["request_id"]: r["district_id"] for r in rows}
+            return {"batch_id": batch_id, "dry_run": True,
+                    "n_requests": len([i for i in plan["swept_ids"] if did_by_id[i] in built]),
+                    "n_districts": len(batch_doc["districts"]), "targets": plan["targets"],
+                    "preview": _preview_districts(batch_doc), "spilled": plan["spilled"],
+                    "blocked": plan["blocked"], "deferred": plan["deferred"], "skipped": skipped,
+                    "benchmark_excluded": bm_excluded}
 
         # Rows + flip on ONE session (atomic, #139). Flip ONLY the directives whose district made it
         # into the batch (#136) — a skipped district's directive stays 'approved', re-sweepable.
