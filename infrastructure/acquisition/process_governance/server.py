@@ -1337,18 +1337,100 @@ async def extract_request_review(request_id: int, payload: dict):
     return {"request_id": request_id, "status": status}
 
 
+# ---- #157: follow-up auto-flow — gate@1 auto-pass + auto-run Stages 2->3->4, stop at gate@5 ----
+# A follow-up batch carries an already-approved gate@7 decision, so re-gating it at gate@1 and clicking
+# Start on each of Stages 2/3/4 is redundant (governance §11b ramp-up; the gate@1/stage-trigger de-facto
+# gates auto-advance for follow-ups). gate@5 (new URLs = data quality) and gate@6 (spend) stay manual.
+_AUTOFLOW_JOBS: dict = {}
+
+
+def _autoflow_view(batch_id: str) -> dict | None:
+    j = _AUTOFLOW_JOBS.get(batch_id)
+    if not j:
+        return None
+    return {k: j[k] for k in ("state", "stage", "started_at", "finished_at", "actor", "error", "stages")}
+
+
+@app.get("/api/followup/autoflow/{batch_id}")
+def followup_autoflow_status(batch_id: str):
+    """Live status of a follow-up auto-flow (#157). {state:'idle'} if none seen."""
+    return _autoflow_view(batch_id) or {"state": "idle"}
+
+
+def _autoflow_followup(batch_id: str, actor: str) -> None:
+    """One supervisor thread: gate@1 auto-approve -> Stage 2 discover -> Stage 3 capture -> Stage 4
+    process, landing at gate@5. Holds the per-batch run lock across the whole chain (a manual stage
+    run 409s while it flows); any stage's failure halts the chain and records where. gate@6 stays
+    manual — the spend gate is never auto-crossed."""
+    from datetime import datetime, timezone
+
+    def _now():
+        return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    job = {"state": "running", "stage": "approve", "started_at": _now(), "finished_at": None,
+           "actor": actor, "error": None, "stages": {}}
+    _AUTOFLOW_JOBS[batch_id] = job
+    try:
+        lock = _acquire_batch_run(batch_id)
+    except HTTPException as e:
+        job["state"], job["error"], job["finished_at"] = "error", f"batch busy: {e.detail}", _now()
+        return
+    try:
+        # gate@1 auto-approve (idempotent: a re-run finds it already approved)
+        try:
+            with gdb.session_scope() as con:
+                BSTORE.approve_batch(con, batch_id, actor)
+                included = [(d.district_id, d.name, d.state) for d in con.scalars(
+                    select(BatchDistrict).where(BatchDistrict.batch_id == batch_id,
+                                                BatchDistrict.included.is_(True)))]
+            _record_gate1(included, event_type="approved", actor=actor,
+                          note=f"gate@1 auto-approved (follow-up autoflow) {batch_id}")
+        except BSTORE.BatchLocked:
+            pass                                  # already approved — carry on into the stage chain
+        job["stages"]["gate1"] = "approved"
+
+        job["stage"] = "discover"                 # Stage 2
+        def _w2(district, residual, domain):
+            return H2._wave2_claude(district, residual, domain, _run=_tracked_run)
+        s2 = H2.run_batch(batch_id, actor=actor, wave2_runner=_w2)
+        job["stages"]["discover"] = (s2 or {}).get("summary", s2)
+
+        job["stage"] = "capture"                  # Stage 3
+        batch = _batch_from_db(batch_id)
+        s3 = H3.run_batch(batch, actor=actor, _run=_tracked_run)
+        job["stages"]["capture"] = (s3 or {}).get("summary", s3)
+
+        job["stage"] = "process"                  # Stage 4
+        s4 = H4.run_batch(batch, actor=actor)
+        job["stages"]["process"] = (s4 or {}).get("summary", s4)
+
+        job["stage"], job["state"] = "gate@5", "done"     # landed at the review gate — STOP
+    except SystemExit as e:
+        job["state"], job["error"] = "halted", f"CONTROL FAILURE at {job['stage']}: {e}"
+    except Exception as e:  # noqa: BLE001
+        job["state"], job["error"] = "error", f"{type(e).__name__} at {job['stage']}: {e}"
+    finally:
+        lock.release()
+        job["finished_at"] = _now()
+
+
 @app.post("/api/extract/compose-followup")
 async def extract_compose_followup(payload: dict):
-    """REQ-118 execution (7→2/7→3/7→1): sweep APPROVED NEW-work directives into ONE targeted, DRAFT
-    Stage-1 follow-up batch (reviewable at gate@1), flipping those directives to 'executed'. Anything
-    needing new capture/discovery routes through Stage 1 (governance §11d) — this does NOT run
-    discovery, it queues a batch. Scope to one run with `handoff_hash`, else all approved NEW-work."""
+    """REQ-118 execution (7→2/7→3/7→1): sweep APPROVED NEW-work directives into ONE targeted DRAFT
+    Stage-1 follow-up batch, flipping those directives to 'executed'. Then (#157, unless
+    `autoflow=false`) AUTO-FLOW it: gate@1 auto-pass + Stages 2→3→4 in the background, stopping at
+    gate@5 — a follow-up carries an already-approved gate@7 decision, so the downstream gates don't
+    re-ask. Scope to one run with `handoff_hash`, else all approved NEW-work."""
     try:
         out = EX.compose_followup_batch(
             year=payload.get("year", "2024_25"), actor=payload.get("actor", "ian"),
             handoff_hash=payload.get("handoff_hash"), cap=int(payload.get("cap", 12)))
     except Exception as e:  # noqa: BLE001 — surface the failure to the operator, don't 500 opaquely
         raise HTTPException(400, f"compose-followup failed: {type(e).__name__}: {e}")
+    if out.get("batch_id") and payload.get("autoflow", True):
+        threading.Thread(target=_autoflow_followup, args=(out["batch_id"], payload.get("actor", "ian")),
+                         name=f"autoflow-{out['batch_id']}", daemon=True).start()
+        out["autoflow_started"] = True
     return out
 
 

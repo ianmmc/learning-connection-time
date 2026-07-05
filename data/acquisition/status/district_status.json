@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-05T03:55:27Z",
+  "last_updated": "2026-07-05T14:01:26Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -7952,6 +7952,72 @@
         }
       ],
       "notes": "reject district 7200030"
+    },
+    "ZZAF": {
+      "name": "Autoville",
+      "state": "IA",
+      "furthest_stage": 0,
+      "stage_name": null,
+      "outcome": null,
+      "topology": null,
+      "batch_id": null,
+      "history": [
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-05T14:01:11Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-05T14:01:11Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-05T14:01:11Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-05T14:01:26Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-05T14:01:26Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-05T14:01:26Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        }
+      ],
+      "notes": "gate@1 auto-approved (follow-up autoflow) batch_zzautoflow"
     }
   }
 }

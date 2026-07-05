@@ -170,18 +170,33 @@
 
   // 7->2/7->3/7->1: sweep approved NEW-work directives (this run) into ONE draft follow-up batch.
   async function composeFollowup(handoffHash, did) {
-    if (!confirm("Compose a follow-up batch from the approved 7->2/7->3/7->1 directives? It lands as a DRAFT for review at gate@1 (Stage 1).")) return;
+    // #157: composing AUTO-FLOWS the follow-up (gate@1 auto-pass -> Stages 2-4 -> gate@5). Say so.
+    if (!confirm("Compose a follow-up batch from the approved 7->2/7->3/7->1 directives?\n\nIt auto-passes gate@1 and auto-runs discovery -> capture -> process, stopping at gate@5 for your review (gate@6 dispatch stays manual).")) return;
     let out;
     try { out = await api(`/api/extract/compose-followup`, postJSON({ handoff_hash: handoffHash || null, actor: "ian" })); }
     catch (e) { alert("Compose failed: " + e.message); return; }
     if (!out.batch_id) { alert("Nothing composed — no approved NEW-work directives."); }
     else {
-      let msg = `Draft follow-up ${out.batch_id}: ${out.n_districts} district(s), ${out.n_requests} directive(s) executed. Review at gate@1.`;
+      let msg = `Draft follow-up ${out.batch_id}: ${out.n_districts} district(s), ${out.n_requests} directive(s) executed.`;
       if (out.spilled && out.spilled.length) msg += `\nSpilled ${out.spilled.length} district(s) past the 12-cap (compose again for the next batch).`;
       if (out.blocked && out.blocked.length) msg += `\nBlocked ${out.blocked.length} by the depth guard.`;
+      if (out.deferred && out.deferred.length) msg += `\nDeferred ${out.deferred.length} — execute the district's 7->6 first (#159).`;
+      if (out.autoflow_started) msg += `\n\nAuto-flowing to gate@5 in the background… (watch Stage 1/2/3/4, review at gate@5).`;
       alert(msg);
+      if (out.autoflow_started) pollAutoflow(out.batch_id);
     }
     openDistrict(did);
     loadDistricts();
+  }
+
+  // #157: poll the follow-up auto-flow until it lands at gate@5 (or halts), then notify.
+  async function pollAutoflow(batchId) {
+    let st;
+    try { st = await api(`/api/followup/autoflow/${batchId}`); }
+    catch (_) { return; }
+    if (st.state === "running") { setTimeout(() => pollAutoflow(batchId), 3000); return; }
+    if (st.state === "done") alert(`Follow-up ${batchId} reached gate@5 (discovery→capture→process done). Review + label at Stage 5, then dispatch at gate@6.`);
+    else if (st.state === "halted") alert(`Follow-up ${batchId} auto-flow HALTED: ${st.error || ""}`);
+    else if (st.state === "error") alert(`Follow-up ${batchId} auto-flow error: ${st.error || ""}`);
   }
 })();
