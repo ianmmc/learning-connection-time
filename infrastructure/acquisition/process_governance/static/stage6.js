@@ -248,14 +248,19 @@
       const row = document.createElement("div");
       row.className = "q-batch s6-handoff";
       // #152: run the PAID Stage-7 extraction for this dispatched handoff (gate@6 was the go-ahead).
+      // The run is resume-by-default (already-extracted districts skip), so a FULLY-extracted handoff
+      // gets an honest done marker, not a button — a "Re-run" would skip everything and do nothing.
       const done = h.n_extracted >= h.n_districts && h.n_districts > 0;
-      const label = h.running ? "running…" : (h.n_extracted > 0 ? (done ? "Re-run extraction" : "Resume extraction") : "Run extraction ▶");
       const extractedNote = h.n_extracted > 0 ? ` · <span class="muted">${h.n_extracted}/${h.n_districts} extracted</span>` : "";
+      const control = done
+        ? `<span class="badge badge-neutral" title="all districts extracted for this handoff">✓ extracted</span>`
+        : `<button class="btn btn-secondary btn-mini s6-extract" data-hash="${esc(h.handoff_hash)}" ${h.running ? "disabled" : ""}>${h.running ? "running…" : (h.n_extracted > 0 ? "Resume extraction" : "Run extraction ▶")}</button>`;
       row.innerHTML = `<div class="q-batch-top"><span class="q-batch-id">${esc(h.handoff_id.slice(0, 24))}…</span>
           <span class="badge badge-success">${esc(h.status)}</span></div>
         <div class="q-batch-meta">${h.n_districts}d · ${h.n_reps}r · ${usd(h.total_usd)} ${esc(h.cost_provenance)} · ${esc(fmt(h.created_at))}${extractedNote}</div>
-        <div class="btn-row"><button class="btn btn-secondary btn-mini s6-extract" data-hash="${esc(h.handoff_hash)}" ${h.running ? "disabled" : ""}>${label}</button></div>`;
-      row.querySelector(".s6-extract").onclick = (e) => { e.stopPropagation(); runExtraction(h.handoff_hash); };
+        <div class="btn-row">${control}</div>`;
+      const btn = row.querySelector(".s6-extract");
+      if (btn) btn.onclick = (e) => { e.stopPropagation(); runExtraction(h.handoff_hash); };
       el.appendChild(row);
     });
   }
