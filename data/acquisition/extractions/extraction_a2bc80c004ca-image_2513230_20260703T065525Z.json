@@ -1,0 +1,821 @@
+{
+  "handoff_hash": "a2bc80c004ca-image",
+  "district": {
+    "district_id": "2513230",
+    "name": "Worcester",
+    "reps": [
+      {
+        "rec_key": "2513230:dc32188ca9",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:47",
+                "end_time": "15:07",
+                "school_name": "Sullivan Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2941,
+            "completion_tokens": 48,
+            "cost_usd": 0.0010023,
+            "latency_ms": 17188,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061426-HkMQfwRsnUeIREUMax5h"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:47",
+                "end_time": "15:10",
+                "school_name": "Dr. Arthur F. Sullivan Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2770,
+            "completion_tokens": 48,
+            "cost_usd": 0.001457,
+            "latency_ms": 25070,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061452-3vDXkrVDJiBObKsSR5KB"
+          },
+          {
+            "model": "deepseek/deepseek-v3.2",
+            "role": "judge",
+            "ok": false,
+            "error": "Error code: 404 - {'error': {'message': 'No endpoints found that support image input', 'code': 404}}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 14282,
+            "finish_reason": null,
+            "generation_id": null
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "sullivan",
+            "starts": {
+              "google/gemini-2.5-flash": "08:47"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:07"
+            },
+            "rec_key": "2513230:dc32188ca9",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "dr arthur f sullivan",
+            "starts": {
+              "mistralai/mistral-large-2512": "08:47"
+            },
+            "ends": {
+              "mistralai/mistral-large-2512": "15:10"
+            },
+            "rec_key": "2513230:dc32188ca9",
+            "source_file": "raster_p-1.png"
+          }
+        ]
+      },
+      {
+        "rec_key": "2513230:40be7167eb",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "North High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2941,
+            "completion_tokens": 48,
+            "cost_usd": 0.0010023,
+            "latency_ms": 14627,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061481-yWWpSK6K5m9XtzwrC4UG"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "14:43",
+                "school_name": "North High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2770,
+            "completion_tokens": 43,
+            "cost_usd": 0.0012983,
+            "latency_ms": 15687,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061496-7v2vfkFXyKSeCAtj3mnP"
+          },
+          {
+            "model": "deepseek/deepseek-v3.2",
+            "role": "judge",
+            "ok": false,
+            "error": "Error code: 404 - {'error': {'message': 'No endpoints found that support image input', 'code': 404}}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 13423,
+            "finish_reason": null,
+            "generation_id": null
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "north",
+            "starts": {
+              "google/gemini-2.5-flash": "07:20",
+              "mistralai/mistral-large-2512": "07:20"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "13:43",
+              "mistralai/mistral-large-2512": "14:43"
+            },
+            "rec_key": "2513230:40be7167eb",
+            "source_file": "raster_p-1.png"
+          }
+        ]
+      },
+      {
+        "rec_key": "2513230:5c7d04005b",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "Worcester Technical High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2941,
+            "completion_tokens": 50,
+            "cost_usd": 0.0010073,
+            "latency_ms": 16172,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061526-cSQ1GAr2M7FAMvb6FmEm"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "Worcester Technical High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2770,
+            "completion_tokens": 46,
+            "cost_usd": 0.0013028,
+            "latency_ms": 17372,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061542-pI66TxM6w6tYtxqDMIKx"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "worcester technical",
+            "start": "07:20",
+            "end": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "2513230:5c7d04005b",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:0d7454e3ed",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:20",
+                "school_name": "Belmont Street Community School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2941,
+            "completion_tokens": 50,
+            "cost_usd": 0.0010073,
+            "latency_ms": 15961,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061560-xWYw9pf5WooSOjG8MYqE"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:20",
+                "school_name": "Belmont Street Community School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2770,
+            "completion_tokens": 47,
+            "cost_usd": 0.0013043,
+            "latency_ms": 16454,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061575-YmhVmbj1TvQ5aUMfbgrR"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "belmont street community",
+            "start": "08:15",
+            "end": "14:20",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "2513230:0d7454e3ed",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:fde6320875",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "Burncoat High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2941,
+            "completion_tokens": 49,
+            "cost_usd": 0.0010048,
+            "latency_ms": 16576,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061592-gqDKjPwA18HG0lx5xr4e"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "Burncoat High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2770,
+            "completion_tokens": 45,
+            "cost_usd": 0.0014525,
+            "latency_ms": 17346,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061610-Qi7ESk4PVttyJin98f7v"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "burncoat",
+            "start": "07:20",
+            "end": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "2513230:fde6320875",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:df57290963",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "Grafton Street School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2941,
+            "completion_tokens": 50,
+            "cost_usd": 0.0010073,
+            "latency_ms": 17209,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061627-vkKmIqAFmulrN8Mj5qwb"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "Grafton Street School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2770,
+            "completion_tokens": 46,
+            "cost_usd": 0.0013028,
+            "latency_ms": 16619,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061643-voJTqAy29Q2B0oA0kyE0"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "grafton street",
+            "start": "08:25",
+            "end": "14:30",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "2513230:df57290963",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:6d32e3f608",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "May Street School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2941,
+            "completion_tokens": 48,
+            "cost_usd": 0.0010023,
+            "latency_ms": 16699,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061661-ziKtGGUrYXdfCE6mBQ66"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "May Street School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2770,
+            "completion_tokens": 44,
+            "cost_usd": 0.0012998,
+            "latency_ms": 16386,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061677-GAFD7jTctBji6WmWb6EC"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "may street",
+            "start": "08:25",
+            "end": "14:30",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "2513230:6d32e3f608",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:ed68441b1d",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "14:00",
+                "school_name": "Elm Park Community School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2941,
+            "completion_tokens": 50,
+            "cost_usd": 0.0010073,
+            "latency_ms": 14403,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061692-fRUCF6bJX9X1GXYJj4Xr"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 2770,
+            "completion_tokens": 8,
+            "cost_usd": 0.0012458,
+            "latency_ms": 16757,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061708-W5PdV8rKC0CqghRIX6Pa"
+          },
+          {
+            "model": "deepseek/deepseek-v3.2",
+            "role": "judge",
+            "ok": false,
+            "error": "Error code: 404 - {'error': {'message': 'No endpoints found that support image input', 'code': 404}}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 14487,
+            "finish_reason": null,
+            "generation_id": null
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "elm park community",
+            "starts": {
+              "google/gemini-2.5-flash": "07:55"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "14:00"
+            },
+            "rec_key": "2513230:ed68441b1d",
+            "source_file": "raster_p-1.png"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "worcester technical",
+        "start": "07:20",
+        "end": "13:43",
+        "gross": 383,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "2513230:5c7d04005b",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "belmont street community",
+        "start": "08:15",
+        "end": "14:20",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "2513230:0d7454e3ed",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "burncoat",
+        "start": "07:20",
+        "end": "13:43",
+        "gross": 383,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "2513230:fde6320875",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "grafton street",
+        "start": "08:25",
+        "end": "14:30",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "2513230:df57290963",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "may street",
+        "start": "08:25",
+        "end": "14:30",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "2513230:6d32e3f608",
+        "source_file": "raster_p-1.png"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "sullivan",
+        "starts": {
+          "google/gemini-2.5-flash": "08:47"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:07"
+        },
+        "rec_key": "2513230:dc32188ca9",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "dr arthur f sullivan",
+        "starts": {
+          "mistralai/mistral-large-2512": "08:47"
+        },
+        "ends": {
+          "mistralai/mistral-large-2512": "15:10"
+        },
+        "rec_key": "2513230:dc32188ca9",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "north",
+        "starts": {
+          "google/gemini-2.5-flash": "07:20",
+          "mistralai/mistral-large-2512": "07:20"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "13:43",
+          "mistralai/mistral-large-2512": "14:43"
+        },
+        "rec_key": "2513230:40be7167eb",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "elm park community",
+        "starts": {
+          "google/gemini-2.5-flash": "07:55"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "14:00"
+        },
+        "rec_key": "2513230:ed68441b1d",
+        "source_file": "raster_p-1.png"
+      }
+    ],
+    "n_reps": 8,
+    "n_judged": 3,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 365,
+        "start_time": "08:15",
+        "end_time": "14:20",
+        "n_schools": 3,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "belmont street community",
+            "start_time": "08:15",
+            "end_time": "14:20",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "grafton street",
+            "start_time": "08:25",
+            "end_time": "14:30",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "may street",
+            "start_time": "08:25",
+            "end_time": "14:30",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 383,
+        "start_time": "07:20",
+        "end_time": "13:43",
+        "n_schools": 2,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "worcester technical",
+            "start_time": "07:20",
+            "end_time": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "burncoat",
+            "start_time": "07:20",
+            "end_time": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 19,
+      "judge_calls": 3,
+      "errors": 3,
+      "truncated": 0,
+      "prompt_tokens": 45688,
+      "completion_tokens": 720,
+      "cost_usd": 0.018704199999999997
+    }
+  }
+}

@@ -120,8 +120,8 @@ Postgres fixture** (no SQLite stand-in). The governance DB connection lives in t
 enforces this — keep it that way).
 
 **All of REQ-103 is now done.** 103a committed `3c725f3`; **103b–f committed `bbd0f66`**; **103c +
-103g** in the follow-up pass. The old `data/acquisition/stage5_review/review.db` (SQLite) is **kept
-on disk as the 103f reference** — retire it (and `paths.REVIEW_DB`) once you're confident (tracked: #126).
+103g** in the follow-up pass. The old `data/acquisition/stage5_review/review.db` (SQLite) 103f reference
+and `paths.REVIEW_DB` have since been **retired** (#126) — the governance Postgres DB is the sole working store.
 **Next build step: REQ-099** (state event-log; §3).
 
 ### ✅ 103a DONE & committed (3c725f3) — additive, the live SQLite path is untouched
@@ -167,7 +167,7 @@ on disk as the 103f reference** — retire it (and `paths.REVIEW_DB`) once you'r
 
 **The 4 (now 5) governance-DB consumers:** `build_signals.py`, `harness.py`, `frontier.py`,
 `process_governance/server.py` (+ the `gov_session` test fixture). `paths.REVIEW_DB` / the old
-SQLite file are retained as the 103f reference until retired (tracked: #126).
+SQLite file have been retired (#126).
 
 ---
 

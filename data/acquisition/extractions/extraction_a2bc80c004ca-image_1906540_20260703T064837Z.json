@@ -1,0 +1,253 @@
+{
+  "handoff_hash": "a2bc80c004ca-image",
+  "district": {
+    "district_id": "1906540",
+    "name": "Cedar Rapids Comm School District",
+    "reps": [
+      {
+        "rec_key": "1906540:0387e7f767",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:50",
+                "school_name": "Cedar Rapids Community School District",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Cedar Rapids Community School District",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Cedar Rapids Community School District",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2941,
+            "completion_tokens": 130,
+            "cost_usd": 0.0012073,
+            "latency_ms": 13291,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061298-adFTDde1utyTi21FEOIY"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:50",
+                "school_name": "Cedar Rapids Community School District",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Cedar Rapids Community School District",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Cedar Rapids Community School District",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2782,
+            "completion_tokens": 128,
+            "cost_usd": 0.001583,
+            "latency_ms": 16688,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061313-uZgrT77nJeYHEslPMsDY"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "cedar rapids community district",
+            "start": "08:50",
+            "end": "15:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "1906540:0387e7f767",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "cedar rapids community district",
+            "start": "07:50",
+            "end": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "1906540:0387e7f767",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "cedar rapids community district",
+            "start": "07:50",
+            "end": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "1906540:0387e7f767",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "cedar rapids community district",
+        "start": "08:50",
+        "end": "15:50",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "1906540:0387e7f767",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "cedar rapids community district",
+        "start": "07:50",
+        "end": "14:50",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "1906540:0387e7f767",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "cedar rapids community district",
+        "start": "07:50",
+        "end": "14:50",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "1906540:0387e7f767",
+        "source_file": "raster_p-1.png"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 1,
+    "n_judged": 0,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 420,
+        "start_time": "08:50",
+        "end_time": "15:50",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "cedar rapids community district",
+            "start_time": "08:50",
+            "end_time": "15:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 420,
+        "start_time": "07:50",
+        "end_time": "14:50",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "cedar rapids community district",
+            "start_time": "07:50",
+            "end_time": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 420,
+        "start_time": "07:50",
+        "end_time": "14:50",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "cedar rapids community district",
+            "start_time": "07:50",
+            "end_time": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 2,
+      "judge_calls": 0,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 5723,
+      "completion_tokens": 258,
+      "cost_usd": 0.0027903
+    }
+  }
+}

@@ -1,0 +1,2811 @@
+{
+  "handoff_hash": "51849a4688a4",
+  "district": {
+    "district_id": "3800038",
+    "name": "DICKINSON 1",
+    "reps": [
+      {
+        "rec_key": "3800038:f962d4236d",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "15:20",
+                "school_name": "middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:10",
+                "end_time": "15:20",
+                "school_name": "high",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1340,
+            "completion_tokens": 136,
+            "cost_usd": 0.0001884,
+            "latency_ms": 1337,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305776-qfF72yKjf1wnRnDpv6eC"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:10",
+                "end_time": "15:20",
+                "school_name": "Dickinson Public School District #1",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1357,
+            "completion_tokens": 47,
+            "cost_usd": 7.161e-05,
+            "latency_ms": 886,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305778-TBaZnV5qQH95LCb5EDq8"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:10",
+                "end_time": "15:20",
+                "school_name": "Dickinson Public School District #1",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1337,
+            "completion_tokens": 44,
+            "cost_usd": 0.00012473,
+            "latency_ms": 3008,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305779-qFLOAXi46br8nGaihTGv"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "dickinson public district 1",
+            "start": "08:10",
+            "end": "15:20",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3800038:f962d4236d",
+            "source_file": "harvest_slice.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:10"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:20"
+            },
+            "rec_key": "3800038:f962d4236d",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:10"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:20"
+            },
+            "rec_key": "3800038:f962d4236d",
+            "source_file": "harvest_slice.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3800038:a8941eea87",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "end_time": "15:20",
+                "grade_level": "middle",
+                "school_name": "Hagen",
+                "start_time": "08:15"
+              },
+              {
+                "end_time": "13:30",
+                "grade_level": "middle",
+                "school_name": "Hagen",
+                "start_time": "08:15"
+              },
+              {
+                "end_time": "15:20",
+                "grade_level": "middle",
+                "school_name": "Hagen",
+                "start_time": "08:15"
+              },
+              {
+                "end_time": "15:20",
+                "grade_level": "middle",
+                "school_name": "Hagen",
+                "start_time": "08:15"
+              },
+              {
+                "end_time": "15:20",
+                "grade_level": "middle",
+                "school_name": "Hagen",
+                "start_time": "08:15"
+              }
+            ],
+            "prompt_tokens": 1384,
+            "completion_tokens": 210,
+            "cost_usd": 0.0002224,
+            "latency_ms": 801,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305782-XdY9gXWR05bG9AvABez6"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:15",
+                "end_time": "15:20",
+                "school_name": "Hagen",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1407,
+            "completion_tokens": 69,
+            "cost_usd": 7.587e-05,
+            "latency_ms": 1043,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305783-BaY9Z04rUil3STRgdOXY"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "hagen",
+            "start": "08:15",
+            "end": "15:20",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:a8941eea87",
+            "source_file": "harvest_slice.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3800038:f9232441cf",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:10",
+                "end_time": "15:20",
+                "school_name": "Dickinson High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 729,
+            "completion_tokens": 44,
+            "cost_usd": 9.05e-05,
+            "latency_ms": 530,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305784-Z9fZeVxpsAzHd0GE20cN"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:10",
+                "end_time": "15:20",
+                "school_name": "Dickinson High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 721,
+            "completion_tokens": 45,
+            "cost_usd": 3.965e-05,
+            "latency_ms": 840,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305784-rlVcv4LkKSO1nftFSSwy"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "dickinson",
+            "start": "08:10",
+            "end": "15:20",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:f9232441cf",
+            "source_file": "harvest_slice.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3800038:dea8788ce2",
+        "file": "camelot_stream.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:10",
+                "end_time": "15:25",
+                "school_name": "DHS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 844,
+            "completion_tokens": 42,
+            "cost_usd": 0.0001012,
+            "latency_ms": 616,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305785-3KyXSGTYCLXl5kYW8dx7"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:10",
+                "end_time": "15:25",
+                "school_name": "DHS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 840,
+            "completion_tokens": 69,
+            "cost_usd": 4.752e-05,
+            "latency_ms": 986,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305786-sTpbUZ9O5614yuaUBdlB"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "dhs",
+            "start": "08:10",
+            "end": "15:25",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:dea8788ce2",
+            "source_file": "camelot_stream.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3800038:af5756eb79",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 11,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Berg Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Heart River Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Jefferson Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Lincoln Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Prairie Rose Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Roosevelt Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:24",
+                "end_time": "15:30",
+                "school_name": "Dickinson Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:30",
+                "school_name": "Dickinson High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:30",
+                "school_name": "SW Community High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "K-8 Roughrider Virtual Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "9-12 Roughrider Virtual Academy",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2240,
+            "completion_tokens": 443,
+            "cost_usd": 0.0004012,
+            "latency_ms": 1419,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305787-fTx8izc4Z4m9hGfcnTvZ"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 9,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Berg Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Heart River Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Jefferson Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Lincoln Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Prairie Rose Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Roosevelt Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:24",
+                "end_time": "15:30",
+                "school_name": "Dickinson Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Dickinson High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "SW Community High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2354,
+            "completion_tokens": 518,
+            "cost_usd": 0.00015914,
+            "latency_ms": 7103,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305788-cax6evcaiER4UGJmSFv7"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 8,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Berg Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Heart River Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Jefferson Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Lincoln Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Prairie Rose Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Roosevelt Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:24",
+                "end_time": "15:30",
+                "school_name": "Dickinson Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:10",
+                "end_time": "14:35",
+                "school_name": "Dickinson High School",
+                "confidence": "medium"
+              }
+            ],
+            "prompt_tokens": 2265,
+            "completion_tokens": 295,
+            "cost_usd": 0.00037495,
+            "latency_ms": 10644,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305795-ia6AGoFnmUFV2CZsYkmd"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "berg",
+            "start": "08:00",
+            "end": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:af5756eb79",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "heart river",
+            "start": "08:00",
+            "end": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:af5756eb79",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "jefferson",
+            "start": "08:00",
+            "end": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:af5756eb79",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lincoln",
+            "start": "08:00",
+            "end": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:af5756eb79",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "prairie rose",
+            "start": "08:00",
+            "end": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:af5756eb79",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "roosevelt",
+            "start": "08:00",
+            "end": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:af5756eb79",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "dickinson",
+            "start": "08:24",
+            "end": "15:30",
+            "gross": 426,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:af5756eb79",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "dickinson",
+            "start": "08:10",
+            "end": "14:35",
+            "gross": 385,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3800038:af5756eb79",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "sw community",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00",
+              "mistralai/mistral-small-24b-instruct-2501": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:30",
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "3800038:af5756eb79",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "k8 roughrider virtual",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "3800038:af5756eb79",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "912 roughrider virtual",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "3800038:af5756eb79",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3800038:e06b0e317b",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:24",
+                "end_time": "15:30",
+                "school_name": "Dickinson Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1941,
+            "completion_tokens": 49,
+            "cost_usd": 0.0002137,
+            "latency_ms": 604,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305806-V2GYwp45xmNhosLxGyuK"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:24",
+                "end_time": "15:30",
+                "school_name": "Dickinson Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2035,
+            "completion_tokens": 49,
+            "cost_usd": 0.00010567,
+            "latency_ms": 1044,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305807-f5TGdjQaNdwYh4gsFIWW"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "dickinson",
+            "start": "08:24",
+            "end": "15:30",
+            "gross": 426,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:e06b0e317b",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3800038:01c0ba51f8",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 6,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Berg",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Jefferson",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Heart River",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Lincoln",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Prairie Rose",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Roosevelt",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1062,
+            "completion_tokens": 229,
+            "cost_usd": 0.0001978,
+            "latency_ms": 959,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305808-H8xCzXhvQWFYvGQ6RIEH"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 6,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Berg",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Jefferson",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Heart River",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Lincoln",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Prairie Rose",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Roosevelt",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1093,
+            "completion_tokens": 224,
+            "cost_usd": 7.257e-05,
+            "latency_ms": 3755,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305809-7inDmgLm8m2oXpstkuxg"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "berg",
+            "start": "08:05",
+            "end": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:01c0ba51f8",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "jefferson",
+            "start": "08:05",
+            "end": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:01c0ba51f8",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "heart river",
+            "start": "08:05",
+            "end": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:01c0ba51f8",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lincoln",
+            "start": "08:05",
+            "end": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:01c0ba51f8",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "prairie rose",
+            "start": "08:05",
+            "end": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:01c0ba51f8",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "roosevelt",
+            "start": "08:05",
+            "end": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:01c0ba51f8",
+            "source_file": "harvest_slice.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3800038:f78241f3fe",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 6,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Berg",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Jefferson",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Heart River",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Lincoln",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Prairie Rose",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Roosevelt",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1130,
+            "completion_tokens": 224,
+            "cost_usd": 0.0002026,
+            "latency_ms": 937,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305813-lefDNHBvFXxlwwMpb4zl"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 6,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Berg",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Jefferson",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Heart River",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Lincoln",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Prairie Rose",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Roosevelt",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1154,
+            "completion_tokens": 225,
+            "cost_usd": 7.57e-05,
+            "latency_ms": 3618,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305814-WRBjvJNq78PlegV5Tukw"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "berg",
+            "start": "08:05",
+            "end": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:f78241f3fe",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "jefferson",
+            "start": "08:05",
+            "end": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:f78241f3fe",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "heart river",
+            "start": "08:05",
+            "end": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:f78241f3fe",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lincoln",
+            "start": "08:05",
+            "end": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:f78241f3fe",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "prairie rose",
+            "start": "08:05",
+            "end": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:f78241f3fe",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "roosevelt",
+            "start": "08:05",
+            "end": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:f78241f3fe",
+            "source_file": "harvest_slice.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3800038:08b330937e",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:25",
+                "school_name": "Southwest Community High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1000,
+            "completion_tokens": 50,
+            "cost_usd": 0.00012,
+            "latency_ms": 444,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305817-mYtktgXgMyOKT1CUnDC9"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:25",
+                "school_name": "Southwest Community High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1005,
+            "completion_tokens": 72,
+            "cost_usd": 5.601e-05,
+            "latency_ms": 1123,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305818-Ct2ZUJW0FyJssV6OnCTn"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "southwest community",
+            "start": "08:30",
+            "end": "15:25",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:08b330937e",
+            "source_file": "harvest_slice.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3800038:caaaaec3e1",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1052,
+            "completion_tokens": 5,
+            "cost_usd": 0.0001072,
+            "latency_ms": 492,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305819-3lWTEmdNgKnUSKuth0hP"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1090,
+            "completion_tokens": 12,
+            "cost_usd": 5.546e-05,
+            "latency_ms": 568,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305819-OJLS7SiDuyUwDXFIjrK6"
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3800038:a97e7de385",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:24",
+                "end_time": "15:30",
+                "school_name": "Dickinson Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1170,
+            "completion_tokens": 49,
+            "cost_usd": 0.0001366,
+            "latency_ms": 724,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305820-1en4upgC1IKkQHiSZadF"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:24",
+                "end_time": "15:30",
+                "school_name": "Dickinson Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1265,
+            "completion_tokens": 49,
+            "cost_usd": 6.717e-05,
+            "latency_ms": 1337,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305821-xgilRU5kRaubrxFxL8Kp"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "dickinson",
+            "start": "08:24",
+            "end": "15:30",
+            "gross": 426,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:a97e7de385",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3800038:0d3bd88243",
+        "file": "camelot_stream.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 999,
+            "completion_tokens": 161,
+            "cost_usd": 0.0001643,
+            "latency_ms": 1435,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305822-NKkJopUVOgT2i79j7ljE"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 964,
+            "completion_tokens": 51,
+            "cost_usd": 5.228e-05,
+            "latency_ms": 1887,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305824-HIwystiTBWKbZDVhJ9Jl"
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3800038:b6cc7604ec",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:18",
+                "end_time": "15:30",
+                "school_name": "DICKINSON",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:18",
+                "end_time": "15:30",
+                "school_name": "DICKINSON MIDDLE SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1046,
+            "completion_tokens": 142,
+            "cost_usd": 0.0001614,
+            "latency_ms": 665,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305826-1C9VefgDAHQ0blrRIyR7"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:24",
+                "end_time": "15:30",
+                "school_name": "DICKINSON",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:24",
+                "end_time": "15:56",
+                "school_name": "MIDDLE SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1114,
+            "completion_tokens": 129,
+            "cost_usd": 6.602e-05,
+            "latency_ms": 2322,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305826-YZ76d0nhj6R1XJbaidSQ"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:24",
+                "end_time": "15:30",
+                "school_name": "DICKINSON MIDDLE SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1081,
+            "completion_tokens": 44,
+            "cost_usd": 0.00010169,
+            "latency_ms": 3906,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305829-988JktZDfYDht5LKvrRe"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "dickinson",
+            "start": "08:24",
+            "end": "15:30",
+            "gross": 426,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3800038:b6cc7604ec",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "dickinson",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:18"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:30"
+            },
+            "rec_key": "3800038:b6cc7604ec",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:24"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:56"
+            },
+            "rec_key": "3800038:b6cc7604ec",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3800038:63141082a1",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:24",
+                "end_time": "15:30",
+                "school_name": "Dickinson Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2282,
+            "completion_tokens": 44,
+            "cost_usd": 0.0002458,
+            "latency_ms": 607,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305833-mHzrUJeenBkJRFyYw3oU"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:24",
+                "end_time": "15:30",
+                "school_name": "Dickinson Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2358,
+            "completion_tokens": 49,
+            "cost_usd": 0.00012182,
+            "latency_ms": 888,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305833-Vo6GHivrEJ4vQ4FoYWEk"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "dickinson",
+            "start": "08:24",
+            "end": "15:30",
+            "gross": 426,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:63141082a1",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3800038:df6bcfc4b7",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:24",
+                "end_time": "15:30",
+                "school_name": "Dickinson Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1170,
+            "completion_tokens": 49,
+            "cost_usd": 0.0001366,
+            "latency_ms": 1069,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305834-pf0OMNVIuWKOEnFz9sS8"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:24",
+                "end_time": "15:30",
+                "school_name": "Dickinson Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1258,
+            "completion_tokens": 48,
+            "cost_usd": 6.674e-05,
+            "latency_ms": 862,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305835-OOvyvQX9EZxWZTliG7nA"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "dickinson",
+            "start": "08:24",
+            "end": "15:30",
+            "gross": 426,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:df6bcfc4b7",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3800038:c1a0d26caa",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:24",
+                "end_time": "15:30",
+                "school_name": "Dickinson Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2797,
+            "completion_tokens": 44,
+            "cost_usd": 0.0002973,
+            "latency_ms": 1226,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305836-px6Gxj9tx948FEzUfBw3"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:24",
+                "end_time": "15:30",
+                "school_name": "Dickinson Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2571,
+            "completion_tokens": 44,
+            "cost_usd": 0.00013207,
+            "latency_ms": 1628,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305838-3DEGrXdRAYgTD5TuNkf3"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "dickinson",
+            "start": "08:24",
+            "end": "15:30",
+            "gross": 426,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:c1a0d26caa",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3800038:e7544b01cf",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:24",
+                "end_time": "15:30",
+                "school_name": "Dickinson Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2815,
+            "completion_tokens": 44,
+            "cost_usd": 0.0002991,
+            "latency_ms": 757,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305839-GVykNXccIHEU2HM9GlxA"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:24",
+                "end_time": "15:30",
+                "school_name": "Dickinson Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2745,
+            "completion_tokens": 49,
+            "cost_usd": 0.00014117,
+            "latency_ms": 871,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305840-TPC4DIx5GBaFFj89Trcr"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "dickinson",
+            "start": "08:24",
+            "end": "15:30",
+            "gross": 426,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3800038:e7544b01cf",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "dickinson public district 1",
+        "start": "08:10",
+        "end": "15:20",
+        "gross": 430,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3800038:f962d4236d",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "hagen",
+        "start": "08:15",
+        "end": "15:20",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:a8941eea87",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "dickinson",
+        "start": "08:10",
+        "end": "15:20",
+        "gross": 430,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:f9232441cf",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "dhs",
+        "start": "08:10",
+        "end": "15:25",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:dea8788ce2",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "berg",
+        "start": "08:00",
+        "end": "15:00",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:af5756eb79",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "heart river",
+        "start": "08:00",
+        "end": "15:00",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:af5756eb79",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "jefferson",
+        "start": "08:00",
+        "end": "15:00",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:af5756eb79",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lincoln",
+        "start": "08:00",
+        "end": "15:00",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:af5756eb79",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "prairie rose",
+        "start": "08:00",
+        "end": "15:00",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:af5756eb79",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "roosevelt",
+        "start": "08:00",
+        "end": "15:00",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:af5756eb79",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "dickinson",
+        "start": "08:24",
+        "end": "15:30",
+        "gross": 426,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:af5756eb79",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "dickinson",
+        "start": "08:10",
+        "end": "14:35",
+        "gross": 385,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3800038:af5756eb79",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "dickinson",
+        "start": "08:24",
+        "end": "15:30",
+        "gross": 426,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:e06b0e317b",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "berg",
+        "start": "08:05",
+        "end": "15:05",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:01c0ba51f8",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "jefferson",
+        "start": "08:05",
+        "end": "15:05",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:01c0ba51f8",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "heart river",
+        "start": "08:05",
+        "end": "15:05",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:01c0ba51f8",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lincoln",
+        "start": "08:05",
+        "end": "15:05",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:01c0ba51f8",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "prairie rose",
+        "start": "08:05",
+        "end": "15:05",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:01c0ba51f8",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "roosevelt",
+        "start": "08:05",
+        "end": "15:05",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:01c0ba51f8",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "berg",
+        "start": "08:05",
+        "end": "15:05",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:f78241f3fe",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "jefferson",
+        "start": "08:05",
+        "end": "15:05",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:f78241f3fe",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "heart river",
+        "start": "08:05",
+        "end": "15:05",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:f78241f3fe",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lincoln",
+        "start": "08:05",
+        "end": "15:05",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:f78241f3fe",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "prairie rose",
+        "start": "08:05",
+        "end": "15:05",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:f78241f3fe",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "roosevelt",
+        "start": "08:05",
+        "end": "15:05",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:f78241f3fe",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "southwest community",
+        "start": "08:30",
+        "end": "15:25",
+        "gross": 415,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:08b330937e",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "dickinson",
+        "start": "08:24",
+        "end": "15:30",
+        "gross": 426,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:a97e7de385",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "dickinson",
+        "start": "08:24",
+        "end": "15:30",
+        "gross": 426,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3800038:b6cc7604ec",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "dickinson",
+        "start": "08:24",
+        "end": "15:30",
+        "gross": 426,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:63141082a1",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "dickinson",
+        "start": "08:24",
+        "end": "15:30",
+        "gross": 426,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:df6bcfc4b7",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "dickinson",
+        "start": "08:24",
+        "end": "15:30",
+        "gross": 426,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:c1a0d26caa",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "dickinson",
+        "start": "08:24",
+        "end": "15:30",
+        "gross": 426,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3800038:e7544b01cf",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:10"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:20"
+        },
+        "rec_key": "3800038:f962d4236d",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:10"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:20"
+        },
+        "rec_key": "3800038:f962d4236d",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "sw community",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00",
+          "mistralai/mistral-small-24b-instruct-2501": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:30",
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "3800038:af5756eb79",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "k8 roughrider virtual",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "3800038:af5756eb79",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "912 roughrider virtual",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "3800038:af5756eb79",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "dickinson",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:18"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:30"
+        },
+        "rec_key": "3800038:b6cc7604ec",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:24"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:56"
+        },
+        "rec_key": "3800038:b6cc7604ec",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "n_reps": 17,
+    "n_judged": 3,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 420,
+        "start_time": "08:00",
+        "end_time": "15:00",
+        "n_schools": 18,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "berg",
+            "start_time": "08:00",
+            "end_time": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "heart river",
+            "start_time": "08:00",
+            "end_time": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "jefferson",
+            "start_time": "08:00",
+            "end_time": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lincoln",
+            "start_time": "08:00",
+            "end_time": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "prairie rose",
+            "start_time": "08:00",
+            "end_time": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "roosevelt",
+            "start_time": "08:00",
+            "end_time": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "berg",
+            "start_time": "08:05",
+            "end_time": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "jefferson",
+            "start_time": "08:05",
+            "end_time": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "heart river",
+            "start_time": "08:05",
+            "end_time": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lincoln",
+            "start_time": "08:05",
+            "end_time": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "prairie rose",
+            "start_time": "08:05",
+            "end_time": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "roosevelt",
+            "start_time": "08:05",
+            "end_time": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "berg",
+            "start_time": "08:05",
+            "end_time": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "jefferson",
+            "start_time": "08:05",
+            "end_time": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "heart river",
+            "start_time": "08:05",
+            "end_time": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lincoln",
+            "start_time": "08:05",
+            "end_time": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "prairie rose",
+            "start_time": "08:05",
+            "end_time": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "roosevelt",
+            "start_time": "08:05",
+            "end_time": "15:05",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 426,
+        "start_time": "08:24",
+        "end_time": "15:30",
+        "n_schools": 9,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "hagen",
+            "start_time": "08:15",
+            "end_time": "15:20",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dickinson",
+            "start_time": "08:24",
+            "end_time": "15:30",
+            "gross": 426,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dickinson",
+            "start_time": "08:24",
+            "end_time": "15:30",
+            "gross": 426,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dickinson",
+            "start_time": "08:24",
+            "end_time": "15:30",
+            "gross": 426,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dickinson",
+            "start_time": "08:24",
+            "end_time": "15:30",
+            "gross": 426,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dickinson",
+            "start_time": "08:24",
+            "end_time": "15:30",
+            "gross": 426,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dickinson",
+            "start_time": "08:24",
+            "end_time": "15:30",
+            "gross": 426,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dickinson",
+            "start_time": "08:24",
+            "end_time": "15:30",
+            "gross": 426,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dickinson",
+            "start_time": "08:24",
+            "end_time": "15:30",
+            "gross": 426,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 430,
+        "start_time": "08:10",
+        "end_time": "15:20",
+        "n_schools": 5,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "dickinson public district 1",
+            "start_time": "08:10",
+            "end_time": "15:20",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dickinson",
+            "start_time": "08:10",
+            "end_time": "15:20",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dhs",
+            "start_time": "08:10",
+            "end_time": "15:25",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dickinson",
+            "start_time": "08:10",
+            "end_time": "14:35",
+            "gross": 385,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "southwest community",
+            "start_time": "08:30",
+            "end_time": "15:25",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 37,
+      "judge_calls": 3,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 55015,
+      "completion_tokens": 4097,
+      "cost_usd": 0.0052939400000000005
+    },
+    "state": "ND"
+  }
+}

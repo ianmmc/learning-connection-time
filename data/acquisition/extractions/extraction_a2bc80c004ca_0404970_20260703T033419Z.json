@@ -1,0 +1,233 @@
+{
+  "handoff_hash": "a2bc80c004ca",
+  "district": {
+    "district_id": "0404970",
+    "name": "Mesa Unified District (4235)",
+    "reps": [
+      {
+        "rec_key": "0404970:786092c1ea",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:45",
+                "school_name": "Field Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 781,
+            "completion_tokens": 42,
+            "cost_usd": 9.49e-05,
+            "latency_ms": 14268,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049616-txZPhNizWumdSZpdALIB"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:45",
+                "school_name": "Field Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 773,
+            "completion_tokens": 43,
+            "cost_usd": 4.209e-05,
+            "latency_ms": 12895,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049629-Hbtr4qyKGI0fi7HKGFwe"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "field",
+            "start": "08:15",
+            "end": "14:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0404970:786092c1ea",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0404970:e457000534",
+        "file": "pdfplumber_lines.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:15",
+                "school_name": "Franklin Junior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1551,
+            "completion_tokens": 49,
+            "cost_usd": 0.0001747,
+            "latency_ms": 13629,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049643-uIeEoAbpabXw6yqAEBmL"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:15",
+                "school_name": "Franklin Junior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1562,
+            "completion_tokens": 72,
+            "cost_usd": 8.386e-05,
+            "latency_ms": 15479,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049658-hurWDYADCgr0nVaOeOG7"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "franklin",
+            "start": "07:30",
+            "end": "14:15",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0404970:e457000534",
+            "source_file": "pdfplumber_lines.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "field",
+        "start": "08:15",
+        "end": "14:45",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0404970:786092c1ea",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "franklin",
+        "start": "07:30",
+        "end": "14:15",
+        "gross": 405,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0404970:e457000534",
+        "source_file": "pdfplumber_lines.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 2,
+    "n_judged": 0,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 390,
+        "start_time": "08:15",
+        "end_time": "14:45",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "field",
+            "start_time": "08:15",
+            "end_time": "14:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 405,
+        "start_time": "07:30",
+        "end_time": "14:15",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "franklin",
+            "start_time": "07:30",
+            "end_time": "14:15",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 4,
+      "judge_calls": 0,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 4667,
+      "completion_tokens": 206,
+      "cost_usd": 0.00039555
+    }
+  }
+}

@@ -58,8 +58,10 @@ function writeVersioned(filePath, content) {
 
 const TIME = /\b\d{1,2}:\d{2}\s*(?:[AaPp]\.?[Mm]\.?)?/g;
 
-// Same keyword list discover.py's SCHED_KW already uses for ranking schedule-named URLs --
-// reused here, not duplicated, so "what counts as a schedule link" stays one source of truth.
+// Schedule-link keywords for the emergent-candidate scan (REQ-084): an anchor whose text/href hits
+// one of these gets queued as a one-hop emergent capture. This is now the list's ONLY home —
+// discover.py's Python twin (SCHED_KW, once used by the retired candidate-ranking bench) was
+// deleted with #87.
 const SCHED_KW = ['bell', 'schedule', 'hours', 'start-time', 'start_time', 'daily-schedule', 'times', 'school-day', 'schoolday'];
 
 // Bound operations that lack an effective native timeout: page.pdf() has NONE, and a full-page

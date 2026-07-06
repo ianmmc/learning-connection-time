@@ -1,0 +1,794 @@
+{
+  "handoff_hash": "7301db5ac45d",
+  "district": {
+    "district_id": "3901302",
+    "name": "Dayton Early College Academy Inc",
+    "reps": [
+      {
+        "rec_key": "3901302:e26f3c6d06",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:45",
+                "end_time": "15:35",
+                "school_name": "DECA High",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3189,
+            "completion_tokens": 43,
+            "cost_usd": 0.0003361,
+            "latency_ms": 980,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293114-h2AxhdnlyBSDOwDUyNBU"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:45",
+                "end_time": "15:35",
+                "school_name": "DECA High",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3346,
+            "completion_tokens": 48,
+            "cost_usd": 0.00017114,
+            "latency_ms": 1088,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293115-mvRQje9YIjjA4LWuTAHL"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "deca",
+            "start": "08:45",
+            "end": "15:35",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3901302:e26f3c6d06",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3901302:14ad8c359d",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:15",
+                "end_time": "15:20",
+                "school_name": "DECA Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "15:20",
+                "school_name": "DECA High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:20",
+                "school_name": "DECA PREP",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1848,
+            "completion_tokens": 125,
+            "cost_usd": 0.0002348,
+            "latency_ms": 901,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293116-xTzMVEhqDDtxPlXNdz0c"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:25",
+                "end_time": "15:20",
+                "school_name": "DECA Middle",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2019,
+            "completion_tokens": 70,
+            "cost_usd": 0.00010655,
+            "latency_ms": 1151,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293117-CIRVRsWtHlt8oe6obYjg"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:15",
+                "end_time": "15:20",
+                "school_name": "DECA Middle",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1946,
+            "completion_tokens": 40,
+            "cost_usd": 0.00019834,
+            "latency_ms": 1531,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293118-ZNmxwqin8zZpT4dcRvJZ"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "deca",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3901302:14ad8c359d",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "deca",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:20"
+            },
+            "rec_key": "3901302:14ad8c359d",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "deca prep",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:20"
+            },
+            "rec_key": "3901302:14ad8c359d",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3901302:57798314f7",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:45",
+                "end_time": "15:35",
+                "school_name": "DECA High",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1813,
+            "completion_tokens": 48,
+            "cost_usd": 0.0002005,
+            "latency_ms": 703,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293120-rwGqDrAc3qVYS0cBJgZ2"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:45",
+                "end_time": "15:35",
+                "school_name": "DECA High",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1971,
+            "completion_tokens": 48,
+            "cost_usd": 0.00010239,
+            "latency_ms": 800,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293120-EGMbkrDJxrENAYypZhDk"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "deca",
+            "start": "08:45",
+            "end": "15:35",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3901302:57798314f7",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3901302:0e7861bf1f",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:15",
+                "end_time": "15:20",
+                "school_name": "DECA Middle",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2838,
+            "completion_tokens": 43,
+            "cost_usd": 0.000301,
+            "latency_ms": 590,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293121-BkQpnXl3gzzOlI9H07Oe"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:25",
+                "end_time": "15:20",
+                "school_name": "DECA Middle",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2986,
+            "completion_tokens": 70,
+            "cost_usd": 0.0001549,
+            "latency_ms": 1108,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293122-RJMI1lSd9OLsxcJBiGW8"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "deca",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3901302:0e7861bf1f",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3901302:339ff9f813",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Dayton Early College Academy",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 658,
+            "completion_tokens": 50,
+            "cost_usd": 8.58e-05,
+            "latency_ms": 637,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293123-zALZgPc00OCKDtdHN5pt"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Dayton Early College Academy",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 681,
+            "completion_tokens": 46,
+            "cost_usd": 3.773e-05,
+            "latency_ms": 863,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293124-Y4AqNEReHccsCzSHbhwA"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "dayton early college",
+            "start": "07:52",
+            "end": "14:50",
+            "gross": 418,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3901302:339ff9f813",
+            "source_file": "harvest_slice.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3901302:b8ee8887b0",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "DECA PREP",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "DECA Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "DECA High",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2260,
+            "completion_tokens": 125,
+            "cost_usd": 0.000276,
+            "latency_ms": 646,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293124-KT0xpFuD3mgJdcwd265R"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "DECA PREP",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2387,
+            "completion_tokens": 72,
+            "cost_usd": 0.00012511,
+            "latency_ms": 1383,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293125-4ZQlcRoSjYMNo6QMniRd"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "DECA PREP",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2320,
+            "completion_tokens": 42,
+            "cost_usd": 0.000213,
+            "latency_ms": 3916,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293127-WsZqJUIOJWqkODYc4bLu"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "deca prep",
+            "start": "08:00",
+            "end": "14:50",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3901302:b8ee8887b0",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "deca",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:50"
+            },
+            "rec_key": "3901302:b8ee8887b0",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "deca",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:50"
+            },
+            "rec_key": "3901302:b8ee8887b0",
+            "source_file": "page.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "deca",
+        "start": "08:45",
+        "end": "15:35",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3901302:e26f3c6d06",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "deca",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3901302:14ad8c359d",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "deca",
+        "start": "08:45",
+        "end": "15:35",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3901302:57798314f7",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "deca",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3901302:0e7861bf1f",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "dayton early college",
+        "start": "07:52",
+        "end": "14:50",
+        "gross": 418,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3901302:339ff9f813",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "deca prep",
+        "start": "08:00",
+        "end": "14:50",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3901302:b8ee8887b0",
+        "source_file": "page.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "high",
+        "school": "deca",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:20"
+        },
+        "rec_key": "3901302:14ad8c359d",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "deca prep",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:20"
+        },
+        "rec_key": "3901302:14ad8c359d",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "deca",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:50"
+        },
+        "rec_key": "3901302:b8ee8887b0",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "deca",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:50"
+        },
+        "rec_key": "3901302:b8ee8887b0",
+        "source_file": "page.txt"
+      }
+    ],
+    "n_reps": 6,
+    "n_judged": 2,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 414,
+        "start_time": "07:52",
+        "end_time": "14:50",
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "dayton early college",
+            "start_time": "07:52",
+            "end_time": "14:50",
+            "gross": 418,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "deca prep",
+            "start_time": "08:00",
+            "end_time": "14:50",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 420,
+        "start_time": "08:20",
+        "end_time": "15:20",
+        "n_schools": 2,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "deca",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "deca",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 410,
+        "start_time": "08:45",
+        "end_time": "15:35",
+        "n_schools": 2,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "deca",
+            "start_time": "08:45",
+            "end_time": "15:35",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "deca",
+            "start_time": "08:45",
+            "end_time": "15:35",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 14,
+      "judge_calls": 2,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 30262,
+      "completion_tokens": 870,
+      "cost_usd": 0.0025433599999999997
+    },
+    "state": "OH"
+  }
+}

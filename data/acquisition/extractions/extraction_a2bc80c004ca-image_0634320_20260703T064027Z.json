@@ -1,0 +1,518 @@
+{
+  "handoff_hash": "a2bc80c004ca-image",
+  "district": {
+    "district_id": "0634320",
+    "name": "San Diego Unified",
+    "reps": [
+      {
+        "rec_key": "0634320:722637cf38",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:45",
+                "end_time": "15:28",
+                "school_name": "MISSION BAY HIGH SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2941,
+            "completion_tokens": 49,
+            "cost_usd": 0.0010048,
+            "latency_ms": 15796,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783060697-ArYBMqpsBzi51VI3VwYR"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:45",
+                "end_time": "15:28",
+                "school_name": "Mission Bay High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2782,
+            "completion_tokens": 44,
+            "cost_usd": 0.0013058,
+            "latency_ms": 27565,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783060724-oVLwe3ALIFgOuBcxYh62"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "mission bay",
+            "start": "08:45",
+            "end": "15:28",
+            "gross": 403,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "0634320:722637cf38",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0634320:f525f78eca",
+        "file": "original.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "14:45",
+                "school_name": "TK and Kindergarten",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:00",
+                "school_name": "1st-8th",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1651,
+            "completion_tokens": 88,
+            "cost_usd": 0.0007153,
+            "latency_ms": 15691,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783060740-5hXaBGubFjyNt2O9UNmE"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "14:45",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:00",
+                "school_name": "",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1727,
+            "completion_tokens": 74,
+            "cost_usd": 0.0008233,
+            "latency_ms": 13110,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783060753-DhkAPECJCeXumOIhDUbp"
+          },
+          {
+            "model": "deepseek/deepseek-v3.2",
+            "role": "judge",
+            "ok": false,
+            "error": "Error code: 404 - {'error': {'message': 'No endpoints found that support image input', 'code': 404}}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 13387,
+            "finish_reason": null,
+            "generation_id": null
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "tk and kindergarten",
+            "starts": {
+              "google/gemini-2.5-flash": "08:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "14:45"
+            },
+            "rec_key": "0634320:f525f78eca",
+            "source_file": "original.png"
+          },
+          {
+            "band": "elementary",
+            "school": "1st8th",
+            "starts": {
+              "google/gemini-2.5-flash": "08:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:00"
+            },
+            "rec_key": "0634320:f525f78eca",
+            "source_file": "original.png"
+          },
+          {
+            "band": "elementary",
+            "school": "",
+            "starts": {
+              "mistralai/mistral-large-2512": "08:30"
+            },
+            "ends": {
+              "mistralai/mistral-large-2512": "14:45"
+            },
+            "rec_key": "0634320:f525f78eca",
+            "source_file": "original.png"
+          },
+          {
+            "band": "middle",
+            "school": "",
+            "starts": {
+              "mistralai/mistral-large-2512": "08:30"
+            },
+            "ends": {
+              "mistralai/mistral-large-2512": "15:00"
+            },
+            "rec_key": "0634320:f525f78eca",
+            "source_file": "original.png"
+          }
+        ]
+      },
+      {
+        "rec_key": "0634320:f71378e4f5",
+        "file": "original.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:48",
+                "school_name": "BELL MIDDLE SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1651,
+            "completion_tokens": 48,
+            "cost_usd": 0.0006153,
+            "latency_ms": 14314,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783060782-ginBSKuvFp2accI9txpA"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:48",
+                "school_name": "Bell Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1464,
+            "completion_tokens": 43,
+            "cost_usd": 0.0006453,
+            "latency_ms": 16642,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783060798-Pq3uUZRbtnN51v0Y5yrK"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "bell",
+            "start": "08:00",
+            "end": "14:48",
+            "gross": 408,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "0634320:f71378e4f5",
+            "source_file": "original.png"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0634320:907f7855b0",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "14:10",
+                "school_name": "DAILARD ELEMENTARY",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2941,
+            "completion_tokens": 50,
+            "cost_usd": 0.0010073,
+            "latency_ms": 13908,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783060812-vu6uUnkzKHCu8NxOEPbR"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "14:10",
+                "school_name": "Dailard Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2782,
+            "completion_tokens": 45,
+            "cost_usd": 0.0013073,
+            "latency_ms": 12974,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783060825-yZaaNnyIXnPcGLIU1c1q"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "dailard",
+            "start": "07:50",
+            "end": "14:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "0634320:907f7855b0",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "mission bay",
+        "start": "08:45",
+        "end": "15:28",
+        "gross": 403,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "0634320:722637cf38",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "bell",
+        "start": "08:00",
+        "end": "14:48",
+        "gross": 408,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "0634320:f71378e4f5",
+        "source_file": "original.png"
+      },
+      {
+        "band": "elementary",
+        "school": "dailard",
+        "start": "07:50",
+        "end": "14:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "0634320:907f7855b0",
+        "source_file": "raster_p-1.png"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "tk and kindergarten",
+        "starts": {
+          "google/gemini-2.5-flash": "08:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "14:45"
+        },
+        "rec_key": "0634320:f525f78eca",
+        "source_file": "original.png"
+      },
+      {
+        "band": "elementary",
+        "school": "1st8th",
+        "starts": {
+          "google/gemini-2.5-flash": "08:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:00"
+        },
+        "rec_key": "0634320:f525f78eca",
+        "source_file": "original.png"
+      },
+      {
+        "band": "elementary",
+        "school": "",
+        "starts": {
+          "mistralai/mistral-large-2512": "08:30"
+        },
+        "ends": {
+          "mistralai/mistral-large-2512": "14:45"
+        },
+        "rec_key": "0634320:f525f78eca",
+        "source_file": "original.png"
+      },
+      {
+        "band": "middle",
+        "school": "",
+        "starts": {
+          "mistralai/mistral-large-2512": "08:30"
+        },
+        "ends": {
+          "mistralai/mistral-large-2512": "15:00"
+        },
+        "rec_key": "0634320:f525f78eca",
+        "source_file": "original.png"
+      }
+    ],
+    "n_reps": 4,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 380,
+        "start_time": "07:50",
+        "end_time": "14:10",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "dailard",
+            "start_time": "07:50",
+            "end_time": "14:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 408,
+        "start_time": "08:00",
+        "end_time": "14:48",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "bell",
+            "start_time": "08:00",
+            "end_time": "14:48",
+            "gross": 408,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 403,
+        "start_time": "08:45",
+        "end_time": "15:28",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "mission bay",
+            "start_time": "08:45",
+            "end_time": "15:28",
+            "gross": 403,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 9,
+      "judge_calls": 1,
+      "errors": 1,
+      "truncated": 0,
+      "prompt_tokens": 17939,
+      "completion_tokens": 441,
+      "cost_usd": 0.007424399999999999
+    }
+  }
+}

@@ -1,0 +1,528 @@
+{
+  "handoff_hash": "7301db5ac45d",
+  "created_at": "2026-07-05T22:59:23Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "fingerprints": {
+    "4222860": {
+      "config": "e2d24d579723",
+      "labels": "7689bebefdb1",
+      "data": "cb32b27ad6a1"
+    },
+    "3901302": {
+      "config": "e2d24d579723",
+      "labels": "5162cf88f59e",
+      "data": "007993a11761"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v1"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.0204,
+    "n_reps": 20,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "4222860",
+      "name": "Stroudsburg Area SD",
+      "state": "PA",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "4222860:fa8bdfce9a",
+          "url": "https://hamilton.sburg.org/apps/bell_schedules/",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:1da0a99205",
+          "url": "https://high.sburg.org/apps/bell_schedules/index.jsp?id=7104",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:08f592aa23",
+          "url": "https://jhs.sburg.org/apps/bell_schedules/index.jsp?id=8272",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:0b76e3c493",
+          "url": "https://chipperfield.sburg.org/apps/cross.jsp?wREC_ID=5711&crossPath=/apps3/bell_schedules/",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:0ba126eb4d",
+          "url": "https://jhs.sburg.org/apps/bell_schedules/printerfriendly.jsp",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:1f51effa21",
+          "url": "https://hamilton.sburg.org/apps/bell_schedules/printerfriendly.jsp",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:5d7778b6a7",
+          "url": "https://hamilton.sburg.org/apps/bell_schedules/index.jsp?id=7091",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:6271fb3277",
+          "url": "https://middle.sburg.org/apps/bell_schedules/index.jsp?id=7093",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:6a908720a1",
+          "url": "https://hamilton.sburg.org/apps/cross.jsp?wREC_ID=5711&crossPath=/apps3/bell_schedules/",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:7bbb2ff11e",
+          "url": "https://high.sburg.org/apps/bell_schedules/index.jsp?id=7100",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:9707adcffa",
+          "url": "https://high.sburg.org/apps/bell_schedules/index.jsp?id=7102",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:a622435c8a",
+          "url": "https://jhs.sburg.org/apps/bell_schedules/index.jsp?rn=741",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:77a6eec89d",
+          "url": "https://middle.sburg.org/apps/bell_schedules/printerfriendly.jsp",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:0115cb4b01",
+          "url": "https://hamilton.sburg.org/apps/bell_schedules/index.jsp?id=7565",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:0286264bfb",
+          "url": "https://jhs.sburg.org/apps/bell_schedules/index.jsp?id=8937",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:8c9f1b965b",
+          "url": "https://high.sburg.org/apps/bell_schedules/index.jsp?id=7101",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:68c1d17836",
+          "url": "https://high.sburg.org/apps/bell_schedules/printerfriendly.jsp",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:38d8c26e9b",
+          "url": "https://high.sburg.org/apps/bell_schedules/index.jsp?id=7105",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:2ca0e1c23b",
+          "url": "https://high.sburg.org/apps/bell_schedules/index.jsp",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:bca38d0fb5",
+          "url": "https://high.sburg.org/apps/bell_schedules/index.jsp?id=7103",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:a2346ca195",
+          "url": "https://high.sburg.org/apps/pages/index.jsp?uREC_ID=626815&type=d",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:cbe2b6cac5",
+          "url": "https://chipperfield.sburg.org/apps/pages/index.jsp?uREC_ID=597121&type=d",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:8fca26be3e",
+          "url": "https://chipperfield.sburg.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:959e5fb2e8",
+          "url": "https://morey.sburg.org/about-us/bell-schedule",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:d778cd678c",
+          "url": "https://arlington.sburg.org/apps/cross.jsp?wREC_ID=5711&crossPath=/apps3/bell_schedules/",
+          "decision": "reject",
+          "reason": "non-target:unusable",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:0324cb31f0",
+          "url": "https://arlington.sburg.org/about-us/bell-schedule",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 14,
+      "est_usd": 0.014280000000000001
+    },
+    {
+      "district_id": "3901302",
+      "name": "Dayton Early College Academy Inc",
+      "state": "OH",
+      "topology": "single_school",
+      "records": [
+        {
+          "rec_key": "3901302:e26f3c6d06",
+          "url": "https://www.daytonearlycollege.org/campuses/deca-high",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3901302:14ad8c359d",
+          "url": "https://www.daytonearlycollege.org/campuses/deca-middle/parent-information",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3901302:57798314f7",
+          "url": "https://www.daytonearlycollege.org/campuses/deca-high/parent-information",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3901302:0e7861bf1f",
+          "url": "https://www.daytonearlycollege.org/campuses/deca-middle",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3901302:339ff9f813",
+          "url": "https://www.daytonearlycollege.org/campuses/deca-prep/parent-information",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1
+              ]
+            }
+          ]
+        },
+        {
+          "rec_key": "3901302:b8ee8887b0",
+          "url": "https://www.daytonearlycollege.org/campuses/deca-prep",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3901302:ba8ac53b43",
+          "url": "https://www.daytonearlycollege.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3901302:5b4dd684d3",
+          "url": "https://www.daytonearlycollege.org/about-us/academic-calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 6,
+      "est_usd": 0.0061200000000000004
+    }
+  ]
+}

@@ -1,0 +1,300 @@
+{
+  "handoff_hash": "a2bc80c004ca-image",
+  "district": {
+    "district_id": "2302820",
+    "name": "Bangor Public Schools",
+    "reps": [
+      {
+        "rec_key": "2302820:fa6e7dd32d",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:00",
+                "school_name": "Bangor School Department",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:15",
+                "end_time": "14:30",
+                "school_name": "Bangor School Department",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "14:00",
+                "school_name": "Bangor High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3715,
+            "completion_tokens": 127,
+            "cost_usd": 0.001432,
+            "latency_ms": 14753,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061329-LaXQmRXJdvSVMJiFgTff"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:00",
+                "school_name": "Bangor School Department (Pre-Kindergarten \u2013 Grade 3)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:00",
+                "school_name": "Bangor School Department (Grades 4-5)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:15",
+                "end_time": "14:30",
+                "school_name": "Bangor School Department (Grades 6-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:00",
+                "school_name": "Bangor High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3386,
+            "completion_tokens": 183,
+            "cost_usd": 0.0019675,
+            "latency_ms": 18645,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061346-GK6VqdACbxFHSeT96seu"
+          },
+          {
+            "model": "deepseek/deepseek-v3.2",
+            "role": "judge",
+            "ok": false,
+            "error": "Error code: 404 - {'error': {'message': 'No endpoints found that support image input', 'code': 404}}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 12008,
+            "finish_reason": null,
+            "generation_id": null
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "bangor",
+            "start": "07:58",
+            "end": "14:00",
+            "gross": 362,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "2302820:fa6e7dd32d",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "bangor department",
+            "starts": {
+              "google/gemini-2.5-flash": "08:55"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:00"
+            },
+            "rec_key": "2302820:fa6e7dd32d",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "bangor department",
+            "starts": {
+              "google/gemini-2.5-flash": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "14:30"
+            },
+            "rec_key": "2302820:fa6e7dd32d",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "bangor department prekindergarten grade 3",
+            "starts": {
+              "mistralai/mistral-large-2512": "08:55"
+            },
+            "ends": {
+              "mistralai/mistral-large-2512": "15:00"
+            },
+            "rec_key": "2302820:fa6e7dd32d",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "bangor department grades 45",
+            "starts": {
+              "mistralai/mistral-large-2512": "08:50"
+            },
+            "ends": {
+              "mistralai/mistral-large-2512": "15:00"
+            },
+            "rec_key": "2302820:fa6e7dd32d",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "bangor department grades 68",
+            "starts": {
+              "mistralai/mistral-large-2512": "08:15"
+            },
+            "ends": {
+              "mistralai/mistral-large-2512": "14:30"
+            },
+            "rec_key": "2302820:fa6e7dd32d",
+            "source_file": "raster_p-1.png"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "bangor",
+        "start": "07:58",
+        "end": "14:00",
+        "gross": 362,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "2302820:fa6e7dd32d",
+        "source_file": "raster_p-1.png"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "bangor department",
+        "starts": {
+          "google/gemini-2.5-flash": "08:55"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:00"
+        },
+        "rec_key": "2302820:fa6e7dd32d",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "bangor department",
+        "starts": {
+          "google/gemini-2.5-flash": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "14:30"
+        },
+        "rec_key": "2302820:fa6e7dd32d",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "bangor department prekindergarten grade 3",
+        "starts": {
+          "mistralai/mistral-large-2512": "08:55"
+        },
+        "ends": {
+          "mistralai/mistral-large-2512": "15:00"
+        },
+        "rec_key": "2302820:fa6e7dd32d",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "bangor department grades 45",
+        "starts": {
+          "mistralai/mistral-large-2512": "08:50"
+        },
+        "ends": {
+          "mistralai/mistral-large-2512": "15:00"
+        },
+        "rec_key": "2302820:fa6e7dd32d",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "bangor department grades 68",
+        "starts": {
+          "mistralai/mistral-large-2512": "08:15"
+        },
+        "ends": {
+          "mistralai/mistral-large-2512": "14:30"
+        },
+        "rec_key": "2302820:fa6e7dd32d",
+        "source_file": "raster_p-1.png"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "high": {
+        "gross_minutes": 362,
+        "start_time": "07:58",
+        "end_time": "14:00",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "bangor",
+            "start_time": "07:58",
+            "end_time": "14:00",
+            "gross": 362,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 1,
+      "truncated": 0,
+      "prompt_tokens": 7101,
+      "completion_tokens": 310,
+      "cost_usd": 0.0033994999999999997
+    }
+  }
+}

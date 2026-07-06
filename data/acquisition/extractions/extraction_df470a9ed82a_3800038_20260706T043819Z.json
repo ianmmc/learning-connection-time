@@ -1,0 +1,180 @@
+{
+  "handoff_hash": "df470a9ed82a",
+  "district": {
+    "district_id": "3800038",
+    "name": "DICKINSON 1",
+    "reps": [
+      {
+        "rec_key": "3800038:caaaaec3e1",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "15:30",
+                "school_name": "Southwest Community High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 34479,
+            "completion_tokens": 73,
+            "cost_usd": 0.0034771,
+            "latency_ms": 1474,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783312692-cq1koIQANzz7A1C7ok6A"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": false,
+            "error": "Error code: 400 - {'error': {'message': \"This endpoint's maximum context length is 32768 tokens. However, you requested about 62234 tokens (46234 of text input, 16000 in the output). Please reduce the length of either one, or use the context-compression plugin to compress your prompt automatically.\", 'code': 400, 'metadata': {'provider_name': None}}, 'user_id': 'user_3F6G2u57EqCPewKcTHYL5cGYfne'}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 152,
+            "finish_reason": null,
+            "generation_id": null
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "15:30",
+                "school_name": "Southwest Community High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 33965,
+            "completion_tokens": 42,
+            "cost_usd": 0.00306105,
+            "latency_ms": 4030,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783312693-wMuUPX5pSw705tYWfPiY"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "southwest community",
+            "start": "07:30",
+            "end": "15:30",
+            "gross": 480,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3800038:caaaaec3e1",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3800038:0d3bd88243",
+        "file": "pdfplumber_lines.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 872,
+            "completion_tokens": 49,
+            "cost_usd": 0.0001068,
+            "latency_ms": 558,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783312697-o4urHBsbIFEFT3yK67Iu"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 851,
+            "completion_tokens": 50,
+            "cost_usd": 4.655e-05,
+            "latency_ms": 1483,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783312698-ITGlm8i6QOyX4TqwEuAL"
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "southwest community",
+        "start": "07:30",
+        "end": "15:30",
+        "gross": 480,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3800038:caaaaec3e1",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 2,
+    "n_judged": 1,
+    "bands": {
+      "high": {
+        "gross_minutes": 480,
+        "start_time": "07:30",
+        "end_time": "15:30",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "southwest community",
+            "start_time": "07:30",
+            "end_time": "15:30",
+            "gross": 480,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 5,
+      "judge_calls": 1,
+      "errors": 1,
+      "truncated": 0,
+      "prompt_tokens": 70167,
+      "completion_tokens": 214,
+      "cost_usd": 0.0066914999999999995
+    },
+    "state": "ND"
+  }
+}

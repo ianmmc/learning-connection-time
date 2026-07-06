@@ -1,0 +1,620 @@
+{
+  "handoff_hash": "a2bc80c004ca-image",
+  "district": {
+    "district_id": "0200510",
+    "name": "Matanuska-Susitna Borough School District",
+    "reps": [
+      {
+        "rec_key": "0200510:c533d50626",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:45",
+                "end_time": "14:15",
+                "school_name": "Colony High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2683,
+            "completion_tokens": 49,
+            "cost_usd": 0.0009274,
+            "latency_ms": 16219,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783059194-G7qFYHB9cf12uG7mj7Jt"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:45",
+                "end_time": "14:30",
+                "school_name": "Colony High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2042,
+            "completion_tokens": 44,
+            "cost_usd": 0.0009358,
+            "latency_ms": 15246,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783059209-YkKTjuRwND1QUqENavRM"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "colony",
+            "start": "08:45",
+            "end": "14:22",
+            "gross": 337,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200510:c533d50626",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0200510:26998ca8e2",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "10:15",
+                "end_time": "15:45",
+                "school_name": "BIG LAKE ELEMENTARY SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3199,
+            "completion_tokens": 50,
+            "cost_usd": 0.0010847,
+            "latency_ms": 22036,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783059229-DIfyX8ZHMWggcF8mcQGU"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:15",
+                "school_name": "Big Lake Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1407,
+            "completion_tokens": 45,
+            "cost_usd": 0.0006198,
+            "latency_ms": 21837,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783059250-CR2p1T4gd4Uc7b3vrmHd"
+          },
+          {
+            "model": "deepseek/deepseek-v3.2",
+            "role": "judge",
+            "ok": false,
+            "error": "Error code: 404 - {'error': {'message': 'No endpoints found that support image input', 'code': 404}}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 17120,
+            "finish_reason": null,
+            "generation_id": null
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "big lake",
+            "starts": {
+              "google/gemini-2.5-flash": "10:15",
+              "mistralai/mistral-large-2512": "09:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:45",
+              "mistralai/mistral-large-2512": "15:15"
+            },
+            "rec_key": "0200510:26998ca8e2",
+            "source_file": "raster_p-1.png"
+          }
+        ]
+      },
+      {
+        "rec_key": "0200510:d310544ff9",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:40",
+                "school_name": "COTTONWOOD CREEK ELEMENTARY SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3199,
+            "completion_tokens": 53,
+            "cost_usd": 0.0010922,
+            "latency_ms": 22241,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783059290-D973O9DkOVNCs2QxqCVg"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:15",
+                "school_name": "Cottonwood Creek Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1407,
+            "completion_tokens": 48,
+            "cost_usd": 0.0006243,
+            "latency_ms": 22057,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783059312-KSWf3bR8fjUmrNEvlFsJ"
+          },
+          {
+            "model": "deepseek/deepseek-v3.2",
+            "role": "judge",
+            "ok": false,
+            "error": "Error code: 404 - {'error': {'message': 'No endpoints found that support image input', 'code': 404}}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 16205,
+            "finish_reason": null,
+            "generation_id": null
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "cottonwood creek",
+            "starts": {
+              "google/gemini-2.5-flash": "09:15",
+              "mistralai/mistral-large-2512": "09:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:40",
+              "mistralai/mistral-large-2512": "15:15"
+            },
+            "rec_key": "0200510:d310544ff9",
+            "source_file": "raster_p-1.png"
+          }
+        ]
+      },
+      {
+        "rec_key": "0200510:ca8789c188",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "10:15",
+                "end_time": "15:45",
+                "school_name": "GOOSE BAY ELEMENTARY SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3199,
+            "completion_tokens": 51,
+            "cost_usd": 0.0010872,
+            "latency_ms": 18447,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783059348-Ynv0AYhqEqtmZDW5lM87"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:05",
+                "end_time": "15:15",
+                "school_name": "Goose Bay Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1407,
+            "completion_tokens": 46,
+            "cost_usd": 0.0007725,
+            "latency_ms": 24903,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783059373-NoenEJFfG9PDoZTN3USP"
+          },
+          {
+            "model": "deepseek/deepseek-v3.2",
+            "role": "judge",
+            "ok": false,
+            "error": "Error code: 404 - {'error': {'message': 'No endpoints found that support image input', 'code': 404}}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 14943,
+            "finish_reason": null,
+            "generation_id": null
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "goose bay",
+            "starts": {
+              "google/gemini-2.5-flash": "10:15",
+              "mistralai/mistral-large-2512": "09:05"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:45",
+              "mistralai/mistral-large-2512": "15:15"
+            },
+            "rec_key": "0200510:ca8789c188",
+            "source_file": "raster_p-1.png"
+          }
+        ]
+      },
+      {
+        "rec_key": "0200510:ccbf550749",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:45",
+                "end_time": "14:15",
+                "school_name": "HOUSTON HIGH SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3199,
+            "completion_tokens": 50,
+            "cost_usd": 0.0010847,
+            "latency_ms": 20299,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783059407-j00XVrshU63PnApDjWy4"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "14:45",
+                "school_name": "Houston High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1407,
+            "completion_tokens": 44,
+            "cost_usd": 0.0007695,
+            "latency_ms": 19195,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783059426-5yOrq7aEde2G0gUPz9Ft"
+          },
+          {
+            "model": "deepseek/deepseek-v3.2",
+            "role": "judge",
+            "ok": false,
+            "error": "Error code: 404 - {'error': {'message': 'No endpoints found that support image input', 'code': 404}}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 15074,
+            "finish_reason": null,
+            "generation_id": null
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "houston",
+            "starts": {
+              "google/gemini-2.5-flash": "08:45",
+              "mistralai/mistral-large-2512": "08:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "14:15",
+              "mistralai/mistral-large-2512": "14:45"
+            },
+            "rec_key": "0200510:ccbf550749",
+            "source_file": "raster_p-1.png"
+          }
+        ]
+      },
+      {
+        "rec_key": "0200510:fb3b5bd096",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "MACHETANZ ELEMENTARY SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3199,
+            "completion_tokens": 51,
+            "cost_usd": 0.0010872,
+            "latency_ms": 23684,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783059465-xxN4MvtqdeDkwqaEgqHH"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:15",
+                "school_name": "Machetanz Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1407,
+            "completion_tokens": 47,
+            "cost_usd": 0.000774,
+            "latency_ms": 26936,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783059489-cr76H5L2jxKx3xKQ0hh9"
+          },
+          {
+            "model": "deepseek/deepseek-v3.2",
+            "role": "judge",
+            "ok": false,
+            "error": "Error code: 404 - {'error': {'message': 'No endpoints found that support image input', 'code': 404}}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 16235,
+            "finish_reason": null,
+            "generation_id": null
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "machetanz",
+            "starts": {
+              "google/gemini-2.5-flash": "09:15",
+              "mistralai/mistral-large-2512": "09:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:45",
+              "mistralai/mistral-large-2512": "15:15"
+            },
+            "rec_key": "0200510:fb3b5bd096",
+            "source_file": "raster_p-1.png"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "colony",
+        "start": "08:45",
+        "end": "14:22",
+        "gross": 337,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200510:c533d50626",
+        "source_file": "raster_p-1.png"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "big lake",
+        "starts": {
+          "google/gemini-2.5-flash": "10:15",
+          "mistralai/mistral-large-2512": "09:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:45",
+          "mistralai/mistral-large-2512": "15:15"
+        },
+        "rec_key": "0200510:26998ca8e2",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "cottonwood creek",
+        "starts": {
+          "google/gemini-2.5-flash": "09:15",
+          "mistralai/mistral-large-2512": "09:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:40",
+          "mistralai/mistral-large-2512": "15:15"
+        },
+        "rec_key": "0200510:d310544ff9",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "goose bay",
+        "starts": {
+          "google/gemini-2.5-flash": "10:15",
+          "mistralai/mistral-large-2512": "09:05"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:45",
+          "mistralai/mistral-large-2512": "15:15"
+        },
+        "rec_key": "0200510:ca8789c188",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "houston",
+        "starts": {
+          "google/gemini-2.5-flash": "08:45",
+          "mistralai/mistral-large-2512": "08:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "14:15",
+          "mistralai/mistral-large-2512": "14:45"
+        },
+        "rec_key": "0200510:ccbf550749",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "machetanz",
+        "starts": {
+          "google/gemini-2.5-flash": "09:15",
+          "mistralai/mistral-large-2512": "09:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:45",
+          "mistralai/mistral-large-2512": "15:15"
+        },
+        "rec_key": "0200510:fb3b5bd096",
+        "source_file": "raster_p-1.png"
+      }
+    ],
+    "n_reps": 6,
+    "n_judged": 5,
+    "bands": {
+      "high": {
+        "gross_minutes": 337,
+        "start_time": "08:45",
+        "end_time": "14:22",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "colony",
+            "start_time": "08:45",
+            "end_time": "14:22",
+            "gross": 337,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 17,
+      "judge_calls": 5,
+      "errors": 5,
+      "truncated": 0,
+      "prompt_tokens": 27755,
+      "completion_tokens": 578,
+      "cost_usd": 0.010859299999999999
+    }
+  }
+}

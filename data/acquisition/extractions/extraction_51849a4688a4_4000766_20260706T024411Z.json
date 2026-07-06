@@ -1,0 +1,313 @@
+{
+  "handoff_hash": "51849a4688a4",
+  "district": {
+    "district_id": "4000766",
+    "name": "KIPP OKC COLLEGE PREP CHARTER",
+    "reps": [
+      {
+        "rec_key": "4000766:2f764d7fa2",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:35",
+                "school_name": "KIPP OKC College Prep",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1753,
+            "completion_tokens": 50,
+            "cost_usd": 0.0001953,
+            "latency_ms": 619,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305841-p0ZBBdFnefhC27EKwFaS"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:35",
+                "school_name": "KIPP OKC College Prep",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1771,
+            "completion_tokens": 53,
+            "cost_usd": 9.279e-05,
+            "latency_ms": 945,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305842-gmlP6eJt23W7SaBxYLo0"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "kipp okc college prep",
+            "start": "07:30",
+            "end": "14:35",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "4000766:2f764d7fa2",
+            "source_file": "harvest_slice.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4000766:97161c6a76",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "16:00",
+                "school_name": "KIPP OKC College Prep",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "KIPP OKC College Prep",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2292,
+            "completion_tokens": 144,
+            "cost_usd": 0.0002868,
+            "latency_ms": 913,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305843-gOa2z0lkzztnJUw0B2vi"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "KIPP OKC College Prep",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "KIPP OKC College Prep",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2286,
+            "completion_tokens": 135,
+            "cost_usd": 0.0001251,
+            "latency_ms": 2043,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305844-LcD0mrzyHa4WM26EjVjS"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "KIPP OKC College Prep",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "KIPP OKC College Prep",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2239,
+            "completion_tokens": 81,
+            "cost_usd": 0.00020961,
+            "latency_ms": 5826,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305846-KrwnWd8A0CPns565w4nV"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "kipp okc college prep",
+            "start": "08:00",
+            "end": "14:30",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "4000766:97161c6a76",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "kipp okc college prep",
+            "start": "08:00",
+            "end": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "4000766:97161c6a76",
+            "source_file": "harvest_slice.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "middle",
+        "school": "kipp okc college prep",
+        "start": "07:30",
+        "end": "14:35",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "4000766:2f764d7fa2",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "kipp okc college prep",
+        "start": "08:00",
+        "end": "14:30",
+        "gross": 390,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "4000766:97161c6a76",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "kipp okc college prep",
+        "start": "08:00",
+        "end": "15:00",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "4000766:97161c6a76",
+        "source_file": "harvest_slice.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 2,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 420,
+        "start_time": "08:00",
+        "end_time": "15:00",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "kipp okc college prep",
+            "start_time": "08:00",
+            "end_time": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 408,
+        "start_time": "07:30",
+        "end_time": "14:35",
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "kipp okc college prep",
+            "start_time": "07:30",
+            "end_time": "14:35",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "kipp okc college prep",
+            "start_time": "08:00",
+            "end_time": "14:30",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 5,
+      "judge_calls": 1,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 10341,
+      "completion_tokens": 463,
+      "cost_usd": 0.0009096
+    },
+    "state": "OK"
+  }
+}

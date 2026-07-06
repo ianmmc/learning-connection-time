@@ -1,0 +1,130 @@
+{
+  "handoff_hash": "e59d41e680bc",
+  "district": {
+    "district_id": "3901302",
+    "name": "Dayton Early College Academy Inc",
+    "reps": [
+      {
+        "rec_key": "3901302:339ff9f813",
+        "file": "camelot_stream.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Dayton Early College Academy",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 996,
+            "completion_tokens": 50,
+            "cost_usd": 0.0001196,
+            "latency_ms": 579,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293116-E8wcdD6uLNYmSa0MELTu"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Dayton Early College Academy",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 990,
+            "completion_tokens": 73,
+            "cost_usd": 5.534e-05,
+            "latency_ms": 1332,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293117-Rz6WCkrRAHjXGgqptORC"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "dayton early college",
+            "start": "08:00",
+            "end": "14:50",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3901302:339ff9f813",
+            "source_file": "camelot_stream.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "dayton early college",
+        "start": "08:00",
+        "end": "14:50",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3901302:339ff9f813",
+        "source_file": "camelot_stream.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 1,
+    "n_judged": 0,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 410,
+        "start_time": "08:00",
+        "end_time": "14:50",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "dayton early college",
+            "start_time": "08:00",
+            "end_time": "14:50",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 2,
+      "judge_calls": 0,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 1986,
+      "completion_tokens": 123,
+      "cost_usd": 0.00017494
+    },
+    "state": "OH"
+  }
+}

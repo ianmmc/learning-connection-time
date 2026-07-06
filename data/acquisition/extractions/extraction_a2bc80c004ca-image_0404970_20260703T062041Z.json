@@ -1,0 +1,248 @@
+{
+  "handoff_hash": "a2bc80c004ca-image",
+  "district": {
+    "district_id": "0404970",
+    "name": "Mesa Unified District (4235)",
+    "reps": [
+      {
+        "rec_key": "0404970:786092c1ea",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:45",
+                "school_name": "Field Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3715,
+            "completion_tokens": 47,
+            "cost_usd": 0.001232,
+            "latency_ms": 17869,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783059578-1VRmApGupL5hPw5K0HGS"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:45",
+                "school_name": "Eugene Field Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2882,
+            "completion_tokens": 46,
+            "cost_usd": 0.0013588,
+            "latency_ms": 15670,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783059594-UWxZRMGjbf0kPaTQ5opl"
+          },
+          {
+            "model": "deepseek/deepseek-v3.2",
+            "role": "judge",
+            "ok": false,
+            "error": "Error code: 404 - {'error': {'message': 'No endpoints found that support image input', 'code': 404}}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 12735,
+            "finish_reason": null,
+            "generation_id": null
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "field",
+            "starts": {
+              "google/gemini-2.5-flash": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "14:45"
+            },
+            "rec_key": "0404970:786092c1ea",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "eugene field",
+            "starts": {
+              "mistralai/mistral-large-2512": "08:15"
+            },
+            "ends": {
+              "mistralai/mistral-large-2512": "14:45"
+            },
+            "rec_key": "0404970:786092c1ea",
+            "source_file": "raster_p-1.png"
+          }
+        ]
+      },
+      {
+        "rec_key": "0404970:e457000534",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:15",
+                "school_name": "Franklin Junior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3715,
+            "completion_tokens": 49,
+            "cost_usd": 0.001237,
+            "latency_ms": 15624,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783059623-fbjzGpsCeDr19yelv3ui"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:15",
+                "school_name": "Franklin Junior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3222,
+            "completion_tokens": 45,
+            "cost_usd": 0.0015273,
+            "latency_ms": 15928,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783059638-1cNCc7uQGNuQzC9d5B6X"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "franklin",
+            "start": "07:30",
+            "end": "14:15",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "0404970:e457000534",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "middle",
+        "school": "franklin",
+        "start": "07:30",
+        "end": "14:15",
+        "gross": 405,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "0404970:e457000534",
+        "source_file": "raster_p-1.png"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "field",
+        "starts": {
+          "google/gemini-2.5-flash": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "14:45"
+        },
+        "rec_key": "0404970:786092c1ea",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "eugene field",
+        "starts": {
+          "mistralai/mistral-large-2512": "08:15"
+        },
+        "ends": {
+          "mistralai/mistral-large-2512": "14:45"
+        },
+        "rec_key": "0404970:786092c1ea",
+        "source_file": "raster_p-1.png"
+      }
+    ],
+    "n_reps": 2,
+    "n_judged": 1,
+    "bands": {
+      "middle": {
+        "gross_minutes": 405,
+        "start_time": "07:30",
+        "end_time": "14:15",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "franklin",
+            "start_time": "07:30",
+            "end_time": "14:15",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 5,
+      "judge_calls": 1,
+      "errors": 1,
+      "truncated": 0,
+      "prompt_tokens": 13534,
+      "completion_tokens": 187,
+      "cost_usd": 0.0053551
+    }
+  }
+}

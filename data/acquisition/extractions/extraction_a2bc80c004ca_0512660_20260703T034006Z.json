@@ -1,0 +1,1044 @@
+{
+  "handoff_hash": "a2bc80c004ca",
+  "district": {
+    "district_id": "0512660",
+    "name": "SPRINGDALE SCHOOL DISTRICT",
+    "reps": [
+      {
+        "rec_key": "0512660:214f7f4fdc",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:15",
+                "school_name": "Elmdale Elementary"
+              }
+            ],
+            "prompt_tokens": 1351,
+            "completion_tokens": 45,
+            "cost_usd": 0.0001531,
+            "latency_ms": 12746,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049671-zGA4Usod2oCxe3P7gNiA"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:15",
+                "school_name": "Elmdale Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1343,
+            "completion_tokens": 45,
+            "cost_usd": 7.075e-05,
+            "latency_ms": 13836,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049685-sXoVlgijAND8Mie9zBWj"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "elmdale",
+            "start": "07:45",
+            "end": "15:15",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0512660:214f7f4fdc",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0512660:c892bd1955",
+        "file": "pdfplumber_lines.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:10",
+                "school_name": "Bayyari Elementary"
+              }
+            ],
+            "prompt_tokens": 1435,
+            "completion_tokens": 40,
+            "cost_usd": 0.0001595,
+            "latency_ms": 14045,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049699-eM15P18JEEF7ObHOLnyJ"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:10",
+                "school_name": "Bayyari Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1466,
+            "completion_tokens": 50,
+            "cost_usd": 7.73e-05,
+            "latency_ms": 13322,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049713-etTorco74wOk4NvLhgTY"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "bayyari",
+            "start": "07:45",
+            "end": "15:10",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0512660:c892bd1955",
+            "source_file": "pdfplumber_lines.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0512660:d4a5ad6660",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:15",
+                "school_name": "Harp Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 966,
+            "completion_tokens": 43,
+            "cost_usd": 0.0001138,
+            "latency_ms": 12812,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049726-G2lTDrGmw0Ddf2ODDuCW"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:15",
+                "school_name": "Harp Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 964,
+            "completion_tokens": 44,
+            "cost_usd": 5.172e-05,
+            "latency_ms": 12859,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049738-XRxpfNawWlyTHG8lrtM4"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "harp",
+            "start": "07:45",
+            "end": "15:15",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0512660:d4a5ad6660",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0512660:5064d6b238",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:05",
+                "end_time": "15:30",
+                "school_name": "Helen Tyson Middle School"
+              }
+            ],
+            "prompt_tokens": 1900,
+            "completion_tokens": 45,
+            "cost_usd": 0.000208,
+            "latency_ms": 12849,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049751-QUjgCIEixtoY6u9xJVW2"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:05",
+                "end_time": "15:30",
+                "school_name": "Helen Tyson Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1957,
+            "completion_tokens": 50,
+            "cost_usd": 0.00010185,
+            "latency_ms": 14499,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049765-Xz1Oci1eDi6tzY8m4S3M"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "helen tyson",
+            "start": "08:05",
+            "end": "15:30",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0512660:5064d6b238",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0512660:f420754317",
+        "file": "pdfplumber_lines.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:10",
+                "school_name": "Monitor Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1487,
+            "completion_tokens": 47,
+            "cost_usd": 0.0001675,
+            "latency_ms": 12838,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049779-u6UfY1SyqRy9ITObRLkq"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:10",
+                "school_name": "Monitor Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1500,
+            "completion_tokens": 48,
+            "cost_usd": 7.884e-05,
+            "latency_ms": 14615,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049793-xm6tasVwoWAvPVdIU9XO"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "monitor",
+            "start": "07:45",
+            "end": "15:10",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0512660:f420754317",
+            "source_file": "pdfplumber_lines.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0512660:a599227d33",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:05",
+                "end_time": "15:30",
+                "school_name": "Sonora Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:05",
+                "end_time": "15:30",
+                "school_name": "Sonora Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:05",
+                "end_time": "15:30",
+                "school_name": "Sonora Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:05",
+                "end_time": "15:30",
+                "school_name": "Sonora Middle School"
+              }
+            ],
+            "prompt_tokens": 1445,
+            "completion_tokens": 192,
+            "cost_usd": 0.0002213,
+            "latency_ms": 14985,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049808-zye9nFFyBzGTPl6O3pJP"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:28",
+                "end_time": "15:28",
+                "school_name": "Sonora Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1596,
+            "completion_tokens": 44,
+            "cost_usd": 8.332e-05,
+            "latency_ms": 14804,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049823-oblzWzOAP7eJwFdVJ9do"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:05",
+                "end_time": "03:28",
+                "school_name": "Sonora Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1579,
+            "completion_tokens": 40,
+            "cost_usd": 0.00016531,
+            "latency_ms": 15210,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049837-hEuNU8b1z8iAvPERzK7r"
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "sonora",
+            "gross": -277,
+            "reason": "implausible",
+            "rec_key": "0512660:a599227d33",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "0512660:47ccd92c19",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:10",
+                "school_name": "Walter Turnbow Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 722,
+            "completion_tokens": 49,
+            "cost_usd": 9.18e-05,
+            "latency_ms": 11767,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049850-QZX6vBKeeljar7C14vCa"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:10",
+                "school_name": "Walter Turnbow Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 746,
+            "completion_tokens": 72,
+            "cost_usd": 4.306e-05,
+            "latency_ms": 14676,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049864-UpgqNvUcul2hyDRN5UYb"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "walter turnbow",
+            "start": "07:45",
+            "end": "15:10",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0512660:47ccd92c19",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0512660:3ea0fc62c4",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "14:05",
+                "school_name": "Springdale High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1995,
+            "completion_tokens": 49,
+            "cost_usd": 0.0002191,
+            "latency_ms": 13174,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049877-bVMnBaqz9PF2eWNWwgvO"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "16:05",
+                "school_name": "Springdale High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2031,
+            "completion_tokens": 71,
+            "cost_usd": 0.00010723,
+            "latency_ms": 12118,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049890-g4H2ChnCwMdexCmF0wM0"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "14:35",
+                "school_name": "Springdale High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1980,
+            "completion_tokens": 41,
+            "cost_usd": 0.0001823,
+            "latency_ms": 14961,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049903-KIc1r6Snr0ZdM9NNZdB9"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "springdale",
+            "start": "07:50",
+            "end": "14:35",
+            "gross": 405,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0512660:3ea0fc62c4",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0512660:81dd581987",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "16:05",
+                "school_name": "Har-Ber High School"
+              }
+            ],
+            "prompt_tokens": 1960,
+            "completion_tokens": 54,
+            "cost_usd": 0.0002176,
+            "latency_ms": 13841,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049919-zPQ6jPqb5ciHtBPZP10s"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "16:05",
+                "school_name": "Har-Ber High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1974,
+            "completion_tokens": 71,
+            "cost_usd": 0.00010438,
+            "latency_ms": 44894,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049964-ZUEYjNLeiHfsCz29ZUN2"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start\u6e38\u620f\u526f\u672c": "07:50",
+                "end_time": "14:05",
+                "school_name": "Har-Ber High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1918,
+            "completion_tokens": 42,
+            "cost_usd": 0.00017682,
+            "latency_ms": 15019,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049978-q8CaiiA4prTod7DklSBg"
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "harber",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:50",
+              "mistralai/mistral-small-24b-instruct-2501": "08:40"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "16:05",
+              "mistralai/mistral-small-24b-instruct-2501": "16:05"
+            },
+            "rec_key": "0512660:81dd581987",
+            "source_file": "tesseract_raster.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "0512660:68e835ef49",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:05",
+                "school_name": "Central Junior High"
+              }
+            ],
+            "prompt_tokens": 1244,
+            "completion_tokens": 44,
+            "cost_usd": 0.000142,
+            "latency_ms": 11807,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049991-T9j1MbhtACiooQikBCxr"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:40",
+                "end_time": "16:05",
+                "school_name": "Central Junior High",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1295,
+            "completion_tokens": 70,
+            "cost_usd": 7.035e-05,
+            "latency_ms": 14003,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050005-wXAF8qBUGbgp7UiP5Y4i"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "central",
+            "start": "08:40",
+            "end": "16:05",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0512660:68e835ef49",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "elmdale",
+        "start": "07:45",
+        "end": "15:15",
+        "gross": 450,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0512660:214f7f4fdc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "bayyari",
+        "start": "07:45",
+        "end": "15:10",
+        "gross": 445,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0512660:c892bd1955",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "harp",
+        "start": "07:45",
+        "end": "15:15",
+        "gross": 450,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0512660:d4a5ad6660",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "helen tyson",
+        "start": "08:05",
+        "end": "15:30",
+        "gross": 445,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0512660:5064d6b238",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "monitor",
+        "start": "07:45",
+        "end": "15:10",
+        "gross": 445,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0512660:f420754317",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "walter turnbow",
+        "start": "07:45",
+        "end": "15:10",
+        "gross": 445,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0512660:47ccd92c19",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "springdale",
+        "start": "07:50",
+        "end": "14:35",
+        "gross": 405,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0512660:3ea0fc62c4",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "central",
+        "start": "08:40",
+        "end": "16:05",
+        "gross": 445,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0512660:68e835ef49",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "sonora",
+        "gross": -277,
+        "reason": "implausible",
+        "rec_key": "0512660:a599227d33",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "harber",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:50",
+          "mistralai/mistral-small-24b-instruct-2501": "08:40"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "16:05",
+          "mistralai/mistral-small-24b-instruct-2501": "16:05"
+        },
+        "rec_key": "0512660:81dd581987",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "n_reps": 10,
+    "n_judged": 3,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 445,
+        "start_time": "07:45",
+        "end_time": "15:10",
+        "n_schools": 5,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "elmdale",
+            "start_time": "07:45",
+            "end_time": "15:15",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "bayyari",
+            "start_time": "07:45",
+            "end_time": "15:10",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "harp",
+            "start_time": "07:45",
+            "end_time": "15:15",
+            "gross": 450,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "monitor",
+            "start_time": "07:45",
+            "end_time": "15:10",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "walter turnbow",
+            "start_time": "07:45",
+            "end_time": "15:10",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 445,
+        "start_time": "08:05",
+        "end_time": "15:30",
+        "n_schools": 2,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "helen tyson",
+            "start_time": "08:05",
+            "end_time": "15:30",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "central",
+            "start_time": "08:40",
+            "end_time": "16:05",
+            "gross": 445,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 405,
+        "start_time": "07:50",
+        "end_time": "14:35",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "springdale",
+            "start_time": "07:50",
+            "end_time": "14:35",
+            "gross": 405,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 23,
+      "judge_calls": 3,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 34854,
+      "completion_tokens": 1296,
+      "cost_usd": 0.0030069299999999992
+    }
+  }
+}

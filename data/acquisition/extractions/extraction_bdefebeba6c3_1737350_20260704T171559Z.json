@@ -1,0 +1,979 @@
+{
+  "handoff_hash": "bdefebeba6c3",
+  "district": {
+    "district_id": "1737350",
+    "name": "Triad CUSD 2",
+    "reps": [
+      {
+        "rec_key": "1737350:9e29340e94",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 6,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:00",
+                "school_name": "Henning Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:00",
+                "school_name": "Marine Elementary School",
+                "confidence": "low"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:00",
+                "school_name": "Silver Creek Elementary School",
+                "confidence": "low"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:00",
+                "school_name": "St. Jacob Elementary School",
+                "confidence": "low"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:50",
+                "end_time": "15:00",
+                "school_name": "Triad High School",
+                "confidence": "low"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:50",
+                "end_time": "15:00",
+                "school_name": "Triad Middle School",
+                "confidence": "low"
+              }
+            ],
+            "prompt_tokens": 590,
+            "completion_tokens": 402,
+            "cost_usd": 0.0002198,
+            "latency_ms": 2298,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185331-jbYcWXhapKN1LJ40bETc"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:00",
+                "school_name": "Henning Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 617,
+            "completion_tokens": 72,
+            "cost_usd": 3.661e-05,
+            "latency_ms": 1431,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185333-1Ilkjgyj6W8AJyUcxcoy"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:00",
+                "school_name": "Henning Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 591,
+            "completion_tokens": 41,
+            "cost_usd": 0.0001128725,
+            "latency_ms": 1469,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185335-irA208KMnPBOBaWo0LEm"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "henning",
+            "start": "08:50",
+            "end": "15:00",
+            "gross": 370,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "1737350:9e29340e94",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "marine",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "1737350:9e29340e94",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "silver creek",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "1737350:9e29340e94",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "st jacob",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "1737350:9e29340e94",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "high",
+            "school": "triad",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "1737350:9e29340e94",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "middle",
+            "school": "triad",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "1737350:9e29340e94",
+            "source_file": "tesseract_raster.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "1737350:8105414824",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "13:55",
+                "school_name": "Triad Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "13:55",
+                "school_name": "Triad High School",
+                "confidence": "low"
+              }
+            ],
+            "prompt_tokens": 2205,
+            "completion_tokens": 88,
+            "cost_usd": 0.0002557,
+            "latency_ms": 755,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185336-6NN4hECBBs7DcKxC9uxt"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "13:55",
+                "school_name": "Triad Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2221,
+            "completion_tokens": 71,
+            "cost_usd": 0.00011673,
+            "latency_ms": 1448,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185337-eAjB5CTYJnm29ISrywQp"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "13:55",
+                "school_name": "Triad Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2168,
+            "completion_tokens": 41,
+            "cost_usd": 0.00019922,
+            "latency_ms": 3384,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185338-bjzHftyNvacgUolfZm7t"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "triad",
+            "start": "07:30",
+            "end": "13:55",
+            "gross": 385,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "1737350:8105414824",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "triad",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "13:55"
+            },
+            "rec_key": "1737350:8105414824",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "1737350:cb193a6deb",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 6,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "13:55",
+                "school_name": "Triad Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": null,
+                "end_time": null,
+                "school_name": "Henning Elementary School",
+                "confidence": "low"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": null,
+                "end_time": null,
+                "school_name": "Marine Elementary School",
+                "confidence": "low"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": null,
+                "end_time": null,
+                "school_name": "Silver Creek Elementary School",
+                "confidence": "low"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": null,
+                "end_time": null,
+                "school_name": "St. Jacob Elementary School",
+                "confidence": "low"
+              },
+              {
+                "grade_level": "high",
+                "start_time": null,
+                "end_time": null,
+                "school_name": "Triad High School",
+                "confidence": "low"
+              }
+            ],
+            "prompt_tokens": 691,
+            "completion_tokens": 352,
+            "cost_usd": 0.0002099,
+            "latency_ms": 1790,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185342-GLqaelTI72rP8slNFXLl"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 688,
+            "completion_tokens": 8,
+            "cost_usd": 3.504e-05,
+            "latency_ms": 331,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185343-Px8AcrfRfM1EcLuFL72o"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "13:55",
+                "school_name": "Triad Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 676,
+            "completion_tokens": 40,
+            "cost_usd": 0.000124982,
+            "latency_ms": 1732,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185344-Ekg3iYQ9yQ4qXeUUTbGY"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "triad",
+            "start": "07:30",
+            "end": "13:55",
+            "gross": 385,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "1737350:cb193a6deb",
+            "source_file": "harvest_slice.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "1737350:c09c08e49a",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "13:55",
+                "school_name": "Triad Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2433,
+            "completion_tokens": 77,
+            "cost_usd": 0.0002741,
+            "latency_ms": 1149,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185345-X9UoO8fj5andKgMFTdp8"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "13:55",
+                "school_name": "Triad Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2441,
+            "completion_tokens": 71,
+            "cost_usd": 0.00012773,
+            "latency_ms": 1222,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185347-gZvfForMdl7r7LNvaSjh"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "triad",
+            "start": "07:30",
+            "end": "13:55",
+            "gross": 385,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "1737350:c09c08e49a",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "1737350:8594de5dcf",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:00",
+                "school_name": "ELEMENTARY SCHOOLS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "13:55",
+                "school_name": "MIDDLE SCHOOL",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "14:10",
+                "school_name": "Triad High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1002,
+            "completion_tokens": 163,
+            "cost_usd": 0.0001654,
+            "latency_ms": 1301,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185348-9W4Cd5H7zNEGci6EFDX4"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:00",
+                "school_name": "St. Jacob Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "13:55",
+                "school_name": "Triad Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "14:10",
+                "school_name": "Triad High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1077,
+            "completion_tokens": 183,
+            "cost_usd": 6.849e-05,
+            "latency_ms": 2618,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185350-e1Rv2ai0ekGDTk7M4Zr7"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:00",
+                "school_name": "ELEMENTARY",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "13:55",
+                "school_name": "MIDDLE SCHOOL",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "14:10",
+                "school_name": "HIGH SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1015,
+            "completion_tokens": 107,
+            "cost_usd": 0.00015341,
+            "latency_ms": 6997,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185352-g6uCo9GbJk2Yv1Aezipl"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "",
+            "start": "07:30",
+            "end": "13:55",
+            "gross": 385,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "1737350:8594de5dcf",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "high",
+            "school": "triad",
+            "start": "07:45",
+            "end": "14:10",
+            "gross": 385,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "1737350:8594de5dcf",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "schools",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "1737350:8594de5dcf",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "st jacob",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:50"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:00"
+            },
+            "rec_key": "1737350:8594de5dcf",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "middle",
+            "school": "triad",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:30"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "13:55"
+            },
+            "rec_key": "1737350:8594de5dcf",
+            "source_file": "tesseract_raster.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "henning",
+        "start": "08:50",
+        "end": "15:00",
+        "gross": 370,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "1737350:9e29340e94",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "triad",
+        "start": "07:30",
+        "end": "13:55",
+        "gross": 385,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "1737350:8105414824",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "triad",
+        "start": "07:30",
+        "end": "13:55",
+        "gross": 385,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "1737350:cb193a6deb",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "triad",
+        "start": "07:30",
+        "end": "13:55",
+        "gross": 385,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "1737350:c09c08e49a",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "",
+        "start": "07:30",
+        "end": "13:55",
+        "gross": 385,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "1737350:8594de5dcf",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "triad",
+        "start": "07:45",
+        "end": "14:10",
+        "gross": 385,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "1737350:8594de5dcf",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "marine",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "1737350:9e29340e94",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "silver creek",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "1737350:9e29340e94",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "st jacob",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "1737350:9e29340e94",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "triad",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "1737350:9e29340e94",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "triad",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "1737350:9e29340e94",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "triad",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "13:55"
+        },
+        "rec_key": "1737350:8105414824",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "schools",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "1737350:8594de5dcf",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "st jacob",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:50"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:00"
+        },
+        "rec_key": "1737350:8594de5dcf",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "triad",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:30"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "13:55"
+        },
+        "rec_key": "1737350:8594de5dcf",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "n_reps": 5,
+    "n_judged": 4,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 370,
+        "start_time": "08:50",
+        "end_time": "15:00",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "henning",
+            "start_time": "08:50",
+            "end_time": "15:00",
+            "gross": 370,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 385,
+        "start_time": "07:30",
+        "end_time": "13:55",
+        "n_schools": 4,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "triad",
+            "start_time": "07:30",
+            "end_time": "13:55",
+            "gross": 385,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "triad",
+            "start_time": "07:30",
+            "end_time": "13:55",
+            "gross": 385,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "triad",
+            "start_time": "07:30",
+            "end_time": "13:55",
+            "gross": 385,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "",
+            "start_time": "07:30",
+            "end_time": "13:55",
+            "gross": 385,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 385,
+        "start_time": "07:45",
+        "end_time": "14:10",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "triad",
+            "start_time": "07:45",
+            "end_time": "14:10",
+            "gross": 385,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 14,
+      "judge_calls": 4,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 18415,
+      "completion_tokens": 1716,
+      "cost_usd": 0.0020999845000000002
+    }
+  }
+}

@@ -1,0 +1,204 @@
+{
+  "handoff_hash": "cb8fabfc32ae",
+  "created_at": "2026-07-03T00:00:19Z",
+  "created_by": "ian:batch0-stage7-dev",
+  "verified_only": false,
+  "fingerprints": {
+    "1000080": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "0a82eb0cfa46"
+    },
+    "0404970": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "4fe62d3710e7"
+    },
+    "5000395": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "76c42df03a4f"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v1"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.0061200000000000004,
+    "n_reps": 6,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "1000080",
+      "name": "Appoquinimink School District",
+      "state": "DE",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "1000080:ce2cad0f08",
+          "url": "gt://gt_curation_20260621T060008Z/1000080_Appoquinimink_School_District/2025 -2026 Bell _ Bus Times.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "0404970",
+      "name": "Mesa Unified District (4235)",
+      "state": "AZ",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "0404970:786092c1ea",
+          "url": "gt://gt_curation_20260621T060008Z/0404970_Mesa_Unified_District_4235/Bell Schedule | Field Elementary.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:e457000534",
+          "url": "gt://gt_curation_20260621T060008Z/0404970_Mesa_Unified_District_4235/Bell Schedule | Franklin Junior High School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:38745edc1b",
+          "url": "gt://gt_curation_20260621T060008Z/0404970_Mesa_Unified_District_4235/25-26 Red Mtn. Block Schedule & Calendar.pdf",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 2,
+      "est_usd": 0.00204
+    },
+    {
+      "district_id": "5000395",
+      "name": "Essex Westford Educational Community Unified Union SD #51",
+      "state": "VT",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "5000395:179b4a1c55",
+          "url": "gt://gt_curation_20260621T060008Z/5000395_Essex_Westford_Educational_Community_Unified_Union_SD_51/Home _ Essex Middle School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5000395:642c632e75",
+          "url": "gt://gt_curation_20260621T060008Z/5000395_Essex_Westford_Educational_Community_Unified_Union_SD_51/Home _ Essex Elementary School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5000395:2945f3d474",
+          "url": "gt://gt_curation_20260621T060008Z/5000395_Essex_Westford_Educational_Community_Unified_Union_SD_51/Home _ Westford School (Elementary).pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5000395:978e08c699",
+          "url": "gt://gt_curation_20260621T060008Z/5000395_Essex_Westford_Educational_Community_Unified_Union_SD_51/Essex High School Bell Schedule.jpeg",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 3,
+      "est_usd": 0.0030600000000000002
+    }
+  ]
+}

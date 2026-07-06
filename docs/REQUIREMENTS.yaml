@@ -1690,9 +1690,8 @@ requirements:
       - tests/test_acquisition_stages.py::TestWave1Handoff::test_merge_attaches_urls_by_school_id_missing_school_gets_empty
       - tests/test_acquisition_stages.py::TestResidualAndWave2Gating::test_school_with_kept_wave1_candidate_is_not_residual
       - tests/test_acquisition_stages.py::TestResidualAndWave2Gating::test_school_with_zero_kept_candidates_is_residual
-      - tests/test_acquisition_stages.py::TestOpenRouterBillingFailure::test_billing_status_code_raises_system_exit
-      - tests/test_acquisition_stages.py::TestOpenRouterBillingFailure::test_non_billing_status_code_propagates_as_plain_exception
-      - tests/test_acquisition_stages.py::TestOpenRouterBillingFailure::test_run_wave2_does_not_swallow_a_billing_system_exit
+      - tests/test_acquisition_stages.py::TestSerpProviderFailureSemantics   # billing/auth CONTROL-FAILURE contract, live providers (#87 moved it off the removed openrouter tests)
+      - tests/test_acquisition_stages.py::TestRunWave2Provider::test_run_wave2_does_not_swallow_a_billing_system_exit
     created: "2026-06-23T00:00:00Z"
     updated: "2026-06-23T00:00:00Z"
     notes: "infrastructure/acquisition/discovery/discover_stage2.py::validate_wave1_result, merge_wave1,
@@ -1826,7 +1825,7 @@ requirements:
     priority: should
     status: tested
     acceptance_criteria:
-      - "While an HTML page is rendered, its DOM is scanned for anchor tags whose link text or href matches the SCHED_KW keyword list - the SAME list discover.py already uses for ranking schedule-named URLs, not a new or duplicated list"
+      - "While an HTML page is rendered, its DOM is scanned for anchor tags whose link text or href matches the SCHED_KW keyword list (the list's sole home is now capture_discovery.mjs — discover.py's twin was deleted with #87 when its only consumer, the retired ranking bench, was removed)"
       - A matching link becomes a new candidate task tagged source=emergent and found_on=<the page it was found on>, recorded in captures.json for full traceability back to its origin
       - Emergent-candidate discovery is exactly ONE HOP - an emergent candidate's own rendered page is never itself scanned for further emergent candidates, and this is not a revival of the abandoned blind-crawl design (gated on the same keyword signal already proven useful elsewhere, triggered only from a page Capture is already rendering anyway)
       - This path is explicitly intended to catch CDN-hosted materials (Finalsite, BoardDocs, SchoolWires/Blackboard, S3, etc. - discover.py's existing CMS_HOSTS set) that Discovery's domain-scoped search would never surface directly, not only Drive/Docs links - this must be reflected in test coverage, not left as an incidental side effect of Drive/Docs-focused cases
@@ -2848,7 +2847,7 @@ requirements:
       - "Streaming survives long idle gaps: keep-alive/empty chunks are tolerated without content loss; a long multi-school generation reassembles in order across many chunks (not one un-chunked read) — MET"
       - "Truncation (finish_reason == 'length') and mid-stream errors are surfaced with partial content preserved (the silent-tail-loss tripwire) — MET"
       - "A provider-agnostic SOURCE GUARD flags any OpenAI-SDK chat-completion call in the acquisition code that is not streaming; a NEW blocking call anywhere fails the test — MET"
-      - "Deprecated, non-live call sites are an explicit, bounded allowlist (not a silent pass) — MET"
+      - "Deprecated, non-live call sites are an explicit, bounded allowlist (not a silent pass) — MET; the allowlist emptied 2026-07-06 when its only entry (openrouter_search) was removed, #87 — any non-streaming call now fails outright"
       - "Any alternative provider adapter swapped in later must present the same streaming call() contract — enforced by the behavioral + source guards"
     tests:
       - tests/test_streaming_contract.py
@@ -2856,4 +2855,4 @@ requirements:
       - tests/test_stage7_openrouter.py::test_mid_stream_error_keeps_partial_content
     created: "2026-07-04T00:00:00Z"
     updated: "2026-07-04T00:00:00Z"
-    notes: "Rationale (Ian, 2026-07-04): a non-streaming completion on a long generation (a big hub district returns a long single-shot JSON) idle-times-out the connection — a silent, load-bearing failure mode during automatic processing AT SCALE. Streaming keep-alive chunks hold the socket open, deltas arrive incrementally, and a mid-stream failure yields a partial + structured error instead of a dropped connection. The ONLY live generative call site is the council extraction client (already streams, REQ-117); the SERP providers (serper/brightdata) are search/data APIs (not token-generating, streaming N/A). DEPRECATED non-streaming site: common/discover.py openrouter_search (the retired ~$27/1K OpenRouter AI-search Wave provider, issue #41; sibling perplexity_search also deprecated) — allowlisted in the source guard, NOT in the live path. CLEANUP FOLLOW-UP: remove the deprecated openrouter_search/perplexity_search (they carry their own error-handling tests, so removal cascades into test_acquisition_stages.py — a scoped change, deferred)."
+    notes: "Rationale (Ian, 2026-07-04): a non-streaming completion on a long generation (a big hub district returns a long single-shot JSON) idle-times-out the connection — a silent, load-bearing failure mode during automatic processing AT SCALE. Streaming keep-alive chunks hold the socket open, deltas arrive incrementally, and a mid-stream failure yields a partial + structured error instead of a dropped connection. The ONLY live generative call site is the council extraction client (already streams, REQ-117); the SERP providers (serper/brightdata) are search/data APIs (not token-generating, streaming N/A). The formerly-deprecated non-streaming site (common/discover.py openrouter_search, the retired ~$27/1K OpenRouter AI-search Wave provider, issue #41; sibling perplexity_search) was REMOVED 2026-07-06 (#87) along with its error-handling tests; the source-guard allowlist is now empty."

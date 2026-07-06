@@ -1,0 +1,70 @@
+{
+  "handoff_hash": "2c3680a6428e",
+  "created_at": "2026-07-06T03:20:41Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "fingerprints": {
+    "1716950": {
+      "config": "e2d24d579723",
+      "labels": "05cfe3eae08d",
+      "data": "8d33a03ecf01"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v1"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.00102,
+    "n_reps": 1,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "1716950",
+      "name": "Brookwood SD 167",
+      "state": "IL",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "1716950:847e90839d",
+          "url": "https://www.brookwood167.org/district-parent-student-information-handbook/",
+          "decision": "send",
+          "reason": "7->6 alternate-rep re-dispatch (REQ-118)",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    }
+  ]
+}

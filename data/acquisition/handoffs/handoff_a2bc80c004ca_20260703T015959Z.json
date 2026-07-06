@@ -1,0 +1,1947 @@
+{
+  "handoff_hash": "a2bc80c004ca",
+  "created_at": "2026-07-03T01:59:59Z",
+  "created_by": "ian:batch0-fullrun",
+  "verified_only": false,
+  "fingerprints": {
+    "0100270": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "d5cc2c554790"
+    },
+    "0102370": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "3588527454ca"
+    },
+    "0200510": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "077335c6ad12"
+    },
+    "0200600": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "5b12b2cfde12"
+    },
+    "0404970": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "4fe62d3710e7"
+    },
+    "0512660": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "108e07bc8619"
+    },
+    "0626910": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "a34a692df7ab"
+    },
+    "0634320": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "674ce2b2300f"
+    },
+    "0900450": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "beaec7e150e5"
+    },
+    "0902790": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "8e0d8622bf7d"
+    },
+    "0904830": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "d58f74212838"
+    },
+    "1000080": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "0a82eb0cfa46"
+    },
+    "1201440": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "4680402d9fb8"
+    },
+    "1602100": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "4d797626a552"
+    },
+    "1906540": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "4f213abd04db"
+    },
+    "2302820": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "ed058acff746"
+    },
+    "2307320": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "25afb8d8e461"
+    },
+    "2513230": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "1f4a29c63dad"
+    },
+    "3172840": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "cd5905e75307"
+    },
+    "3200480": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "94d9990541fa"
+    },
+    "3904378": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "8ebfed7cd05a"
+    },
+    "4700148": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "ac06266c3399"
+    },
+    "5000395": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "76c42df03a4f"
+    },
+    "5605302": {
+      "config": "68a4ab9418ce",
+      "labels": "d41d8cd98f00",
+      "data": "eca8c8264320"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v1"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.08466000000000001,
+    "n_reps": 83,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "0100270",
+      "name": "Baldwin County",
+      "state": "AL",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "0100270:dc3199947e",
+          "url": "gt://gt_curation_20260621T060008Z/0100270_Baldwin_County/Fairhope Middle School Bell Schedule.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0100270:4dba6c3ff8",
+          "url": "gt://gt_curation_20260621T060008Z/0100270_Baldwin_County/Pine Grove Elementary School Hours.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0100270:6b93a28f59",
+          "url": "gt://gt_curation_20260621T060008Z/0100270_Baldwin_County/Spanish Fork High School Bell Schedule.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0100270:df2b64d357",
+          "url": "gt://gt_curation_20260621T060008Z/0100270_Baldwin_County/EMSBells25-26.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0100270:06c3e0963c",
+          "url": "gt://gt_curation_20260621T060008Z/0100270_Baldwin_County/Fairhope High School Bell Schedule.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0100270:3040141abe",
+          "url": "gt://gt_curation_20260621T060008Z/0100270_Baldwin_County/Baldwin County High School Bell Schedule.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0100270:2e127fd3f6",
+          "url": "gt://gt_curation_20260621T060008Z/0100270_Baldwin_County/Daphne High School Bell Schedule.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0100270:94404a545c",
+          "url": "gt://gt_curation_20260621T060008Z/0100270_Baldwin_County/Robertsdale High School Bell Schedule.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0100270:3bfb22a08e",
+          "url": "gt://gt_curation_20260621T060008Z/0100270_Baldwin_County/School Bell - Rosinton Elementary.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0100270:6757d7054e",
+          "url": "gt://gt_curation_20260621T060008Z/0100270_Baldwin_County/School Hours - Swift School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0100270:e1ecbe7cfe",
+          "url": "gt://gt_curation_20260621T060008Z/0100270_Baldwin_County/Spanish Fort Middle School 2025-26 Bell Schedule.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "camelot_stream.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0100270:b7284963cf",
+          "url": "gt://gt_curation_20260621T060008Z/0100270_Baldwin_County/Bell Schedule.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 12,
+      "est_usd": 0.012240000000000001
+    },
+    {
+      "district_id": "0102370",
+      "name": "Mobile County",
+      "state": "AL",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "0102370:510e64749e",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/School Schedule | Tanner Williams Elementary School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:a6b3da66c4",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/About the School | Holloway Elementary School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:bd50a2bef1",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Allentown Elementary School Parent-Student-Handbook-2025-2026.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:35a6ed41bd",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/2025-2026-Mary G Montgomery High School-Bell-Schedule.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:059ddd4a31",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Causey Middle School 25-26-Bell-Schedule.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:4b559ca901",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Class Schedule | Collier Elementary School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:d6814c1db4",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Dodge Elementary School Parent Handbook 20212022.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:f49a4a9376",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Hutchens_Student-Parent_Handbook_2024-2025.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:785b5912fa",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Pillans Middle School _Bell_Schedule_2023-2024.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0102370:26ac75d68c",
+          "url": "gt://gt_curation_20260621T060008Z/0102370_Mobile_County/Blount High School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 10,
+      "est_usd": 0.0102
+    },
+    {
+      "district_id": "0200510",
+      "name": "Matanuska-Susitna Borough School District",
+      "state": "AK",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "0200510:c533d50626",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Colony High School 2526BellSchedule.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:26998ca8e2",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Home - Big Lake Elementary School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:d310544ff9",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Home - Cottonwood Creek Elementary School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:ca8789c188",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Home - Goose Bay Elementary School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:ccbf550749",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Home - Houston High School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:fb3b5bd096",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Home - Machetanz Elementary School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0200510:c70e77ddfb",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Home - Teeland Middle School.pdf",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:4c5a701688",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Home - Colony Middle School.pdf",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:bad3915333",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Home - Palmer High School.pdf",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:48410835e2",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Home - Palmer Jr Middle School.pdf",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        },
+        {
+          "rec_key": "0200510:2826dfaba8",
+          "url": "gt://gt_curation_20260621T060008Z/0200510_Matanuska-Susitna_Borough_School_District/Home - Shaw Elementary School.pdf",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 6,
+      "est_usd": 0.0061200000000000004
+    },
+    {
+      "district_id": "0200600",
+      "name": "Fairbanks North Star Borough School District",
+      "state": "AK",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "0200600:3f98de6c1d",
+          "url": "gt://gt_curation_20260621T060008Z/0200600_Fairbanks_North_Star_Borough_School_District/2025-26SchoolStartTimesandEarlyDismissals1.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "0404970",
+      "name": "Mesa Unified District (4235)",
+      "state": "AZ",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "0404970:786092c1ea",
+          "url": "gt://gt_curation_20260621T060008Z/0404970_Mesa_Unified_District_4235/Bell Schedule | Field Elementary.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:e457000534",
+          "url": "gt://gt_curation_20260621T060008Z/0404970_Mesa_Unified_District_4235/Bell Schedule | Franklin Junior High School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0404970:38745edc1b",
+          "url": "gt://gt_curation_20260621T060008Z/0404970_Mesa_Unified_District_4235/25-26 Red Mtn. Block Schedule & Calendar.pdf",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 2,
+      "est_usd": 0.00204
+    },
+    {
+      "district_id": "0512660",
+      "name": "SPRINGDALE SCHOOL DISTRICT",
+      "state": "AR",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "0512660:214f7f4fdc",
+          "url": "gt://gt_curation_20260621T060008Z/0512660_SPRINGDALE_SCHOOL_DISTRICT/Attendance & Bell Schedule | Elmdale Elementary.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0512660:c892bd1955",
+          "url": "gt://gt_curation_20260621T060008Z/0512660_SPRINGDALE_SCHOOL_DISTRICT/Bell Schedule and Attendance Policies | Bayyari Elementary.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0512660:d4a5ad6660",
+          "url": "gt://gt_curation_20260621T060008Z/0512660_SPRINGDALE_SCHOOL_DISTRICT/Attendance & Bell Schedule | Harp Elementary.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0512660:5064d6b238",
+          "url": "gt://gt_curation_20260621T060008Z/0512660_SPRINGDALE_SCHOOL_DISTRICT/Attendance & Bell Schedule | Helen Tyson Middle School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0512660:f420754317",
+          "url": "gt://gt_curation_20260621T060008Z/0512660_SPRINGDALE_SCHOOL_DISTRICT/Attendance & Bell Schedule | Monitor Elementary.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0512660:a599227d33",
+          "url": "gt://gt_curation_20260621T060008Z/0512660_SPRINGDALE_SCHOOL_DISTRICT/SMS 2025-2026 Bell Schedule.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0512660:47ccd92c19",
+          "url": "gt://gt_curation_20260621T060008Z/0512660_SPRINGDALE_SCHOOL_DISTRICT/Attendance & Bell Schedule | Walter Turnbow Elementary.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0512660:3ea0fc62c4",
+          "url": "gt://gt_curation_20260621T060008Z/0512660_SPRINGDALE_SCHOOL_DISTRICT/Attendance & Bell Schedule | Springdale High School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0512660:81dd581987",
+          "url": "gt://gt_curation_20260621T060008Z/0512660_SPRINGDALE_SCHOOL_DISTRICT/Attendance and Bell Schedule | Har-Ber High School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0512660:68e835ef49",
+          "url": "gt://gt_curation_20260621T060008Z/0512660_SPRINGDALE_SCHOOL_DISTRICT/Attendance & Bell Schedule | Central Junior High.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 10,
+      "est_usd": 0.0102
+    },
+    {
+      "district_id": "0626910",
+      "name": "New Haven Unified",
+      "state": "CA",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "0626910:c559f4af14",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/AES 2025-26 Bell Sched.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0626910:d5771bd18c",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/CCHS 2025-26 Bell Sched.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0626910:372eb50773",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/EAS 2025-26 Bell Sched.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0626910:0a0b114129",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/EMA 2025-26 Bell Sched.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0626910:91c9dde70c",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/HVC 2025-26 Bell Sched.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0626910:57a1961beb",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/IVCMS 2025-26 Bell Sched.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0626910:5e6ffc71ef",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/JLHS 2025-26 Bell Sched.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "camelot_stream.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0626910:602419209e",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/KIT 2025-26 Bell Sched.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "camelot_stream.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0626910:db22077a79",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/NHA 2025-26 Bell Sched.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0626910:6871d926a9",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/PIO 2025-26 Bell Sched.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0626910:7438aaa13d",
+          "url": "gt://gt_curation_20260621T060008Z/0626910_New_Haven_Unified/SEA 2025-26 Bell Sched.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 11,
+      "est_usd": 0.01122
+    },
+    {
+      "district_id": "0634320",
+      "name": "San Diego Unified",
+      "state": "CA",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "0634320:722637cf38",
+          "url": "gt://gt_curation_20260621T060008Z/0634320_San_Diego_Unified/2025-2026 Bell Schedule Mission Bay High School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:f525f78eca",
+          "url": "gt://gt_curation_20260621T060008Z/0634320_San_Diego_Unified/Mount View School UTK-8.png",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "tesseract_image.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:f71378e4f5",
+          "url": "gt://gt_curation_20260621T060008Z/0634320_San_Diego_Unified/Bell Middle School Schedule 2025.png",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "tesseract_image.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:fb882436d5",
+          "url": "gt://gt_curation_20260621T060008Z/0634320_San_Diego_Unified/Canyon Hills 25-26 Bell Schedule 1.jpg",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "tesseract_image.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:907f7855b0",
+          "url": "gt://gt_curation_20260621T060008Z/0634320_San_Diego_Unified/Dailard Elementary Bell Schedule 2025-2026.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "camelot_stream.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:2b50e70434",
+          "url": "gt://gt_curation_20260621T060008Z/0634320_San_Diego_Unified/Pershing Middle School Bell Schedule_25-26.jpg",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "tesseract_image.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0634320:9caffa784e",
+          "url": "gt://gt_curation_20260621T060008Z/0634320_San_Diego_Unified/Mira Mesa High School 5. Marauder.Minutes.25.26_Official.pdf",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 6,
+      "est_usd": 0.0061200000000000004
+    },
+    {
+      "district_id": "0900450",
+      "name": "Bridgeport School District",
+      "state": "CT",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "0900450:d5fa191574",
+          "url": "gt://gt_curation_20260621T060008Z/0900450_Bridgeport_School_District/Bell_24_25_schedule_updated.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "0902790",
+      "name": "New Haven School District",
+      "state": "CT",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "0902790:8f789ce38f",
+          "url": "gt://gt_curation_20260621T060008Z/0902790_New_Haven_School_District/New Haven Publc Schools Bell Times.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "0904830",
+      "name": "Waterbury School District",
+      "state": "CT",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "0904830:866bfb8645",
+          "url": "gt://gt_curation_20260621T060008Z/0904830_Waterbury_School_District/SchoolHours9-13-2024.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "camelot_stream.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "1000080",
+      "name": "Appoquinimink School District",
+      "state": "DE",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "1000080:ce2cad0f08",
+          "url": "gt://gt_curation_20260621T060008Z/1000080_Appoquinimink_School_District/2025 -2026 Bell _ Bus Times.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "1201440",
+      "name": "ORANGE",
+      "state": "FL",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "1201440:58ab717ed5",
+          "url": "gt://gt_curation_20260621T060008Z/1201440_ORANGE/current_bell_times.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "1602100",
+      "name": "JOINT SCHOOL DISTRICT NO. 2",
+      "state": "ID",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "1602100:450fc1cb03",
+          "url": "gt://gt_curation_20260621T060008Z/1602100_JOINT_SCHOOL_DISTRICT_NO_2/2025-26_West_Ada_Bell_Schedules.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "1906540",
+      "name": "Cedar Rapids Comm School District",
+      "state": "IA",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "1906540:0387e7f767",
+          "url": "gt://gt_curation_20260621T060008Z/1906540_Cedar_Rapids_Comm_School_District/2025-26FinalCalendar-3_24_25.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "2302820",
+      "name": "Bangor Public Schools",
+      "state": "ME",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "2302820:fa6e7dd32d",
+          "url": "gt://gt_curation_20260621T060008Z/2302820_Bangor_School_Department/School Hours | Bangor School Department.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "2307320",
+      "name": "Lewiston Public Schools",
+      "state": "ME",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "2307320:86c104bfdf",
+          "url": "gt://gt_curation_20260621T060008Z/2307320_Lewiston_Public_Schools/2023 Start and end times.png",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "tesseract_image.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "2513230",
+      "name": "Worcester",
+      "state": "MA",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "2513230:dc32188ca9",
+          "url": "gt://gt_curation_20260621T060008Z/2513230_Worcester/Welcome to Sullivan Middle School _ Dr. Arthur F. Sullivan Middle School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:40be7167eb",
+          "url": "gt://gt_curation_20260621T060008Z/2513230_Worcester/About Us _ North High School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:5c7d04005b",
+          "url": "gt://gt_curation_20260621T060008Z/2513230_Worcester/About Us _ Worcester Technical High School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:0d7454e3ed",
+          "url": "gt://gt_curation_20260621T060008Z/2513230_Worcester/Belmont Street Community School _ Home.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:fde6320875",
+          "url": "gt://gt_curation_20260621T060008Z/2513230_Worcester/About Us _ Burncoat High School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:df57290963",
+          "url": "gt://gt_curation_20260621T060008Z/2513230_Worcester/Home _ Grafton Street School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:6d32e3f608",
+          "url": "gt://gt_curation_20260621T060008Z/2513230_Worcester/Home _ May Street School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "2513230:ed68441b1d",
+          "url": "gt://gt_curation_20260621T060008Z/2513230_Worcester/Home _ Elm Park Community School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 8,
+      "est_usd": 0.00816
+    },
+    {
+      "district_id": "3172840",
+      "name": "LINCOLN PUBLIC SCHOOLS",
+      "state": "NE",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "3172840:2ebaa93907",
+          "url": "gt://gt_curation_20260621T060008Z/3172840_LINCOLN_PUBLIC_SCHOOLS/ib-eng - school start and end times.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "3200480",
+      "name": "Washoe County",
+      "state": "NV",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "3200480:3bdae9db41",
+          "url": "gt://gt_curation_20260621T060008Z/3200480_Washoe_County/2025-2026BellSchedule1.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "camelot_stream.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "3904378",
+      "name": "Cleveland Municipal",
+      "state": "OH",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "3904378:e51613860e",
+          "url": "gt://gt_curation_20260621T060008Z/3904378_Cleveland_Municipal/StartEndTimesFlier_7-11-25.webp",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "tesseract_image.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "4700148",
+      "name": "Memphis-Shelby County Schools",
+      "state": "TN",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "4700148:43d7f483a4",
+          "url": "gt://gt_curation_20260621T060008Z/4700148_Memphis-Shelby_County_Schools/Bell Times 2025-2026.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "5000395",
+      "name": "Essex Westford Educational Community Unified Union SD #51",
+      "state": "VT",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "5000395:179b4a1c55",
+          "url": "gt://gt_curation_20260621T060008Z/5000395_Essex_Westford_Educational_Community_Unified_Union_SD_51/Home _ Essex Middle School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5000395:642c632e75",
+          "url": "gt://gt_curation_20260621T060008Z/5000395_Essex_Westford_Educational_Community_Unified_Union_SD_51/Home _ Essex Elementary School.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5000395:2945f3d474",
+          "url": "gt://gt_curation_20260621T060008Z/5000395_Essex_Westford_Educational_Community_Unified_Union_SD_51/Home _ Westford School (Elementary).pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5000395:978e08c699",
+          "url": "gt://gt_curation_20260621T060008Z/5000395_Essex_Westford_Educational_Community_Unified_Union_SD_51/Essex High School Bell Schedule.jpeg",
+          "decision": "hold",
+          "reason": "unlabeled-tier-B",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 3,
+      "est_usd": 0.0030600000000000002
+    },
+    {
+      "district_id": "5605302",
+      "name": "Sweetwater County School District #1",
+      "state": "WY",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "5605302:8f48c1d027",
+          "url": "gt://gt_curation_20260621T060008Z/5605302_Sweetwater_County_School_District_1/SchoolStartandEndTimes.pdf",
+          "decision": "send",
+          "reason": "auto:tier-A",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    }
+  ]
+}

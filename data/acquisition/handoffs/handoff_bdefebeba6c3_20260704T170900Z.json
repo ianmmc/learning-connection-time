@@ -1,0 +1,1668 @@
+{
+  "handoff_hash": "bdefebeba6c3",
+  "created_at": "2026-07-04T17:09:00Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "fingerprints": {
+    "3501500": {
+      "config": "4f61aaa7d9c8",
+      "labels": "7b7f4c1b9422",
+      "data": "93aea82bac5f"
+    },
+    "5102940": {
+      "config": "4f61aaa7d9c8",
+      "labels": "76614c0bd944",
+      "data": "453e17e9ee8e"
+    },
+    "1737350": {
+      "config": "4f61aaa7d9c8",
+      "labels": "33a506695107",
+      "data": "30aa2e4d0f66"
+    },
+    "1918690": {
+      "config": "4f61aaa7d9c8",
+      "labels": "8585fe34cda9",
+      "data": "66b06f0c14f4"
+    },
+    "1739960": {
+      "config": "4f61aaa7d9c8",
+      "labels": "65fc720bd1d3",
+      "data": "3bac0ae1c9a9"
+    }
+  },
+  "councils": {
+    "image": {
+      "id": "image",
+      "name": "Image / vision council",
+      "input_kinds": [
+        "image"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash",
+        "mistralai/mistral-large-2512"
+      ],
+      "judge": "qwen/qwen3-vl-235b-a22b-instruct",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.vision.v1"
+      }
+    },
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v1"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.052680000000000005,
+    "n_reps": 37,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "3501500",
+      "name": "LAS CRUCES",
+      "state": "NM",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "3501500:0bec6d12e4",
+          "url": "https://www.lcps.net/page/staff-and-student-start-times",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:6a20e53c62",
+          "url": "https://www.lcps.net/page/calendars-handbooks-school-hours",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                2
+              ]
+            }
+          ]
+        },
+        {
+          "rec_key": "3501500:c55121f4f9",
+          "url": "https://mesillapark.lcps.net/",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3501500:d9768df5d6",
+          "url": "https://www.lcps.net/article/2313084",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3501500:04108dbf4a",
+          "url": "https://www.lcps.net/o/uhes/article/1673255",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3501500:83035af49a",
+          "url": "https://mvla.lcps.net/live-feed?page_no=12",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3501500:52f8d810e8",
+          "url": "https://www.lcps.net/o/mpes/live-feed?page_no=7",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3501500:188ab8fb32",
+          "url": "https://www.lcps.net/o/coes/article/1091422",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3501500:50200f0180",
+          "url": "https://mesillapark.lcps.net/live-feed?page_no=11",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3501500:17103002ed",
+          "url": "https://www.lcps.net/o/mpes/article/1091435",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3501500:174ae1bce3",
+          "url": "https://www.lcps.net/o/lhes/article/1091431",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3501500:62591e6fc7",
+          "url": "https://www.lcps.net/o/mes/article/1165991",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3501500:31d4bbb03d",
+          "url": "https://www.lcps.net/o/mpes/article/2216073",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3501500:b0aa515a51",
+          "url": "https://chs.lcps.net/o/mpes/live-feed?page_no=29",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                19
+              ]
+            }
+          ]
+        },
+        {
+          "rec_key": "3501500:d522ace094",
+          "url": "https://www.lcps.net/o/tes/live-feed?page_no=8",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:e708643448",
+          "url": "https://alameda.lcps.net/live-feed?page_no=21",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:61746f054d",
+          "url": "https://www.lcps.net/o/jes/live-feed?page_no=21",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:ffae6c8055",
+          "url": "https://jornada.lcps.net/o/jes/live-feed?page_no=7",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:36961fd995",
+          "url": "https://lomaheights.lcps.net/live-feed/?page_no=29",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:1d776cf188",
+          "url": "https://montevista.lcps.net/o/lhes/live-feed?page_no=7",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:2d4399c57d",
+          "url": "https://www.lcps.net/o/uhes/live-feed?page_no=16",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:d25a9943bf",
+          "url": "https://mesilla.lcps.net/live-feed?page_no=8",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:8bff05137d",
+          "url": "https://montevista.lcps.net/live-feed?page_no=7",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:8fd5302fc6",
+          "url": "https://www.lcps.net/o/dhes/live-feed?page_no=29",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:affa224719",
+          "url": "https://chs.lcps.net/o/cbes/live-feed?page_no=10",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:a5c9e7b3ca",
+          "url": "https://www.lcps.net/o/sms/live-feed?page_no=11",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "page.png",
+              "kind": "image",
+              "councils": [
+                "image"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "image-rep",
+              "est_usd": 0.0047550000000000005
+            }
+          ]
+        },
+        {
+          "rec_key": "3501500:be5f30bec3",
+          "url": "https://www.lcps.net/o/vves/live-feed?page_no=30",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:1cf9b136b7",
+          "url": "https://vms.lcps.net/o/vves/live-feed?page_no=11",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "page.png",
+              "kind": "image",
+              "councils": [
+                "image"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "image-rep",
+              "est_usd": 0.0047550000000000005
+            }
+          ]
+        },
+        {
+          "rec_key": "3501500:24ea4eb8b2",
+          "url": "https://mhs.lcps.net/o/vms/live-feed?page_no=11",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "page.png",
+              "kind": "image",
+              "councils": [
+                "image"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "image-rep",
+              "est_usd": 0.0047550000000000005
+            }
+          ]
+        },
+        {
+          "rec_key": "3501500:bf3315525e",
+          "url": "https://eastpicacho.lcps.net/live-feed?page_no=11",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "page.png",
+              "kind": "image",
+              "councils": [
+                "image"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "image-rep",
+              "est_usd": 0.0047550000000000005
+            }
+          ]
+        },
+        {
+          "rec_key": "3501500:14b9b23a40",
+          "url": "https://fairacres.lcps.net/o/mves/live-feed?page_no=27",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:e845870d0c",
+          "url": "https://lomaheights.lcps.net/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:650175c225",
+          "url": "https://deserthills.lcps.net/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:c0519a4973",
+          "url": "https://columbia.lcps.net/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:49a2865b69",
+          "url": "https://montevista.lcps.net/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:44a7d40b50",
+          "url": "https://jornada.lcps.net/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:ad4b6d60c9",
+          "url": "https://vms.lcps.net/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:0184b9871d",
+          "url": "https://sunrise.lcps.net/o/sres/live-feed?page_no=6",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:bcb951acbc",
+          "url": "https://cesarchavez.lcps.net/live-feed?page_no=6",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:b87cc365a0",
+          "url": "https://conlee.lcps.net/o/coes/live-feed?page_no=45",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:a60bee2cc9",
+          "url": "https://www.lcps.net/o/aes/live-feed?page_no=8",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:3654d57452",
+          "url": "https://valleyview.lcps.net/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:45f24d476f",
+          "url": "https://conlee.lcps.net/live-feed?page_no=30",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:5669fffbe8",
+          "url": "https://valleyview.lcps.net/live-feed?page_no=18",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:00909c6142",
+          "url": "https://mms.lcps.net/live-feed?page_no=7",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:49effad7ad",
+          "url": "https://www.lcps.net/o/hres/news?page_no=38",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:31d827b978",
+          "url": "https://chs.lcps.net/o/coes/news?page_no=10",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:53a29125f5",
+          "url": "https://lomaheights.lcps.net/news?page_no=11",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:150971ab9a",
+          "url": "https://macarthur.lcps.net/o/hhes/news?page_no=10",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:3c4cae3139",
+          "url": "https://deserthills.lcps.net/o/dhes/article/1585112",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:ca240a8646",
+          "url": "https://jornada.lcps.net/news?page_no=10",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:0dc7ac12f0",
+          "url": "https://arrowhead.lcps.net/o/vves/live-feed?page_no=30",
+          "decision": "reject",
+          "reason": "non-target:unusable",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:9361f876dd",
+          "url": "https://jornada.lcps.net/o/coes/news?page_no=17",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:5de99d63c4",
+          "url": "https://conlee.lcps.net/news?page_no=11",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:28e9711cdd",
+          "url": "https://chs.lcps.net/o/vves/news?page_no=15",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:887139dcaf",
+          "url": "https://universityhills.lcps.net/news?page_no=15",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:01f9fbc92e",
+          "url": "https://montevista.lcps.net/o/mves/news?page_no=10",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:e211abeb79",
+          "url": "https://www.lcps.net/o/cbes/news?page_no=3",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:e43068ba77",
+          "url": "https://www.lcps.net/o/mves/live-feed?page_no=9",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:4aefc9e7e1",
+          "url": "https://www.lcps.net/page/meal-prices-and-guidelines",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:0e808bc268",
+          "url": "https://www.lcps.net/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:49848dd42e",
+          "url": "https://jornada.lcps.net/o/jes/news?page_no=3",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:2ab392e72f",
+          "url": "https://vms.lcps.net/o/vves/news?page_no=10",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:4f2c52c69c",
+          "url": "https://zms.lcps.net/o/aes/news?page_no=3",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501500:83da3e8de4",
+          "url": "https://www.lcps.net/o/cbes/live-feed?page_no=33",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 17,
+      "est_usd": 0.03228
+    },
+    {
+      "district_id": "5102940",
+      "name": "Pittsylvania County Public Schools",
+      "state": "VA",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "5102940:0f6c7da050",
+          "url": "https://uhe.pcs.k12.va.us/administrators",
+          "decision": "send",
+          "reason": "target-label:school_start_end_prose",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5102940:f5d6f611fb",
+          "url": "https://chs.pcs.k12.va.us/UserFiles/Servers/Server_87407/Image/For%20Students/handbook/Student%20Handbook--Revised%202019-2020.pdf?utm_source=openai",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                3
+              ]
+            }
+          ]
+        },
+        {
+          "rec_key": "5102940:4ea496b9c9",
+          "url": "https://drhs.pcs.k12.va.us/UserFiles/Servers/Server_90465/File/Student%20Handbook/2023-2024%20DRHS%20Student%20Handbook.pdf?utm_source=openai",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                2
+              ]
+            }
+          ]
+        },
+        {
+          "rec_key": "5102940:33ab0ee79d",
+          "url": "https://gms.pcs.k12.va.us/UserFiles/Servers/Server_91385/File/For%20Parents/Handbook/GMS%20Student%20Handbook%20%287-20-23%29.pdf?utm_source=openai",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                4,
+                9
+              ]
+            }
+          ]
+        },
+        {
+          "rec_key": "5102940:a8f029279e",
+          "url": "https://gms.pcs.k12.va.us/UserFiles/Servers/Server_91385/File/For%20Parents/Handbook/GMS%20Student%20Handbook%20%28New%20Cell%20Phone%20Protocols%29.pdf?utm_source=openai",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                4,
+                8
+              ]
+            }
+          ]
+        },
+        {
+          "rec_key": "5102940:0932688744",
+          "url": "https://drhs.pcs.k12.va.us/parents__students/calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:0be745c22a",
+          "url": "https://ces.pcs.k12.va.us/for_parents/chatham_elementary_calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:914d37165f",
+          "url": "https://www.pcs.k12.va.us/calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:6fc33f633f",
+          "url": "https://drhs.pcs.k12.va.us/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:5b44e6d4ea",
+          "url": "https://ths.pcs.k12.va.us/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:af08a2b300",
+          "url": "https://cms.pcs.k12.va.us/?utm_source=openai",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:4d0e3897b6",
+          "url": "https://tms.pcs.k12.va.us/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:88d466cfc7",
+          "url": "https://hes.pcs.k12.va.us/home",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:994f7edea3",
+          "url": "https://bes.pcs.k12.va.us/home",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:3b7bf17c6d",
+          "url": "https://ths.pcs.k12.va.us/athletics/sport_schedules",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:3fd75486f1",
+          "url": "https://sme.pcs.k12.va.us/for_parents/student_handbook",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:f0bac27369",
+          "url": "https://tms.pcs.k12.va.us/about_us/contact_us/contact_information?utm_source=openai",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:1e482af0ea",
+          "url": "https://www.pcs.k12.va.us/parents/calendars/2025-2026_calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:1b9c58bf45",
+          "url": "https://www.pcs.k12.va.us/parents/calendars/2026-2027_calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:871421de78",
+          "url": "https://drhs.pcs.k12.va.us/parents__students/student_handbook",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:f3ee9fc349",
+          "url": "https://tms.pcs.k12.va.us/parents/student_handbook",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:11e85ccda9",
+          "url": "https://hes.pcs.k12.va.us/for_parents/student_handbook",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:9216457fa8",
+          "url": "https://www.pcs.k12.va.us/parents/calendars",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:962702e3f9",
+          "url": "https://drhs.pcs.k12.va.us/athletics/sport_schedules",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:9632b15d02",
+          "url": "https://drms.pcs.k12.va.us/parents/student_handbook",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:98380ddd67",
+          "url": "https://sse.pcs.k12.va.us/calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:ff0014c2b0",
+          "url": "https://mae.pcs.k12.va.us/for_parents/student_handbook",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:9a8e758342",
+          "url": "https://ghs.pcs.k12.va.us/athletics/sport_schedules",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:a542d620ef",
+          "url": "https://cms.pcs.k12.va.us/parents/student_handbook",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:a7bd20cb3e",
+          "url": "https://bes.pcs.k12.va.us/brosville_calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:ae80e294f7",
+          "url": "https://chs.pcs.k12.va.us/parents__students",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:26f8330ade",
+          "url": "https://ths.pcs.k12.va.us/UserFiles/Servers/Server_94354/File/For_Parents/Student%20Handbook/THS_2024_2025%20HB.docx.pdf?utm_source=openai",
+          "decision": "reject",
+          "reason": "non-target:unusable",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:b073e624d1",
+          "url": "https://chs.pcs.k12.va.us/cavalier_sports/cavalier_schedules",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:b4b30960b2",
+          "url": "https://gms.pcs.k12.va.us/calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:bd2b14c3ce",
+          "url": "https://gms.pcs.k12.va.us/parents/student_handbook",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:be2a5e9d93",
+          "url": "https://sme.pcs.k12.va.us/calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:c4af92ee30",
+          "url": "https://kes.pcs.k12.va.us/calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:d4f33c0491",
+          "url": "https://ths.pcs.k12.va.us/parents__students/student_handbook",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:e8d79f4891",
+          "url": "https://kes.pcs.k12.va.us/for_parents/student_handbook",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:20de29fcbc",
+          "url": "https://www.pcs.k12.va.us/departments/admin_finance_hr/2025-2026_employee_of_the_week_schedule",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:2bc454c1fd",
+          "url": "https://uhe.pcs.k12.va.us/for_parents/student_handbook",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5102940:2c5175f534",
+          "url": "https://www.pcs.k12.va.us/parents/calendars/2024-2025_calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 5,
+      "est_usd": 0.0051
+    },
+    {
+      "district_id": "1737350",
+      "name": "Triad CUSD 2",
+      "state": "IL",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "1737350:346742e4c4",
+          "url": "https://www.tcusd2.org/page/triad-together",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:9e29340e94",
+          "url": "https://henning.tcusd2.org/o/henning/page/school-hours",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "1737350:3b047650ea",
+          "url": "https://www.tcusd2.org/article/2301487",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:8105414824",
+          "url": "https://triadms.tcusd2.org/o/triad-ms/article/1696957",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "1737350:cb193a6deb",
+          "url": "https://triadms.tcusd2.org/o/triad-ms/article/2349503",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                5
+              ]
+            }
+          ]
+        },
+        {
+          "rec_key": "1737350:c09c08e49a",
+          "url": "https://triadms.tcusd2.org/o/triad-ms/article/2338466",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "1737350:7da8c2aa90",
+          "url": "https://triadms.tcusd2.org/o/triad-ms/article/2074983",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:0bc533f850",
+          "url": "https://silvercreek.tcusd2.org/o/silver-creek/article/1396551",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:4c8d299160",
+          "url": "https://stjacob.tcusd2.org/o/st-jacob/article/2533193",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:790fbb8dde",
+          "url": "https://silvercreek.tcusd2.org/o/silver-creek/article/854061",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:8594de5dcf",
+          "url": "https://triadhs.tcusd2.org/o/triad-hs/article/1169821",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "1737350:682c422e7f",
+          "url": "https://henning.tcusd2.org/live-feed?page_no=14",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:4a420ba54f",
+          "url": "https://triadms.tcusd2.org/o/triad-ms/article/2043720",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:1933f4dcfe",
+          "url": "https://triadms.tcusd2.org/o/triad-ms/article/1982859",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:27b9780cd5",
+          "url": "https://stjacob.tcusd2.org/o/st-jacob/article/1667631",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:8366903893",
+          "url": "https://stjacob.tcusd2.org/o/st-jacob/article/497249",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:a54cfe59b0",
+          "url": "https://coronavirus-vaccine-outreach-madcoil.hub.arcgis.com/pages/covid-19-vaccine-appointment-scheduler",
+          "decision": "reject",
+          "reason": "non-target:unusable",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:1938fe1ce8",
+          "url": "https://docs.google.com/document/d/1-CS5uOL4Q6BAm-xzISsEjdwWx-J8oTAZM1cmExaYbM0/edit?usp=sharing",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:09030084bb",
+          "url": "https://triadms.tcusd2.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:7b346408b9",
+          "url": "https://docs.google.com/document/d/1lpVTTDz11oL5cQmgSrbYFVG9OQxV2DrdHGFg6BLIfLE/edit?usp=sharing",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:90247ed7a6",
+          "url": "https://triadhs.tcusd2.org/o/triad-hs/live-feed?page_no=3",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:82e7a1a0f7",
+          "url": "https://www.tcusd2.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:827ad129fe",
+          "url": "https://marine.tcusd2.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:29af69f4c2",
+          "url": "https://www.tcusd2.org/page/safety-and-parent-notification",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:bde6c29ae6",
+          "url": "https://www.tcusd2.org/page/beyond-the-bell",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:1f12618033",
+          "url": "https://www.tcusd2.org/page/calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:be916d8b68",
+          "url": "https://stjacob.tcusd2.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:c78d78ffa1",
+          "url": "https://silvercreek.tcusd2.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1737350:224086427d",
+          "url": "https://triadhs.tcusd2.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 5,
+      "est_usd": 0.0051
+    },
+    {
+      "district_id": "1918690",
+      "name": "Marion Independent School District",
+      "state": "IA",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "1918690:1deeb63356",
+          "url": "https://www.marion-isd.org/o/francis-marion/page/school-hours",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "1918690:8015fc58df",
+          "url": "https://www.marion-isd.org/o/longfellow/page/school-hours",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "1918690:8f6ed54432",
+          "url": "https://www.marion-isd.org/o/parkview/page/school-hours",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "1918690:600ade165e",
+          "url": "https://www.marion-isd.org/fmi-home/",
+          "decision": "reject",
+          "reason": "non-target:unusable",
+          "reps": []
+        },
+        {
+          "rec_key": "1918690:aa1d5cfb30",
+          "url": "https://www.marion-isd.org/o/vms/documents/vms-bell-schedule/177774",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1918690:d9e387ea42",
+          "url": "https://www.marion-isd.org/o/mhs/documents/bell-schedule/149465",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 3,
+      "est_usd": 0.0030600000000000002
+    },
+    {
+      "district_id": "1739960",
+      "name": "Urbana SD 116",
+      "state": "IL",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "1739960:a0a98bdf1b",
+          "url": "https://uhs.usd116.org/uhs-bell-schedule/",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "1739960:d05b7dcfe3",
+          "url": "https://usd116.org/schools/",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "1739960:a7d489f0f1",
+          "url": "https://ums.usd116.org/",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdfplumber_lines.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "1739960:5bb66dc186",
+          "url": "https://drking.usd116.org/",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "1739960:ffda304e6d",
+          "url": "https://leal.usd116.org/",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "1739960:e01c25bbd2",
+          "url": "https://ums.usd116.org/ums-bell-schedule/",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "1739960:8e030312cd",
+          "url": "https://tmspaine.usd116.org/",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "1739960:1997f42a55",
+          "url": "https://drwilliams.usd116.org/family-info-center/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1739960:d0a0a39bd8",
+          "url": "https://usd116.org/schools/dpw/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1739960:03aba1b1c1",
+          "url": "https://usd116.org/calendar/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1739960:c8d6b3b9e7",
+          "url": "https://tmspaine.usd116.org/family-information-center/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1739960:5b1eacbb58",
+          "url": "https://uhs.usd116.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1739960:46aa4f1509",
+          "url": "https://drking.usd116.org/about/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1739960:d7aec1ccc2",
+          "url": "https://leal.usd116.org/about/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1739960:815ad7e883",
+          "url": "https://leal.usd116.org/cpt_staff_lst/staff-directory/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1739960:3c11c24113",
+          "url": "https://mtd.org/maps-and-schedules/schools/urbana-middle-school/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 7,
+      "est_usd": 0.0071400000000000005
+    }
+  ]
+}

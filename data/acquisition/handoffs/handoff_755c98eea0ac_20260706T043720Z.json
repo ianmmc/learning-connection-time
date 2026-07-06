@@ -1,0 +1,279 @@
+{
+  "handoff_hash": "755c98eea0ac",
+  "created_at": "2026-07-06T04:37:20Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "fingerprints": {
+    "0806750": {
+      "config": "e2d24d579723",
+      "labels": "522e03878cd0",
+      "data": "cedba95ab7c6"
+    },
+    "3502280": {
+      "config": "e2d24d579723",
+      "labels": "396393c3e6c4",
+      "data": "bffc610f46c1"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v1"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.00408,
+    "n_reps": 4,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "0806750",
+      "name": "Strasburg School District 31J",
+      "state": "CO",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "0806750:43f183c24c",
+          "url": "https://ses.strasburg31j.com/view-all-news",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0806750:72be9003bb",
+          "url": "https://ses.strasburg31j.com/",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0806750:ef4764c812",
+          "url": "https://www.strasburg31j.com/fs/resource-manager/view/71d643ab-1d56-4b66-a012-10081375b50b",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0806750:d839387273",
+          "url": "https://www.strasburg31j.com/calendar/2025-2026-district-calendar",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0806750:2d448e34f3",
+          "url": "https://www.strasburg31j.com/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0806750:098c2165a6",
+          "url": "https://hms.strasburg31j.com/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0806750:8eeb83c4cd",
+          "url": "https://www.strasburg31j.com/departments-services/food-service",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0806750:a436415c0d",
+          "url": "https://www.strasburg31j.com/departments-services/social-work",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0806750:d1b57be1c4",
+          "url": "https://shs.strasburg31j.com/graduation",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0806750:fb8bc6fbd9",
+          "url": "https://shs.strasburg31j.com/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0806750:cef2d325bf",
+          "url": "https://shs.strasburg31j.com/family-resources/shs-volunteer-opportunities",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0806750:c674548007",
+          "url": "https://shs.strasburg31j.com/galleries",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0806750:2d68ed853f",
+          "url": "https://shs.strasburg31j.com/principal",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0806750:7d39cad0b2",
+          "url": "https://www.strasburg31j.com/gratitude",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0806750:fc2069de4e",
+          "url": "https://ses.strasburg31j.com/calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0806750:bb9c7edf72",
+          "url": "https://hms.strasburg31j.com/quick-links/photo-gallery",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0806750:73f79d0595",
+          "url": "https://www.strasburg31j.com/fs/resource-manager/view/2f229de4-5489-426b-b24f-9dd97cf571a2",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 2,
+      "est_usd": 0.00204
+    },
+    {
+      "district_id": "3502280",
+      "name": "ROY",
+      "state": "NM",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "3502280:31170892b5",
+          "url": "https://www.royschools.org/classschedule",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3502280:0aca323467",
+          "url": "https://www.royschools.org/studentandparentinfo",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3502280:15bd419f57",
+          "url": "https://www.royschools.org/cafeteriamenus",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3502280:c597675274",
+          "url": "https://www.royschools.org/sys/calendar/upcoming/page/332090d8b7274aa2987d400f2455c6b8",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3502280:db9e0ef9cd",
+          "url": "https://www.royschools.org/athletics",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3502280:291ed7b934",
+          "url": "https://www.royschools.org/calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3502280:cc14b886c1",
+          "url": "https://www.royschools.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 2,
+      "est_usd": 0.00204
+    }
+  ]
+}

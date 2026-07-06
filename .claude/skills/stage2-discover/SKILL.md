@@ -1,9 +1,21 @@
 ---
 name: stage2-discover
-description: Run Stage 2 (Discover) of the bell-schedule acquisition pipeline against a CP-A-approved Stage 1 batch — dispatch one Haiku WebSearch subagent per district (Wave 1), then deterministic script handles gating, conditional Wave 2 (OpenRouter), flatten/dedup, write, and registry write-back. Use when discovering candidate schedule pages for districts already queued in data/acquisition/queue/batch_NNNNN.json.
+description: SUPERSEDED (2026-07-06) — Stage 2 now runs as a deterministic headless SERP cascade (python3 -m infrastructure.acquisition.stage2_discover.headless run <batch_id>), no subagents. Do NOT follow this skill's procedure; see the header note. Kept for the 2026-06-23 design history only.
 ---
 
 # /stage2-discover — Stage 2 (Discover)
+
+> **SUPERSEDED (2026-07-06, kept for history — same pattern as the per-school-acquire headers).**
+> This skill describes the retired agent-in-the-loop architecture: Haiku WebSearch subagents as
+> Wave 1 and the OpenRouter AI-search as Wave 2. The live Stage 2 (REQ-104, decided 2026-06-28) is a
+> **deterministic SERP cascade** — Wave 1 = Bright Data SERP → Serper failover, Wave 2 = Claude
+> WebSearch (`claude -p`) on the residual — run headlessly, no subagents:
+> `python3 -m infrastructure.acquisition.stage2_discover.headless run <batch_id>` (or the console's
+> Stage-2 trigger / the follow-up auto-flow, #157). No `OPENROUTER_API_KEY` is involved anywhere in
+> Stage 2 anymore (the retired providers + `_openrouter_key` were removed, #87); Wave 2 needs only the
+> `claude` CLI. Also superseded below: the "never redo" rule — a **follow-up batch** now redoes
+> discovery deliberately, with union-merged manifests (#174). Authority:
+> `STAGE2_DISCOVER_DESIGN_2026-06.md`.
 
 Written explicitly so the procedure survives across sessions without relying on conversational nuance (the full design was negotiated in detail on 2026-06-23 — see `docs/ACQUISITION_PIPELINE.md` Stage 2 and `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE2_DISCOVER_DESIGN_2026-06.md` §6 for the decision trail; this skill is the executable form of that design, not a paraphrase of it).
 

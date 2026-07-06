@@ -1,0 +1,3756 @@
+{
+  "handoff_hash": "bdefebeba6c3",
+  "district": {
+    "district_id": "3501500",
+    "name": "LAS CRUCES",
+    "reps": [
+      {
+        "rec_key": "3501500:6a20e53c62",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 6,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Mesilla Valley Leadership Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Rio Grande Preparatory Institute",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Arrowhead Park Early College High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 739,
+            "completion_tokens": 243,
+            "cost_usd": 0.0001711,
+            "latency_ms": 1001,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185401-XPQ4LNc83K3BIBTCzUc4"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 6,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Arrowhead Park ECHS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Arrowhead Park ECHS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Arrowhead Park ECHS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Mesilla Valley Leadership Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Rio Grande Preparatory Institute",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Arrowhead Park Early College High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 739,
+            "completion_tokens": 358,
+            "cost_usd": 6.559e-05,
+            "latency_ms": 4488,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185402-gvaLYN9EgWwtXBrCWJL7"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 6,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Mesilla Valley Leadership Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Rio Grande Preparatory Institute",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Arrowhead Park Early College High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 727,
+            "completion_tokens": 218,
+            "cost_usd": 8.723e-05,
+            "latency_ms": 12175,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185407-yLtzuY5E7HVMt70QDzUa"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "",
+            "start": "08:00",
+            "end": "14:40",
+            "gross": 400,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3501500:6a20e53c62",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3501500:6a20e53c62",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "",
+            "start": "08:35",
+            "end": "15:35",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3501500:6a20e53c62",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "mesilla valley leadership",
+            "start": "08:35",
+            "end": "15:35",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3501500:6a20e53c62",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "rio grande preparatory institute",
+            "start": "08:55",
+            "end": "15:55",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3501500:6a20e53c62",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "arrowhead park early college",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3501500:6a20e53c62",
+            "source_file": "harvest_slice.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "arrowhead park echs",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:00"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:40"
+            },
+            "rec_key": "3501500:6a20e53c62",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "arrowhead park echs",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "09:15"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "16:15"
+            },
+            "rec_key": "3501500:6a20e53c62",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "arrowhead park echs",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:35"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:35"
+            },
+            "rec_key": "3501500:6a20e53c62",
+            "source_file": "harvest_slice.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3501500:c55121f4f9",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "14:30",
+                "school_name": "Mesilla Park Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1103,
+            "completion_tokens": 50,
+            "cost_usd": 0.0001303,
+            "latency_ms": 673,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185418-ODNnRYEfSr8gYmKEWbpT"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Mesilla Park Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1144,
+            "completion_tokens": 49,
+            "cost_usd": 6.112e-05,
+            "latency_ms": 732,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185419-CV6r1Z2kSo3znOQspZNQ"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "mesilla park",
+            "start": "07:58",
+            "end": "14:30",
+            "gross": 392,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3501500:c55121f4f9",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3501500:d9768df5d6",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 6,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Las Cruces Public Schools"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Las Cruces Public Schools"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Las Cruces Public Schools"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Arrowhead Park Early College High School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Rio Grande Preparatory Institute"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Mesilla Valley Leadership Academy"
+              }
+            ],
+            "prompt_tokens": 1926,
+            "completion_tokens": 228,
+            "cost_usd": 0.0002838,
+            "latency_ms": 860,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185420-jyZu1Ch77eaSHmBUWdTy"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 6,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Arrowhead Park Early College High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Rio Grande Preparatory Institute",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Mesilla Valley Leadership Academy",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1956,
+            "completion_tokens": 355,
+            "cost_usd": 0.0001262,
+            "latency_ms": 4202,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185421-7RF3RR084NaJvAdugt0h"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 6,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Arrowhead Park Early College High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Rio Grande Preparatory Institute",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "20:35",
+                "end_time": "15:35",
+                "school_name": "Mesilla Valley Leadership Academy",
+                "confidence": "low"
+              }
+            ],
+            "prompt_tokens": 1892,
+            "completion_tokens": 226,
+            "cost_usd": 0.00019288,
+            "latency_ms": 11470,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185425-Cd4eIBw5kYB7mPhpVbC2"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "las cruces public schools",
+            "start": "08:00",
+            "end": "14:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3501500:d9768df5d6",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "las cruces public schools",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3501500:d9768df5d6",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "las cruces public schools",
+            "start": "08:35",
+            "end": "15:35",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3501500:d9768df5d6",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "arrowhead park early college",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3501500:d9768df5d6",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "rio grande preparatory institute",
+            "start": "08:55",
+            "end": "15:55",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3501500:d9768df5d6",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "rio grande preparatory institute",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:55"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:55"
+            },
+            "rec_key": "3501500:d9768df5d6",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "mesilla valley leadership",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:35"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:35"
+            },
+            "rec_key": "3501500:d9768df5d6",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "mesilla valley leadership",
+            "gross": -300,
+            "reason": "implausible",
+            "rec_key": "3501500:d9768df5d6",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3501500:04108dbf4a",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 6,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "University Hills Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Middle school",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:25",
+                "end_time": "15:25",
+                "school_name": "High school",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "15:00",
+                "school_name": "Arrowhead Park Early College High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:00",
+                "end_time": "15:00",
+                "school_name": "Mesilla Valley Leadership Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "15:00",
+                "school_name": "Rio Grande Preparatory Institute",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3734,
+            "completion_tokens": 403,
+            "cost_usd": 0.0005346,
+            "latency_ms": 1138,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185436-fUjkyUzPY5EN0xsZw508"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "University Hills Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:25",
+                "end_time": "15:25",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3732,
+            "completion_tokens": 184,
+            "cost_usd": 0.00020132,
+            "latency_ms": 2577,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185438-qVlIrwzbCvnJVVO3Pfh7"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "University Hills Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:25",
+                "end_time": "15:25",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3813,
+            "completion_tokens": 114,
+            "cost_usd": 0.00062502,
+            "latency_ms": 4444,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185440-uFmFIHeUNC2qJqCy2ltU"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "university hills",
+            "start": "08:00",
+            "end": "14:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3501500:04108dbf4a",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "las cruces public schools",
+            "start": "08:55",
+            "end": "15:55",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3501500:04108dbf4a",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "las cruces public schools",
+            "start": "08:25",
+            "end": "15:25",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3501500:04108dbf4a",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:55"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:55"
+            },
+            "rec_key": "3501500:04108dbf4a",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:25"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:25"
+            },
+            "rec_key": "3501500:04108dbf4a",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "arrowhead park early college",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "3501500:04108dbf4a",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "mesilla valley leadership",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "3501500:04108dbf4a",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "rio grande preparatory institute",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "3501500:04108dbf4a",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3501500:83035af49a",
+        "file": "tesseract_screenshot.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "15:35",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Mesilla Valley Leadership Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3613,
+            "completion_tokens": 130,
+            "cost_usd": 0.0004133,
+            "latency_ms": 875,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185445-rQgRwtTbXuLttXGuDczW"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "15:35",
+                "school_name": "Mesilla Valley Leadership Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Mesilla Valley Leadership Academy",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3869,
+            "completion_tokens": 128,
+            "cost_usd": 0.00020369,
+            "latency_ms": 1920,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185446-ihnAaCb8HoTs4Jc8jy1H"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Mesilla Valley Leadership Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Mesilla Valley Leadership Academy",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3683,
+            "completion_tokens": 78,
+            "cost_usd": 0.000799,
+            "latency_ms": 1731,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185448-3WeBrqD3TUxtIfBA4Lnv"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "mesilla valley leadership",
+            "start": "08:35",
+            "end": "15:35",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3501500:83035af49a",
+            "source_file": "tesseract_screenshot.txt"
+          },
+          {
+            "band": "middle",
+            "school": "mesilla valley leadership",
+            "start": "08:35",
+            "end": "15:35",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3501500:83035af49a",
+            "source_file": "tesseract_screenshot.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "las cruces public schools",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:35"
+            },
+            "rec_key": "3501500:83035af49a",
+            "source_file": "tesseract_screenshot.txt"
+          },
+          {
+            "band": "high",
+            "school": "las cruces public schools",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:35"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:35"
+            },
+            "rec_key": "3501500:83035af49a",
+            "source_file": "tesseract_screenshot.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3501500:52f8d810e8",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "14:30",
+                "school_name": "Mesilla Park Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 6317,
+            "completion_tokens": 45,
+            "cost_usd": 0.0006497,
+            "latency_ms": 643,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185449-x4VFvDJ3FecT93zt3Hi7"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Mesilla Park Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 6593,
+            "completion_tokens": 50,
+            "cost_usd": 0.00033365,
+            "latency_ms": 1010,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185450-15GuJ1cNz85BPfBiMSbk"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "mesilla park",
+            "start": "07:58",
+            "end": "14:30",
+            "gross": 392,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3501500:52f8d810e8",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3501500:188ab8fb32",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Conlee Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:25",
+                "end_time": "15:25",
+                "school_name": "High Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "15:00",
+                "school_name": "Rio Grande Preparatory Institute",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "15:00",
+                "school_name": "Arrowhead Park Early College High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1262,
+            "completion_tokens": 267,
+            "cost_usd": 0.000233,
+            "latency_ms": 1005,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185451-j896I42WxP886XiZtwLw"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Conlee Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:25",
+                "end_time": "15:25",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1300,
+            "completion_tokens": 184,
+            "cost_usd": 7.972e-05,
+            "latency_ms": 2514,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185452-ybmBkd1VXolnZjwCYk6r"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Conlee Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:25",
+                "end_time": "15:25",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1231,
+            "completion_tokens": 114,
+            "cost_usd": 0.00017691,
+            "latency_ms": 4137,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185455-wpMFxycnX1JnswnUQl23"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "conlee",
+            "start": "08:00",
+            "end": "14:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3501500:188ab8fb32",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "las cruces public schools",
+            "start": "08:55",
+            "end": "15:55",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3501500:188ab8fb32",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "las cruces public schools",
+            "start": "08:25",
+            "end": "15:25",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3501500:188ab8fb32",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "schools",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:55"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:55"
+            },
+            "rec_key": "3501500:188ab8fb32",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "schools",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:25"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:25"
+            },
+            "rec_key": "3501500:188ab8fb32",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "rio grande preparatory institute",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "3501500:188ab8fb32",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "arrowhead park early college",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "3501500:188ab8fb32",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3501500:50200f0180",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "14:30",
+                "school_name": "Mesilla Park Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 4485,
+            "completion_tokens": 45,
+            "cost_usd": 0.0004665,
+            "latency_ms": 879,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185459-PKlW8Mj84cn7yCgiktwf"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Mesilla Park Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "15:30",
+                "school_name": "Sierra Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:30",
+                "school_name": "Organ Mountain High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:30",
+                "school_name": "Centennial High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 4804,
+            "completion_tokens": 238,
+            "cost_usd": 0.00025924,
+            "latency_ms": 3509,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185460-DFakcDvRU9uFMWRffDoJ"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "14:30",
+                "school_name": "Mesilla Park Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 4578,
+            "completion_tokens": 43,
+            "cost_usd": 0.00064652,
+            "latency_ms": 3036,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185464-BLDccees3h1nvLKApuYx"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "mesilla park",
+            "start": "07:58",
+            "end": "14:30",
+            "gross": 392,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3501500:50200f0180",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "sierra",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "09:15"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:30"
+            },
+            "rec_key": "3501500:50200f0180",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "high",
+            "school": "organ mountain",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:35"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:30"
+            },
+            "rec_key": "3501500:50200f0180",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "high",
+            "school": "centennial",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:35"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:30"
+            },
+            "rec_key": "3501500:50200f0180",
+            "source_file": "tesseract_raster.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3501500:17103002ed",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Mesilla Park Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:25",
+                "end_time": "15:25",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "15:00",
+                "school_name": "Rio Grande Preparatory Institute",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "15:00",
+                "school_name": "Arrowhead Park Early College High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1360,
+            "completion_tokens": 212,
+            "cost_usd": 0.0002208,
+            "latency_ms": 1114,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185466-emhEWBLAHt68MboXJKV7"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Mesilla Park Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Mesilla Park Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:25",
+                "end_time": "15:25",
+                "school_name": "Mesilla Park Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1405,
+            "completion_tokens": 185,
+            "cost_usd": 8.505e-05,
+            "latency_ms": 2568,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185468-JJgecqaHRckFgTdU3C2S"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Mesilla Park Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:25",
+                "end_time": "15:25",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1332,
+            "completion_tokens": 115,
+            "cost_usd": 0.00024968,
+            "latency_ms": 3547,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185470-GKmcfhXXYaIlLtW0MkG7"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "mesilla park",
+            "start": "08:00",
+            "end": "14:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3501500:17103002ed",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "las cruces public schools",
+            "start": "08:55",
+            "end": "15:55",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3501500:17103002ed",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "las cruces public schools",
+            "start": "08:25",
+            "end": "15:25",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3501500:17103002ed",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "rio grande preparatory institute",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "3501500:17103002ed",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "arrowhead park early college",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "3501500:17103002ed",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "mesilla park",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:55"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:55"
+            },
+            "rec_key": "3501500:17103002ed",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "mesilla park",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:25"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:25"
+            },
+            "rec_key": "3501500:17103002ed",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3501500:174ae1bce3",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Loma Heights Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:25",
+                "end_time": "15:25",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "15:00",
+                "school_name": "Rio Grande Preparatory Institute",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "15:00",
+                "school_name": "Arrowhead Park Early College High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1299,
+            "completion_tokens": 212,
+            "cost_usd": 0.0002147,
+            "latency_ms": 990,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185474-oyjSblyTbNxa4UCsfRr0"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Loma Heights Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:25",
+                "end_time": "15:25",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1336,
+            "completion_tokens": 185,
+            "cost_usd": 8.16e-05,
+            "latency_ms": 2485,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185475-KMyfLDwvyZQW2OeeYb7v"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Loma Heights Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Loma Heights Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:25",
+                "end_time": "15:25",
+                "school_name": "Loma Heights Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1266,
+            "completion_tokens": 115,
+            "cost_usd": 0.00012544,
+            "latency_ms": 5084,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185477-UopV4mrDKDGo0HIeWVVx"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "loma heights",
+            "start": "08:00",
+            "end": "14:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3501500:174ae1bce3",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "las cruces public schools",
+            "start": "08:55",
+            "end": "15:55",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3501500:174ae1bce3",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "las cruces public schools",
+            "start": "08:25",
+            "end": "15:25",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3501500:174ae1bce3",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "rio grande preparatory institute",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "3501500:174ae1bce3",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "arrowhead park early college",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "3501500:174ae1bce3",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3501500:62591e6fc7",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 6,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Mesilla Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Middle school",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:25",
+                "end_time": "15:25",
+                "school_name": "High school",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "15:00",
+                "school_name": "Arrowhead Park Early College High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "15:00",
+                "school_name": "Mesilla Valley Leadership Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "15:00",
+                "school_name": "Rio Grande Preparatory Institute",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1490,
+            "completion_tokens": 245,
+            "cost_usd": 0.000247,
+            "latency_ms": 1483,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185483-LIhsdqYh6OA63qFj9Q2q"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Mesilla Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:25",
+                "end_time": "15:25",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1501,
+            "completion_tokens": 184,
+            "cost_usd": 8.977e-05,
+            "latency_ms": 2214,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185484-xhqmPXuoG4OfMXBL3hGC"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Mesilla Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:25",
+                "end_time": "15:25",
+                "school_name": "Las Cruces Public Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1453,
+            "completion_tokens": 114,
+            "cost_usd": 0.00041998,
+            "latency_ms": 2326,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185486-GeOxfeYEvq3NUiTGeEa5"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "mesilla",
+            "start": "08:00",
+            "end": "14:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3501500:62591e6fc7",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "las cruces public schools",
+            "start": "08:55",
+            "end": "15:55",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3501500:62591e6fc7",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "las cruces public schools",
+            "start": "08:25",
+            "end": "15:25",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3501500:62591e6fc7",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:55"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:55"
+            },
+            "rec_key": "3501500:62591e6fc7",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:25"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:25"
+            },
+            "rec_key": "3501500:62591e6fc7",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "arrowhead park early college",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "3501500:62591e6fc7",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "mesilla valley leadership",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "3501500:62591e6fc7",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "rio grande preparatory institute",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "3501500:62591e6fc7",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "3501500:31d4bbb03d",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "14:30",
+                "school_name": "Mesilla Park Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 899,
+            "completion_tokens": 45,
+            "cost_usd": 0.0001079,
+            "latency_ms": 668,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185489-nP5eZZwOebXVjRV91oA4"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Mesilla Park Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 914,
+            "completion_tokens": 73,
+            "cost_usd": 5.154e-05,
+            "latency_ms": 1222,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185489-zKnLrq8OD5y9j6bwCyMQ"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "mesilla park",
+            "start": "07:58",
+            "end": "14:30",
+            "gross": 392,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3501500:31d4bbb03d",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3501500:b0aa515a51",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "14:30",
+                "school_name": "Mesilla Park Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 544,
+            "completion_tokens": 49,
+            "cost_usd": 7.4e-05,
+            "latency_ms": 962,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185491-xAxgMfEfV7xSoRGMWalD"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Mesilla Park Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 548,
+            "completion_tokens": 72,
+            "cost_usd": 3.316e-05,
+            "latency_ms": 1344,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185492-AKFFWVfc69BYQm5gCk6U"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "mesilla park",
+            "start": "07:58",
+            "end": "14:30",
+            "gross": 392,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3501500:b0aa515a51",
+            "source_file": "harvest_slice.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3501500:a5c9e7b3ca",
+        "file": "page.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "14:35",
+                "school_name": "Sierra Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3715,
+            "completion_tokens": 43,
+            "cost_usd": 0.001222,
+            "latency_ms": 5345,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185494-TKYfRI3X2VXcpgHNKn0f"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 637,
+            "completion_tokens": 8,
+            "cost_usd": 0.0003305,
+            "latency_ms": 3616,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185499-XTk8VUjJ913OKuHRTJeS"
+          },
+          {
+            "model": "qwen/qwen3-vl-235b-a22b-instruct",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "16:00",
+                "school_name": "Sierra Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Sierra Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Sierra Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 16525,
+            "completion_tokens": 112,
+            "cost_usd": 0.00340356,
+            "latency_ms": 9999,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185502-VBTeRL06sCralqIyrVRm"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "sierra",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3501500:a5c9e7b3ca",
+            "source_file": "page.png"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3501500:1cf9b136b7",
+        "file": "page.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 3715,
+            "completion_tokens": 5,
+            "cost_usd": 0.001127,
+            "latency_ms": 3864,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185513-1LF0aFysZLE8kqFNhtPP"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 637,
+            "completion_tokens": 8,
+            "cost_usd": 0.0001793,
+            "latency_ms": 2929,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185516-HmXkvBlFYcw2wfINKAe4"
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3501500:24ea4eb8b2",
+        "file": "page.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 3715,
+            "completion_tokens": 5,
+            "cost_usd": 0.001127,
+            "latency_ms": 4320,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185519-hsOKldua7gChfQsdOVLn"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 637,
+            "completion_tokens": 8,
+            "cost_usd": 0.0003305,
+            "latency_ms": 8926,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185524-u9yofUyqUyjwEdO5m0bX"
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3501500:bf3315525e",
+        "file": "page.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 3715,
+            "completion_tokens": 10,
+            "cost_usd": 0.0011395,
+            "latency_ms": 3770,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185533-zBU8wgbCvGiAly7uJTUg"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 637,
+            "completion_tokens": 8,
+            "cost_usd": 0.0001793,
+            "latency_ms": 3780,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185537-EddID3McSmp6ri6jc3Ek"
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "",
+        "start": "08:00",
+        "end": "14:40",
+        "gross": 400,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3501500:6a20e53c62",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3501500:6a20e53c62",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "",
+        "start": "08:35",
+        "end": "15:35",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3501500:6a20e53c62",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "mesilla valley leadership",
+        "start": "08:35",
+        "end": "15:35",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3501500:6a20e53c62",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "rio grande preparatory institute",
+        "start": "08:55",
+        "end": "15:55",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3501500:6a20e53c62",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "arrowhead park early college",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3501500:6a20e53c62",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "mesilla park",
+        "start": "07:58",
+        "end": "14:30",
+        "gross": 392,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3501500:c55121f4f9",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "las cruces public schools",
+        "start": "08:00",
+        "end": "14:40",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3501500:d9768df5d6",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "las cruces public schools",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3501500:d9768df5d6",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "las cruces public schools",
+        "start": "08:35",
+        "end": "15:35",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3501500:d9768df5d6",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "arrowhead park early college",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3501500:d9768df5d6",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "rio grande preparatory institute",
+        "start": "08:55",
+        "end": "15:55",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3501500:d9768df5d6",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "university hills",
+        "start": "08:00",
+        "end": "14:40",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3501500:04108dbf4a",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "las cruces public schools",
+        "start": "08:55",
+        "end": "15:55",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3501500:04108dbf4a",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "las cruces public schools",
+        "start": "08:25",
+        "end": "15:25",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3501500:04108dbf4a",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "mesilla valley leadership",
+        "start": "08:35",
+        "end": "15:35",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3501500:83035af49a",
+        "source_file": "tesseract_screenshot.txt"
+      },
+      {
+        "band": "middle",
+        "school": "mesilla valley leadership",
+        "start": "08:35",
+        "end": "15:35",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3501500:83035af49a",
+        "source_file": "tesseract_screenshot.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "mesilla park",
+        "start": "07:58",
+        "end": "14:30",
+        "gross": 392,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3501500:52f8d810e8",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "conlee",
+        "start": "08:00",
+        "end": "14:40",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3501500:188ab8fb32",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "las cruces public schools",
+        "start": "08:55",
+        "end": "15:55",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3501500:188ab8fb32",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "las cruces public schools",
+        "start": "08:25",
+        "end": "15:25",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3501500:188ab8fb32",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "mesilla park",
+        "start": "07:58",
+        "end": "14:30",
+        "gross": 392,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3501500:50200f0180",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "mesilla park",
+        "start": "08:00",
+        "end": "14:40",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3501500:17103002ed",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "las cruces public schools",
+        "start": "08:55",
+        "end": "15:55",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3501500:17103002ed",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "las cruces public schools",
+        "start": "08:25",
+        "end": "15:25",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3501500:17103002ed",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "loma heights",
+        "start": "08:00",
+        "end": "14:40",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3501500:174ae1bce3",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "las cruces public schools",
+        "start": "08:55",
+        "end": "15:55",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3501500:174ae1bce3",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "las cruces public schools",
+        "start": "08:25",
+        "end": "15:25",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3501500:174ae1bce3",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "mesilla",
+        "start": "08:00",
+        "end": "14:40",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3501500:62591e6fc7",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "las cruces public schools",
+        "start": "08:55",
+        "end": "15:55",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3501500:62591e6fc7",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "las cruces public schools",
+        "start": "08:25",
+        "end": "15:25",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3501500:62591e6fc7",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "mesilla park",
+        "start": "07:58",
+        "end": "14:30",
+        "gross": 392,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3501500:31d4bbb03d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "mesilla park",
+        "start": "07:58",
+        "end": "14:30",
+        "gross": 392,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3501500:b0aa515a51",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "sierra",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3501500:a5c9e7b3ca",
+        "source_file": "page.png"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "arrowhead park echs",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:00"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:40"
+        },
+        "rec_key": "3501500:6a20e53c62",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "arrowhead park echs",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "09:15"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "16:15"
+        },
+        "rec_key": "3501500:6a20e53c62",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "arrowhead park echs",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:35"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:35"
+        },
+        "rec_key": "3501500:6a20e53c62",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "rio grande preparatory institute",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:55"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:55"
+        },
+        "rec_key": "3501500:d9768df5d6",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "mesilla valley leadership",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:35"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:35"
+        },
+        "rec_key": "3501500:d9768df5d6",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "mesilla valley leadership",
+        "gross": -300,
+        "reason": "implausible",
+        "rec_key": "3501500:d9768df5d6",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:55"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:55"
+        },
+        "rec_key": "3501500:04108dbf4a",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:25"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:25"
+        },
+        "rec_key": "3501500:04108dbf4a",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "arrowhead park early college",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "3501500:04108dbf4a",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "mesilla valley leadership",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "3501500:04108dbf4a",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "rio grande preparatory institute",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "3501500:04108dbf4a",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "las cruces public schools",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:35"
+        },
+        "rec_key": "3501500:83035af49a",
+        "source_file": "tesseract_screenshot.txt"
+      },
+      {
+        "band": "high",
+        "school": "las cruces public schools",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:35"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:35"
+        },
+        "rec_key": "3501500:83035af49a",
+        "source_file": "tesseract_screenshot.txt"
+      },
+      {
+        "band": "middle",
+        "school": "schools",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:55"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:55"
+        },
+        "rec_key": "3501500:188ab8fb32",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "schools",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:25"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:25"
+        },
+        "rec_key": "3501500:188ab8fb32",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "rio grande preparatory institute",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "3501500:188ab8fb32",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "arrowhead park early college",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "3501500:188ab8fb32",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "sierra",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "09:15"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:30"
+        },
+        "rec_key": "3501500:50200f0180",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "organ mountain",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:35"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:30"
+        },
+        "rec_key": "3501500:50200f0180",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "centennial",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:35"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:30"
+        },
+        "rec_key": "3501500:50200f0180",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "rio grande preparatory institute",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "3501500:17103002ed",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "arrowhead park early college",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "3501500:17103002ed",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "mesilla park",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:55"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:55"
+        },
+        "rec_key": "3501500:17103002ed",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "mesilla park",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:25"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:25"
+        },
+        "rec_key": "3501500:17103002ed",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "rio grande preparatory institute",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "3501500:174ae1bce3",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "arrowhead park early college",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "3501500:174ae1bce3",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:55"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:55"
+        },
+        "rec_key": "3501500:62591e6fc7",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:25"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:25"
+        },
+        "rec_key": "3501500:62591e6fc7",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "arrowhead park early college",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "3501500:62591e6fc7",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "mesilla valley leadership",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "3501500:62591e6fc7",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "rio grande preparatory institute",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "3501500:62591e6fc7",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "n_reps": 17,
+    "n_judged": 10,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 400,
+        "start_time": "08:00",
+        "end_time": "14:40",
+        "n_schools": 12,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "",
+            "start_time": "08:00",
+            "end_time": "14:40",
+            "gross": 400,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mesilla park",
+            "start_time": "07:58",
+            "end_time": "14:30",
+            "gross": 392,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "las cruces public schools",
+            "start_time": "08:00",
+            "end_time": "14:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "university hills",
+            "start_time": "08:00",
+            "end_time": "14:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mesilla park",
+            "start_time": "07:58",
+            "end_time": "14:30",
+            "gross": 392,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "conlee",
+            "start_time": "08:00",
+            "end_time": "14:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mesilla park",
+            "start_time": "07:58",
+            "end_time": "14:30",
+            "gross": 392,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mesilla park",
+            "start_time": "08:00",
+            "end_time": "14:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "loma heights",
+            "start_time": "08:00",
+            "end_time": "14:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mesilla",
+            "start_time": "08:00",
+            "end_time": "14:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mesilla park",
+            "start_time": "07:58",
+            "end_time": "14:30",
+            "gross": 392,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mesilla park",
+            "start_time": "07:58",
+            "end_time": "14:30",
+            "gross": 392,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 420,
+        "start_time": "09:15",
+        "end_time": "16:15",
+        "n_schools": 9,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "las cruces public schools",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "las cruces public schools",
+            "start_time": "08:55",
+            "end_time": "15:55",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mesilla valley leadership",
+            "start_time": "08:35",
+            "end_time": "15:35",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "las cruces public schools",
+            "start_time": "08:55",
+            "end_time": "15:55",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "las cruces public schools",
+            "start_time": "08:55",
+            "end_time": "15:55",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "las cruces public schools",
+            "start_time": "08:55",
+            "end_time": "15:55",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "las cruces public schools",
+            "start_time": "08:55",
+            "end_time": "15:55",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "sierra",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 420,
+        "start_time": "08:35",
+        "end_time": "15:35",
+        "n_schools": 13,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "",
+            "start_time": "08:35",
+            "end_time": "15:35",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mesilla valley leadership",
+            "start_time": "08:35",
+            "end_time": "15:35",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "rio grande preparatory institute",
+            "start_time": "08:55",
+            "end_time": "15:55",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "arrowhead park early college",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "las cruces public schools",
+            "start_time": "08:35",
+            "end_time": "15:35",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "arrowhead park early college",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "rio grande preparatory institute",
+            "start_time": "08:55",
+            "end_time": "15:55",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "las cruces public schools",
+            "start_time": "08:25",
+            "end_time": "15:25",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mesilla valley leadership",
+            "start_time": "08:35",
+            "end_time": "15:35",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "las cruces public schools",
+            "start_time": "08:25",
+            "end_time": "15:25",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "las cruces public schools",
+            "start_time": "08:25",
+            "end_time": "15:25",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "las cruces public schools",
+            "start_time": "08:25",
+            "end_time": "15:25",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "las cruces public schools",
+            "start_time": "08:25",
+            "end_time": "15:25",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 44,
+      "judge_calls": 10,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 112520,
+      "completion_tokens": 5763,
+      "cost_usd": 0.01777967
+    }
+  }
+}

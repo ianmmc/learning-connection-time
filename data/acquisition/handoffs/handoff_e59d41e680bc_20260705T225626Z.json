@@ -1,0 +1,70 @@
+{
+  "handoff_hash": "e59d41e680bc",
+  "created_at": "2026-07-05T22:56:26Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "fingerprints": {
+    "3901302": {
+      "config": "e2d24d579723",
+      "labels": "5162cf88f59e",
+      "data": "007993a11761"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v1"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.00102,
+    "n_reps": 1,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "3901302",
+      "name": "Dayton Early College Academy Inc",
+      "state": "OH",
+      "topology": "single_school",
+      "records": [
+        {
+          "rec_key": "3901302:339ff9f813",
+          "url": "https://www.daytonearlycollege.org/campuses/deca-prep/parent-information",
+          "decision": "send",
+          "reason": "7->6 alternate-rep re-dispatch (REQ-118)",
+          "reps": [
+            {
+              "file": "camelot_stream.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    }
+  ]
+}

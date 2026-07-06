@@ -1,0 +1,319 @@
+{
+  "handoff_hash": "bdefebeba6c3",
+  "district": {
+    "district_id": "1918690",
+    "name": "Marion Independent School District",
+    "reps": [
+      {
+        "rec_key": "1918690:1deeb63356",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:30",
+                "school_name": "Francis Marion Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1094,
+            "completion_tokens": 49,
+            "cost_usd": 0.000129,
+            "latency_ms": 639,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185396-APcYFJz3tbQTJvtDDnSw"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:30",
+                "school_name": "Francis Marion Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1131,
+            "completion_tokens": 50,
+            "cost_usd": 6.055e-05,
+            "latency_ms": 826,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185397-vcCNqPbI6GJAl8X7mp7O"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "francis marion",
+            "start": "08:30",
+            "end": "15:30",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "1918690:1deeb63356",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "1918690:8015fc58df",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Longfellow Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1171,
+            "completion_tokens": 43,
+            "cost_usd": 0.0001343,
+            "latency_ms": 614,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185398-RS3CGuaGLhrBiUckxkQB"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Longfellow Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1216,
+            "completion_tokens": 46,
+            "cost_usd": 6.448e-05,
+            "latency_ms": 803,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185398-UF1nQTP5OWE46wHCnVyO"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "longfellow",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "1918690:8015fc58df",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "1918690:8f6ed54432",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Parkview Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1180,
+            "completion_tokens": 49,
+            "cost_usd": 0.0001376,
+            "latency_ms": 522,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185399-0DdWekQ2GZZ0Vb3knYRC"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Parkview Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1217,
+            "completion_tokens": 50,
+            "cost_usd": 6.485e-05,
+            "latency_ms": 895,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185400-AxwpKcXKDaYrSPFKrfQT"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "parkview",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "1918690:8f6ed54432",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "francis marion",
+        "start": "08:30",
+        "end": "15:30",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "1918690:1deeb63356",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "longfellow",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "1918690:8015fc58df",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "parkview",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "1918690:8f6ed54432",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 3,
+    "n_judged": 0,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 420,
+        "start_time": "08:30",
+        "end_time": "15:30",
+        "n_schools": 3,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "francis marion",
+            "start_time": "08:30",
+            "end_time": "15:30",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "longfellow",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "parkview",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 6,
+      "judge_calls": 0,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 7009,
+      "completion_tokens": 287,
+      "cost_usd": 0.00059078
+    }
+  }
+}

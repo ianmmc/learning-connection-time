@@ -1,0 +1,310 @@
+{
+  "handoff_hash": "51849a4688a4",
+  "district": {
+    "district_id": "5508790",
+    "name": "Marshall School District",
+    "reps": [
+      {
+        "rec_key": "5508790:6cc3deb70a",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:15",
+                "school_name": "Marshall Early Learning Center (ELC)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:20",
+                "school_name": "Marshall Early Learning Center (ELC)",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 568,
+            "completion_tokens": 148,
+            "cost_usd": 0.000116,
+            "latency_ms": 1735,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783307311-IlgUcieVwWAvINKsQFLd"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:20",
+                "school_name": "Marshall Early Learning Center (ELC)",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 575,
+            "completion_tokens": 76,
+            "cost_usd": 3.483e-05,
+            "latency_ms": 1062,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783307313-k0UCy3VMVf9ezhAkRZO8"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:20",
+                "school_name": "Marshall Early Learning Center",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 550,
+            "completion_tokens": 43,
+            "cost_usd": 0.00011475,
+            "latency_ms": 7289,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783307317-1hMTGK76DXkQu9eiav1f"
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "marshall early learning center elc",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00",
+              "mistralai/mistral-small-24b-instruct-2501": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:15",
+              "mistralai/mistral-small-24b-instruct-2501": "15:20"
+            },
+            "rec_key": "5508790:6cc3deb70a",
+            "source_file": "harvest_slice.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "5508790:df1b53f1b0",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "10:00",
+                "end_time": "15:20",
+                "school_name": "Marshall Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 781,
+            "completion_tokens": 43,
+            "cost_usd": 9.53e-05,
+            "latency_ms": 814,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783307321-Cs0F15nahaZ4Dx8T0CMe"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 792,
+            "completion_tokens": 8,
+            "cost_usd": 4.024e-05,
+            "latency_ms": 468,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783307322-ToKbGsnoOopFf3IJ8IMO"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 773,
+            "completion_tokens": 6,
+            "cost_usd": 7.305e-05,
+            "latency_ms": 946,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783307323-aw8K9KiIQJOnGcTKWYGY"
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "marshall",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "10:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:20"
+            },
+            "rec_key": "5508790:df1b53f1b0",
+            "source_file": "harvest_slice.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "5508790:dde6ec4060",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:57",
+                "end_time": "15:21",
+                "school_name": "Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 771,
+            "completion_tokens": 75,
+            "cost_usd": 0.0001071,
+            "latency_ms": 581,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783307324-fDyW8VgEeZFkspxyyw6H"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 809,
+            "completion_tokens": 46,
+            "cost_usd": 4.413e-05,
+            "latency_ms": 717,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783307324-Pd7SfYGNctqlhzGCqp9L"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 757,
+            "completion_tokens": 32,
+            "cost_usd": 0.00022125,
+            "latency_ms": 1021,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783307325-4mDGOCD3gnYGWwtsGUb4"
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:57"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:21"
+            },
+            "rec_key": "5508790:dde6ec4060",
+            "source_file": "harvest_slice.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "marshall early learning center elc",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00",
+          "mistralai/mistral-small-24b-instruct-2501": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:15",
+          "mistralai/mistral-small-24b-instruct-2501": "15:20"
+        },
+        "rec_key": "5508790:6cc3deb70a",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "marshall",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "10:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:20"
+        },
+        "rec_key": "5508790:df1b53f1b0",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:57"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:21"
+        },
+        "rec_key": "5508790:dde6ec4060",
+        "source_file": "harvest_slice.txt"
+      }
+    ],
+    "n_reps": 3,
+    "n_judged": 3,
+    "bands": {},
+    "telemetry": {
+      "calls": 9,
+      "judge_calls": 3,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 6376,
+      "completion_tokens": 477,
+      "cost_usd": 0.0008466499999999999
+    },
+    "state": "WI"
+  }
+}

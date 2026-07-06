@@ -1,0 +1,406 @@
+{
+  "handoff_hash": "51849a4688a4",
+  "district": {
+    "district_id": "4824000",
+    "name": "HUNTINGTON ISD",
+    "reps": [
+      {
+        "rec_key": "4824000:855d9017fc",
+        "file": "pdfplumber_lines.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "15:35",
+                "school_name": "5th Grade",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "15:30",
+                "school_name": "4th Grade",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1385,
+            "completion_tokens": 112,
+            "cost_usd": 0.0001833,
+            "latency_ms": 722,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305866-cJzTfTOtwrvSkecfhEDG"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "15:30",
+                "school_name": "5th Grade",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "15:30",
+                "school_name": "4th Grade",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1382,
+            "completion_tokens": 126,
+            "cost_usd": 7.918e-05,
+            "latency_ms": 3465,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305866-JsLpQ0SwJwbXayqquOrs"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "5th grade",
+            "start": "07:55",
+            "end": "15:32",
+            "gross": 457,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "4824000:855d9017fc",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "4th grade",
+            "start": "07:55",
+            "end": "15:30",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "4824000:855d9017fc",
+            "source_file": "pdfplumber_lines.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4824000:bab96342a1",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:30",
+                "school_name": "HMS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 585,
+            "completion_tokens": 46,
+            "cost_usd": 7.69e-05,
+            "latency_ms": 668,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305870-vJo8hk94KWhHCQfSR06K"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:30",
+                "school_name": "HMS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 620,
+            "completion_tokens": 41,
+            "cost_usd": 3.428e-05,
+            "latency_ms": 1088,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305871-Snb2lW5BMtM475L1YHxS"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "hms",
+            "start": "07:55",
+            "end": "15:30",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "4824000:bab96342a1",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4824000:8a9afd4fab",
+        "file": "tesseract_screenshot.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:30",
+                "school_name": "HMS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 603,
+            "completion_tokens": 74,
+            "cost_usd": 8.99e-05,
+            "latency_ms": 1314,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305872-83DCy0o3blzoIzXALACl"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:30",
+                "school_name": "Huntington Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 623,
+            "completion_tokens": 50,
+            "cost_usd": 3.515e-05,
+            "latency_ms": 1453,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305873-OZy2arPY8jACokEhfUAq"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 607,
+            "completion_tokens": 22,
+            "cost_usd": 5.683e-05,
+            "latency_ms": 1074,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305875-peOkX6tFEdv2oCE28Ovp"
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "hms",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:55"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:30"
+            },
+            "rec_key": "4824000:8a9afd4fab",
+            "source_file": "tesseract_screenshot.txt"
+          },
+          {
+            "band": "middle",
+            "school": "huntington",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:55"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:30"
+            },
+            "rec_key": "4824000:8a9afd4fab",
+            "source_file": "tesseract_screenshot.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "5th grade",
+        "start": "07:55",
+        "end": "15:32",
+        "gross": 457,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "4824000:855d9017fc",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "4th grade",
+        "start": "07:55",
+        "end": "15:30",
+        "gross": 455,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "4824000:855d9017fc",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "middle",
+        "school": "hms",
+        "start": "07:55",
+        "end": "15:30",
+        "gross": 455,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "4824000:bab96342a1",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "hms",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:55"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:30"
+        },
+        "rec_key": "4824000:8a9afd4fab",
+        "source_file": "tesseract_screenshot.txt"
+      },
+      {
+        "band": "middle",
+        "school": "huntington",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:55"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:30"
+        },
+        "rec_key": "4824000:8a9afd4fab",
+        "source_file": "tesseract_screenshot.txt"
+      }
+    ],
+    "n_reps": 3,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 456,
+        "start_time": "07:55",
+        "end_time": "15:32",
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "5th grade",
+            "start_time": "07:55",
+            "end_time": "15:32",
+            "gross": 457,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "4th grade",
+            "start_time": "07:55",
+            "end_time": "15:30",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 455,
+        "start_time": "07:55",
+        "end_time": "15:30",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "hms",
+            "start_time": "07:55",
+            "end_time": "15:30",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 7,
+      "judge_calls": 1,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 5805,
+      "completion_tokens": 471,
+      "cost_usd": 0.00055554
+    },
+    "state": "TX"
+  }
+}

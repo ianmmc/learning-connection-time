@@ -1,0 +1,3344 @@
+{
+  "handoff_hash": "a2bc80c004ca",
+  "district": {
+    "district_id": "0100270",
+    "name": "Baldwin County",
+    "reps": [
+      {
+        "rec_key": "0100270:dc3199947e",
+        "file": "pdfplumber_lines.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:45",
+                "end_time": "15:05",
+                "school_name": "Fairhope Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1604,
+            "completion_tokens": 49,
+            "cost_usd": 0.00018,
+            "latency_ms": 14307,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048535-Egghrpf2iWPvG0EuJI6n"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "Fairhope Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1617,
+            "completion_tokens": 50,
+            "cost_usd": 8.485e-05,
+            "latency_ms": 14123,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048549-9ZW7PDAyNf3NO3P7zf3T"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "fairhope",
+            "start": "07:48",
+            "end": "15:05",
+            "gross": 437,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100270:dc3199947e",
+            "source_file": "pdfplumber_lines.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0100270:4dba6c3ff8",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Pine Grove Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 767,
+            "completion_tokens": 43,
+            "cost_usd": 9.39e-05,
+            "latency_ms": 13674,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048563-iP5sORJtrFYeULUqOGCG"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Pine Grove Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 772,
+            "completion_tokens": 45,
+            "cost_usd": 4.22e-05,
+            "latency_ms": 12992,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048576-ivm5AiwVRpWZb0HBpu89"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "pine grove",
+            "start": "07:40",
+            "end": "14:40",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100270:4dba6c3ff8",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0100270:6b93a28f59",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "15:12",
+                "school_name": "Spanish Fort High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1337,
+            "completion_tokens": 44,
+            "cost_usd": 0.0001513,
+            "latency_ms": 16319,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048592-ddkrBReomikYcYyd5L0b"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "15:12",
+                "school_name": "Spanish Fort High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1341,
+            "completion_tokens": 44,
+            "cost_usd": 7.057e-05,
+            "latency_ms": 14039,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048606-qhJGhKJxSno6iGQ8sZ8g"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "spanish fort",
+            "start": "07:50",
+            "end": "15:12",
+            "gross": 442,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100270:6b93a28f59",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0100270:df2b64d357",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:45",
+                "end_time": "15:03",
+                "school_name": "Elberta Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 530,
+            "completion_tokens": 49,
+            "cost_usd": 7.26e-05,
+            "latency_ms": 12517,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048619-phLHtTYug8khjqxD2h7O"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:45",
+                "end_time": "15:03",
+                "school_name": "Elberta Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 546,
+            "completion_tokens": 44,
+            "cost_usd": 3.082e-05,
+            "latency_ms": 12914,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048632-QM6r5L7xi6peTsltdOiY"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "elberta",
+            "start": "07:45",
+            "end": "15:03",
+            "gross": 438,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100270:df2b64d357",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0100270:06c3e0963c",
+        "file": "pdfplumber_lines.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "15:15",
+                "school_name": "Fairhope High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1407,
+            "completion_tokens": 49,
+            "cost_usd": 0.0001603,
+            "latency_ms": 12726,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048644-YkBU6cCey79il3KjroM6"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Fairhope High",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1423,
+            "completion_tokens": 71,
+            "cost_usd": 7.683e-05,
+            "latency_ms": 13578,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048658-5rDggAuZ7NhT2RHpdPvD"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "fairhope",
+            "start": "07:55",
+            "end": "15:15",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100270:06c3e0963c",
+            "source_file": "pdfplumber_lines.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0100270:3040141abe",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": false,
+            "error": "JSON error injected into SSE stream",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 14972,
+            "finish_reason": null,
+            "generation_id": "gen-1783048672-zGL6NX8l4xoTB4ZnquZZ"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:54",
+                "end_time": "15:11",
+                "school_name": "",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 777,
+            "completion_tokens": 45,
+            "cost_usd": 4.245e-05,
+            "latency_ms": 12236,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048685-3F5zfEC1WQ0qHw23UXvY"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:54",
+                "end_time": "15:11",
+                "school_name": "Fivay High",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 755,
+            "completion_tokens": 40,
+            "cost_usd": 9.115e-05,
+            "latency_ms": 14133,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048698-OnIdKuQmq6VyOJNNmgNq"
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:54"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:11"
+            },
+            "rec_key": "0100270:3040141abe",
+            "source_file": "tesseract_raster.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "0100270:2e127fd3f6",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:40",
+                "end_time": "14:35",
+                "school_name": "DHS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 784,
+            "completion_tokens": 57,
+            "cost_usd": 0.0001012,
+            "latency_ms": 11783,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048711-sCxorx2s4j3XuwACRUE8"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "15:10",
+                "school_name": "DHS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 775,
+            "completion_tokens": 47,
+            "cost_usd": 4.251e-05,
+            "latency_ms": 14959,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048726-dHqMN6ozGJzTozxSXJqE"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:40",
+                "end_time": "15:10",
+                "school_name": "DHS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 766,
+            "completion_tokens": 38,
+            "cost_usd": 0.00018664,
+            "latency_ms": 13547,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048739-hLEefJRBunYzSZfUdATQ"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "dhs",
+            "start": "07:40",
+            "end": "15:10",
+            "gross": 450,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0100270:2e127fd3f6",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0100270:94404a545c",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:09",
+                "end_time": "15:09",
+                "school_name": "Robertsdale High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 734,
+            "completion_tokens": 44,
+            "cost_usd": 9.1e-05,
+            "latency_ms": 12695,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048753-BQisIEHTuSY7vqY0cPI4"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:09",
+                "end_time": "15:09",
+                "school_name": "Robertsdale High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 776,
+            "completion_tokens": 49,
+            "cost_usd": 4.272e-05,
+            "latency_ms": 13819,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048766-xQtW4Mqsy0EsVwDWkAs0"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "robertsdale",
+            "start": "08:09",
+            "end": "15:09",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100270:94404a545c",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0100270:3bfb22a08e",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:00",
+                "school_name": "Rosinton Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 581,
+            "completion_tokens": 48,
+            "cost_usd": 7.73e-05,
+            "latency_ms": 14629,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048781-g1hfCetXmoxHeFJeF9Y1"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Rosinton Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 603,
+            "completion_tokens": 44,
+            "cost_usd": 3.367e-05,
+            "latency_ms": 13789,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048795-Ga9knfxBzwxr1WKrdQXm"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "rosinton",
+            "start": "07:55",
+            "end": "15:00",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100270:3bfb22a08e",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0100270:6757d7054e",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:25",
+                "school_name": "Swift School"
+              }
+            ],
+            "prompt_tokens": 606,
+            "completion_tokens": 43,
+            "cost_usd": 7.78e-05,
+            "latency_ms": 13154,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048808-UkNj7PWIgYxDf4QSHWuQ"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 641,
+            "completion_tokens": 12,
+            "cost_usd": 3.301e-05,
+            "latency_ms": 12630,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048821-gT77jTquQ97lCtdQWNK9"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:20",
+                "end_time": "15:05",
+                "school_name": "Swift School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 601,
+            "completion_tokens": 40,
+            "cost_usd": 0.0001442,
+            "latency_ms": 13187,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048834-khrxsJPoNf2HAZi4ALCi"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "swift",
+            "start": "07:20",
+            "end": "15:05",
+            "gross": 465,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0100270:6757d7054e",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0100270:e1ecbe7cfe",
+        "file": "camelot_stream.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 355,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School"
+              }
+            ],
+            "prompt_tokens": 10365,
+            "completion_tokens": 16000,
+            "cost_usd": 0.0074365,
+            "latency_ms": 41503,
+            "finish_reason": "length",
+            "generation_id": "gen-1783048848-7PzDcLoQx3Pyf0vt7Lrc"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 10002,
+            "completion_tokens": 71,
+            "cost_usd": 0.00050578,
+            "latency_ms": 13911,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048889-MwmL0rLc8iGcinxsCLxW"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "spanish fort",
+            "start": "07:59",
+            "end": "15:05",
+            "gross": 426,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100270:e1ecbe7cfe",
+            "source_file": "camelot_stream.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0100270:b7284963cf",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:15",
+                "end_time": "15:05",
+                "school_name": "Daphne Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 679,
+            "completion_tokens": 45,
+            "cost_usd": 8.59e-05,
+            "latency_ms": 14117,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048903-4t8eCUfLAgPuWVmfe13p"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:15",
+                "end_time": "15:05",
+                "school_name": "Daphne Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 677,
+            "completion_tokens": 44,
+            "cost_usd": 3.737e-05,
+            "latency_ms": 11697,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783048916-DDtSaC7txYqRALmQR7FT"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "daphne",
+            "start": "07:15",
+            "end": "15:05",
+            "gross": 470,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100270:b7284963cf",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "middle",
+        "school": "fairhope",
+        "start": "07:48",
+        "end": "15:05",
+        "gross": 437,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100270:dc3199947e",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "pine grove",
+        "start": "07:40",
+        "end": "14:40",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100270:4dba6c3ff8",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "spanish fort",
+        "start": "07:50",
+        "end": "15:12",
+        "gross": 442,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100270:6b93a28f59",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "elberta",
+        "start": "07:45",
+        "end": "15:03",
+        "gross": 438,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100270:df2b64d357",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "fairhope",
+        "start": "07:55",
+        "end": "15:15",
+        "gross": 440,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100270:06c3e0963c",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "high",
+        "school": "dhs",
+        "start": "07:40",
+        "end": "15:10",
+        "gross": 450,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0100270:2e127fd3f6",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "robertsdale",
+        "start": "08:09",
+        "end": "15:09",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100270:94404a545c",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "rosinton",
+        "start": "07:55",
+        "end": "15:00",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100270:3bfb22a08e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "swift",
+        "start": "07:20",
+        "end": "15:05",
+        "gross": 465,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0100270:6757d7054e",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "spanish fort",
+        "start": "07:59",
+        "end": "15:05",
+        "gross": 426,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100270:e1ecbe7cfe",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "middle",
+        "school": "daphne",
+        "start": "07:15",
+        "end": "15:05",
+        "gross": 470,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100270:b7284963cf",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "high",
+        "school": "",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:54"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:11"
+        },
+        "rec_key": "0100270:3040141abe",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "n_reps": 12,
+    "n_judged": 3,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 437,
+        "start_time": "07:55",
+        "end_time": "15:00",
+        "n_schools": 3,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "pine grove",
+            "start_time": "07:40",
+            "end_time": "14:40",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "rosinton",
+            "start_time": "07:55",
+            "end_time": "15:00",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "swift",
+            "start_time": "07:20",
+            "end_time": "15:05",
+            "gross": 465,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 443,
+        "start_time": "07:45",
+        "end_time": "15:03",
+        "n_schools": 4,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "fairhope",
+            "start_time": "07:48",
+            "end_time": "15:05",
+            "gross": 437,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "elberta",
+            "start_time": "07:45",
+            "end_time": "15:03",
+            "gross": 438,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "spanish fort",
+            "start_time": "07:59",
+            "end_time": "15:05",
+            "gross": 426,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "daphne",
+            "start_time": "07:15",
+            "end_time": "15:05",
+            "gross": 470,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 438,
+        "start_time": "07:55",
+        "end_time": "15:15",
+        "n_schools": 4,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "spanish fort",
+            "start_time": "07:50",
+            "end_time": "15:12",
+            "gross": 442,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "fairhope",
+            "start_time": "07:55",
+            "end_time": "15:15",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dhs",
+            "start_time": "07:40",
+            "end_time": "15:10",
+            "gross": 450,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "robertsdale",
+            "start_time": "08:09",
+            "end_time": "15:09",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 27,
+      "judge_calls": 3,
+      "errors": 1,
+      "truncated": 1,
+      "prompt_tokens": 41466,
+      "completion_tokens": 17155,
+      "cost_usd": 0.009992570000000001
+    }
+  }
+}

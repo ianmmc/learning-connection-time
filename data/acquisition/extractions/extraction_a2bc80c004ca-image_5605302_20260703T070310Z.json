@@ -1,0 +1,570 @@
+{
+  "handoff_hash": "a2bc80c004ca-image",
+  "district": {
+    "district_id": "5605302",
+    "name": "Sweetwater County School District #1",
+    "reps": [
+      {
+        "rec_key": "5605302:8f48c1d027",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 8,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:45",
+                "school_name": "Overland Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "K-3 Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "4-6 Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:50",
+                "school_name": "Rock Springs Junior High School Wamsutter K-8",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:55",
+                "school_name": "9 - 12 High Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:00",
+                "school_name": "Farson-Eden School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:45",
+                "end_time": "16:05",
+                "school_name": "Farson-Eden School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "16:05",
+                "school_name": "Farson-Eden School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2941,
+            "completion_tokens": 337,
+            "cost_usd": 0.0017248,
+            "latency_ms": 18175,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783062153-jIiNMybsOod99yL49sKt"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 8,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:05",
+                "school_name": "K - 3 Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "4 - 6 Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:50",
+                "school_name": "7 - 8 Rock Springs Junior High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:50",
+                "school_name": "Wamsutter K-8",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:55",
+                "school_name": "9 - 12 High Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:00",
+                "school_name": "Farson-Eden Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:45",
+                "end_time": "16:05",
+                "school_name": "Farson-Eden Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "16:05",
+                "school_name": "Farson-Eden High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2770,
+            "completion_tokens": 331,
+            "cost_usd": 0.0018815,
+            "latency_ms": 19689,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783062169-SSqTy1xC58XnTQIhUGBS"
+          },
+          {
+            "model": "deepseek/deepseek-v3.2",
+            "role": "judge",
+            "ok": false,
+            "error": "Error code: 404 - {'error': {'message': 'No endpoints found that support image input', 'code': 404}}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 14418,
+            "finish_reason": null,
+            "generation_id": null
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "9 12 schools",
+            "start": "08:00",
+            "end": "15:55",
+            "gross": 475,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "farsoneden",
+            "start": "07:45",
+            "end": "15:00",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "farsoneden",
+            "start": "07:45",
+            "end": "16:05",
+            "gross": 500,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "farsoneden",
+            "start": "07:45",
+            "end": "16:05",
+            "gross": 500,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "overland",
+            "starts": {
+              "google/gemini-2.5-flash": "07:45"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "14:45"
+            },
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "k3 schools",
+            "starts": {
+              "google/gemini-2.5-flash": "07:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:05"
+            },
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "46 schools",
+            "starts": {
+              "google/gemini-2.5-flash": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:15"
+            },
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "rock springs wamsutter k8",
+            "starts": {
+              "google/gemini-2.5-flash": "08:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:50"
+            },
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "k 3 schools",
+            "starts": {
+              "mistralai/mistral-large-2512": "07:50"
+            },
+            "ends": {
+              "mistralai/mistral-large-2512": "15:05"
+            },
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "4 6 schools",
+            "starts": {
+              "mistralai/mistral-large-2512": "08:00"
+            },
+            "ends": {
+              "mistralai/mistral-large-2512": "15:15"
+            },
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "7 8 rock springs",
+            "starts": {
+              "mistralai/mistral-large-2512": "08:30"
+            },
+            "ends": {
+              "mistralai/mistral-large-2512": "15:50"
+            },
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "wamsutter k8",
+            "starts": {
+              "mistralai/mistral-large-2512": "08:30"
+            },
+            "ends": {
+              "mistralai/mistral-large-2512": "15:50"
+            },
+            "rec_key": "5605302:8f48c1d027",
+            "source_file": "raster_p-1.png"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "9 12 schools",
+        "start": "08:00",
+        "end": "15:55",
+        "gross": 475,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "farsoneden",
+        "start": "07:45",
+        "end": "15:00",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "farsoneden",
+        "start": "07:45",
+        "end": "16:05",
+        "gross": 500,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "farsoneden",
+        "start": "07:45",
+        "end": "16:05",
+        "gross": 500,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "raster_p-1.png"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "overland",
+        "starts": {
+          "google/gemini-2.5-flash": "07:45"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "14:45"
+        },
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "k3 schools",
+        "starts": {
+          "google/gemini-2.5-flash": "07:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:05"
+        },
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "46 schools",
+        "starts": {
+          "google/gemini-2.5-flash": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:15"
+        },
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "rock springs wamsutter k8",
+        "starts": {
+          "google/gemini-2.5-flash": "08:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:50"
+        },
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "k 3 schools",
+        "starts": {
+          "mistralai/mistral-large-2512": "07:50"
+        },
+        "ends": {
+          "mistralai/mistral-large-2512": "15:05"
+        },
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "4 6 schools",
+        "starts": {
+          "mistralai/mistral-large-2512": "08:00"
+        },
+        "ends": {
+          "mistralai/mistral-large-2512": "15:15"
+        },
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "7 8 rock springs",
+        "starts": {
+          "mistralai/mistral-large-2512": "08:30"
+        },
+        "ends": {
+          "mistralai/mistral-large-2512": "15:50"
+        },
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "wamsutter k8",
+        "starts": {
+          "mistralai/mistral-large-2512": "08:30"
+        },
+        "ends": {
+          "mistralai/mistral-large-2512": "15:50"
+        },
+        "rec_key": "5605302:8f48c1d027",
+        "source_file": "raster_p-1.png"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 435,
+        "start_time": "07:45",
+        "end_time": "15:00",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "farsoneden",
+            "start_time": "07:45",
+            "end_time": "15:00",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 500,
+        "start_time": "07:45",
+        "end_time": "16:05",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "farsoneden",
+            "start_time": "07:45",
+            "end_time": "16:05",
+            "gross": 500,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 488,
+        "start_time": "07:45",
+        "end_time": "16:05",
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "9 12 schools",
+            "start_time": "08:00",
+            "end_time": "15:55",
+            "gross": 475,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "farsoneden",
+            "start_time": "07:45",
+            "end_time": "16:05",
+            "gross": 500,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 1,
+      "truncated": 0,
+      "prompt_tokens": 5711,
+      "completion_tokens": 668,
+      "cost_usd": 0.0036063
+    }
+  }
+}

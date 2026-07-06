@@ -1,0 +1,63 @@
+{
+  "handoff_hash": "396fe9245032",
+  "district": {
+    "district_id": "3800038",
+    "name": "DICKINSON 1",
+    "reps": [
+      {
+        "rec_key": "3800038:0d3bd88243",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 778,
+            "completion_tokens": 127,
+            "cost_usd": 0.0001286,
+            "latency_ms": 1262,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783313191-sc78mesGGhMMiaR6KEnO"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 806,
+            "completion_tokens": 46,
+            "cost_usd": 4.398e-05,
+            "latency_ms": 1752,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783313192-7eD1AYCEouVBuVkzw3vN"
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      }
+    ],
+    "accepted": [],
+    "unresolved": [],
+    "n_reps": 1,
+    "n_judged": 0,
+    "bands": {},
+    "telemetry": {
+      "calls": 2,
+      "judge_calls": 0,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 1584,
+      "completion_tokens": 173,
+      "cost_usd": 0.00017258
+    },
+    "state": "ND"
+  }
+}

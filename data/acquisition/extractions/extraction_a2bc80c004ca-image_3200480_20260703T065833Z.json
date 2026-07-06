@@ -1,0 +1,2127 @@
+{
+  "handoff_hash": "a2bc80c004ca-image",
+  "district": {
+    "district_id": "3200480",
+    "name": "Washoe County",
+    "reps": [
+      {
+        "rec_key": "3200480:3bdae9db41",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 39,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:26",
+                "end_time": "14:00",
+                "school_name": "Academy of Arts, Careers & Technology",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Damonte Ranch",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:26",
+                "end_time": "14:00",
+                "school_name": "Debbie Smith CTE",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Galena",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:30",
+                "school_name": "Gerlach K-12",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "14:34",
+                "school_name": "Hug",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "14:30",
+                "school_name": "Incline",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "14:57",
+                "school_name": "Innovations",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:00",
+                "school_name": "Inspire Academy (6-12)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:35",
+                "school_name": "McQueen",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:35",
+                "school_name": "North Valleys",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:35",
+                "school_name": "Reed",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:40",
+                "end_time": "14:30",
+                "school_name": "Reno",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Spanish Springs",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:35",
+                "school_name": "Sparks",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:20",
+                "school_name": "TMCC",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:50",
+                "end_time": "16:00",
+                "school_name": "Transitions Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Turning Point",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Wooster",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Billinghurst",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Clayton-Pre AP",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Cold Springs 6-8",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Gerlach K-12",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:30",
+                "end_time": "15:30",
+                "school_name": "Cold Springs EC",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Depoali",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Desert Skies",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Dilworth-STEM",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Herz",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:25",
+                "school_name": "Incline",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Mendive",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "13:54",
+                "school_name": "O'Brien-STEM",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:30",
+                "end_time": "15:30",
+                "school_name": "Picollo (PK-12)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Pine",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_name": "14:00",
+                "school_name": "Shaw",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Sky Ranch",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Sparks",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Swope",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Traner",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:00",
+                "school_name": "Vaughn",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2941,
+            "completion_tokens": 1495,
+            "cost_usd": 0.0046198,
+            "latency_ms": 21410,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061859-IG3xdXIA5R53TJc2sgCd"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 37,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:26",
+                "end_time": "14:00",
+                "school_name": "Academy of Arts, Careers & Technology",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Damonte Ranch",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:26",
+                "end_time": "14:00",
+                "school_name": "Debbie Smith CTE",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Galena",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:30",
+                "school_name": "Gerlach K-12 (HS)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Gerlach K-12 (ES)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "14:34",
+                "school_name": "Hug",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "14:30",
+                "school_name": "Incline",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "14:57",
+                "school_name": "Innovations",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:00",
+                "school_name": "Inspire Academy (6-12)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:35",
+                "school_name": "McQueen",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:35",
+                "school_name": "North Valleys",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:35",
+                "school_name": "Reed",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:40",
+                "end_time": "14:30",
+                "school_name": "Reno",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Spanish Springs",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:35",
+                "school_name": "Sparks",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:20",
+                "school_name": "TMCC",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:50",
+                "end_time": "16:00",
+                "school_name": "Transitions Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Turning Point",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Wooster",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Billinghurst",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Clayton-Pre AP",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Cold Springs 6-8",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Depoali",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Desert Skies",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Dilworth-STEM",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Herz",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:25",
+                "school_name": "Incline",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Mendive",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "13:54",
+                "school_name": "O'Brien-STEM",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Pine",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Shaw",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Sky Ranch",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Sparks",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Swope",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Traner",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:00",
+                "school_name": "Vaughn",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2782,
+            "completion_tokens": 1361,
+            "cost_usd": 0.0034325,
+            "latency_ms": 33519,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061880-Ssb9UHU21XBMxSIqcaqX"
+          },
+          {
+            "model": "deepseek/deepseek-v3.2",
+            "role": "judge",
+            "ok": false,
+            "error": "Error code: 404 - {'error': {'message': 'No endpoints found that support image input', 'code': 404}}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 13369,
+            "finish_reason": null,
+            "generation_id": null
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "arts careers technology",
+            "start": "07:26",
+            "end": "14:00",
+            "gross": 394,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "damonte ranch",
+            "start": "08:00",
+            "end": "14:30",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "debbie smith cte",
+            "start": "07:26",
+            "end": "14:00",
+            "gross": 394,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "galena",
+            "start": "08:00",
+            "end": "14:30",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "hug",
+            "start": "07:45",
+            "end": "14:34",
+            "gross": 409,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "incline",
+            "start": "07:45",
+            "end": "14:30",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "innovations",
+            "start": "08:30",
+            "end": "14:57",
+            "gross": 387,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "inspire 612",
+            "start": "08:30",
+            "end": "15:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "mcqueen",
+            "start": "08:00",
+            "end": "14:35",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "north valleys",
+            "start": "08:00",
+            "end": "14:35",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "reed",
+            "start": "08:00",
+            "end": "14:35",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "reno",
+            "start": "07:40",
+            "end": "14:30",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "spanish springs",
+            "start": "08:00",
+            "end": "14:30",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "sparks",
+            "start": "08:00",
+            "end": "14:35",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "tmcc",
+            "start": "08:00",
+            "end": "14:20",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "transitions",
+            "start": "09:50",
+            "end": "16:00",
+            "gross": 370,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "turning point",
+            "start": "08:00",
+            "end": "14:30",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "wooster",
+            "start": "08:00",
+            "end": "14:30",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "billinghurst",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "claytonpre ap",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "cold springs 68",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "depoali",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "desert skies",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "dilworthstem",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "herz",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "incline",
+            "start": "07:50",
+            "end": "14:25",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "mendive",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "obrienstem",
+            "start": "07:30",
+            "end": "13:54",
+            "gross": 384,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "pine",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "sky ranch",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "sparks",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "swope",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "traner",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "vaughn",
+            "start": "07:25",
+            "end": "14:00",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "gerlach k12",
+            "starts": {
+              "google/gemini-2.5-flash": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:30"
+            },
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "gerlach k12",
+            "starts": {
+              "google/gemini-2.5-flash": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "14:50"
+            },
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "cold springs ec",
+            "starts": {
+              "google/gemini-2.5-flash": "09:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:30"
+            },
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "picollo pk12",
+            "starts": {
+              "google/gemini-2.5-flash": "09:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:30"
+            },
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "high",
+            "school": "gerlach k12 hs",
+            "starts": {
+              "mistralai/mistral-large-2512": "08:00"
+            },
+            "ends": {
+              "mistralai/mistral-large-2512": "15:30"
+            },
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "gerlach k12 es",
+            "starts": {
+              "mistralai/mistral-large-2512": "08:00"
+            },
+            "ends": {
+              "mistralai/mistral-large-2512": "14:50"
+            },
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "middle",
+            "school": "shaw",
+            "starts": {
+              "mistralai/mistral-large-2512": "07:30"
+            },
+            "ends": {
+              "mistralai/mistral-large-2512": "14:00"
+            },
+            "rec_key": "3200480:3bdae9db41",
+            "source_file": "raster_p-1.png"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "arts careers technology",
+        "start": "07:26",
+        "end": "14:00",
+        "gross": 394,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "damonte ranch",
+        "start": "08:00",
+        "end": "14:30",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "debbie smith cte",
+        "start": "07:26",
+        "end": "14:00",
+        "gross": 394,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "galena",
+        "start": "08:00",
+        "end": "14:30",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "hug",
+        "start": "07:45",
+        "end": "14:34",
+        "gross": 409,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "incline",
+        "start": "07:45",
+        "end": "14:30",
+        "gross": 405,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "innovations",
+        "start": "08:30",
+        "end": "14:57",
+        "gross": 387,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "inspire 612",
+        "start": "08:30",
+        "end": "15:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "mcqueen",
+        "start": "08:00",
+        "end": "14:35",
+        "gross": 395,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "north valleys",
+        "start": "08:00",
+        "end": "14:35",
+        "gross": 395,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "reed",
+        "start": "08:00",
+        "end": "14:35",
+        "gross": 395,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "reno",
+        "start": "07:40",
+        "end": "14:30",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "spanish springs",
+        "start": "08:00",
+        "end": "14:30",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "sparks",
+        "start": "08:00",
+        "end": "14:35",
+        "gross": 395,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "tmcc",
+        "start": "08:00",
+        "end": "14:20",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "transitions",
+        "start": "09:50",
+        "end": "16:00",
+        "gross": 370,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "turning point",
+        "start": "08:00",
+        "end": "14:30",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "wooster",
+        "start": "08:00",
+        "end": "14:30",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "billinghurst",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "claytonpre ap",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "cold springs 68",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "depoali",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "desert skies",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "dilworthstem",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "herz",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "incline",
+        "start": "07:50",
+        "end": "14:25",
+        "gross": 395,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "mendive",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "obrienstem",
+        "start": "07:30",
+        "end": "13:54",
+        "gross": 384,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "pine",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "sky ranch",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "sparks",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "swope",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "traner",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "vaughn",
+        "start": "07:25",
+        "end": "14:00",
+        "gross": 395,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "high",
+        "school": "gerlach k12",
+        "starts": {
+          "google/gemini-2.5-flash": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:30"
+        },
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "gerlach k12",
+        "starts": {
+          "google/gemini-2.5-flash": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "14:50"
+        },
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "cold springs ec",
+        "starts": {
+          "google/gemini-2.5-flash": "09:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:30"
+        },
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "picollo pk12",
+        "starts": {
+          "google/gemini-2.5-flash": "09:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:30"
+        },
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "gerlach k12 hs",
+        "starts": {
+          "mistralai/mistral-large-2512": "08:00"
+        },
+        "ends": {
+          "mistralai/mistral-large-2512": "15:30"
+        },
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "gerlach k12 es",
+        "starts": {
+          "mistralai/mistral-large-2512": "08:00"
+        },
+        "ends": {
+          "mistralai/mistral-large-2512": "14:50"
+        },
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "shaw",
+        "starts": {
+          "mistralai/mistral-large-2512": "07:30"
+        },
+        "ends": {
+          "mistralai/mistral-large-2512": "14:00"
+        },
+        "rec_key": "3200480:3bdae9db41",
+        "source_file": "raster_p-1.png"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "middle": {
+        "gross_minutes": 390,
+        "start_time": "07:30",
+        "end_time": "14:00",
+        "n_schools": 16,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "billinghurst",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "claytonpre ap",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "cold springs 68",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "depoali",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "desert skies",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dilworthstem",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "herz",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "incline",
+            "start_time": "07:50",
+            "end_time": "14:25",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mendive",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "obrienstem",
+            "start_time": "07:30",
+            "end_time": "13:54",
+            "gross": 384,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "pine",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "sky ranch",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "sparks",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "swope",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "traner",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "vaughn",
+            "start_time": "07:25",
+            "end_time": "14:00",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 390,
+        "start_time": "08:00",
+        "end_time": "14:30",
+        "n_schools": 18,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "arts careers technology",
+            "start_time": "07:26",
+            "end_time": "14:00",
+            "gross": 394,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "damonte ranch",
+            "start_time": "08:00",
+            "end_time": "14:30",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "debbie smith cte",
+            "start_time": "07:26",
+            "end_time": "14:00",
+            "gross": 394,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "galena",
+            "start_time": "08:00",
+            "end_time": "14:30",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hug",
+            "start_time": "07:45",
+            "end_time": "14:34",
+            "gross": 409,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "incline",
+            "start_time": "07:45",
+            "end_time": "14:30",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "innovations",
+            "start_time": "08:30",
+            "end_time": "14:57",
+            "gross": 387,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "inspire 612",
+            "start_time": "08:30",
+            "end_time": "15:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mcqueen",
+            "start_time": "08:00",
+            "end_time": "14:35",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "north valleys",
+            "start_time": "08:00",
+            "end_time": "14:35",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "reed",
+            "start_time": "08:00",
+            "end_time": "14:35",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "reno",
+            "start_time": "07:40",
+            "end_time": "14:30",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "spanish springs",
+            "start_time": "08:00",
+            "end_time": "14:30",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "sparks",
+            "start_time": "08:00",
+            "end_time": "14:35",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "tmcc",
+            "start_time": "08:00",
+            "end_time": "14:20",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "transitions",
+            "start_time": "09:50",
+            "end_time": "16:00",
+            "gross": 370,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "turning point",
+            "start_time": "08:00",
+            "end_time": "14:30",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "wooster",
+            "start_time": "08:00",
+            "end_time": "14:30",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 1,
+      "truncated": 0,
+      "prompt_tokens": 5723,
+      "completion_tokens": 2856,
+      "cost_usd": 0.0080523
+    }
+  }
+}
