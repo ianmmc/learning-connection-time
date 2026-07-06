@@ -1201,9 +1201,15 @@ async def extract_run(handoff_hash: str, payload: dict):
         try:
             doc = R7.load_handoff(row["path"])
             summ = R7.run_council_streaming(doc, persist=True, created_by=actor, on_district=_on_district)
-            job["summary"] = {"n_districts": len(summ.get("districts", {}))}
-            job["state"] = "done"
-        except SystemExit as e:   # no key / billing halt / #82 vision guard — surface, don't hide
+            failed = summ.get("failed") or []
+            job["summary"] = {"n_districts": len(summ.get("districts", {})),
+                              "n_failed": len(failed), "failed": failed}
+            # #173: individual districts can fail without aborting the batch — a run that finished with
+            # any failed district is `partial` (the good districts ARE durable), not a clean `done`.
+            job["state"] = "partial" if failed else "done"
+        except R7.OR.BillingAuthError as e:   # 401/402 — every later paid call fails identically → halt
+            job["state"], job["error"] = "halted", f"BILLING/AUTH: {e}"
+        except SystemExit as e:   # no key / #82 vision guard — surface, don't hide
             job["state"], job["error"] = "halted", f"CONTROL FAILURE: {e}"
         except Exception as e:    # noqa: BLE001
             job["state"], job["error"] = "error", f"{type(e).__name__}: {e}"
@@ -1299,7 +1305,11 @@ def _request_lineage(con, district_id: str, req: dict, ctx: dict) -> dict | None
             n_ext = con.execute(text("SELECT COUNT(*) FROM extraction WHERE handoff_hash = :h"),
                                 {"h": ref}).scalar()
             job = _EXTRACT_JOBS.get(ref)
+            # #186: a `partial` job (some districts failed while others extracted) must NOT read as a
+            # clean "extracted" — the reviewer needs to see the remedy only partly landed.
+            n_failed = (job.get("summary") or {}).get("n_failed") if job else None
             state = ("extracting…" if job and job["state"] == "running"
+                     else f"partial — {n_failed} failed" if job and job["state"] == "partial"
                      else "extracted" if n_ext else "dispatched — run extraction at Stage 6")
             return {"kind": "handoff", "ref": ref, "state": state, "n_extracted": n_ext,
                     "n_districts": h["n_districts"] if h else None}

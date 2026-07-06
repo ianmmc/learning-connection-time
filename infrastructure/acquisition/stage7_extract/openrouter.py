@@ -39,6 +39,12 @@ DEFAULT_TIMEOUT = 90               # with stream=True this bounds connect/read G
 # vanish with no error. 16k clears every roster size we've seen while staying inside all six council
 # models' completion windows; `finish_reason == "length"` (now captured) is the tripwire if not.
 DEFAULT_MAX_TOKENS = 16000
+# #169: on a truncated reply (finish_reason == "length") the salvage parser keeps only the head and the
+# tail schools vanish silently. `call()` retries that ONE call ONCE at this higher ceiling to recover
+# the dropped tail (a roster that overflows 16k usually fits 32k); a still-truncated retry keeps
+# finish_reason == "length" so the incompleteness stays visible. If a model's own completion cap is
+# below this, OpenRouter clamps it (no error) and the retry simply can't recover more — honest.
+ESCALATED_MAX_TOKENS = 32000
 DEFAULT_TEMPERATURE = 0.1
 BILLING_AUTH_STATUS = {401, 402}   # key/balance — every later call fails identically → halt
 
@@ -68,6 +74,8 @@ class CallResult:
     finish_reason: Optional[str] = None  # 'stop' | 'length' (TRUNCATED) | 'error' | ...
     generation_id: Optional[str] = None  # OpenRouter gen-... id (chunk.id) — the handle for
     #                                      GET /api/v1/generation (fallback cost/stats + support)
+    truncation_retried: bool = False     # #169: this call was re-run once at ESCALATED_MAX_TOKENS
+    #                                      after a first truncated reply (recovery attempt; the tail)
 
     @property
     def truncated(self) -> bool:
@@ -112,14 +120,23 @@ def _usage_cost(usage) -> Optional[float]:
     return extra.get("cost")
 
 
+def _sum_cost(a: Optional[float], b: Optional[float]) -> Optional[float]:
+    """Sum two optional generation costs, preserving None only when BOTH are unknown — so a billed
+    call summed with a cost-less one still reflects the billed spend (#182)."""
+    if a is None and b is None:
+        return None
+    return (a or 0.0) + (b or 0.0)
+
+
 def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DEFAULT_TIMEOUT,
          max_tokens: int = DEFAULT_MAX_TOKENS, temperature: float = DEFAULT_TEMPERATURE) -> CallResult:
     """Execute one OpenRouter chat completion over an SSE STREAM. `request_body` is a
     `stage6_handoff.requests` body ({model, messages}); temperature/max_tokens/usage-telemetry/
     stream are layered on here. Deltas are accumulated to the full content (the caller still sees
     one complete reply); `usage` (native tokens + cost) is read from the final chunk; a mid-stream
-    error event ends the call as non-ok but KEEPS the partial content. Returns a `CallResult`;
-    raises `BillingAuthError` on 401/402."""
+    error event ends the call as non-ok but KEEPS the partial content. On a truncated reply
+    (`finish_reason == "length"`) the call is retried ONCE at `ESCALATED_MAX_TOKENS` to recover the
+    silently-dropped tail (#169). Returns a `CallResult`; raises `BillingAuthError` on 401/402."""
     import openai
 
     model = request_body.get("model", "?")
@@ -129,47 +146,70 @@ def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DE
 
     client = openai.OpenAI(base_url=OPENROUTER_BASE_URL, api_key=key, timeout=timeout,
                            default_headers=ATTRIBUTION_HEADERS)
-    body = {"temperature": temperature, "max_tokens": max_tokens, **request_body,
-            "stream": True, "extra_body": {"usage": {"include": True}}}
-    t0 = time.monotonic()
-    parts: list = []
-    finish = usage = mid_err = gen_id = None
-    try:
-        stream = client.chat.completions.create(**body)
-        for chunk in stream:
-            gen_id = gen_id or getattr(chunk, "id", None)     # the gen-... generation id
-            u = getattr(chunk, "usage", None)
-            if u is not None:
-                usage = u                                     # the final chunk carries usage
-            err = (getattr(chunk, "model_extra", None) or {}).get("error")
-            if err:                                           # mid-stream error event (docs: the
-                mid_err = err                                 # stream terminates after it)
-            for ch in (chunk.choices or []):
-                delta = getattr(ch, "delta", None)
-                if delta is not None and getattr(delta, "content", None):
-                    parts.append(delta.content)
-                if getattr(ch, "finish_reason", None):
-                    finish = ch.finish_reason
-    except openai.APIStatusError as e:
-        status = getattr(e, "status_code", None)
-        if status in BILLING_AUTH_STATUS:
-            raise BillingAuthError(f"{model}: HTTP {status} — {e}") from e
-        return CallResult(model=model, ok=False, content="".join(parts), latency_ms=_ms(t0),
-                          error=str(e), error_kind="transient", generation_id=gen_id)
-    except (openai.APITimeoutError, openai.APIConnectionError) as e:
-        return CallResult(model=model, ok=False, content="".join(parts), latency_ms=_ms(t0),
-                          error=str(e), error_kind="transient", generation_id=gen_id)
-    except Exception as e:  # noqa: BLE001 — any other SDK/parse error is a per-call miss, not a halt
-        return CallResult(model=model, ok=False, content="".join(parts), latency_ms=_ms(t0),
-                          error=str(e), error_kind="other", generation_id=gen_id)
 
-    common = dict(
-        model=model, content="".join(parts),
-        prompt_tokens=(getattr(usage, "prompt_tokens", 0) or 0) if usage else 0,
-        completion_tokens=(getattr(usage, "completion_tokens", 0) or 0) if usage else 0,
-        cost_usd=_usage_cost(usage), latency_ms=_ms(t0), finish_reason=finish,
-        generation_id=gen_id)
-    if mid_err or finish == "error":
-        msg = (mid_err or {}).get("message") if isinstance(mid_err, dict) else str(mid_err or "stream error")
-        return CallResult(ok=False, error=f"mid-stream: {msg}", error_kind="transient", **common)
-    return CallResult(ok=True, **common)
+    def _stream_once(mt: int) -> CallResult:
+        body = {"temperature": temperature, "max_tokens": mt, **request_body,
+                "stream": True, "extra_body": {"usage": {"include": True}}}
+        t0 = time.monotonic()
+        parts: list = []
+        finish = usage = mid_err = gen_id = None
+        try:
+            stream = client.chat.completions.create(**body)
+            for chunk in stream:
+                gen_id = gen_id or getattr(chunk, "id", None)     # the gen-... generation id
+                u = getattr(chunk, "usage", None)
+                if u is not None:
+                    usage = u                                     # the final chunk carries usage
+                err = (getattr(chunk, "model_extra", None) or {}).get("error")
+                if err:                                           # mid-stream error event (docs: the
+                    mid_err = err                                 # stream terminates after it)
+                for ch in (chunk.choices or []):
+                    delta = getattr(ch, "delta", None)
+                    if delta is not None and getattr(delta, "content", None):
+                        parts.append(delta.content)
+                    if getattr(ch, "finish_reason", None):
+                        finish = ch.finish_reason
+        except openai.APIStatusError as e:
+            status = getattr(e, "status_code", None)
+            if status in BILLING_AUTH_STATUS:
+                raise BillingAuthError(f"{model}: HTTP {status} — {e}") from e
+            return CallResult(model=model, ok=False, content="".join(parts), latency_ms=_ms(t0),
+                              error=str(e), error_kind="transient", generation_id=gen_id)
+        except (openai.APITimeoutError, openai.APIConnectionError) as e:
+            return CallResult(model=model, ok=False, content="".join(parts), latency_ms=_ms(t0),
+                              error=str(e), error_kind="transient", generation_id=gen_id)
+        except Exception as e:  # noqa: BLE001 — any other SDK/parse error is a per-call miss, not a halt
+            return CallResult(model=model, ok=False, content="".join(parts), latency_ms=_ms(t0),
+                              error=str(e), error_kind="other", generation_id=gen_id)
+
+        common = dict(
+            model=model, content="".join(parts),
+            prompt_tokens=(getattr(usage, "prompt_tokens", 0) or 0) if usage else 0,
+            completion_tokens=(getattr(usage, "completion_tokens", 0) or 0) if usage else 0,
+            cost_usd=_usage_cost(usage), latency_ms=_ms(t0), finish_reason=finish,
+            generation_id=gen_id)
+        if mid_err or finish == "error":
+            msg = (mid_err or {}).get("message") if isinstance(mid_err, dict) else str(mid_err or "stream error")
+            return CallResult(ok=False, error=f"mid-stream: {msg}", error_kind="transient", **common)
+        return CallResult(ok=True, **common)
+
+    res = _stream_once(max_tokens)
+    # #169: a truncated reply silently drops the tail schools — retry ONCE at the higher ceiling to
+    # recover them. Keep the retry's CONTENT when it SUCCEEDED (fully recovered, or at least a longer
+    # head — a still-truncated reply is ok=True with finish_reason "length", so the ⚠ flag persists);
+    # a retry that ERRORED keeps the first attempt's salvaged head. Either branch: BOTH attempts were
+    # real billed calls, so their cost/tokens/latency are SUMMED onto the returned result — the budget
+    # governor (REQ-051) must see true spend, not just the surviving call's (#182).
+    # #187: 32k is inside every council model's completion window today, so a caller already at/above it
+    # gets no retry (nowhere higher to go). #180's n_times sizing clamps to 32k, so this stays correct;
+    # lifting it needs per-model completion ceilings (deferred with #180).
+    if not (res.truncated and max_tokens < ESCALATED_MAX_TOKENS):
+        return res
+    retry = _stream_once(ESCALATED_MAX_TOKENS)
+    keep = retry if retry.ok else res                 # recovered tail vs. salvaged head
+    keep.truncation_retried = True
+    keep.prompt_tokens = (res.prompt_tokens or 0) + (retry.prompt_tokens or 0)
+    keep.completion_tokens = (res.completion_tokens or 0) + (retry.completion_tokens or 0)
+    keep.cost_usd = _sum_cost(res.cost_usd, retry.cost_usd)
+    keep.latency_ms = res.latency_ms + retry.latency_ms
+    return keep

@@ -281,6 +281,10 @@
     if (st.state === "running") { setTimeout(() => pollExtraction(hash), 2500); return; }
     loadHandoffs();                      // refresh counts/labels on terminal state
     if (st.state === "done") alert(`Extraction complete: ${st.summary ? st.summary.n_districts : "?"} district(s) this run. Review at gate@7.`);
+    else if (st.state === "partial") {                    // #173: some districts failed, batch continued
+      const s = st.summary || {}, failed = (s.failed || []).map(f => f.district_id).join(", ");
+      alert(`Extraction finished PARTIAL: ${s.n_districts || 0} district(s) extracted, ${s.n_failed || 0} failed (${failed}). The good districts are durable; re-run to retry the failed ones. Review at gate@7.`);
+    }
     else if (st.state === "halted") alert("Extraction halted (control failure): " + (st.error || ""));
     else if (st.state === "error") alert("Extraction error: " + (st.error || ""));
   }

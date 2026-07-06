@@ -42,6 +42,13 @@ from infrastructure.acquisition.stage7_extract import requests as RQ
 from infrastructure.acquisition.stage7_extract import validate as VALID
 from infrastructure.acquisition.stage8_aggregate import aggregate as AGG
 
+# The exceptions that must propagate through BOTH isolation boundaries (per-rep in `_run_district`,
+# per-district in `run_council_streaming`) and HALT the whole run rather than degrade to a skip (#189).
+# Only BillingAuthError needs listing: SystemExit/KeyboardInterrupt are BaseException subclasses that a
+# bare `except Exception` never catches anyway, so they already propagate unaided. One canonical tuple
+# so a third halting type added later lands in a single place, not two divergent inline lists.
+HALTING_EXCEPTIONS = (OR.BillingAuthError,)
+
 
 def load_handoff(path) -> dict:
     """Read a frozen handoff doc (`data/acquisition/handoffs/handoff_<hash>_<ts>.json`)."""
@@ -140,25 +147,46 @@ def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, u
           "n_reps": 0, "n_judged": 0}
     n_total = len(rep_groups)
     for i, rg in enumerate(rep_groups, 1):
-        rec_key, file, kind, cid = rg["rec_key"], rg["file"], rg["kind"], rg["council_id"]
-        content = resolve_content(ddir, rec_key, file, kind)
-        cfg = councils.get(cid) or {}
-        model_rows, calls = {}, []
-        for model in rg["voters"]:
-            res = _call(model, rg["prompt_ids"][model], kind, content)
-            facts = PARSE.parse_schedules(res.content) if res.ok else []
-            model_rows[model] = facts
-            calls.append(_call_record(model, "voter", res, facts))
+        # Per-rep isolation (#173): a rep that can't be READ (unreadable/relocated file) or whose
+        # processing throws must not kill the district — record it as a failed rep and move on, so the
+        # district's OTHER reps still extract (the Marshall harvest_slice case: one bad rep of many).
+        # `calls` is seeded BEFORE the try so any voter calls that already SUCCEEDED (and were billed)
+        # before a later step raised are preserved in the failure record, not discarded (#184). The
+        # rep-group unpack is INSIDE the try so a malformed rep-group is isolated here at the rep level,
+        # not left to escape and strand the whole district (#185). BillingAuthError still propagates.
+        calls: list = []
+        try:
+            rec_key, file, kind, cid = rg["rec_key"], rg["file"], rg["kind"], rg["council_id"]
+            content = resolve_content(ddir, rec_key, file, kind)
+            cfg = councils.get(cid) or {}
+            model_rows = {}
+            for model in rg["voters"]:
+                res = _call(model, rg["prompt_ids"][model], kind, content)
+                facts = PARSE.parse_schedules(res.content) if res.ok else []
+                model_rows[model] = facts
+                calls.append(_call_record(model, "voter", res, facts))
 
-        accepted, unresolved = AGG.consensus_school_facts(model_rows)
-        judged = False
-        if use_judge and unresolved and cfg.get("judge"):
-            jmodel = cfg["judge"]
-            jres = _call(jmodel, P6.select_prompt_id(cfg, jmodel), kind, content)
-            jfacts = PARSE.parse_schedules(jres.content) if jres.ok else []
-            calls.append(_call_record(jmodel, "judge", jres, jfacts))
-            accepted, unresolved = AGG.consensus_school_facts(model_rows, {jmodel: jfacts})
-            judged = True
+            accepted, unresolved = AGG.consensus_school_facts(model_rows)
+            judged = False
+            if use_judge and unresolved and cfg.get("judge"):
+                jmodel = cfg["judge"]
+                jres = _call(jmodel, P6.select_prompt_id(cfg, jmodel), kind, content)
+                jfacts = PARSE.parse_schedules(jres.content) if jres.ok else []
+                calls.append(_call_record(jmodel, "judge", jres, jfacts))
+                accepted, unresolved = AGG.consensus_school_facts(model_rows, {jmodel: jfacts})
+                judged = True
+        except HALTING_EXCEPTIONS:
+            raise                       # halt — every later paid call fails identically (#173/#189)
+        except Exception as e:          # noqa: BLE001 — a bad rep must not lose the whole district
+            pd["reps"].append({"rec_key": rg.get("rec_key"), "file": rg.get("file"),
+                               "kind": rg.get("kind"), "council_id": rg.get("council_id"),
+                               "judged": False, "calls": calls, "accepted": [], "unresolved": [],
+                               "error": f"{type(e).__name__}: {e}"})
+            pd["n_reps"] += 1
+            print(f"  [rep {i}/{n_total}] {did} {str(rg.get('file', ''))[:28]:28s} "
+                  f"({rg.get('kind')}->{rg.get('council_id')})  "
+                  f"⚠ SKIPPED — {type(e).__name__}: {str(e)[:80]}", flush=True)
+            continue
 
         for f in accepted:      # provenance: the rep each fact came from (consensus runs per rep)
             f["rec_key"], f["source_file"] = rec_key, file
@@ -186,7 +214,15 @@ def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, u
             line += f"  ⚠ {rep_trunc} TRUNCATED"
         print(line, flush=True)
 
-    pd["bands"] = AGG.district_bands_from_facts(pd["accepted"])
+    # Post-loop aggregation is guarded too (#183): a bug in band-modeling must not discard the reps
+    # that already ran and were billed. On failure, keep the reps + telemetry (so the district still
+    # persists and its spend is recorded) and mark the district errored with empty bands.
+    try:
+        pd["bands"] = AGG.district_bands_from_facts(pd["accepted"])
+    except Exception as e:  # noqa: BLE001 — an aggregation bug must not lose already-billed reps (#183)
+        pd["bands"], pd["error"] = {}, f"district_bands: {type(e).__name__}: {e}"
+        print(f"  [district {did}] ⚠ band aggregation failed — {type(e).__name__}: {str(e)[:80]} "
+              f"(reps preserved)", flush=True)
     pd["telemetry"] = _rollup_tel(pd["reps"])
     return pd
 
@@ -203,15 +239,20 @@ def _call_record(model: str, role: str, res, facts: list) -> dict:
             "facts": facts, "prompt_tokens": res.prompt_tokens,
             "completion_tokens": res.completion_tokens, "cost_usd": res.cost_usd,
             "latency_ms": res.latency_ms, "finish_reason": res.finish_reason,
-            "generation_id": res.generation_id}
+            "generation_id": res.generation_id, "truncation_retried": res.truncation_retried}
 
 
 def _rollup_tel(reps: list) -> dict:
     """Sum per-call telemetry across a set of reps (per-district or global)."""
-    t = {"calls": 0, "judge_calls": 0, "errors": 0, "truncated": 0, "prompt_tokens": 0,
-         "completion_tokens": 0, "cost_usd": 0.0}
+    t = {"calls": 0, "judge_calls": 0, "errors": 0, "rep_errors": 0, "truncated": 0,
+         "truncation_retries": 0, "prompt_tokens": 0, "completion_tokens": 0, "cost_usd": 0.0}
     for rep in reps:
+        if rep.get("error"):        # a rep that couldn't be read/processed at all (#173) — no calls
+            t["errors"] += 1
+            t["rep_errors"] += 1
         for c in rep["calls"]:
+            if c.get("truncation_retried"):
+                t["truncation_retries"] += 1
             t["calls"] += 1
             t["prompt_tokens"] += c["prompt_tokens"]
             t["completion_tokens"] += c["completion_tokens"]
@@ -306,8 +347,22 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
                   f"would be exceeded (cumulative ${gov.district_total_spent.get(did, 0.0):.4f}, "
                   f"est +${est:.4f}) — SKIPPING", flush=True)
             continue
-        pd = _run_district(did, _district_name(doc, did), by_district[did], councils,
-                           ddirs.get(did), use_judge)
+        # Per-district isolation (#173): the per-rep guard in _run_district already recovers a bad
+        # rep, so this is the batch-level backstop — any OTHER unexpected failure computing a district
+        # (a malformed rep group, an aggregation bug) is recorded and the batch moves on, rather than
+        # aborting every remaining district (the original #122 symptom: 1 bad rep stranded 16→18).
+        # BillingAuthError / SystemExit / KeyboardInterrupt still halt — they're not per-district.
+        try:
+            pd = _run_district(did, _district_name(doc, did), by_district[did], councils,
+                               ddirs.get(did), use_judge)
+        except HALTING_EXCEPTIONS:
+            raise                       # halt — never degrade a billing/auth failure to a skip (#189)
+        except Exception as e:  # noqa: BLE001
+            print(f"[fail]  {did} — {type(e).__name__}: {str(e)[:120]} — SKIPPING (batch continues)",
+                  flush=True)
+            results.setdefault("failed", []).append(
+                {"district_id": did, "error": f"{type(e).__name__}: {e}"})
+            continue
         pd["state"] = _district_state(doc, did)   # onto pd BEFORE receipt/persist (#165)
         gov.record(did, (pd.get("telemetry") or {}).get("cost_usd", 0.0))
         results["districts"][did] = pd
@@ -501,8 +556,11 @@ def _print_district_progress(did: str, pd: dict, gt_data: dict = None) -> None:
     line = (f"[done]  {did} {pd['name'][:22]:22s} reps={pd['n_reps']:2d} "
             f"acc={len(pd['accepted']):2d} unres={len(pd['unresolved']):2d} "
             f"err={tel.get('errors', 0)} ${tel.get('cost_usd', 0):.4f} | {band_str}")
+    if tel.get("truncation_retries"):
+        line += f"  ↻ {tel['truncation_retries']} retried@{OR.ESCALATED_MAX_TOKENS//1000}k"
     if tel.get("truncated"):
-        line += f"  ⚠ {tel['truncated']} TRUNCATED reply(s) — raise max_tokens / check tail loss"
+        line += (f"  ⚠ {tel['truncated']} STILL TRUNCATED after the "
+                 f"{OR.ESCALATED_MAX_TOKENS//1000}k retry — roster exceeds the model window; check tail loss")
     if gt_data and did in gt_data:
         card = VALID.score_district(pd, gt_data[did])
         hit = sum(1 for b in card["bands"] if b["status"] == "hit")
@@ -754,6 +812,14 @@ def _print_council(out: dict) -> None:
                   f"n={b['n_schools']} [{b['method']}]")
         for u in pd["unresolved"]:
             print(f"    UNRESOLVED {u.get('band')}/{u.get('school')} {u.get('reason','disagree')}")
+    # #188: a district-level failure isolates + continues the batch (#173) — surface it in the CLI
+    # summary too, so a redirected-to-log run doesn't read as clean when N districts were skipped.
+    failed = out.get("failed") or []
+    if failed:
+        print(f"\n⚠ {len(failed)} districts FAILED (skipped, batch continued): "
+              f"{', '.join(f['district_id'] for f in failed)}")
+        for f in failed:
+            print(f"    {f['district_id']}: {f['error']}")
     print(f"\nTELEMETRY: {tel['calls']} calls ({tel['judge_calls']} judge), "
           f"{tel['prompt_tokens']}+{tel['completion_tokens']} tok, "
           f"${tel['cost_usd']:.4f}, {tel['errors']} errors, "

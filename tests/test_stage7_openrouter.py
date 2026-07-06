@@ -83,13 +83,104 @@ def test_stream_accumulates_deltas_and_reads_final_usage(monkeypatch):
     assert captured["client_kwargs"]["default_headers"] == OR.ATTRIBUTION_HEADERS
 
 
+def _patch_sequence(monkeypatch, batches):
+    """Fake OpenAI whose create() serves batches[i] on the i-th call (a chunk list to yield, or an
+    Exception to raise) — for exercising the #169 truncation RETRY, which makes a second call."""
+    calls = []
+
+    class _Completions:
+        @staticmethod
+        def create(**body):
+            calls.append(dict(body))
+            item = batches[len(calls) - 1]
+            if isinstance(item, Exception):
+                raise item
+            return iter(item)
+
+    class _Client:
+        def __init__(self, **kw):
+            self.chat = types.SimpleNamespace(completions=_Completions())
+
+    import openai
+    monkeypatch.setattr(openai, "OpenAI", _Client)
+    monkeypatch.setattr(OR, "resolve_key", lambda explicit=None: "sk-test")
+    return calls
+
+
+def _truncated_batch():
+    return [_Chunk([_Choice('{"schedules":[{"school_name":"A"}', finish_reason="length")]),
+            _Chunk([], usage=_Usage(500, 16000, 0.006))]
+
+
 def test_length_finish_flags_truncation(monkeypatch):
-    _patch(monkeypatch, [
-        _Chunk([_Choice('{"schedules":[{"school_name":"A"}', finish_reason="length")]),
-        _Chunk([], usage=_Usage(500, 16000, 0.01)),
-    ])
+    """A `length` finish flags truncation; with the #169 retry the SAME (still-truncated) mock reply
+    on the second call leaves the flag set and records the retry attempt."""
+    calls = _patch_sequence(monkeypatch, [_truncated_batch(), _truncated_batch()])
     res = OR.call(BODY)
     assert res.ok and res.truncated and res.finish_reason == "length"
+    assert res.truncation_retried is True and len(calls) == 2
+
+
+def test_truncation_retries_once_at_higher_ceiling_and_recovers(monkeypatch):
+    """#169: a truncated reply triggers ONE retry at ESCALATED_MAX_TOKENS; when the retry completes,
+    the recovered tail schools are returned and the truncation flag clears."""
+    recovered = [_Chunk([_Choice('{"schedules":[{"school_name":"A"},{"school_name":"B"}]}',
+                                  finish_reason="stop")]),
+                 _Chunk([], usage=_Usage(500, 900, 0.001))]
+    calls = _patch_sequence(monkeypatch, [_truncated_batch(), recovered])
+    res = OR.call(BODY)
+    assert res.ok and not res.truncated and res.finish_reason == "stop"
+    assert res.truncation_retried is True
+    assert '"school_name":"B"' in res.content               # the previously-dropped tail, recovered
+    assert len(calls) == 2                                  # exactly one retry
+    assert calls[0]["max_tokens"] == OR.DEFAULT_MAX_TOKENS
+    assert calls[1]["max_tokens"] == OR.ESCALATED_MAX_TOKENS
+
+
+def test_truncation_retry_sums_both_billed_attempts_cost(monkeypatch):
+    """#182: the truncated first call AND the recovering retry are BOTH real billed calls — the
+    returned result's cost/tokens are the SUM, so the REQ-051 budget governor sees true spend (not
+    just the surviving call's, which would ~86%-undercount exactly the largest districts)."""
+    recovered = [_Chunk([_Choice('{"schedules":[{"school_name":"A"},{"school_name":"B"}]}',
+                                  finish_reason="stop")]),
+                 _Chunk([], usage=_Usage(500, 900, 0.001))]
+    _patch_sequence(monkeypatch, [_truncated_batch(), recovered])   # first: (500, 16000, $0.006)
+    res = OR.call(BODY)
+    assert res.cost_usd == pytest.approx(0.007)             # 0.006 (truncated) + 0.001 (retry)
+    assert res.prompt_tokens == 1000                        # 500 + 500
+    assert res.completion_tokens == 16900                   # 16000 + 900
+
+
+def test_failed_retry_keeps_the_salvaged_head(monkeypatch):
+    """If the retry itself ERRORS (transient), don't discard the first attempt's salvaged head —
+    return the original content, flagged as retried, with the first (billed) attempt's cost intact."""
+    import openai
+    import httpx
+    timeout = openai.APITimeoutError(request=httpx.Request("POST", "https://openrouter.ai/x"))
+    calls = _patch_sequence(monkeypatch, [_truncated_batch(), timeout])
+    res = OR.call(BODY)
+    assert res.truncated and res.truncation_retried is True and len(calls) == 2
+    assert '"school_name":"A"' in res.content               # the first attempt's head survives
+    assert res.cost_usd == pytest.approx(0.006)             # #182: the billed first attempt's $ kept
+                                                            #       (the errored retry adds no usage)
+
+
+def test_no_retry_when_already_at_escalated_ceiling(monkeypatch):
+    """No infinite escalation: a call already made at ESCALATED_MAX_TOKENS that still truncates is not
+    retried again."""
+    calls = _patch_sequence(monkeypatch, [_truncated_batch()])
+    res = OR.call(BODY, max_tokens=OR.ESCALATED_MAX_TOKENS)
+    assert res.truncated and res.truncation_retried is False and len(calls) == 1
+
+
+def test_no_retry_when_not_truncated(monkeypatch):
+    """A clean (finish_reason=stop) reply makes exactly one call — the retry is truncation-only."""
+    calls = _patch_sequence(monkeypatch, [[
+        _Chunk([_Choice('{"schedules":[]}', finish_reason="stop")]),
+        _Chunk([], usage=_Usage(100, 40, 0.0001)),
+    ]])
+    res = OR.call(BODY)
+    assert res.ok and not res.truncated and res.truncation_retried is False and len(calls) == 1
 
 
 def test_mid_stream_error_keeps_partial_content(monkeypatch):
