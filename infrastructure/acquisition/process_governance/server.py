@@ -873,7 +873,8 @@ def _batch_from_db(batch_id: str) -> dict | None:
         except KeyError:
             return None
     districts = [d for d in view["districts"] if d.get("included", True)]
-    return {"batch_id": batch_id, "batch_status": view["status"], "districts": districts}
+    return {"batch_id": batch_id, "batch_status": view["status"],
+            "batch_type": view.get("batch_type"), "districts": districts}
 
 
 @app.get("/api/capture/{batch_id}")

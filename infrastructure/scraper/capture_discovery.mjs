@@ -353,6 +353,27 @@ export function noteFinalUrl(district, finalUrl) {
   if (finalUrl) district.seen.add(stripFragment(finalUrl));
 }
 
+// Pure, unit-testable (#174, follow-up redo): seed a district's bookkeeping from the prior
+// round's captures.json so a re-run captures only the DELTA. Prior records are carried into
+// the new manifest verbatim (Stage 5 ingests ONLY the current manifest -- per-district
+// delete+rebuild -- so a slice-only manifest would erase the district's existing records and
+// orphan their gate@5 labels at the next ingest); their urls + final_urls join the seen-set so
+// an already-captured candidate is never re-hit (the one-attempt rule); the emergent counter
+// resumes from the prior round's count so a redo can't double the emergent budget. The one
+// exception: a prior FAILED record (ok === false, e.g. not_attempted at the deadline) whose
+// url is being re-attempted this round is DROPPED, not carried -- the retry's fresh record
+// replaces it instead of sitting behind it forever.
+export function seedFromPriorCaptures(district, priorRecords, candidateUrls) {
+  for (const rec of priorRecords || []) {
+    const u = rec.url ? stripFragment(rec.url) : null;
+    if (rec.ok === false && u && candidateUrls.has(u)) continue; // retried this round -> replaced
+    district.records.push(rec);
+    if (u) district.seen.add(u);
+    if (rec.final_url) district.seen.add(stripFragment(rec.final_url));
+    if (rec.source === 'emergent') district.emergent += 1;
+  }
+}
+
 function findEmergentLinks(anchors) {
   const out = [];
   for (const a of anchors) {
@@ -404,8 +425,22 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
     const capDir = path.join(ROOT, did, 'captures');
     mkdirSync(capDir, { recursive: true });
     byDistrict[did] = { capDir, records: [], seen: new Set(), emergent: 0 };
+    // #174 (follow-up redo): a prior round's captures.json seeds records + seen so this run
+    // captures only the delta and the written manifest stays the district's complete union.
+    // First runs are untouched (no manifest exists until end-of-run). An unreadable prior
+    // manifest degrades to a fresh full capture -- writeVersioned still preserves the file.
+    const priorPath = path.join(ROOT, did, 'captures.json');
+    if (existsSync(priorPath)) {
+      const candidateUrls = new Set(meta.candidates.map((c) => stripFragment(c.url)));
+      try {
+        seedFromPriorCaptures(byDistrict[did], JSON.parse(readFileSync(priorPath)), candidateUrls);
+      } catch (e) {
+        console.error(`  ${did}: unreadable prior captures.json (${e}) -- capturing fresh`);
+      }
+    }
     for (const c of meta.candidates) {
       const u = stripFragment(c.url);
+      if (byDistrict[did].seen.has(u)) continue;   // already captured in a prior round (#174)
       byDistrict[did].seen.add(u);
       tasks.push({ did, url: u, tools: c.tools, source: 'discovered', found_on: null, capDir });
     }

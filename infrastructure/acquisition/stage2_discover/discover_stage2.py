@@ -106,13 +106,30 @@ def reconcile(batch: dict, registry: dict) -> tuple[list, list]:
     exists on disk, reconcile the registry up to match (skip -- already done, never redo
     automatically). If the registry claims furthest_stage>=2 but the file does NOT exist,
     that's a control failure, not routine drift -- halt the entire run rather than risk
-    propagating whatever caused it to other districts. Returns (todo, skipped)."""
+    propagating whatever caused it to other districts. Returns (todo, skipped).
+
+    FOLLOW-UP batches are the sanctioned exception (issue #174): a 7->2/7->3/7->1 follow-up
+    exists precisely to REDO discovery for districts we already discovered, so 'discovery.json
+    exists' must not skip them -- every included district is todo, and the redo merges with the
+    prior round downstream (write_discovery merge mode) instead of replacing it. The
+    registry-ahead-of-disk control failure still halts (a follow-up district missing its prior
+    discovery.json is exactly as alarming as in a first run)."""
     todo, skipped = [], []
+    followup = batch.get("batch_type") == "follow-up"
     for d in batch["districts"]:
         did = d["district_id"]
         done_on_disk = (lea_dir(did, d["name"]) / "discovery.json").exists()
         rec = registry["districts"].get(did)
         reg_says_done = rec is not None and rec.get("furthest_stage", 0) >= 2
+        if not done_on_disk and reg_says_done:
+            raise SystemExit(
+                f"CONTROL FAILURE: registry says {did} ({d['name']}) reached Stage 2+ but "
+                f"{lea_dir(did, d['name']) / 'discovery.json'} does not exist. Stopping the "
+                f"entire run -- investigate before re-running anything in this batch."
+            )
+        if followup:
+            todo.append(d)          # a follow-up IS a deliberate redo -- never skip on disk state
+            continue
         if done_on_disk and not reg_says_done:
             DS.record_stage(
                 registry, did, d["name"], d["state"], stage=2, stage_name="discover",
@@ -121,14 +138,8 @@ def reconcile(batch: dict, registry: dict) -> tuple[list, list]:
             skipped.append(d)
         elif done_on_disk and reg_says_done:
             skipped.append(d)
-        elif not done_on_disk and reg_says_done:
-            raise SystemExit(
-                f"CONTROL FAILURE: registry says {did} ({d['name']}) reached Stage 2+ but "
-                f"{lea_dir(did, d['name']) / 'discovery.json'} does not exist. Stopping the "
-                f"entire run -- investigate before re-running anything in this batch."
-            )
-        else:
-            todo.append(d)
+        else:                       # not done_on_disk, not reg_says_done (the raise above covered
+            todo.append(d)          # the registry-ahead-of-disk case for every batch type)
     return todo, skipped
 
 
@@ -299,21 +310,61 @@ def flatten(roster: list) -> list:
     return list(dedup.values())
 
 
-def write_discovery(district: dict, roster: list, batch_id: str) -> Path:
+def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool = False) -> Path:
     """Single atomic write -- discovery.json (full per-school audit trail) + candidates.json
     (flattened, capture-ready). NEVER overwritten in place: an existing discovery.json (a
-    deliberate, manual redo -- Stage 2 never triggers this on its own) is renamed aside
-    with a timestamp suffix first, preserving the full attempt history -- data/raw/ is
-    write-once in spirit (see ACQUISITION_PIPELINE.md Stage 2 and CLAUDE.md's "never
-    modify data/raw/" rule)."""
+    deliberate redo -- a follow-up batch, or a manual one) is renamed aside with a timestamp
+    suffix first, preserving the full attempt history -- data/raw/ is write-once in spirit
+    (see ACQUISITION_PIPELINE.md Stage 2 and CLAUDE.md's "never modify data/raw/" rule).
+
+    `merge=True` (a follow-up redo, issue #174): the new docs are the UNION of the prior round
+    and this one, never just this round's slice -- Stage 5's ingest reads ONLY the current
+    manifests (per-district delete + rebuild), so a slice-only manifest would ERASE the
+    district's existing records (and orphan their gate@5 labels) at the next ingest.
+      - discovery.json schools: this round's entry REPLACES the same school's old entry
+        (latest attempt wins); schools not re-queried this round carry over verbatim -- so
+        roster_norm (the signal layer's roster) stays complete.
+      - candidates.json: prior candidates verbatim + this round's new URLs appended (deduped
+        by normalized URL) -- the manifest stays the district's complete capture plan."""
     d = lea_dir(district["district_id"], district["name"])
     d.mkdir(parents=True, exist_ok=True)
     disc_path, cand_path = d / "discovery.json", d / "candidates.json"
+
+    old_schools, old_candidates = [], []
+    if merge and disc_path.exists():
+        old_schools = (json.loads(disc_path.read_text()) or {}).get("schools", [])
+        if cand_path.exists():
+            old_candidates = (json.loads(cand_path.read_text()) or {}).get("candidates", [])
+
     if disc_path.exists():
         ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         disc_path.rename(d / f"discovery.{ts}.json")
         if cand_path.exists():
             cand_path.rename(d / f"candidates.{ts}.json")
+
+    new_schools = [
+        {
+            "school_id": r["school_id"],
+            "school": r["school"],
+            "bands": r["bands"],
+            "query": r["query"],
+            "wave1_raw_urls": r["wave1_raw_urls"],
+            "wave1_provider": r.get("wave1_provider"),
+            "wave1_gated": r["wave1_gated"],
+            "wave2_invoked": r["wave2_invoked"],
+            "wave2_raw_urls": r["wave2_raw_urls"],
+            "wave2_provider": r.get("wave2_provider"),
+            "wave2_gated": r["wave2_gated"],
+            "outcome": school_outcome(r),
+        }
+        for r in roster
+    ]
+    if old_schools:
+        new_by_id = {e["school_id"]: e for e in new_schools}
+        schools = [new_by_id.pop(s["school_id"], s) for s in old_schools]
+        schools += [e for e in new_schools if e["school_id"] in new_by_id]
+    else:
+        schools = new_schools
 
     discovery_doc = {
         "district_id": district["district_id"],
@@ -322,27 +373,20 @@ def write_discovery(district: dict, roster: list, batch_id: str) -> Path:
         "domain": district.get("domain", ""),
         "batch_id": batch_id,
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "schools": [
-            {
-                "school_id": r["school_id"],
-                "school": r["school"],
-                "bands": r["bands"],
-                "query": r["query"],
-                "wave1_raw_urls": r["wave1_raw_urls"],
-                "wave1_provider": r.get("wave1_provider"),
-                "wave1_gated": r["wave1_gated"],
-                "wave2_invoked": r["wave2_invoked"],
-                "wave2_raw_urls": r["wave2_raw_urls"],
-                "wave2_provider": r.get("wave2_provider"),
-                "wave2_gated": r["wave2_gated"],
-                "outcome": school_outcome(r),
-            }
-            for r in roster
-        ],
+        "schools": schools,
     }
     disc_path.write_text(json.dumps(discovery_doc, indent=2))
 
-    candidates = flatten(roster)
+    new_candidates = flatten(roster)
+    if merge:
+        for c in new_candidates:      # inline round provenance: which batch discovered this URL
+            c["batch_id"] = batch_id  # (old candidates keep their entries verbatim, unstamped)
+    if old_candidates:
+        have_old = {_normalize_url(c["url"]) for c in old_candidates}
+        candidates = old_candidates + [c for c in new_candidates
+                                       if _normalize_url(c["url"]) not in have_old]
+    else:
+        candidates = new_candidates
     # #161: seed URLs (7->3 recapture directives carried on the follow-up batch) are pre-specified
     # capture targets — inject them into the candidate list (deduped by normalized URL, tool
     # 'seed_7to3') so Stage 3 captures them through the existing candidates.json pipe, no discovery and
@@ -362,11 +406,13 @@ def write_discovery(district: dict, roster: list, batch_id: str) -> Path:
     return d
 
 
-def finish_district(district: dict, roster: list, batch_id: str, registry: dict) -> str:
+def finish_district(district: dict, roster: list, batch_id: str, registry: dict,
+                    *, merge: bool = False) -> str:
     """Single registry write per district, at actual completion -- never from a subagent,
     never an interim 'started' marker (there's nothing meaningful to reconcile against a
-    half-finished state, since the file write only happens once everything is assembled)."""
-    ddir = write_discovery(district, roster, batch_id)
+    half-finished state, since the file write only happens once everything is assembled).
+    `merge=True` = a follow-up redo (issue #174): write_discovery unions with the prior round."""
+    ddir = write_discovery(district, roster, batch_id, merge=merge)
     outcome = district_outcome(roster)
     DS.record_stage(
         registry, district["district_id"], district["name"], district["state"],
@@ -432,7 +478,8 @@ def main():
             )
         print(f"  wave 2: skipped, Wave 1 + gating satisfied all {len(roster)} schools")
         registry = DS.load()
-        outcome = finish_district(district, roster, batch["batch_id"], registry)
+        outcome = finish_district(district, roster, batch["batch_id"], registry,
+                                  merge=batch.get("batch_type") == "follow-up")
         DS.save(registry)
         print(f"{district['district_id']} {district['name']}: {outcome}")
 

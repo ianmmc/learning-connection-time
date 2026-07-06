@@ -119,40 +119,44 @@ def check_file_consistency(district: dict) -> list[str]:
     return problems
 
 
-def reconcile(districts: list[dict], registry: dict) -> tuple[list, list, list]:
+def reconcile(districts: list[dict], registry: dict, *, redo: bool = False) -> tuple[list, list, list]:
     """Filesystem is truth, same shape as Stage 2/3 reconcile() -- plus the file-existence
     check above, run ONLY on districts about to be processed (an already-done district is
     not gated retroactively). Returns (todo, skipped, quarantined): a quarantined district
     is inconsistent on disk (#78) -- excluded from the run with a loud per-district report
     line and its problems attached as d['inconsistency']; the caller surfaces it like a
-    `failed` district. Registry-ahead-of-disk stays a run-halting SystemExit."""
+    `failed` district. Registry-ahead-of-disk stays a run-halting SystemExit.
+
+    `redo=True` (a follow-up batch, issue #174): 'processed.json exists' must not skip -- the
+    district's captures.json is now the prior+delta UNION, and process_district rebuilds
+    processed.json from it in full (local CPU only; the old file is renamed aside), so the
+    processed manifest stays complete. Consistency check + control-failure halt unchanged."""
     todo, skipped, quarantined = [], [], []
     for d in districts:
         did = d["district_id"]
         done_on_disk = (d["dir"] / "processed.json").exists()
         rec = registry["districts"].get(did)
         reg_says_done = rec is not None and rec.get("furthest_stage", 0) >= 4
-        if done_on_disk and not reg_says_done:
-            DS.record_stage(registry, did, d["name"], d["state"], stage=4,
-                             stage_name="process", outcome="reconciled_from_disk")
-            skipped.append(d)
-        elif done_on_disk and reg_says_done:
-            skipped.append(d)
-        elif not done_on_disk and reg_says_done:
+        if not done_on_disk and reg_says_done:
             raise SystemExit(
                 f"CONTROL FAILURE: registry says {did} ({d['name']}) reached Stage 4+ but "
                 f"{d['dir'] / 'processed.json'} does not exist. Stopping the entire run -- "
                 f"investigate before re-running anything."
             )
+        if done_on_disk and not redo:
+            if not reg_says_done:
+                DS.record_stage(registry, did, d["name"], d["state"], stage=4,
+                                 stage_name="process", outcome="reconciled_from_disk")
+            skipped.append(d)
+            continue
+        problems = check_file_consistency(d)
+        if problems:
+            for p in problems:
+                print(f"QUARANTINED (inconsistent captures) {did} ({d['name']}): {p}")
+            d["inconsistency"] = problems
+            quarantined.append(d)
         else:
-            problems = check_file_consistency(d)
-            if problems:
-                for p in problems:
-                    print(f"QUARANTINED (inconsistent captures) {did} ({d['name']}): {p}")
-                d["inconsistency"] = problems
-                quarantined.append(d)
-            else:
-                todo.append(d)
+            todo.append(d)
     return todo, skipped, quarantined
 
 

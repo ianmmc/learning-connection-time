@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-06T02:35:40Z",
+  "last_updated": "2026-07-06T03:43:48Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -694,11 +694,11 @@
     "0500012": {
       "name": "RIVERSIDE SCHOOL DISTRICT",
       "state": "AR",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_all",
+      "furthest_stage": 7,
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00010",
       "history": [
         {
           "stage": 1,
@@ -765,9 +765,30 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T02:35:58Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-06T03:17:09Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-06T03:17:09Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "51849a4688a4"
+      "notes": "gate@1 auto-approved (follow-up autoflow) batch_00010"
     },
     "0500076": {
       "name": "OZARK MOUNTAIN SCHOOL DISTRICT",
@@ -1198,11 +1219,11 @@
     "0601869": {
       "name": "Learning Works District",
       "state": "CA",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_all",
+      "furthest_stage": 7,
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00010",
       "history": [
         {
           "stage": 1,
@@ -1269,9 +1290,30 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T02:36:03Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-06T03:17:09Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-06T03:17:09Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "51849a4688a4"
+      "notes": "gate@1 auto-approved (follow-up autoflow) batch_00010"
     },
     "0602057": {
       "name": "STREAM Charter District",
@@ -1345,9 +1387,9 @@
     "0602095": {
       "name": "Aspire Summit Charter Academy District",
       "state": "CA",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_partial",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -1416,9 +1458,24 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T02:36:37Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T03:21:26Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "51849a4688a4"
+      "notes": "545683ec83cd"
     },
     "0602459": {
       "name": "Aurum Preparatory Academy District",
@@ -1626,11 +1683,11 @@
     "0806750": {
       "name": "Strasburg School District 31J",
       "state": "CO",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_all",
+      "furthest_stage": 7,
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00010",
       "history": [
         {
           "stage": 1,
@@ -1697,9 +1754,30 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T02:36:45Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-06T03:17:09Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-06T03:17:09Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "51849a4688a4"
+      "notes": "gate@1 auto-approved (follow-up autoflow) batch_00010"
     },
     "0807350": {
       "name": "Weld County Reorganized School District No. Re-4",
@@ -2386,9 +2464,9 @@
     "1716950": {
       "name": "Brookwood SD 167",
       "state": "IL",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_all",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -2481,9 +2559,24 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T02:36:57Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T03:20:41Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "51849a4688a4"
+      "notes": "2c3680a6428e"
     },
     "1724390": {
       "name": "Manteno CUSD 5",
@@ -2840,9 +2933,9 @@
     "1803700": {
       "name": "Franklin County Community Sch Corp",
       "state": "IN",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_all",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -2911,6 +3004,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T02:37:31Z"
         }
       ],
       "notes": "51849a4688a4"
@@ -3665,9 +3764,9 @@
     "2506900": {
       "name": "Lincoln",
       "state": "MA",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_all",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -3736,6 +3835,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T02:37:50Z"
         }
       ],
       "notes": "51849a4688a4"
@@ -4286,9 +4391,9 @@
     "2900601": {
       "name": "HOPE LEADERSHIP ACADEMY",
       "state": "MO",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_all",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -4330,6 +4435,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T02:37:53Z"
         }
       ],
       "notes": "51849a4688a4"
@@ -4392,9 +4503,9 @@
     "2905790": {
       "name": "ADAIR CO. R-II",
       "state": "MO",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_partial",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -4463,9 +4574,33 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T02:38:03Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T03:19:44Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T03:22:15Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "51849a4688a4"
+      "notes": "a639cbc50ba1"
     },
     "2921720": {
       "name": "NAYLOR R-II",
@@ -5152,11 +5287,11 @@
     "3502280": {
       "name": "ROY",
       "state": "NM",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_all",
+      "furthest_stage": 7,
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00010",
       "history": [
         {
           "stage": 1,
@@ -5196,9 +5331,30 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T02:38:05Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-06T03:17:09Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-06T03:17:09Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
-      "notes": "51849a4688a4"
+      "notes": "gate@1 auto-approved (follow-up autoflow) batch_00010"
     },
     "3502370": {
       "name": "SANTA FE",
@@ -5573,9 +5729,9 @@
     "3609330": {
       "name": "DRYDEN CENTRAL SCHOOL DISTRICT",
       "state": "NY",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_all",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -5644,6 +5800,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T02:38:15Z"
         }
       ],
       "notes": "51849a4688a4"
@@ -5651,9 +5813,9 @@
     "3700385": {
       "name": "KIPP Durham College Preparatory",
       "state": "NC",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_partial",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -5722,6 +5884,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T02:42:56Z"
         }
       ],
       "notes": "51849a4688a4"
@@ -5774,9 +5942,9 @@
     "3800038": {
       "name": "DICKINSON 1",
       "state": "ND",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_partial",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -5845,9 +6013,24 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T02:44:01Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T03:21:49Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "51849a4688a4"
+      "notes": "df470a9ed82a"
     },
     "3802014": {
       "name": "APPLE CREEK 39",
@@ -6249,9 +6432,9 @@
     "4000766": {
       "name": "KIPP OKC COLLEGE PREP CHARTER",
       "state": "OK",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_all",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -6320,6 +6503,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T02:44:11Z"
         }
       ],
       "notes": "51849a4688a4"
@@ -6451,9 +6640,9 @@
     "4200874": {
       "name": "Mastery CS-Francis D. Pastorius Elementary",
       "state": "PA",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_all",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -6522,6 +6711,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T02:44:25Z"
         }
       ],
       "notes": "51849a4688a4"
@@ -6778,9 +6973,18 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-05T23:13:30Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T03:21:43Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "7301db5ac45d"
+      "notes": "28e1d93b0260"
     },
     "4600041": {
       "name": "Britton-Hecla School District 45-4",
@@ -7028,9 +7232,9 @@
     "4824000": {
       "name": "HUNTINGTON ISD",
       "state": "TX",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_partial",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -7099,9 +7303,24 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T02:44:36Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T03:20:56Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "51849a4688a4"
+      "notes": "a219eacb7471"
     },
     "4828590": {
       "name": "LULING ISD",
@@ -7940,11 +8159,11 @@
     "5508790": {
       "name": "Marshall School District",
       "state": "WI",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00008",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -8026,9 +8245,24 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T03:08:46Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T03:19:33Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "51849a4688a4"
+      "notes": "6bc08e983d45"
     },
     "5510380": {
       "name": "Nekoosa School District",
@@ -8051,9 +8285,9 @@
     "5510620": {
       "name": "New Richmond School District",
       "state": "WI",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_all",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -8122,6 +8356,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T03:08:58Z"
         }
       ],
       "notes": "51849a4688a4"
@@ -8471,6 +8711,33 @@
           "stage_name": "queue",
           "outcome": null,
           "at": "2026-07-05T15:41:46Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-06T03:43:48Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-06T03:43:48Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-06T03:43:48Z",
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"

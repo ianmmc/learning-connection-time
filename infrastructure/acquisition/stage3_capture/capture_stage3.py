@@ -52,18 +52,32 @@ def find_districts(root: Path) -> list:
     return out
 
 
-def reconcile(districts: list, registry: dict) -> tuple[list, list]:
+def reconcile(districts: list, registry: dict, *, redo: bool = False) -> tuple[list, list]:
     """Filesystem is truth. For every district with candidates.json ready: if captures.json
     already exists on disk, reconcile the registry up to match (skip -- already done, never
     redo automatically). If the registry claims furthest_stage>=3 but the file does NOT
     exist, that's a control failure, not routine drift -- halt the entire run rather than
-    risk propagating whatever caused it to other districts. Returns (todo, skipped)."""
+    risk propagating whatever caused it to other districts. Returns (todo, skipped).
+
+    `redo=True` (a follow-up batch, issue #174): 'captures.json exists' must not skip -- the
+    follow-up exists precisely to redo these districts. The capture runner seeds from the
+    prior manifest and captures only the DELTA (seedFromPriorCaptures in the mjs), so the
+    redo never re-hits already-captured URLs. The control-failure halt is unchanged."""
     todo, skipped = [], []
     for d in districts:
         did = d["district_id"]
         done_on_disk = (d["dir"] / "captures.json").exists()
         rec = registry["districts"].get(did)
         reg_says_done = rec is not None and rec.get("furthest_stage", 0) >= 3
+        if not done_on_disk and reg_says_done:
+            raise SystemExit(
+                f"CONTROL FAILURE: registry says {did} ({d['name']}) reached Stage 3+ but "
+                f"{d['dir'] / 'captures.json'} does not exist. Stopping the entire run -- "
+                f"investigate before re-running anything."
+            )
+        if redo:
+            todo.append(d)          # a follow-up IS a deliberate redo -- never skip on disk state
+            continue
         if done_on_disk and not reg_says_done:
             DS.record_stage(
                 registry, did, d["name"], d["state"], stage=3, stage_name="capture",
@@ -72,14 +86,8 @@ def reconcile(districts: list, registry: dict) -> tuple[list, list]:
             skipped.append(d)
         elif done_on_disk and reg_says_done:
             skipped.append(d)
-        elif not done_on_disk and reg_says_done:
-            raise SystemExit(
-                f"CONTROL FAILURE: registry says {did} ({d['name']}) reached Stage 3+ but "
-                f"{d['dir'] / 'captures.json'} does not exist. Stopping the entire run -- "
-                f"investigate before re-running anything."
-            )
-        else:
-            todo.append(d)
+        else:                       # not done_on_disk, not reg_says_done (the raise above covered
+            todo.append(d)          # the registry-ahead-of-disk case for every batch type)
     return todo, skipped
 
 

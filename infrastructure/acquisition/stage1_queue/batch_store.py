@@ -145,7 +145,8 @@ def to_receipt_doc(sess, batch_id: str) -> dict:
     districts = [_district_doc(sess, d, included_only=True, with_flags=False)
                 for d in _ordered_districts(sess, batch_id, included_only=True)]
     return {
-        "batch_id": b.batch_id, "created": b.created_at, "n": len(districts),
+        "batch_id": b.batch_id, "batch_type": b.batch_type, "created": b.created_at,
+        "n": len(districts),
         "nces_year": b.nces_year, **(b.meta_json or {}), "districts": districts,
     }
 

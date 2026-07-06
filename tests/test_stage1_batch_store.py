@@ -57,6 +57,7 @@ class TestRoundTrip:
         BS.create_batch(sess, _doc(), actor="tester")
         rec = BS.to_receipt_doc(sess, "batch_test_store")
         assert rec["batch_id"] == "batch_test_store"
+        assert rec["batch_type"] == "first-run"   # #174: reconcile keys follow-up redo off the receipt
         assert rec["nces_year"] == "2024_25"
         assert rec["stratification"]["priority"] == ["enrollment", "state"]   # meta carried through
         assert [d["district_id"] for d in rec["districts"]] == ["D1", "D2"]    # pick order preserved
@@ -71,8 +72,9 @@ class TestRoundTrip:
         doc["districts"][0]["schools_by_band"]["high"]["query_strategy"] = "widen_queries"
         doc["districts"][0]["schools_by_band"]["elementary"]["query_strategy"] = "new_schools"
         doc["districts"][0]["seed_urls"] = ["http://x/handbook.pdf"]
-        BS.create_batch(sess, doc, actor="t")
+        BS.create_batch(sess, doc, batch_type="follow-up", actor="t")
         rec = BS.to_receipt_doc(sess, "batch_test_followup")
+        assert rec["batch_type"] == "follow-up"   # #174: the redo signal Stage 2/3/4 reconcile reads
         d1 = rec["districts"][0]
         assert d1["schools_by_band"]["high"]["query_strategy"] == "widen_queries"
         assert d1["schools_by_band"]["elementary"]["query_strategy"] == "new_schools"

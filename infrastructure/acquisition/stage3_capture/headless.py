@@ -228,7 +228,8 @@ def run_batch(batch: dict, *, actor: str = "auto:stage3", on_event=None, _run=su
     try:
         districts = find_batch_districts(batch)
         registry = DS.load()
-        todo, skipped = C3.reconcile(districts, registry)
+        todo, skipped = C3.reconcile(districts, registry,
+                                     redo=batch.get("batch_type") == "follow-up")
         DS.save(registry, export=False)
         # Drop no-link districts (Stage 2 manual_flag_all -> empty candidates.json) BEFORE dispatch: they
         # have nothing for Playwright, are terminal at Stage 2, and get no Stage-3 artifact/event (they

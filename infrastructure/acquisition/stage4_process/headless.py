@@ -228,7 +228,8 @@ def run_batch(batch: dict, *, actor: str = "auto:stage4", on_event=None) -> dict
         # a captures.json/disk mismatch quarantines JUST that district (#78) -- recorded as a
         # `failed` process event (so status shows it, retriable after investigation) with a
         # distinct `inconsistent` outcome in the results, while the rest of the batch runs.
-        todo, skipped, quarantined = C4.reconcile(districts, registry)
+        todo, skipped, quarantined = C4.reconcile(districts, registry,
+                                                  redo=batch.get("batch_type") == "follow-up")
         results = []
         for q in quarantined:
             problems = "; ".join(q.get("inconsistency") or [])

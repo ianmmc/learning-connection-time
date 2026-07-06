@@ -6,7 +6,7 @@
 // fingerprint helpers' tests -- these cover the deterministic manifest logic.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { noteFileResult, noteFinalUrl, stripFragment } from './capture_discovery.mjs';
+import { noteFileResult, noteFinalUrl, stripFragment, seedFromPriorCaptures } from './capture_discovery.mjs';
 
 test('noteFileResult records a files{} entry only on success (#18)', () => {
   const rec = { files: {} };
@@ -38,6 +38,41 @@ test('noteFinalUrl ignores a missing final_url (#44)', () => {
   noteFinalUrl(district, undefined);
   noteFinalUrl(district, '');
   assert.equal(district.seen.size, 0);
+});
+
+test('seedFromPriorCaptures carries prior records + seeds seen/emergent (#174)', () => {
+  const district = { records: [], seen: new Set(), emergent: 0 };
+  const prior = [
+    { url: 'https://x.org/bell', final_url: 'https://x.org/bell-final', ok: true,
+      source: 'discovered', files: { txt: 'page.txt' } },
+    { url: 'https://x.org/found-link', ok: true, source: 'emergent', files: { txt: 'page.txt' } },
+  ];
+  seedFromPriorCaptures(district, prior, new Set(['https://x.org/new-this-round']));
+  assert.equal(district.records.length, 2);           // both carried into the new manifest
+  assert.ok(district.seen.has('https://x.org/bell')); // never re-hit (one-attempt rule)
+  assert.ok(district.seen.has('https://x.org/bell-final')); // redirect target seeded too
+  assert.equal(district.emergent, 1);                 // emergent budget resumes, not doubled
+});
+
+test('seedFromPriorCaptures drops a FAILED prior record whose url is retried this round (#174)', () => {
+  const district = { records: [], seen: new Set(), emergent: 0 };
+  const prior = [
+    { url: 'https://x.org/slow', ok: false, source: 'discovered', files: {},
+      err: 'not_attempted (capture deadline reached)' },
+  ];
+  seedFromPriorCaptures(district, prior, new Set(['https://x.org/slow']));
+  assert.equal(district.records.length, 0);            // replaced by the retry's fresh record
+  assert.equal(district.seen.has('https://x.org/slow'), false); // retry NOT blocked
+});
+
+test('seedFromPriorCaptures keeps a FAILED prior record whose url is NOT retried (#174)', () => {
+  const district = { records: [], seen: new Set(), emergent: 0 };
+  const prior = [
+    { url: 'https://x.org/dead', ok: false, source: 'discovered', files: {}, err: 'nav timeout' },
+  ];
+  seedFromPriorCaptures(district, prior, new Set(['https://x.org/other']));
+  assert.equal(district.records.length, 1);            // manifest completeness preserved
+  assert.ok(district.seen.has('https://x.org/dead'));
 });
 
 test('stripFragment normalizes like new URL(): case, default port, empty path (#43 parity)', () => {

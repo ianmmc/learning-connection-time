@@ -286,7 +286,8 @@ def discover_district(batch: dict, district: dict, registry: dict, *,
     residual = D2.residual_schools(roster)
     if residual:
         wave2_runner(district, residual, domain)
-    return D2.finish_district(district, roster, batch["batch_id"], registry)
+    return D2.finish_district(district, roster, batch["batch_id"], registry,
+                              merge=batch.get("batch_type") == "follow-up")
 
 
 def load_batch_any(batch_ref: str) -> dict:
