@@ -440,6 +440,22 @@
     "updated_at": "2026-07-02T07:10:00Z"
   },
   {
+    "rec_key": "0500012:56b69ad5be",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "Has a \"30 days of gratitude\" calendar",
+    "status": "labeled",
+    "updated_at": "2026-07-06T04:16:02Z"
+  },
+  {
+    "rec_key": "0500012:985528de22",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "Has \"Snacks and Suppers After School Program Information\"",
+    "status": "labeled",
+    "updated_at": "2026-07-06T04:17:28Z"
+  },
+  {
     "rec_key": "0500012:a9b45454fd",
     "primary_label": "target_absent",
     "facets_json": "{\"community_calendar\": \"yes\"}",
@@ -952,12 +968,28 @@
     "updated_at": "2026-07-04T05:45:32Z"
   },
   {
+    "rec_key": "0806750:098c2165a6",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-06T04:18:43Z"
+  },
+  {
     "rec_key": "0806750:2d448e34f3",
     "primary_label": "target_absent",
     "facets_json": "{\"sports\": \"yes\"}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-05T19:35:48Z"
+  },
+  {
+    "rec_key": "0806750:2d68ed853f",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-06T04:28:33Z"
   },
   {
     "rec_key": "0806750:43f183c24c",
@@ -992,12 +1024,92 @@
     "updated_at": "2026-07-05T19:34:18Z"
   },
   {
+    "rec_key": "0806750:7d39cad0b2",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-06T04:28:41Z"
+  },
+  {
+    "rec_key": "0806750:8eeb83c4cd",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "Cafeteria / food service information",
+    "status": "labeled",
+    "updated_at": "2026-07-06T04:19:27Z"
+  },
+  {
+    "rec_key": "0806750:a436415c0d",
+    "primary_label": "target_absent",
+    "facets_json": "{\"office_building_hours\": \"yes\"}",
+    "note": "Social work information",
+    "status": "labeled",
+    "updated_at": "2026-07-06T04:26:38Z"
+  },
+  {
+    "rec_key": "0806750:bb9c7edf72",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-06T04:28:50Z"
+  },
+  {
+    "rec_key": "0806750:c674548007",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-06T04:28:09Z"
+  },
+  {
+    "rec_key": "0806750:cef2d325bf",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "Volunteer opportunities",
+    "status": "labeled",
+    "updated_at": "2026-07-06T04:18:17Z"
+  },
+  {
+    "rec_key": "0806750:d1b57be1c4",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "Information about graduation",
+    "status": "labeled",
+    "updated_at": "2026-07-06T04:27:08Z"
+  },
+  {
+    "rec_key": "0806750:d839387273",
+    "primary_label": "district_hub_by_school",
+    "facets_json": "{\"academic_calendar\": \"yes\"}",
+    "note": "It's here - but tricky.\n\nSHS 7:45am-3:45pm (1105)\nHMS 7:50am-3:50pm (1105)\nSES 7:55am-3:40pm (1068)\n\nSHS = Strasburg High School\nHMS = Hemphill Middle School\nSES = Strasburg Elementary School",
+    "status": "labeled",
+    "updated_at": "2026-07-06T04:22:43Z"
+  },
+  {
     "rec_key": "0806750:ef4764c812",
     "primary_label": "target_absent",
     "facets_json": "{\"board\": \"yes\"}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-05T19:38:14Z"
+  },
+  {
+    "rec_key": "0806750:fb8bc6fbd9",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\", \"office_building_hours\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-06T04:27:58Z"
+  },
+  {
+    "rec_key": "0806750:fc2069de4e",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "Links to other pages",
+    "status": "labeled",
+    "updated_at": "2026-07-06T04:27:20Z"
   },
   {
     "rec_key": "0900450:d5fa191574",
@@ -2888,12 +3000,52 @@
     "updated_at": "2026-07-02T06:30:52Z"
   },
   {
+    "rec_key": "3502280:0aca323467",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-06T04:13:32Z"
+  },
+  {
+    "rec_key": "3502280:15bd419f57",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-06T04:14:23Z"
+  },
+  {
+    "rec_key": "3502280:291ed7b934",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-06T04:14:52Z"
+  },
+  {
     "rec_key": "3502280:31170892b5",
     "primary_label": "school_bell_table",
     "facets_json": "{}",
     "note": "Titled here as \"Class Schedule\". We may want to add that to favorable keywords as equivalent key phrases to \"Bell Schedule\". (It should not just be the word \"class\", though.)",
     "status": "labeled",
     "updated_at": "2026-06-25T02:12:27Z"
+  },
+  {
+    "rec_key": "3502280:c597675274",
+    "primary_label": "target_absent",
+    "facets_json": "{\"board\": \"yes\", \"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-06T04:14:35Z"
+  },
+  {
+    "rec_key": "3502280:cc14b886c1",
+    "primary_label": "target_absent",
+    "facets_json": "{\"board\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-06T04:14:08Z"
   },
   {
     "rec_key": "3502280:db9e0ef9cd",

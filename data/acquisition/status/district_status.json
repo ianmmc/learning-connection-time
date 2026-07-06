@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-06T03:43:48Z",
+  "last_updated": "2026-07-06T05:02:34Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -318,9 +318,9 @@
     "0103390": {
       "name": "Tuscaloosa County",
       "state": "AL",
-      "furthest_stage": 3,
-      "stage_name": "capture",
-      "outcome": "captured_all",
+      "furthest_stage": 4,
+      "stage_name": "process",
+      "outcome": "processed_all",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -366,6 +366,20 @@
           "stage_name": "capture",
           "outcome": "captured_all",
           "at": "2026-06-29T17:34:14Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-06T04:45:17Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-07-06T04:56:25Z"
         }
       ],
       "notes": "gate@1 approved batch_00006"
@@ -695,10 +709,10 @@
       "name": "RIVERSIDE SCHOOL DISTRICT",
       "state": "AR",
       "furthest_stage": 7,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "stage_name": "process",
+      "outcome": "processed_all",
       "topology": null,
-      "batch_id": "batch_00010",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -786,6 +800,48 @@
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-06T03:45:12Z",
+          "event_type": "dispatched",
+          "actor": "ian-174-fix"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-06T03:45:23Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-07-06T03:47:30Z",
+          "event_type": "dispatched",
+          "actor": "ian-174-fix"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-07-06T03:48:23Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-06T03:51:14Z",
+          "event_type": "dispatched",
+          "actor": "ian-174-fix"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-07-06T03:51:48Z"
         }
       ],
       "notes": "gate@1 auto-approved (follow-up autoflow) batch_00010"
@@ -1164,9 +1220,9 @@
     "0601700": {
       "name": "City Heights Preparatory Charter District",
       "state": "CA",
-      "furthest_stage": 3,
-      "stage_name": "capture",
-      "outcome": "captured_all",
+      "furthest_stage": 4,
+      "stage_name": "process",
+      "outcome": "processed_all",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -1212,6 +1268,20 @@
           "stage_name": "capture",
           "outcome": "captured_all",
           "at": "2026-06-29T17:35:35Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-06T04:45:17Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-07-06T04:57:09Z"
         }
       ],
       "notes": "gate@1 approved batch_00006"
@@ -1220,10 +1290,10 @@
       "name": "Learning Works District",
       "state": "CA",
       "furthest_stage": 7,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "stage_name": "process",
+      "outcome": "processed_all",
       "topology": null,
-      "batch_id": "batch_00010",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -1311,6 +1381,48 @@
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-06T03:45:12Z",
+          "event_type": "dispatched",
+          "actor": "ian-174-fix"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-06T03:45:41Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-07-06T03:47:30Z",
+          "event_type": "dispatched",
+          "actor": "ian-174-fix"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-07-06T03:48:24Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-06T03:51:14Z",
+          "event_type": "dispatched",
+          "actor": "ian-174-fix"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-07-06T03:52:01Z"
         }
       ],
       "notes": "gate@1 auto-approved (follow-up autoflow) batch_00010"
@@ -1473,6 +1585,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T04:38:53Z"
         }
       ],
       "notes": "545683ec83cd"
@@ -1684,10 +1802,10 @@
       "name": "Strasburg School District 31J",
       "state": "CO",
       "furthest_stage": 7,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00010",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -1775,9 +1893,66 @@
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-06T03:45:12Z",
+          "event_type": "dispatched",
+          "actor": "ian-174-fix"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-06T03:46:34Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-07-06T03:47:30Z",
+          "event_type": "dispatched",
+          "actor": "ian-174-fix"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-07-06T03:49:44Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-06T03:51:14Z",
+          "event_type": "dispatched",
+          "actor": "ian-174-fix"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-07-06T04:00:14Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T04:37:20Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T04:37:54Z"
         }
       ],
-      "notes": "gate@1 auto-approved (follow-up autoflow) batch_00010"
+      "notes": "755c98eea0ac"
     },
     "0807350": {
       "name": "Weld County Reorganized School District No. Re-4",
@@ -2574,6 +2749,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T04:38:44Z"
         }
       ],
       "notes": "2c3680a6428e"
@@ -2716,6 +2897,14 @@
           "stage_name": "capture",
           "outcome": "captured_all",
           "at": "2026-06-29T17:36:45Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-06T04:45:17Z",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
       "notes": "gate@1 approved batch_00006"
@@ -4496,6 +4685,14 @@
           "stage_name": "capture",
           "outcome": "captured_partial",
           "at": "2026-06-29T17:39:15Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-06T04:45:17Z",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
       "notes": "1 needs_oauth_reauth"
@@ -4504,8 +4701,8 @@
       "name": "ADAIR CO. R-II",
       "state": "MO",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "process",
+      "outcome": "processed_partial",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -4598,9 +4795,78 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T04:38:11Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T04:39:03Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-06T04:41:07Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-06T04:41:07Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-06T04:41:07Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-06T04:41:26Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-07-06T04:41:26Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-07-06T04:42:38Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-06T04:42:38Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_partial",
+          "at": "2026-07-06T05:02:34Z"
         }
       ],
-      "notes": "a639cbc50ba1"
+      "notes": "gate@1 auto-approved (follow-up autoflow) batch_00012"
     },
     "2921720": {
       "name": "NAYLOR R-II",
@@ -5158,6 +5424,14 @@
           "stage_name": "capture",
           "outcome": "captured_all",
           "at": "2026-06-29T17:40:39Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-06T04:45:17Z",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
       "notes": "gate@1 approved batch_00006"
@@ -5288,10 +5562,10 @@
       "name": "ROY",
       "state": "NM",
       "furthest_stage": 7,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00010",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -5352,9 +5626,66 @@
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-06T03:45:12Z",
+          "event_type": "dispatched",
+          "actor": "ian-174-fix"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-06T03:47:06Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-07-06T03:47:30Z",
+          "event_type": "dispatched",
+          "actor": "ian-174-fix"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-07-06T03:50:58Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-06T03:51:14Z",
+          "event_type": "dispatched",
+          "actor": "ian-174-fix"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-07-06T04:00:36Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T04:37:20Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T04:37:59Z"
         }
       ],
-      "notes": "gate@1 auto-approved (follow-up autoflow) batch_00010"
+      "notes": "755c98eea0ac"
     },
     "3502370": {
       "name": "SANTA FE",
@@ -5590,6 +5921,14 @@
           "stage_name": "capture",
           "outcome": "captured_all",
           "at": "2026-06-29T17:42:03Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-06T04:45:17Z",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
       "notes": "gate@1 approved batch_00006"
@@ -6028,9 +6367,30 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T04:38:19Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T04:40:28Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T04:46:34Z"
         }
       ],
-      "notes": "df470a9ed82a"
+      "notes": "396fe9245032"
     },
     "3802014": {
       "name": "APPLE CREEK 39",
@@ -6633,6 +6993,14 @@
           "stage_name": "capture",
           "outcome": "captured_all",
           "at": "2026-06-29T17:43:27Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-06T04:45:17Z",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
       "notes": "gate@1 approved batch_00006"
@@ -6799,6 +7167,14 @@
           "stage_name": "capture",
           "outcome": "captured_all",
           "at": "2026-06-29T17:44:48Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-06T04:45:17Z",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
       "notes": "gate@1 approved batch_00006"
@@ -7233,8 +7609,8 @@
       "name": "HUNTINGTON ISD",
       "state": "TX",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "process",
+      "outcome": "processed_partial",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -7318,9 +7694,72 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T04:38:23Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-06T04:40:16Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-06T04:40:16Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-06T04:40:16Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-06T04:40:27Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-07-06T04:40:27Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-07-06T04:42:00Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-06T04:42:01Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_partial",
+          "at": "2026-07-06T04:44:47Z"
         }
       ],
-      "notes": "a219eacb7471"
+      "notes": "gate@1 auto-approved (follow-up autoflow) batch_00011"
     },
     "4828590": {
       "name": "LULING ISD",
@@ -7391,6 +7830,14 @@
           "stage_name": "capture",
           "outcome": "captured_all",
           "at": "2026-06-29T17:46:00Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-06T04:45:17Z",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
       "notes": "gate@1 approved batch_00006"
@@ -7584,6 +8031,14 @@
           "stage_name": "capture",
           "outcome": "captured_all",
           "at": "2026-06-29T17:47:59Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-06T04:45:17Z",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
       "notes": "gate@1 approved batch_00006"
@@ -7859,6 +8314,14 @@
           "stage_name": "capture",
           "outcome": "captured_all",
           "at": "2026-06-29T17:49:20Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-06T04:45:17Z",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
       "notes": "gate@1 approved batch_00006"
@@ -8260,6 +8723,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-06T04:38:51Z"
         }
       ],
       "notes": "6bc08e983d45"
