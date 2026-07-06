@@ -124,6 +124,90 @@ def test_budget_district_TOTAL_cap_skips_across_handoffs(monkeypatch):
     assert set(out["districts"]) == {"ZZS2"}
 
 
+def test_one_district_failure_does_not_abort_the_batch(monkeypatch):
+    """#173: an unexpected failure computing ONE district is recorded and the run continues to the
+    next — the original #122 symptom was a single bad rep stranding districts 16..18. The failed
+    district lands in out['failed']; the healthy ones are still processed + persisted."""
+    persisted = _mock_env(monkeypatch, already=set())
+
+    def _boom_on_S1(did, name, *a, **k):
+        if did == "ZZS1":
+            raise FileNotFoundError("captures/…/harvest_slice.txt")   # the Marshall class of failure
+        return _fake_pd(did, name)
+    monkeypatch.setattr(R7, "_run_district", _boom_on_S1)
+
+    out = R7.run_council_streaming(DOC, persist=True, resume=True)
+    assert persisted == ["ZZS2"]                       # the healthy district still ran + persisted
+    assert set(out["districts"]) == {"ZZS2"}
+    assert [f["district_id"] for f in out["failed"]] == ["ZZS1"]
+    assert "FileNotFoundError" in out["failed"][0]["error"]
+
+
+def test_billing_auth_error_halts_the_whole_run(monkeypatch):
+    """#173: BillingAuthError is the ONE per-district exception that must NOT be swallowed — every
+    later paid call fails identically (bad key / exhausted balance), so the run halts, not skips."""
+    import pytest
+    _mock_env(monkeypatch, already=set())
+
+    def _billing(did, name, *a, **k):
+        raise R7.OR.BillingAuthError(f"{did}: HTTP 402 — insufficient balance")
+    monkeypatch.setattr(R7, "_run_district", _billing)
+
+    with pytest.raises(R7.OR.BillingAuthError):
+        R7.run_council_streaming(DOC, persist=True, resume=True)
+
+
+def test_run_district_isolates_one_unreadable_rep(monkeypatch):
+    """#173 (the deeper half): a single unreadable rep must not lose the DISTRICT — it's recorded as a
+    failed rep (no calls, carries the error, counted in telemetry) while the district's OTHER reps
+    still extract. This is exactly the Marshall harvest_slice case: one bad rep of several."""
+    def _resolve(ddir, rec_key, file, kind):
+        if file == "bad.txt":
+            raise FileNotFoundError(f"captures/…/{file}")
+        return "GOOD CONTENT"
+    monkeypatch.setattr(R7, "resolve_content", _resolve)
+    monkeypatch.setattr(R7, "_call", lambda m, p, k, c: R7.OR.CallResult(model=m, ok=True, content="[]"))
+    monkeypatch.setattr(R7.PARSE, "parse_schedules", lambda content: [{"school": "x"}])
+    monkeypatch.setattr(R7.AGG, "consensus_school_facts", lambda rows, judge=None: (
+        [{"band": "high", "school": "x", "start": "08:00", "end": "14:00",
+          "gross": 360, "method": "council_agree", "models": ["m1", "m2"]}], []))
+    monkeypatch.setattr(R7.AGG, "district_bands_from_facts", lambda facts: {})
+
+    groups = [
+        {"rec_key": "D:aa", "file": "bad.txt", "kind": "text", "council_id": "lc",
+         "voters": ["m1", "m2"], "prompt_ids": {"m1": "p", "m2": "p"}},
+        {"rec_key": "D:bb", "file": "good.txt", "kind": "text", "council_id": "lc",
+         "voters": ["m1", "m2"], "prompt_ids": {"m1": "p", "m2": "p"}},
+    ]
+    councils = {"lc": {"voters": ["m1", "m2"], "prompts": {"default": "p"}}}   # no judge → no judge path
+
+    pd = R7._run_district("D", "Dville", groups, councils, None, use_judge=True)
+
+    assert pd["n_reps"] == 2                                   # both reps attempted
+    bad = next(r for r in pd["reps"] if r["file"] == "bad.txt")
+    assert bad["calls"] == [] and "FileNotFoundError" in bad["error"] and bad["accepted"] == []
+    good = next(r for r in pd["reps"] if r["file"] == "good.txt")
+    assert good["accepted"] and not good.get("error")         # the good rep extracted normally
+    assert len(pd["accepted"]) == 1                           # the district still has its coverage
+    assert pd["telemetry"]["errors"] == 1 and pd["telemetry"]["rep_errors"] == 1
+
+
+def test_run_district_reraises_billing_from_a_rep(monkeypatch):
+    """#173: a BillingAuthError raised while processing a rep propagates out of _run_district (halts),
+    it is never caught by the per-rep skip guard."""
+    import pytest
+    monkeypatch.setattr(R7, "resolve_content", lambda *a: "CONTENT")
+
+    def _billing(*a, **k):
+        raise R7.OR.BillingAuthError("HTTP 402")
+    monkeypatch.setattr(R7, "_call", _billing)
+
+    groups = [{"rec_key": "D:aa", "file": "x.txt", "kind": "text", "council_id": "lc",
+               "voters": ["m1"], "prompt_ids": {"m1": "p"}}]
+    with pytest.raises(R7.OR.BillingAuthError):
+        R7._run_district("D", "Dville", groups, {"lc": {"voters": ["m1"], "prompts": {}}}, None, False)
+
+
 def test_frozen_handoff_with_blind_image_judge_refused(monkeypatch):
     """#138 (the #82-recurrence guard): a frozen handoff EMBEDS its council configs, so a pre-swap
     image handoff still names the dead text-only judge — the run must refuse BEFORE any paid call
