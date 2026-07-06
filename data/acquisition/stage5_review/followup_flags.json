@@ -1,11 +1,1 @@
-[
-  {
-    "scope": "district",
-    "target_id": "ZZFACETL",
-    "district_id": "ZZFACETL",
-    "directive": "do X",
-    "actor": "zz-test",
-    "created_at": "2026-07-06T06:18:32Z",
-    "resolved_at": "2026-07-06T06:18:32Z"
-  }
-]
+[]
