@@ -466,11 +466,12 @@ def stage5_facets():
 # ---- follow-up flags (the top attention tier — a directive on a district or a record) ----
 def _backup_followups(con) -> int:
     """Back the precious follow-up flags to a tracked JSON (the labels.json pattern), so a human
-    directive survives a DB wipe. Atomic write."""
+    directive survives a DB wipe. Atomic write. Under pytest the tracked file is
+    quarantine-redirected (issue #178)."""
     rows = con.execute(text("SELECT scope, target_id, district_id, directive, actor, created_at, resolved_at "
                             "FROM followup_flag ORDER BY id")).mappings().all()
     data = [dict(r) for r in rows]
-    out = BS.LABELS_JSON.parent / "followup_flags.json"
+    out = paths.guard_tracked_backup(paths.FOLLOWUP_FLAGS_JSON)
     tmp = out.with_name(out.name + ".tmp")
     tmp.write_text(json.dumps(data, indent=2))
     tmp.replace(out)

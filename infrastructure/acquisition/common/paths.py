@@ -39,6 +39,7 @@ STAGE5_DIR = ACQUISITION / "stage5_review"
 # governance Postgres DB — see common/db.py. The precious JSON backups below remain.)
 LABELS_JSON = STAGE5_DIR / "labels.json"                # precious, version-controlled
 CLUSTER_SPLITS_JSON = STAGE5_DIR / "cluster_splits.json"  # precious, version-controlled
+FOLLOWUP_FLAGS_JSON = STAGE5_DIR / "followup_flags.json"  # precious, version-controlled (issue #57)
 SCORECARDS_DIR = STAGE5_DIR / "scorecards"              # harness output (config-vs-labels metrics)
 
 # --- config-as-data (versioned tunables; near code, intentionally NOT under DATA_ROOT) ---
@@ -52,3 +53,30 @@ SECRETS_FILE = REPO_ROOT / "config" / "secrets.local.json"
 def data_root_is_default() -> bool:
     """True when DATA_ROOT is the in-repo default (no LCT_DATA_ROOT override active)."""
     return DATA_ROOT == (REPO_ROOT / "data")
+
+
+# --- test-run quarantine for the tracked precious backups (issue #178) ---
+# The four git-tracked precious-state backups are swept into every commit by the pre-commit hook, so a
+# test run that regenerates one (govdb tests drive real server endpoints, whose exporters fire as a
+# side effect) pollutes whatever commit comes next with fixture churn — and can leave the backup
+# CONTRADICTING the DB after the fixture's cleanup. The invariant is global ("no test run ever writes a
+# tracked backup"), so it is enforced HERE, once, at the exporters' shared path-resolution moment —
+# not re-implemented per test via monkeypatching (the epic-#133 lesson).
+TRACKED_BACKUPS = frozenset({STATUS_FILE, LABELS_JSON, CLUSTER_SPLITS_JSON, FOLLOWUP_FLAGS_JSON})
+_quarantine_noted: set = set()
+
+
+def guard_tracked_backup(out: Path) -> Path:
+    """The write target for a precious-backup export: `out` itself normally, but under pytest
+    (PYTEST_CURRENT_TEST is set for the whole test process, inherited by its threads/subprocesses)
+    a tracked backup is redirected to a quarantine dir under the system tmp. Explicit non-tracked
+    paths (tests that pass their own tmp `out=`) pass through untouched."""
+    if out not in TRACKED_BACKUPS or "PYTEST_CURRENT_TEST" not in os.environ:
+        return out
+    import tempfile
+    q = Path(tempfile.gettempdir()) / "lct-test-quarantine" / out.name
+    q.parent.mkdir(parents=True, exist_ok=True)
+    if out.name not in _quarantine_noted:      # note once per file per process, not per write
+        _quarantine_noted.add(out.name)
+        print(f"[paths] test run — {out.name} export quarantined to {q} (issue #178)", flush=True)
+    return q

@@ -49,6 +49,9 @@ def env():
             con.execute(text("DELETE FROM batch_school WHERE batch_id = :b"), {"b": BID})
             con.execute(text("DELETE FROM batch_district WHERE batch_id = :b"), {"b": BID})
             con.execute(text("DELETE FROM batch WHERE batch_id = :b"), {"b": BID})
+            # #178: gate@1 auto-approve records real state_event rows for the fixture district — clean
+            # them, or the live registry accumulates ZZAF events monotonically per test run.
+            con.execute(text("DELETE FROM state_event WHERE district_id = 'ZZAF'"))
 
 
 def test_autoflow_approves_then_runs_2_3_4_and_stops_at_gate5(env, monkeypatch):

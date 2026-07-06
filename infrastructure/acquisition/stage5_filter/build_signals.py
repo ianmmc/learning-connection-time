@@ -765,7 +765,9 @@ BIN_KINDS = {"png": "image", "pdf": "pdf", "bin": "binary"}
 
 
 def export_labels(s, out: Path = LABELS_JSON) -> int:
-    """Dump all non-unlabeled rows to a tracked JSON (atomic write). The label backup."""
+    """Dump all non-unlabeled rows to a tracked JSON (atomic write). The label backup.
+    Under pytest the tracked file is quarantine-redirected (issue #178)."""
+    out = paths.guard_tracked_backup(out)
     rows = s.execute(text(
         f"SELECT {','.join(LABEL_COLS)} FROM label WHERE status!='unlabeled' ORDER BY rec_key")).fetchall()
     data = [dict(zip(LABEL_COLS, r)) for r in rows]
@@ -777,7 +779,9 @@ def export_labels(s, out: Path = LABELS_JSON) -> int:
 
 
 def export_splits(s, out: Path = CLUSTER_SPLITS_JSON) -> int:
-    """Dump the precious cluster-split rec_keys to a tracked JSON (atomic). The split backup."""
+    """Dump the precious cluster-split rec_keys to a tracked JSON (atomic). The split backup.
+    Under pytest the tracked file is quarantine-redirected (issue #178)."""
+    out = paths.guard_tracked_backup(out)
     rows = [r[0] for r in s.execute(text("SELECT rec_key FROM cluster_split ORDER BY rec_key"))]
     out.parent.mkdir(parents=True, exist_ok=True)
     tmp = out.with_name(out.name + ".tmp")

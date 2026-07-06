@@ -239,8 +239,9 @@ def export() -> int:
 
 def export_status(s, out=None) -> int:
     """Regenerate district_status.json from the full state_event log: per district, the snapshot
-    (from current_state) + the full ordered history[]. The precious, git-tracked backup (atomic)."""
-    out = out or STATUS_FILE
+    (from current_state) + the full ordered history[]. The precious, git-tracked backup (atomic).
+    Under pytest the tracked file is quarantine-redirected (issue #178) — tests must never churn it."""
+    out = paths.guard_tracked_backup(out or STATUS_FILE)
     snap = {r["district_id"]: dict(r) for r in s.execute(text(
         "SELECT district_id, name, state, furthest_stage, stage_name, outcome, topology, batch_id "
         "FROM current_state")).mappings()}
