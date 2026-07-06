@@ -1,0 +1,317 @@
+{
+  "handoff_hash": "51849a4688a4",
+  "district": {
+    "district_id": "1716950",
+    "name": "Brookwood SD 167",
+    "reps": [
+      {
+        "rec_key": "1716950:432fc1959f",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "15:00",
+                "school_name": "Longwood Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3078,
+            "completion_tokens": 77,
+            "cost_usd": 0.0003386,
+            "latency_ms": 690,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305405-4HYcH4RXbEwkJdbesoZq"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:35",
+                "end_time": "15:00",
+                "school_name": "Longwood Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3100,
+            "completion_tokens": 50,
+            "cost_usd": 0.000159,
+            "latency_ms": 1425,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305406-uibWQCtyAKHyxg9HSydQ"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "longwood",
+            "start": "08:35",
+            "end": "15:00",
+            "gross": 385,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "1716950:432fc1959f",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "1716950:847e90839d",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "all",
+                "start_time": "08:30",
+                "end_time": "15:10",
+                "school_name": "All Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1886,
+            "completion_tokens": 47,
+            "cost_usd": 0.0002074,
+            "latency_ms": 664,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305407-ElKPh7WR9QbfMtpl57hq"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1896,
+            "completion_tokens": 12,
+            "cost_usd": 9.576e-05,
+            "latency_ms": 512,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305408-2fB2exuFZJyZVJuvABW4"
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      },
+      {
+        "rec_key": "1716950:597022378f",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:10",
+                "school_name": "LONGWOOD\u2019S SCHOOL HOURS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 895,
+            "completion_tokens": 51,
+            "cost_usd": 0.0001099,
+            "latency_ms": 903,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305408-zMvmHCq56KVOpZ2ePimp"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:10",
+                "school_name": "Longwood",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 915,
+            "completion_tokens": 48,
+            "cost_usd": 4.959e-05,
+            "latency_ms": 1011,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305409-ndnTFvcPq7C5LNw3JTiE"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:10",
+                "school_name": "LONGWOOD",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 880,
+            "completion_tokens": 40,
+            "cost_usd": 8.32e-05,
+            "latency_ms": 6626,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305410-NTrGwNE2hT0h5ipvXV0u"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "longwood",
+            "start": "08:30",
+            "end": "15:10",
+            "gross": 400,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "1716950:597022378f",
+            "source_file": "harvest_slice.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "longwoods hours",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:10"
+            },
+            "rec_key": "1716950:597022378f",
+            "source_file": "harvest_slice.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "longwood",
+        "start": "08:35",
+        "end": "15:00",
+        "gross": 385,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "1716950:432fc1959f",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "longwood",
+        "start": "08:30",
+        "end": "15:10",
+        "gross": 400,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "1716950:597022378f",
+        "source_file": "harvest_slice.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "longwoods hours",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:10"
+        },
+        "rec_key": "1716950:597022378f",
+        "source_file": "harvest_slice.txt"
+      }
+    ],
+    "n_reps": 3,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 392,
+        "start_time": "08:35",
+        "end_time": "15:00",
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "longwood",
+            "start_time": "08:35",
+            "end_time": "15:00",
+            "gross": 385,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "longwood",
+            "start_time": "08:30",
+            "end_time": "15:10",
+            "gross": 400,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 7,
+      "judge_calls": 1,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 12650,
+      "completion_tokens": 325,
+      "cost_usd": 0.0010434499999999998
+    },
+    "state": "IL"
+  }
+}

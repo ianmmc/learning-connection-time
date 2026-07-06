@@ -14,7 +14,8 @@
 district, `data/raw/lea-website-captures/<id>_<slug>/discovery.json` (audit trail) + `candidates.json`
 (capture-ready URL list). The `stage2-discover` skill (the retired agent-wave orchestrator) is **obsolete**.
 
-**Code:** `common/discover.py` (`brightdata_search`, `serper_search`, `openrouter_search`, the gate);
+**Code:** `common/discover.py` (`brightdata_search`, `serper_search`, the gate — the retired
+`openrouter_search`/`perplexity_search` were deleted 2026-07-06, #87);
 `stage2_discover/discover_stage2.py` (`build_roster`, `run_wave1(search_fn)`, `run_wave2(search_fn)`,
 `flatten`, gate/residual/write/registry); `stage2_discover/headless.py`
 (`brightdata_then_serper` — Wave-1 + failover, `_wave2_claude`, `discover_district`, sequential

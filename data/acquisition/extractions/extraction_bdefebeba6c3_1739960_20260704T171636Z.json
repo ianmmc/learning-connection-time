@@ -1,0 +1,1150 @@
+{
+  "handoff_hash": "bdefebeba6c3",
+  "district": {
+    "district_id": "1739960",
+    "name": "Urbana SD 116",
+    "reps": [
+      {
+        "rec_key": "1739960:a0a98bdf1b",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:16",
+                "school_name": "Urbana High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1248,
+            "completion_tokens": 50,
+            "cost_usd": 0.0001448,
+            "latency_ms": 623,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185359-6XxK9Vaj3YkoP4OPBBI1"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:16",
+                "school_name": "Urbana High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1232,
+            "completion_tokens": 46,
+            "cost_usd": 6.528e-05,
+            "latency_ms": 949,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185360-hHMPcBMguILm6EmHJxcJ"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "urbana",
+            "start": "08:00",
+            "end": "15:16",
+            "gross": 436,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "1739960:a0a98bdf1b",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "1739960:d05b7dcfe3",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 8,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "15:00",
+                "school_name": "Dr. Martin Luther King Jr. Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "15:00",
+                "school_name": "Leal Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "15:00",
+                "school_name": "Thomas Paine Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "15:00",
+                "school_name": "Dr. Preston L. Williams Jr Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "15:00",
+                "school_name": "Yankee Ridge Multilingual School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:45",
+                "end_time": null,
+                "school_name": "Urbana Middle School",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": null,
+                "end_time": null,
+                "school_name": "Urbana Sixth Grade Center",
+                "confidence": "low"
+              },
+              {
+                "grade_level": "high",
+                "start_time": null,
+                "end_time": null,
+                "school_name": "Urbana High School",
+                "confidence": "low"
+              }
+            ],
+            "prompt_tokens": 2252,
+            "completion_tokens": 520,
+            "cost_usd": 0.0004332,
+            "latency_ms": 1416,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185361-0lrnr39OdvsTyFn461sD"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 8,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:00",
+                "school_name": "Dr. Martin Luther King, Jr. Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:00",
+                "school_name": "Leal Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:00",
+                "school_name": "Thomas Paine Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:00",
+                "school_name": "Dr. Preston L. Williams, Jr. Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:00",
+                "school_name": "Yankee Ridge Multilingual School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Urbana Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Urbana Sixth Grade Center",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "15:00",
+                "school_name": "Urbana High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2256,
+            "completion_tokens": 479,
+            "cost_usd": 0.00015112,
+            "latency_ms": 5933,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185362-TMW9YDiY9cb20C3PSMSm"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 8,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "15:00",
+                "school_name": "Dr. Martin Luther King Jr. Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "15:00",
+                "school_name": "Leal Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "15:00",
+                "school_name": "Thomas Paine Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "15:00",
+                "school_name": "Dr. Preston L. Williams Jr Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "15:00",
+                "school_name": "Yankee Ridge Multilingual School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Urbana Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:45",
+                "end_time": "15:00",
+                "school_name": "Urbana Sixth Grade Center",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:15",
+                "end_time": "15:00",
+                "school_name": "Urbana High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2125,
+            "completion_tokens": 305,
+            "cost_usd": 0.00022175,
+            "latency_ms": 16800,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185368-j3RSGCwVg7ZrmplJFLMg"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "dr martin luther king",
+            "start": "08:12",
+            "end": "15:00",
+            "gross": 408,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "1739960:d05b7dcfe3",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "leal",
+            "start": "08:12",
+            "end": "15:00",
+            "gross": 408,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "1739960:d05b7dcfe3",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "thomas paine",
+            "start": "08:12",
+            "end": "15:00",
+            "gross": 408,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "1739960:d05b7dcfe3",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "dr preston l williams",
+            "start": "08:12",
+            "end": "15:00",
+            "gross": 408,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "1739960:d05b7dcfe3",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "yankee ridge multilingual",
+            "start": "08:12",
+            "end": "15:00",
+            "gross": 408,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "1739960:d05b7dcfe3",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "urbana",
+            "start": "08:45",
+            "end": "15:00",
+            "gross": 375,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "1739960:d05b7dcfe3",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "urbana sixth grade center",
+            "start": "08:45",
+            "end": "15:00",
+            "gross": 375,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "1739960:d05b7dcfe3",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "urbana",
+            "start": "08:15",
+            "end": "15:00",
+            "gross": 405,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "1739960:d05b7dcfe3",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "1739960:a7d489f0f1",
+        "file": "pdfplumber_lines.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:45",
+                "end_time": "15:35",
+                "school_name": "Urbana Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1086,
+            "completion_tokens": 50,
+            "cost_usd": 0.0001286,
+            "latency_ms": 1211,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185385-7IIdvgUBPMlvEs6aNYMy"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:45",
+                "end_time": "15:35",
+                "school_name": "Urbana Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1079,
+            "completion_tokens": 72,
+            "cost_usd": 5.971e-05,
+            "latency_ms": 1207,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185386-g5YdKo5gkLISOU7YwmeH"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "urbana",
+            "start": "08:45",
+            "end": "15:35",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "1739960:a7d489f0f1",
+            "source_file": "pdfplumber_lines.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "1739960:5bb66dc186",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:00",
+                "school_name": "Dr. Martin Luther King Jr. Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 613,
+            "completion_tokens": 54,
+            "cost_usd": 8.29e-05,
+            "latency_ms": 527,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185387-Jt2ImBqYTDr7CrGr25pm"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:00",
+                "school_name": "Dr. Martin Luther King, Jr. Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 624,
+            "completion_tokens": 78,
+            "cost_usd": 3.744e-05,
+            "latency_ms": 1865,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185388-AM6rxQzqBrRRexOX7UJL"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "dr martin luther king",
+            "start": "08:15",
+            "end": "15:00",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "1739960:5bb66dc186",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "1739960:ffda304e6d",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "15:00",
+                "school_name": "Leal Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 626,
+            "completion_tokens": 49,
+            "cost_usd": 8.22e-05,
+            "latency_ms": 1225,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185390-kV3xlpaNKS06wvBOjfDu"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:00",
+                "school_name": "Leal Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 638,
+            "completion_tokens": 45,
+            "cost_usd": 3.55e-05,
+            "latency_ms": 740,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185391-v7tUxNORjd4YhvNkNppo"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "leal",
+            "start": "08:12",
+            "end": "15:00",
+            "gross": 408,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "1739960:ffda304e6d",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "1739960:e01c25bbd2",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:45",
+                "end_time": "15:35",
+                "school_name": "Urbana Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1276,
+            "completion_tokens": 45,
+            "cost_usd": 0.0001456,
+            "latency_ms": 572,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185392-9k6viDVYA48pCBemCiZk"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:45",
+                "end_time": "15:35",
+                "school_name": "Urbana Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1227,
+            "completion_tokens": 50,
+            "cost_usd": 6.535e-05,
+            "latency_ms": 1683,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185393-vkhOCsEZxIUFocsRGPPv"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "urbana",
+            "start": "08:45",
+            "end": "15:35",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "1739960:e01c25bbd2",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "1739960:8e030312cd",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:00",
+                "school_name": "Thomas Paine Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 503,
+            "completion_tokens": 48,
+            "cost_usd": 6.95e-05,
+            "latency_ms": 558,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185394-LEMWReerXSlWMO3DB2HW"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:00",
+                "school_name": "Thomas Paine Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 521,
+            "completion_tokens": 72,
+            "cost_usd": 3.181e-05,
+            "latency_ms": 1097,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783185395-vglpwFL7NoCSF6own0FX"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "thomas paine",
+            "start": "08:15",
+            "end": "15:00",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "1739960:8e030312cd",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "urbana",
+        "start": "08:00",
+        "end": "15:16",
+        "gross": 436,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "1739960:a0a98bdf1b",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "dr martin luther king",
+        "start": "08:12",
+        "end": "15:00",
+        "gross": 408,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "1739960:d05b7dcfe3",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "leal",
+        "start": "08:12",
+        "end": "15:00",
+        "gross": 408,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "1739960:d05b7dcfe3",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "thomas paine",
+        "start": "08:12",
+        "end": "15:00",
+        "gross": 408,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "1739960:d05b7dcfe3",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "dr preston l williams",
+        "start": "08:12",
+        "end": "15:00",
+        "gross": 408,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "1739960:d05b7dcfe3",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "yankee ridge multilingual",
+        "start": "08:12",
+        "end": "15:00",
+        "gross": 408,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "1739960:d05b7dcfe3",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "urbana",
+        "start": "08:45",
+        "end": "15:00",
+        "gross": 375,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "1739960:d05b7dcfe3",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "urbana sixth grade center",
+        "start": "08:45",
+        "end": "15:00",
+        "gross": 375,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "1739960:d05b7dcfe3",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "urbana",
+        "start": "08:15",
+        "end": "15:00",
+        "gross": 405,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "1739960:d05b7dcfe3",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "urbana",
+        "start": "08:45",
+        "end": "15:35",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "1739960:a7d489f0f1",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "dr martin luther king",
+        "start": "08:15",
+        "end": "15:00",
+        "gross": 405,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "1739960:5bb66dc186",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "leal",
+        "start": "08:12",
+        "end": "15:00",
+        "gross": 408,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "1739960:ffda304e6d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "urbana",
+        "start": "08:45",
+        "end": "15:35",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "1739960:e01c25bbd2",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "thomas paine",
+        "start": "08:15",
+        "end": "15:00",
+        "gross": 405,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "1739960:8e030312cd",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 7,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 408,
+        "start_time": "08:12",
+        "end_time": "15:00",
+        "n_schools": 8,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "dr martin luther king",
+            "start_time": "08:12",
+            "end_time": "15:00",
+            "gross": 408,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "leal",
+            "start_time": "08:12",
+            "end_time": "15:00",
+            "gross": 408,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "thomas paine",
+            "start_time": "08:12",
+            "end_time": "15:00",
+            "gross": 408,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dr preston l williams",
+            "start_time": "08:12",
+            "end_time": "15:00",
+            "gross": 408,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "yankee ridge multilingual",
+            "start_time": "08:12",
+            "end_time": "15:00",
+            "gross": 408,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dr martin luther king",
+            "start_time": "08:15",
+            "end_time": "15:00",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "leal",
+            "start_time": "08:12",
+            "end_time": "15:00",
+            "gross": 408,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "thomas paine",
+            "start_time": "08:15",
+            "end_time": "15:00",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 392,
+        "start_time": "08:45",
+        "end_time": "15:00",
+        "n_schools": 4,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "urbana",
+            "start_time": "08:45",
+            "end_time": "15:00",
+            "gross": 375,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "urbana sixth grade center",
+            "start_time": "08:45",
+            "end_time": "15:00",
+            "gross": 375,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "urbana",
+            "start_time": "08:45",
+            "end_time": "15:35",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "urbana",
+            "start_time": "08:45",
+            "end_time": "15:35",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 420,
+        "start_time": "08:15",
+        "end_time": "15:00",
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "urbana",
+            "start_time": "08:00",
+            "end_time": "15:16",
+            "gross": 436,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "urbana",
+            "start_time": "08:15",
+            "end_time": "15:00",
+            "gross": 405,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 15,
+      "judge_calls": 1,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 17306,
+      "completion_tokens": 1963,
+      "cost_usd": 0.0017547599999999995
+    }
+  }
+}

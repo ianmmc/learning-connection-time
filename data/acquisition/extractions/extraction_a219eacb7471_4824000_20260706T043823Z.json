@@ -1,0 +1,130 @@
+{
+  "handoff_hash": "a219eacb7471",
+  "district": {
+    "district_id": "4824000",
+    "name": "HUNTINGTON ISD",
+    "reps": [
+      {
+        "rec_key": "4824000:8a9afd4fab",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:30",
+                "school_name": "HMS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 539,
+            "completion_tokens": 74,
+            "cost_usd": 8.35e-05,
+            "latency_ms": 677,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783312701-7gaHXs28kSiPivAzbMVo"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:30",
+                "school_name": "HMS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 549,
+            "completion_tokens": 46,
+            "cost_usd": 3.113e-05,
+            "latency_ms": 1326,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783312702-BaE8Ygi1yFzkZFk9NIAu"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "hms",
+            "start": "07:55",
+            "end": "15:30",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "4824000:8a9afd4fab",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "middle",
+        "school": "hms",
+        "start": "07:55",
+        "end": "15:30",
+        "gross": 455,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "4824000:8a9afd4fab",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 1,
+    "n_judged": 0,
+    "bands": {
+      "middle": {
+        "gross_minutes": 455,
+        "start_time": "07:55",
+        "end_time": "15:30",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "hms",
+            "start_time": "07:55",
+            "end_time": "15:30",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 2,
+      "judge_calls": 0,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 1088,
+      "completion_tokens": 120,
+      "cost_usd": 0.00011463
+    },
+    "state": "TX"
+  }
+}

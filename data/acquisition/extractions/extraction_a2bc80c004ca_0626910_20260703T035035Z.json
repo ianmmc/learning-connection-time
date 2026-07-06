@@ -1,0 +1,4755 @@
+{
+  "handoff_hash": "a2bc80c004ca",
+  "district": {
+    "district_id": "0626910",
+    "name": "New Haven Unified",
+    "reps": [
+      {
+        "rec_key": "0626910:c559f4af14",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Alvarado Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1783,
+            "completion_tokens": 50,
+            "cost_usd": 0.0001983,
+            "latency_ms": 14057,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050019-PGVrn4juum8Svzsd43Qy"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Alvarado Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1894,
+            "completion_tokens": 46,
+            "cost_usd": 9.838e-05,
+            "latency_ms": 29105,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050048-B8WNVTA8CwqfuGNesP7F"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "alvarado",
+            "start": "08:00",
+            "end": "14:05",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0626910:c559f4af14",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0626910:d5771bd18c",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "13:54",
+                "school_name": "Core & Alternative Learning Academy at Conley-Caraballo High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 667,
+            "completion_tokens": 86,
+            "cost_usd": 0.0001011,
+            "latency_ms": 14630,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050063-EhrrelJxwZaFejl8Q3Of"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "13:54",
+                "school_name": "Conley-Caraballo High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 701,
+            "completion_tokens": 52,
+            "cost_usd": 3.921e-05,
+            "latency_ms": 15919,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050079-T2DfufQJKWcU3vNikGAP"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "13:54",
+                "school_name": "Conley-Caraballo High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 693,
+            "completion_tokens": 44,
+            "cost_usd": 8.789e-05,
+            "latency_ms": 13730,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050092-igl6OD5NvRvBXGmbnHPT"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "conleycaraballo",
+            "start": "08:00",
+            "end": "13:54",
+            "gross": 354,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0626910:d5771bd18c",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "core alternative learning conleycaraballo",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "13:54"
+            },
+            "rec_key": "0626910:d5771bd18c",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "0626910:372eb50773",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Delaine Eastin Elementary School"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "12:05",
+                "school_name": "Delaine Eastin Elementary School (Modified Day)"
+              }
+            ],
+            "prompt_tokens": 1890,
+            "completion_tokens": 110,
+            "cost_usd": 0.000233,
+            "latency_ms": 12873,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050106-KnpZnrNai4ahqCtNs2sQ"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Delaine Eastin Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2025,
+            "completion_tokens": 47,
+            "cost_usd": 0.00010501,
+            "latency_ms": 13735,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050120-iMmOkPuRkTylZ4QTr5g9"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Delaine Eastin Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1990,
+            "completion_tokens": 44,
+            "cost_usd": 0.0001835,
+            "latency_ms": 17995,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050135-RoIta1aeLUWe8dJEr4ls"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "delaine eastin",
+            "start": "08:00",
+            "end": "14:05",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0626910:372eb50773",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "delaine eastin modified day",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "12:05"
+            },
+            "rec_key": "0626910:372eb50773",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "0626910:0a0b114129",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Guy Emanuele Elementary School"
+              }
+            ],
+            "prompt_tokens": 2116,
+            "completion_tokens": 41,
+            "cost_usd": 0.000228,
+            "latency_ms": 12733,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050150-yVXonLXUKIjIbMrmDxhA"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Guy Emanuele Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2294,
+            "completion_tokens": 46,
+            "cost_usd": 0.00011838,
+            "latency_ms": 18136,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050168-AhNQ6sEnmDdLkMUoHg45"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "guy emanuele",
+            "start": "08:00",
+            "end": "14:05",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0626910:0a0b114129",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0626910:91c9dde70c",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "14:05",
+                "school_name": "Hillview Crest Elementary School"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "12:05",
+                "school_name": "Hillview Crest Elementary School"
+              }
+            ],
+            "prompt_tokens": 1399,
+            "completion_tokens": 82,
+            "cost_usd": 0.0001727,
+            "latency_ms": 11964,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050180-runlLU3yuIx0k722wlpM"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "14:05",
+                "school_name": "Hillview Crest Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1493,
+            "completion_tokens": 48,
+            "cost_usd": 7.849e-05,
+            "latency_ms": 12026,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050193-MEndWo8vcIgXQXX8DNHj"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "hillview crest",
+            "start": "08:10",
+            "end": "14:05",
+            "gross": 355,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0626910:91c9dde70c",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0626910:57a1961beb",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:10",
+                "end_time": "14:44",
+                "school_name": "Itliong-Vera Cruz Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:20",
+                "end_time": "13:26",
+                "school_name": "Itliong-Vera Cruz Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1142,
+            "completion_tokens": 152,
+            "cost_usd": 0.000175,
+            "latency_ms": 13986,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050206-h4lzfjeTqcVT7mHl9eQF"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:15",
+                "end_time": "14:44",
+                "school_name": "Itliong-Vera Cruz Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1193,
+            "completion_tokens": 75,
+            "cost_usd": 6.565e-05,
+            "latency_ms": 13326,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050220-H3u4DcV23GwuYJa1x01t"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:15",
+                "end_time": "14:44",
+                "school_name": "Itliong-Vera Cruz Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1177,
+            "completion_tokens": 45,
+            "cost_usd": 0.00020078,
+            "latency_ms": 13991,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050233-IZ7XN6vc0vcqFYl6YXXk"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "itliongvera cruz",
+            "start": "08:15",
+            "end": "14:44",
+            "gross": 389,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0626910:57a1961beb",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0626910:5e6ffc71ef",
+        "file": "camelot_stream.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:26",
+                "end_time": "16:39",
+                "school_name": "Fivay High",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1603,
+            "completion_tokens": 49,
+            "cost_usd": 0.0001799,
+            "latency_ms": 14843,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050249-erOQ6EKsgggQtFOjdq5d"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:35",
+                "school_name": "Unknown",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1584,
+            "completion_tokens": 68,
+            "cost_usd": 8.464e-05,
+            "latency_ms": 14660,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050263-STZKCaElIoyUpvGteKKW"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:35",
+                "school_name": "Fivay High",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1567,
+            "completion_tokens": 51,
+            "cost_usd": 0.0002733,
+            "latency_ms": 13063,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050275-4QA4SeulIIbOXrdbOBQw"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "fivay",
+            "start": "08:30",
+            "end": "15:35",
+            "gross": 425,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0626910:5e6ffc71ef",
+            "source_file": "camelot_stream.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "unknown",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:30"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:35"
+            },
+            "rec_key": "0626910:5e6ffc71ef",
+            "source_file": "camelot_stream.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "0626910:602419209e",
+        "file": "camelot_stream.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 10,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Kindergarten Rooms 3, 6"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Kindergarten Rooms 10, 13"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "GRADE 1"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "GRADE 2"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "GRADE 3"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "GRADES 4, 5"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "TK"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Kindergarten"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "12:05",
+                "school_name": "TK (Modified Day)"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "12:05",
+                "school_name": "Kindergarten (Modified Day)"
+              }
+            ],
+            "prompt_tokens": 2872,
+            "completion_tokens": 362,
+            "cost_usd": 0.000432,
+            "latency_ms": 11708,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050288-bWqr9wRFCdTIZ1szfdvu"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 420,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 228924,
+            "finish_reason": null,
+            "generation_id": "gen-1783050301-QamlXCsyhfGlH5H3DDty"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 6,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "TK",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Kindergarten",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Grade 1",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Grade 2",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Grade 3",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Grades 4, 5",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2814,
+            "completion_tokens": 216,
+            "cost_usd": 0.00037854,
+            "latency_ms": 16866,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050531-nxPhF4wdFU58jkgl3j6H"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "grade 1",
+            "start": "08:00",
+            "end": "14:05",
+            "gross": 365,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0626910:602419209e",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "grade 2",
+            "start": "08:00",
+            "end": "14:05",
+            "gross": 365,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0626910:602419209e",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "grade 3",
+            "start": "08:00",
+            "end": "14:05",
+            "gross": 365,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0626910:602419209e",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "grades 4 5",
+            "start": "08:00",
+            "end": "14:05",
+            "gross": 365,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0626910:602419209e",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "tk",
+            "start": "08:00",
+            "end": "14:05",
+            "gross": 365,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0626910:602419209e",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "kindergarten",
+            "start": "08:00",
+            "end": "14:05",
+            "gross": 365,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0626910:602419209e",
+            "source_file": "camelot_stream.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "kindergarten rooms 3 6",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:05"
+            },
+            "rec_key": "0626910:602419209e",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "kindergarten rooms 10 13",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:05"
+            },
+            "rec_key": "0626910:602419209e",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "tk modified day",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "12:05"
+            },
+            "rec_key": "0626910:602419209e",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "kindergarten modified day",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "12:05"
+            },
+            "rec_key": "0626910:602419209e",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:00"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:05"
+            },
+            "rec_key": "0626910:602419209e",
+            "source_file": "camelot_stream.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "0626910:db22077a79",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:05",
+                "school_name": "New Haven Academy"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:05",
+                "school_name": "New Haven Academy"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:05",
+                "school_name": "New Haven Academy"
+              }
+            ],
+            "prompt_tokens": 853,
+            "completion_tokens": 144,
+            "cost_usd": 0.0001429,
+            "latency_ms": 14113,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050548-G2mqAo7kqp4v22JXNIIX"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:05",
+                "school_name": "New Haven Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:35",
+                "school_name": "New Haven Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:05",
+                "school_name": "New Haven Academy",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 864,
+            "completion_tokens": 116,
+            "cost_usd": 5.248e-05,
+            "latency_ms": 14644,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050562-1iZtwY9my9H3kDvM4Vpx"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:05",
+                "school_name": "New Haven Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:35",
+                "school_name": "New Haven Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:05",
+                "school_name": "New Haven Academy",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 848,
+            "completion_tokens": 109,
+            "cost_usd": 0.00020895,
+            "latency_ms": 17276,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050575-sZYN740v03xIfUloe84j"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "new haven",
+            "start": "08:30",
+            "end": "15:05",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0626910:db22077a79",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "new haven",
+            "start": "08:30",
+            "end": "15:35",
+            "gross": 425,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0626910:db22077a79",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "new haven",
+            "start": "08:30",
+            "end": "15:05",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0626910:db22077a79",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0626910:6871d926a9",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Pioneer Elementary School"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "12:05",
+                "school_name": "Pioneer Elementary School"
+              }
+            ],
+            "prompt_tokens": 1848,
+            "completion_tokens": 75,
+            "cost_usd": 0.0002148,
+            "latency_ms": 12838,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050593-wjwzUbU3USjqiDxXOIby"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Pioneer Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1936,
+            "completion_tokens": 47,
+            "cost_usd": 0.00010056,
+            "latency_ms": 12656,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050606-LV1ovDaMDoRw3oFIQv1S"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "pioneer",
+            "start": "08:00",
+            "end": "14:05",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0626910:6871d926a9",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0626910:7438aaa13d",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Searles Elementary School"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "12:05",
+                "school_name": "Searles Elementary School"
+              }
+            ],
+            "prompt_tokens": 1801,
+            "completion_tokens": 80,
+            "cost_usd": 0.0002121,
+            "latency_ms": 13959,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050620-5ydR4jkUdMkFDOoHAg22"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:05",
+                "school_name": "Searles Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1937,
+            "completion_tokens": 47,
+            "cost_usd": 0.00010061,
+            "latency_ms": 14455,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783050634-jfxPHx3B2jNU5kFYuKYa"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "searles",
+            "start": "08:00",
+            "end": "14:05",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0626910:7438aaa13d",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "alvarado",
+        "start": "08:00",
+        "end": "14:05",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0626910:c559f4af14",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "conleycaraballo",
+        "start": "08:00",
+        "end": "13:54",
+        "gross": 354,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0626910:d5771bd18c",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "delaine eastin",
+        "start": "08:00",
+        "end": "14:05",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0626910:372eb50773",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "guy emanuele",
+        "start": "08:00",
+        "end": "14:05",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0626910:0a0b114129",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hillview crest",
+        "start": "08:10",
+        "end": "14:05",
+        "gross": 355,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0626910:91c9dde70c",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "itliongvera cruz",
+        "start": "08:15",
+        "end": "14:44",
+        "gross": 389,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0626910:57a1961beb",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "fivay",
+        "start": "08:30",
+        "end": "15:35",
+        "gross": 425,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0626910:5e6ffc71ef",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "grade 1",
+        "start": "08:00",
+        "end": "14:05",
+        "gross": 365,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0626910:602419209e",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "grade 2",
+        "start": "08:00",
+        "end": "14:05",
+        "gross": 365,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0626910:602419209e",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "grade 3",
+        "start": "08:00",
+        "end": "14:05",
+        "gross": 365,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0626910:602419209e",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "grades 4 5",
+        "start": "08:00",
+        "end": "14:05",
+        "gross": 365,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0626910:602419209e",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "tk",
+        "start": "08:00",
+        "end": "14:05",
+        "gross": 365,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0626910:602419209e",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "kindergarten",
+        "start": "08:00",
+        "end": "14:05",
+        "gross": 365,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0626910:602419209e",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "middle",
+        "school": "new haven",
+        "start": "08:30",
+        "end": "15:05",
+        "gross": 395,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0626910:db22077a79",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "new haven",
+        "start": "08:30",
+        "end": "15:35",
+        "gross": 425,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0626910:db22077a79",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "new haven",
+        "start": "08:30",
+        "end": "15:05",
+        "gross": 395,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0626910:db22077a79",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "pioneer",
+        "start": "08:00",
+        "end": "14:05",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0626910:6871d926a9",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "searles",
+        "start": "08:00",
+        "end": "14:05",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0626910:7438aaa13d",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "high",
+        "school": "core alternative learning conleycaraballo",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "13:54"
+        },
+        "rec_key": "0626910:d5771bd18c",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "delaine eastin modified day",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "12:05"
+        },
+        "rec_key": "0626910:372eb50773",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "unknown",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:30"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:35"
+        },
+        "rec_key": "0626910:5e6ffc71ef",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "kindergarten rooms 3 6",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:05"
+        },
+        "rec_key": "0626910:602419209e",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "kindergarten rooms 10 13",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:05"
+        },
+        "rec_key": "0626910:602419209e",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "tk modified day",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "12:05"
+        },
+        "rec_key": "0626910:602419209e",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "kindergarten modified day",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "12:05"
+        },
+        "rec_key": "0626910:602419209e",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:00"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:05"
+        },
+        "rec_key": "0626910:602419209e",
+        "source_file": "camelot_stream.txt"
+      }
+    ],
+    "n_reps": 11,
+    "n_judged": 6,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 365,
+        "start_time": "08:00",
+        "end_time": "14:05",
+        "n_schools": 13,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "alvarado",
+            "start_time": "08:00",
+            "end_time": "14:05",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "delaine eastin",
+            "start_time": "08:00",
+            "end_time": "14:05",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "guy emanuele",
+            "start_time": "08:00",
+            "end_time": "14:05",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hillview crest",
+            "start_time": "08:10",
+            "end_time": "14:05",
+            "gross": 355,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "grade 1",
+            "start_time": "08:00",
+            "end_time": "14:05",
+            "gross": 365,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "grade 2",
+            "start_time": "08:00",
+            "end_time": "14:05",
+            "gross": 365,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "grade 3",
+            "start_time": "08:00",
+            "end_time": "14:05",
+            "gross": 365,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "grades 4 5",
+            "start_time": "08:00",
+            "end_time": "14:05",
+            "gross": 365,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "tk",
+            "start_time": "08:00",
+            "end_time": "14:05",
+            "gross": 365,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "kindergarten",
+            "start_time": "08:00",
+            "end_time": "14:05",
+            "gross": 365,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "new haven",
+            "start_time": "08:30",
+            "end_time": "15:35",
+            "gross": 425,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "pioneer",
+            "start_time": "08:00",
+            "end_time": "14:05",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "searles",
+            "start_time": "08:00",
+            "end_time": "14:05",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 392,
+        "start_time": "08:15",
+        "end_time": "14:44",
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "itliongvera cruz",
+            "start_time": "08:15",
+            "end_time": "14:44",
+            "gross": 389,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "new haven",
+            "start_time": "08:30",
+            "end_time": "15:05",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 391,
+        "start_time": "08:30",
+        "end_time": "15:05",
+        "n_schools": 3,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "conleycaraballo",
+            "start_time": "08:00",
+            "end_time": "13:54",
+            "gross": 354,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "fivay",
+            "start_time": "08:30",
+            "end_time": "15:35",
+            "gross": 425,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "new haven",
+            "start_time": "08:30",
+            "end_time": "15:05",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 28,
+      "judge_calls": 6,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 42984,
+      "completion_tokens": 2332,
+      "cost_usd": 0.004466170000000001
+    }
+  }
+}

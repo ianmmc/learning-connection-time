@@ -9,8 +9,8 @@ present the same streaming `call()`.
 
 Two layers of guard: (1) BEHAVIORAL — the live client streams, accumulates many chunks incrementally,
 and survives keep-alive gaps; (2) a SOURCE guard — no OpenAI-SDK chat-completion call anywhere in the
-acquisition code runs un-streamed (deprecated, non-live paths are an explicit, bounded allowlist, so a
-NEW blocking call fails this test)."""
+acquisition code runs un-streamed, unconditionally (the one-time deprecated-path allowlist emptied and
+was removed when its only entry, openrouter_search, was deleted — #87)."""
 import ast
 import types
 from pathlib import Path
@@ -109,10 +109,9 @@ def test_usage_and_finish_read_after_a_long_stream(monkeypatch):
 
 
 # --------------------------- source guard: no un-streamed completion calls ---------------------------
-# The retired non-streaming OpenRouter AI-search provider (openrouter_search) was REMOVED in #87 (it was
-# the only allowlisted non-streaming completion call). The allowlist is now empty: any un-streamed
-# OpenAI-SDK chat-completion call in acquisition is an unconditional failure (REQ-119).
-_DEPRECATED_NONSTREAMING = set()
+# Any un-streamed OpenAI-SDK chat-completion call in acquisition is an unconditional failure (REQ-119).
+# (The deprecated-path allowlist this guard once carried was removed with its only entry,
+# openrouter_search — #87. If a legitimate exemption ever reappears, re-introduce it deliberately.)
 _ACQ = Path(__file__).resolve().parents[1] / "infrastructure" / "acquisition"
 
 
@@ -127,7 +126,6 @@ def test_no_nonstreaming_llm_completion_calls_in_acquisition():
         src = py.read_text()
         if "chat.completions.create" not in src:
             continue
-        rel = str(py.relative_to(_ACQ.parent.parent))  # e.g. infrastructure/acquisition/... -> trim below
         rel = str(py.relative_to(_ACQ)).replace("\\", "/")
         tree = ast.parse(src)
         for node in ast.walk(tree):
@@ -135,8 +133,7 @@ def test_no_nonstreaming_llm_completion_calls_in_acquisition():
                 continue
             fn_src = ast.get_source_segment(src, node) or ""
             if "chat.completions.create" in fn_src and not _streams(fn_src):
-                if (rel, node.name) not in _DEPRECATED_NONSTREAMING:
-                    offenders.append(f"{rel}::{node.name}")
+                offenders.append(f"{rel}::{node.name}")
     assert not offenders, (
         "un-streamed OpenAI-SDK chat-completion call(s) found — external-AI calls must stream (REQ-119): "
         + ", ".join(offenders))

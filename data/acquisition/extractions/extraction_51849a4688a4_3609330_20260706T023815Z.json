@@ -1,0 +1,352 @@
+{
+  "handoff_hash": "51849a4688a4",
+  "district": {
+    "district_id": "3609330",
+    "name": "DRYDEN CENTRAL SCHOOL DISTRICT",
+    "reps": [
+      {
+        "rec_key": "3609330:3fae2568a4",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:48",
+                "end_time": "14:14",
+                "school_name": "Dryden Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1365,
+            "completion_tokens": 49,
+            "cost_usd": 0.0001561,
+            "latency_ms": 765,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305485-l3hbeU2sLqyTyqzygs6y"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:48",
+                "end_time": "14:14",
+                "school_name": "Dryden Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1462,
+            "completion_tokens": 46,
+            "cost_usd": 7.678e-05,
+            "latency_ms": 1283,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305486-fYXyLMYe8E8TEVg1iB6X"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "dryden",
+            "start": "07:48",
+            "end": "14:14",
+            "gross": 386,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3609330:3fae2568a4",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3609330:12f8c4604f",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:48",
+                "end_time": "14:35",
+                "school_name": "Dryden High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:48",
+                "end_time": "14:35",
+                "school_name": "Dryden High School",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:48",
+                "end_time": "14:35",
+                "school_name": "Dryden High School",
+                "confidence": "medium"
+              }
+            ],
+            "prompt_tokens": 1443,
+            "completion_tokens": 165,
+            "cost_usd": 0.0002103,
+            "latency_ms": 726,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305488-AuzLcDwERLFl9tuwA8pc"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:48",
+                "end_time": "14:31",
+                "school_name": "Dryden High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1536,
+            "completion_tokens": 72,
+            "cost_usd": 8.256e-05,
+            "latency_ms": 4148,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305490-TgqDmvbp2Cy4B7aAE2NE"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "dryden",
+            "start": "07:48",
+            "end": "14:33",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3609330:12f8c4604f",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3609330:d48a9179d2",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:22",
+                "school_name": "Dryden Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2539,
+            "completion_tokens": 44,
+            "cost_usd": 0.0002715,
+            "latency_ms": 635,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305493-UUExGo4MASVJC90OV53V"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:22",
+                "school_name": "Dryden Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2545,
+            "completion_tokens": 51,
+            "cost_usd": 0.00013133,
+            "latency_ms": 1414,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305493-hGELH68eccbAISBb3Omw"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "dryden",
+            "start": "09:00",
+            "end": "15:22",
+            "gross": 382,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3609330:d48a9179d2",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "middle",
+        "school": "dryden",
+        "start": "07:48",
+        "end": "14:14",
+        "gross": 386,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3609330:3fae2568a4",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "dryden",
+        "start": "07:48",
+        "end": "14:33",
+        "gross": 405,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3609330:12f8c4604f",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "dryden",
+        "start": "09:00",
+        "end": "15:22",
+        "gross": 382,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3609330:d48a9179d2",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 3,
+    "n_judged": 0,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 382,
+        "start_time": "09:00",
+        "end_time": "15:22",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "dryden",
+            "start_time": "09:00",
+            "end_time": "15:22",
+            "gross": 382,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 386,
+        "start_time": "07:48",
+        "end_time": "14:14",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "dryden",
+            "start_time": "07:48",
+            "end_time": "14:14",
+            "gross": 386,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 405,
+        "start_time": "07:48",
+        "end_time": "14:33",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "dryden",
+            "start_time": "07:48",
+            "end_time": "14:33",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 6,
+      "judge_calls": 0,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 10890,
+      "completion_tokens": 427,
+      "cost_usd": 0.0009285699999999999
+    },
+    "state": "NY"
+  }
+}

@@ -1,0 +1,572 @@
+{
+  "handoff_hash": "c127b5f6e5d7",
+  "district": {
+    "district_id": "4900540",
+    "name": "Millard District",
+    "reps": [
+      {
+        "rec_key": "4900540:b6de222ea5",
+        "file": "tesseract_image.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 9,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "15:00",
+                "school_name": "Delta South Elem",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:50",
+                "school_name": "Delta North Elem",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "14:40",
+                "school_name": "Delta Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:10",
+                "end_time": "14:40",
+                "school_name": "Delta Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "14:45",
+                "school_name": "Fillmore Elem",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "14:45",
+                "school_name": "Fillmore Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:10",
+                "end_time": "14:40",
+                "school_name": "Millard High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:15",
+                "school_name": "Garrison Elem",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:10",
+                "school_name": "EskDale High",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 948,
+            "completion_tokens": 465,
+            "cost_usd": 0.0002808,
+            "latency_ms": 1331,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285005-VI5QPVy4wDLiukbQmqou"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 9,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "15:00",
+                "school_name": "Delta South Elem",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:50",
+                "school_name": "Delta North Elem",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "14:40",
+                "school_name": "Delta Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:10",
+                "end_time": "14:40",
+                "school_name": "Delta Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "14:45",
+                "school_name": "Fillmore Elem",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:10",
+                "end_time": "14:45",
+                "school_name": "Fillmore Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:10",
+                "end_time": "14:40",
+                "school_name": "Millard High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:15",
+                "school_name": "Garrison Elem",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:10",
+                "school_name": "EskDale High",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 957,
+            "completion_tokens": 511,
+            "cost_usd": 8.873e-05,
+            "latency_ms": 5488,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783285007-l4KZSxq3kYTBhm6R50SQ"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "delta south elem",
+            "start": "08:25",
+            "end": "15:00",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "4900540:b6de222ea5",
+            "source_file": "tesseract_image.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "delta north elem",
+            "start": "08:15",
+            "end": "14:50",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "4900540:b6de222ea5",
+            "source_file": "tesseract_image.txt"
+          },
+          {
+            "band": "middle",
+            "school": "delta",
+            "start": "08:10",
+            "end": "14:40",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "4900540:b6de222ea5",
+            "source_file": "tesseract_image.txt"
+          },
+          {
+            "band": "high",
+            "school": "delta",
+            "start": "08:10",
+            "end": "14:40",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "4900540:b6de222ea5",
+            "source_file": "tesseract_image.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "fillmore elem",
+            "start": "08:10",
+            "end": "14:45",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "4900540:b6de222ea5",
+            "source_file": "tesseract_image.txt"
+          },
+          {
+            "band": "middle",
+            "school": "fillmore",
+            "start": "08:10",
+            "end": "14:45",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "4900540:b6de222ea5",
+            "source_file": "tesseract_image.txt"
+          },
+          {
+            "band": "high",
+            "school": "millard",
+            "start": "08:10",
+            "end": "14:40",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "4900540:b6de222ea5",
+            "source_file": "tesseract_image.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "garrison elem",
+            "start": "08:30",
+            "end": "15:15",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "4900540:b6de222ea5",
+            "source_file": "tesseract_image.txt"
+          },
+          {
+            "band": "high",
+            "school": "eskdale",
+            "start": "07:55",
+            "end": "15:10",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "4900540:b6de222ea5",
+            "source_file": "tesseract_image.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "delta south elem",
+        "start": "08:25",
+        "end": "15:00",
+        "gross": 395,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "4900540:b6de222ea5",
+        "source_file": "tesseract_image.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "delta north elem",
+        "start": "08:15",
+        "end": "14:50",
+        "gross": 395,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "4900540:b6de222ea5",
+        "source_file": "tesseract_image.txt"
+      },
+      {
+        "band": "middle",
+        "school": "delta",
+        "start": "08:10",
+        "end": "14:40",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "4900540:b6de222ea5",
+        "source_file": "tesseract_image.txt"
+      },
+      {
+        "band": "high",
+        "school": "delta",
+        "start": "08:10",
+        "end": "14:40",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "4900540:b6de222ea5",
+        "source_file": "tesseract_image.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "fillmore elem",
+        "start": "08:10",
+        "end": "14:45",
+        "gross": 395,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "4900540:b6de222ea5",
+        "source_file": "tesseract_image.txt"
+      },
+      {
+        "band": "middle",
+        "school": "fillmore",
+        "start": "08:10",
+        "end": "14:45",
+        "gross": 395,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "4900540:b6de222ea5",
+        "source_file": "tesseract_image.txt"
+      },
+      {
+        "band": "high",
+        "school": "millard",
+        "start": "08:10",
+        "end": "14:40",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "4900540:b6de222ea5",
+        "source_file": "tesseract_image.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "garrison elem",
+        "start": "08:30",
+        "end": "15:15",
+        "gross": 405,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "4900540:b6de222ea5",
+        "source_file": "tesseract_image.txt"
+      },
+      {
+        "band": "high",
+        "school": "eskdale",
+        "start": "07:55",
+        "end": "15:10",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "4900540:b6de222ea5",
+        "source_file": "tesseract_image.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 1,
+    "n_judged": 0,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 395,
+        "start_time": "08:25",
+        "end_time": "15:00",
+        "n_schools": 4,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "delta south elem",
+            "start_time": "08:25",
+            "end_time": "15:00",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "delta north elem",
+            "start_time": "08:15",
+            "end_time": "14:50",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "fillmore elem",
+            "start_time": "08:10",
+            "end_time": "14:45",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "garrison elem",
+            "start_time": "08:30",
+            "end_time": "15:15",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 392,
+        "start_time": "08:10",
+        "end_time": "14:40",
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "delta",
+            "start_time": "08:10",
+            "end_time": "14:40",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "fillmore",
+            "start_time": "08:10",
+            "end_time": "14:45",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 390,
+        "start_time": "08:10",
+        "end_time": "14:40",
+        "n_schools": 3,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "delta",
+            "start_time": "08:10",
+            "end_time": "14:40",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "millard",
+            "start_time": "08:10",
+            "end_time": "14:40",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "eskdale",
+            "start_time": "07:55",
+            "end_time": "15:10",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 2,
+      "judge_calls": 0,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 1905,
+      "completion_tokens": 976,
+      "cost_usd": 0.00036952999999999997
+    },
+    "state": "UT"
+  }
+}

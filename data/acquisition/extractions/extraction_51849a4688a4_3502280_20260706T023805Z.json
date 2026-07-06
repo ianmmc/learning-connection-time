@@ -1,0 +1,130 @@
+{
+  "handoff_hash": "51849a4688a4",
+  "district": {
+    "district_id": "3502280",
+    "name": "ROY",
+    "reps": [
+      {
+        "rec_key": "3502280:31170892b5",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "16:00",
+                "school_name": "Roy Municipal Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 842,
+            "completion_tokens": 43,
+            "cost_usd": 0.0001014,
+            "latency_ms": 992,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305483-bmDUotRtowfYzfd49J9N"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "16:00",
+                "school_name": "Roy Municipal Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 839,
+            "completion_tokens": 43,
+            "cost_usd": 4.539e-05,
+            "latency_ms": 1015,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305484-nsFc6bU8v3rVEEuSxoap"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "roy municipal schools",
+            "start": "08:00",
+            "end": "16:00",
+            "gross": 480,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3502280:31170892b5",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "roy municipal schools",
+        "start": "08:00",
+        "end": "16:00",
+        "gross": 480,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3502280:31170892b5",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 1,
+    "n_judged": 0,
+    "bands": {
+      "high": {
+        "gross_minutes": 480,
+        "start_time": "08:00",
+        "end_time": "16:00",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "roy municipal schools",
+            "start_time": "08:00",
+            "end_time": "16:00",
+            "gross": 480,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 2,
+      "judge_calls": 0,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 1681,
+      "completion_tokens": 86,
+      "cost_usd": 0.00014679
+    },
+    "state": "NM"
+  }
+}

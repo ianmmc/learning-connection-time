@@ -1,0 +1,349 @@
+{
+  "handoff_hash": "755c98eea0ac",
+  "district": {
+    "district_id": "0806750",
+    "name": "Strasburg School District 31J",
+    "reps": [
+      {
+        "rec_key": "0806750:72be9003bb",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "15:40",
+                "school_name": "Strasburg Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 894,
+            "completion_tokens": 50,
+            "cost_usd": 0.0001094,
+            "latency_ms": 1023,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783312669-AdpbAA3MBAH8meiSRmxk"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "15:40",
+                "school_name": "Strasburg Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 921,
+            "completion_tokens": 73,
+            "cost_usd": 5.189e-05,
+            "latency_ms": 1383,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783312669-amVvxR8HwKX1z1YutLR2"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "strasburg",
+            "start": "07:55",
+            "end": "15:40",
+            "gross": 465,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0806750:72be9003bb",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0806750:d839387273",
+        "file": "tesseract_screenshot.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "15:45",
+                "school_name": "SHS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:50",
+                "school_name": "HMS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "15:40",
+                "school_name": "SES",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1642,
+            "completion_tokens": 119,
+            "cost_usd": 0.0002118,
+            "latency_ms": 805,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783312671-rwT18Yl1mNcJRan5Q0BI"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "15:45",
+                "school_name": "SHS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:50",
+                "school_name": "HMS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "15:40",
+                "school_name": "SES",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1684,
+            "completion_tokens": 174,
+            "cost_usd": 9.812e-05,
+            "latency_ms": 2538,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783312672-gCoqvhZKnsPMC4Ar9B4J"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "shs",
+            "start": "07:45",
+            "end": "15:45",
+            "gross": 480,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0806750:d839387273",
+            "source_file": "tesseract_screenshot.txt"
+          },
+          {
+            "band": "middle",
+            "school": "hms",
+            "start": "07:50",
+            "end": "15:50",
+            "gross": 480,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0806750:d839387273",
+            "source_file": "tesseract_screenshot.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "ses",
+            "start": "07:55",
+            "end": "15:40",
+            "gross": 465,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0806750:d839387273",
+            "source_file": "tesseract_screenshot.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "strasburg",
+        "start": "07:55",
+        "end": "15:40",
+        "gross": 465,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0806750:72be9003bb",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "shs",
+        "start": "07:45",
+        "end": "15:45",
+        "gross": 480,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0806750:d839387273",
+        "source_file": "tesseract_screenshot.txt"
+      },
+      {
+        "band": "middle",
+        "school": "hms",
+        "start": "07:50",
+        "end": "15:50",
+        "gross": 480,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0806750:d839387273",
+        "source_file": "tesseract_screenshot.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "ses",
+        "start": "07:55",
+        "end": "15:40",
+        "gross": 465,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0806750:d839387273",
+        "source_file": "tesseract_screenshot.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 2,
+    "n_judged": 0,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 465,
+        "start_time": "07:55",
+        "end_time": "15:40",
+        "n_schools": 2,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "strasburg",
+            "start_time": "07:55",
+            "end_time": "15:40",
+            "gross": 465,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ses",
+            "start_time": "07:55",
+            "end_time": "15:40",
+            "gross": 465,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 480,
+        "start_time": "07:50",
+        "end_time": "15:50",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "hms",
+            "start_time": "07:50",
+            "end_time": "15:50",
+            "gross": 480,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 480,
+        "start_time": "07:45",
+        "end_time": "15:45",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "shs",
+            "start_time": "07:45",
+            "end_time": "15:45",
+            "gross": 480,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 4,
+      "judge_calls": 0,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 5141,
+      "completion_tokens": 416,
+      "cost_usd": 0.00047120999999999996
+    },
+    "state": "CO"
+  }
+}

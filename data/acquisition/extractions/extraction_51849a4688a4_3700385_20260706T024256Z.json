@@ -1,0 +1,3328 @@
+{
+  "handoff_hash": "51849a4688a4",
+  "district": {
+    "district_id": "3700385",
+    "name": "KIPP Durham College Preparatory",
+    "reps": [
+      {
+        "rec_key": "3700385:0b57e9d898",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 55,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Club Boulevard",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Creekside",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Easley",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Eastway",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Eno Valley",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Forest View",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Fayetteville St.",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Glenn",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "R.N. Harris",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Hillandale",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Holt",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Hope Valley",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Lakewood",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Lyons Farm",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Little River Montessori",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Mangum",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Merrick-Moore",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Morehead",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Murray-Massenburg",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Oak Grove",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Parkwood",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "W.G. Pearson",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Pearsontown",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "E.K. Powe",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Sandy Ridge",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Y.E. Smith",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Southwest",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "CC Spaulding",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Spring Valley",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "George Watts",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Brogden",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Carrington",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Githens",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Lakewood",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Lowe's Grove",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Lucas",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Neal",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Rogers-Herr",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Shepard",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Durham School of the Arts",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "School for Creative Studies",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Lakeview Learning Center",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "City of Medicine Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Hillside High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Durham Early College of Health Sciences",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Durham School of Technology",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Holton Career Center",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "16:00",
+                "school_name": "JD Clement Early College",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Jordan High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Northern High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Performance Learning Center",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Riverside High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Southern School of Energy and Sustainability",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "k-12",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Hospital School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "k-12",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Ignite! Online Academy",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1636,
+            "completion_tokens": 2107,
+            "cost_usd": 0.0010064,
+            "latency_ms": 4187,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305495-uzLoimxqURPhfm3yvqxj"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 52,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Club Boulevard",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Creekside",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Easley",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Eastway",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Eno Valley",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Forest View",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Fayetteville St.",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Glenn",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "R.N. Harris",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Hillandale",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Holt",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Hope Valley",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Lakewood",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Lyons Farm",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Little River Montessori",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Mangum",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Merrick-Moore",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Morehead",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Murray-Massenburg",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Oak Grove",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Parkwood",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "W.G. Pearson",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Pearsontown",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "E.K. Powe",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Sandy Ridge",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Y.E. Smith",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Southwest",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "CC Spaulding",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Spring Valley",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "George Watts",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Brogden",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Carrington",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Githens",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Lakewood",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Lowe's Grove",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Lucas",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Neal",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Rogers-Herr",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Shepard",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "City of Medicine Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Hillside High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Durham Early College of Health Sciences",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Durham School of Technology",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Holton Career Center",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "16:00",
+                "school_name": "JD Clement Early College",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Jordan High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Northern High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Performance Learning Center",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Riverside High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Southern School of Energy and Sustainability",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Hospital School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Ignite! Online Academy",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1601,
+            "completion_tokens": 2461,
+            "cost_usd": 0.00027693,
+            "latency_ms": 52489,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305499-gtKOGzwpSa2JGJlc3BaL"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 55,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Club Boulevard",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Creekside",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Easley",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Eastway",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Eno Valley",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Forest View",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Fayetteville St.",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Glenn",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "R.N. Harris",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Hillandale",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Holt",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Hope Valley",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Lakewood",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Lyons Farm",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Little River Montessori",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Mangum",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Merrick-Moore",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Morehead",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Murray-Massenburg",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Oak Grove",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Parkwood",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "W.G. Pearson",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Pearsontown",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "E.K. Powe",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Sandy Ridge",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Y.E. Smith",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Southwest",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "CC Spaulding",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "Spring Valley",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:15",
+                "school_name": "George Watts",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Brogden",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Carrington",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Githens",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Lakewood",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Lowe's Grove",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Lucas",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Neal",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Rogers-Herr",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Shepard",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Durham School of the Arts",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "School for Creative Studies",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Lakeview Learning Center",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:20",
+                "school_name": "Ignite! Online Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "City of Medicine Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Hillside High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Durham Early College of Health Sciences",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Durham School of Technology",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Holton Career Center",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "16:00",
+                "school_name": "JD Clement Early College",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Jordan High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Northern High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Performance Learning Center",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Riverside High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Southern School of Energy and Sustainability",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Hospital School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1534,
+            "completion_tokens": 1926,
+            "cost_usd": 0.00125514,
+            "latency_ms": 224785,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305552-unezajV4A3T5pxqSktSm"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "club boulevard",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "creekside",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "easley",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "eastway",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "eno valley",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "forest view",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "fayetteville st",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "glenn",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "rn harris",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "hillandale",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "holt",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "hope valley",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lakewood",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "lyons farm",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "little river montessori",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "mangum",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "merrickmoore",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "morehead",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "murraymassenburg",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "oak grove",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "parkwood",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "wg pearson",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "pearsontown",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "ek powe",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "sandy ridge",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "ye smith",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "southwest",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "cc spaulding",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "spring valley",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "george watts",
+            "start": "07:45",
+            "end": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "brogden",
+            "start": "08:30",
+            "end": "15:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "carrington",
+            "start": "08:30",
+            "end": "15:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "githens",
+            "start": "08:30",
+            "end": "15:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "lakewood",
+            "start": "08:30",
+            "end": "15:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "lowes grove",
+            "start": "08:30",
+            "end": "15:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "lucas",
+            "start": "08:30",
+            "end": "15:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "neal",
+            "start": "08:30",
+            "end": "15:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "rogersherr",
+            "start": "08:30",
+            "end": "15:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "shepard",
+            "start": "08:30",
+            "end": "15:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "city medicine",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "hillside",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "durham early college health sciences",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "durham technology",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "holton career center",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "jd clement early college",
+            "start": "09:00",
+            "end": "16:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "jordan",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "northern",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "performance learning center",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "riverside",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "southern energy and sustainability",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "middle",
+            "school": "ignite online",
+            "start": "08:30",
+            "end": "15:20",
+            "gross": 410,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "durham arts",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:20"
+            },
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "for creative studies",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:20"
+            },
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "high",
+            "school": "lakeview learning center",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:20"
+            },
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "hospital",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "09:15"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "16:15"
+            },
+            "rec_key": "3700385:0b57e9d898",
+            "source_file": "harvest_slice.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "club boulevard",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "creekside",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "easley",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "eastway",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "eno valley",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "forest view",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "fayetteville st",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "glenn",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "rn harris",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hillandale",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "holt",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hope valley",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lakewood",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "lyons farm",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "little river montessori",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "mangum",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "merrickmoore",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "morehead",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "murraymassenburg",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "oak grove",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "parkwood",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "wg pearson",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "pearsontown",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "ek powe",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "sandy ridge",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "ye smith",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "southwest",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "cc spaulding",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "spring valley",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "george watts",
+        "start": "07:45",
+        "end": "14:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "brogden",
+        "start": "08:30",
+        "end": "15:20",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "carrington",
+        "start": "08:30",
+        "end": "15:20",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "githens",
+        "start": "08:30",
+        "end": "15:20",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "lakewood",
+        "start": "08:30",
+        "end": "15:20",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "lowes grove",
+        "start": "08:30",
+        "end": "15:20",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "lucas",
+        "start": "08:30",
+        "end": "15:20",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "neal",
+        "start": "08:30",
+        "end": "15:20",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "rogersherr",
+        "start": "08:30",
+        "end": "15:20",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "shepard",
+        "start": "08:30",
+        "end": "15:20",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "city medicine",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "hillside",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "durham early college health sciences",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "durham technology",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "holton career center",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "jd clement early college",
+        "start": "09:00",
+        "end": "16:00",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "jordan",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "northern",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "performance learning center",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "riverside",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "southern energy and sustainability",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "middle",
+        "school": "ignite online",
+        "start": "08:30",
+        "end": "15:20",
+        "gross": 410,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "high",
+        "school": "durham arts",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:20"
+        },
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "for creative studies",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:20"
+        },
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "high",
+        "school": "lakeview learning center",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:20"
+        },
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hospital",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "09:15"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "16:15"
+        },
+        "rec_key": "3700385:0b57e9d898",
+        "source_file": "harvest_slice.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 390,
+        "start_time": "07:45",
+        "end_time": "14:15",
+        "n_schools": 30,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "club boulevard",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "creekside",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "easley",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "eastway",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "eno valley",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "forest view",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "fayetteville st",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "glenn",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "rn harris",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hillandale",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "holt",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hope valley",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lakewood",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lyons farm",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "little river montessori",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mangum",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "merrickmoore",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "morehead",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "murraymassenburg",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "oak grove",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "parkwood",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "wg pearson",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "pearsontown",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ek powe",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "sandy ridge",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ye smith",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "southwest",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "cc spaulding",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "spring valley",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "george watts",
+            "start_time": "07:45",
+            "end_time": "14:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 410,
+        "start_time": "08:30",
+        "end_time": "15:20",
+        "n_schools": 10,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "brogden",
+            "start_time": "08:30",
+            "end_time": "15:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "carrington",
+            "start_time": "08:30",
+            "end_time": "15:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "githens",
+            "start_time": "08:30",
+            "end_time": "15:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lakewood",
+            "start_time": "08:30",
+            "end_time": "15:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lowes grove",
+            "start_time": "08:30",
+            "end_time": "15:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lucas",
+            "start_time": "08:30",
+            "end_time": "15:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "neal",
+            "start_time": "08:30",
+            "end_time": "15:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "rogersherr",
+            "start_time": "08:30",
+            "end_time": "15:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "shepard",
+            "start_time": "08:30",
+            "end_time": "15:20",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ignite online",
+            "start_time": "08:30",
+            "end_time": "15:20",
+            "gross": 410,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 420,
+        "start_time": "09:15",
+        "end_time": "16:15",
+        "n_schools": 11,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "city medicine",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hillside",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "durham early college health sciences",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "durham technology",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "holton career center",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "jd clement early college",
+            "start_time": "09:00",
+            "end_time": "16:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "jordan",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "northern",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "performance learning center",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "riverside",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "southern energy and sustainability",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 4771,
+      "completion_tokens": 6494,
+      "cost_usd": 0.00253847
+    },
+    "state": "NC"
+  }
+}

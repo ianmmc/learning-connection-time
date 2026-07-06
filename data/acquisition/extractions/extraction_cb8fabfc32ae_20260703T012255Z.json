@@ -1,0 +1,1971 @@
+{
+  "handoff_hash": "cb8fabfc32ae",
+  "districts": {
+    "1000080": {
+      "district_id": "1000080",
+      "name": "Appoquinimink School District",
+      "reps": [
+        {
+          "rec_key": "1000080:ce2cad0f08",
+          "file": "pdftotext.txt",
+          "kind": "text",
+          "council_id": "low-cost-text",
+          "judged": true,
+          "calls": [
+            {
+              "model": "google/gemini-2.5-flash-lite",
+              "role": "voter",
+              "ok": true,
+              "error": null,
+              "n_facts": 18,
+              "facts": [
+                {
+                  "grade_level": "high",
+                  "start_time": "08:20",
+                  "end_time": "15:00",
+                  "school_name": "Appoquinimink HS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "high",
+                  "start_time": "08:20",
+                  "end_time": "15:00",
+                  "school_name": "Middletown HS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "high",
+                  "start_time": "08:20",
+                  "end_time": "15:00",
+                  "school_name": "Odessa HS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "middle",
+                  "start_time": "08:20",
+                  "end_time": "15:00",
+                  "school_name": "Special Program MS/HS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "middle",
+                  "start_time": "07:30",
+                  "end_time": "14:10",
+                  "school_name": "Everett Meredith MS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "middle",
+                  "start_time": "07:30",
+                  "end_time": "14:10",
+                  "school_name": "Louis L. Redding MS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "middle",
+                  "start_time": "07:30",
+                  "end_time": "14:10",
+                  "school_name": "Alfred G. Waters MS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "middle",
+                  "start_time": "07:30",
+                  "end_time": "14:10",
+                  "school_name": "Cantwell\u2019s Bridge MS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Brick Mill ES/ECC",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Bunker Hill ES",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Cedar Lane ES/ECC",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Lorewood Grove ES",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Crystal Run ES",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Old State ES & Spring Meadow ECC",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Olive B. Loss ES",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Silver Lake ES",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Townsend ES/ECC",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:10",
+                  "school_name": "Appoquinimink Preschool Full",
+                  "confidence": "high"
+                }
+              ],
+              "prompt_tokens": 1256,
+              "completion_tokens": 782,
+              "cost_usd": 0.0004384,
+              "latency_ms": 15510
+            },
+            {
+              "model": "mistralai/mistral-small-24b-instruct-2501",
+              "role": "voter",
+              "ok": true,
+              "error": null,
+              "n_facts": 16,
+              "facts": [
+                {
+                  "grade_level": "high",
+                  "start_time": "08:20",
+                  "end_time": "15:00",
+                  "school_name": "Appoquinimink HS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "high",
+                  "start_time": "08:20",
+                  "end_time": "15:00",
+                  "school_name": "Middletown HS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "high",
+                  "start_time": "08:20",
+                  "end_time": "15:00",
+                  "school_name": "Odessa HS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "middle",
+                  "start_time": "07:30",
+                  "end_time": "14:10",
+                  "school_name": "Everett Meredith MS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "middle",
+                  "start_time": "07:30",
+                  "end_time": "14:10",
+                  "school_name": "Louis L. Redding MS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "middle",
+                  "start_time": "07:30",
+                  "end_time": "14:10",
+                  "school_name": "Alfred G. Waters MS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "middle",
+                  "start_time": "07:30",
+                  "end_time": "14:10",
+                  "school_name": "Cantwell\u2019s Bridge MS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Brick Mill ES/ECC",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Bunker Hill ES",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Cedar Lane ES/ECC",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Lorewood Grove ES",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Crystal Run ES",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Old State ES & Spring Meadow ECC",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Olive B. Loss ES",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Silver Lake ES",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Townsend ES/ECC",
+                  "confidence": "high"
+                }
+              ],
+              "prompt_tokens": 1379,
+              "completion_tokens": 625,
+              "cost_usd": 0.00011895,
+              "latency_ms": 27250
+            },
+            {
+              "model": "qwen/qwen3-235b-a22b-2507",
+              "role": "judge",
+              "ok": true,
+              "error": null,
+              "n_facts": 16,
+              "facts": [
+                {
+                  "grade_level": "high",
+                  "start_time": "08:20",
+                  "end_time": "15:00",
+                  "school_name": "Appoquinimink HS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "high",
+                  "start_time": "08:20",
+                  "end_time": "15:00",
+                  "school_name": "Middletown HS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "high",
+                  "start_time": "08:20",
+                  "end_time": "15:00",
+                  "school_name": "Odessa HS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "middle",
+                  "start_time": "07:30",
+                  "end_time": "14:10",
+                  "school_name": "Everett Meredith MS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "middle",
+                  "start_time": "07:30",
+                  "end_time": "14:10",
+                  "school_name": "Louis L. Redding MS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "middle",
+                  "start_time": "07:30",
+                  "end_time": "14:10",
+                  "school_name": "Alfred G. Waters MS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "middle",
+                  "start_time": "07:30",
+                  "end_time": "14:10",
+                  "school_name": "Cantwell\u2019s Bridge MS",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Brick Mill ES/ECC",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Bunker Hill ES",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Cedar Lane ES/ECC",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Lorewood Grove ES",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Crystal Run ES",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Old State ES & Spring Meadow ECC",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Olive B. Loss ES",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Silver Lake ES",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "09:10",
+                  "end_time": "15:50",
+                  "school_name": "Townsend ES/ECC",
+                  "confidence": "high"
+                }
+              ],
+              "prompt_tokens": 1365,
+              "completion_tokens": 591,
+              "cost_usd": 0.00046563,
+              "latency_ms": 22213
+            }
+          ],
+          "accepted": [
+            {
+              "band": "high",
+              "school": "appoquinimink hs",
+              "start": "08:20",
+              "end": "15:00",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "1000080:ce2cad0f08",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "high",
+              "school": "middletown hs",
+              "start": "08:20",
+              "end": "15:00",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "1000080:ce2cad0f08",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "high",
+              "school": "odessa hs",
+              "start": "08:20",
+              "end": "15:00",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "1000080:ce2cad0f08",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "middle",
+              "school": "everett meredith ms",
+              "start": "07:30",
+              "end": "14:10",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "1000080:ce2cad0f08",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "middle",
+              "school": "louis l redding ms",
+              "start": "07:30",
+              "end": "14:10",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "1000080:ce2cad0f08",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "middle",
+              "school": "alfred g waters ms",
+              "start": "07:30",
+              "end": "14:10",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "1000080:ce2cad0f08",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "middle",
+              "school": "cantwells bridge ms",
+              "start": "07:30",
+              "end": "14:10",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "1000080:ce2cad0f08",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "elementary",
+              "school": "brick mill esecc",
+              "start": "09:10",
+              "end": "15:50",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "1000080:ce2cad0f08",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "elementary",
+              "school": "bunker hill es",
+              "start": "09:10",
+              "end": "15:50",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "1000080:ce2cad0f08",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "elementary",
+              "school": "cedar lane esecc",
+              "start": "09:10",
+              "end": "15:50",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "1000080:ce2cad0f08",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "elementary",
+              "school": "lorewood grove es",
+              "start": "09:10",
+              "end": "15:50",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "1000080:ce2cad0f08",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "elementary",
+              "school": "crystal run es",
+              "start": "09:10",
+              "end": "15:50",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "1000080:ce2cad0f08",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "elementary",
+              "school": "old state es spring meadow ecc",
+              "start": "09:10",
+              "end": "15:50",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "1000080:ce2cad0f08",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "elementary",
+              "school": "olive b loss es",
+              "start": "09:10",
+              "end": "15:50",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "1000080:ce2cad0f08",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "elementary",
+              "school": "silver lake es",
+              "start": "09:10",
+              "end": "15:50",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "1000080:ce2cad0f08",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "elementary",
+              "school": "townsend esecc",
+              "start": "09:10",
+              "end": "15:50",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "1000080:ce2cad0f08",
+              "source_file": "pdftotext.txt"
+            }
+          ],
+          "unresolved": [
+            {
+              "band": "middle",
+              "school": "special program mshs",
+              "starts": {
+                "google/gemini-2.5-flash-lite": "08:20"
+              },
+              "ends": {
+                "google/gemini-2.5-flash-lite": "15:00"
+              },
+              "rec_key": "1000080:ce2cad0f08",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "elementary",
+              "school": "appoquinimink preschool full",
+              "starts": {
+                "google/gemini-2.5-flash-lite": "09:10"
+              },
+              "ends": {
+                "google/gemini-2.5-flash-lite": "15:10"
+              },
+              "rec_key": "1000080:ce2cad0f08",
+              "source_file": "pdftotext.txt"
+            }
+          ]
+        }
+      ],
+      "accepted": [
+        {
+          "band": "high",
+          "school": "appoquinimink hs",
+          "start": "08:20",
+          "end": "15:00",
+          "gross": 400,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "1000080:ce2cad0f08",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "high",
+          "school": "middletown hs",
+          "start": "08:20",
+          "end": "15:00",
+          "gross": 400,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "1000080:ce2cad0f08",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "high",
+          "school": "odessa hs",
+          "start": "08:20",
+          "end": "15:00",
+          "gross": 400,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "1000080:ce2cad0f08",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "middle",
+          "school": "everett meredith ms",
+          "start": "07:30",
+          "end": "14:10",
+          "gross": 400,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "1000080:ce2cad0f08",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "middle",
+          "school": "louis l redding ms",
+          "start": "07:30",
+          "end": "14:10",
+          "gross": 400,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "1000080:ce2cad0f08",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "middle",
+          "school": "alfred g waters ms",
+          "start": "07:30",
+          "end": "14:10",
+          "gross": 400,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "1000080:ce2cad0f08",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "middle",
+          "school": "cantwells bridge ms",
+          "start": "07:30",
+          "end": "14:10",
+          "gross": 400,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "1000080:ce2cad0f08",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "elementary",
+          "school": "brick mill esecc",
+          "start": "09:10",
+          "end": "15:50",
+          "gross": 400,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "1000080:ce2cad0f08",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "elementary",
+          "school": "bunker hill es",
+          "start": "09:10",
+          "end": "15:50",
+          "gross": 400,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "1000080:ce2cad0f08",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "elementary",
+          "school": "cedar lane esecc",
+          "start": "09:10",
+          "end": "15:50",
+          "gross": 400,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "1000080:ce2cad0f08",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "elementary",
+          "school": "lorewood grove es",
+          "start": "09:10",
+          "end": "15:50",
+          "gross": 400,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "1000080:ce2cad0f08",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "elementary",
+          "school": "crystal run es",
+          "start": "09:10",
+          "end": "15:50",
+          "gross": 400,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "1000080:ce2cad0f08",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "elementary",
+          "school": "old state es spring meadow ecc",
+          "start": "09:10",
+          "end": "15:50",
+          "gross": 400,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "1000080:ce2cad0f08",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "elementary",
+          "school": "olive b loss es",
+          "start": "09:10",
+          "end": "15:50",
+          "gross": 400,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "1000080:ce2cad0f08",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "elementary",
+          "school": "silver lake es",
+          "start": "09:10",
+          "end": "15:50",
+          "gross": 400,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "1000080:ce2cad0f08",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "elementary",
+          "school": "townsend esecc",
+          "start": "09:10",
+          "end": "15:50",
+          "gross": 400,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "1000080:ce2cad0f08",
+          "source_file": "pdftotext.txt"
+        }
+      ],
+      "unresolved": [
+        {
+          "band": "middle",
+          "school": "special program mshs",
+          "starts": {
+            "google/gemini-2.5-flash-lite": "08:20"
+          },
+          "ends": {
+            "google/gemini-2.5-flash-lite": "15:00"
+          },
+          "rec_key": "1000080:ce2cad0f08",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "elementary",
+          "school": "appoquinimink preschool full",
+          "starts": {
+            "google/gemini-2.5-flash-lite": "09:10"
+          },
+          "ends": {
+            "google/gemini-2.5-flash-lite": "15:10"
+          },
+          "rec_key": "1000080:ce2cad0f08",
+          "source_file": "pdftotext.txt"
+        }
+      ],
+      "n_reps": 1,
+      "n_judged": 1,
+      "bands": {
+        "elementary": {
+          "gross_minutes": 400,
+          "start_time": "09:10",
+          "end_time": "15:50",
+          "n_schools": 9,
+          "method": "modal",
+          "schools": [
+            {
+              "school": "brick mill esecc",
+              "start_time": "09:10",
+              "end_time": "15:50",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            },
+            {
+              "school": "bunker hill es",
+              "start_time": "09:10",
+              "end_time": "15:50",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            },
+            {
+              "school": "cedar lane esecc",
+              "start_time": "09:10",
+              "end_time": "15:50",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            },
+            {
+              "school": "lorewood grove es",
+              "start_time": "09:10",
+              "end_time": "15:50",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            },
+            {
+              "school": "crystal run es",
+              "start_time": "09:10",
+              "end_time": "15:50",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            },
+            {
+              "school": "old state es spring meadow ecc",
+              "start_time": "09:10",
+              "end_time": "15:50",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            },
+            {
+              "school": "olive b loss es",
+              "start_time": "09:10",
+              "end_time": "15:50",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            },
+            {
+              "school": "silver lake es",
+              "start_time": "09:10",
+              "end_time": "15:50",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            },
+            {
+              "school": "townsend esecc",
+              "start_time": "09:10",
+              "end_time": "15:50",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            }
+          ]
+        },
+        "middle": {
+          "gross_minutes": 400,
+          "start_time": "07:30",
+          "end_time": "14:10",
+          "n_schools": 4,
+          "method": "modal",
+          "schools": [
+            {
+              "school": "everett meredith ms",
+              "start_time": "07:30",
+              "end_time": "14:10",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            },
+            {
+              "school": "louis l redding ms",
+              "start_time": "07:30",
+              "end_time": "14:10",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            },
+            {
+              "school": "alfred g waters ms",
+              "start_time": "07:30",
+              "end_time": "14:10",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            },
+            {
+              "school": "cantwells bridge ms",
+              "start_time": "07:30",
+              "end_time": "14:10",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            }
+          ]
+        },
+        "high": {
+          "gross_minutes": 400,
+          "start_time": "08:20",
+          "end_time": "15:00",
+          "n_schools": 3,
+          "method": "modal",
+          "schools": [
+            {
+              "school": "appoquinimink hs",
+              "start_time": "08:20",
+              "end_time": "15:00",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            },
+            {
+              "school": "middletown hs",
+              "start_time": "08:20",
+              "end_time": "15:00",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            },
+            {
+              "school": "odessa hs",
+              "start_time": "08:20",
+              "end_time": "15:00",
+              "gross": 400,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            }
+          ]
+        }
+      },
+      "telemetry": {
+        "calls": 3,
+        "judge_calls": 1,
+        "errors": 0,
+        "prompt_tokens": 4000,
+        "completion_tokens": 1998,
+        "cost_usd": 0.00102298
+      }
+    },
+    "0404970": {
+      "district_id": "0404970",
+      "name": "Mesa Unified District (4235)",
+      "reps": [
+        {
+          "rec_key": "0404970:786092c1ea",
+          "file": "pdftotext.txt",
+          "kind": "text",
+          "council_id": "low-cost-text",
+          "judged": false,
+          "calls": [
+            {
+              "model": "google/gemini-2.5-flash-lite",
+              "role": "voter",
+              "ok": true,
+              "error": null,
+              "n_facts": 1,
+              "facts": [
+                {
+                  "grade_level": "elementary",
+                  "start_time": "08:15",
+                  "end_time": "14:45",
+                  "school_name": "Field Elementary",
+                  "confidence": "high"
+                }
+              ],
+              "prompt_tokens": 781,
+              "completion_tokens": 42,
+              "cost_usd": 9.49e-05,
+              "latency_ms": 14151
+            },
+            {
+              "model": "mistralai/mistral-small-24b-instruct-2501",
+              "role": "voter",
+              "ok": true,
+              "error": null,
+              "n_facts": 1,
+              "facts": [
+                {
+                  "grade_level": "elementary",
+                  "start_time": "08:15",
+                  "end_time": "14:45",
+                  "school_name": "Field Elementary",
+                  "confidence": "high"
+                }
+              ],
+              "prompt_tokens": 773,
+              "completion_tokens": 43,
+              "cost_usd": 4.209e-05,
+              "latency_ms": 13556
+            }
+          ],
+          "accepted": [
+            {
+              "band": "elementary",
+              "school": "field",
+              "start": "08:15",
+              "end": "14:45",
+              "gross": 390,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "0404970:786092c1ea",
+              "source_file": "pdftotext.txt"
+            }
+          ],
+          "unresolved": []
+        },
+        {
+          "rec_key": "0404970:e457000534",
+          "file": "pdfplumber_lines.txt",
+          "kind": "text",
+          "council_id": "low-cost-text",
+          "judged": false,
+          "calls": [
+            {
+              "model": "google/gemini-2.5-flash-lite",
+              "role": "voter",
+              "ok": true,
+              "error": null,
+              "n_facts": 1,
+              "facts": [
+                {
+                  "grade_level": "middle",
+                  "start_time": "07:30",
+                  "end_time": "14:15",
+                  "school_name": "Franklin Junior High School",
+                  "confidence": "high"
+                }
+              ],
+              "prompt_tokens": 1551,
+              "completion_tokens": 49,
+              "cost_usd": 0.0001747,
+              "latency_ms": 11820
+            },
+            {
+              "model": "mistralai/mistral-small-24b-instruct-2501",
+              "role": "voter",
+              "ok": true,
+              "error": null,
+              "n_facts": 1,
+              "facts": [
+                {
+                  "grade_level": "middle",
+                  "start_time": "07:30",
+                  "end_time": "14:15",
+                  "school_name": "Franklin Junior High School",
+                  "confidence": "high"
+                }
+              ],
+              "prompt_tokens": 1562,
+              "completion_tokens": 72,
+              "cost_usd": 8.386e-05,
+              "latency_ms": 14074
+            }
+          ],
+          "accepted": [
+            {
+              "band": "middle",
+              "school": "franklin",
+              "start": "07:30",
+              "end": "14:15",
+              "gross": 405,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "0404970:e457000534",
+              "source_file": "pdfplumber_lines.txt"
+            }
+          ],
+          "unresolved": []
+        }
+      ],
+      "accepted": [
+        {
+          "band": "elementary",
+          "school": "field",
+          "start": "08:15",
+          "end": "14:45",
+          "gross": 390,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "0404970:786092c1ea",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "middle",
+          "school": "franklin",
+          "start": "07:30",
+          "end": "14:15",
+          "gross": 405,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "0404970:e457000534",
+          "source_file": "pdfplumber_lines.txt"
+        }
+      ],
+      "unresolved": [],
+      "n_reps": 2,
+      "n_judged": 0,
+      "bands": {
+        "elementary": {
+          "gross_minutes": 390,
+          "start_time": "08:15",
+          "end_time": "14:45",
+          "n_schools": 1,
+          "method": "modal",
+          "schools": [
+            {
+              "school": "field",
+              "start_time": "08:15",
+              "end_time": "14:45",
+              "gross": 390,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            }
+          ]
+        },
+        "middle": {
+          "gross_minutes": 405,
+          "start_time": "07:30",
+          "end_time": "14:15",
+          "n_schools": 1,
+          "method": "modal",
+          "schools": [
+            {
+              "school": "franklin",
+              "start_time": "07:30",
+              "end_time": "14:15",
+              "gross": 405,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            }
+          ]
+        }
+      },
+      "telemetry": {
+        "calls": 4,
+        "judge_calls": 0,
+        "errors": 0,
+        "prompt_tokens": 4667,
+        "completion_tokens": 206,
+        "cost_usd": 0.00039555
+      }
+    },
+    "5000395": {
+      "district_id": "5000395",
+      "name": "Essex Westford Educational Community Unified Union SD #51",
+      "reps": [
+        {
+          "rec_key": "5000395:179b4a1c55",
+          "file": "pdftotext.txt",
+          "kind": "text",
+          "council_id": "low-cost-text",
+          "judged": false,
+          "calls": [
+            {
+              "model": "google/gemini-2.5-flash-lite",
+              "role": "voter",
+              "ok": true,
+              "error": null,
+              "n_facts": 1,
+              "facts": [
+                {
+                  "grade_level": "middle",
+                  "start_time": "08:35",
+                  "end_time": "15:35",
+                  "school_name": "Essex Middle School"
+                }
+              ],
+              "prompt_tokens": 627,
+              "completion_tokens": 44,
+              "cost_usd": 8.03e-05,
+              "latency_ms": 12888
+            },
+            {
+              "model": "mistralai/mistral-small-24b-instruct-2501",
+              "role": "voter",
+              "ok": true,
+              "error": null,
+              "n_facts": 1,
+              "facts": [
+                {
+                  "grade_level": "middle",
+                  "start_time": "08:35",
+                  "end_time": "15:35",
+                  "school_name": "Essex Middle School",
+                  "confidence": "high"
+                }
+              ],
+              "prompt_tokens": 620,
+              "completion_tokens": 45,
+              "cost_usd": 3.46e-05,
+              "latency_ms": 13398
+            }
+          ],
+          "accepted": [
+            {
+              "band": "middle",
+              "school": "essex",
+              "start": "08:35",
+              "end": "15:35",
+              "gross": 420,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "5000395:179b4a1c55",
+              "source_file": "pdftotext.txt"
+            }
+          ],
+          "unresolved": []
+        },
+        {
+          "rec_key": "5000395:642c632e75",
+          "file": "pdftotext.txt",
+          "kind": "text",
+          "council_id": "low-cost-text",
+          "judged": false,
+          "calls": [
+            {
+              "model": "google/gemini-2.5-flash-lite",
+              "role": "voter",
+              "ok": true,
+              "error": null,
+              "n_facts": 1,
+              "facts": [
+                {
+                  "grade_level": "elementary",
+                  "start_time": "07:30",
+                  "end_time": "14:30",
+                  "school_name": "Essex Elementary School"
+                }
+              ],
+              "prompt_tokens": 655,
+              "completion_tokens": 44,
+              "cost_usd": 8.31e-05,
+              "latency_ms": 12993
+            },
+            {
+              "model": "mistralai/mistral-small-24b-instruct-2501",
+              "role": "voter",
+              "ok": true,
+              "error": null,
+              "n_facts": 1,
+              "facts": [
+                {
+                  "grade_level": "elementary",
+                  "start_time": "07:30",
+                  "end_time": "14:30",
+                  "school_name": "Essex Elementary School",
+                  "confidence": "high"
+                }
+              ],
+              "prompt_tokens": 644,
+              "completion_tokens": 46,
+              "cost_usd": 3.588e-05,
+              "latency_ms": 13677
+            }
+          ],
+          "accepted": [
+            {
+              "band": "elementary",
+              "school": "essex",
+              "start": "07:30",
+              "end": "14:30",
+              "gross": 420,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "5000395:642c632e75",
+              "source_file": "pdftotext.txt"
+            }
+          ],
+          "unresolved": []
+        },
+        {
+          "rec_key": "5000395:2945f3d474",
+          "file": "pdftotext.txt",
+          "kind": "text",
+          "council_id": "low-cost-text",
+          "judged": true,
+          "calls": [
+            {
+              "model": "google/gemini-2.5-flash-lite",
+              "role": "voter",
+              "ok": true,
+              "error": null,
+              "n_facts": 8,
+              "facts": [
+                {
+                  "grade_level": "high",
+                  "start_time": "07:30",
+                  "end_time": "14:30",
+                  "school_name": "Essex High School",
+                  "confidence": "medium"
+                },
+                {
+                  "grade_level": "middle",
+                  "start_time": "07:30",
+                  "end_time": "14:30",
+                  "school_name": "Essex Middle School",
+                  "confidence": "medium"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "07:30",
+                  "end_time": "14:30",
+                  "school_name": "Albert D Lawton",
+                  "confidence": "medium"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "07:30",
+                  "end_time": "14:30",
+                  "school_name": "Westford School",
+                  "confidence": "medium"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "07:30",
+                  "end_time": "14:30",
+                  "school_name": "Founders Memorial School",
+                  "confidence": "medium"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "07:30",
+                  "end_time": "14:30",
+                  "school_name": "Thomas Fleming School",
+                  "confidence": "medium"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "07:30",
+                  "end_time": "14:30",
+                  "school_name": "Essex Elementary School",
+                  "confidence": "medium"
+                },
+                {
+                  "grade_level": "elementary",
+                  "start_time": "07:30",
+                  "end_time": "14:30",
+                  "school_name": "Hiawatha Elementary School",
+                  "confidence": "medium"
+                }
+              ],
+              "prompt_tokens": 608,
+              "completion_tokens": 529,
+              "cost_usd": 0.0002724,
+              "latency_ms": 12530
+            },
+            {
+              "model": "mistralai/mistral-small-24b-instruct-2501",
+              "role": "voter",
+              "ok": true,
+              "error": null,
+              "n_facts": 3,
+              "facts": [
+                {
+                  "grade_level": "elementary",
+                  "start_time": "07:30",
+                  "end_time": "14:30",
+                  "school_name": "Essex Elementary School",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "middle",
+                  "start_time": "07:30",
+                  "end_time": "14:30",
+                  "school_name": "Essex Middle School",
+                  "confidence": "high"
+                },
+                {
+                  "grade_level": "high",
+                  "start_time": "07:30",
+                  "end_time": "14:30",
+                  "school_name": "Essex High School",
+                  "confidence": "high"
+                }
+              ],
+              "prompt_tokens": 606,
+              "completion_tokens": 119,
+              "cost_usd": 3.982e-05,
+              "latency_ms": 12724
+            },
+            {
+              "model": "qwen/qwen3-235b-a22b-2507",
+              "role": "judge",
+              "ok": true,
+              "error": null,
+              "n_facts": 1,
+              "facts": [
+                {
+                  "grade_level": "elementary",
+                  "start_time": "07:30",
+                  "end_time": "14:30",
+                  "school_name": "Westford School",
+                  "confidence": "high"
+                }
+              ],
+              "prompt_tokens": 590,
+              "completion_tokens": 40,
+              "cost_usd": 0.000112125,
+              "latency_ms": 13104
+            }
+          ],
+          "accepted": [
+            {
+              "band": "high",
+              "school": "essex",
+              "start": "07:30",
+              "end": "14:30",
+              "gross": 420,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "5000395:2945f3d474",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "middle",
+              "school": "essex",
+              "start": "07:30",
+              "end": "14:30",
+              "gross": 420,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "5000395:2945f3d474",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "elementary",
+              "school": "westford",
+              "start": "07:30",
+              "end": "14:30",
+              "gross": 420,
+              "models": [
+                "judge"
+              ],
+              "method": "judge",
+              "rec_key": "5000395:2945f3d474",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "elementary",
+              "school": "essex",
+              "start": "07:30",
+              "end": "14:30",
+              "gross": 420,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "method": "council_agree",
+              "rec_key": "5000395:2945f3d474",
+              "source_file": "pdftotext.txt"
+            }
+          ],
+          "unresolved": [
+            {
+              "band": "elementary",
+              "school": "albert d lawton",
+              "starts": {
+                "google/gemini-2.5-flash-lite": "07:30"
+              },
+              "ends": {
+                "google/gemini-2.5-flash-lite": "14:30"
+              },
+              "rec_key": "5000395:2945f3d474",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "elementary",
+              "school": "founders memorial",
+              "starts": {
+                "google/gemini-2.5-flash-lite": "07:30"
+              },
+              "ends": {
+                "google/gemini-2.5-flash-lite": "14:30"
+              },
+              "rec_key": "5000395:2945f3d474",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "elementary",
+              "school": "thomas fleming",
+              "starts": {
+                "google/gemini-2.5-flash-lite": "07:30"
+              },
+              "ends": {
+                "google/gemini-2.5-flash-lite": "14:30"
+              },
+              "rec_key": "5000395:2945f3d474",
+              "source_file": "pdftotext.txt"
+            },
+            {
+              "band": "elementary",
+              "school": "hiawatha",
+              "starts": {
+                "google/gemini-2.5-flash-lite": "07:30"
+              },
+              "ends": {
+                "google/gemini-2.5-flash-lite": "14:30"
+              },
+              "rec_key": "5000395:2945f3d474",
+              "source_file": "pdftotext.txt"
+            }
+          ]
+        }
+      ],
+      "accepted": [
+        {
+          "band": "middle",
+          "school": "essex",
+          "start": "08:35",
+          "end": "15:35",
+          "gross": 420,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "5000395:179b4a1c55",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "elementary",
+          "school": "essex",
+          "start": "07:30",
+          "end": "14:30",
+          "gross": 420,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "5000395:642c632e75",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "high",
+          "school": "essex",
+          "start": "07:30",
+          "end": "14:30",
+          "gross": 420,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "5000395:2945f3d474",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "middle",
+          "school": "essex",
+          "start": "07:30",
+          "end": "14:30",
+          "gross": 420,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "5000395:2945f3d474",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "elementary",
+          "school": "westford",
+          "start": "07:30",
+          "end": "14:30",
+          "gross": 420,
+          "models": [
+            "judge"
+          ],
+          "method": "judge",
+          "rec_key": "5000395:2945f3d474",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "elementary",
+          "school": "essex",
+          "start": "07:30",
+          "end": "14:30",
+          "gross": 420,
+          "models": [
+            "google/gemini-2.5-flash-lite",
+            "mistralai/mistral-small-24b-instruct-2501"
+          ],
+          "method": "council_agree",
+          "rec_key": "5000395:2945f3d474",
+          "source_file": "pdftotext.txt"
+        }
+      ],
+      "unresolved": [
+        {
+          "band": "elementary",
+          "school": "albert d lawton",
+          "starts": {
+            "google/gemini-2.5-flash-lite": "07:30"
+          },
+          "ends": {
+            "google/gemini-2.5-flash-lite": "14:30"
+          },
+          "rec_key": "5000395:2945f3d474",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "elementary",
+          "school": "founders memorial",
+          "starts": {
+            "google/gemini-2.5-flash-lite": "07:30"
+          },
+          "ends": {
+            "google/gemini-2.5-flash-lite": "14:30"
+          },
+          "rec_key": "5000395:2945f3d474",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "elementary",
+          "school": "thomas fleming",
+          "starts": {
+            "google/gemini-2.5-flash-lite": "07:30"
+          },
+          "ends": {
+            "google/gemini-2.5-flash-lite": "14:30"
+          },
+          "rec_key": "5000395:2945f3d474",
+          "source_file": "pdftotext.txt"
+        },
+        {
+          "band": "elementary",
+          "school": "hiawatha",
+          "starts": {
+            "google/gemini-2.5-flash-lite": "07:30"
+          },
+          "ends": {
+            "google/gemini-2.5-flash-lite": "14:30"
+          },
+          "rec_key": "5000395:2945f3d474",
+          "source_file": "pdftotext.txt"
+        }
+      ],
+      "n_reps": 3,
+      "n_judged": 1,
+      "bands": {
+        "elementary": {
+          "gross_minutes": 420,
+          "start_time": "07:30",
+          "end_time": "14:30",
+          "n_schools": 3,
+          "method": "modal",
+          "schools": [
+            {
+              "school": "essex",
+              "start_time": "07:30",
+              "end_time": "14:30",
+              "gross": 420,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            },
+            {
+              "school": "westford",
+              "start_time": "07:30",
+              "end_time": "14:30",
+              "gross": 420,
+              "models": [
+                "judge"
+              ],
+              "human_determination": ""
+            },
+            {
+              "school": "essex",
+              "start_time": "07:30",
+              "end_time": "14:30",
+              "gross": 420,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            }
+          ]
+        },
+        "middle": {
+          "gross_minutes": 420,
+          "start_time": "08:35",
+          "end_time": "15:35",
+          "n_schools": 2,
+          "method": "modal",
+          "schools": [
+            {
+              "school": "essex",
+              "start_time": "08:35",
+              "end_time": "15:35",
+              "gross": 420,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            },
+            {
+              "school": "essex",
+              "start_time": "07:30",
+              "end_time": "14:30",
+              "gross": 420,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            }
+          ]
+        },
+        "high": {
+          "gross_minutes": 420,
+          "start_time": "07:30",
+          "end_time": "14:30",
+          "n_schools": 1,
+          "method": "modal",
+          "schools": [
+            {
+              "school": "essex",
+              "start_time": "07:30",
+              "end_time": "14:30",
+              "gross": 420,
+              "models": [
+                "google/gemini-2.5-flash-lite",
+                "mistralai/mistral-small-24b-instruct-2501"
+              ],
+              "human_determination": ""
+            }
+          ]
+        }
+      },
+      "telemetry": {
+        "calls": 7,
+        "judge_calls": 1,
+        "errors": 0,
+        "prompt_tokens": 4350,
+        "completion_tokens": 867,
+        "cost_usd": 0.000658225
+      }
+    }
+  },
+  "telemetry": {
+    "calls": 14,
+    "judge_calls": 2,
+    "errors": 0,
+    "prompt_tokens": 13017,
+    "completion_tokens": 3071,
+    "cost_usd": 0.002076755
+  }
+}

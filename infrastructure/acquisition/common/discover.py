@@ -8,9 +8,7 @@ import each other, the import-linter layering contract):
     real-Google, recurring free tier) → `serper_search` (uptime failover). Billing/auth (401/402)
     halts the run; a 429 is transient (issue #29) → failover / per-school degrade.
 
-The retired non-streaming AI-search providers (Perplexity, OpenRouter) were removed (#87) — they
-were superseded by the Bright Data → Serper Wave-1 cascade + Claude WebSearch Wave 2, and only the
-old standalone bench `main()` still referenced them."""
+(The retired Perplexity/OpenRouter AI-search providers were removed in #87.)"""
 import os, json, re, time
 from urllib.parse import urlparse
 
@@ -23,7 +21,6 @@ from infrastructure.acquisition.common import paths  # noqa: E402  (repo-anchore
 # slug is kept. Governance + per-entry provenance live in the config file. REQ-089.
 CMS_HOSTS=tuple(config_loader.values("cms_hosts"))
 NEWS_AGG=("patch.com","niche.com","greatschools.org","wikipedia.org","news12.com","facebook.com","instagram.com","twitter.com","x.com","yelp.com","usnews.com","schooldigger.com","publicschoolreview.com")
-SCHED_KW=("bell","schedule","hours","start-time","start_time","daily-schedule","times","school-day","schoolday")
 
 def host_of(url):
     try: return urlparse(url).netloc.lower().split(":")[0].replace("www.","")
@@ -50,7 +47,7 @@ def gate(url, dhost, slug, scoped):
         if h==dhost or h.endswith("."+dhost): return True,"on-domain"
         if any(_host_matches(h, c) for c in CMS_HOSTS) and slug and slug in url.lower(): return True,"cms-slug"
         return False,"off-district"
-    return True,"unscoped"   # no NCES domain: keep non-news results; relevance gate sorts it out
+    return True,"unscoped"   # no NCES domain: keep non-news results; Stage-5 signal scoring sorts it out
 
 SECRETS_FILE = paths.SECRETS_FILE   # repo-anchored (issue #31), never CWD-relative
 

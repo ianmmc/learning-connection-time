@@ -1,0 +1,1184 @@
+{
+  "handoff_hash": "a2bc80c004ca-image",
+  "district": {
+    "district_id": "0100270",
+    "name": "Baldwin County",
+    "reps": [
+      {
+        "rec_key": "0100270:dc3199947e",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:45",
+                "end_time": "15:05",
+                "school_name": "Fairhope Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3715,
+            "completion_tokens": 49,
+            "cost_usd": 0.001237,
+            "latency_ms": 22152,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058418-ppKO05kYO0B4XWueRQJg"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:45",
+                "end_time": "15:05",
+                "school_name": "Fairhope Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3112,
+            "completion_tokens": 45,
+            "cost_usd": 0.0016235,
+            "latency_ms": 15687,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058432-1jCUelio916k7mVWT34V"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "fairhope",
+            "start": "07:45",
+            "end": "15:05",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100270:dc3199947e",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0100270:4dba6c3ff8",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Pine Grove Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3715,
+            "completion_tokens": 48,
+            "cost_usd": 0.0012345,
+            "latency_ms": 16371,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058450-rFiY0roUJcNnJXDHLwWX"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Pine Grove Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2994,
+            "completion_tokens": 45,
+            "cost_usd": 0.0015645,
+            "latency_ms": 14779,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058463-yWvkg0hUp97iojmuTBSe"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "pine grove",
+            "start": "07:40",
+            "end": "14:40",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100270:4dba6c3ff8",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0100270:6b93a28f59",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "15:12",
+                "school_name": "Spanish Fort High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3715,
+            "completion_tokens": 49,
+            "cost_usd": 0.001237,
+            "latency_ms": 18442,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058483-LOBqB8e6GFGHMfnKRmcz"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "15:12",
+                "school_name": "Spanish Fort High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2727,
+            "completion_tokens": 44,
+            "cost_usd": 0.0012783,
+            "latency_ms": 18872,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058500-VM1WYUb0wj0zOe74BA2u"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "spanish fort",
+            "start": "07:50",
+            "end": "15:12",
+            "gross": 442,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100270:6b93a28f59",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0100270:df2b64d357",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:45",
+                "end_time": "15:03",
+                "school_name": "Elberta Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2941,
+            "completion_tokens": 49,
+            "cost_usd": 0.0010048,
+            "latency_ms": 15087,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058517-NklM6nEIayZFWR0BkBl7"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:45",
+                "end_time": "15:03",
+                "school_name": "Elberta Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2782,
+            "completion_tokens": 44,
+            "cost_usd": 0.0013058,
+            "latency_ms": 13953,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058531-N4tOOPc2KBOVejGY9LLA"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "elberta",
+            "start": "07:45",
+            "end": "15:03",
+            "gross": 438,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100270:df2b64d357",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0100270:06c3e0963c",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Fairhope High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3715,
+            "completion_tokens": 49,
+            "cost_usd": 0.001237,
+            "latency_ms": 16538,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058548-lN9fd9187qCXZVjSqJHf"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Fairhope High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3167,
+            "completion_tokens": 45,
+            "cost_usd": 0.001651,
+            "latency_ms": 15318,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058562-CJy5tEK0wqDs6o9SYGSm"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "fairhope",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100270:06c3e0963c",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0100270:3040141abe",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:54",
+                "end_time": "15:11",
+                "school_name": "Baldwin County High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2683,
+            "completion_tokens": 50,
+            "cost_usd": 0.0009299,
+            "latency_ms": 14623,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058578-U4kAOkZOJ2lxSQ0gT7Jp"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "15:03",
+                "school_name": "Baldwin County High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1957,
+            "completion_tokens": 46,
+            "cost_usd": 0.0008963,
+            "latency_ms": 19571,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058597-sfv2rWa9CqLfU0NYcuLg"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "baldwin county",
+            "start": "07:50",
+            "end": "15:07",
+            "gross": 437,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100270:3040141abe",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0100270:2e127fd3f6",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "15:10",
+                "school_name": "DHS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2941,
+            "completion_tokens": 47,
+            "cost_usd": 0.0009998,
+            "latency_ms": 15312,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058613-wYroycoehYeSj19YbYNC"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:50",
+                "end_time": "15:10",
+                "school_name": "DHS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2770,
+            "completion_tokens": 42,
+            "cost_usd": 0.0012968,
+            "latency_ms": 16834,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058628-Z6LKwAvc49LJuME14bye"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "dhs",
+            "start": "07:50",
+            "end": "15:10",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100270:2e127fd3f6",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0100270:94404a545c",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "Robertsdale High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3715,
+            "completion_tokens": 49,
+            "cost_usd": 0.001237,
+            "latency_ms": 17873,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058647-qLvQsDUht6Shiv8ZEEP3"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:09",
+                "school_name": "Robertsdale High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2782,
+            "completion_tokens": 45,
+            "cost_usd": 0.0013073,
+            "latency_ms": 15296,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058662-eDxJoh5vq37eErjv1EV6"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "robertsdale",
+            "start": "07:55",
+            "end": "15:09",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100270:94404a545c",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0100270:3bfb22a08e",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "15:00",
+                "school_name": "Rosinton Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3715,
+            "completion_tokens": 48,
+            "cost_usd": 0.0012345,
+            "latency_ms": 13144,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058676-b3pPSK7wjRB0SMfIkgqn"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Rosinton Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2826,
+            "completion_tokens": 44,
+            "cost_usd": 0.0013278,
+            "latency_ms": 15676,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058691-EkIgD8dwnLR5xWzEi416"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "rosinton",
+            "start": "07:55",
+            "end": "15:00",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100270:3bfb22a08e",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0100270:6757d7054e",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:20",
+                "end_time": "15:00",
+                "school_name": "Swift School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3715,
+            "completion_tokens": 56,
+            "cost_usd": 0.0012545,
+            "latency_ms": 19964,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058710-vrlQfrfGEaLX2s2bqw5l"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 3277,
+            "completion_tokens": 8,
+            "cost_usd": 0.0016505,
+            "latency_ms": 17308,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058728-V65JG94gf2aQ8cLweb69"
+          },
+          {
+            "model": "deepseek/deepseek-v3.2",
+            "role": "judge",
+            "ok": false,
+            "error": "Error code: 404 - {'error': {'message': 'No endpoints found that support image input', 'code': 404}}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 13439,
+            "finish_reason": null,
+            "generation_id": null
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "swift",
+            "starts": {
+              "google/gemini-2.5-flash": "07:20"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:00"
+            },
+            "rec_key": "0100270:6757d7054e",
+            "source_file": "raster_p-1.png"
+          }
+        ]
+      },
+      {
+        "rec_key": "0100270:e1ecbe7cfe",
+        "file": "raster_p-01.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2941,
+            "completion_tokens": 49,
+            "cost_usd": 0.0010048,
+            "latency_ms": 16394,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058758-sqemGIKQyMg6XzPCK7eR"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "15:05",
+                "school_name": "Spanish Fort Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2782,
+            "completion_tokens": 44,
+            "cost_usd": 0.001457,
+            "latency_ms": 14540,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058773-yNa5Z1HIX8WKPq6wmN3T"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "spanish fort",
+            "start": "07:59",
+            "end": "15:05",
+            "gross": 426,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100270:e1ecbe7cfe",
+            "source_file": "raster_p-01.png"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0100270:b7284963cf",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:15",
+                "end_time": "15:05",
+                "school_name": "Daphne Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3715,
+            "completion_tokens": 50,
+            "cost_usd": 0.0012395,
+            "latency_ms": 15073,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058789-60tcSEV3HS22hzlTLD6p"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:15",
+                "end_time": "15:05",
+                "school_name": "Daphne Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3277,
+            "completion_tokens": 44,
+            "cost_usd": 0.0017045,
+            "latency_ms": 17389,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783058806-69ubNnuYzSrzOSDqkIhD"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "daphne",
+            "start": "07:15",
+            "end": "15:05",
+            "gross": 470,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100270:b7284963cf",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "middle",
+        "school": "fairhope",
+        "start": "07:45",
+        "end": "15:05",
+        "gross": 440,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100270:dc3199947e",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "pine grove",
+        "start": "07:40",
+        "end": "14:40",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100270:4dba6c3ff8",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "spanish fort",
+        "start": "07:50",
+        "end": "15:12",
+        "gross": 442,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100270:6b93a28f59",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "elberta",
+        "start": "07:45",
+        "end": "15:03",
+        "gross": 438,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100270:df2b64d357",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "fairhope",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100270:06c3e0963c",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "baldwin county",
+        "start": "07:50",
+        "end": "15:07",
+        "gross": 437,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100270:3040141abe",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "dhs",
+        "start": "07:50",
+        "end": "15:10",
+        "gross": 440,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100270:2e127fd3f6",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "high",
+        "school": "robertsdale",
+        "start": "07:55",
+        "end": "15:09",
+        "gross": 434,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100270:94404a545c",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "rosinton",
+        "start": "07:55",
+        "end": "15:00",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100270:3bfb22a08e",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "middle",
+        "school": "spanish fort",
+        "start": "07:59",
+        "end": "15:05",
+        "gross": 426,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100270:e1ecbe7cfe",
+        "source_file": "raster_p-01.png"
+      },
+      {
+        "band": "middle",
+        "school": "daphne",
+        "start": "07:15",
+        "end": "15:05",
+        "gross": 470,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100270:b7284963cf",
+        "source_file": "raster_p-1.png"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "swift",
+        "starts": {
+          "google/gemini-2.5-flash": "07:20"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:00"
+        },
+        "rec_key": "0100270:6757d7054e",
+        "source_file": "raster_p-1.png"
+      }
+    ],
+    "n_reps": 12,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 422,
+        "start_time": "07:40",
+        "end_time": "14:40",
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "pine grove",
+            "start_time": "07:40",
+            "end_time": "14:40",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "rosinton",
+            "start_time": "07:55",
+            "end_time": "15:00",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 444,
+        "start_time": "07:45",
+        "end_time": "15:05",
+        "n_schools": 4,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "fairhope",
+            "start_time": "07:45",
+            "end_time": "15:05",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "elberta",
+            "start_time": "07:45",
+            "end_time": "15:03",
+            "gross": 438,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "spanish fort",
+            "start_time": "07:59",
+            "end_time": "15:05",
+            "gross": 426,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "daphne",
+            "start_time": "07:15",
+            "end_time": "15:05",
+            "gross": 470,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 438,
+        "start_time": "07:50",
+        "end_time": "15:07",
+        "n_schools": 5,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "spanish fort",
+            "start_time": "07:50",
+            "end_time": "15:12",
+            "gross": 442,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "fairhope",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "baldwin county",
+            "start_time": "07:50",
+            "end_time": "15:07",
+            "gross": 437,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dhs",
+            "start_time": "07:50",
+            "end_time": "15:10",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "robertsdale",
+            "start_time": "07:55",
+            "end_time": "15:09",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 25,
+      "judge_calls": 1,
+      "errors": 1,
+      "truncated": 0,
+      "prompt_tokens": 75679,
+      "completion_tokens": 1089,
+      "cost_usd": 0.030913599999999996
+    }
+  }
+}

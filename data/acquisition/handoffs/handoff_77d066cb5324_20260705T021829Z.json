@@ -1,0 +1,163 @@
+{
+  "handoff_hash": "77d066cb5324",
+  "created_at": "2026-07-05T02:18:29Z",
+  "created_by": "ian-158-recovery",
+  "verified_only": false,
+  "fingerprints": {
+    "1918690": {
+      "config": "4f61aaa7d9c8",
+      "labels": "8585fe34cda9",
+      "data": "66b06f0c14f4"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v1"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.0051,
+    "n_reps": 5,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "1918690",
+      "name": "Marion Independent School District",
+      "state": "IA",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "1918690:a8bfb0b149",
+          "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/1559/Vms/ca595b7d-d739-4968-9082-dc3d4a332361/23-24_Bell_Schedule.pdf?disposition=inline",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "1918690:8015fc58df",
+          "url": "https://www.marion-isd.org/o/longfellow/page/school-hours",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "1918690:8f6ed54432",
+          "url": "https://www.marion-isd.org/o/parkview/page/school-hours",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "1918690:1deeb63356",
+          "url": "https://www.marion-isd.org/o/francis-marion/page/school-hours",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "1918690:1c693ea3aa",
+          "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/1559/Mhs/642dd49a-f5f7-4ab0-a3c8-ffc72cafc5a5/MHS_Bell_Schedule_24-25_1.pdf?disposition=inline",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "1918690:d9e387ea42",
+          "url": "https://www.marion-isd.org/o/mhs/documents/bell-schedule/149465",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "1918690:600ade165e",
+          "url": "https://www.marion-isd.org/fmi-home/",
+          "decision": "reject",
+          "reason": "non-target:unusable",
+          "reps": []
+        },
+        {
+          "rec_key": "1918690:aa1d5cfb30",
+          "url": "https://www.marion-isd.org/o/vms/documents/vms-bell-schedule/177774",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 5,
+      "est_usd": 0.0051
+    }
+  ]
+}

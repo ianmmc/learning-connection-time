@@ -1,0 +1,180 @@
+{
+  "handoff_hash": "6869c9d673ef",
+  "district": {
+    "district_id": "2905790",
+    "name": "ADAIR CO. R-II",
+    "reps": [
+      {
+        "rec_key": "2905790:5c115eb32b",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 77225,
+            "completion_tokens": 5,
+            "cost_usd": 0.0077245,
+            "latency_ms": 1394,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783312717-i6lQqy3gfVs61JkKbFeE"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": false,
+            "error": "Error code: 400 - {'error': {'message': \"This endpoint's maximum context length is 32768 tokens. However, you requested about 79566 tokens (63566 of text input, 16000 in the output). Please reduce the length of either one, or use the context-compression plugin to compress your prompt automatically.\", 'code': 400, 'metadata': {'provider_name': None}}, 'user_id': 'user_3F6G2u57EqCPewKcTHYL5cGYfne'}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 182,
+            "finish_reason": null,
+            "generation_id": null
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2905790:e39555d45b",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:38",
+                "school_name": "ADAIR COUNTY R-II HIGH SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 48393,
+            "completion_tokens": 81,
+            "cost_usd": 0.0048717,
+            "latency_ms": 1353,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783312718-yOlSSrfnCzjdeHRO4TSG"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": false,
+            "error": "Error code: 400 - {'error': {'message': \"This endpoint's maximum context length is 32768 tokens. However, you requested about 76973 tokens (60973 of text input, 16000 in the output). Please reduce the length of either one, or use the context-compression plugin to compress your prompt automatically.\", 'code': 400, 'metadata': {'provider_name': None}}, 'user_id': 'user_3F6G2u57EqCPewKcTHYL5cGYfne'}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 183,
+            "finish_reason": null,
+            "generation_id": null
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "15:38",
+                "school_name": "Adair County R-II High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 59012,
+            "completion_tokens": 44,
+            "cost_usd": 0.0118376,
+            "latency_ms": 22995,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783312720-IymROgQB0e5Q2Nkn1UBr"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "adair county rii",
+            "start": "07:55",
+            "end": "15:38",
+            "gross": 463,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2905790:e39555d45b",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "adair county rii",
+        "start": "07:55",
+        "end": "15:38",
+        "gross": 463,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2905790:e39555d45b",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 2,
+    "n_judged": 1,
+    "bands": {
+      "high": {
+        "gross_minutes": 463,
+        "start_time": "07:55",
+        "end_time": "15:38",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "adair county rii",
+            "start_time": "07:55",
+            "end_time": "15:38",
+            "gross": 463,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 5,
+      "judge_calls": 1,
+      "errors": 2,
+      "truncated": 0,
+      "prompt_tokens": 184630,
+      "completion_tokens": 130,
+      "cost_usd": 0.0244338
+    },
+    "state": "MO"
+  }
+}

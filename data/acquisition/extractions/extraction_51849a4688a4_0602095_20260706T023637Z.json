@@ -1,0 +1,616 @@
+{
+  "handoff_hash": "51849a4688a4",
+  "district": {
+    "district_id": "0602095",
+    "name": "Aspire Summit Charter Academy District",
+    "reps": [
+      {
+        "rec_key": "0602095:1e84861a7a",
+        "file": "camelot_stream.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Full Days",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "12:10",
+                "school_name": "Minimum Days",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 8466,
+            "completion_tokens": 79,
+            "cost_usd": 0.0008782,
+            "latency_ms": 1580,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305364-jxwOMPf29bqCcByjDxXr"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Aspire Public Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 8428,
+            "completion_tokens": 46,
+            "cost_usd": 0.00042508,
+            "latency_ms": 2855,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305366-JkrFkAk32vGpWuHLEfdq"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 8338,
+            "completion_tokens": 6,
+            "cost_usd": 0.0016712,
+            "latency_ms": 1390,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305368-Ql99oz8EKmmvbg1XXgoB"
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "full days",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:15"
+            },
+            "rec_key": "0602095:1e84861a7a",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "minimum days",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "12:10"
+            },
+            "rec_key": "0602095:1e84861a7a",
+            "source_file": "camelot_stream.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "aspire public schools",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:00"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:15"
+            },
+            "rec_key": "0602095:1e84861a7a",
+            "source_file": "camelot_stream.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "0602095:6e8db3e114",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1407,
+            "completion_tokens": 5,
+            "cost_usd": 0.0001427,
+            "latency_ms": 494,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305369-MkY7jGZKfSp3iD7X4Eyy"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1400,
+            "completion_tokens": 8,
+            "cost_usd": 7.064e-05,
+            "latency_ms": 506,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305370-niUYb8IPRlXevjnr251i"
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0602095:f2a9ac1042",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "14:35",
+                "school_name": "Vanguard College Preparatory Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "13:15",
+                "school_name": "Vanguard College Preparatory Academy",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1178,
+            "completion_tokens": 118,
+            "cost_usd": 0.000165,
+            "latency_ms": 1892,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305371-yRLHWkYh5gVy8Ab2tmwQ"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:38",
+                "school_name": "Vanguard College Preparatory Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "13:15",
+                "school_name": "Vanguard College Preparatory Academy",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1195,
+            "completion_tokens": 130,
+            "cost_usd": 7.015e-05,
+            "latency_ms": 4550,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305372-kdk407c0sP1GE5cMwXFV"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:38",
+                "school_name": "Vanguard College Preparatory Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "13:15",
+                "school_name": "Vanguard College Preparatory Academy",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1182,
+            "completion_tokens": 82,
+            "cost_usd": 0.00011458,
+            "latency_ms": 13710,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305377-s84mEhRGJNSmxnoDRqeg"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "vanguard college preparatory",
+            "start": "08:30",
+            "end": "15:38",
+            "gross": 428,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0602095:f2a9ac1042",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "middle",
+            "school": "vanguard college preparatory",
+            "start": "08:30",
+            "end": "13:15",
+            "gross": 285,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0602095:f2a9ac1042",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0602095:ee9c660da1",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "UCS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "12:30",
+                "school_name": "UCS",
+                "confidence": "medium"
+              }
+            ],
+            "prompt_tokens": 996,
+            "completion_tokens": 97,
+            "cost_usd": 0.0001384,
+            "latency_ms": 701,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305391-bvJBNMjVUIBz6BBCiLC0"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "UCS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 998,
+            "completion_tokens": 70,
+            "cost_usd": 5.55e-05,
+            "latency_ms": 1838,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305392-OHUnyd2lBDZeh8mfxyhc"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "ucs",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0602095:ee9c660da1",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0602095:9ff95a560b",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "12:30",
+                "school_name": "Summit Charter Academy",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 596,
+            "completion_tokens": 48,
+            "cost_usd": 7.88e-05,
+            "latency_ms": 537,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305393-PybsTGfq87nac6viBVZj"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "12:25",
+                "school_name": "Summit Charter Academy",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 601,
+            "completion_tokens": 50,
+            "cost_usd": 3.405e-05,
+            "latency_ms": 1617,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305394-YoD2y3yWDblvoeifCPNh"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 591,
+            "completion_tokens": 6,
+            "cost_usd": 5.379e-05,
+            "latency_ms": 1605,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783305396-OuL2odXQIROulehflrXm"
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "summit charter",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00",
+              "mistralai/mistral-small-24b-instruct-2501": "09:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "12:30",
+              "mistralai/mistral-small-24b-instruct-2501": "12:25"
+            },
+            "rec_key": "0602095:9ff95a560b",
+            "source_file": "tesseract_raster.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "vanguard college preparatory",
+        "start": "08:30",
+        "end": "15:38",
+        "gross": 428,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0602095:f2a9ac1042",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "vanguard college preparatory",
+        "start": "08:30",
+        "end": "13:15",
+        "gross": 285,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0602095:f2a9ac1042",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "ucs",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0602095:ee9c660da1",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "full days",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:15"
+        },
+        "rec_key": "0602095:1e84861a7a",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "minimum days",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "12:10"
+        },
+        "rec_key": "0602095:1e84861a7a",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "aspire public schools",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:00"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:15"
+        },
+        "rec_key": "0602095:1e84861a7a",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "summit charter",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00",
+          "mistralai/mistral-small-24b-instruct-2501": "09:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "12:30",
+          "mistralai/mistral-small-24b-instruct-2501": "12:25"
+        },
+        "rec_key": "0602095:9ff95a560b",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "n_reps": 5,
+    "n_judged": 3,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 420,
+        "start_time": "08:15",
+        "end_time": "15:15",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "ucs",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 285,
+        "start_time": "08:30",
+        "end_time": "13:15",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "vanguard college preparatory",
+            "start_time": "08:30",
+            "end_time": "13:15",
+            "gross": 285,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 428,
+        "start_time": "08:30",
+        "end_time": "15:38",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "vanguard college preparatory",
+            "start_time": "08:30",
+            "end_time": "15:38",
+            "gross": 428,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 13,
+      "judge_calls": 3,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 35376,
+      "completion_tokens": 745,
+      "cost_usd": 0.0038980899999999995
+    },
+    "state": "CA"
+  }
+}

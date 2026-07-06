@@ -1,0 +1,88 @@
+{
+  "handoff_hash": "28e1d93b0260",
+  "created_at": "2026-07-06T03:21:43Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "fingerprints": {
+    "4222860": {
+      "config": "e2d24d579723",
+      "labels": "7689bebefdb1",
+      "data": "cb32b27ad6a1"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v1"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.00204,
+    "n_reps": 2,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "4222860",
+      "name": "Stroudsburg Area SD",
+      "state": "PA",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "4222860:fa8bdfce9a",
+          "url": "https://hamilton.sburg.org/apps/bell_schedules/",
+          "decision": "send",
+          "reason": "7->6 alternate-rep re-dispatch (REQ-118)",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:a622435c8a",
+          "url": "https://jhs.sburg.org/apps/bell_schedules/index.jsp?rn=741",
+          "decision": "send",
+          "reason": "7->6 alternate-rep re-dispatch (REQ-118)",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 2,
+      "est_usd": 0.00204
+    }
+  ]
+}

@@ -1,0 +1,253 @@
+{
+  "handoff_hash": "28e1d93b0260",
+  "district": {
+    "district_id": "4222860",
+    "name": "Stroudsburg Area SD",
+    "reps": [
+      {
+        "rec_key": "4222860:fa8bdfce9a",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:20",
+                "end_time": "15:41",
+                "school_name": "Hamilton Township Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 830,
+            "completion_tokens": 44,
+            "cost_usd": 0.0001006,
+            "latency_ms": 551,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293119-kzced5EuY39g0ic4X5DW"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:20",
+                "end_time": "15:41",
+                "school_name": "Hamilton Township Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 868,
+            "completion_tokens": 51,
+            "cost_usd": 4.748e-05,
+            "latency_ms": 1358,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293120-VibmGch4y9Cm0gcIfE3P"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "hamilton township",
+            "start": "09:20",
+            "end": "15:41",
+            "gross": 381,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "4222860:fa8bdfce9a",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4222860:a622435c8a",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:10",
+                "end_time": "14:22",
+                "school_name": "Stroudsburg Junior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1098,
+            "completion_tokens": 47,
+            "cost_usd": 0.0001286,
+            "latency_ms": 709,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293121-lkDrrRxNPSklCp8Y8EJm"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:27",
+                "end_time": "14:22",
+                "school_name": "Stroudsburg Junior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1129,
+            "completion_tokens": 52,
+            "cost_usd": 6.061e-05,
+            "latency_ms": 1314,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293122-e573tUEJMfsasG5o7vpW"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:10",
+                "end_time": "14:22",
+                "school_name": "Stroudsburg Junior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1105,
+            "completion_tokens": 43,
+            "cost_usd": 0.00010375,
+            "latency_ms": 4339,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783293123-O4xPoFwvoq8DF55AbB9d"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "stroudsburg",
+            "start": "07:10",
+            "end": "14:22",
+            "gross": 432,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "4222860:a622435c8a",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "hamilton township",
+        "start": "09:20",
+        "end": "15:41",
+        "gross": 381,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "4222860:fa8bdfce9a",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "stroudsburg",
+        "start": "07:10",
+        "end": "14:22",
+        "gross": 432,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "4222860:a622435c8a",
+        "source_file": "page.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 2,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 381,
+        "start_time": "09:20",
+        "end_time": "15:41",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "hamilton township",
+            "start_time": "09:20",
+            "end_time": "15:41",
+            "gross": 381,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 432,
+        "start_time": "07:10",
+        "end_time": "14:22",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "stroudsburg",
+            "start_time": "07:10",
+            "end_time": "14:22",
+            "gross": 432,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 5,
+      "judge_calls": 1,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 5030,
+      "completion_tokens": 237,
+      "cost_usd": 0.00044104
+    },
+    "state": "PA"
+  }
+}

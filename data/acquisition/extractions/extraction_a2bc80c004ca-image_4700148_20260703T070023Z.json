@@ -1,0 +1,5025 @@
+{
+  "handoff_hash": "a2bc80c004ca-image",
+  "district": {
+    "district_id": "4700148",
+    "name": "Memphis-Shelby County Schools",
+    "reps": [
+      {
+        "rec_key": "4700148:43d7f483a4",
+        "file": "raster_p-1.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 94,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "A B Hill ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Alcy ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Balmoral/Ridgeway ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Barrett's Chapel (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Belle Forest Community School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Berclair ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Bethel Grove ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Brownsville Road ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Bruce ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Caldwell-Guthrie (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Cherokee ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Chimneyrock ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Cordova ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Cromwell ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Crump ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Cummings (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Delano ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Dexter (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Double Tree ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Douglass (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Downtown ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Dunbar ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "EE Jeter K-8",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Egypt ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Evans ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Ford Road ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Fox Meadows ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "16:15",
+                "school_name": "Frayser/Corning ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Gardenview ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Geeter (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Germanshire ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Germantown ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Getwell ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Georgian Hills ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Gordon Achievement Academy (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Grahamwood ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Hanley K-8",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Hamilton K-8",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Hawkins Mill ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Hickory Ridge ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Highland Oaks ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Holmes Road ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Ida B Wells Success",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Idlewild ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Jackson ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "John P Freeman (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Kate Bond ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Keystone ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Kingsbury ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "La Rose ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Levi ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Lowrance (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Lucie E. Campbell ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Lucy ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Macon Hall ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Newberry ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Norris Achievement Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Northaven ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Oak Forest ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Oakhaven ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Oakshire ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Parkway Village ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Peabody ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Raleigh Bartlett Meadows ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Richland ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Ridgeway Early Learning Center",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Riverview (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Riverwood ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Robert R. Church ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Ross ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Rozelle ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Scenic Hills ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Sea Isle ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Sharpe ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Sheffield ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Shelby Oaks ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Sherwood ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:15",
+                "end_time": "02:15",
+                "school_name": "Shrine School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Snowden (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "South Park ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Southwind ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Springdale ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Treadwell ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Vollentine ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Wells Station ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Westhaven ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Westside ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "White Station ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Whitehaven ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Whitney ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "William H Brewster ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Willow Oaks ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Winchester ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Winridge ES",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2941,
+            "completion_tokens": 3671,
+            "cost_usd": 0.0100598,
+            "latency_ms": 28810,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061927-7xdti3fWPM5oSSFbArv7"
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 93,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "A B Hill ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Alcy ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Balmorel/Ridgeway ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Barrett's Chapel (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Belle Forest Community School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Berclair ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Bethel Grove ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "09:15",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Brownsville Road ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Bruce ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Caldwell-Guthrie (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Cherokee ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Chimneyrock ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Cordova ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Cromwell ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Crump ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Cummings (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Delano ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Dexter (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Double Tree ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Douglass (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Downtown ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Dunbar ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "EE Jeter K-8",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Egypt ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Evans ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Ford Road ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Fox Meadows ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "16:15",
+                "school_name": "Frayser/Corning ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Gardenview ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Geeter (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Germantown ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "09:15",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Getwell ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Georgian Hills ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Gordon Achievement Academy (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Grahamwood ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Hanley K-8",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Hamilton K-8",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Hawkins Mill ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Hickory Ridge ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Highland Oaks ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Holmes Road ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Ida B Wells Success",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Idlewild ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Jackson ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "John P Freeman (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Kate Bond ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Keystone ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Kingsbury ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "LaRose ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Levi ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Lowrance (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Lucie E. Campbell ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Lucy ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Macon Hall ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Newberry ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Norris Achievement Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Northaven ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Oak Forest ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Oakhaven ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Oakshire ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Parkway Village ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Peabody ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Raleigh Bartlett Meadows ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Richland ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Ridgeway Early Learning Center",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Rivercrest (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Riverwood ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Robert R. Church ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Ross ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Rozelle ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Scenic Hills ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Sea Isle ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Sharpe ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Sheffield ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Shelby Oaks ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Sherwood ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:15",
+                "end_time": "14:15",
+                "school_name": "Shrine School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Snowden (K-8)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "South Park ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Southwind ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Springdale ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Treadwell ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Valentine ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Wells Station ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Westhaven ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Westside ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "White Station ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "16:15",
+                "school_name": "Whitehaven ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Whitney ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "William H Brewster ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Willow Oaks ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "16:15",
+                "school_name": "Winchester ES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "15:15",
+                "school_name": "Winridge ES",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2782,
+            "completion_tokens": 3578,
+            "cost_usd": 0.006758,
+            "latency_ms": 63707,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783061955-DxmeUmQ4T0AUDYsM0zmd"
+          },
+          {
+            "model": "deepseek/deepseek-v3.2",
+            "role": "judge",
+            "ok": false,
+            "error": "Error code: 404 - {'error': {'message': 'No endpoints found that support image input', 'code': 404}}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 16631,
+            "finish_reason": null,
+            "generation_id": null
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "a b hill es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "alcy es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "barretts chapel k8",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "belle forest community",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "berclair es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "bethel grove es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "bruce es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "caldwellguthrie k8",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "cherokee es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "chimneyrock es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "cordova es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "cromwell es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "crump es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "cummings k8",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "delano es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "dexter k8",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "double tree es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "douglass k8",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "downtown es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "dunbar es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "ee jeter k8",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "egypt es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "evans es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "ford road es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "fox meadows es",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "fraysercorning es",
+            "start": "08:15",
+            "end": "16:15",
+            "gross": 480,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "gardenview es",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "geeter k8",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "georgian hills es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "gordon achievement k8",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "grahamwood es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "hanley k8",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "hamilton k8",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "hawkins mill es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "hickory ridge es",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "highland oaks es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "holmes road es",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "ida b wells success",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "idlewild es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "jackson es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "john p freeman k8",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "kate bond es",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "keystone es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "kingsbury es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "levi es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "lowrance k8",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "lucie e campbell es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "lucy es",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "macon hall es",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "newberry es",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "norris achievement",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "northaven es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "oak forest es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "oakhaven es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "oakshire es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "parkway village es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "peabody es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "raleigh bartlett meadows es",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "richland es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "ridgeway early learning center",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "riverwood es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "robert r church es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "ross es",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "rozelle es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "scenic hills es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "sea isle es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "sharpe es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "sheffield es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "shelby oaks es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "sherwood es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "snowden k8",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "south park es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "southwind es",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "springdale es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "treadwell es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "wells station es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "westhaven es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "westside es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "white station es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "whitehaven es",
+            "start": "09:15",
+            "end": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "whitney es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "william h brewster es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "willow oaks es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "winridge es",
+            "start": "08:15",
+            "end": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "balmoralridgeway es",
+            "starts": {
+              "google/gemini-2.5-flash": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:15"
+            },
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "brownsville road es",
+            "starts": {
+              "google/gemini-2.5-flash": "09:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "16:15"
+            },
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "germanshire es",
+            "starts": {
+              "google/gemini-2.5-flash": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:15"
+            },
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "germantown es",
+            "starts": {
+              "google/gemini-2.5-flash": "09:15",
+              "mistralai/mistral-large-2512": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "16:15",
+              "mistralai/mistral-large-2512": "15:15"
+            },
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "getwell es",
+            "starts": {
+              "google/gemini-2.5-flash": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:15"
+            },
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "la rose es",
+            "starts": {
+              "google/gemini-2.5-flash": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:15"
+            },
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "riverview k8",
+            "starts": {
+              "google/gemini-2.5-flash": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:15"
+            },
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "shrine",
+            "starts": {
+              "google/gemini-2.5-flash": "07:15",
+              "mistralai/mistral-large-2512": "07:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "02:15",
+              "mistralai/mistral-large-2512": "14:15"
+            },
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "vollentine es",
+            "starts": {
+              "google/gemini-2.5-flash": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:15"
+            },
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "winchester es",
+            "starts": {
+              "google/gemini-2.5-flash": "08:15",
+              "mistralai/mistral-large-2512": "08:15"
+            },
+            "ends": {
+              "google/gemini-2.5-flash": "15:15",
+              "mistralai/mistral-large-2512": "16:15"
+            },
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "balmorelridgeway es",
+            "starts": {
+              "mistralai/mistral-large-2512": "08:15"
+            },
+            "ends": {
+              "mistralai/mistral-large-2512": "15:15"
+            },
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "larose es",
+            "starts": {
+              "mistralai/mistral-large-2512": "08:15"
+            },
+            "ends": {
+              "mistralai/mistral-large-2512": "15:15"
+            },
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "rivercrest k8",
+            "starts": {
+              "mistralai/mistral-large-2512": "08:15"
+            },
+            "ends": {
+              "mistralai/mistral-large-2512": "15:15"
+            },
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          },
+          {
+            "band": "elementary",
+            "school": "valentine es",
+            "starts": {
+              "mistralai/mistral-large-2512": "08:15"
+            },
+            "ends": {
+              "mistralai/mistral-large-2512": "15:15"
+            },
+            "rec_key": "4700148:43d7f483a4",
+            "source_file": "raster_p-1.png"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "a b hill es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "alcy es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "barretts chapel k8",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "belle forest community",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "berclair es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "bethel grove es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "bruce es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "caldwellguthrie k8",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "cherokee es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "chimneyrock es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "cordova es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "cromwell es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "crump es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "cummings k8",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "delano es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "dexter k8",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "double tree es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "douglass k8",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "downtown es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "dunbar es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "ee jeter k8",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "egypt es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "evans es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "ford road es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "fox meadows es",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "fraysercorning es",
+        "start": "08:15",
+        "end": "16:15",
+        "gross": 480,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "gardenview es",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "geeter k8",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "georgian hills es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "gordon achievement k8",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "grahamwood es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "hanley k8",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "hamilton k8",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "hawkins mill es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "hickory ridge es",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "highland oaks es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "holmes road es",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "ida b wells success",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "idlewild es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "jackson es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "john p freeman k8",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "kate bond es",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "keystone es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "kingsbury es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "levi es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "lowrance k8",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "lucie e campbell es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "lucy es",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "macon hall es",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "newberry es",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "norris achievement",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "northaven es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "oak forest es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "oakhaven es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "oakshire es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "parkway village es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "peabody es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "raleigh bartlett meadows es",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "richland es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "ridgeway early learning center",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "riverwood es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "robert r church es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "ross es",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "rozelle es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "scenic hills es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "sea isle es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "sharpe es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "sheffield es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "shelby oaks es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "sherwood es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "snowden k8",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "south park es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "southwind es",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "springdale es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "treadwell es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "wells station es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "westhaven es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "westside es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "white station es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "whitehaven es",
+        "start": "09:15",
+        "end": "16:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "whitney es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "william h brewster es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "willow oaks es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "winridge es",
+        "start": "08:15",
+        "end": "15:15",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "balmoralridgeway es",
+        "starts": {
+          "google/gemini-2.5-flash": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:15"
+        },
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "brownsville road es",
+        "starts": {
+          "google/gemini-2.5-flash": "09:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "16:15"
+        },
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "germanshire es",
+        "starts": {
+          "google/gemini-2.5-flash": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:15"
+        },
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "germantown es",
+        "starts": {
+          "google/gemini-2.5-flash": "09:15",
+          "mistralai/mistral-large-2512": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "16:15",
+          "mistralai/mistral-large-2512": "15:15"
+        },
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "getwell es",
+        "starts": {
+          "google/gemini-2.5-flash": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:15"
+        },
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "la rose es",
+        "starts": {
+          "google/gemini-2.5-flash": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:15"
+        },
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "riverview k8",
+        "starts": {
+          "google/gemini-2.5-flash": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:15"
+        },
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "shrine",
+        "starts": {
+          "google/gemini-2.5-flash": "07:15",
+          "mistralai/mistral-large-2512": "07:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "02:15",
+          "mistralai/mistral-large-2512": "14:15"
+        },
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "vollentine es",
+        "starts": {
+          "google/gemini-2.5-flash": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:15"
+        },
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "winchester es",
+        "starts": {
+          "google/gemini-2.5-flash": "08:15",
+          "mistralai/mistral-large-2512": "08:15"
+        },
+        "ends": {
+          "google/gemini-2.5-flash": "15:15",
+          "mistralai/mistral-large-2512": "16:15"
+        },
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "balmorelridgeway es",
+        "starts": {
+          "mistralai/mistral-large-2512": "08:15"
+        },
+        "ends": {
+          "mistralai/mistral-large-2512": "15:15"
+        },
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "larose es",
+        "starts": {
+          "mistralai/mistral-large-2512": "08:15"
+        },
+        "ends": {
+          "mistralai/mistral-large-2512": "15:15"
+        },
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "rivercrest k8",
+        "starts": {
+          "mistralai/mistral-large-2512": "08:15"
+        },
+        "ends": {
+          "mistralai/mistral-large-2512": "15:15"
+        },
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      },
+      {
+        "band": "elementary",
+        "school": "valentine es",
+        "starts": {
+          "mistralai/mistral-large-2512": "08:15"
+        },
+        "ends": {
+          "mistralai/mistral-large-2512": "15:15"
+        },
+        "rec_key": "4700148:43d7f483a4",
+        "source_file": "raster_p-1.png"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 420,
+        "start_time": "08:15",
+        "end_time": "15:15",
+        "n_schools": 84,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "a b hill es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "alcy es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "barretts chapel k8",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "belle forest community",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "berclair es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "bethel grove es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "bruce es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "caldwellguthrie k8",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "cherokee es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "chimneyrock es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "cordova es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "cromwell es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "crump es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "cummings k8",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "delano es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dexter k8",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "double tree es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "douglass k8",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "downtown es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "dunbar es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ee jeter k8",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "egypt es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "evans es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ford road es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "fox meadows es",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "fraysercorning es",
+            "start_time": "08:15",
+            "end_time": "16:15",
+            "gross": 480,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "gardenview es",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "geeter k8",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "georgian hills es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "gordon achievement k8",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "grahamwood es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hanley k8",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hamilton k8",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hawkins mill es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hickory ridge es",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "highland oaks es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "holmes road es",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ida b wells success",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "idlewild es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "jackson es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "john p freeman k8",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "kate bond es",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "keystone es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "kingsbury es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "levi es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lowrance k8",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lucie e campbell es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lucy es",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "macon hall es",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "newberry es",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "norris achievement",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "northaven es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "oak forest es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "oakhaven es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "oakshire es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "parkway village es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "peabody es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "raleigh bartlett meadows es",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "richland es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ridgeway early learning center",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "riverwood es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "robert r church es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ross es",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "rozelle es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "scenic hills es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "sea isle es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "sharpe es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "sheffield es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "shelby oaks es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "sherwood es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "snowden k8",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "south park es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "southwind es",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "springdale es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "treadwell es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "wells station es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "westhaven es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "westside es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "white station es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "whitehaven es",
+            "start_time": "09:15",
+            "end_time": "16:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "whitney es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "william h brewster es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "willow oaks es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "winridge es",
+            "start_time": "08:15",
+            "end_time": "15:15",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 1,
+      "truncated": 0,
+      "prompt_tokens": 5723,
+      "completion_tokens": 7249,
+      "cost_usd": 0.0168178
+    }
+  }
+}

@@ -1,0 +1,519 @@
+{
+  "handoff_hash": "a2bc80c004ca",
+  "district": {
+    "district_id": "2307320",
+    "name": "Lewiston Public Schools",
+    "reps": [
+      {
+        "rec_key": "2307320:86c104bfdf",
+        "file": "tesseract_image.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 9,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:40",
+                "end_time": "15:10",
+                "school_name": "Farwell",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:40",
+                "end_time": "15:10",
+                "school_name": "McMahon",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:40",
+                "end_time": "15:10",
+                "school_name": "Geiger",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Connors",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Montello",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:35",
+                "end_time": "14:00",
+                "school_name": "LMS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "14:00",
+                "school_name": "LHS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "14:00",
+                "school_name": "LRTC",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "14:00",
+                "school_name": "Next STEP",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 850,
+            "completion_tokens": 453,
+            "cost_usd": 0.0002662,
+            "latency_ms": 13736,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051665-2R6OkLV9MTvTrHjVyXxW"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:35",
+                "end_time": "14:00",
+                "school_name": "LMS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "14:00",
+                "school_name": "LHS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 841,
+            "completion_tokens": 106,
+            "cost_usd": 5.053e-05,
+            "latency_ms": 12561,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051678-u0kiAk5XYshxwuxi3D20"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 7,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:40",
+                "end_time": "15:10",
+                "school_name": "Farwell",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Connors",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:40",
+                "end_time": "15:10",
+                "school_name": "McMahon",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Montello",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:40",
+                "end_time": "15:10",
+                "school_name": "Geiger",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:35",
+                "end_time": "14:00",
+                "school_name": "LMS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "14:00",
+                "school_name": "LHS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 831,
+            "completion_tokens": 242,
+            "cost_usd": 0.0003114,
+            "latency_ms": 15705,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051692-a0srnEWaD3NJGtLokJmr"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "farwell",
+            "start": "08:40",
+            "end": "15:10",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2307320:86c104bfdf",
+            "source_file": "tesseract_image.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "mcmahon",
+            "start": "08:40",
+            "end": "15:10",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2307320:86c104bfdf",
+            "source_file": "tesseract_image.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "geiger",
+            "start": "08:40",
+            "end": "15:10",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2307320:86c104bfdf",
+            "source_file": "tesseract_image.txt"
+          },
+          {
+            "band": "middle",
+            "school": "lms",
+            "start": "07:35",
+            "end": "14:00",
+            "gross": 385,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2307320:86c104bfdf",
+            "source_file": "tesseract_image.txt"
+          },
+          {
+            "band": "high",
+            "school": "lhs",
+            "start": "07:45",
+            "end": "14:00",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2307320:86c104bfdf",
+            "source_file": "tesseract_image.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "connors",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:30"
+            },
+            "rec_key": "2307320:86c104bfdf",
+            "source_file": "tesseract_image.txt"
+          },
+          {
+            "band": "middle",
+            "school": "montello",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:30"
+            },
+            "rec_key": "2307320:86c104bfdf",
+            "source_file": "tesseract_image.txt"
+          },
+          {
+            "band": "high",
+            "school": "lrtc",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:45"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:00"
+            },
+            "rec_key": "2307320:86c104bfdf",
+            "source_file": "tesseract_image.txt"
+          },
+          {
+            "band": "high",
+            "school": "next step",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:45"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:00"
+            },
+            "rec_key": "2307320:86c104bfdf",
+            "source_file": "tesseract_image.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "farwell",
+        "start": "08:40",
+        "end": "15:10",
+        "gross": 390,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2307320:86c104bfdf",
+        "source_file": "tesseract_image.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "mcmahon",
+        "start": "08:40",
+        "end": "15:10",
+        "gross": 390,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2307320:86c104bfdf",
+        "source_file": "tesseract_image.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "geiger",
+        "start": "08:40",
+        "end": "15:10",
+        "gross": 390,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2307320:86c104bfdf",
+        "source_file": "tesseract_image.txt"
+      },
+      {
+        "band": "middle",
+        "school": "lms",
+        "start": "07:35",
+        "end": "14:00",
+        "gross": 385,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2307320:86c104bfdf",
+        "source_file": "tesseract_image.txt"
+      },
+      {
+        "band": "high",
+        "school": "lhs",
+        "start": "07:45",
+        "end": "14:00",
+        "gross": 375,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2307320:86c104bfdf",
+        "source_file": "tesseract_image.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "connors",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:30"
+        },
+        "rec_key": "2307320:86c104bfdf",
+        "source_file": "tesseract_image.txt"
+      },
+      {
+        "band": "middle",
+        "school": "montello",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:30"
+        },
+        "rec_key": "2307320:86c104bfdf",
+        "source_file": "tesseract_image.txt"
+      },
+      {
+        "band": "high",
+        "school": "lrtc",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:45"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:00"
+        },
+        "rec_key": "2307320:86c104bfdf",
+        "source_file": "tesseract_image.txt"
+      },
+      {
+        "band": "high",
+        "school": "next step",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:45"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:00"
+        },
+        "rec_key": "2307320:86c104bfdf",
+        "source_file": "tesseract_image.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 390,
+        "start_time": "08:40",
+        "end_time": "15:10",
+        "n_schools": 3,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "farwell",
+            "start_time": "08:40",
+            "end_time": "15:10",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mcmahon",
+            "start_time": "08:40",
+            "end_time": "15:10",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "geiger",
+            "start_time": "08:40",
+            "end_time": "15:10",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 385,
+        "start_time": "07:35",
+        "end_time": "14:00",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "lms",
+            "start_time": "07:35",
+            "end_time": "14:00",
+            "gross": 385,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 375,
+        "start_time": "07:45",
+        "end_time": "14:00",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "lhs",
+            "start_time": "07:45",
+            "end_time": "14:00",
+            "gross": 375,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 2522,
+      "completion_tokens": 801,
+      "cost_usd": 0.00062813
+    }
+  }
+}

@@ -1,0 +1,367 @@
+{
+  "handoff_hash": "6bc08e983d45",
+  "district": {
+    "district_id": "5508790",
+    "name": "Marshall School District",
+    "reps": [
+      {
+        "rec_key": "5508790:6cc3deb70a",
+        "file": "pdfplumber_lines.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:20",
+                "school_name": "Marshall Early Learning Center",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:15",
+                "school_name": "Marshall Early Learning Center",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1178,
+            "completion_tokens": 88,
+            "cost_usd": 0.000153,
+            "latency_ms": 710,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783312719-YS03Lc5cHMaqkhoRXLUp"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:20",
+                "school_name": "Marshall Early Learning Center",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1215,
+            "completion_tokens": 51,
+            "cost_usd": 6.483e-05,
+            "latency_ms": 830,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783312720-ejWYYl6gLPXJ1JvCNNqf"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "marshall early learning center",
+            "start": "08:00",
+            "end": "15:20",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "5508790:6cc3deb70a",
+            "source_file": "pdfplumber_lines.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "5508790:df1b53f1b0",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:57",
+                "end_time": "15:21",
+                "school_name": "Marshall Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 19424,
+            "completion_tokens": 76,
+            "cost_usd": 0.0019728,
+            "latency_ms": 1269,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783312721-W59Jj0nl80oOTWav18gF"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": false,
+            "error": "Error code: 400 - {'error': {'message': \"This endpoint's maximum context length is 32768 tokens. However, you requested about 40148 tokens (24148 of text input, 16000 in the output). Please reduce the length of either one, or use the context-compression plugin to compress your prompt automatically.\", 'code': 400, 'metadata': {'provider_name': None}}, 'user_id': 'user_3F6G2u57EqCPewKcTHYL5cGYfne'}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 1175,
+            "finish_reason": null,
+            "generation_id": null
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:57",
+                "end_time": "15:21",
+                "school_name": "Marshall Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 19277,
+            "completion_tokens": 41,
+            "cost_usd": 0.00175871,
+            "latency_ms": 2856,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783312724-eiNbiEHOwgrJ6VEQwt01"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "marshall",
+            "start": "07:57",
+            "end": "15:21",
+            "gross": 444,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "5508790:df1b53f1b0",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "5508790:dde6ec4060",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:57",
+                "end_time": "15:21",
+                "school_name": "Marshall High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 17647,
+            "completion_tokens": 58,
+            "cost_usd": 0.0017879,
+            "latency_ms": 785,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783312726-mrSTnzBHIB3cCRTeW3EP"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": false,
+            "error": "Error code: 400 - {'error': {'message': \"This endpoint's maximum context length is 32768 tokens. However, you requested about 38074 tokens (22074 of text input, 16000 in the output). Please reduce the length of either one, or use the context-compression plugin to compress your prompt automatically.\", 'code': 400, 'metadata': {'provider_name': None}}, 'user_id': 'user_3F6G2u57EqCPewKcTHYL5cGYfne'}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 69,
+            "finish_reason": null,
+            "generation_id": null
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:57",
+                "end_time": "15:21",
+                "school_name": "Marshall High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 17546,
+            "completion_tokens": 41,
+            "cost_usd": 0.0037191,
+            "latency_ms": 3512,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783312727-bD18RVPQukCqeDHBbsvC"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "marshall",
+            "start": "07:57",
+            "end": "15:21",
+            "gross": 444,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "5508790:dde6ec4060",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "marshall early learning center",
+        "start": "08:00",
+        "end": "15:20",
+        "gross": 440,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "5508790:6cc3deb70a",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "middle",
+        "school": "marshall",
+        "start": "07:57",
+        "end": "15:21",
+        "gross": 444,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "5508790:df1b53f1b0",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "marshall",
+        "start": "07:57",
+        "end": "15:21",
+        "gross": 444,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "5508790:dde6ec4060",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 3,
+    "n_judged": 2,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 440,
+        "start_time": "08:00",
+        "end_time": "15:20",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "marshall early learning center",
+            "start_time": "08:00",
+            "end_time": "15:20",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 444,
+        "start_time": "07:57",
+        "end_time": "15:21",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "marshall",
+            "start_time": "07:57",
+            "end_time": "15:21",
+            "gross": 444,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 444,
+        "start_time": "07:57",
+        "end_time": "15:21",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "marshall",
+            "start_time": "07:57",
+            "end_time": "15:21",
+            "gross": 444,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 8,
+      "judge_calls": 2,
+      "errors": 2,
+      "truncated": 0,
+      "prompt_tokens": 76287,
+      "completion_tokens": 355,
+      "cost_usd": 0.00945634
+    },
+    "state": "WI"
+  }
+}

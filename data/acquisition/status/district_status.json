@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-06T05:30:44Z",
+  "last_updated": "2026-07-06T05:59:52Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -8996,7 +8996,7 @@
           "stage": null,
           "stage_name": "queue",
           "outcome": null,
-          "at": "2026-07-05T14:01:11Z",
+          "at": "2026-07-06T05:59:52Z",
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"
@@ -9005,7 +9005,7 @@
           "stage": null,
           "stage_name": "queue",
           "outcome": null,
-          "at": "2026-07-05T14:01:11Z",
+          "at": "2026-07-06T05:59:52Z",
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"
@@ -9014,250 +9014,7 @@
           "stage": null,
           "stage_name": "queue",
           "outcome": null,
-          "at": "2026-07-05T14:01:11Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T14:01:26Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T14:01:26Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T14:01:26Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T14:21:36Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T14:21:36Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T14:21:36Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T14:25:14Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T14:25:14Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T14:25:14Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T14:26:57Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T14:26:57Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T14:26:57Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T14:27:31Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T14:27:31Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T14:27:31Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T15:40:44Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T15:40:44Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T15:40:44Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T15:41:46Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T15:41:46Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-05T15:41:46Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-06T03:43:48Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-06T03:43:48Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-06T03:43:48Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-06T05:30:44Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-06T05:30:44Z",
-          "checkpoint": "gate@1",
-          "event_type": "approved",
-          "actor": "ian"
-        },
-        {
-          "stage": null,
-          "stage_name": "queue",
-          "outcome": null,
-          "at": "2026-07-06T05:30:44Z",
+          "at": "2026-07-06T05:59:52Z",
           "checkpoint": "gate@1",
           "event_type": "approved",
           "actor": "ian"

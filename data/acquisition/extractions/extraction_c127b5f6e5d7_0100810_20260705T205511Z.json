@@ -1,0 +1,590 @@
+{
+  "handoff_hash": "c127b5f6e5d7",
+  "district": {
+    "district_id": "0100810",
+    "name": "Coffee County",
+    "reps": [
+      {
+        "rec_key": "0100810:4b49c7aff9",
+        "file": "camelot_hybrid.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:47",
+                "end_time": "15:01",
+                "school_name": "Kinston K-12",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "14:50",
+                "school_name": "N BES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:44",
+                "end_time": "15:01",
+                "school_name": "N BMS & NBHS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:44",
+                "end_time": "15:01",
+                "school_name": "N BMS & NBHS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:47",
+                "end_time": "15:01",
+                "school_name": "Zion Chapel K-12",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1049,
+            "completion_tokens": 342,
+            "cost_usd": 0.0002417,
+            "latency_ms": 1485,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783284888-R2dcULNeEnYwrDSzuFFE"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 9,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:47",
+                "end_time": "15:01",
+                "school_name": "Kinston K-12",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:47",
+                "end_time": "15:01",
+                "school_name": "Kinston K-12",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:47",
+                "end_time": "15:01",
+                "school_name": "Kinston K-12",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "14:50",
+                "school_name": "N BES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:44",
+                "end_time": "15:01",
+                "school_name": "N BMS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:44",
+                "end_time": "15:01",
+                "school_name": "NBHS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:47",
+                "end_time": "15:01",
+                "school_name": "Zion Chapel K-12",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:47",
+                "end_time": "15:01",
+                "school_name": "Zion Chapel K-12",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:47",
+                "end_time": "15:01",
+                "school_name": "Zion Chapel K-12",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1023,
+            "completion_tokens": 525,
+            "cost_usd": 9.315e-05,
+            "latency_ms": 6198,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783284889-dA4QCx9F1oRttr5mAesP"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "14:50",
+                "school_name": "N BES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:44",
+                "end_time": "15:01",
+                "school_name": "N BMS & NBHS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:44",
+                "end_time": "15:01",
+                "school_name": "N BMS & NBHS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:47",
+                "end_time": "15:01",
+                "school_name": "Kinston K-12",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:47",
+                "end_time": "15:01",
+                "school_name": "Zion Chapel K-12",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1012,
+            "completion_tokens": 191,
+            "cost_usd": 0.00029505,
+            "latency_ms": 15854,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783284895-7atvyApVF1qeFJfkWWgP"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "kinston k12",
+            "start": "07:47",
+            "end": "15:01",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100810:4b49c7aff9",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "n bes",
+            "start": "07:55",
+            "end": "14:50",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100810:4b49c7aff9",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "high",
+            "school": "n bms nbhs",
+            "start": "07:44",
+            "end": "15:01",
+            "gross": 437,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0100810:4b49c7aff9",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "middle",
+            "school": "n bms nbhs",
+            "start": "07:44",
+            "end": "15:01",
+            "gross": 437,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0100810:4b49c7aff9",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "zion chapel k12",
+            "start": "07:47",
+            "end": "15:01",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0100810:4b49c7aff9",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "high",
+            "school": "zion chapel k12",
+            "start": "07:47",
+            "end": "15:01",
+            "gross": 434,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0100810:4b49c7aff9",
+            "source_file": "camelot_hybrid.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "kinston k12",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:47"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:01"
+            },
+            "rec_key": "0100810:4b49c7aff9",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "high",
+            "school": "kinston k12",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:47"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:01"
+            },
+            "rec_key": "0100810:4b49c7aff9",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "middle",
+            "school": "n bms",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:44"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:01"
+            },
+            "rec_key": "0100810:4b49c7aff9",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "high",
+            "school": "nbhs",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:44"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:01"
+            },
+            "rec_key": "0100810:4b49c7aff9",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "middle",
+            "school": "zion chapel k12",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:47"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:01"
+            },
+            "rec_key": "0100810:4b49c7aff9",
+            "source_file": "camelot_hybrid.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "kinston k12",
+        "start": "07:47",
+        "end": "15:01",
+        "gross": 434,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100810:4b49c7aff9",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "n bes",
+        "start": "07:55",
+        "end": "14:50",
+        "gross": 415,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100810:4b49c7aff9",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "high",
+        "school": "n bms nbhs",
+        "start": "07:44",
+        "end": "15:01",
+        "gross": 437,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0100810:4b49c7aff9",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "middle",
+        "school": "n bms nbhs",
+        "start": "07:44",
+        "end": "15:01",
+        "gross": 437,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0100810:4b49c7aff9",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "zion chapel k12",
+        "start": "07:47",
+        "end": "15:01",
+        "gross": 434,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0100810:4b49c7aff9",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "high",
+        "school": "zion chapel k12",
+        "start": "07:47",
+        "end": "15:01",
+        "gross": 434,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0100810:4b49c7aff9",
+        "source_file": "camelot_hybrid.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "kinston k12",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:47"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:01"
+        },
+        "rec_key": "0100810:4b49c7aff9",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "high",
+        "school": "kinston k12",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:47"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:01"
+        },
+        "rec_key": "0100810:4b49c7aff9",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "middle",
+        "school": "n bms",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:44"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:01"
+        },
+        "rec_key": "0100810:4b49c7aff9",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "high",
+        "school": "nbhs",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:44"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:01"
+        },
+        "rec_key": "0100810:4b49c7aff9",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "middle",
+        "school": "zion chapel k12",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:47"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:01"
+        },
+        "rec_key": "0100810:4b49c7aff9",
+        "source_file": "camelot_hybrid.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 434,
+        "start_time": "07:47",
+        "end_time": "15:01",
+        "n_schools": 3,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "kinston k12",
+            "start_time": "07:47",
+            "end_time": "15:01",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "n bes",
+            "start_time": "07:55",
+            "end_time": "14:50",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "zion chapel k12",
+            "start_time": "07:47",
+            "end_time": "15:01",
+            "gross": 434,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 437,
+        "start_time": "07:44",
+        "end_time": "15:01",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "n bms nbhs",
+            "start_time": "07:44",
+            "end_time": "15:01",
+            "gross": 437,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 436,
+        "start_time": "07:44",
+        "end_time": "15:01",
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "n bms nbhs",
+            "start_time": "07:44",
+            "end_time": "15:01",
+            "gross": 437,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "zion chapel k12",
+            "start_time": "07:47",
+            "end_time": "15:01",
+            "gross": 434,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 3084,
+      "completion_tokens": 1058,
+      "cost_usd": 0.0006299
+    },
+    "state": "AL"
+  }
+}

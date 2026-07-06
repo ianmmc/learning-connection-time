@@ -1,0 +1,1094 @@
+{
+  "handoff_hash": "c127b5f6e5d7",
+  "created_at": "2026-07-05T20:54:16Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "fingerprints": {
+    "5501770": {
+      "config": "e2d24d579723",
+      "labels": "6cded96d8706",
+      "data": "e2a42f17e9a8"
+    },
+    "4222860": {
+      "config": "e2d24d579723",
+      "labels": "7689bebefdb1",
+      "data": "cb32b27ad6a1"
+    },
+    "0100810": {
+      "config": "e2d24d579723",
+      "labels": "2f3745c53f0a",
+      "data": "fdff8e9a448c"
+    },
+    "4900540": {
+      "config": "e2d24d579723",
+      "labels": "2f541d51d0fa",
+      "data": "759f87d3a78a"
+    },
+    "3901302": {
+      "config": "e2d24d579723",
+      "labels": "5162cf88f59e",
+      "data": "007993a11761"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v1"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.04284,
+    "n_reps": 42,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "5501770",
+      "name": "Elmbrook School District",
+      "state": "WI",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "5501770:ba367e9037",
+          "url": "https://www.elmbrookschools.org/news-details/~board/district-news/post/board-decisions-on-middle-school-programming-school-start-times",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5501770:b58c9479bd",
+          "url": "https://pilgrimpark.elmbrookschools.org/families/school-year-calendar",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5501770:eb1ca61f81",
+          "url": "https://swanson.elmbrookschools.org/families/school-year-calendar",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5501770:d7b01a095a",
+          "url": "https://tonawanda.elmbrookschools.org/families/school-year-calendar",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5501770:79bd417034",
+          "url": "https://docs.google.com/document/d/1sozQIFXHnJIA98s366Hpv11cKAEGm9spQT-x4VzSws8/edit?usp=sharing",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5501770:526bad74e8",
+          "url": "https://docs.google.com/document/d/1wpaBE5anUNInVRiWl-I-B8UnEikF0AvoBBj4joDjb7Y/edit?usp=sharing_eil_m&ts=62d0465f",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5501770:4413437eec",
+          "url": "https://resources.finalsite.net/images/v1655136778/elmbrookschoolsorg/rc1mggpip0zd855p4idj/PPMSBellSchedule2022-23.pdf",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5501770:e1f6ecf97a",
+          "url": "https://dixon.elmbrookschools.org/families/school-year-calendar",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5501770:d332f8d942",
+          "url": "https://www.elmbrookschools.org/uploaded/SSMigration/data/files/gallery/ContentGallery/Brookfield_East_High_School_Handbook.pdf",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1
+              ]
+            }
+          ]
+        },
+        {
+          "rec_key": "5501770:8c548e1d03",
+          "url": "https://burleigh.elmbrookschools.org/families/school-year-calendar",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5501770:8de749d287",
+          "url": "https://brookfieldeast.elmbrookschools.org/families/school-year-calendar",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5501770:ed2a423605",
+          "url": "https://brookfieldelementary.elmbrookschools.org/families/school-year-calendar",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5501770:63543d9fbf",
+          "url": "https://brookfieldcentral.elmbrookschools.org/families/school-year-calendar",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5501770:55cfd1b998",
+          "url": "https://wisconsinhills.elmbrookschools.org/family-resources/school-year-calendar",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5501770:cf2e5a94e8",
+          "url": "https://www.elmbrookschools.org/about-elmbrook/district-information/school-year-calendar",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5501770:08995bf67a",
+          "url": "https://brookfieldcentral.elmbrookschools.org/academics/a-b-day-and-bell-schedule",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5501770:7b5982fec4",
+          "url": "https://pilgrimpark.elmbrookschools.org/students/a-b-day-and-bell-schedule",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5501770:c31836cd98",
+          "url": "https://burleigh.elmbrookschools.org/students/bell-schedule",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5501770:bd46f37869",
+          "url": "https://brookfieldelementary.elmbrookschools.org/students/bell-schedule",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5501770:96bba5deeb",
+          "url": "https://www.elmbrookschools.org/uploaded/Documents/PPMS_Documents/PPMS_Handbook_2018-19.pdf",
+          "decision": "send",
+          "reason": "target-label:school_start_end_prose",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                7
+              ]
+            }
+          ]
+        },
+        {
+          "rec_key": "5501770:f7b0f0cd4e",
+          "url": "https://burleigh.elmbrookschools.org/families/announcements",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5501770:61a75c2d65",
+          "url": "https://brookfieldcentral.elmbrookschools.org/families/calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5501770:46c9d5ecb6",
+          "url": "https://brookfieldeast.elmbrookschools.org/families/calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5501770:37d42e434c",
+          "url": "https://wisconsinhills.elmbrookschools.org/students/a-b-day-and-bell-schedule",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5501770:4dee30825d",
+          "url": "https://swanson.elmbrookschools.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5501770:77fb0f075e",
+          "url": "https://tonawanda.elmbrookschools.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5501770:be547edc7b",
+          "url": "https://brookfieldcentral.elmbrookschools.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5501770:142574a8bd",
+          "url": "https://wisconsinhills.elmbrookschools.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5501770:a72830aba3",
+          "url": "https://dixon.elmbrookschools.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5501770:701d3aa394",
+          "url": "https://www.elmbrookschools.org/district-news",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5501770:242614fc21",
+          "url": "https://brookfieldeast.elmbrookschools.org/students/a-b-day-and-bell-schedule",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5501770:065e50a7d7",
+          "url": "https://burleigh.elmbrookschools.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5501770:a0aad7409d",
+          "url": "https://drive.google.com/file/d/1qT5GIssNfnyXJnlF8VX-xrQj9gaD97s6/view?usp=sharing",
+          "decision": "reject",
+          "reason": "non-target:unusable",
+          "reps": []
+        },
+        {
+          "rec_key": "5501770:c0372af94f",
+          "url": "https://pilgrimpark.elmbrookschools.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "5501770:df97c70aa2",
+          "url": "https://wisconsinhills.elmbrookschools.org/family-resources/attendance",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 20,
+      "est_usd": 0.0204
+    },
+    {
+      "district_id": "4222860",
+      "name": "Stroudsburg Area SD",
+      "state": "PA",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "4222860:fa8bdfce9a",
+          "url": "https://hamilton.sburg.org/apps/bell_schedules/",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:1da0a99205",
+          "url": "https://high.sburg.org/apps/bell_schedules/index.jsp?id=7104",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:08f592aa23",
+          "url": "https://jhs.sburg.org/apps/bell_schedules/index.jsp?id=8272",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:0b76e3c493",
+          "url": "https://chipperfield.sburg.org/apps/cross.jsp?wREC_ID=5711&crossPath=/apps3/bell_schedules/",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:0ba126eb4d",
+          "url": "https://jhs.sburg.org/apps/bell_schedules/printerfriendly.jsp",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:1f51effa21",
+          "url": "https://hamilton.sburg.org/apps/bell_schedules/printerfriendly.jsp",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:5d7778b6a7",
+          "url": "https://hamilton.sburg.org/apps/bell_schedules/index.jsp?id=7091",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:6271fb3277",
+          "url": "https://middle.sburg.org/apps/bell_schedules/index.jsp?id=7093",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:6a908720a1",
+          "url": "https://hamilton.sburg.org/apps/cross.jsp?wREC_ID=5711&crossPath=/apps3/bell_schedules/",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:7bbb2ff11e",
+          "url": "https://high.sburg.org/apps/bell_schedules/index.jsp?id=7100",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:9707adcffa",
+          "url": "https://high.sburg.org/apps/bell_schedules/index.jsp?id=7102",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:a622435c8a",
+          "url": "https://jhs.sburg.org/apps/bell_schedules/index.jsp?rn=741",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:77a6eec89d",
+          "url": "https://middle.sburg.org/apps/bell_schedules/printerfriendly.jsp",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:0115cb4b01",
+          "url": "https://hamilton.sburg.org/apps/bell_schedules/index.jsp?id=7565",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:0286264bfb",
+          "url": "https://jhs.sburg.org/apps/bell_schedules/index.jsp?id=8937",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:8c9f1b965b",
+          "url": "https://high.sburg.org/apps/bell_schedules/index.jsp?id=7101",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:68c1d17836",
+          "url": "https://high.sburg.org/apps/bell_schedules/printerfriendly.jsp",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:38d8c26e9b",
+          "url": "https://high.sburg.org/apps/bell_schedules/index.jsp?id=7105",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:2ca0e1c23b",
+          "url": "https://high.sburg.org/apps/bell_schedules/index.jsp",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222860:bca38d0fb5",
+          "url": "https://high.sburg.org/apps/bell_schedules/index.jsp?id=7103",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:a2346ca195",
+          "url": "https://high.sburg.org/apps/pages/index.jsp?uREC_ID=626815&type=d",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:cbe2b6cac5",
+          "url": "https://chipperfield.sburg.org/apps/pages/index.jsp?uREC_ID=597121&type=d",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:8fca26be3e",
+          "url": "https://chipperfield.sburg.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:959e5fb2e8",
+          "url": "https://morey.sburg.org/about-us/bell-schedule",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:d778cd678c",
+          "url": "https://arlington.sburg.org/apps/cross.jsp?wREC_ID=5711&crossPath=/apps3/bell_schedules/",
+          "decision": "reject",
+          "reason": "non-target:unusable",
+          "reps": []
+        },
+        {
+          "rec_key": "4222860:0324cb31f0",
+          "url": "https://arlington.sburg.org/about-us/bell-schedule",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 14,
+      "est_usd": 0.014280000000000001
+    },
+    {
+      "district_id": "0100810",
+      "name": "Coffee County",
+      "state": "AL",
+      "topology": "district_hub",
+      "records": [
+        {
+          "rec_key": "0100810:47a0a3082c",
+          "url": "https://www.coffeecountyschools.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0100810:4b49c7aff9",
+          "url": "https://docs.google.com/document/d/10ovK0neJOZZ1eAZGZmSy9y1gO24w6e4522-KRruF3os/edit?usp=sharing",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "4900540",
+      "name": "Millard District",
+      "state": "UT",
+      "topology": "district_hub",
+      "records": [
+        {
+          "rec_key": "4900540:c2ef8fec4d",
+          "url": "https://www.millard.k12.ut.us/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4900540:b6de222ea5",
+          "url": "https://www.millardk12.org/wp-content/uploads/2025/10/School-Start-Times-25-26-2-20-25-1-1.jpg",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "tesseract_image.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "3901302",
+      "name": "Dayton Early College Academy Inc",
+      "state": "OH",
+      "topology": "single_school",
+      "records": [
+        {
+          "rec_key": "3901302:e26f3c6d06",
+          "url": "https://www.daytonearlycollege.org/campuses/deca-high",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3901302:14ad8c359d",
+          "url": "https://www.daytonearlycollege.org/campuses/deca-middle/parent-information",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3901302:57798314f7",
+          "url": "https://www.daytonearlycollege.org/campuses/deca-high/parent-information",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3901302:0e7861bf1f",
+          "url": "https://www.daytonearlycollege.org/campuses/deca-middle",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3901302:339ff9f813",
+          "url": "https://www.daytonearlycollege.org/campuses/deca-prep/parent-information",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                1
+              ]
+            }
+          ]
+        },
+        {
+          "rec_key": "3901302:b8ee8887b0",
+          "url": "https://www.daytonearlycollege.org/campuses/deca-prep",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3901302:ba8ac53b43",
+          "url": "https://www.daytonearlycollege.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3901302:5b4dd684d3",
+          "url": "https://www.daytonearlycollege.org/about-us/academic-calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 6,
+      "est_usd": 0.0061200000000000004
+    }
+  ]
+}

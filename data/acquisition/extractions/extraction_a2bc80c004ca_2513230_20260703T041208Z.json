@@ -1,0 +1,822 @@
+{
+  "handoff_hash": "a2bc80c004ca",
+  "district": {
+    "district_id": "2513230",
+    "name": "Worcester",
+    "reps": [
+      {
+        "rec_key": "2513230:dc32188ca9",
+        "file": "pdfplumber_lines.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:47",
+                "end_time": "15:07",
+                "school_name": "Dr. Arthur F. Sullivan Middle School"
+              }
+            ],
+            "prompt_tokens": 1845,
+            "completion_tokens": 44,
+            "cost_usd": 0.0002021,
+            "latency_ms": 12997,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051708-3tCDWW17mXeKgBqnu4tw"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:47",
+                "end_time": "15:10",
+                "school_name": "Dr. Arthur F. Sullivan Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1845,
+            "completion_tokens": 75,
+            "cost_usd": 9.825e-05,
+            "latency_ms": 12710,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051720-0DxTdMAq2lo99UfuJUGo"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "dr arthur f sullivan",
+            "start": "08:47",
+            "end": "15:08",
+            "gross": 381,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2513230:dc32188ca9",
+            "source_file": "pdfplumber_lines.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:40be7167eb",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "North High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 833,
+            "completion_tokens": 43,
+            "cost_usd": 0.0001005,
+            "latency_ms": 14893,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051736-fNrlHvk4MXT8R9RKcgyG"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "North High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 806,
+            "completion_tokens": 43,
+            "cost_usd": 4.374e-05,
+            "latency_ms": 14207,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051750-t25SfAnwVBbgZexjaq6B"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "north",
+            "start": "07:20",
+            "end": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2513230:40be7167eb",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:5c7d04005b",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "Worcester Technical High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 629,
+            "completion_tokens": 50,
+            "cost_usd": 8.29e-05,
+            "latency_ms": 15079,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051765-4YtHLZL9cDNqZO8tDVjQ"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "Worcester Technical High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 620,
+            "completion_tokens": 46,
+            "cost_usd": 3.468e-05,
+            "latency_ms": 12967,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051778-P8XexfuZyAfUc2FZaS2M"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "worcester technical",
+            "start": "07:20",
+            "end": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2513230:5c7d04005b",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:0d7454e3ed",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:20",
+                "school_name": "Belmont Street Community School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 508,
+            "completion_tokens": 45,
+            "cost_usd": 6.88e-05,
+            "latency_ms": 13466,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051791-NLEZThcoF1kfBLxrsedd"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:20",
+                "school_name": "Belmont Street Community School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 520,
+            "completion_tokens": 47,
+            "cost_usd": 2.976e-05,
+            "latency_ms": 14313,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051805-HjQLTGywENhAJJpgDpaH"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "belmont street community",
+            "start": "08:15",
+            "end": "14:20",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2513230:0d7454e3ed",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:fde6320875",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "Burncoat High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 724,
+            "completion_tokens": 44,
+            "cost_usd": 9e-05,
+            "latency_ms": 13847,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051820-LqTAZTylGdzkDBzwmHnI"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:20",
+                "end_time": "13:43",
+                "school_name": "Burncoat High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 717,
+            "completion_tokens": 45,
+            "cost_usd": 3.945e-05,
+            "latency_ms": 14563,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051834-1U8XbZYrhICQALHuKtvQ"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "burncoat",
+            "start": "07:20",
+            "end": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2513230:fde6320875",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:df57290963",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "Grafton Street School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 507,
+            "completion_tokens": 45,
+            "cost_usd": 6.87e-05,
+            "latency_ms": 12562,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051847-JM4tDGdkydSs7KkqWd7Y"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "Grafton Street School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 520,
+            "completion_tokens": 46,
+            "cost_usd": 2.968e-05,
+            "latency_ms": 14109,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051860-eQcD3lwVwcMohwbLWj8T"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "grafton street",
+            "start": "08:25",
+            "end": "14:30",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2513230:df57290963",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:6d32e3f608",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "May Street School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 503,
+            "completion_tokens": 43,
+            "cost_usd": 6.75e-05,
+            "latency_ms": 13021,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051874-mGHegLb8i4yb01W2dkJ5"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:25",
+                "end_time": "14:30",
+                "school_name": "May Street School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 512,
+            "completion_tokens": 44,
+            "cost_usd": 2.912e-05,
+            "latency_ms": 13131,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051887-qoezrAOouKd252hiarGT"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "may street",
+            "start": "08:25",
+            "end": "14:30",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2513230:6d32e3f608",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2513230:ed68441b1d",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "14:00",
+                "school_name": "Elm Park Community School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 511,
+            "completion_tokens": 45,
+            "cost_usd": 6.91e-05,
+            "latency_ms": 12998,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051900-cesUXgcA6ADMYgI3OGlr"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 520,
+            "completion_tokens": 8,
+            "cost_usd": 2.664e-05,
+            "latency_ms": 13429,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051914-zgr8CTuUFhdRMcYVeMMt"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "14:00",
+                "school_name": "Elm Park Community School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 501,
+            "completion_tokens": 43,
+            "cost_usd": 0.0001346,
+            "latency_ms": 13606,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783051927-RSFCsmkO9tQlb45ZMxfi"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "elm park community",
+            "start": "07:55",
+            "end": "14:00",
+            "gross": 365,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2513230:ed68441b1d",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "middle",
+        "school": "dr arthur f sullivan",
+        "start": "08:47",
+        "end": "15:08",
+        "gross": 381,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2513230:dc32188ca9",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "high",
+        "school": "north",
+        "start": "07:20",
+        "end": "13:43",
+        "gross": 383,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2513230:40be7167eb",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "worcester technical",
+        "start": "07:20",
+        "end": "13:43",
+        "gross": 383,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2513230:5c7d04005b",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "belmont street community",
+        "start": "08:15",
+        "end": "14:20",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2513230:0d7454e3ed",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "burncoat",
+        "start": "07:20",
+        "end": "13:43",
+        "gross": 383,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2513230:fde6320875",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "grafton street",
+        "start": "08:25",
+        "end": "14:30",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2513230:df57290963",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "may street",
+        "start": "08:25",
+        "end": "14:30",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2513230:6d32e3f608",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "elm park community",
+        "start": "07:55",
+        "end": "14:00",
+        "gross": 365,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2513230:ed68441b1d",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 8,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 365,
+        "start_time": "08:15",
+        "end_time": "14:20",
+        "n_schools": 4,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "belmont street community",
+            "start_time": "08:15",
+            "end_time": "14:20",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "grafton street",
+            "start_time": "08:25",
+            "end_time": "14:30",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "may street",
+            "start_time": "08:25",
+            "end_time": "14:30",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "elm park community",
+            "start_time": "07:55",
+            "end_time": "14:00",
+            "gross": 365,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 381,
+        "start_time": "08:47",
+        "end_time": "15:08",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "dr arthur f sullivan",
+            "start_time": "08:47",
+            "end_time": "15:08",
+            "gross": 381,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 383,
+        "start_time": "07:20",
+        "end_time": "13:43",
+        "n_schools": 3,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "north",
+            "start_time": "07:20",
+            "end_time": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "worcester technical",
+            "start_time": "07:20",
+            "end_time": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "burncoat",
+            "start_time": "07:20",
+            "end_time": "13:43",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 17,
+      "judge_calls": 1,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 12621,
+      "completion_tokens": 756,
+      "cost_usd": 0.0012155200000000003
+    }
+  }
+}

@@ -1,0 +1,1642 @@
+{
+  "handoff_hash": "a2bc80c004ca",
+  "district": {
+    "district_id": "0200600",
+    "name": "Fairbanks North Star Borough School District",
+    "reps": [
+      {
+        "rec_key": "0200600:3f98de6c1d",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 26,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:10",
+                "school_name": "ANDERSON-CRAWFORD ELEMENTARY",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "ANNE WIEN ELEMENTARY",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "ARCTIC LIGHT ELEMENTARY",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:45",
+                "school_name": "BARNETTE MAGNET",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:15",
+                "school_name": "BOREAL SUN CHARTER",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:45",
+                "school_name": "CHINOOK MONTESSORI CHARTER",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "DENALI ELEMENTARY",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "13:30",
+                "school_name": "DISCOVERY PEAK CHARTER",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:50",
+                "end_time": "15:45",
+                "school_name": "EFFIE KOKRINE CHARTER",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "HUNTER ELEMENTARY",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "HUTCHISON HIGH",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "LADD ELEMENTARY",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "LATHROP HIGH",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:30",
+                "school_name": "NORTH POLE ELEMENTARY",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "NORTH POLE HIGH",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "NORTH POLE MIDDLE",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "RANDY SMITH MIDDLE",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "RYAN MIDDLE",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "SALCHA ELEMENTARY",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "14:25",
+                "school_name": "TANANA MIDDLE",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:30",
+                "school_name": "TICASUK BROWN ELEMENTARY",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "UNIVERSITY PARK ELEMENTARY",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:00",
+                "school_name": "WATERSHED CHARTER",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "WELLER ELEMENTARY",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "W E S T   V A L L E Y   H I G H",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "WOODRIVER ELEMENTARY",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1103,
+            "completion_tokens": 1368,
+            "cost_usd": 0.0006575,
+            "latency_ms": 17174,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049561-6Hq0pkpyuEANzemBXqJD"
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 21,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:10",
+                "school_name": "Anderson-Crawford Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "Anne Wien Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Arctic Light Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:45",
+                "school_name": "Barnette Magnet",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:15",
+                "school_name": "Boreal Sun Charter",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:45",
+                "school_name": "Chinook Montessori Charter",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "Denali Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "Ladd Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:30",
+                "school_name": "North Pole Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "Salcha Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "University Park Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "Weller Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "Woodriver Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "North Pole Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "Randy Smith Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "Ryan Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "14:25",
+                "school_name": "Tanana Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Hutchison High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Lathrop High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "North Pole High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "West Valley High",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1231,
+            "completion_tokens": 787,
+            "cost_usd": 0.00012451,
+            "latency_ms": 21360,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049576-wKs0mknlprZZQC17ynMK"
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 26,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:10",
+                "school_name": "Anderson-Crawford Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "Anne Wien Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Arctic Light Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:45",
+                "school_name": "Barnette Magnet",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:45",
+                "end_time": "15:15",
+                "school_name": "Boreal Sun Charter",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:15",
+                "end_time": "14:45",
+                "school_name": "Chinook Montessori Charter",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "Denali Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Discovery Peak Charter",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:50",
+                "end_time": "15:45",
+                "school_name": "Effie Kokrine Charter",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Hunter Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Hutchison High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "Ladd Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "Lathrop High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:30",
+                "school_name": "North Pole Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "North Pole High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "North Pole Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "Randy Smith Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:20",
+                "school_name": "Ryan Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "Salcha Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "14:25",
+                "school_name": "Tanana Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:30",
+                "school_name": "Ticasuk Brown Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "University Park Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "15:00",
+                "school_name": "Watershed Charter",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "Weller Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:30",
+                "end_time": "14:00",
+                "school_name": "West Valley High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:15",
+                "end_time": "15:45",
+                "school_name": "Woodriver Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1176,
+            "completion_tokens": 923,
+            "cost_usd": 0.00107096,
+            "latency_ms": 17424,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783049597-JndL7Mc1pbjJ3iIsTYhU"
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "andersoncrawford",
+            "start": "07:40",
+            "end": "14:10",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "anne wien",
+            "start": "09:15",
+            "end": "15:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "arctic light",
+            "start": "08:00",
+            "end": "14:30",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "barnette magnet",
+            "start": "08:15",
+            "end": "14:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "boreal sun charter",
+            "start": "08:45",
+            "end": "15:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "chinook montessori charter",
+            "start": "08:15",
+            "end": "14:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "denali",
+            "start": "09:15",
+            "end": "15:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "discovery peak charter",
+            "start": "08:00",
+            "end": "14:30",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "effie kokrine charter",
+            "start": "09:50",
+            "end": "15:45",
+            "gross": 355,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "hunter",
+            "start": "08:00",
+            "end": "14:30",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "hutchison",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "ladd",
+            "start": "09:15",
+            "end": "15:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "lathrop",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "north pole",
+            "start": "09:00",
+            "end": "15:30",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "north pole",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "north pole",
+            "start": "07:50",
+            "end": "14:20",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "randy smith",
+            "start": "07:50",
+            "end": "14:20",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "ryan",
+            "start": "07:50",
+            "end": "14:20",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "salcha",
+            "start": "09:15",
+            "end": "15:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "tanana",
+            "start": "07:55",
+            "end": "14:25",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "ticasuk brown",
+            "start": "09:00",
+            "end": "15:30",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "university park",
+            "start": "09:15",
+            "end": "15:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "watershed charter",
+            "start": "08:30",
+            "end": "15:00",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "weller",
+            "start": "09:15",
+            "end": "15:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "woodriver",
+            "start": "09:15",
+            "end": "15:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "west valley",
+            "start": "07:30",
+            "end": "14:00",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "w e s t v a l l e y h i g h",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:30"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:00"
+            },
+            "rec_key": "0200600:3f98de6c1d",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "andersoncrawford",
+        "start": "07:40",
+        "end": "14:10",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "anne wien",
+        "start": "09:15",
+        "end": "15:45",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "arctic light",
+        "start": "08:00",
+        "end": "14:30",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "barnette magnet",
+        "start": "08:15",
+        "end": "14:45",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "boreal sun charter",
+        "start": "08:45",
+        "end": "15:15",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "chinook montessori charter",
+        "start": "08:15",
+        "end": "14:45",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "denali",
+        "start": "09:15",
+        "end": "15:45",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "discovery peak charter",
+        "start": "08:00",
+        "end": "14:30",
+        "gross": 390,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "effie kokrine charter",
+        "start": "09:50",
+        "end": "15:45",
+        "gross": 355,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hunter",
+        "start": "08:00",
+        "end": "14:30",
+        "gross": 390,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "hutchison",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "ladd",
+        "start": "09:15",
+        "end": "15:45",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "lathrop",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "north pole",
+        "start": "09:00",
+        "end": "15:30",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "north pole",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "north pole",
+        "start": "07:50",
+        "end": "14:20",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "randy smith",
+        "start": "07:50",
+        "end": "14:20",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "ryan",
+        "start": "07:50",
+        "end": "14:20",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "salcha",
+        "start": "09:15",
+        "end": "15:45",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "tanana",
+        "start": "07:55",
+        "end": "14:25",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "ticasuk brown",
+        "start": "09:00",
+        "end": "15:30",
+        "gross": 390,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "university park",
+        "start": "09:15",
+        "end": "15:45",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "watershed charter",
+        "start": "08:30",
+        "end": "15:00",
+        "gross": 390,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "weller",
+        "start": "09:15",
+        "end": "15:45",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "woodriver",
+        "start": "09:15",
+        "end": "15:45",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "west valley",
+        "start": "07:30",
+        "end": "14:00",
+        "gross": 390,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "high",
+        "school": "w e s t v a l l e y h i g h",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:30"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:00"
+        },
+        "rec_key": "0200600:3f98de6c1d",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 390,
+        "start_time": "07:40",
+        "end_time": "14:10",
+        "n_schools": 18,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "andersoncrawford",
+            "start_time": "07:40",
+            "end_time": "14:10",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "anne wien",
+            "start_time": "09:15",
+            "end_time": "15:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "arctic light",
+            "start_time": "08:00",
+            "end_time": "14:30",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "barnette magnet",
+            "start_time": "08:15",
+            "end_time": "14:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "boreal sun charter",
+            "start_time": "08:45",
+            "end_time": "15:15",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "chinook montessori charter",
+            "start_time": "08:15",
+            "end_time": "14:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "denali",
+            "start_time": "09:15",
+            "end_time": "15:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "discovery peak charter",
+            "start_time": "08:00",
+            "end_time": "14:30",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "effie kokrine charter",
+            "start_time": "09:50",
+            "end_time": "15:45",
+            "gross": 355,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hunter",
+            "start_time": "08:00",
+            "end_time": "14:30",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ladd",
+            "start_time": "09:15",
+            "end_time": "15:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "north pole",
+            "start_time": "09:00",
+            "end_time": "15:30",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "salcha",
+            "start_time": "09:15",
+            "end_time": "15:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ticasuk brown",
+            "start_time": "09:00",
+            "end_time": "15:30",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "university park",
+            "start_time": "09:15",
+            "end_time": "15:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "watershed charter",
+            "start_time": "08:30",
+            "end_time": "15:00",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "weller",
+            "start_time": "09:15",
+            "end_time": "15:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "woodriver",
+            "start_time": "09:15",
+            "end_time": "15:45",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 390,
+        "start_time": "07:50",
+        "end_time": "14:20",
+        "n_schools": 4,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "north pole",
+            "start_time": "07:50",
+            "end_time": "14:20",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "randy smith",
+            "start_time": "07:50",
+            "end_time": "14:20",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ryan",
+            "start_time": "07:50",
+            "end_time": "14:20",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "tanana",
+            "start_time": "07:55",
+            "end_time": "14:25",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 390,
+        "start_time": "07:30",
+        "end_time": "14:00",
+        "n_schools": 4,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "hutchison",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lathrop",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "north pole",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "west valley",
+            "start_time": "07:30",
+            "end_time": "14:00",
+            "gross": 390,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 0,
+      "truncated": 0,
+      "prompt_tokens": 3510,
+      "completion_tokens": 3078,
+      "cost_usd": 0.0018529699999999998
+    }
+  }
+}
