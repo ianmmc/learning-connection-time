@@ -208,6 +208,84 @@ def test_run_district_reraises_billing_from_a_rep(monkeypatch):
         R7._run_district("D", "Dville", groups, {"lc": {"voters": ["m1"], "prompts": {}}}, None, False)
 
 
+def test_run_district_failed_rep_keeps_already_billed_calls(monkeypatch):
+    """#184: when a rep fails AFTER one or more voter calls already succeeded (and were billed), those
+    calls are preserved in the failure record — their cost must not vanish from telemetry/receipts."""
+    monkeypatch.setattr(R7, "resolve_content", lambda *a: "CONTENT")
+    monkeypatch.setattr(R7, "_call", lambda m, p, k, c: R7.OR.CallResult(
+        model=m, ok=True, content="[]", cost_usd=0.002, prompt_tokens=10, completion_tokens=5))
+    monkeypatch.setattr(R7.PARSE, "parse_schedules", lambda content: [])
+
+    def _consensus_boom(rows, judge=None):
+        raise ValueError("consensus blew up AFTER both voters were billed")
+    monkeypatch.setattr(R7.AGG, "consensus_school_facts", _consensus_boom)
+    monkeypatch.setattr(R7.AGG, "district_bands_from_facts", lambda facts: {})
+
+    groups = [{"rec_key": "D:aa", "file": "x.txt", "kind": "text", "council_id": "lc",
+               "voters": ["m1", "m2"], "prompt_ids": {"m1": "p", "m2": "p"}}]
+    pd = R7._run_district("D", "Dville", groups, {"lc": {"voters": ["m1", "m2"], "prompts": {}}},
+                          None, use_judge=False)
+    rep = pd["reps"][0]
+    assert "consensus blew up" in rep["error"]
+    assert len(rep["calls"]) == 2                          # BOTH billed voter calls preserved (#184)
+    assert pd["telemetry"]["cost_usd"] == 0.004            # their $ still counted, not silently lost
+    assert pd["telemetry"]["rep_errors"] == 1
+
+
+def test_run_district_isolates_a_malformed_rep_group(monkeypatch):
+    """#185: a rep-group missing a required key is isolated at the REP level (recorded + skipped) — it
+    must not raise out of _run_district and strand the district's OTHER reps (the #122 symptom)."""
+    monkeypatch.setattr(R7, "resolve_content", lambda *a: "CONTENT")
+    monkeypatch.setattr(R7, "_call", lambda m, p, k, c: R7.OR.CallResult(model=m, ok=True, content="[]"))
+    monkeypatch.setattr(R7.PARSE, "parse_schedules", lambda c: [])
+    monkeypatch.setattr(R7.AGG, "consensus_school_facts", lambda rows, judge=None: ([], []))
+    monkeypatch.setattr(R7.AGG, "district_bands_from_facts", lambda facts: {})
+
+    groups = [
+        {"rec_key": "D:aa", "kind": "text", "council_id": "lc", "prompt_ids": {}},   # MISSING file+voters
+        {"rec_key": "D:bb", "file": "good.txt", "kind": "text", "council_id": "lc",
+         "voters": ["m1"], "prompt_ids": {"m1": "p"}},
+    ]
+    pd = R7._run_district("D", "Dville", groups, {"lc": {"voters": ["m1"], "prompts": {}}}, None, False)
+    assert pd["n_reps"] == 2                               # both attempted, neither stranded the other
+    assert "KeyError" in pd["reps"][0]["error"]            # malformed group isolated at rep level, not raised
+    assert pd["reps"][1].get("error") is None             # the healthy rep still ran
+
+
+def test_run_district_bands_failure_preserves_billed_reps(monkeypatch):
+    """#183: a bug in post-loop band aggregation must NOT discard the district's already-billed reps —
+    the reps + telemetry survive (so the district persists + spend is recorded), bands go empty."""
+    monkeypatch.setattr(R7, "resolve_content", lambda *a: "CONTENT")
+    monkeypatch.setattr(R7, "_call", lambda m, p, k, c: R7.OR.CallResult(
+        model=m, ok=True, content="[]", cost_usd=0.003))
+    monkeypatch.setattr(R7.PARSE, "parse_schedules", lambda c: [{"school": "x"}])
+    monkeypatch.setattr(R7.AGG, "consensus_school_facts", lambda rows, judge=None: (
+        [{"band": "high", "school": "x", "start": "08:00", "end": "14:00", "gross": 360,
+          "method": "council_agree", "models": ["m1"]}], []))
+
+    def _bands_boom(facts):
+        raise KeyError("gross_minutes")
+    monkeypatch.setattr(R7.AGG, "district_bands_from_facts", _bands_boom)
+
+    groups = [{"rec_key": "D:aa", "file": "x.txt", "kind": "text", "council_id": "lc",
+               "voters": ["m1"], "prompt_ids": {"m1": "p"}}]
+    pd = R7._run_district("D", "Dville", groups, {"lc": {"voters": ["m1"], "prompts": {}}}, None, False)
+    assert pd["bands"] == {} and "district_bands" in pd["error"]   # aggregation failed → empty, not lost
+    assert len(pd["reps"]) == 1 and pd["reps"][0]["accepted"]      # the billed rep survives
+    assert pd["telemetry"]["cost_usd"] == 0.003                    # its spend is still recorded
+
+
+def test_print_council_reports_failed_districts(capsys):
+    """#188: the CLI summary surfaces out['failed'] — a redirected-to-log run must not read as clean
+    when districts were skipped (the console path already alerts; the CLI path lagged)."""
+    out = {"telemetry": {"calls": 1, "judge_calls": 0, "errors": 0, "prompt_tokens": 1,
+                         "completion_tokens": 1, "cost_usd": 0.0, "truncated": 0},
+           "districts": {}, "failed": [{"district_id": "ZZBAD", "error": "KeyError: 'x'"}]}
+    R7._print_council(out)
+    printed = capsys.readouterr().out
+    assert "1 districts FAILED" in printed and "ZZBAD" in printed and "KeyError" in printed
+
+
 def test_frozen_handoff_with_blind_image_judge_refused(monkeypatch):
     """#138 (the #82-recurrence guard): a frozen handoff EMBEDS its council configs, so a pre-swap
     image handoff still names the dead text-only judge — the run must refuse BEFORE any paid call

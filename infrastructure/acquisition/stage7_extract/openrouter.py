@@ -120,6 +120,14 @@ def _usage_cost(usage) -> Optional[float]:
     return extra.get("cost")
 
 
+def _sum_cost(a: Optional[float], b: Optional[float]) -> Optional[float]:
+    """Sum two optional generation costs, preserving None only when BOTH are unknown — so a billed
+    call summed with a cost-less one still reflects the billed spend (#182)."""
+    if a is None and b is None:
+        return None
+    return (a or 0.0) + (b or 0.0)
+
+
 def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DEFAULT_TIMEOUT,
          max_tokens: int = DEFAULT_MAX_TOKENS, temperature: float = DEFAULT_TEMPERATURE) -> CallResult:
     """Execute one OpenRouter chat completion over an SSE STREAM. `request_body` is a
@@ -187,13 +195,21 @@ def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DE
 
     res = _stream_once(max_tokens)
     # #169: a truncated reply silently drops the tail schools — retry ONCE at the higher ceiling to
-    # recover them. Keep the retry only if it SUCCEEDED (fully recovered, or at least a longer head —
-    # a still-truncated reply is ok=True with finish_reason "length", so the ⚠ flag persists). A retry
-    # that ERRORED must not discard the salvageable head from the first attempt.
-    if res.truncated and max_tokens < ESCALATED_MAX_TOKENS:
-        retry = _stream_once(ESCALATED_MAX_TOKENS)
-        if retry.ok:
-            retry.truncation_retried = True
-            return retry
-        res.truncation_retried = True
-    return res
+    # recover them. Keep the retry's CONTENT when it SUCCEEDED (fully recovered, or at least a longer
+    # head — a still-truncated reply is ok=True with finish_reason "length", so the ⚠ flag persists);
+    # a retry that ERRORED keeps the first attempt's salvaged head. Either branch: BOTH attempts were
+    # real billed calls, so their cost/tokens/latency are SUMMED onto the returned result — the budget
+    # governor (REQ-051) must see true spend, not just the surviving call's (#182).
+    # #187: 32k is inside every council model's completion window today, so a caller already at/above it
+    # gets no retry (nowhere higher to go). #180's n_times sizing clamps to 32k, so this stays correct;
+    # lifting it needs per-model completion ceilings (deferred with #180).
+    if not (res.truncated and max_tokens < ESCALATED_MAX_TOKENS):
+        return res
+    retry = _stream_once(ESCALATED_MAX_TOKENS)
+    keep = retry if retry.ok else res                 # recovered tail vs. salvaged head
+    keep.truncation_retried = True
+    keep.prompt_tokens = (res.prompt_tokens or 0) + (retry.prompt_tokens or 0)
+    keep.completion_tokens = (res.completion_tokens or 0) + (retry.completion_tokens or 0)
+    keep.cost_usd = _sum_cost(res.cost_usd, retry.cost_usd)
+    keep.latency_ms = res.latency_ms + retry.latency_ms
+    return keep

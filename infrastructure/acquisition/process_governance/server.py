@@ -1305,7 +1305,11 @@ def _request_lineage(con, district_id: str, req: dict, ctx: dict) -> dict | None
             n_ext = con.execute(text("SELECT COUNT(*) FROM extraction WHERE handoff_hash = :h"),
                                 {"h": ref}).scalar()
             job = _EXTRACT_JOBS.get(ref)
+            # #186: a `partial` job (some districts failed while others extracted) must NOT read as a
+            # clean "extracted" — the reviewer needs to see the remedy only partly landed.
+            n_failed = (job.get("summary") or {}).get("n_failed") if job else None
             state = ("extracting…" if job and job["state"] == "running"
+                     else f"partial — {n_failed} failed" if job and job["state"] == "partial"
                      else "extracted" if n_ext else "dispatched — run extraction at Stage 6")
             return {"kind": "handoff", "ref": ref, "state": state, "n_extracted": n_ext,
                     "n_districts": h["n_districts"] if h else None}
