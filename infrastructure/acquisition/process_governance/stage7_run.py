@@ -29,6 +29,7 @@ from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import model_families as MF
 from infrastructure.acquisition.common import paths
+from infrastructure.acquisition.stage5_filter import build_signals as BS
 from infrastructure.acquisition.stage6_handoff import cost as COST6
 from infrastructure.acquisition.stage6_handoff import councils as C6
 from infrastructure.acquisition.stage6_handoff import prompts as P6
@@ -50,8 +51,19 @@ def load_handoff(path) -> dict:
 def resolve_content(district_dir: str, rec_key: str, file: str, kind: str = "text"):
     """The rep's on-disk content (RAW_CAPTURES/<district_dir>/captures/<hash>/<file>). `hash` is the
     hex tail of `rec_key` — the same path gate@6's `inspect` serves. Text reps → the file text;
-    image reps → a base64 data: URL for the vision council (`.webp`→`.png` normalized)."""
+    image reps → a base64 data: URL for the vision council (`.webp`→`.png` normalized).
+
+    A `harvest_slice.txt` rep is a DERIVED artifact that was relocated OUT of the capture dir (the #58
+    relocation), so joining the capture dir ourselves fails for every relocated slice. Resolve it
+    through `build_signals.resolve_harvest_slice` (new-location-first, legacy fallback) — the same
+    resolver gate@6's `inspect` uses — so the extraction read agrees with what the console serves."""
     h = rec_key.split(":", 1)[1]
+    if file == BS.HARVEST_SLICE_FILE and not CONTENT.is_image_kind(kind):
+        district_id = rec_key.split(":", 1)[0]
+        slice_fp = BS.resolve_harvest_slice(district_id, district_dir, rec_key)
+        if slice_fp is not None:
+            return slice_fp.read_text(errors="replace")
+        # neither location exists — fall through so the legacy path raises the same clear error
     fp = paths.RAW_CAPTURES / district_dir / "captures" / h / file
     if CONTENT.is_image_kind(kind):
         return CONTENT.image_data_url(fp)

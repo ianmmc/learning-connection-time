@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-05T15:41:46Z",
+  "last_updated": "2026-07-06T02:35:40Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -76,9 +76,9 @@
     "0100810": {
       "name": "Coffee County",
       "state": "AL",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_all",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -138,9 +138,24 @@
           "stage_name": "process",
           "outcome": "processed_all",
           "at": "2026-06-29T08:09:53Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-05T20:54:16Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-05T20:55:11Z"
         }
       ],
-      "notes": "gate@1 approved batch_00004"
+      "notes": "c127b5f6e5d7"
     },
     "0101410": {
       "name": "Eufaula City",
@@ -741,9 +756,18 @@
           "stage_name": "process",
           "outcome": "processed_all",
           "at": "2026-06-29T08:10:03Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T02:35:40Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 approved batch_00004"
+      "notes": "51849a4688a4"
     },
     "0500076": {
       "name": "OZARK MOUNTAIN SCHOOL DISTRICT",
@@ -1236,9 +1260,18 @@
           "stage_name": "process",
           "outcome": "processed_all",
           "at": "2026-06-29T08:12:45Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T02:35:40Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 approved batch_00005"
+      "notes": "51849a4688a4"
     },
     "0602057": {
       "name": "STREAM Charter District",
@@ -1374,9 +1407,18 @@
           "stage_name": "process",
           "outcome": "processed_partial",
           "at": "2026-06-29T07:05:00Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T02:35:40Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 approved batch_00002"
+      "notes": "51849a4688a4"
     },
     "0602459": {
       "name": "Aurum Preparatory Academy District",
@@ -1646,9 +1688,18 @@
           "stage_name": "process",
           "outcome": "processed_all",
           "at": "2026-06-29T08:18:18Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T02:35:40Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 approved batch_00003"
+      "notes": "51849a4688a4"
     },
     "0807350": {
       "name": "Weld County Reorganized School District No. Re-4",
@@ -2421,9 +2472,18 @@
           "stage_name": "process",
           "outcome": "processed_all",
           "at": "2026-06-29T08:16:58Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T02:35:40Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "10 not_recovered (capture interrupted before completion)"
+      "notes": "51849a4688a4"
     },
     "1724390": {
       "name": "Manteno CUSD 5",
@@ -2842,9 +2902,18 @@
           "stage_name": "process",
           "outcome": "processed_all",
           "at": "2026-06-29T08:17:21Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T02:35:40Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 approved batch_00005"
+      "notes": "51849a4688a4"
     },
     "1810380": {
       "name": "South Henry School Corp",
@@ -3658,9 +3727,18 @@
           "stage_name": "process",
           "outcome": "processed_all",
           "at": "2026-06-29T07:13:24Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T02:35:40Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 approved batch_00002"
+      "notes": "51849a4688a4"
     },
     "2507080": {
       "name": "Lunenburg",
@@ -4243,9 +4321,18 @@
           "stage_name": "process",
           "outcome": "processed_all",
           "at": "2026-06-24T04:48:38Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T02:35:40Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": ""
+      "notes": "51849a4688a4"
     },
     "2901000": {
       "name": "COLUMBIA 93",
@@ -4367,9 +4454,18 @@
           "stage_name": "process",
           "outcome": "processed_partial",
           "at": "2026-06-29T08:30:40Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T02:35:40Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 approved batch_00003"
+      "notes": "51849a4688a4"
     },
     "2921720": {
       "name": "NAYLOR R-II",
@@ -5091,9 +5187,18 @@
           "stage_name": "process",
           "outcome": "processed_all",
           "at": "2026-06-24T04:49:00Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T02:35:40Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": ""
+      "notes": "51849a4688a4"
     },
     "3502370": {
       "name": "SANTA FE",
@@ -5530,9 +5635,18 @@
           "stage_name": "process",
           "outcome": "processed_all",
           "at": "2026-06-29T07:19:30Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T02:35:40Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 approved batch_00002"
+      "notes": "51849a4688a4"
     },
     "3700385": {
       "name": "KIPP Durham College Preparatory",
@@ -5599,9 +5713,18 @@
           "stage_name": "process",
           "outcome": "processed_partial",
           "at": "2026-06-29T07:20:44Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T02:35:40Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 approved batch_00002"
+      "notes": "51849a4688a4"
     },
     "3700660": {
       "name": "Caswell County Schools",
@@ -5713,9 +5836,18 @@
           "stage_name": "process",
           "outcome": "processed_partial",
           "at": "2026-06-29T08:48:18Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T02:35:40Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 approved batch_00004"
+      "notes": "51849a4688a4"
     },
     "3802014": {
       "name": "APPLE CREEK 39",
@@ -5843,9 +5975,9 @@
     "3901302": {
       "name": "Dayton Early College Academy Inc",
       "state": "OH",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_all",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -5905,9 +6037,54 @@
           "stage_name": "process",
           "outcome": "processed_all",
           "at": "2026-06-29T09:03:57Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-05T20:54:16Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-05T20:55:30Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-05T22:56:26Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-05T22:59:23Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-05T23:11:58Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-05T23:12:10Z"
         }
       ],
-      "notes": "gate@1 approved batch_00003"
+      "notes": "7301db5ac45d"
     },
     "3901587": {
       "name": "Dayton Athletic Vocational Academy",
@@ -6134,9 +6311,18 @@
           "stage_name": "process",
           "outcome": "processed_all",
           "at": "2026-06-29T09:06:58Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T02:35:40Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 approved batch_00003"
+      "notes": "51849a4688a4"
     },
     "4026640": {
       "name": "SOUTH COFFEYVILLE",
@@ -6327,9 +6513,18 @@
           "stage_name": "process",
           "outcome": "processed_all",
           "at": "2026-06-29T09:02:20Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T02:35:40Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 approved batch_00004"
+      "notes": "51849a4688a4"
     },
     "4202670": {
       "name": "Athens Area SD",
@@ -6503,9 +6698,9 @@
     "4222860": {
       "name": "Stroudsburg Area SD",
       "state": "PA",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_partial",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -6538,9 +6733,54 @@
           "stage_name": "process",
           "outcome": "processed_partial",
           "at": "2026-06-24T04:51:19Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-05T20:54:16Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-05T20:56:45Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-05T22:56:12Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-05T22:59:23Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-05T23:12:07Z"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-05T23:13:30Z"
         }
       ],
-      "notes": ""
+      "notes": "7301db5ac45d"
     },
     "4600041": {
       "name": "Britton-Hecla School District 45-4",
@@ -6850,9 +7090,18 @@
           "stage_name": "process",
           "outcome": "processed_partial",
           "at": "2026-06-29T09:10:45Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T02:35:40Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 approved batch_00003"
+      "notes": "51849a4688a4"
     },
     "4828590": {
       "name": "LULING ISD",
@@ -7123,9 +7372,9 @@
     "4900540": {
       "name": "Millard District",
       "state": "UT",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_all",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -7185,9 +7434,24 @@
           "stage_name": "process",
           "outcome": "processed_all",
           "at": "2026-06-29T09:04:17Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-05T20:54:16Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-05T20:56:52Z"
         }
       ],
-      "notes": "gate@1 approved batch_00004"
+      "notes": "c127b5f6e5d7"
     },
     "5000395": {
       "name": "Essex Westford Educational Community Unified Union SD #51",
@@ -7482,9 +7746,9 @@
     "5501770": {
       "name": "Elmbrook School District",
       "state": "WI",
-      "furthest_stage": 4,
-      "stage_name": "process",
-      "outcome": "processed_partial",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -7544,9 +7808,24 @@
           "stage_name": "process",
           "outcome": "processed_partial",
           "at": "2026-06-29T07:24:22Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-05T20:54:16Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-05T20:58:27Z"
         }
       ],
-      "notes": "gate@1 approved batch_00002"
+      "notes": "c127b5f6e5d7"
     },
     "5505100": {
       "name": "Geneva J4 School District",
@@ -7738,9 +8017,18 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-02T16:29:19Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T02:35:40Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 approved batch_00008"
+      "notes": "51849a4688a4"
     },
     "5510380": {
       "name": "Nekoosa School District",
@@ -7825,9 +8113,18 @@
           "stage_name": "process",
           "outcome": "processed_all",
           "at": "2026-06-29T09:07:15Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-06T02:35:40Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "gate@1 approved batch_00005"
+      "notes": "51849a4688a4"
     },
     "5605302": {
       "name": "Sweetwater County School District #1",
