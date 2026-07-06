@@ -642,67 +642,10 @@ class TestResidualAndWave2Gating:
         assert len(D2.residual_schools(roster)) == 2
 
 
-def _api_status_error(status_code):
-    import openai, httpx
-    resp = httpx.Response(status_code, request=httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions"))
-    return openai.APIStatusError(f"HTTP {status_code}", response=resp, body=None)
-
-
-class TestOpenRouterBillingFailure:
-    """A billing/auth/rate-limit failure means the call was never really attempted -- every
-    later Wave 2 call would fail identically, so it must never be silently treated the same
-    as 'the search legitimately found nothing' (found 2026-06-23: any exception, including a
-    402 insufficient-balance error, was being caught generically and degraded to urls=[])."""
-
-    def test_billing_status_code_raises_system_exit(self, monkeypatch):
-        import openai as openai_module
-
-        class FakeCompletions:
-            def create(self, **kwargs):
-                raise _api_status_error(402)
-
-        class FakeClient:
-            def __init__(self, **kwargs):
-                self.chat = type("C", (), {"completions": FakeCompletions()})()
-
-        monkeypatch.setattr(openai_module, "OpenAI", FakeClient)
-        with pytest.raises(SystemExit, match="CONTROL FAILURE"):
-            DISC.openrouter_search("query", "example.org")
-
-    def test_non_billing_status_code_propagates_as_plain_exception(self, monkeypatch):
-        """A 500 (transient server error) is NOT a billing/auth signal -- it must propagate
-        as the original APIStatusError, not SystemExit, so callers can still distinguish
-        'OpenRouter itself errored' from 'CONTROL FAILURE, halt everything' if they choose to."""
-        import openai as openai_module
-
-        class FakeCompletions:
-            def create(self, **kwargs):
-                raise _api_status_error(500)
-
-        class FakeClient:
-            def __init__(self, **kwargs):
-                self.chat = type("C", (), {"completions": FakeCompletions()})()
-
-        monkeypatch.setattr(openai_module, "OpenAI", FakeClient)
-        with pytest.raises(openai_module.APIStatusError):
-            DISC.openrouter_search("query", "example.org")
-
-    def test_429_is_transient_not_a_halt(self, monkeypatch):
-        """Issue #29: 429 was split out of the billing/auth halt set -- a rate-limit is
-        transient, so it propagates as the plain APIStatusError (per-school degrade)."""
-        import openai as openai_module
-
-        class FakeCompletions:
-            def create(self, **kwargs):
-                raise _api_status_error(429)
-
-        class FakeClient:
-            def __init__(self, **kwargs):
-                self.chat = type("C", (), {"completions": FakeCompletions()})()
-
-        monkeypatch.setattr(openai_module, "OpenAI", FakeClient)
-        with pytest.raises(openai_module.APIStatusError):
-            DISC.openrouter_search("query", "example.org")
+class TestRunWave2Provider:
+    """run_wave2 must never reach a paid provider silently. (The retired openrouter_search AI-search
+    provider — and the tests of its billing/auth halt behavior — were removed in #87; the live Wave-1
+    providers' identical CONTROL-FAILURE contract is covered by TestSerpProviderFailureSemantics.)"""
 
     def test_run_wave2_requires_an_explicit_provider(self):
         """Issue #41: the old default (the retired openrouter_search, ~$27/1K) is gone --
@@ -1156,9 +1099,10 @@ class TestProcessStage4Reconcile:
         (d / "captures.json").write_text("[]")
         districts = P4.find_districts(tmp_path)
         registry = {"schema_version": 1, "last_updated": None, "districts": {}}
-        todo, skipped = P4.reconcile(districts, registry)
+        todo, skipped, quarantined = P4.reconcile(districts, registry)
         assert [x["district_id"] for x in todo] == ["9999999"]
         assert skipped == []
+        assert quarantined == []
 
     def test_disk_ahead_of_registry_reconciles_up_and_skips(self, tmp_path):
         d = tmp_path / "9999999_test_process_district"
@@ -1168,9 +1112,10 @@ class TestProcessStage4Reconcile:
         (d / "processed.json").write_text("[]")
         districts = P4.find_districts(tmp_path)
         registry = {"schema_version": 1, "last_updated": None, "districts": {}}
-        todo, skipped = P4.reconcile(districts, registry)
+        todo, skipped, quarantined = P4.reconcile(districts, registry)
         assert todo == []
         assert [x["district_id"] for x in skipped] == ["9999999"]
+        assert quarantined == []
         assert registry["districts"]["9999999"]["furthest_stage"] == 4
 
     def test_registry_ahead_of_disk_halts_the_entire_run(self, tmp_path):
@@ -1185,10 +1130,11 @@ class TestProcessStage4Reconcile:
         with pytest.raises(SystemExit, match="CONTROL FAILURE"):
             P4.reconcile(districts, registry)
 
-    def test_missing_referenced_file_halts_before_registry_comparison(self, tmp_path):
-        """The file-existence check fires inside reconcile() too, not just standalone --
-        a structural problem must be caught even on a district that would otherwise look
-        like ordinary 'todo' work."""
+    def test_missing_referenced_file_quarantines_the_district(self, tmp_path):
+        """The file-existence check fires inside reconcile() too (#78): a district whose captures.json
+        claims a file not on disk is QUARANTINED (excluded from the run with its problems attached),
+        NOT run-halted -- one inconsistent district must not abort the whole batch. (Pre-#78 this
+        raised a CONTROL-FAILURE SystemExit; the test drifted from the quarantine behavior — #166.)"""
         d = tmp_path / "9999999_test_process_district"
         d.mkdir()
         _write_discovery(d)
@@ -1198,8 +1144,10 @@ class TestProcessStage4Reconcile:
         (d / "captures.json").write_text(json.dumps(captures))
         districts = P4.find_districts(tmp_path)
         registry = {"schema_version": 1, "last_updated": None, "districts": {}}
-        with pytest.raises(SystemExit, match="CONTROL FAILURE"):
-            P4.reconcile(districts, registry)
+        todo, skipped, quarantined = P4.reconcile(districts, registry)
+        assert todo == [] and skipped == []
+        assert [x["district_id"] for x in quarantined] == ["9999999"]
+        assert quarantined[0]["inconsistency"]   # the specific problem(s) attached for the report
 
 
 class TestUsableTextBar:

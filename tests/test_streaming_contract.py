@@ -109,13 +109,10 @@ def test_usage_and_finish_read_after_a_long_stream(monkeypatch):
 
 
 # --------------------------- source guard: no un-streamed completion calls ---------------------------
-# DEPRECATED, non-live path (user-confirmed 2026-07-04): the retired ~$27/1K OpenRouter AI-search Wave
-# provider (issue #41; the sibling perplexity_search is also deprecated but doesn't use the SDK
-# completion pattern, so it isn't flagged here). Unreachable in the live SERP-cascade discovery. Bounded
-# + explicit so a NEW blocking call elsewhere fails; streamed-or-removed is a tracked cleanup (REQ-119).
-_DEPRECATED_NONSTREAMING = {
-    ("common/discover.py", "openrouter_search"),
-}
+# The retired non-streaming OpenRouter AI-search provider (openrouter_search) was REMOVED in #87 (it was
+# the only allowlisted non-streaming completion call). The allowlist is now empty: any un-streamed
+# OpenAI-SDK chat-completion call in acquisition is an unconditional failure (REQ-119).
+_DEPRECATED_NONSTREAMING = set()
 _ACQ = Path(__file__).resolve().parents[1] / "infrastructure" / "acquisition"
 
 

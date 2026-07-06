@@ -1,19 +1,23 @@
-"""Discovery v3: domain-scoped search (Perplexity param + OpenRouter site:) + smart URL gate,
-with an unscoped fallback for districts whose NCES WEBSITE is blank. Ranks candidates
-(schedule-keyword URLs + multi-tool agreement first) and caps per district. Google dropped.
-Writes candidates.json (gated, ranked, capped) + rejected.json. Usage: discover.py [ids] [cap]"""
-import os, json, re, sys, csv, time
+"""Shared discovery helpers + the Stage-2 Wave-1 SERP providers.
+
+Two things live here, both imported across stages (so they sit in `common/` — stages must not
+import each other, the import-linter layering contract):
+  - **URL helpers** used by Stage 1 (benchmark_batch) and Stage 2 (discover_stage2): `host_of`,
+    `slugify`, and the smart-`gate()` domain/CMS/news filter.
+  - **Wave-1 SERP providers** the Stage-2 runner cascades over: `brightdata_search` (primary,
+    real-Google, recurring free tier) → `serper_search` (uptime failover). Billing/auth (401/402)
+    halts the run; a 429 is transient (issue #29) → failover / per-school degrade.
+
+The retired non-streaming AI-search providers (Perplexity, OpenRouter) were removed (#87) — they
+were superseded by the Bright Data → Serper Wave-1 cascade + Claude WebSearch Wave 2, and only the
+old standalone bench `main()` still referenced them."""
+import os, json, re, time
 from urllib.parse import urlparse
 
 from infrastructure.acquisition.common import config_loader  # noqa: E402  (config-as-data layer — REQ-088)
 from infrastructure.acquisition.common import paths  # noqa: E402  (repo-anchored locations — REQ-087)
 
-# Repo-anchored, never CWD-relative (issue #31): this module is imported by the governance server
-# and the Stage-2 runners, which may be launched from any directory — a bare Path("config/...")
-# silently resolves against the launch CWD (the exact bug class paths.py exists to end).
-OUT=paths.ACQUISITION / "discovery"
-NCES=paths.DATA_ROOT / "raw/federal/nces-ccd/2023_24/ccd_lea_029_2324_w_1a_073124.csv"
-# Trusted K-12 CMS / content-host SUFFIXES -- now the shared config-as-data knob `cms_hosts`
+# Trusted K-12 CMS / content-host SUFFIXES -- the shared config-as-data knob `cms_hosts`
 # (single source of truth with capture_discovery.mjs; no more hand-syncing). LOAD-BEARING in
 # gate(): an off-domain candidate whose host ends with one of these AND contains the district
 # slug is kept. Governance + per-entry provenance live in the config file. REQ-089.
@@ -33,14 +37,6 @@ def slugify(name: str, maxlen: int = 40) -> str:
     s = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
     return s[:maxlen].rstrip("_")
 
-def load_domains():
-    out={}
-    with open(NCES, encoding="utf-8-sig") as f:
-        for row in csv.DictReader(f):
-            w=row.get("WEBSITE","") or ""
-            out[row.get("LEAID","").zfill(7)] = host_of(w if "//" in w else "http://"+w) if w else ""
-    return out
-
 def _host_matches(h, suffix):
     """True iff host `h` IS `suffix` or is a subdomain of it -- dot-boundary matching (issue #34).
     A bare endswith() lets halifax.com match x.com and evilschoolwires.com match schoolwires.com."""
@@ -56,30 +52,7 @@ def gate(url, dhost, slug, scoped):
         return False,"off-district"
     return True,"unscoped"   # no NCES domain: keep non-news results; relevance gate sorts it out
 
-def perplexity_search(q, dhost, k=10):
-    from perplexity import Perplexity
-    kw={"query":q,"max_results":k}
-    if dhost: kw["search_domain_filter"]=[dhost]
-    r=Perplexity().search.create(**kw)
-    return [getattr(it,"url","") for it in (r.results or []) if getattr(it,"url","")]
-
 SECRETS_FILE = paths.SECRETS_FILE   # repo-anchored (issue #31), never CWD-relative
-
-def _openrouter_key():
-    """OPENROUTER_API_KEY isn't auto-loaded from .env or secrets.local.json -- and in any
-    execution environment where each shell command starts fresh (no persisted env across
-    calls), an `export` done once is silently gone by the next call. Fall back to reading
-    the key directly from secrets.local.json rather than depending on that export having
-    survived. Returns the value directly -- deliberately does NOT set os.environ, since
-    that would make the key visible to every later subprocess this process spawns for no
-    functional benefit (the one caller uses the return value directly)."""
-    key = os.getenv("OPENROUTER_API_KEY")
-    if key:
-        return key
-    try:
-        return json.loads(SECRETS_FILE.read_text()).get("OPENROUTER_API_KEY")
-    except Exception:
-        return None
 
 # HTTP statuses that mean "this call was never really attempted" (bad/revoked key, exhausted
 # pre-paid balance) -- every later call would fail identically, so this must never be treated
@@ -94,35 +67,9 @@ class TransientProviderError(RuntimeError):
     the RIGHT reaction is failover (Wave 1: Bright Data -> Serper) or per-school degradation,
     NOT the SystemExit whole-run halt reserved for billing/auth (401/402). Issue #29."""
 
-def openrouter_search(q, dhost, k=10):
-    import openai
-    c=openai.OpenAI(base_url="https://openrouter.ai/api/v1", api_key=_openrouter_key())
-    query=f"{q} site:{dhost}" if dhost else q
-    try:
-        r=c.chat.completions.create(model="openai/gpt-4o-mini-search-preview",
-            messages=[{"role":"user","content":query}], max_tokens=600, extra_body={"plugins":[{"id":"web"}]})
-    except openai.APIStatusError as e:
-        if e.status_code in BILLING_AUTH_STATUS_CODES:
-            # SystemExit, not a plain Exception -- callers that do `except Exception` (e.g.
-            # discover_stage2.run_wave2's per-school degradation) must NOT catch this; it has
-            # to propagate and halt the whole run, the same as a reconcile() CONTROL FAILURE.
-            raise SystemExit(
-                f"CONTROL FAILURE: OpenRouter returned HTTP {e.status_code} -- this is a "
-                f"billing/auth failure, not 'no results found'. Every remaining "
-                f"Wave 2 call would fail identically. Stopping the entire run -- check the "
-                f"account balance / API key before re-running. ({str(e)[:200]})"
-            )
-        raise   # 429/5xx/etc propagate as the plain APIStatusError -- transient, caller degrades
-    ann=getattr(r.choices[0].message,"annotations",None) or []
-    out=[]
-    for a in ann:
-        ad=a if isinstance(a,dict) else a.model_dump()
-        u=(ad.get("url_citation") or {}).get("url") or ad.get("url")
-        if u: out.append(u)
-    return out[:k]
 
 def _secret(name):
-    """A secret from env or the gitignored secrets file (same fallback rationale as _openrouter_key)."""
+    """A secret from env or the gitignored secrets file (repo-anchored, never CWD-relative)."""
     return os.getenv(name) or (json.loads(SECRETS_FILE.read_text()).get(name)
                                if SECRETS_FILE.exists() else None)
 
@@ -130,10 +77,9 @@ def _secret(name):
 def serper_search(q, dhost, k=10, _sleep=time.sleep):
     """Serper.dev Google SERP -- domain-scoped via `site:`, returns organic result URLs. The Stage 2
     Wave-1 UPTIME FAILOVER (banked credits; ~$0.001/query). Measured 100% recall on the 53-school
-    known-positive set. Billing/auth (401/402) -> SystemExit halt, same control-failure stance as
-    openrouter_search (every later call would fail identically). A 429 is TRANSIENT (issue #29):
-    one short sleep + single retry, then TransientProviderError (a plain exception -- the caller
-    degrades that school, the run continues)."""
+    known-positive set. Billing/auth (401/402) -> SystemExit halt (every later call would fail
+    identically). A 429 is TRANSIENT (issue #29): one short sleep + single retry, then
+    TransientProviderError (a plain exception -- the caller degrades that school, the run continues)."""
     import requests
 
     def _post():
@@ -193,39 +139,5 @@ def brightdata_search(q, dhost, k=10):
 # Canonical provenance names (issue #30): Stage 2's flatten() records WHICH provider actually
 # served each kept URL into candidates.json `tools[]` (-> DB cache -> Stage-5 candidate_tools_json),
 # so the names must be the real providers, not the retired claude/openrouter wave labels.
-perplexity_search.provider_name = "perplexity"
-openrouter_search.provider_name = "openrouter"
 serper_search.provider_name = "serper"
 brightdata_search.provider_name = "brightdata"
-
-
-def rank_key(c):
-    return (any(k in c["url"].lower() for k in SCHED_KW), len(c["tools"]))
-
-def main():
-    man={d["district_id"]:d for d in json.load(open("data/benchmark/ground_truth_manifest.json"))["districts"]}
-    dom=load_domains()
-    ids=sys.argv[1].split(",") if len(sys.argv)>1 else ["1000200","5605302","0200600"]
-    cap=int(sys.argv[2]) if len(sys.argv)>2 else 8
-    for did in ids:
-        d=man[did]; dhost=dom.get(did,""); scoped=bool(dhost); slug=dhost.split(".")[0] if dhost else ""
-        q=f'{d["district_name"]} {d["state"]} school bell schedule start and end times'
-        kept={}; rej=[]
-        for tool,fn in [("perplexity",perplexity_search),("openrouter",openrouter_search)]:
-            try: urls=fn(q,dhost)
-            except Exception as e: print(f"  [{did}/{tool}] ERR {str(e)[:80]}"); urls=[]
-            for u in urls:
-                ok,why=gate(u,dhost,slug,scoped)
-                if ok:
-                    n=host_of(u)+urlparse(u).path.rstrip("/")
-                    kept.setdefault(n,{"url":u,"tools":[],"gate":why})
-                    if tool not in kept[n]["tools"]: kept[n]["tools"].append(tool)
-                else: rej.append({"url":u,"tool":tool,"why":why})
-        ranked=sorted(kept.values(), key=rank_key, reverse=True)[:cap]
-        dd=OUT/did; dd.mkdir(parents=True,exist_ok=True)
-        (dd/"candidates.json").write_text(json.dumps({"district_id":did,"name":d["district_name"],"state":d["state"],
-            "domain":dhost,"scoped":scoped,"query":q,"candidates":ranked},indent=2))
-        (dd/"rejected.json").write_text(json.dumps(rej,indent=2))
-        print(f"{did} {d['district_name'][:24]:24} dom={(dhost or '(none/unscoped)'):22} kept={len(ranked):2}/{len(kept):2} rej={len(rej)}")
-
-if __name__=="__main__": main()
