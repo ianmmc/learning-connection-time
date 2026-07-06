@@ -29,6 +29,7 @@ from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import model_families as MF
 from infrastructure.acquisition.common import paths
+from infrastructure.acquisition.common import school_sampling as SS
 from infrastructure.acquisition.stage5_filter import build_signals as BS
 from infrastructure.acquisition.stage6_handoff import cost as COST6
 from infrastructure.acquisition.stage6_handoff import councils as C6
@@ -650,11 +651,16 @@ def _district_request_inputs(session, result: dict):
     sent: dict = {}
     for rep in result.get("reps", []):
         sent.setdefault(rep["rec_key"], set()).add(rep["file"])
-    row = session.execute(text("SELECT lea_claimed_bands_json, schools_by_band_json "
+    row = session.execute(text("SELECT lea_claimed_bands_json, schools_by_band_json, nces_by_level_json "
                                "FROM district_target WHERE district_id = :d"), {"d": did}).fetchone()
     claimed = json.loads(row[0]) if row and row[0] else []
     sbb = json.loads(row[1]) if row and row[1] else {}
     band_schools = {b: [x["name"] for x in (sbb.get(b, {}) or {}).get("schools", [])] for b in RQ.BANDS}
+    # real_bands (#175/#176): the bands with ≥1 REAL NCES school — the SAME derivation Stage 1 uses
+    # (school_sampling), so the loop's phantom/coverage gates agree with how bands were assigned.
+    by_level = json.loads(row[2]) if row and row[2] else {}
+    all_schools = [sc for meta in sbb.values() for sc in (meta or {}).get("schools", [])]
+    real_bands = SS.real_bands_for_district(by_level, all_schools)
     alts = {}
     for rec_key, sent_files in sent.items():
         # Dispatchable kinds only (#140): binaries (pdf/bin) and chrome segments are usable=1 in the
@@ -675,16 +681,16 @@ def _district_request_inputs(session, result: dict):
     covered = {b for (b,) in session.execute(
         text("SELECT DISTINCT band FROM school_fact WHERE district_id = :d AND status = 'accepted'"),
         {"d": did}).all()}
-    return claimed, band_schools, alts, covered
+    return claimed, band_schools, alts, covered, real_bands
 
 
 def detect_and_persist_requests(session, result: dict, handoff_hash: str) -> int:
     """Detect the request-more-evidence directives for one district's result and persist the NEW ones
     (natural-key dedup on (handoff_hash, target, altitude, route, band) so a re-detect/backfill never
     duplicates and never clobbers a human's review status). Returns the count newly persisted."""
-    claimed, band_schools, alts, covered = _district_request_inputs(session, result)
+    claimed, band_schools, alts, covered, real_bands = _district_request_inputs(session, result)
     reqs = RQ.detect_requests(result, claimed_bands=claimed, alternates_by_rec=alts,
-                              band_schools=band_schools, covered_bands=covered)
+                              band_schools=band_schools, covered_bands=covered, real_bands=real_bands)
     n = 0
     for r in reqs:
         exists = session.execute(

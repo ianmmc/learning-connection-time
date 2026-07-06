@@ -91,7 +91,7 @@ def _alt_reason(sent: str, ranked: list) -> str:
 
 
 def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = None,
-                    band_schools: dict = None, covered_bands=None) -> list:
+                    band_schools: dict = None, covered_bands=None, real_bands=None) -> list:
     """Emit routed request objects for one district's extraction `result` (a `run_council_streaming`
     per-district dict: {district_id, reps[], accepted[], unresolved[], bands}).
 
@@ -106,6 +106,16 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
                           single record covers nothing, so every claimed band looks empty and a
                           spurious 7→2 fires per band (live: Las Cruces #285-287/#289-291). The
                           district-altitude check unions this with the result's own facts.
+    `real_bands`      — bands with ≥1 REAL NCES school (the app layer derives this the same way Stage 1
+                          assigns a school's band — `school_sampling.primary_bands_for`). When known, it
+                          gates the loop against COVERAGE-BLIND spend (#176):
+                            • a claimed band NOT in real_bands is a PHANTOM (0 schools at that level —
+                              8/23 in the #122 run, usually 'middle'); a 7→2 rediscover can never fill
+                              it, so it is never emitted (#175);
+                            • a district whose every REAL target band already has facts is FULLY
+                              COVERED — a barren-rep 7→6/7→3 can add no net-new coverage, so it is
+                              suppressed (#170/#176: the Aspire $0.076 vision-escalation-for-nothing).
+                          None ⇒ unknown ⇒ no gating (back-compat; benchmark/unit inputs behave as before).
 
     Returns a list of `{district_id, altitude, route, target, band, params, reason}`.
     """
@@ -115,10 +125,22 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
     files = _sent_file(result)
     reqs: list = []
 
+    # Coverage state, computed ONCE up front (both gates read it). `have` = this result's bands ∪ the
+    # district-wide covered bands (a partial result alone must not fabricate a gap). `target_bands` =
+    # the bands worth chasing = claimed ∩ real (phantoms dropped when real_bands is known); if real is
+    # unknown, fall back to the claim. `fully_covered` = every real target band already has facts.
+    have = _bands_with_facts(result) | {b for b in (covered_bands or ()) if b in BANDS}
+    target_bands = {b for b in (claimed_bands or []) if b in BANDS}
+    if real_bands is not None:
+        target_bands &= set(real_bands)
+    fully_covered = bool(target_bands) and target_bands <= have
+
     # --- representation / URL altitude: a sent record produced no accepted facts ---
     for rec_key, n_acc in _accepted_by_record(result).items():
         if n_acc > 0:
             continue
+        if fully_covered:
+            continue    # #170/#176: every real band already covered — no barren-rep remedy adds coverage
         alts = alternates_by_rec.get(rec_key) or []
         sent = files.get(rec_key)
         if alts:
@@ -150,10 +172,11 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
     # --- district altitude: a claimed band has no accepted facts anywhere (DISTRICT-WIDE: this
     # result's facts ∪ covered_bands from prior extractions — a partial result alone must not
     # fabricate a gap) ---
-    have = _bands_with_facts(result) | {b for b in (covered_bands or ()) if b in BANDS}
     for band in claimed_bands or []:
         if band not in BANDS or band in have:
             continue
+        if real_bands is not None and band not in real_bands:
+            continue    # #175: PHANTOM band (0 real NCES schools) — a rediscover can never fill it
         schools = band_schools.get(band) or []
         params = {"band": band, "schools": schools}
         reason = (f"claimed band '{band}' has 0 accepted facts across all URLs"

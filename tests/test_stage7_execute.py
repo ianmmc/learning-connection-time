@@ -480,3 +480,58 @@ def test_newwork_routes_come_from_the_detector_constants():
     route in the detector must flow through automatically."""
     from infrastructure.acquisition.stage7_extract import requests as RQ7
     assert EX.NEWWORK_ROUTES == (RQ7.ROUTE_REDISCOVER, RQ7.ROUTE_RECAPTURE, RQ7.ROUTE_ADD_SCHOOLS)
+
+
+# --- #176 / #175: compose-time coverage/phantom gate (defense in depth) ---
+
+def test_compose_suppresses_7to2_for_now_covered_band():
+    # #176: a band another round covered between approval and this compose must not re-fire — the
+    # LIVE covered_bands re-check drops it (recorded in 'suppressed', not 'targets').
+    plan = EX.plan_followup([_req(1, "D1", "7->2", "high")], claimed_bands={},
+                            covered_bands={"D1": {"high"}})
+    assert plan["targets"] == {}
+    assert plan["swept_ids"] == []
+    assert [s["request_id"] for s in plan["suppressed"]] == [1]
+    assert "already covered" in plan["suppressed"][0]["reason"]
+
+
+def test_compose_suppresses_7to2_for_phantom_band():
+    # #175: a 7->2 for a band with no real school is unfillable -> suppressed at compose too.
+    plan = EX.plan_followup([_req(1, "D1", "7->2", "middle")], claimed_bands={},
+                            real_bands={"D1": {"elementary", "high"}})
+    assert plan["targets"] == {}
+    assert [s["request_id"] for s in plan["suppressed"]] == [1]
+    assert "phantom" in plan["suppressed"][0]["reason"]
+
+
+def test_compose_gate_leaves_real_uncovered_band_untouched():
+    # a real, still-uncovered band fires normally; the gate only drops covered/phantom bands.
+    plan = EX.plan_followup([_req(1, "D1", "7->2", "high")], claimed_bands={},
+                            covered_bands={"D1": {"elementary"}}, real_bands={"D1": {"elementary", "high"}})
+    assert plan["targets"] == {"D1": ["high"]}
+    assert plan["swept_ids"] == [1]
+    assert plan["suppressed"] == []
+
+
+def test_compose_gate_unknown_district_not_gated():
+    # a district absent from real_bands is treated as unknown (not gated) — back-compat safety.
+    plan = EX.plan_followup([_req(1, "D1", "7->2", "middle")], claimed_bands={}, real_bands={})
+    assert plan["targets"] == {"D1": ["middle"]}
+    assert plan["suppressed"] == []
+
+
+def test_real_bands_for_district_drops_phantom_middle():
+    # the shared derivation (used by both detector app-inputs and the compose gate): a K-6/7-12
+    # district with by_level {Elementary, High} and those schools yields {elementary, high} — no middle.
+    from infrastructure.acquisition.common import school_sampling as SS
+    by_level = {"Elementary": 1, "High": 1}
+    schools = [{"level": "Elementary", "gslo": "KG", "gshi": "06"},
+               {"level": "High", "gslo": "07", "gshi": "12"}]
+    assert SS.real_bands_for_district(by_level, schools) == {"elementary", "high"}
+
+
+def test_real_bands_for_district_rescues_secondary_via_span():
+    # a 'Secondary' school (ambiguous LEVEL) rescues to bands via its grade span (middle+high).
+    from infrastructure.acquisition.common import school_sampling as SS
+    assert SS.real_bands_for_district({"Secondary": 1},
+                                      [{"level": "Secondary", "gslo": "07", "gshi": "12"}]) == {"middle", "high"}

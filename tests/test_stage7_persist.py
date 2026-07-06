@@ -91,9 +91,11 @@ def test_detect_and_persist_requests_dedups(gov_session, monkeypatch):
     dedup), human review status preserved. DB inputs mocked so no district_target/representation setup."""
     gdb.init_precious_schema()
     s = gov_session
-    # claimed elementary+high; high has no facts -> one district 7->2 request. No alternates.
+    # claimed elementary+high; high has no facts -> one district 7->2 request. No alternates. Both
+    # bands are real (real_bands={elementary,high}), so the #175 phantom gate doesn't suppress high.
     monkeypatch.setattr(R7, "_district_request_inputs",
-                        lambda sess, res: (["elementary", "high"], {"high": ["A High"]}, {}, set()))
+                        lambda sess, res: (["elementary", "high"], {"high": ["A High"]}, {}, set(),
+                                           {"elementary", "high"}))
     result = {"district_id": "ZZREQ1", "reps": [],
               "accepted": [{"band": "elementary", "school": "e"}], "unresolved": []}
 

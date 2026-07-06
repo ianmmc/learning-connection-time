@@ -61,8 +61,9 @@ def test_partial_result_with_covered_bands_fabricates_no_band_gaps():
         res, claimed_bands=["elementary", "middle", "high"],
         covered_bands={"elementary", "middle", "high"})
     assert [r for r in reqs if r["altitude"] == "district"] == []   # no fabricated gaps
-    # the 7->3 for the barren rep itself still fires (no alternates given) — that part is real
-    assert [r["route"] for r in reqs] == ["7->3"]
+    # #176: the district is already fully covered — a barren rep's 7->3 recapture would add no coverage
+    # either, so coverage gates ALL follow-ups here (was: the 7->3 fired regardless — pre-#176 waste).
+    assert reqs == []
 
 
 def test_covered_bands_only_fills_known_bands_not_all():
@@ -136,4 +137,67 @@ def test_multi_rep_url_barren_only_if_all_reps_barren():
               {"rec_key": "D1:dd", "file": "b.txt", "accepted": [{"band": "high", "school": "h"}]}],
         accepted=[{"band": "high", "school": "h"}])
     reqs = RQ.detect_requests(res, claimed_bands=["high"])
+    assert reqs == []
+
+
+# --- #175 / #170 / #176: coverage-aware gating via real_bands ---
+
+def test_phantom_claimed_band_emits_no_7to2():
+    # #175: 'middle' is claimed but has NO real NCES school (real_bands={elementary,high}) — a
+    # rediscover could never fill it, so it is never emitted (elem/high already covered).
+    res = _result(accepted=[{"band": "elementary", "school": "a"}, {"band": "high", "school": "b"}])
+    reqs = RQ.detect_requests(res, claimed_bands=["elementary", "middle", "high"],
+                              real_bands={"elementary", "high"})
+    assert [r for r in reqs if r["altitude"] == "district"] == []
+
+
+def test_real_missing_band_still_emits_7to2():
+    # a REAL band (high) with no facts still fires — the phantom gate only drops UNreal bands.
+    res = _result(accepted=[{"band": "elementary", "school": "a"}])
+    reqs = RQ.detect_requests(res, claimed_bands=["elementary", "high"],
+                              real_bands={"elementary", "high"})
+    assert [r["band"] for r in reqs if r["altitude"] == "district"] == ["high"]
+
+
+def test_real_bands_none_preserves_legacy_behavior():
+    # real_bands unknown -> NO phantom gating (back-compat): a claimed-but-unreal band still fires.
+    res = _result(accepted=[{"band": "elementary", "school": "a"}])
+    reqs = RQ.detect_requests(res, claimed_bands=["elementary", "middle"])
+    assert [r["band"] for r in reqs if r["altitude"] == "district"] == ["middle"]
+
+
+def test_fully_covered_district_suppresses_barren_rep():
+    # #170/#176 (the Aspire shape): every real band already covered; a barren rep with an alternate
+    # would fire a 7->6, but it can add no net-new coverage -> suppressed (no 7->6, no 7->2).
+    res = _result(
+        reps=[{"rec_key": "D1:x", "file": "camelot_stream.txt", "accepted": []}],
+        accepted=[{"band": b, "school": b} for b in ("elementary", "middle", "high")])
+    reqs = RQ.detect_requests(
+        res, claimed_bands=["elementary", "middle", "high"],
+        real_bands={"elementary", "middle", "high"},
+        alternates_by_rec={"D1:x": [{"file": "raster_p-1.png", "kind": "image", "n_times": 0}]})
+    assert reqs == []
+
+
+def test_not_fully_covered_still_fires_barren_rep():
+    # a real band (high) still empty -> the barren rep's 7->6 fires; coverage is incomplete.
+    res = _result(
+        reps=[{"rec_key": "D1:x", "file": "camelot_stream.txt", "accepted": []}],
+        accepted=[{"band": "elementary", "school": "a"}])
+    reqs = RQ.detect_requests(
+        res, claimed_bands=["elementary", "high"], real_bands={"elementary", "high"},
+        alternates_by_rec={"D1:x": [{"file": "pdftotext.txt", "kind": "text", "n_times": 40}]})
+    assert "7->6" in {r["route"] for r in reqs}                                   # barren-rep remedy
+    assert any(r["band"] == "high" for r in reqs if r["altitude"] == "district")  # the real gap too
+
+
+def test_phantom_band_does_not_block_full_coverage():
+    # a phantom 'middle' must not keep a district from counting as fully covered: real bands are
+    # {elementary, high}, both covered -> the barren rep is suppressed even though phantom 'middle' is empty.
+    res = _result(
+        reps=[{"rec_key": "D1:x", "file": "camelot_stream.txt", "accepted": []}],
+        accepted=[{"band": "elementary", "school": "a"}, {"band": "high", "school": "b"}])
+    reqs = RQ.detect_requests(
+        res, claimed_bands=["elementary", "middle", "high"], real_bands={"elementary", "high"},
+        alternates_by_rec={"D1:x": [{"file": "raster_p-1.png", "kind": "image", "n_times": 0}]})
     assert reqs == []

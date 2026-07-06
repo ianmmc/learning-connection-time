@@ -84,6 +84,21 @@ def primary_bands_for(level, gslo, gshi):
     b = LEVEL_BAND.get((level or "").strip())
     return {b} if b else bands_for(gslo, gshi)
 
+
+def real_bands_for_district(by_level, schools) -> set:
+    """The bands a district can ACTUALLY satisfy — each anchored by ≥1 real NCES school. Clean
+    Elementary/Middle/High LEVEL counts (`by_level`, which spans ALL criteria-meeting schools, not
+    just a selected subset) seed it; each school's own grade span then rescues an ambiguous LEVEL
+    (Secondary/Other) via `primary_bands_for`. `schools`: iterable of dicts with level/gslo/gshi.
+
+    This is the single definition of "real bands" for the Stage-7 request loop's coverage gates: a
+    CLAIMED band absent from this set is a PHANTOM the rediscover loop can never fill (#175), and a
+    district whose every real band is already covered can't benefit from a barren-rep 7->6 (#176)."""
+    bands = {LEVEL_BAND[lvl] for lvl in (by_level or {}) if lvl in LEVEL_BAND}
+    for sc in schools or ():
+        bands |= primary_bands_for(sc.get("level"), sc.get("gslo"), sc.get("gshi"))
+    return bands
+
 def _grade_num(idx):
     """GRADE_ORD index -> integer grade number; PK/KG both -> 0 (pre-grade-1)."""
     for g, i in GRADE_ORD.items():
