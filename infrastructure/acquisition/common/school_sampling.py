@@ -85,18 +85,31 @@ def primary_bands_for(level, gslo, gshi):
     return {b} if b else bands_for(gslo, gshi)
 
 
-def real_bands_for_district(by_level, schools) -> set:
-    """The bands a district can ACTUALLY satisfy — each anchored by ≥1 real NCES school. Clean
-    Elementary/Middle/High LEVEL counts (`by_level`, which spans ALL criteria-meeting schools, not
-    just a selected subset) seed it; each school's own grade span then rescues an ambiguous LEVEL
-    (Secondary/Other) via `primary_bands_for`. `schools`: iterable of dicts with level/gslo/gshi.
-
-    This is the single definition of "real bands" for the Stage-7 request loop's coverage gates: a
-    CLAIMED band absent from this set is a PHANTOM the rediscover loop can never fill (#175), and a
-    district whose every real band is already covered can't benefit from a barren-rep 7->6 (#176)."""
+def real_bands_for_district(by_level, schools_by_band) -> set:
+    """The bands a district can ACTUALLY satisfy — each SERVED by ≥1 real NCES school. This is
+    FILLABILITY, not primary-label classification, so it must agree with `school_index`'s own
+    placement — including the gap-fill: Jasper Co.'s 'High'-LEVEL 07-12 school also fills middle
+    (grades 7-8 attend it), and Roy's 07-12 school produced ACCEPTED middle-band facts. A
+    `primary_bands_for`-based version shipped first and wrongly called all 24 such gap-filled
+    middles "phantom" (PR #191 review). Three signals, unioned:
+      1. clean Elementary/Middle/High LEVEL counts (`by_level` — ALL criteria-meeting schools,
+         not just the selected subset);
+      2. any band Stage 1 itself placed ≥1 school into (`schools_by_band` — the sbb dict,
+         carrying the school_index gap-fill verbatim);
+      3. each placed school's clean LEVEL band + its `bands_for_rescue` grade span (the same
+         conservative overlap school_index rescues with — a K-6 does NOT reach middle).
+    The single definition of "real bands" for the Stage-7 request loop's coverage gates
+    (`stage7_extract/requests.py` holds the gate policy)."""
     bands = {LEVEL_BAND[lvl] for lvl in (by_level or {}) if lvl in LEVEL_BAND}
-    for sc in schools or ():
-        bands |= primary_bands_for(sc.get("level"), sc.get("gslo"), sc.get("gshi"))
+    for band, meta in (schools_by_band or {}).items():
+        schools = (meta or {}).get("schools") or []
+        if band in BANDS and schools:
+            bands.add(band)
+        for sc in schools:
+            b = LEVEL_BAND.get((sc.get("level") or "").strip())
+            if b:
+                bands.add(b)
+            bands |= bands_for_rescue(sc.get("gslo"), sc.get("gshi"))
     return bands
 
 def _grade_num(idx):

@@ -643,8 +643,9 @@ def _district_request_inputs(session, result: dict):
     """The DB-derived inputs the pure detector (`requests.detect_requests`) needs for one district:
     claimed bands + the band's schools (`district_target`), the alternate reps per sent record
     (`representation`, the usable reps of a rec_key other than the one we sent — drives 7→6 vs 7→3),
-    and the district-wide covered bands (`school_fact` across all extractions — so a partial result
-    can't fabricate band gaps). Returns (claimed, band_schools, alts, covered)."""
+    the district-wide covered bands (`school_fact` across all extractions — so a partial result
+    can't fabricate band gaps), and the real (fillable) bands (#175/#176).
+    Returns (claimed, band_schools, alts, covered, real_bands) — a 5-tuple."""
     did = result["district_id"]
     # ALL files sent per rec_key (#145): Stage 6 may dispatch several reps of one record, and a rep we
     # already sent (and that just failed) must never be offered back as its own 7->6 "alternate".
@@ -656,11 +657,11 @@ def _district_request_inputs(session, result: dict):
     claimed = json.loads(row[0]) if row and row[0] else []
     sbb = json.loads(row[1]) if row and row[1] else {}
     band_schools = {b: [x["name"] for x in (sbb.get(b, {}) or {}).get("schools", [])] for b in RQ.BANDS}
-    # real_bands (#175/#176): the bands with ≥1 REAL NCES school — the SAME derivation Stage 1 uses
-    # (school_sampling), so the loop's phantom/coverage gates agree with how bands were assigned.
+    # real_bands (#175/#176): the bands SERVED by ≥1 real NCES school — derived by the ONE shared
+    # helper (it owns the sbb traversal too, so the detector's gate and the compose gate in
+    # stage7_execute can never diverge on the definition). Fillability, incl. Stage 1's gap-fill.
     by_level = json.loads(row[2]) if row and row[2] else {}
-    all_schools = [sc for meta in sbb.values() for sc in (meta or {}).get("schools", [])]
-    real_bands = SS.real_bands_for_district(by_level, all_schools)
+    real_bands = SS.real_bands_for_district(by_level, sbb)
     alts = {}
     for rec_key, sent_files in sent.items():
         # Dispatchable kinds only (#140): binaries (pdf/bin) and chrome segments are usable=1 in the
@@ -678,8 +679,11 @@ def _district_request_inputs(session, result: dict):
     # this session by persist_run_session, so they're visible too). Without this, a PARTIAL result
     # (a 1-record 7->6 re-dispatch) fabricates a gap for every claimed band the single record
     # doesn't cover — the live Las Cruces #285-287/#289-291 spurious 7->2s.
+    # `band IS NOT NULL` keeps the covered set band-only — aligned with the batched twin
+    # `stage7_execute._covered_bands_now` (the compose gate) so the two never disagree on membership.
     covered = {b for (b,) in session.execute(
-        text("SELECT DISTINCT band FROM school_fact WHERE district_id = :d AND status = 'accepted'"),
+        text("SELECT DISTINCT band FROM school_fact WHERE district_id = :d AND status = 'accepted' "
+             "AND band IS NOT NULL"),
         {"d": did}).all()}
     return claimed, band_schools, alts, covered, real_bands
 
@@ -689,8 +693,22 @@ def detect_and_persist_requests(session, result: dict, handoff_hash: str) -> int
     (natural-key dedup on (handoff_hash, target, altitude, route, band) so a re-detect/backfill never
     duplicates and never clobbers a human's review status). Returns the count newly persisted."""
     claimed, band_schools, alts, covered, real_bands = _district_request_inputs(session, result)
+    explain: dict = {}
     reqs = RQ.detect_requests(result, claimed_bands=claimed, alternates_by_rec=alts,
-                              band_schools=band_schools, covered_bands=covered, real_bands=real_bands)
+                              band_schools=band_schools, covered_bands=covered, real_bands=real_bands,
+                              explain=explain)
+    # Detect-time suppression is NON-emission (nothing persists; re-detection re-emits if coverage
+    # regresses) — log it so a barren rep with no request next to it is explicable from the run log.
+    if explain.get("suppressed_barren_reps") or explain.get("phantom_bands"):
+        did = result.get("district_id")
+        bits = []
+        if explain.get("suppressed_barren_reps"):
+            bits.append(f"{explain['suppressed_barren_reps']} barren-rep remedy(ies) suppressed — "
+                        f"no fillable band gap remains")
+        if explain.get("phantom_bands"):
+            bits.append(f"phantom claimed band(s) {explain['phantom_bands']} — no school serves "
+                        f"those grades, no 7->2 emitted")
+        print(f"  [requests] {did}: " + "; ".join(bits), flush=True)
     n = 0
     for r in reqs:
         exists = session.execute(

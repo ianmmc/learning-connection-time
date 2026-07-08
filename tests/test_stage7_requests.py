@@ -201,3 +201,35 @@ def test_phantom_band_does_not_block_full_coverage():
         res, claimed_bands=["elementary", "middle", "high"], real_bands={"elementary", "high"},
         alternates_by_rec={"D1:x": [{"file": "raster_p-1.png", "kind": "image", "n_times": 0}]})
     assert reqs == []
+
+
+def test_all_phantom_district_suppresses_barren_reps_too():
+    # review F5 (the all-phantom corner): claimed ∩ real is EMPTY — no claimed band can ever be
+    # satisfied, so barren-rep remedies are suppressed too (they'd loop against the depth guard
+    # for nothing), not just the 7->2s.
+    res = _result(reps=[{"rec_key": "D1:x", "file": "camelot_stream.txt", "accepted": []}],
+                  accepted=[])
+    reqs = RQ.detect_requests(
+        res, claimed_bands=["middle"], real_bands={"elementary", "high"},
+        alternates_by_rec={"D1:x": [{"file": "pdftotext.txt", "kind": "text", "n_times": 12}]})
+    assert reqs == []
+
+
+def test_real_unknown_empty_claim_keeps_barren_rep_remedies():
+    # with real UNKNOWN an empty/all-covered-less claim must NOT suppress (can't tell all-phantom
+    # from no-data) — the barren rep's remedy still fires.
+    res = _result(reps=[{"rec_key": "D1:x", "file": "a.txt", "accepted": []}], accepted=[])
+    reqs = RQ.detect_requests(res, claimed_bands=[])
+    assert [r["route"] for r in reqs] == ["7->3"]
+
+
+def test_explain_reports_detect_time_suppression():
+    # review F7-adjacent: detect-time suppression is non-emission — `explain` is the caller's hook
+    # to log it (suppressed barren reps + phantom bands).
+    res = _result(reps=[{"rec_key": "D1:x", "file": "a.txt", "accepted": []}],
+                  accepted=[{"band": "elementary", "school": "e"}])
+    explain = {}
+    reqs = RQ.detect_requests(res, claimed_bands=["elementary", "middle"],
+                              real_bands={"elementary"}, explain=explain)
+    assert reqs == []                                       # e covered; middle phantom; rep suppressed
+    assert explain == {"phantom_bands": ["middle"], "suppressed_barren_reps": 1}
