@@ -209,6 +209,7 @@
     const notes = [];
     if (prev.spilled && prev.spilled.length) notes.push(`${prev.spilled.length} district(s) spill past the 12-cap (compose again for the next batch)`);
     if (prev.deferred && prev.deferred.length) notes.push(`${prev.deferred.length} deferred — execute the district's 7->6 first (#159)`);
+    if (prev.suppressed && prev.suppressed.length) notes.push(`${prev.suppressed.length} suppressed — band covered/phantom or no fillable gap left (auto-rejected on compose; reversible per request below)`);
     if (prev.blocked && prev.blocked.length) notes.push(`${prev.blocked.length} blocked by the depth guard`);
     if (prev.benchmark_excluded && prev.benchmark_excluded.length) notes.push(`${prev.benchmark_excluded.length} benchmark-walled (batch_00000)`);
     const nothing = !prev.batch_id || !prev.n_districts;

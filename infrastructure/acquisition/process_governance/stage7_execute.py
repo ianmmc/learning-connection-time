@@ -28,10 +28,12 @@ import json
 from sqlalchemy import text
 
 from pathlib import Path
+from typing import NamedTuple
 
 from infrastructure.acquisition.common import budget as BUD
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
+from infrastructure.acquisition.common import school_sampling as SS
 from infrastructure.acquisition.process_governance import stage6_dispatch as H6
 from infrastructure.acquisition.stage1_queue import batch_store as BSTORE
 from infrastructure.acquisition.stage1_queue import queue_batch as Q1
@@ -54,26 +56,65 @@ NEWWORK_ROUTES = (RQ.ROUTE_REDISCOVER, RQ.ROUTE_RECAPTURE, RQ.ROUTE_ADD_SCHOOLS)
 # Pure planner (no DB/network) — the collect / depth-guard / cap / band-expand logic
 # ---------------------------------------------------------------------------
 def plan_followup(requests: list, *, claimed_bands: dict, executed_rounds: dict = None,
-                  cap: int = 12, max_rounds: int = None, defer_76: set = None) -> dict:
+                  cap: int = 12, max_rounds: int = None, defer_76: set = None,
+                  covered_bands: dict = None, real_bands: dict = None) -> dict:
     """Decide the follow-up batch from approved NEW-work request dicts — PURE (unit-testable, the real
-    logic). Steps: filter to NEW-work routes → HOLD a request whose district still has an un-executed
-    7->6 (#159: try the cheap in-hand alternate rep before spending on new discovery) → apply the
+    logic). Steps: filter to NEW-work routes → SUPPRESS a request that can no longer add coverage
+    (#176 defense-in-depth: a banded request whose band is covered/phantom, OR a band-less one for a
+    district with no fillable gap left) → HOLD a request whose district still has an un-executed 7->6
+    (#159: try the cheap in-hand alternate rep before spending on new discovery) → apply the
     per-district×band DEPTH guard → group by district in first-seen order (upstream attention sort
     preserved) → apply the 12-district cap (overflow spills, un-swept) → per kept district, the union
-    of target bands (an explicit `band` from 7->2; a band-less 7->3/7->1 expands to claimed bands).
+    of target bands (an explicit `band` from 7->2; a band-less 7->3/7->1 expands to the district's
+    FILLABLE GAP — claimed ∩ real-when-known − covered — never to raw claimed bands, which would
+    re-target phantom/covered bands through the band-less side door).
 
     requests:        [{request_id, district_id, route, band}]  (band may be None)
     claimed_bands:   {district_id: [band, ...]}                 (for band-less expansion)
     executed_rounds: {(district_id, band): n_already_executed}  (depth guard; band key may be None)
     defer_76:        {district_id, ...} with an un-executed 7->6 — their NEW-work requests are HELD
-    Returns {targets, swept_ids, spilled, blocked, deferred: [{request_id, district_id, reason}]}."""
+    covered_bands:   {district_id: {band, ...}} with accepted facts NOW (LIVE, re-read at compose — a
+                     band another round covered between approval and execution must not re-fire; #176)
+    real_bands:      {district_id: {band, ...}} the district can actually satisfy (≥1 real school
+                     SERVING the band — `school_sampling.real_bands_for_district`, fillability incl.
+                     Stage 1's gap-fill). A banded request for a band absent here is a PHANTOM,
+                     unfillable (#175). A district missing from the dict is unknown (not gated).
+    Returns {targets, swept_ids, spilled, blocked, deferred, suppressed}."""
     executed_rounds = executed_rounds or {}
     defer_76 = defer_76 or set()
-    blocked, deferred, eligible = [], [], []
+    covered_bands = covered_bands or {}
+    real_bands = real_bands or {}
+
+    def _fillable_gap(did) -> list:
+        """The bands a follow-up for `did` could still fill, in claimed order: claimed ∩
+        real-when-known − covered. The ONE predicate behind the band-less suppression + expansion."""
+        fillable = [b for b in claimed_bands.get(did, []) if b in RQ.BANDS
+                    and (did not in real_bands or b in real_bands[did])]
+        return [b for b in fillable if b not in covered_bands.get(did, ())]
+
+    blocked, deferred, suppressed, eligible = [], [], [], []
     for r in requests:
         if r["route"] not in NEWWORK_ROUTES:
             continue
         did, band = r["district_id"], r.get("band")
+        # #176 defense-in-depth, checked LIVE at compose — never trusting the request's stale
+        # detect-time band state (the #159 lesson). Banded (any new-work route): its band must still
+        # be uncovered and fillable. Band-less (7->3/7->1): the district must still have SOME
+        # fillable gap — a recapture for a district whose last gap was filled by another round
+        # between approval and compose can add nothing (the stale-request door).
+        reason = None
+        if band:
+            if band in covered_bands.get(did, ()):
+                reason = f"band '{band}' now has accepted facts — already covered"
+            elif did in real_bands and band not in real_bands[did]:
+                reason = f"band '{band}' is phantom (no school serves those grades) — unfillable"
+        elif not _fillable_gap(did):
+            reason = ("no fillable band gap remains — every fillable claimed band is covered "
+                      "(or none exists), so this recapture/add-schools can no longer add coverage")
+        if reason:
+            suppressed.append({"request_id": r["request_id"], "district_id": did, "band": band,
+                               "route": r["route"], "reason": reason})
+            continue
         if did in defer_76:
             # #159: an un-executed 7->6 (an already-captured alternate rep) may fill the band for free;
             # rediscovering NOW would spend on new discovery/capture prematurely. Held until the
@@ -105,13 +146,13 @@ def plan_followup(requests: list, *, claimed_bands: dict, executed_rounds: dict 
                 if r["band"] not in bands:
                     bands.append(r["band"])
             else:
-                for b in claimed_bands.get(did, []):
+                for b in _fillable_gap(did):   # never raw claimed — no phantom/covered re-targeting
                     if b not in bands:
                         bands.append(b)
             swept_ids.append(r["request_id"])
         targets[did] = bands
     return {"targets": targets, "swept_ids": swept_ids, "spilled": spilled,
-            "blocked": blocked, "deferred": deferred}
+            "blocked": blocked, "deferred": deferred, "suppressed": suppressed}
 
 
 # ---------------------------------------------------------------------------
@@ -161,18 +202,50 @@ def _seed_urls_by_district(rows: list) -> dict:
     return out
 
 
-def _claimed_bands(session, district_ids: list) -> dict:
+def _json_col(value, default):
+    """One parse contract for district_target's JSON text columns: text → json.loads; a driver/
+    migration that hands back an already-parsed list/dict passes through; garbage → default.
+    (Previously _claimed_bands parsed defensively while its siblings parsed bare — two conventions
+    for the same table meant the same bad value degraded in one helper and crashed the other.)"""
+    if value is None or value == "":
+        return default
+    if isinstance(value, (list, dict)):
+        return value
+    try:
+        return json.loads(value)
+    except (TypeError, json.JSONDecodeError):
+        return default
+
+
+def _district_target_bands(session, district_ids: list) -> tuple:
+    """(claimed, real) per district from ONE district_target read: claimed = the LEA's claim
+    (band-less expansion); real = the bands ≥1 real school actually SERVES, via the one shared
+    definition (`school_sampling.real_bands_for_district`, which owns the sbb traversal) — so the
+    compose gate can never diverge from the detector's. A district with no row is omitted from
+    `real` (unknown ⇒ not gated)."""
+    if not district_ids:
+        return {}, {}
+    claimed, real = {}, {}
+    for did, cb, by_level_j, sbb_j in session.execute(text(
+            "SELECT district_id, lea_claimed_bands_json, nces_by_level_json, schools_by_band_json "
+            "FROM district_target WHERE district_id = ANY(:d)"), {"d": list(district_ids)}):
+        claimed[did] = _json_col(cb, [])
+        real[did] = SS.real_bands_for_district(_json_col(by_level_j, {}), _json_col(sbb_j, {}))
+    return claimed, real
+
+
+def _covered_bands_now(session, district_ids: list) -> dict:
+    """{district_id: {band, ...}} with an ACCEPTED fact right now — the LIVE coverage the #176 compose
+    gate reads (a band another round filled between a 7->2's approval and this compose must not fire).
+    stage7_run's per-district covered query is this predicate's single-district twin — keep aligned."""
     if not district_ids:
         return {}
-    rows = session.execute(text(
-        "SELECT district_id, lea_claimed_bands_json FROM district_target WHERE district_id = ANY(:d)"),
-        {"d": list(district_ids)})
-    out = {}
-    for did, cb in rows:
-        try:
-            out[did] = json.loads(cb) if cb else []
-        except (TypeError, json.JSONDecodeError):
-            out[did] = cb if isinstance(cb, list) else []
+    out: dict = {}
+    for did, band in session.execute(text(
+            "SELECT DISTINCT district_id, band FROM school_fact "
+            "WHERE district_id = ANY(:d) AND status = 'accepted' AND band IS NOT NULL"),
+            {"d": list(district_ids)}):
+        out.setdefault(did, set()).add(band)
     return out
 
 
@@ -225,15 +298,31 @@ def _defer_76_districts(session, district_ids: list, max_rounds=None) -> set:
     return {d for d in cands if _executed_rounds_76(session, d) < max_rounds}
 
 
-def _gather(session, handoff_hash: str, max_rounds=None) -> tuple:
-    """Read the detector inputs on `session`: the approved NEW-work rows (benchmark districts
-    EXCLUDED — the wall, #134), per-district claimed bands (band-less expansion), the executed-round
-    history (depth guard), the districts to defer (un-executed 7->6, #159), and the next free batch id.
+class Gathered(NamedTuple):
+    """The compose inputs `_gather` reads — named fields, not a hand-aligned positional tuple (the
+    arity grew 6→8 in one PR and two adjacent `{}` slots type-check identically when swapped)."""
+    rows: list
+    claimed: dict
+    exec_rounds: dict
+    defer_76: set
+    covered: dict
+    real: dict
+    batch_id: str | None
+    benchmark_excluded: list
 
-    Returns (rows, claimed, exec_rounds, defer_76, batch_id, benchmark_excluded)."""
+    @classmethod
+    def empty(cls, rows=None, benchmark_excluded=None):
+        return cls(rows or [], {}, {}, set(), {}, {}, None, benchmark_excluded or [])
+
+
+def _gather(session, handoff_hash: str, max_rounds=None) -> "Gathered":
+    """Read the detector inputs on `session`: the approved NEW-work rows (benchmark districts
+    EXCLUDED — the wall, #134), per-district claimed + real bands (ONE district_target read),
+    the executed-round history (depth guard), the districts to defer (un-executed 7->6, #159),
+    the LIVE covered bands (the #176/#175 coverage/phantom gate), and the next free batch id."""
     rows = _approved_newwork(session, handoff_hash)
     if not rows:
-        return rows, {}, {}, set(), None, []
+        return Gathered.empty()
     dids = sorted({r["district_id"] for r in rows})
     bm = _benchmark_district_ids(session, dids)
     benchmark_excluded = [{"district_id": r["district_id"], "request_id": r["request_id"],
@@ -241,13 +330,14 @@ def _gather(session, handoff_hash: str, max_rounds=None) -> tuple:
                           for r in rows if r["district_id"] in bm]
     rows = [r for r in rows if r["district_id"] not in bm]
     if not rows:
-        return rows, {}, {}, set(), None, benchmark_excluded
+        return Gathered.empty(benchmark_excluded=benchmark_excluded)
     dids = sorted({r["district_id"] for r in rows})
-    claimed = _claimed_bands(session, dids)
+    claimed, real = _district_target_bands(session, dids)
     exec_rounds = _executed_rounds(session, dids)
     defer_76 = _defer_76_districts(session, dids, max_rounds)
+    covered = _covered_bands_now(session, dids)
     batch_id = f"batch_{BSTORE.next_batch_number(session):05d}"
-    return rows, claimed, exec_rounds, defer_76, batch_id, benchmark_excluded
+    return Gathered(rows, claimed, exec_rounds, defer_76, covered, real, batch_id, benchmark_excluded)
 
 
 def _flip(session, swept_ids: list, executed_ref: str) -> None:
@@ -258,6 +348,19 @@ def _flip(session, swept_ids: list, executed_ref: str) -> None:
         "UPDATE extraction_request SET status = 'executed', executed_ref = :b, executed_at = :t "
         "WHERE request_id = ANY(:ids) AND status = 'approved'"),
         {"b": executed_ref, "t": M7.utcnow(), "ids": list(swept_ids)})
+
+
+def _reject_suppressed(session, suppressed: list) -> None:
+    """Resolve compose-suppressed directives to 'rejected' with the machine actor + reason — a
+    suppressed request (band covered/phantom, or no fillable gap left) would otherwise stay
+    'approved' forever, re-suppressing on every future compose (zombie). Guarded on
+    status='approved' (idempotent); a human can reverse via the gate@7 review endpoint."""
+    now = M7.utcnow()
+    for sp in suppressed:
+        session.execute(text(
+            "UPDATE extraction_request SET status = 'rejected', reviewed_by = 'auto:compose-gate', "
+            "reviewed_at = :t, review_note = :n WHERE request_id = :id AND status = 'approved'"),
+            {"t": now, "n": f"compose-suppressed: {sp['reason']}", "id": sp["request_id"]})
 
 
 def _preview_districts(batch_doc: dict) -> list:
@@ -292,48 +395,61 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
     b = BUD.load_budget()
 
     def _work(s) -> dict:
-        rows, claimed, exec_rounds, defer_76, batch_id, bm_excluded = _gather(s, handoff_hash,
-                                                                              b.max_request_rounds)
-        if not rows:
-            return {**_empty_result(), "benchmark_excluded": bm_excluded}
+        g = _gather(s, handoff_hash, b.max_request_rounds)
+        if not g.rows:
+            return {**_empty_result(), "benchmark_excluded": g.benchmark_excluded}
 
-        plan = plan_followup(rows, claimed_bands=claimed, executed_rounds=exec_rounds,
-                             cap=cap, max_rounds=b.max_request_rounds, defer_76=defer_76)
+        plan = plan_followup(g.rows, claimed_bands=g.claimed, executed_rounds=g.exec_rounds,
+                             cap=cap, max_rounds=b.max_request_rounds, defer_76=g.defer_76,
+                             covered_bands=g.covered, real_bands=g.real)
+        if not dry_run:
+            # A suppressed directive is RESOLVED, not skipped: its band is covered/phantom (or the
+            # district has no fillable gap left), so it could otherwise never leave 'approved' — it
+            # would re-enter _approved_newwork and re-suppress on EVERY future compose, forever.
+            # Auto-reject with an explicit machine actor + the reason as the review note: auditable,
+            # visible in the gate@7 card ("rejected by auto:compose-gate"), and human-REVERSIBLE via
+            # the review endpoint (set back to pending). If coverage later regresses, re-detection on
+            # the new handoff emits a FRESH request — this row is history, not a lock.
+            _reject_suppressed(s, plan["suppressed"])
         if not plan["targets"]:
             return {**_empty_result(), "spilled": plan["spilled"], "blocked": plan["blocked"],
-                    "deferred": plan["deferred"], "benchmark_excluded": bm_excluded}
+                    "deferred": plan["deferred"], "suppressed": plan["suppressed"],
+                    "benchmark_excluded": g.benchmark_excluded}
 
         # Follow-up shaping inputs (#162 untried schools, #161 seed URLs), scoped to the plan's targets.
         target_dids = list(plan["targets"])
         attempted = _attempted_schools(s, target_dids)
-        seed_urls = _seed_urls_by_district([r for r in rows if r["district_id"] in set(target_dids)])
-        batch_doc, skipped = Q1.build_followup_batch(year, batch_id, plan["targets"],
+        seed_urls = _seed_urls_by_district([r for r in g.rows if r["district_id"] in set(target_dids)])
+        batch_doc, skipped = Q1.build_followup_batch(year, g.batch_id, plan["targets"],
                                                      attempted_by_did=attempted, seed_urls_by_did=seed_urls)
         if not batch_doc["districts"]:            # every target district was un-buildable (no coverage)
             return {**_empty_result(), "spilled": plan["spilled"], "blocked": plan["blocked"],
-                    "deferred": plan["deferred"], "skipped": skipped, "benchmark_excluded": bm_excluded}
+                    "deferred": plan["deferred"], "suppressed": plan["suppressed"], "skipped": skipped,
+                    "benchmark_excluded": g.benchmark_excluded}
 
         if dry_run:                               # #154 modal preview — NO create_batch, NO flip
             built = {d["district_id"] for d in batch_doc["districts"]}
-            did_by_id = {r["request_id"]: r["district_id"] for r in rows}
-            return {"batch_id": batch_id, "dry_run": True,
+            did_by_id = {r["request_id"]: r["district_id"] for r in g.rows}
+            return {"batch_id": g.batch_id, "dry_run": True,
                     "n_requests": len([i for i in plan["swept_ids"] if did_by_id[i] in built]),
                     "n_districts": len(batch_doc["districts"]), "targets": plan["targets"],
                     "preview": _preview_districts(batch_doc), "spilled": plan["spilled"],
-                    "blocked": plan["blocked"], "deferred": plan["deferred"], "skipped": skipped,
-                    "benchmark_excluded": bm_excluded}
+                    "blocked": plan["blocked"], "deferred": plan["deferred"],
+                    "suppressed": plan["suppressed"], "skipped": skipped,
+                    "benchmark_excluded": g.benchmark_excluded}
 
         # Rows + flip on ONE session (atomic, #139). Flip ONLY the directives whose district made it
         # into the batch (#136) — a skipped district's directive stays 'approved', re-sweepable.
         BSTORE.create_batch(s, batch_doc, batch_type="follow-up", actor=actor)
         built = {d["district_id"] for d in batch_doc["districts"]}
-        did_by_id = {r["request_id"]: r["district_id"] for r in rows}
+        did_by_id = {r["request_id"]: r["district_id"] for r in g.rows}
         flip_ids = [i for i in plan["swept_ids"] if did_by_id[i] in built]
-        _flip(s, flip_ids, batch_id)
-        return {"batch_id": batch_id, "n_requests": len(flip_ids),
+        _flip(s, flip_ids, g.batch_id)
+        return {"batch_id": g.batch_id, "n_requests": len(flip_ids),
                 "n_districts": len(batch_doc["districts"]), "targets": plan["targets"],
                 "spilled": plan["spilled"], "blocked": plan["blocked"], "deferred": plan["deferred"],
-                "skipped": skipped, "benchmark_excluded": bm_excluded,
+                "suppressed": plan["suppressed"], "skipped": skipped,
+                "benchmark_excluded": g.benchmark_excluded,
                 "_batch_districts": [{"district_id": d["district_id"], "name": d.get("name", ""),
                                       "state": d.get("state", "")} for d in batch_doc["districts"]]}
 
@@ -366,7 +482,8 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
 
 def _empty_result() -> dict:
     return {"batch_id": None, "n_requests": 0, "n_districts": 0, "targets": {},
-            "spilled": [], "blocked": [], "deferred": [], "skipped": [], "benchmark_excluded": []}
+            "spilled": [], "blocked": [], "deferred": [], "suppressed": [], "skipped": [],
+            "benchmark_excluded": []}
 
 
 # ===========================================================================
@@ -611,6 +728,9 @@ def main():
                   f"{out['n_requests']} directive(s) executed. Review at gate@1.")
         for sp in out.get("spilled", []):
             print(f"  spilled: {sp['district_id']} ({sp['reason']})")
+        for su in out.get("suppressed", []):      # #176 gate — auto-rejected, human-reversible at gate@7
+            print(f"  suppressed: req {su['request_id']} {su['district_id']}"
+                  f"{'/' + su['band'] if su.get('band') else ''} ({su['reason']})")
         for bl in out.get("blocked", []):
             print(f"  blocked (depth guard): req {bl['request_id']} {bl['district_id']}/{bl['band']}")
         for df in out.get("deferred", []):

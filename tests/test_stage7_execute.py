@@ -480,3 +480,144 @@ def test_newwork_routes_come_from_the_detector_constants():
     route in the detector must flow through automatically."""
     from infrastructure.acquisition.stage7_extract import requests as RQ7
     assert EX.NEWWORK_ROUTES == (RQ7.ROUTE_REDISCOVER, RQ7.ROUTE_RECAPTURE, RQ7.ROUTE_ADD_SCHOOLS)
+
+
+# --- #176 / #175: compose-time coverage/phantom gate (defense in depth) ---
+
+def test_compose_suppresses_7to2_for_now_covered_band():
+    # #176: a band another round covered between approval and this compose must not re-fire — the
+    # LIVE covered_bands re-check drops it (recorded in 'suppressed', not 'targets').
+    plan = EX.plan_followup([_req(1, "D1", "7->2", "high")], claimed_bands={},
+                            covered_bands={"D1": {"high"}})
+    assert plan["targets"] == {}
+    assert plan["swept_ids"] == []
+    assert [s["request_id"] for s in plan["suppressed"]] == [1]
+    assert "already covered" in plan["suppressed"][0]["reason"]
+
+
+def test_compose_suppresses_7to2_for_phantom_band():
+    # #175: a 7->2 for a band with no real school is unfillable -> suppressed at compose too.
+    plan = EX.plan_followup([_req(1, "D1", "7->2", "middle")], claimed_bands={},
+                            real_bands={"D1": {"elementary", "high"}})
+    assert plan["targets"] == {}
+    assert [s["request_id"] for s in plan["suppressed"]] == [1]
+    assert "phantom" in plan["suppressed"][0]["reason"]
+
+
+def test_compose_gate_leaves_real_uncovered_band_untouched():
+    # a real, still-uncovered band fires normally; the gate only drops covered/phantom bands.
+    plan = EX.plan_followup([_req(1, "D1", "7->2", "high")], claimed_bands={},
+                            covered_bands={"D1": {"elementary"}}, real_bands={"D1": {"elementary", "high"}})
+    assert plan["targets"] == {"D1": ["high"]}
+    assert plan["swept_ids"] == [1]
+    assert plan["suppressed"] == []
+
+
+def test_compose_gate_unknown_district_not_gated():
+    # a district absent from real_bands is treated as unknown (not gated) — back-compat safety.
+    plan = EX.plan_followup([_req(1, "D1", "7->2", "middle")], claimed_bands={}, real_bands={})
+    assert plan["targets"] == {"D1": ["middle"]}
+    assert plan["suppressed"] == []
+
+
+def test_real_bands_is_fillability_not_primary_label():
+    # THE PR-#191-review headline (Roy/Jasper shape): a K-6/7-12 district's 'High'-LEVEL 07-12
+    # school SERVES grades 7-8 — Stage 1's school_index gap-fills it into middle, and Roy's produced
+    # ACCEPTED middle facts. real_bands must agree (fillability), not call middle "phantom" the way
+    # a primary-label (LEVEL-short-circuit) derivation wrongly did.
+    from infrastructure.acquisition.common import school_sampling as SS
+    by_level = {"Elementary": 1, "High": 1}
+    sbb = {"elementary": {"schools": [{"level": "Elementary", "gslo": "KG", "gshi": "06"}]},
+           "middle": {"schools": [{"level": "High", "gslo": "07", "gshi": "12"}]}}   # the gap-fill
+    assert SS.real_bands_for_district(by_level, sbb) == {"elementary", "middle", "high"}
+
+
+def test_real_bands_k6_does_not_dilute_middle():
+    # bands_for_rescue semantics (Priest River): a K-6 tops out below grade 7 — it does NOT make
+    # middle real. A truly phantom middle (no school reaching grade 7) stays phantom.
+    from infrastructure.acquisition.common import school_sampling as SS
+    by_level = {"Elementary": 1}
+    sbb = {"elementary": {"schools": [{"level": "Elementary", "gslo": "PK", "gshi": "06"}]}}
+    assert SS.real_bands_for_district(by_level, sbb) == {"elementary"}
+
+
+def test_real_bands_placed_band_counts_even_without_parseable_span():
+    # Stage 1's own placement is trusted verbatim: a school sitting in sbb['middle'] with an
+    # unparseable span still marks middle real (school_index put it there deliberately).
+    from infrastructure.acquisition.common import school_sampling as SS
+    sbb = {"middle": {"schools": [{"level": "Other", "gslo": "M", "gshi": "M"}]}}
+    assert "middle" in SS.real_bands_for_district({}, sbb)
+
+
+def test_real_bands_for_district_rescues_secondary_via_span():
+    # a 'Secondary' school (ambiguous LEVEL) rescues to bands via its grade span (middle+high).
+    from infrastructure.acquisition.common import school_sampling as SS
+    sbb = {"high": {"schools": [{"level": "Secondary", "gslo": "07", "gshi": "12"}]}}
+    assert SS.real_bands_for_district({"Secondary": 1}, sbb) == {"middle", "high"}
+
+
+def test_compose_suppresses_bandless_when_no_fillable_gap_left():
+    # review F3 (the stale-request door): a band-less 7->3 approved while a gap existed, composed
+    # AFTER another round filled the district's last fillable band — must suppress, not recapture.
+    plan = EX.plan_followup([_req(1, "D1", "7->3", None)],
+                            claimed_bands={"D1": ["elementary", "middle", "high"]},
+                            covered_bands={"D1": {"elementary", "high"}},
+                            real_bands={"D1": {"elementary", "high"}})    # middle phantom
+    assert plan["targets"] == {} and plan["swept_ids"] == []
+    assert [s["request_id"] for s in plan["suppressed"]] == [1]
+    assert "no fillable band gap" in plan["suppressed"][0]["reason"]
+
+
+def test_bandless_expansion_filters_phantom_and_covered():
+    # review F2 (the band-less side door): the expansion targets the FILLABLE GAP, never raw
+    # claimed bands — phantom middle and covered elementary are dropped, real-uncovered high kept.
+    plan = EX.plan_followup([_req(1, "D1", "7->3", None)],
+                            claimed_bands={"D1": ["elementary", "middle", "high"]},
+                            covered_bands={"D1": {"elementary"}},
+                            real_bands={"D1": {"elementary", "high"}})
+    assert plan["targets"] == {"D1": ["high"]}
+    assert plan["swept_ids"] == [1] and plan["suppressed"] == []
+
+
+def test_banded_7to3_also_gated():
+    # the gate keys on "targets a specific band", not the 7->2 route string — a banded recapture
+    # for a covered band is equally pointless spend.
+    plan = EX.plan_followup([_req(1, "D1", "7->3", "high")], claimed_bands={},
+                            covered_bands={"D1": {"high"}})
+    assert [s["request_id"] for s in plan["suppressed"]] == [1]
+
+
+@govdb
+def test_compose_auto_rejects_suppressed_directives(gov_session):
+    """Review F4 (the zombie): a compose-suppressed directive must not stay 'approved' forever
+    (re-suppressing on every future compose) — the real compose resolves it to 'rejected' with the
+    machine actor + reason, guarded on status='approved' (idempotent), human-reversible at gate@7."""
+    from infrastructure.acquisition.stage5_filter import build_signals as BS
+    gdb.init_precious_schema()
+    s = gov_session
+    BS.ensure_signal_schema(s)                     # district_target lives in the signal schema
+    # An approved 7->2 for 'high' — but ZZSUP1's district_target shows NO school serves high
+    # (K-6 elementary only), so the compose gate reads the band as PHANTOM live.
+    s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                   "target, band, reason, status, created_at) VALUES ('ZZSUP1', 'hzzsup', 'district', "
+                   "'7->2', 'ZZSUP1', 'high', 'r', 'approved', :ts)"), {"ts": _M7.utcnow()})
+    s.execute(text("DELETE FROM district_target WHERE district_id = 'ZZSUP1'"))
+    s.execute(text("INSERT INTO district_target (district_id, batch_id, nces_year, nces_total, "
+                   "nces_by_level_json, enrollment_k12, lea_claimed_bands_json, schools_by_band_json) "
+                   "VALUES ('ZZSUP1', 'batch_zzsup', 'y', 1, :bl, 100, :cb, :sbb)"),
+              {"bl": json.dumps({"Elementary": 1}), "cb": json.dumps(["elementary", "high"]),
+               "sbb": json.dumps({"elementary": {"schools": [
+                   {"school_id": "Z1", "name": "Z Elem", "level": "Elementary",
+                    "gslo": "KG", "gshi": "06"}]}})})
+    s.flush()
+    out = EX.compose_followup_batch(session=s, handoff_hash="hzzsup")
+    assert [sp["request_id"] for sp in out["suppressed"]]           # it was suppressed...
+    row = s.execute(text("SELECT status, reviewed_by, review_note FROM extraction_request "
+                         "WHERE district_id = 'ZZSUP1'")).one()
+    assert row.status == "rejected" and row.reviewed_by == "auto:compose-gate"   # ...and RESOLVED
+    assert "phantom" in row.review_note
+    # idempotent + drained: a second compose finds nothing approved, suppresses nothing
+    out2 = EX.compose_followup_batch(session=s, handoff_hash="hzzsup")
+    assert out2["suppressed"] == []
+    s.execute(text("DELETE FROM extraction_request WHERE district_id = 'ZZSUP1'"))
+    s.execute(text("DELETE FROM district_target WHERE district_id = 'ZZSUP1'"))
