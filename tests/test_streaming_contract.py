@@ -105,7 +105,7 @@ def test_usage_and_finish_read_after_a_long_stream(monkeypatch):
     _patch(monkeypatch, chunks)
     # Dispatch AT the escalated ceiling so the #169/#182 truncation-retry doesn't fire here — this test
     # is about reading usage/finish from a long single stream, not the retry (which its own tests cover).
-    res = OR.call(BODY, max_tokens=OR.ESCALATED_MAX_TOKENS)
+    res = OR.call(BODY, max_tokens=OR.MAX_TOKENS_CEILING)
     assert res.truncated and res.finish_reason == "length"     # the silent-tail-loss tripwire
     assert res.generation_id == "gen-final" and res.completion_tokens == 16000
 
