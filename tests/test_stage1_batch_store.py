@@ -174,6 +174,40 @@ class TestLifecycle:
         rows = [b for b in BS.list_batches(sess) if b["batch_id"] == "batch_test_store"]
         assert len(rows) == 1 and rows[0]["n_districts"] == 1 and rows[0]["status"] == "draft"
 
+    def test_abandon_sets_terminal_status_and_audit(self, sess):
+        # #168: a draft can be retired to a terminal `abandoned` status carrying who/when/why.
+        BS.create_batch(sess, _doc(), actor="t")
+        BS.abandon_batch(sess, "batch_test_store", "ian", reason="superseded")
+        b = sess.get(Batch, "batch_test_store")
+        assert b.status == "abandoned" and b.abandoned_by == "ian" and b.abandoned_at
+        assert b.abandon_reason == "superseded"
+        view = BS.to_view(sess, "batch_test_store")
+        assert view["status"] == "abandoned" and view["abandon_reason"] == "superseded"
+        row = next(r for r in BS.list_batches(sess) if r["batch_id"] == "batch_test_store")
+        assert row["status"] == "abandoned" and row["abandoned_by"] == "ian"
+
+    def test_abandon_is_terminal_no_approve_reopen_or_edit(self, sess):
+        # #168: abandoned is terminal — approve/reopen/edit all refuse it (no silent resurrection).
+        BS.create_batch(sess, _doc(), actor="t")
+        BS.abandon_batch(sess, "batch_test_store", "ian")
+        with pytest.raises(BS.BatchLocked):
+            BS.approve_batch(sess, "batch_test_store", "ian")
+        with pytest.raises(BS.BatchLocked):
+            BS.reopen_batch(sess, "batch_test_store", "ian")
+        with pytest.raises(BS.BatchLocked):
+            BS.reject_school(sess, "batch_test_store", "D1", "S_E1")
+
+    def test_abandon_is_draft_only(self, sess):
+        # #168: an APPROVED batch (may have run discovery) can't be abandoned directly — that would
+        # drop its schools out of the attempted set. Must reopen to draft first.
+        BS.create_batch(sess, _doc(), actor="t")
+        BS.approve_batch(sess, "batch_test_store", "ian")
+        with pytest.raises(BS.BatchLocked):
+            BS.abandon_batch(sess, "batch_test_store", "ian")
+        BS.reopen_batch(sess, "batch_test_store", "ian")
+        BS.abandon_batch(sess, "batch_test_store", "ian")   # now allowed
+        assert sess.get(Batch, "batch_test_store").status == "abandoned"
+
 
 class TestReservation:
     """Issue #46 — the create path reserves the batch id up front, in its own short transaction,

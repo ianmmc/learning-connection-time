@@ -175,14 +175,17 @@ def _attempted_schools(session, district_ids: list) -> dict:
     human-rejected schools. DRAFT batches are excluded (review of a9c4486): a draft never ran
     discovery — its schools were NOT attempted — and an abandoned draft (batch_00009) would poison
     the untried set forever; an APPROVED batch is committed-to-run, so counting it also prevents
-    double-queuing the same school across overlapping follow-ups."""
+    double-queuing the same school across overlapping follow-ups. `abandoned` (#168) is excluded for
+    the same reason as `draft`: it is a retired never-ran draft, so its schools were never attempted
+    (abandon is draft-only precisely to keep this true — see batch_store.abandon_batch)."""
     if not district_ids:
         return {}
     out: dict = {}
     for did, sid in session.execute(text(
             "SELECT DISTINCT bs.district_id, bs.school_id FROM batch_school bs "
             "JOIN batch b ON b.batch_id = bs.batch_id "
-            "WHERE bs.district_id = ANY(:d) AND bs.included IS TRUE AND b.status != 'draft'"),
+            "WHERE bs.district_id = ANY(:d) AND bs.included IS TRUE "
+            "AND b.status NOT IN ('draft', 'abandoned')"),
             {"d": list(district_ids)}).all():
         out.setdefault(did, set()).add(sid)
     return out

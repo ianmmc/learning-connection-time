@@ -8,7 +8,7 @@ wipe a queued/approved batch. Per-stage models live with their stage (governance
 
 Normalized (not a JSON blob) so the gate@1 edit operations are real row ops and the cross-batch
 queries the user stories need (a district in multiple batches; per-batch yields) fall out:
-  batch            — lifecycle (draft -> approved) + actor/timestamps + the batch-level prose meta
+  batch            — lifecycle (draft -> approved; draft -> abandoned) + actor/timestamps + prose meta
   batch_district   — one row per district in the batch; `included` is the soft-reject flag
   batch_school     — one row per (district, school); `bands` lists every band it's selected into;
                      `included` soft-rejects; `source` distinguishes stratified picks from manual adds
@@ -28,12 +28,18 @@ class Batch(gdb.Base):
 
     batch_id: Mapped[str] = mapped_column(String, primary_key=True)        # e.g. batch_00002
     batch_type: Mapped[str] = mapped_column(String, default="first-run")   # first-run | follow-up
-    status: Mapped[str] = mapped_column(String, default="draft")           # draft | approved
+    status: Mapped[str] = mapped_column(String, default="draft")           # draft | approved | abandoned | reserving
     nces_year: Mapped[str] = mapped_column(String)
     created_at: Mapped[str] = mapped_column(String, default=utcnow)
     created_by: Mapped[str] = mapped_column(String)
     approved_at: Mapped[str | None] = mapped_column(String, nullable=True)
     approved_by: Mapped[str | None] = mapped_column(String, nullable=True)
+    # #168: retire a superseded DRAFT (never-ran) batch to a terminal `abandoned` status without flipping
+    # it to a non-draft value that would count its schools as attempted (the #162 poison). Additive
+    # columns via common/db.py _PRECIOUS_ALTERS; only set on the draft->abandoned transition.
+    abandoned_at: Mapped[str | None] = mapped_column(String, nullable=True)
+    abandoned_by: Mapped[str | None] = mapped_column(String, nullable=True)
+    abandon_reason: Mapped[str | None] = mapped_column(String, nullable=True)
     # batch-level prose carried through to the receipt (stratification method, denominator criteria,
     # cap, over-cap selection rule) — descriptive, not queried.
     meta_json: Mapped[dict] = mapped_column(JSON, default=dict)

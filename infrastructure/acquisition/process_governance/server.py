@@ -735,12 +735,39 @@ async def queue_reopen(batch_id: str, payload: dict):
     with gdb.session_scope() as con:
         try:
             BSTORE.reopen_batch(con, batch_id, actor)
+        except BSTORE.BatchLocked as e:   # #168: an abandoned batch is terminal — reopen refuses it
+            raise HTTPException(409, str(e))
         except KeyError:
             raise HTTPException(404, f"no such batch {batch_id}")
         view = BSTORE.to_view(con, batch_id)
     _record_gate1([(d["district_id"], d["name"], d["state"]) for d in view["districts"] if d["included"]],
                   event_type="reopened", actor=actor, note=f"gate@1 reopened {batch_id}")
     return view
+
+
+@app.post("/api/queue/{batch_id}/abandon")
+async def queue_abandon(batch_id: str, payload: dict):
+    """gate@1 abandon — retire a superseded DRAFT batch to a terminal `abandoned` status (#168). Records
+    a per-district gate@1 'abandoned' event carrying who/when/why. Draft-only (see abandon_batch): an
+    approved batch that already ran must be reopened first, else its schools would fall out of the
+    attempted-set and get re-queued."""
+    actor = payload.get("actor", "ian")
+    reason = payload.get("reason", "")
+    try:
+        with gdb.session_scope() as con:
+            # capture districts BEFORE the transition (an abandoned draft still has its rows)
+            districts = [(d.district_id, d.name, d.state) for d in con.scalars(
+                select(BatchDistrict).where(BatchDistrict.batch_id == batch_id,
+                                            BatchDistrict.included.is_(True)))]
+            BSTORE.abandon_batch(con, batch_id, actor, reason)
+    except BSTORE.BatchLocked as e:
+        raise HTTPException(409, str(e))
+    except KeyError:
+        raise HTTPException(404, f"no such batch {batch_id}")
+    _record_gate1(districts, event_type="abandoned", actor=actor,
+                  note=f"gate@1 abandoned {batch_id}" + (f": {reason}" if reason else ""))
+    with gdb.session_scope() as con:
+        return BSTORE.to_view(con, batch_id)
 
 
 @app.get("/api/queue/{batch_id}/district/{district_id}/candidates")
@@ -1050,15 +1077,23 @@ def handoff_candidates():
     n_send — what a `verified_only` dispatch sends), and `n_hold` (unlabeled tier-B/C awaiting a gate@5
     label). Matches the tier-gated release rule, so the badge reflects what dispatch actually sends, not
     the whole recall-biased funnel. Reuses release.CANONICAL_RECORD_WHERE. Preview stays authoritative
-    for the exact representation count + cost."""
+    for the exact representation count + cost.
+
+    Also carries a per-district DISPATCH-HISTORY signal (#171) so the console can distinguish fresh
+    from already-sent districts (re-selecting a dispatched one is wasted spend): `n_dispatched` /
+    `last_dispatched_at` from the gate@6 `dispatched` state_events, `n_extracted` from PRODUCTION
+    extractions (probe A/B runs excluded, mirroring gate@7), and `batch_id` so the client can mark
+    benchmark (batch_00000) districts, which are dispatch-walled and generally should not be re-sent."""
     # Target labels are a BOUND list parameter computed per request (issue #62): the old module-level
     # _TARGET_IN froze the vocabulary at import time AND string-interpolated it into the SQL.
     targets = sorted(BS.TARGET_LABELS)
     with gdb.session_scope() as con:
         rows = con.execute(text(
-            f"""SELECT d.district_id, d.name, d.state, d.labeled_topology,
+            f"""SELECT d.district_id, d.name, d.state, d.labeled_topology, d.batch_id,
                        COALESCE(t.n_send, 0) AS n_send, COALESCE(t.n_verified, 0) AS n_verified,
-                       COALESCE(t.n_hold, 0) AS n_hold
+                       COALESCE(t.n_hold, 0) AS n_hold,
+                       COALESCE(disp.n_dispatched, 0) AS n_dispatched, disp.last_dispatched_at,
+                       COALESCE(ext.n_extracted, 0) AS n_extracted
                 FROM district d
                 LEFT JOIN (
                     SELECT r.district_id,
@@ -1070,6 +1105,17 @@ def handoff_candidates():
                     WHERE {REL.CANONICAL_RECORD_WHERE}
                     GROUP BY r.district_id
                 ) t ON t.district_id = d.district_id
+                LEFT JOIN (
+                    SELECT district_id, COUNT(*) AS n_dispatched, MAX(created_at) AS last_dispatched_at
+                    FROM state_event
+                    WHERE checkpoint = 'gate@6' AND event_type = 'dispatched'
+                    GROUP BY district_id
+                ) disp ON disp.district_id = d.district_id
+                LEFT JOIN (
+                    SELECT district_id, COUNT(*) AS n_extracted
+                    FROM extraction WHERE run_kind = 'production'
+                    GROUP BY district_id
+                ) ext ON ext.district_id = d.district_id
                 ORDER BY n_send DESC, n_hold DESC, d.district_id"""),
             {"targets": targets}).mappings().all()
         return [dict(r) for r in rows]
@@ -1446,6 +1492,15 @@ def _autoflow_followup(batch_id: str, actor: str) -> None:
         job["state"], job["error"], job["finished_at"] = "error", f"batch busy: {e.detail}", _now()
         return
     try:
+        # An abandoned batch is terminal — never flow it through the chain. approve_batch raises
+        # BatchLocked for any non-draft status and the auto-approve below swallows that, so guard
+        # explicitly here (#168) rather than let a retired batch silently run.
+        with gdb.session_scope() as con:
+            _b = con.get(Batch, batch_id)
+            if _b is not None and _b.status == "abandoned":
+                job["state"], job["error"], job["finished_at"] = (
+                    "error", f"{batch_id} is abandoned; not running", _now())
+                return
         # gate@1 auto-approve (idempotent: a re-run finds it already approved)
         try:
             with gdb.session_scope() as con:

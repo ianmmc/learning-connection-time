@@ -119,3 +119,23 @@ def test_approve_then_edit_is_locked(client):
     assert client.post(f"/api/queue/{BID}/reopen", json={"actor": "ian"}).json()["status"] == "draft"
     assert client.post(f"/api/queue/{BID}/edit",
                        json={"op": "reject_school", "district_id": "ZZTESTA", "school_id": "A1"}).status_code == 200
+
+
+def test_abandon_endpoint_is_terminal(client):
+    # #168: abandon a draft -> terminal; approve/reopen/edit all 409 afterward.
+    j = client.post(f"/api/queue/{BID}/abandon", json={"actor": "ian", "reason": "superseded"}).json()
+    assert j["status"] == "abandoned" and j["abandon_reason"] == "superseded"
+    assert client.get("/api/queue").json() and next(
+        b for b in client.get("/api/queue").json() if b["batch_id"] == BID)["status"] == "abandoned"
+    assert client.post(f"/api/queue/{BID}/approve", json={"actor": "ian"}).status_code == 409
+    assert client.post(f"/api/queue/{BID}/reopen", json={"actor": "ian"}).status_code == 409
+    assert client.post(f"/api/queue/{BID}/edit",
+                       json={"op": "reject_school", "district_id": "ZZTESTA", "school_id": "A1"}).status_code == 409
+
+
+def test_abandon_is_draft_only_via_api(client):
+    # #168: an approved batch can't be abandoned directly (409) — reopen to draft first.
+    assert client.post(f"/api/queue/{BID}/approve", json={"actor": "ian"}).json()["status"] == "approved"
+    assert client.post(f"/api/queue/{BID}/abandon", json={"actor": "ian"}).status_code == 409
+    assert client.post(f"/api/queue/{BID}/reopen", json={"actor": "ian"}).json()["status"] == "draft"
+    assert client.post(f"/api/queue/{BID}/abandon", json={"actor": "ian"}).json()["status"] == "abandoned"

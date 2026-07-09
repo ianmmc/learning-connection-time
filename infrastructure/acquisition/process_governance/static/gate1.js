@@ -13,7 +13,9 @@
 
 
   function statusBadge(s) {
-    const tone = s === "approved" ? "badge-success" : "badge-neutral";
+    const tone = s === "approved" ? "badge-success"
+               : s === "abandoned" ? "badge-red"       // #168: terminal, retired — distinct from draft
+               : "badge-neutral";
     return `<span class="badge ${tone}">${esc(s)}</span>`;
   }
 
@@ -91,17 +93,24 @@
 
   function renderDetail(v) {
     const draft = v.status === "draft";
+    const abandoned = v.status === "abandoned";
     const incl = v.districts.filter((d) => d.included).length;
+    // Draft: Approve + Abandon. Approved: Re-open (abandon is draft-only, so reopen first). Abandoned: terminal, no actions.
     const actions = draft
-      ? `<button id="q-approve" class="btn btn-primary">Approve batch · gate@1</button>`
+      ? `<button id="q-approve" class="btn btn-primary">Approve batch · gate@1</button>
+         <button id="q-abandon" class="btn btn-secondary">Abandon…</button>`
+      : abandoned ? ""
       : `<button id="q-reopen" class="btn btn-secondary">Re-open for editing</button>`;
+    const byline = abandoned
+      ? ` · abandoned by ${esc(v.abandoned_by)} ${esc(fmt(v.abandoned_at))}`
+      : v.approved_at ? ` · approved by ${esc(v.approved_by)} ${esc(fmt(v.approved_at))}`
+      : ` · created by ${esc(v.created_by)} ${esc(fmt(v.created_at))}`;
     let html = `<div class="q-detail-head">
         <div><h2>${esc(v.batch_id)} ${statusBadge(v.status)}</h2>
-          <div class="q-sub">${esc(v.batch_type)} · <b>${incl}/${v.districts.length}</b> districts included · ${esc(v.nces_year)}
-          ${v.approved_at ? ` · approved by ${esc(v.approved_by)} ${esc(fmt(v.approved_at))}`
-                          : ` · created by ${esc(v.created_by)} ${esc(fmt(v.created_at))}`}</div></div>
+          <div class="q-sub">${esc(v.batch_type)} · <b>${incl}/${v.districts.length}</b> districts included · ${esc(v.nces_year)}${byline}</div></div>
         <div class="q-actions">${actions}</div></div>`;
-    if (!draft) html += `<div class="q-locked">Approved — editing is locked. Re-open to make changes.</div>`;
+    if (abandoned) html += `<div class="q-locked">Abandoned${v.abandon_reason ? ` — ${esc(v.abandon_reason)}` : ""}. Terminal: this batch can't be edited, approved, or re-opened.</div>`;
+    else if (!draft) html += `<div class="q-locked">Approved — editing is locked. Re-open to make changes.</div>`;
     html += v.districts.map((d) => districtBlock(d, draft)).join("");
     $g("#q-detail").innerHTML = html;
     wireDetail();
@@ -146,6 +155,7 @@
 
   function wireDetail() {
     const ap = $g("#q-approve"); if (ap) ap.onclick = approve;
+    const ab = $g("#q-abandon"); if (ab) ab.onclick = abandon;
     const ro = $g("#q-reopen"); if (ro) ro.onclick = reopen;
     $g("#q-detail").querySelectorAll("[data-act]").forEach((b) => {
       const { act, did, sid, band } = b.dataset;
@@ -169,6 +179,14 @@
   async function reopen() {
     try { VIEW = await api(`/api/queue/${CURRENT}/reopen`, postJSON({ actor: "ian" })); }
     catch (e) { alert("Re-open failed: " + e.message); return; }
+    renderDetail(VIEW); loadBatches();
+  }
+  async function abandon() {
+    // prompt doubles as confirm (null = cancel) + reason capture. Abandon is terminal & draft-only.
+    const reason = prompt("Abandon this batch (gate@1)?\n\nIt becomes terminal — can't be edited, approved, or re-opened. Its schools stay un-attempted (a never-ran draft).\n\nReason (optional):");
+    if (reason === null) return;
+    try { VIEW = await api(`/api/queue/${CURRENT}/abandon`, postJSON({ actor: "ian", reason })); }
+    catch (e) { alert("Abandon failed: " + e.message); return; }
     renderDetail(VIEW); loadBatches();
   }
 

@@ -58,6 +58,9 @@ def test_candidates_and_handoffs_lists():
     if c.json():
         row = c.json()[0]
         assert "district_id" in row and "n_send" in row and "n_hold" in row
+        # #171: dispatch-history signal + benchmark marker travel on each candidate
+        for k in ("batch_id", "n_dispatched", "last_dispatched_at", "n_extracted"):
+            assert k in row
     h = client.get("/api/handoffs")
     assert h.status_code == 200 and isinstance(h.json(), list)
 
