@@ -84,6 +84,15 @@ _PRECIOUS_ALTERS = [
     "ALTER TABLE extraction_request ADD COLUMN IF NOT EXISTS executed_ref text",   # REQ-118 (execution lineage)
     "ALTER TABLE extraction_request ADD COLUMN IF NOT EXISTS executed_at text",    # REQ-118 (execution lineage)
     "ALTER TABLE batch_district ADD COLUMN IF NOT EXISTS followup_json json",      # #161 (7->3 seed URLs)
+    "ALTER TABLE batch ADD COLUMN IF NOT EXISTS abandoned_at text",                # #168 (terminal abandon audit)
+    "ALTER TABLE batch ADD COLUMN IF NOT EXISTS abandoned_by text",                # #168
+    "ALTER TABLE batch ADD COLUMN IF NOT EXISTS abandon_reason text",              # #168
+    "ALTER TABLE batch ADD COLUMN IF NOT EXISTS first_approved_at text",           # #168 review (durable ever-approved)
+    # Backfill: any currently-approved batch was approved at least once. Guarded (only fills NULLs) →
+    # idempotent no-op on re-run. Covers pre-existing rows so the abandon guard + attempted-set logic
+    # see their ever-approved history. (A row reopened-and-left-draft before this column existed can't
+    # be recovered from approved_at, but none exist in practice; going forward first_approved_at is durable.)
+    "UPDATE batch SET first_approved_at = approved_at WHERE first_approved_at IS NULL AND approved_at IS NOT NULL",
     # #148: first-class run-kind for extractions, replacing the `handoff_hash NOT LIKE '%-image'` hack.
     "ALTER TABLE extraction ADD COLUMN IF NOT EXISTS run_kind text NOT NULL DEFAULT 'production'",
     # Backfill: the ONLY probe ever produced was the `-image` vision variant (image_handoff_variant's

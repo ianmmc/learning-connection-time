@@ -12,7 +12,7 @@
   let inited = false;
   const SELECTED = new Set();
   let CANDIDATES = [];                                   // all loaded candidates (client-side filtering)
-  const FILTER = { q: "", topology: "", sendOnly: false, heldOnly: false };
+  const FILTER = { q: "", topology: "", sendOnly: false, heldOnly: false, hideDispatched: false };
   let VERIFIED_ONLY = false;                             // gate@6 training-grade mode: labeled targets only
   let COUNCILS = [];                                     // council registry (override <select> options)
   const OVERRIDES = {};                                  // "<rec_key>::<file>" -> council_id (gate@6 manual override)
@@ -69,12 +69,15 @@
         topos.map((t) => `<option value="${esc(t)}" ${FILTER.topology === t ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>
       <label class="s6-fl"><input type="checkbox" id="s6-sendonly" ${FILTER.sendOnly ? "checked" : ""}/> has send</label>
       <label class="s6-fl"><input type="checkbox" id="s6-heldonly" ${FILTER.heldOnly ? "checked" : ""}/> has held</label>
+      <label class="s6-fl" title="Hide districts already dispatched in a prior handoff — re-sending re-extracts (wasted spend). (#171)">
+        <input type="checkbox" id="s6-hidedispatched" ${FILTER.hideDispatched ? "checked" : ""}/> hide already-dispatched</label>
       <label class="s6-fl s6-mode" title="Dispatch ONLY human-labeled target representations — drops the speculative unlabeled tier-A auto-sends. Builds training-grade, manually-verified data.">
         <input type="checkbox" id="s6-verified" ${VERIFIED_ONLY ? "checked" : ""}/> verified only (labeled targets)</label>`;
     bar.querySelector("#s6-q").oninput = (e) => { FILTER.q = e.target.value.toLowerCase(); renderCandidates(); };
     bar.querySelector("#s6-topo").onchange = (e) => { FILTER.topology = e.target.value; renderCandidates(); };
     bar.querySelector("#s6-sendonly").onchange = (e) => { FILTER.sendOnly = e.target.checked; renderCandidates(); };
     bar.querySelector("#s6-heldonly").onchange = (e) => { FILTER.heldOnly = e.target.checked; renderCandidates(); };
+    bar.querySelector("#s6-hidedispatched").onchange = (e) => { FILTER.hideDispatched = e.target.checked; renderCandidates(); };
     bar.querySelector("#s6-verified").onchange = (e) => {
       VERIFIED_ONLY = e.target.checked; renderCandidates(); if (SELECTED.size) preview();   // re-price in the new mode
     };
@@ -84,6 +87,7 @@
     if (FILTER.topology && c.labeled_topology !== FILTER.topology) return false;
     if (FILTER.sendOnly && !(effSend(c) > 0)) return false;   // "has send" respects the active mode
     if (FILTER.heldOnly && !(c.n_hold > 0)) return false;
+    if (FILTER.hideDispatched && c.n_dispatched > 0) return false;   // #171: drop already-sent districts
     if (FILTER.q && !`${c.name || ""} ${c.district_id} ${c.state || ""}`.toLowerCase().includes(FILTER.q)) return false;
     return true;
   }
@@ -103,10 +107,18 @@
         ? `<span class="badge ${tone}" title="human-labeled target records — what a verified-only dispatch sends (preview shows exact reps + cost)">${n} verified</span>`
         : `<span class="badge ${tone}" title="canonical records that will be sent — labeled targets + unlabeled tier-A${c.n_verified ? `, of which ${c.n_verified} human-verified` : ""} (preview shows exact reps + cost)">${n} send</span>`;
       const verifiedMeta = (!VERIFIED_ONLY && c.n_verified) ? ` · <span title="human-labeled targets — the verified-only subset">${c.n_verified} verified</span>` : "";
+      // #171: dispatch-history markers so fresh vs. already-sent districts are distinguishable at a glance.
+      // is_benchmark is server-computed by batch_type membership (matches the dispatch wall), #198 review.
+      const bench = c.is_benchmark
+        ? `<span class="badge badge-accent" title="benchmark district (batch_type=benchmark) — dispatch-walled; generally do not re-send">benchmark</span>` : "";
+      const disp = c.n_dispatched > 0
+        ? `<span class="badge badge-warn" title="already dispatched ${c.n_dispatched}×${c.last_dispatched_at ? ` — last ${esc(fmt(c.last_dispatched_at))}` : ""}; re-selecting re-dispatches + re-extracts (wasted spend)">dispatched</span>` : "";
+      const ext = c.n_extracted > 0
+        ? `<span class="badge badge-neutral" title="${c.n_extracted} production extraction${c.n_extracted === 1 ? "" : "s"} with accepted facts on record for this district">✓ extracted</span>` : "";
       el.innerHTML = `<div class="s6-cand-top">
           <input type="checkbox" data-id="${esc(c.district_id)}" ${SELECTED.has(c.district_id) ? "checked" : ""}/>
           <span class="q-batch-id">${esc(c.name || c.district_id)}</span>
-          ${badge}</div>
+          ${badge}${disp}${ext}${bench}</div>
         <div class="q-batch-meta">${esc(c.state || "?")} · ${esc(c.district_id)} · ${esc(c.labeled_topology || "?")}${verifiedMeta}${c.n_hold ? ` · <span title="unlabeled tier-B/C — label them in Stage 5 to dispatch">${c.n_hold} held for label</span>` : ""}</div>`;
       const cb = el.querySelector("input");
       cb.onchange = () => { cb.checked ? SELECTED.add(c.district_id) : SELECTED.delete(c.district_id); };

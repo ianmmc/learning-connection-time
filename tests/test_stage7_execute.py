@@ -120,19 +120,23 @@ def test_executed_rounds_counts_distinct_refs_not_rows(gov_session):
 @govdb
 def test_attempted_schools_excludes_draft_batches(gov_session):
     """Review of a9c4486 (#162): a DRAFT batch never ran discovery — its schools were NOT attempted,
-    and an abandoned draft (batch_00009) must not poison the untried set forever. Only non-draft
-    (approved/committed) batches count."""
+    and an abandoned draft (batch_00009) must not poison the untried set forever. #168: an `abandoned`
+    batch is a retired never-ran draft, so it is excluded for the same reason. Only committed
+    (approved) batches count as attempted."""
     from infrastructure.acquisition.stage1_queue.models import Batch, BatchSchool
     gdb.init_precious_schema()
     s = gov_session
-    for bid, status, sid in (("batch_zzatt_a", "approved", "SA"), ("batch_zzatt_d", "draft", "SD")):
+    for bid, status, sid in (("batch_zzatt_a", "approved", "SA"),
+                             ("batch_zzatt_d", "draft", "SD"),
+                             ("batch_zzatt_x", "abandoned", "SX")):
         s.add(Batch(batch_id=bid, batch_type="follow-up", status=status, nces_year="2024_25",
                     created_at="t", created_by="zz", meta_json={}))
         s.add(BatchSchool(batch_id=bid, district_id="ZZATT", school_id=sid, name="S",
                           is_charter="No", level="High", gslo="09", gshi="12",
                           bands=["high"], included=True, source="stratified"))
     s.flush()
-    assert EX._attempted_schools(s, ["ZZATT"]) == {"ZZATT": {"SA"}}   # draft's SD not counted
+    # only the approved batch's SA counts — draft's SD and abandoned's SX are both un-attempted
+    assert EX._attempted_schools(s, ["ZZATT"]) == {"ZZATT": {"SA"}}
 
 
 @govdb

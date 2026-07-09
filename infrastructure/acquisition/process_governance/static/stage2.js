@@ -47,7 +47,7 @@
     // Stage-2 progress fraction — not the stale gate@1 "approved".
     const badge = b.status === "approved"
       ? window.progressBadge(b.progress, "stage2")
-      : `<span class="badge badge-neutral">${esc(b.status)}</span>`;
+      : window.LCT.statusBadge(b.status);   // #198 review: shared tone (abandoned -> red, not draft-neutral)
     el.innerHTML = `<div class="q-batch-top"><span class="q-batch-id">${esc(b.batch_id)}</span>${badge}</div>
       <div class="q-batch-meta">${esc(b.batch_type)} · ${b.n_districts} district${b.n_districts === 1 ? "" : "s"} · ${esc(b.nces_year)}</div>`;
     el.onclick = () => loadStatus(b.batch_id);
@@ -77,15 +77,16 @@
     const canRun = approved && r.todo > 0 && !running;
 
     let actionHtml;
-    if (!approved) actionHtml = `<span class="s2-note">Approve this batch at gate@1 (Stage&nbsp;1) before discovery.</span>`;
+    if (s.batch_status === "abandoned") actionHtml = `<span class="s2-note">This batch is abandoned (retired at gate@1) — it never runs.</span>`;   // #198 review
+    else if (!approved) actionHtml = `<span class="s2-note">Approve this batch at gate@1 (Stage&nbsp;1) before discovery.</span>`;
     else if (r.todo === 0 && !running) actionHtml = `<span class="s2-note">All districts discovered.</span>`;
     else actionHtml = `<button id="s2-run" class="btn btn-primary${running ? " run-anim" : ""}"${canRun ? "" : " disabled"}>${running ? "Discovery running…" : "Run discovery ▶"}</button>`;
 
     // Header badge = the SAME stage-contextual progress badge as the left pane (not the stale gate@1
-    // "approved"); an unapproved batch still shows its lifecycle status as a blocker.
+    // "approved"); an unapproved batch still shows its lifecycle status (abandoned -> red) as a blocker.
     const headBadge = approved
       ? window.progressBadge({ total: r.total, discovered: r.done, flagged: r.manual_flag_all }, "stage2")
-      : `<span class="badge badge-neutral">${esc(s.batch_status || "—")}</span>`;
+      : window.LCT.statusBadge(s.batch_status || "—");   // #198 review: shared tone
     let html = `<div class="q-detail-head">
         <div><h2>${esc(s.batch_id)} ${headBadge}</h2>
           <div class="q-sub">Stage&nbsp;2 · Discover (ungated) · <b>${r.done}/${r.total}</b> districts discovered

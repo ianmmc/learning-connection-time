@@ -163,6 +163,7 @@ def to_view(sess, batch_id: str) -> dict:
         "batch_id": b.batch_id, "batch_type": b.batch_type, "status": b.status,
         "nces_year": b.nces_year, "created_at": b.created_at, "created_by": b.created_by,
         "approved_at": b.approved_at, "approved_by": b.approved_by,
+        "abandoned_at": b.abandoned_at, "abandoned_by": b.abandoned_by, "abandon_reason": b.abandon_reason,
         "n_included": sum(1 for d in districts if d["included"]),
         **(b.meta_json or {}), "districts": districts,
     }
@@ -205,7 +206,8 @@ def list_batches(sess) -> list:
         out.append({"batch_id": b.batch_id, "batch_type": b.batch_type, "status": b.status,
                     "nces_year": b.nces_year, "n_districts": n, "created_at": b.created_at,
                     "created_by": b.created_by, "approved_at": b.approved_at, "approved_by": b.approved_by,
-                    "progress": progress.get(b.batch_id)})
+                    "abandoned_at": b.abandoned_at, "abandoned_by": b.abandoned_by,
+                    "abandon_reason": b.abandon_reason, "progress": progress.get(b.batch_id)})
     return out
 
 
@@ -306,17 +308,49 @@ def approve_batch(sess, batch_id: str, actor: str) -> None:
     b.status = "approved"
     b.approved_at = utcnow()
     b.approved_by = actor
+    if b.first_approved_at is None:      # #168: durable ever-approved stamp — set once, survives reopen
+        b.first_approved_at = b.approved_at
     sess.flush()
 
 
 def reopen_batch(sess, batch_id: str, actor: str) -> None:
-    """Re-open an approved batch back to draft for further editing (clears the approval stamp)."""
+    """Re-open an approved batch back to draft for further editing (clears the approval stamp).
+    An `abandoned` batch is TERMINAL — reopen refuses it (#168) so it can't be silently resurrected;
+    recovering one is a deliberate un-abandon, not an incidental reopen."""
     b = sess.get(Batch, batch_id)
     if b is None:
         raise KeyError(batch_id)
+    if b.status == "abandoned":
+        raise BatchLocked(f"{batch_id} is abandoned (terminal); cannot re-open")
     b.status = "draft"
     b.approved_at = None
     b.approved_by = None
+    sess.flush()
+
+
+def abandon_batch(sess, batch_id: str, actor: str, reason: str = "") -> None:
+    """gate@1 abandon — retire a NEVER-APPROVED draft to a TERMINAL `abandoned` status (#168).
+
+    NEVER-APPROVED BY DESIGN (the invariant lives here, in the method that owns the transition, so no
+    entry point can bypass it). `_attempted_schools` (stage7_execute) excludes both `draft` and
+    `abandoned` from the already-attempted set on the premise that neither ever ran discovery. That
+    premise holds only if `abandoned` implies never-approved: an approved batch commits its schools to
+    discovery (they count as attempted the moment it's approved), so abandoning one — even after a
+    reopen-to-draft — would drop those schools back out of the attempted set and re-queue them, the
+    exact #162 poison this status was added to avoid. We gate on the DURABLE `first_approved_at`, not
+    the reopen-clearable `status`/`approved_at`: reopen->abandon on a once-approved batch is refused."""
+    b = sess.get(Batch, batch_id)
+    if b is None:
+        raise KeyError(batch_id)
+    if b.first_approved_at is not None:
+        raise BatchLocked(f"{batch_id} was approved (its schools are committed as attempted); cannot "
+                          "abandon — a superseded approved batch stays approved, it is not retired")
+    if b.status != "draft":
+        raise BatchLocked(f"{batch_id} is {b.status}; only a never-approved draft can be abandoned")
+    b.status = "abandoned"
+    b.abandoned_at = utcnow()
+    b.abandoned_by = actor
+    b.abandon_reason = reason or None
     sess.flush()
 
 

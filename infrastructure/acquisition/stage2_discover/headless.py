@@ -29,6 +29,7 @@ import requests
 
 from sqlalchemy import text
 
+from infrastructure.acquisition.common import batch_guard as BG
 from infrastructure.acquisition.common import cache_ingest as CI
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import discover as DISC
@@ -391,6 +392,8 @@ def run_batch(batch_ref: str, *, actor: str = "auto:stage2", on_event=None,
     progress hook the console job feed consumes. `wave1_search`/`wave2_search` are injectable for tests."""
     batch = load_batch_any(batch_ref)
     batch_id = batch["batch_id"]
+    with gdb.session_scope() as _con:      # #168: never run a stage on a terminal abandoned batch
+        BG.assert_runnable(_con, batch_id)
 
     def emit(kind, **payload):
         if on_event:
