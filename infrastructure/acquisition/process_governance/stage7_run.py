@@ -391,7 +391,12 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
                 persist_run_session(s, {"handoff_hash": hh, "run_kind": run_kind,
                                         "districts": {did: pd}},
                                     created_by=created_by, receipt_path=rp)
-                detect_and_persist_requests(s, pd, hh)   # request-more-evidence, same txn
+                # Request-more-evidence, same txn — PRODUCTION only (#148 review): the console's
+                # pending counts + detail cards are district-scoped across all handoffs, so a probe's
+                # directives would surface as reviewable production work (and an approved one could be
+                # swept into a paid follow-up). A probe is a measurement, never a remedy driver.
+                if run_kind == "production":
+                    detect_and_persist_requests(s, pd, hh)
         _print_district_progress(did, pd, gt_data)
         if on_district:
             on_district(did, pd)

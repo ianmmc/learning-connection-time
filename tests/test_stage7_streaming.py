@@ -108,6 +108,40 @@ def test_no_persist_makes_no_db_calls(monkeypatch):
     assert set(out["districts"]) == {"ZZS1", "ZZS2"}
 
 
+def test_probe_run_kind_threaded_to_persist_and_skips_request_loop(monkeypatch):
+    """#148 review: the run_kind seam has real coverage — a probe doc's flag must reach EVERY
+    per-district persist call (else a '-vision2' probe persists as production and the shadowing bug
+    returns), and the request loop must NOT run (a probe's directives would surface as reviewable
+    production work in gate@7 and could be swept into a paid follow-up)."""
+    _mock_env(monkeypatch, already=set())
+    kinds, detected = [], []
+    monkeypatch.setattr(R7, "persist_run_session",
+                        lambda s, results, **kw: kinds.append(results.get("run_kind")))
+    monkeypatch.setattr(R7, "detect_and_persist_requests",
+                        lambda s, pd, hh: detected.append(pd["district_id"]) or 0)
+    probe = dict(DOC)
+    probe["handoff_hash"] = DOC["handoff_hash"] + "-vision2"
+    probe["run_kind"] = "probe"
+    out = R7.run_council_streaming(probe, persist=True, resume=True)
+    assert kinds == ["probe", "probe"]           # threaded into BOTH per-district persists
+    assert detected == []                        # request loop skipped for probes
+    assert out["run_kind"] == "probe"
+
+
+def test_production_run_kind_defaults_and_runs_request_loop(monkeypatch):
+    """#148: a doc with NO run_kind persists as production and the request loop runs as before."""
+    _mock_env(monkeypatch, already=set())
+    kinds, detected = [], []
+    monkeypatch.setattr(R7, "persist_run_session",
+                        lambda s, results, **kw: kinds.append(results.get("run_kind")))
+    monkeypatch.setattr(R7, "detect_and_persist_requests",
+                        lambda s, pd, hh: detected.append(pd["district_id"]) or 0)
+    out = R7.run_council_streaming(DOC, persist=True, resume=True)
+    assert kinds == ["production", "production"]
+    assert detected == ["ZZS1", "ZZS2"]
+    assert out["run_kind"] == "production"
+
+
 def test_budget_run_cap_halts_before_paid_district(monkeypatch):
     """REQ-051: the run halts cleanly at the run cap — the already-spent prior run seeds the governor
     over ceiling, so NO further district is extracted (durability: nothing new persisted)."""
