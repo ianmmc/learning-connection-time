@@ -34,7 +34,7 @@
     error:              { label: "error", tone: "badge-red" },
   };
 
-  const esc = (s) => (s == null ? "" : String(s)).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const { esc } = window.LCT;
 
   // Per-district status badge. `key` is a backend status/outcome string.
   window.outcomeBadge = function (key) {

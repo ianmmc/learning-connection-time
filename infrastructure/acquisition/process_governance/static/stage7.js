@@ -6,16 +6,10 @@
 // (gate@8). Vanilla JS on the MMM tokens; reuses q-*/badge/btn styles + a few s7-* rules.
 (function () {
   const $g = (s, r = document) => r.querySelector(s);
-  const esc = (s) => (s == null ? "" : String(s)).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  const { esc, postJSON, api } = window.LCT;
   const usd = (n) => "$" + (Number(n) || 0).toFixed(4);
-  const postJSON = (b) => ({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) });
   let inited = false, CURRENT = null;
 
-  async function api(url, opts) {
-    const r = await fetch(url, opts);
-    if (!r.ok) { let m = r.statusText; try { m = (await r.json()).detail || m; } catch (_) {} throw new Error(`${r.status} — ${m}`); }
-    return r.json();
-  }
 
   window.initStage7 = function () {
     if (!inited) { inited = true; renderShell(); }
@@ -83,10 +77,9 @@
                 : `<div class="empty">No band resolved.</div>`;
   }
 
-  // Routes needing NEW capture/discovery are wrapped in a Stage-1 follow-up batch (a SWEEP action, not
-  // per-card); 7->6 re-routes an EXISTING rep, so it executes on its own. (REQ-118; mirrors §3F.)
-  const isNewWork = (route) => route === "7->2" || route === "7->3" || route === "7->1";
-
+  // Route classification comes from the SERVER (#147: r.is_newwork / r.is_alt_rep) so the client never
+  // re-spells route strings. NEW-work routes (7->2/3/1) are swept into a Stage-1 follow-up batch, not
+  // executed per-card; 7->6 (is_alt_rep) re-routes an EXISTING rep and executes on its own. (REQ-118.)
   function requestCard(r) {
     const badge = r.status === "approved" ? `<span class="badge badge-success">approved</span>`
                 : r.status === "rejected" ? `<span class="badge badge-neutral">rejected</span>`
@@ -101,11 +94,11 @@
     } else if (r.status === "pending") {
       actions = `<button class="btn btn-secondary btn-mini" data-review="approved" data-id="${r.request_id}">Approve</button>
          <button class="btn btn-ghost btn-mini" data-review="rejected" data-id="${r.request_id}">Reject</button>`;
-    } else if (r.status === "approved" && r.route === "7->6") {
+    } else if (r.status === "approved" && r.is_alt_rep) {
       // existing-rep re-dispatch — executes the district's approved 7->6s as ONE bundle (#153)
       actions = `<button class="btn btn-primary btn-mini" data-execute="${r.request_id}">Execute re-dispatch</button>
          <button class="btn btn-ghost btn-mini" data-review="pending" data-id="${r.request_id}">Reopen</button>`;
-    } else if (r.status === "approved" && isNewWork(r.route)) {
+    } else if (r.status === "approved" && r.is_newwork) {
       actions = `<span class="muted s7-hint">→ queued for a follow-up batch (use “Compose follow-up batch”)</span>
          <button class="btn btn-ghost btn-mini" data-review="pending" data-id="${r.request_id}">Reopen</button>`;
     } else if (r.status === "executed") {
@@ -140,7 +133,7 @@
     const e = x.extraction, reqs = x.requests || [];
     const pending = reqs.filter((r) => r.status === "pending").length;
     // a "Compose follow-up batch" sweep is offered when ≥1 approved NEW-work (7->2/3/1) directive awaits
-    const approvedNewWork = reqs.filter((r) => r.status === "approved" && isNewWork(r.route)).length;
+    const approvedNewWork = reqs.filter((r) => r.status === "approved" && r.is_newwork).length;
     const composeBtn = approvedNewWork
       ? `<button class="btn btn-primary btn-mini" data-compose="${esc(e.handoff_hash || "")}">Compose follow-up batch (${approvedNewWork} approved)</button>`
       : "";

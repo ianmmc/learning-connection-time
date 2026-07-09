@@ -7,16 +7,10 @@
   let CURRENT = null;   // batch_id
   let VIEW = null;      // last loaded to_view payload
 
-  const postJSON = (body) => ({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  const esc = (s) => (s == null ? "" : String(s)).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  const { esc, postJSON, api } = window.LCT;
   const fmt = (iso) => (iso || "").replace("T", " ").replace("Z", " UTC");
   const fmtnum = (n) => (n == null ? "?" : Number(n).toLocaleString());
 
-  async function api(url, opts) {
-    const r = await fetch(url, opts);
-    if (!r.ok) { let m = r.statusText; try { m = (await r.json()).detail || m; } catch (_) {} throw new Error(`${r.status} — ${m}`); }
-    return r.json();
-  }
 
   function statusBadge(s) {
     const tone = s === "approved" ? "badge-success" : "badge-neutral";

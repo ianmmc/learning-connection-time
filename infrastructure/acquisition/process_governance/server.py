@@ -1369,6 +1369,11 @@ def extract_district(district_id: str):
         req_dicts = []
         for r in reqs:
             d = dict(r)
+            # #147: the server classifies the route (from the RQ constants) so the JS never re-spells
+            # '7->2'/'7->6' — a new/renamed route flows through automatically instead of silently
+            # stranding approved directives whose route the client doesn't recognize.
+            d["is_newwork"] = d["route"] in EX.NEWWORK_ROUTES      # 7->2/7->3/7->1 → follow-up batch sweep
+            d["is_alt_rep"] = d["route"] == EX.RQ.ROUTE_ALT_REP    # 7->6 → executes on its own
             d["lineage"] = _request_lineage(con, district_id, d, ctx)  # where it went / why it can't
             req_dicts.append(d)
         return {"extraction": dict(ext), "bands": bands, "accepted": accepted,

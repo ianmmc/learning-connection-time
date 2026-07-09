@@ -5,18 +5,12 @@
 // log) project here. Vanilla JS on the MMM tokens; mirrors gate1.js conventions and reuses its styles.
 (function () {
   const $g = (s, r = document) => r.querySelector(s);
-  const esc = (s) => (s == null ? "" : String(s)).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  const { esc, postJSON, api } = window.LCT;
   const fmt = (iso) => (iso || "").replace("T", " ").replace("Z", " UTC");
-  const postJSON = (b) => ({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) });
   let CURRENT = null;   // batch_id
   let POLL = null;      // poll timer while a run is in flight
   let inited = false;
 
-  async function api(url, opts) {
-    const r = await fetch(url, opts);
-    if (!r.ok) { let m = r.statusText; try { m = (await r.json()).detail || m; } catch (_) {} throw new Error(`${r.status} — ${m}`); }
-    return r.json();
-  }
 
   // lazy-init from the shared switcher (gate1.js) on first show; guard re-entry
   window.initStage2 = function () {
