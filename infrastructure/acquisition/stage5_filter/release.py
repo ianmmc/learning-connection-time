@@ -187,28 +187,59 @@ def load_district(session, district_id: str):
                                  "by_level": json.loads(d["nces_by_level_json"]) if d["nces_by_level_json"] else {}}}
 
 
+_RECORD_COLS = ("""r.rec_key, r.url, r.tier, r.category_hypothesis, r.signals_json, r.is_emergent,
+                   r.intended_schools_json, l.primary_label, l.facets_json""")
+_REP_COLS = ("source", "filename", "file_kind", "n_chars", "n_times", "usable")
+
+
+def _shape_record(r, reps) -> dict:
+    """One record row + its rep rows → the release dict (the ONE shaping used by both loaders; #148)."""
+    return {
+        "rec_key": r["rec_key"], "url": r["url"], "tier": r["tier"],
+        "category": r["category_hypothesis"], "signals": json.loads(r["signals_json"] or "{}"),
+        "is_emergent": r["is_emergent"],
+        "intended_schools": json.loads(r["intended_schools_json"] or "[]"),
+        "label": r["primary_label"], "facets": json.loads(r["facets_json"] or "{}"),
+        "reps": [{k: x[k] for k in _REP_COLS} for x in reps]}
+
+
+def _reps_by_key(session, rec_keys: list) -> dict:
+    """{rec_key: [rep, ...]} for the given records in ONE query (#148: replaces the per-record fetch)."""
+    out: dict = {}
+    if not rec_keys:
+        return out
+    for x in session.execute(text(
+            f"SELECT rec_key, {', '.join(_REP_COLS)} FROM representation WHERE rec_key = ANY(:k)"),
+            {"k": rec_keys}).mappings():
+        out.setdefault(x["rec_key"], []).append(x)
+    return out
+
+
 def load_district_records(session, district_id: str) -> list:
     """The district's CANONICAL records (non-dup; cluster rep or singleton) with label, signals,
     facets, and representation rows — the population the release rule runs over."""
     recs = session.execute(text(
-        f"""SELECT r.rec_key, r.url, r.tier, r.category_hypothesis, r.signals_json, r.is_emergent,
-                  r.intended_schools_json, l.primary_label, l.facets_json
+        f"""SELECT {_RECORD_COLS}
            FROM record r LEFT JOIN label l ON l.rec_key = r.rec_key
            WHERE r.district_id = :d AND {CANONICAL_RECORD_WHERE}
            ORDER BY r.tier, r.sort_score DESC"""), {"d": district_id}).mappings().all()
-    out = []
-    for r in recs:
-        reps = session.execute(text(
-            "SELECT source, filename, file_kind, n_chars, n_times, usable "
-            "FROM representation WHERE rec_key = :rk"), {"rk": r["rec_key"]}).mappings().all()
-        out.append({
-            "rec_key": r["rec_key"], "url": r["url"], "tier": r["tier"],
-            "category": r["category_hypothesis"], "signals": json.loads(r["signals_json"] or "{}"),
-            "is_emergent": r["is_emergent"],
-            "intended_schools": json.loads(r["intended_schools_json"] or "[]"),
-            "label": r["primary_label"], "facets": json.loads(r["facets_json"] or "{}"),
-            "reps": [dict(x) for x in reps]})
-    return out
+    reps = _reps_by_key(session, [r["rec_key"] for r in recs])
+    return [_shape_record(r, reps.get(r["rec_key"], [])) for r in recs]
+
+
+def load_records_by_key(session, rec_keys) -> list:
+    """Like `load_district_records` but scoped to specific `rec_keys` — the 7->6 executor needs only
+    the approved requests' target records, not the whole district (#148: it was loading ALL records +
+    an N+1 rep query per record just to look up a handful). Two queries total, canonical-filtered."""
+    keys = list(rec_keys)
+    if not keys:
+        return []
+    recs = session.execute(text(
+        f"""SELECT {_RECORD_COLS}
+           FROM record r LEFT JOIN label l ON l.rec_key = r.rec_key
+           WHERE r.rec_key = ANY(:k) AND {CANONICAL_RECORD_WHERE}"""), {"k": keys}).mappings().all()
+    reps = _reps_by_key(session, [r["rec_key"] for r in recs])
+    return [_shape_record(r, reps.get(r["rec_key"], [])) for r in recs]
 
 
 def district_fingerprints(session, district_id: str) -> dict:

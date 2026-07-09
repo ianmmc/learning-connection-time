@@ -302,7 +302,7 @@ def test_execute_alternate_dispatch_flips_and_records(gov_session, monkeypatch):
     # stub the release reads + the freeze/record/write internals (their own tests cover them)
     monkeypatch.setattr(EX.REL, "load_district", lambda sess, d: {"district_id": d, "district_dir": "dd",
                                                                   "name": "Z", "state": "AK"})
-    monkeypatch.setattr(EX.REL, "load_district_records", lambda sess, d: [
+    monkeypatch.setattr(EX.REL, "load_records_by_key", lambda sess, keys: [
         {"rec_key": "ZZ76D:abc", "url": "http://x", "signals": {}, "intended_schools": [],
          "reps": [{"source": "raster", "filename": "raster_p-1.png", "file_kind": "image",
                    "n_chars": None, "n_times": None, "usable": 1}]}])
@@ -370,7 +370,7 @@ def test_bundle_multiple_7to6_into_one_round(gov_session, monkeypatch):
                   {"t": tgt, "p": json.dumps({"sent_file": sent}), "ts": _M7.utcnow()})
     s.flush()
 
-    def _recs(sess, d):
+    def _recs(sess, keys):
         return [{"rec_key": f"ZZB:{r}", "url": f"http://{r}", "signals": {}, "intended_schools": [],
                  "reps": [{"source": "capture:text", "filename": "pdftotext.txt", "file_kind": "text",
                            "n_chars": 9, "n_times": 80, "usable": 1},
@@ -378,7 +378,7 @@ def test_bundle_multiple_7to6_into_one_round(gov_session, monkeypatch):
                            "n_chars": None, "n_times": None, "usable": 1}]} for r in ("r1", "r2")]
     monkeypatch.setattr(EX.REL, "load_district", lambda sess, d: {"district_id": d, "district_dir": "dd",
                                                                   "name": "Z", "state": "AK"})
-    monkeypatch.setattr(EX.REL, "load_district_records", _recs)
+    monkeypatch.setattr(EX.REL, "load_records_by_key", _recs)
     monkeypatch.setattr(EX.REL, "district_fingerprints", lambda sess, d: {"config": "c", "labels": "l", "data": "x"})
     monkeypatch.setattr(EX.C6, "load_configs", lambda: {"image": {"voters": ["v"], "judge": "j", "prompts": {"default": "p"}}})
     monkeypatch.setattr(EX.COST6, "load_cost_model", lambda: {"provenance": "t", "assumptions": {}, "models": {}})

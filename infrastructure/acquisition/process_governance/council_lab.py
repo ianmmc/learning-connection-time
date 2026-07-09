@@ -35,12 +35,21 @@ def load_receipts(handoff_hash: str, root=None) -> list:
     top level has `districts`, not `district`) — skip those instead of crashing (#141; same defensive
     shape as `backfill_requests`)."""
     d = Path(root) if root else (paths.ACQUISITION / "extractions")
-    latest: dict = {}
-    for f in sorted(d.glob(f"extraction_{handoff_hash}_*.json")):   # sorted → later ts wins
-        pd = json.loads(f.read_text()).get("district")
-        if pd:
-            latest[pd["district_id"]] = pd
-    return list(latest.values())
+    by_district: dict = {}                              # district_id -> [(ts, path)]; ts sorts lexically
+    for f in d.glob(f"extraction_{handoff_hash}_*.json"):
+        parts = f.stem.split("_")                       # [extraction, <hash[-image]>, <district>, <ts>]
+        if len(parts) != 4:                             # aggregate (extraction_<hash>_<ts>) — no district
+            continue
+        did, ts = parts[2], parts[3]
+        by_district.setdefault(did, []).append((ts, f))
+    out = []
+    for cands in by_district.values():                  # #148: read newest-first, stop at the first
+        for _ts, f in sorted(cands, reverse=True):      # valid receipt (a truncated newest must not
+            pd = json.loads(f.read_text()).get("district")  # drop the district — older one still counts)
+            if pd:
+                out.append(pd)
+                break
+    return out
 
 
 def _voter_rows(rep: dict) -> dict:

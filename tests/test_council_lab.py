@@ -48,6 +48,18 @@ def test_load_receipts_skips_aggregate_shape(tmp_path):
     assert [d["district_id"] for d in docs] == ["0100270"]
 
 
+def test_load_receipts_falls_back_when_newest_lacks_district(tmp_path):
+    """#148 review: if the NEWEST receipt for a district is truncated (no 'district' payload), the
+    older valid receipt must still represent the district — not silently drop it."""
+    import json
+    (tmp_path / "extraction_zzhash_0100270_20260703T000001Z.json").write_text(json.dumps(
+        {"handoff_hash": "zzhash", "district": {"district_id": "0100270", "reps": []}}))
+    (tmp_path / "extraction_zzhash_0100270_20260703T000002Z.json").write_text(json.dumps(
+        {"handoff_hash": "zzhash"}))                                        # truncated newest
+    docs = CL.load_receipts("zzhash", root=tmp_path)
+    assert [d["district_id"] for d in docs] == ["0100270"]
+
+
 def test_replay_refuses_text_only_judge_on_image_reps(tmp_path, monkeypatch):
     """#142 (the #82 shape): a CLI --judge candidate bypasses councils.validate() — the replay must
     refuse a non-vision-capable judge BEFORE any paid call when the receipts carry image reps."""

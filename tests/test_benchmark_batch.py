@@ -84,3 +84,44 @@ def test_inject_refuses_to_overwrite(tmp_path):
     BB.inject_district(d, gt_root=gt, raw_root=raw)
     with pytest.raises(FileExistsError):
         BB.inject_district(d, gt_root=gt, raw_root=raw)
+
+
+def test_load_curated_resolves_buckets_from_proposals(tmp_path):
+    """#148: a FIXTURE-based unit check of load_curated's LOGIC (proposals -> entries, hub/per_school
+    dir resolution) that runs in CI — the real-27-dirs test above is integration-only (needs the local
+    binaries), so a regression in this parsing/resolution shipped green through CI. Synthetic gt_root:
+    no binaries, just a proposals manifest + a couple of stub dirs."""
+    import json
+    from infrastructure.acquisition.stage1_queue import benchmark_batch as BB
+    (tmp_path / "hub").mkdir()
+    (tmp_path / "per_school").mkdir()
+    (tmp_path / "hub" / "alpha_dir").mkdir()             # resolves under hub/
+    (tmp_path / "per_school" / "beta_dir").mkdir()       # resolves under per_school/
+    # gamma_dir is intentionally absent on disk -> gt_dir must be None (the missing-dir signal)
+    (tmp_path / "gt_proposals.json").write_text(json.dumps([
+        {"district_id": "0100001", "dir": "alpha_dir", "topology": "hub"},
+        {"district_id": "0200002", "dir": "beta_dir", "topology": "per_school"},
+        {"district_id": "0300003", "dir": "gamma_dir", "topology": "hub"},
+    ]))
+    out = BB.load_curated(gt_root=tmp_path)
+    assert [c["district_id"] for c in out] == ["0100001", "0200002", "0300003"]   # every proposal → entry
+    by_id = {c["district_id"]: c for c in out}
+    assert by_id["0100001"]["gt_dir"] == tmp_path / "hub" / "alpha_dir"           # resolved under hub/
+    assert by_id["0200002"]["gt_dir"] == tmp_path / "per_school" / "beta_dir"     # resolved under per_school/
+    assert by_id["0300003"]["gt_dir"] is None                                     # absent → None, not crash
+    assert by_id["0100001"]["gt_topology"] == "hub" and by_id["0100001"]["gt_dirname"] == "alpha_dir"
+
+
+def test_tracked_gt_proposals_manifest_has_27_valid_entries():
+    """#148: the 27-count + topology validity of the TRACKED gt_proposals.json (no binaries needed) —
+    catches a manifest regression in CI, complementing the integration on-disk-dirs test."""
+    import json
+    from infrastructure.acquisition.stage1_queue import benchmark_batch as BB
+    mf = BB.GT_ROOT / "gt_proposals.json"
+    if not mf.exists():
+        import pytest as _pt
+        _pt.skip("tracked gt_proposals.json not present in this checkout")
+    props = json.loads(mf.read_text())
+    assert len(props) == 27
+    assert {p["topology"] for p in props} == {"hub", "per_school"}
+    assert all(p.get("district_id") and p.get("dir") for p in props)

@@ -24,6 +24,7 @@ stops billing on DeepSeek but NOT Google/Mistral — a killed run still pays for
 """
 from __future__ import annotations
 
+import functools
 import json
 import math
 import os
@@ -115,6 +116,18 @@ class CallResult:
         return self.finish_reason == "length"
 
 
+@functools.lru_cache(maxsize=8)
+def _client(api_key: str, timeout: int):
+    """The OpenAI SDK client, CACHED per (key, timeout) so consecutive calls in a batch reuse ONE
+    httpx connection pool instead of a fresh TLS handshake each call (#148: ~30-60s/batch of pure
+    handshake). The client is safe to reuse across calls. Tests that swap `openai.OpenAI` for a fake
+    rely on the autouse `_reset_openrouter_client_cache` conftest fixture clearing this each test —
+    else a prior test's cached fake client would be served (same (key, timeout))."""
+    import openai
+    return openai.OpenAI(base_url=OPENROUTER_BASE_URL, api_key=api_key, timeout=timeout,
+                         default_headers=ATTRIBUTION_HEADERS)
+
+
 def resolve_key(explicit: Optional[str] = None) -> Optional[str]:
     """Env first, then the repo-anchored secrets file (same resolution as `common.discover`).
     Never sets os.environ — the return value is used directly, so the key never leaks to
@@ -176,8 +189,7 @@ def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DE
     if not key:
         return CallResult(model=model, ok=False, error="no OPENROUTER_API_KEY", error_kind="other")
 
-    client = openai.OpenAI(base_url=OPENROUTER_BASE_URL, api_key=key, timeout=timeout,
-                           default_headers=ATTRIBUTION_HEADERS)
+    client = _client(key, timeout)
 
     def _stream_once(mt: int) -> CallResult:
         body = {"temperature": temperature, "max_tokens": mt, **request_body,
