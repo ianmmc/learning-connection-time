@@ -61,17 +61,23 @@ def lf_prose_pair(sig, p):
 def lf_footer_hours(sig, p):
     """School hours in the FOOTER/HEADER as an intentional 'Hours: 8:24-3:30' block (REQ-113 §2a-1 — the
     de-chrome false-negative fix). A distinct information SHAPE (list, not table/prose). Down-graded to a
-    soft *negative* when the block reads as OFFICE hours (the research's #1 confusable)."""
+    soft *negative* when the block reads as OFFICE hours (the research's #1 confusable).
+
+    The two segments are evaluated INDEPENDENTLY (#61): the old code OR-ed the two `office` flags into one
+    verdict, so an office-hours FOOTER downgraded a genuine school-hours HEADER (and vice versa) to the
+    office negative — losing the real target. Now a genuine (non-office) hours block in EITHER segment is a
+    target; only when EVERY hit segment reads as office (and no positive keyword rescues it) is it the
+    office-hours confusable."""
     fh, hh = sig.get("footer_hours") or {}, sig.get("header_hours") or {}
-    hit = fh.get("hit") or hh.get("hit")
-    if not hit:
+    segs = [s for s in (fh, hh) if s.get("hit")]
+    if not segs:
         return None
-    office = (fh.get("hit") and fh.get("office")) or (hh.get("hit") and hh.get("office"))
-    if office and not sig.get("positive_kw"):
-        return Vote("lf_office_hours", "negative", "soft", 0.5,
-                    "footer/header hours read as office/staff hours", "other_schedule")
-    return Vote("lf_footer_hours", "target", "strong", 0.75,
-                "school-hours block in the footer/header", "school_start_end_list")
+    school_seg = any(not s.get("office") for s in segs)   # a genuine, non-office block in either segment
+    if school_seg or sig.get("positive_kw"):
+        return Vote("lf_footer_hours", "target", "strong", 0.75,
+                    "school-hours block in the footer/header", "school_start_end_list")
+    return Vote("lf_office_hours", "negative", "soft", 0.5,
+                "footer/header hours read as office/staff hours", "other_schedule")
 
 
 def lf_heading_hours(sig, p):

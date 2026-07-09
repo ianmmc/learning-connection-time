@@ -329,13 +329,34 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 | `migrate_labels_v21` re-run guard (refuses a second real run without `force=True`) | **BUILT 2026-07-02** |
 | Harvest slices relocated out of `data/raw/` to `data/acquisition/harvest_slices/` (read-fallback to legacy location) | **BUILT 2026-07-02** |
 | Stage-3 iframe/embed capture + `cms_hint` promotion + iframe-innerText check | **BUILT (REQ-115)** |
-| **Facet-level per-detector scoring** (negative detectors vs. confounder facets) — accrues as re-tagging fills facets (tracked: #108) | **NEXT (harness follow-on)** |
+| **Facet-level per-detector scoring** (negative detectors vs. their Axis-2 confounder facets — `harness.DETECTOR_FACET` + `facet_detector_diagnostics`, scored over the 339/667 labels that carry facets) | **BUILT (#108, 2026-07-09)** — surfaced low confounder-precision the coarse target-accuracy hid (nonstandard_day 0.17, office_hours 0.18, sports 0.13) |
+| **`lf_footer_hours` footer/header evaluated independently** (an office footer no longer downgrades a school header) | **BUILT (#61, 2026-07-09)** — a bug guard; 0 current-corpus triggers, no metric change |
+| **`lf_nonstandard_day` soft-gate** (an incidental prose-pair + a weather/remote/delay soft negative → review, not auto-send; structural targets still send) | **BUILT (#60, 2026-07-09)** — measured pass: tier-A precision 0.8382→0.8444, tier-A + A+B recall held (0.8906 / 0.9961); 6 pages routed to review, 72 structural preserved |
 | Learned `LabelModel` combiner · hierarchical/vendor pooling · online-FDR drift · Stage-7/8 outcome feedback | **DEFERRED (scale endgame)** |
 
 ---
 
 ## Change log
 
+- **2026-07-09 — Batch 6 detector/combiner hygiene + facet-level scoring (#60/#61/#108), a measured pass.**
+  Three interrelated Stage-5 scoring items, shipped through the harness discipline (before→after re-ingest,
+  recorded in `tuning_ledger`). **#108 (facet-level per-detector scoring):** the harness now scores each
+  NEGATIVE detector against its Axis-2 *confounder facet* (`DETECTOR_FACET` map + `facet_detector_diagnostics`),
+  not just the coarse "fired on a non-target" accuracy — a page can be a target AND carry a confounder
+  (Las Cruces), so the coarse metric conflates confounder-ID error with target co-occurrence. Scored over the
+  339/667 labels that carry facets; immediately surfaced low confounder-precision the coarse view hid
+  (`lf_nonstandard_day` 0.17, `lf_office_hours` 0.18, `lf_sports` 0.13 — provisional, a lower bound as facets
+  under-accrue). **#61 (`lf_footer_hours`):** the footer and header segments are now evaluated INDEPENDENTLY —
+  the old code OR-ed the two `office` flags, so an office-hours footer downgraded a genuine school-hours header
+  to the office negative. A real logic bug; **0 current-corpus triggers** (no page presently has both segments
+  hit with differing office flags), so it's a guard locked by a unit test, no metric change. **#60
+  (`lf_nonstandard_day`):** an incidental prose start/end pair + a weather/remote/delay soft negative now routes
+  to **review** instead of auto-sending tier-A (the extraction prompt's "ignore early-dismissal" was the only
+  backstop); STRUCTURAL targets (footer block / table / explicit minutes) still auto-send — structure is the
+  standard day even amid delay language. **Measured:** tier-A precision **0.8382→0.8444** (2 fewer labeled
+  false-positives in auto-send), tier-A recall **held 0.8906** (no target dropped), A+B recall **held 0.9961**
+  (the true reaches-review floor); 6 pages moved to review, 72 nonstandard-day+structural preserved. See §3
+  detector table, §5, §8.
 - **2026-07-01 (later) — flags→facets convergence completed (fable review findings 2.1/2.2/2.3).**
   The v2.0 `flags_json` column is now an **inert archive**: no live reads or writes anywhere. The
   label save (`server.UPSERT_LABEL`) no longer touches it (it had been wiping historical flags to

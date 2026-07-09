@@ -48,6 +48,31 @@ def test_f1_is_zero_not_none_when_precision_and_recall_are_zero():
     assert a["f1"] == 0.0
 
 
+# ---- #108: facet-level per-detector diagnostics ----
+def test_confounder_facets_parses_v21_dict_and_ignores_axis3():
+    assert harness.confounder_facets('{"news_feed":"yes","_where":"footer","buried_handbook":"yes"}') == {"news_feed"}
+    assert harness.confounder_facets("{}") == set()
+    assert harness.confounder_facets(None) == set()
+    assert harness.confounder_facets('["not","a","dict"]') == set()   # legacy/malformed shape -> no confounders
+
+
+def test_facet_detector_diagnostics_scores_confounder_not_just_nontarget():
+    # A negative detector firing on a record that IS a target but carries its confounder facet is a HIT
+    # (the #108 point — a target can co-occur with a confounder). Untagged records don't count against it.
+    rows = [
+        (["lf_news_feed"], {"news_feed"}, True),        # correct confounder id (even if the page is a target)
+        (["lf_news_feed"], {"board"}, True),            # fired, but the tagged confounder is board -> miss
+        (["lf_news_feed"], set(), False),               # untagged record -> excluded from the denominator
+        (["lf_board"], {"board"}, True),                # a different detector, correct
+    ]
+    out = harness.facet_detector_diagnostics(rows)["per_detector"]
+    nf = out["lf_news_feed"]
+    assert nf["fires"] == 3 and nf["fires_facet_tagged"] == 2 and nf["hits"] == 1
+    assert nf["facet_precision"] == 0.5
+    assert out["lf_board"]["facet_precision"] == 1.0
+    assert out["lf_transport"]["facet_precision"] is None   # never fired -> not computable
+
+
 def test_empty_inputs_dont_crash():
     assert harness.category_accuracy([])["overall"] is None
     assert harness.tier_target_metrics([])["thresholds"]["A"]["precision"] is None

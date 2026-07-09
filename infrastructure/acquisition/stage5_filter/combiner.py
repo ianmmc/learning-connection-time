@@ -13,8 +13,9 @@ Decision policy (recall-biased — the expensive error is dropping a real schedu
   - a STRUCTURAL target (footer hours / schedule table / explicit minutes / heading hours) → SEND (tier A):
     these are real hours blocks, trustworthy even amid negatives (a feed page with a real footer schedule IS a target)
   - a TIME-PROXIMITY target (prose pair) with NO feed/calendar undermining → SEND (tier A)
-  - a time-proximity/weak target UNDERMINED by a feed/calendar negative → REVIEW (tier B): the incidental-times
-    case (a news post's times tripped the pair) — don't auto-send, don't auto-drop; a human decides at gate@5
+  - a time-proximity/weak target UNDERMINED by a feed/calendar negative OR a nonstandard-day soft negative
+    (#60) → REVIEW (tier B): the incidental-times case (a news post's times tripped the pair, or the pair is
+    a weather/delay day's times) — don't auto-send, don't auto-drop; a human decides at gate@5
   - only a WEAK target → REVIEW (tier B)
   - a SUPPRESS/hard-negative with NO target → SUPPRESS (tier D): a confident drop
   - anything else (some evidence, nothing conclusive) → REVIEW (tier C)
@@ -45,14 +46,23 @@ def combine(votes: list) -> dict:
     soft_neg = [v for v in votes if v["polarity"] == "negative" and v["strength"] == "soft"]
     undermines = any(v["name"] in UNDERMINE_TIMES for v in hard_neg)
 
+    # #60: a nonstandard-day soft negative (weather / remote / delay / early-dismissal — a real bell-shape
+    # but the WRONG schedule) means an incidental start/end PAIR is probably the non-standard-day's times,
+    # not the regular day. Treat it like a feed undermining the pair: don't auto-send an incidental target,
+    # route to review (a human confirms the standard day). Structural targets (footer block / schedule
+    # table / explicit minutes) still auto-send — the structure is the standard day even amid delay language,
+    # and structure beats noise (the combiner's core rule). The extraction prompt's 'ignore early-dismissal'
+    # was the only backstop before this.
+    wrong_day = any(v["name"] == "lf_nonstandard_day" for v in soft_neg)
+
     tconf = max((v["confidence"] for v in strong_t), default=0.0)
     nconf = max((v["confidence"] for v in hard_neg + suppress), default=0.0)
 
-    if structural:                                     # a real hours structure beats feed/negative noise
+    if structural:                                     # a real hours structure beats feed/negative/wrong-day noise
         decision, tier, winner = "send", "A", max(structural, key=lambda v: v["confidence"])
-    elif incidental and not undermines:                # a prose start/end pair, no feed undermining it
+    elif incidental and not undermines and not wrong_day:   # a clean prose start/end pair, standard day
         decision, tier, winner = "send", "A", max(incidental, key=lambda v: v["confidence"])
-    elif (incidental or weak_t) and undermines:        # incidental times on a feed/calendar page -> human decides
+    elif (incidental or weak_t) and (undermines or wrong_day):   # incidental times undermined (feed/calendar/wrong-day) -> human decides
         decision, tier, winner = "review", "B", max(incidental + weak_t, key=lambda v: v["confidence"])
     elif weak_t:
         decision, tier, winner = "review", "B", max(weak_t, key=lambda v: v["confidence"])
