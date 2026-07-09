@@ -9,13 +9,11 @@ PURE (dicts in/out). Imports only sibling stage6 modules + nothing from other st
 the release decision and the app-layer wiring live in `process_governance` (the §12 contract: stage6
 must not import stage5). `councils` = the loaded registry (id -> config); `cost_model` = the loaded rates.
 """
-from datetime import datetime, timezone
 
 from infrastructure.acquisition.stage6_handoff import routing, cost
+from infrastructure.acquisition.common.timeutil import utcnow as _now
 
 
-def _now() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def assemble_record(rec: dict, councils: dict, cost_model: dict, overrides: dict = None) -> dict:

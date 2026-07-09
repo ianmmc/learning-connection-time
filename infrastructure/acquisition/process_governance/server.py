@@ -1430,10 +1430,7 @@ def _autoflow_followup(batch_id: str, actor: str) -> None:
     process, landing at gate@5. Holds the per-batch run lock across the whole chain (a manual stage
     run 409s while it flows); any stage's failure halts the chain and records where. gate@6 stays
     manual — the spend gate is never auto-crossed."""
-    from datetime import datetime, timezone
-
-    def _now():
-        return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    from infrastructure.acquisition.common.timeutil import utcnow as _now
 
     job = {"state": "running", "stage": "approve", "started_at": _now(), "finished_at": None,
            "actor": actor, "error": None, "stages": {}}

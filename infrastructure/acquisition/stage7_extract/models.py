@@ -10,16 +10,14 @@ Stage 9 (non-benchmark only) is the sole promoter to `bell_schedules`, so benchm
 Registered on the governance `Base`; created via `init_precious_schema()` once the app (or the
 Stage-7 persist path) imports this module.
 """
-from datetime import datetime, timezone
 
 from sqlalchemy import String, Integer, Float, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
 from infrastructure.acquisition.common import db as gdb
+from infrastructure.acquisition.common.timeutil import utcnow  # noqa: F401 (re-export: default=utcnow + external .utcnow callers)
 
 
-def utcnow() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 class Extraction(gdb.Base):

@@ -30,6 +30,7 @@ from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import model_families as MF
 from infrastructure.acquisition.common import paths
 from infrastructure.acquisition.common import school_sampling as SS
+from infrastructure.acquisition.common import timeutil as TU
 from infrastructure.acquisition.stage5_filter import build_signals as BS
 from infrastructure.acquisition.stage6_handoff import cost as COST6
 from infrastructure.acquisition.stage6_handoff import councils as C6
@@ -330,10 +331,14 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
 
     # REQ-051 budget governor: seed from DURABLE recorded spend (so a resumed run continues under the
     # SAME ceiling) when persisting; else count only this session. A null cap disables its dimension.
+    # #147: the three REQ-051 ceilings share ONE spend definition. This-run per-district spend seeds
+    # both the per-district ceiling AND the run ceiling (run total = sum of the per-district dict —
+    # never a separate query that could define "spend" differently).
+    this_run = _spend_by_district(handoff_hash=hh) if persist else None
     gov = BUD.BudgetGovernor(BUD.load_budget(),
-                             run_spent=_run_spend(hh) if persist else 0.0,
-                             district_spent=_district_spend(hh) if persist else None,
-                             district_total_spent=(_district_total_spend(by_district.keys())
+                             run_spent=sum(this_run.values()) if this_run else 0.0,
+                             district_spent=this_run,
+                             district_total_spent=(_spend_by_district(district_ids=by_district.keys())
                                                    if persist else None))
     try:
         cost_model = COST6.load_cost_model()
@@ -474,8 +479,7 @@ def _district_state(doc: dict, did: str) -> str | None:
 # Slice 3 — receipt (disk) + governance persistence (DB, never the LCT DB)
 # ---------------------------------------------------------------------------
 def _fs_ts() -> str:
-    from datetime import datetime, timezone
-    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    return TU.fs_stamp()
 
 
 def write_receipt(results: dict, *, root=None) -> str:
@@ -508,40 +512,24 @@ def _already_extracted(handoff_hash: str) -> set:
             {"h": handoff_hash or ""})}
 
 
-def _run_spend(handoff_hash: str) -> float:
-    """Durable spend already recorded for this handoff (the budget-governor resume seed, REQ-051) —
-    SUM(extraction.cost_usd). A resumed run continues under the SAME run ceiling, not a fresh count."""
+def _spend_by_district(*, handoff_hash: str = None, district_ids=None) -> dict:
+    """{district_id: SUM(extraction.cost_usd)} — the ONE spend-seed query behind all three REQ-051
+    governor ceilings (#147), so "spend" is defined once and can't drift between them.
+      • `handoff_hash` — THIS run's per-district durable spend (the resume seed; the run total is its
+        SUM, never a separate query). Kept consistent with `_already_extracted`'s scope.
+      • `district_ids` — CUMULATIVE per-district spend across ALL handoffs (the per-district TOTAL
+        acquisition ceiling — bounds a hard district's runaway spend over every follow-up round).
+    Exactly one scope; `district_ids` wins if both are given. Empty `district_ids` → {} (no query)."""
+    if district_ids is not None:
+        ids = list(district_ids)
+        if not ids:
+            return {}
+        where, params = "district_id = ANY(:d)", {"d": ids}
+    else:
+        where, params = "handoff_hash = :h", {"h": handoff_hash or ""}
     with gdb.session_scope() as s:
-        v = s.execute(
-            text("SELECT COALESCE(SUM(cost_usd), 0.0) FROM extraction WHERE handoff_hash = :h"),
-            {"h": handoff_hash or ""}).scalar()
-    return float(v or 0.0)
-
-
-def _district_spend(handoff_hash: str) -> dict:
-    """Per-district durable spend for this handoff — {district_id: SUM(cost_usd)}. Seeds the
-    governor's per-RUN per-district ceiling on resume (kept consistent with `_already_extracted`'s scope)."""
-    with gdb.session_scope() as s:
-        rows = s.execute(
-            text("SELECT district_id, COALESCE(SUM(cost_usd), 0.0) FROM extraction "
-                 "WHERE handoff_hash = :h GROUP BY district_id"),
-            {"h": handoff_hash or ""})
-        return {r[0]: float(r[1] or 0.0) for r in rows}
-
-
-def _district_total_spend(district_ids) -> dict:
-    """CUMULATIVE per-district spend across ALL handoffs — {district_id: SUM(cost_usd)} for the given
-    districts. Seeds the governor's per-district TOTAL acquisition ceiling (REQ-051): unlike
-    `_district_spend`, NOT scoped to one handoff, so it bounds a hard district's total spend across
-    every follow-up round it has ever triggered."""
-    ids = list(district_ids)
-    if not ids:
-        return {}
-    with gdb.session_scope() as s:
-        rows = s.execute(
-            text("SELECT district_id, COALESCE(SUM(cost_usd), 0.0) FROM extraction "
-                 "WHERE district_id = ANY(:d) GROUP BY district_id"),
-            {"d": ids})
+        rows = s.execute(text("SELECT district_id, COALESCE(SUM(cost_usd), 0.0) FROM extraction "
+                              f"WHERE {where} GROUP BY district_id"), params)
         return {r[0]: float(r[1] or 0.0) for r in rows}
 
 

@@ -23,13 +23,13 @@ Usage:  python3 -m infrastructure.acquisition.stage5_filter.release [--district 
 import argparse
 import hashlib
 import json
-from datetime import datetime, timezone
 
 from sqlalchemy import text
 
 from infrastructure.acquisition.common import paths  # noqa: E402
 from infrastructure.acquisition.common import db as gdb  # noqa: E402  (governance Postgres — REQ-103)
 from infrastructure.acquisition.stage5_filter import build_signals as BS  # noqa: E402  (TARGET_LABELS)
+from infrastructure.acquisition.common.timeutil import utcnow as _now
 
 RAW_DIR = paths.RAW_CAPTURES
 TARGET_LABELS = BS.TARGET_LABELS
@@ -41,8 +41,6 @@ HONEST_LABEL = "gross_bell_to_bell"   # REQ-055 — what the council's start/end
 CANONICAL_RECORD_WHERE = "r.duplicate_of IS NULL AND (r.is_cluster_rep = 1 OR r.cluster_id IS NULL)"
 
 
-def _now() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _h(s: str) -> str:

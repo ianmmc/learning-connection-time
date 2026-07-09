@@ -14,16 +14,14 @@ bridge (which has the gov session), the next slice.
 """
 import hashlib
 import json
-from datetime import datetime, timezone
 from pathlib import Path
 
 from infrastructure.acquisition.common import paths
+from infrastructure.acquisition.common.timeutil import utcnow as _now
 
 DEFAULT_ROOT = paths.ACQUISITION / "handoffs"
 
 
-def _now() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _councils_used(package: dict, councils: dict) -> dict:

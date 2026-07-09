@@ -38,11 +38,11 @@ import argparse
 import json
 import re
 import subprocess
-from datetime import datetime, timezone
 from pathlib import Path
 
 from infrastructure.acquisition.common import cache_ingest as CI
 from infrastructure.acquisition.common import district_status as DS
+from infrastructure.acquisition.common import timeutil as TU
 
 
 RAW_DIR = Path("data/raw/lea-website-captures")
@@ -404,7 +404,7 @@ def write_processed(district: dict, records: list[dict]) -> Path:
     too, after this same round of work)."""
     path = district["dir"] / "processed.json"
     if path.exists():
-        ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        ts = TU.fs_stamp()
         path.rename(district["dir"] / f"processed.{ts}.json")
     path.write_text(json.dumps(records, indent=2))
     return path

@@ -123,7 +123,7 @@ def plan_followup(requests: list, *, claimed_bands: dict, executed_rounds: dict 
                              "reason": "un-executed 7->6 (alternate rep) for this district — try it first"})
             continue
         used = executed_rounds.get((did, band), 0)
-        if max_rounds is not None and used >= max_rounds:
+        if BUD.rounds_exhausted(used, max_rounds):     # #147: one depth-guard predicate
             blocked.append({"request_id": r["request_id"], "district_id": did, "band": band,
                             "reason": f"depth guard: {used} round(s) already executed (max {max_rounds})"})
             continue
@@ -602,7 +602,7 @@ def _bundle_alternate(s, district_id: str, actor: str, root) -> dict:
 
     b = BUD.load_budget()
     used = _executed_rounds_76(s, district_id)
-    if b.max_request_rounds is not None and used >= b.max_request_rounds:
+    if b.rounds_exhausted(used):                        # #147: one depth-guard predicate
         return {"ok": False, "blocked": True,
                 "reason": f"depth guard: {used} round(s) already executed for {district_id} 7->6 "
                           f"(max {b.max_request_rounds})"}
