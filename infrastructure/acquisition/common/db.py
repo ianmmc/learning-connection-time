@@ -74,15 +74,23 @@ def session_scope() -> Generator[Session, None, None]:
         session.close()
 
 
-# Additive, idempotent column migrations for the never-dropped PRECIOUS tables: create_all() creates a
-# missing table but does NOT add a new column to a table that already exists, so a column added to a model
-# after the table was first created must be ALTERed in. Raw SQL by table name (no stage-module import — the
-# layering contract is about imports, not table names). Keep additive-only; never drop/rename here.
+# Additive, idempotent column migrations (+ their one-time idempotent backfills) for the never-dropped
+# PRECIOUS tables: create_all() creates a missing table but does NOT add a new column to a table that
+# already exists, so a column added to a model after the table was first created must be ALTERed in. Raw
+# SQL by table name (no stage-module import — the layering contract is about imports, not table names).
+# Keep additive-only; never drop/rename here. Backfills must be guarded so re-running is a no-op.
 _PRECIOUS_ALTERS = [
     "ALTER TABLE label ADD COLUMN IF NOT EXISTS facets_json text",   # REQ-114 (V2 facet questionnaire)
     "ALTER TABLE extraction_request ADD COLUMN IF NOT EXISTS executed_ref text",   # REQ-118 (execution lineage)
     "ALTER TABLE extraction_request ADD COLUMN IF NOT EXISTS executed_at text",    # REQ-118 (execution lineage)
     "ALTER TABLE batch_district ADD COLUMN IF NOT EXISTS followup_json json",      # #161 (7->3 seed URLs)
+    # #148: first-class run-kind for extractions, replacing the `handoff_hash NOT LIKE '%-image'` hack.
+    "ALTER TABLE extraction ADD COLUMN IF NOT EXISTS run_kind text NOT NULL DEFAULT 'production'",
+    # Backfill: the ONLY probe ever produced was the `-image` vision variant (image_handoff_variant's
+    # default council). Flip those legacy rows so the console filter matches pre-migration behavior.
+    # Guarded (only flips still-default rows) → a no-op on every re-run. Real handoff hashes are 12 hex
+    # chars and never contain '-', so this can't misclassify a production run.
+    "UPDATE extraction SET run_kind = 'probe' WHERE handoff_hash LIKE '%-image' AND run_kind = 'production'",
 ]
 
 

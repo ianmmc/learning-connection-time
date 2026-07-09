@@ -1258,8 +1258,8 @@ def handoff_inspect(district_id: str, rec_key: str, file: str):
 def extract_districts():
     """gate@7 left pane: districts with a Stage-7 extraction, each showing the LATEST run's summary +
     its pending-request count. Attention-first (most pending requests, then most unresolved).
-    Excludes `*-image` handoffs — those are the vision-council A/B *probe* (image_handoff_variant, not a
-    production dispatch), not a review surface. (A first-class run-kind flag is a follow-up.)"""
+    Excludes PROBE runs (`run_kind='probe'` — the vision-council A/B from image_handoff_variant, not a
+    production dispatch), which are experiments, not a review surface (#148)."""
     with gdb.session_scope() as con:
         rows = con.execute(text(
             """SELECT e.district_id, e.handoff_hash, e.n_accepted, e.n_unresolved, e.cost_usd,
@@ -1267,7 +1267,7 @@ def extract_districts():
                       COALESCE(rq.n_pending, 0) AS n_pending, COALESCE(rq.n_requests, 0) AS n_requests
                FROM extraction e
                JOIN (SELECT district_id, MAX(extraction_id) mx FROM extraction
-                     WHERE handoff_hash NOT LIKE '%-image' GROUP BY district_id) L
+                     WHERE run_kind = 'production' GROUP BY district_id) L
                  ON L.mx = e.extraction_id
                LEFT JOIN district d ON d.district_id = e.district_id
                LEFT JOIN (SELECT district_id,
@@ -1340,7 +1340,7 @@ def extract_district(district_id: str):
         ext = con.execute(text(
             "SELECT extraction_id, handoff_hash, created_at, created_by, cost_usd, "
             "n_accepted, n_unresolved, n_reps FROM extraction "
-            "WHERE district_id = :d AND handoff_hash NOT LIKE '%-image' "
+            "WHERE district_id = :d AND run_kind = 'production' "     # #148: exclude probe runs
             "ORDER BY extraction_id DESC LIMIT 1"), {"d": district_id}).mappings().first()
         if not ext:
             raise HTTPException(404, "no extraction for this district")
