@@ -263,6 +263,15 @@ This is the core briefing. Load the right doc for the task:
 4. **Temporal Validation**: Data from multiple sources must span ≤3 years
 5. **Raw Data**: Never modify files in `data/raw/`
 6. **Data Verification**: ALWAYS verify data exists in database before claiming enrichment counts. Never trust dispatch documentation without database verification.
+7. **Research before implementing**: When a task involves a non-trivial design decision, an unfamiliar
+   failure mode, or a pattern this codebase hasn't established a convention for (state-machine/invariant
+   design, a new library, a class of bug just hit), do a web search *before* writing code — not only
+   after a bug or a code-review finding surfaces it. Goal: prevention over correction — spend a small,
+   cheap search now to avoid a larger token/time cost fixing it later (a wrong implementation, a review
+   round-trip, a CI failure). Cite what you found and how it shaped the approach, the same as any other
+   research. This does not replace reading this codebase's own conventions first (CLAUDE.md, the
+   `docs/technical-notes/` design notes, existing code in the area) — check those before an external
+   search, since a local precedent usually beats a generic pattern.
 
 ---
 
