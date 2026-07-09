@@ -52,6 +52,10 @@ MAX_TOKENS_CEILING = 32000
 # Output-token model (docs/technical-notes/.../EXTRACTION_TOKEN_SIZING_2026-07-06.md, 840 real calls):
 # reply length is roster-bound, ~47 completion tokens/school (flat, no verbosity noise); each school
 # contributes ~2 clock times (start+end). So schools ≈ n_times/2 and output ≈ schools × 47.
+# NB: stage6_handoff/cost.py carries a SECOND output-per-school encoding (per-model fitted
+# `output_tokens_per_school`, and its `_n_schools` proxies n_times 1:1, not /2). It's dead today
+# (#192 — n_times never reaches handoff reps); when #192 revives it, unify with these constants so
+# the gate@6 cost preview and this runtime sizing can't disagree about the same rep.
 _TOKENS_PER_SCHOOL = 47
 _TIMES_PER_SCHOOL = 2
 _SIZING_HEADROOM = 1.5             # grade-band splitting (a K-12 campus emits >1 row/school) + long names
