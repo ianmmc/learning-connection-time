@@ -31,6 +31,14 @@ from dataclasses import dataclass
 from infrastructure.acquisition.common import config_loader
 
 
+def rounds_exhausted(rounds_used: int, cap: int | None) -> bool:
+    """The depth-guard comparison, in ONE place (#147): a district×band whose executed rounds have
+    reached `cap` (`max_request_rounds`) may fire no more. `cap` None ⇒ unbounded (never exhausted).
+    Both production sites (compose `plan_followup`, `execute_alternate_dispatch`) and
+    `BudgetGovernor.rounds_exhausted` route through here so the `>= cap` semantics can't fork."""
+    return cap is not None and rounds_used >= cap
+
+
 @dataclass(frozen=True)
 class Budget:
     """The caps, resolved from the `budget` knob. A None field is an unbounded dimension."""
@@ -38,6 +46,10 @@ class Budget:
     per_district_total_usd: float | None = None
     per_run_usd: float | None = None
     max_request_rounds: int | None = None
+
+    def rounds_exhausted(self, rounds_used: int) -> bool:
+        """The depth guard against THIS budget's `max_request_rounds` cap (#147)."""
+        return rounds_exhausted(rounds_used, self.max_request_rounds)
 
 
 def load_budget() -> Budget:
@@ -90,8 +102,7 @@ class BudgetGovernor:
 
     def rounds_exhausted(self, rounds_used: int) -> bool:
         """The depth guard: True once a district×band has already fired `max_request_rounds` rounds."""
-        cap = self.budget.max_request_rounds
-        return cap is not None and rounds_used >= cap
+        return self.budget.rounds_exhausted(rounds_used)
 
     # -- mutation --
     def record(self, district_id: str, cost_usd) -> None:

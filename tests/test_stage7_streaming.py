@@ -38,6 +38,17 @@ def _fake_pd(did, name, *_a, **_k):
                           "completion_tokens": 5, "cost_usd": 0.001}}
 
 
+def _spend_seed(this_run=None, total=None):
+    """Fake `_spend_by_district` (#147): one function serving both governor scopes — `handoff_hash=`
+    returns this run's per-district spend (its SUM is the run seed), `district_ids=` the cumulative
+    per-district total. Seeds are CONSISTENT by construction (run total = sum of the per-district
+    dict), unlike the old independent-mock trio that could set run=0 while a district read 999."""
+    this_run, total = this_run or {}, total or {}
+    def _f(*, handoff_hash=None, district_ids=None):
+        return dict(total) if district_ids is not None else dict(this_run)
+    return _f
+
+
 def _mock_env(monkeypatch, already):
     monkeypatch.setattr(R7, "_run_district", _fake_pd)
     monkeypatch.setattr(R7, "_require_key", lambda: None)
@@ -45,11 +56,9 @@ def _mock_env(monkeypatch, already):
     monkeypatch.setattr(R7.gdb, "init_precious_schema", lambda: None)
     monkeypatch.setattr(R7.gdb, "session_scope", lambda: contextlib.nullcontext(None))
     monkeypatch.setattr(R7, "_already_extracted", lambda hh: set(already))
-    # REQ-051 governor seeds (DB SUM(cost_usd)) — stub like the other DB reads; the shipped budget.json
-    # caps ($25/run) don't trip on this test's $0.001/district, so the governor is inert here.
-    monkeypatch.setattr(R7, "_run_spend", lambda hh: 0.0)
-    monkeypatch.setattr(R7, "_district_spend", lambda hh: {})
-    monkeypatch.setattr(R7, "_district_total_spend", lambda ids: {})
+    # REQ-051 governor seed (DB SUM(cost_usd)) — one query now (#147); the shipped budget.json caps
+    # ($25/run, $1/district, $3/district-total) don't trip on this test's $0.001/district, inert here.
+    monkeypatch.setattr(R7, "_spend_by_district", _spend_seed())
     monkeypatch.setattr(R7, "write_district_receipt", lambda pd, hh, **k: "/tmp/r.json")
     monkeypatch.setattr(R7.DS, "export_status", lambda s: None)
     # the request-loop detect/persist runs in the same persist txn — no-op it here (its own tests cover it)
@@ -98,18 +107,21 @@ def test_budget_run_cap_halts_before_paid_district(monkeypatch):
     """REQ-051: the run halts cleanly at the run cap — the already-spent prior run seeds the governor
     over ceiling, so NO further district is extracted (durability: nothing new persisted)."""
     persisted = _mock_env(monkeypatch, already=set())
-    monkeypatch.setattr(R7, "_run_spend", lambda hh: 999.0)       # prior spend already over any cap
+    # prior run spend already over the $25 run cap (run seed = sum of this-run per-district spend).
+    monkeypatch.setattr(R7, "_spend_by_district", _spend_seed(this_run={"ZZS1": 999.0}))
     out = R7.run_council_streaming(DOC, persist=True, resume=True)
     assert persisted == []                        # halted before the first paid district
     assert out["districts"] == {}
 
 
 def test_budget_district_cap_skips_but_run_continues(monkeypatch):
-    """REQ-051: a per-district (per-run) ceiling skips the over-budget district, continues to the next."""
+    """REQ-051: a per-district (per-run) ceiling skips the over-budget district, continues to the next.
+    ZZS1 at $2 clears the $1 per-district cap; the run total ($2) stays under the $25 run cap — the
+    consolidated seed (#147) makes run = sum(per-district), so the value must isolate ONE cap."""
     persisted = _mock_env(monkeypatch, already=set())
-    monkeypatch.setattr(R7, "_district_spend", lambda hh: {"ZZS1": 999.0})   # ZZS1 already over cap
+    monkeypatch.setattr(R7, "_spend_by_district", _spend_seed(this_run={"ZZS1": 2.0}))
     out = R7.run_council_streaming(DOC, persist=True, resume=True)
-    assert persisted == ["ZZS2"]                  # ZZS1 skipped, ZZS2 still runs
+    assert persisted == ["ZZS2"]                  # ZZS1 skipped (over $1), ZZS2 still runs (run $2 < $25)
     assert set(out["districts"]) == {"ZZS2"}
 
 
@@ -117,8 +129,8 @@ def test_budget_district_TOTAL_cap_skips_across_handoffs(monkeypatch):
     """REQ-051: the CUMULATIVE per-district cap (all handoffs) skips a district whose lifetime spend is
     over ceiling, even though THIS handoff's per-run spend is 0 — the request-loop runaway guard."""
     persisted = _mock_env(monkeypatch, already=set())
-    monkeypatch.setattr(R7, "_district_spend", lambda hh: {})               # this run: nothing yet
-    monkeypatch.setattr(R7, "_district_total_spend", lambda ids: {"ZZS1": 999.0})  # lifetime: over cap
+    # this run: nothing yet (run + per-run-district under cap); lifetime ZZS1 $4 > $3 total cap.
+    monkeypatch.setattr(R7, "_spend_by_district", _spend_seed(total={"ZZS1": 4.0}))
     out = R7.run_council_streaming(DOC, persist=True, resume=True)
     assert persisted == ["ZZS2"]                  # ZZS1 skipped on the TOTAL cap; ZZS2 still runs
     assert set(out["districts"]) == {"ZZS2"}

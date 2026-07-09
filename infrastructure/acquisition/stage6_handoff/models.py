@@ -6,16 +6,14 @@ dispatch; this row is the queryable INDEX over those files — so the console ca
 ingest drop list); rebuildable from the files if ever needed. Registered on the governance `Base`
 (create via `init_precious_schema()` once the app imports this module).
 """
-from datetime import datetime, timezone
 
 from sqlalchemy import String, Integer, Float, JSON
 from sqlalchemy.orm import Mapped, mapped_column
 
 from infrastructure.acquisition.common import db as gdb
+from infrastructure.acquisition.common.timeutil import utcnow  # noqa: F401 (re-export: default=utcnow + external .utcnow callers)
 
 
-def utcnow() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 class Handoff(gdb.Base):

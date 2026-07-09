@@ -12,7 +12,6 @@ and survives keep-alive gaps; (2) a SOURCE guard — no OpenAI-SDK chat-completi
 acquisition code runs un-streamed, unconditionally (the one-time deprecated-path allowlist emptied and
 was removed when its only entry, openrouter_search, was deleted — #87)."""
 import ast
-import types
 from pathlib import Path
 
 import pytest
@@ -21,41 +20,13 @@ from infrastructure.acquisition.stage7_extract import openrouter as OR
 
 
 # ---- minimal fakes for the OpenAI SDK streaming-chunk shape ----
-class _Delta:
-    def __init__(self, content=None): self.content = content
-
-
-class _Choice:
-    def __init__(self, content=None, finish_reason=None):
-        self.delta = _Delta(content); self.finish_reason = finish_reason
-
-
-class _Usage:
-    def __init__(self, p=0, c=0, cost=None):
-        self.prompt_tokens = p; self.completion_tokens = c; self.cost = cost; self.model_extra = {}
-
-
-class _Chunk:
-    def __init__(self, choices=(), usage=None, id="gen-x"):
-        self.choices = list(choices); self.usage = usage; self.id = id; self.model_extra = {}
+# The OpenAI-SDK streaming fakes live in ONE place now (#147), aliased to this file's private names.
+from openai_fakes import Chunk as _Chunk, Choice as _Choice, Usage as _Usage  # noqa: E402
+import openai_fakes as _F  # noqa: E402
 
 
 def _patch(monkeypatch, chunks):
-    captured = {}
-
-    class _Completions:
-        @staticmethod
-        def create(**body):
-            captured.update(body)
-            return iter(chunks)
-
-    class _Client:
-        def __init__(self, **kw): self.chat = types.SimpleNamespace(completions=_Completions())
-
-    import openai
-    monkeypatch.setattr(openai, "OpenAI", _Client)
-    monkeypatch.setattr(OR, "resolve_key", lambda explicit=None: "sk-test")
-    return captured
+    return _F.patch(monkeypatch, OR, chunks)
 
 
 BODY = {"model": "google/gemini-2.5-flash-lite", "messages": [{"role": "user", "content": "x"}]}

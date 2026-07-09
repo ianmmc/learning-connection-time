@@ -24,7 +24,6 @@ stays eligible for redraw (e.g. after a queue-time bug fix).
 Schema reference: data/acquisition/status/district_status.example.json
 Doc: docs/ACQUISITION_PIPELINE.md (Stage 1), docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §3
 """
-from datetime import datetime, timezone
 import json
 
 from sqlalchemy import Integer, String, text
@@ -32,6 +31,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from infrastructure.acquisition.common import paths  # noqa: E402  (single source of truth for runtime-state locations — REQ-087)
 from infrastructure.acquisition.common import db as gdb  # noqa: E402  (isolated governance Postgres — REQ-103)
+from infrastructure.acquisition.common.timeutil import utcnow as _now
 
 STATUS_FILE = paths.STATUS_FILE
 SCHEMA_VERSION = 2   # 1 = JSON registry; 2 = Postgres state_event log + regenerable JSON backup
@@ -122,8 +122,6 @@ INSERT_STATE_EVENT = text(
          :event_type, :outcome, :topology, :batch_id, :fingerprints_json, :actor, :note, :created_at)""")
 
 
-def _now() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def ensure_schema() -> None:

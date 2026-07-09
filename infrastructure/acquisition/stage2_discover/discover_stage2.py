@@ -30,6 +30,7 @@ from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import paths
 
 from infrastructure.acquisition.common.discover import host_of, gate, slugify
+from infrastructure.acquisition.common import timeutil as TU
 
 # Anchored to the repo (paths.RAW_CAPTURES), never a CWD-relative literal -- this script and the
 # governance server (which reads the same discovery.json/candidates.json) must agree on the location
@@ -337,7 +338,7 @@ def write_discovery(district: dict, roster: list, batch_id: str, *, merge: bool 
             old_candidates = (json.loads(cand_path.read_text()) or {}).get("candidates", [])
 
     if disc_path.exists():
-        ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        ts = TU.fs_stamp()
         disc_path.rename(d / f"discovery.{ts}.json")
         if cand_path.exists():
             cand_path.rename(d / f"candidates.{ts}.json")

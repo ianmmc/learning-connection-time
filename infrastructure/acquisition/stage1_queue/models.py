@@ -13,16 +13,14 @@ queries the user stories need (a district in multiple batches; per-batch yields)
   batch_school     — one row per (district, school); `bands` lists every band it's selected into;
                      `included` soft-rejects; `source` distinguishes stratified picks from manual adds
 """
-from datetime import datetime, timezone
 
 from sqlalchemy import JSON, Boolean, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from infrastructure.acquisition.common import db as gdb
+from infrastructure.acquisition.common.timeutil import utcnow  # noqa: F401 (re-export: default=utcnow + external .utcnow callers)
 
 
-def utcnow() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 class Batch(gdb.Base):

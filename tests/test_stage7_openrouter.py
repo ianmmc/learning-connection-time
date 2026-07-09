@@ -7,60 +7,18 @@ import types
 import pytest
 
 from infrastructure.acquisition.stage7_extract import openrouter as OR
-
-
-# ---- tiny fakes for the OpenAI SDK's streaming chunk shape ----
-class _Delta:
-    def __init__(self, content=None):
-        self.content = content
-
-
-class _Choice:
-    def __init__(self, content=None, finish_reason=None):
-        self.delta = _Delta(content)
-        self.finish_reason = finish_reason
-
-
-class _Usage:
-    def __init__(self, p, c, cost):
-        self.prompt_tokens = p
-        self.completion_tokens = c
-        self.cost = cost
-        self.model_extra = {}
-
-
-class _Chunk:
-    def __init__(self, choices=(), usage=None, error=None, id="gen-test-123"):
-        self.choices = list(choices)
-        self.usage = usage
-        self.id = id
-        self.model_extra = {"error": error} if error else {}
-
-
-def _client_returning(chunks):
-    """A fake openai.OpenAI whose chat.completions.create yields `chunks` (captures the body)."""
-    captured = {}
-
-    class _Completions:
-        @staticmethod
-        def create(**body):
-            captured.update(body)
-            return iter(chunks)
-
-    class _Client:
-        def __init__(self, **kw):
-            captured["client_kwargs"] = kw
-            self.chat = types.SimpleNamespace(completions=_Completions())
-
-    return _Client, captured
+# The OpenAI-SDK streaming fakes live in ONE place now (#147); aliased to the private names the tests
+# below use. `_patch`/`_patch_sequence` bind this module's OR.
+from openai_fakes import Chunk as _Chunk, Choice as _Choice, Usage as _Usage
+import openai_fakes as _F
 
 
 def _patch(monkeypatch, chunks):
-    Client, captured = _client_returning(chunks)
-    import openai
-    monkeypatch.setattr(openai, "OpenAI", Client)
-    monkeypatch.setattr(OR, "resolve_key", lambda explicit=None: "sk-test")
-    return captured
+    return _F.patch(monkeypatch, OR, chunks)
+
+
+def _patch_sequence(monkeypatch, batches):
+    return _F.patch_sequence(monkeypatch, OR, batches)
 
 
 BODY = {"model": "google/gemini-2.5-flash-lite", "messages": [{"role": "user", "content": "x"}]}
@@ -81,30 +39,6 @@ def test_stream_accumulates_deltas_and_reads_final_usage(monkeypatch):
     assert captured["stream"] is True
     assert captured["extra_body"] == {"usage": {"include": True}}
     assert captured["client_kwargs"]["default_headers"] == OR.ATTRIBUTION_HEADERS
-
-
-def _patch_sequence(monkeypatch, batches):
-    """Fake OpenAI whose create() serves batches[i] on the i-th call (a chunk list to yield, or an
-    Exception to raise) — for exercising the #169 truncation RETRY, which makes a second call."""
-    calls = []
-
-    class _Completions:
-        @staticmethod
-        def create(**body):
-            calls.append(dict(body))
-            item = batches[len(calls) - 1]
-            if isinstance(item, Exception):
-                raise item
-            return iter(item)
-
-    class _Client:
-        def __init__(self, **kw):
-            self.chat = types.SimpleNamespace(completions=_Completions())
-
-    import openai
-    monkeypatch.setattr(openai, "OpenAI", _Client)
-    monkeypatch.setattr(OR, "resolve_key", lambda explicit=None: "sk-test")
-    return calls
 
 
 def _truncated_batch():
