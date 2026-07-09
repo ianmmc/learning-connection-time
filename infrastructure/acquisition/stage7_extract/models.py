@@ -28,6 +28,15 @@ class Extraction(gdb.Base):
     extraction_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     handoff_hash: Mapped[str] = mapped_column(String, index=True)   # the dispatch this ran against
     district_id: Mapped[str] = mapped_column(String, index=True)
+    # 'production' (default) vs 'probe' (a council-variant A/B, e.g. image_handoff_variant's vision
+    # probe). The gate@7 console shows ONLY production; a probe is an experiment, not a review surface.
+    # First-class discriminator (#148) — replaces the fragile `handoff_hash NOT LIKE '%-image'` string
+    # match, which silently let any OTHER variant suffix (`-vision2`, …) shadow production runs.
+    # Deliberately UNindexed, like every other _PRECIOUS_ALTERS column: the raw ALTER migration can't
+    # add a model-side index, so index=True would silently diverge fresh vs migrated DBs — and the
+    # console filter matches nearly every row, so an index buys nothing.
+    run_kind: Mapped[str] = mapped_column(String, default="production", server_default="production",
+                                          nullable=False)
     created_at: Mapped[str] = mapped_column(String, default=utcnow)
     created_by: Mapped[str] = mapped_column(String, default="auto:stage7")
     # telemetry rollup (per-model per-call detail lives in the disk receipt)

@@ -345,7 +345,8 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
     except Exception:  # noqa: BLE001 — estimate is advisory (see _estimate_district_cost)
         cost_model = None
 
-    results = {"handoff_hash": hh, "districts": {}}
+    run_kind = doc.get("run_kind") or "production"    # #148: probes (image_handoff_variant) stamp this
+    results = {"handoff_hash": hh, "run_kind": run_kind, "districts": {}}
     for did in sorted(by_district):
         if did in done:
             print(f"[skip]  {did} — already extracted for handoff {hh}", flush=True)
@@ -387,9 +388,15 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
         if persist:
             rp = write_district_receipt(pd, hh)
             with gdb.session_scope() as s:
-                persist_run_session(s, {"handoff_hash": hh, "districts": {did: pd}},
+                persist_run_session(s, {"handoff_hash": hh, "run_kind": run_kind,
+                                        "districts": {did: pd}},
                                     created_by=created_by, receipt_path=rp)
-                detect_and_persist_requests(s, pd, hh)   # request-more-evidence, same txn
+                # Request-more-evidence, same txn — PRODUCTION only (#148 review): the console's
+                # pending counts + detail cards are district-scoped across all handoffs, so a probe's
+                # directives would surface as reviewable production work (and an approved one could be
+                # swept into a paid follow-up). A probe is a measurement, never a remedy driver.
+                if run_kind == "production":
+                    detect_and_persist_requests(s, pd, hh)
         _print_district_progress(did, pd, gt_data)
         if on_district:
             on_district(did, pd)
@@ -455,6 +462,10 @@ def image_handoff_variant(doc: dict, *, council_id: str = "image") -> dict:
     base_hash = v.get("handoff_hash")
     if base_hash:
         v["handoff_hash"] = f"{base_hash}-{council_id}"
+    # #148: mark this as a PROBE so its extraction rows carry run_kind='probe' and stay out of the
+    # gate@7 console — a first-class flag, independent of the hash suffix (which now serves only
+    # resume-isolation + lineage). Any council_id, not just 'image', is a probe.
+    v["run_kind"] = "probe"
     return v
 
 
@@ -578,11 +589,12 @@ def persist_run_session(s, results: dict, *, created_by: str = "auto:stage7",
     row (telemetry rollup + receipt pointer) + its `school_fact` rows (accepted + unresolved) + a
     `stage=7` `extracted` state_event (furthest_stage -> 7). Returns a summary."""
     hh = results.get("handoff_hash")
+    run_kind = results.get("run_kind") or "production"   # #148: probe vs production, console discriminator
     summary = {"handoff_hash": hh, "districts": [], "n_facts": 0}
     for did, pd in results["districts"].items():
         tel = pd.get("telemetry") or {}
         ex = M7.Extraction(
-            handoff_hash=hh or "", district_id=did, created_by=created_by,
+            handoff_hash=hh or "", district_id=did, created_by=created_by, run_kind=run_kind,
             n_reps=pd.get("n_reps", 0), n_calls=tel.get("calls", 0),
             n_judge_calls=tel.get("judge_calls", 0), n_errors=tel.get("errors", 0),
             prompt_tokens=tel.get("prompt_tokens", 0),

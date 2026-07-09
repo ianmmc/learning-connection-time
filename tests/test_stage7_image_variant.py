@@ -67,6 +67,8 @@ def test_variant_gets_a_distinct_handoff_hash(tmp_path, monkeypatch):
     v = R7.image_handoff_variant(DOC)
     assert v["handoff_hash"] == "abc123-image"
     assert v["handoff_hash"] != DOC["handoff_hash"]
+    assert v["run_kind"] == "probe"          # #148: flagged a probe, keeping it out of the console
+    assert "run_kind" not in DOC             # the source (production) doc is untouched
 
 
 def test_custom_council_id_reflected_in_hash_and_routing(tmp_path, monkeypatch):
@@ -76,5 +78,8 @@ def test_custom_council_id_reflected_in_hash_and_routing(tmp_path, monkeypatch):
 
     v = R7.image_handoff_variant(DOC, council_id="vision-x")
     assert v["handoff_hash"] == "abc123-vision-x"
+    # #148: a NON-'-image' probe suffix — the exact case the old `NOT LIKE '%-image'` filter missed.
+    # run_kind='probe' catches it regardless of the suffix, so it can't shadow production in the console.
+    assert v["run_kind"] == "probe"
     d1 = next(d for d in v["districts"] if d["district_id"] == "D1")
     assert d1["records"][0]["reps"][0]["councils"] == ["vision-x"]
