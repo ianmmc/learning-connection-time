@@ -16,6 +16,7 @@ requires-python = ">=3.10"
 # --- Architecture contracts (REQ-098 step 4): `lint-imports` enforces these in CI. ---
 [tool.importlinter]
 root_packages = ["infrastructure"]
+include_external_packages = true   # needed to forbid the external `openai` SDK below (REQ-119, #148)
 
 [[tool.importlinter.contracts]]
 name = "Layering: process_governance (app) > stages (independent) > common (base)"
@@ -43,6 +44,21 @@ name = "The LCT/database/scripts layer must not import the acquisition pipeline"
 type = "forbidden"
 source_modules = ["infrastructure.database", "infrastructure.scripts"]
 forbidden_modules = ["infrastructure.acquisition"]
+
+[[tool.importlinter.contracts]]
+# REQ-119 (#148): forbid a MODULE-LEVEL OpenAI SDK import anywhere in acquisition — the exact gap the
+# AST source-guard test can't see (it walks function bodies only, so a module-level un-streamed call
+# escapes it). openrouter's own `import openai` is function-scoped (grimp doesn't graph it), so it
+# needs no exemption; together the two guards cover both scopes of SDK use.
+name = "No module-level OpenAI SDK import in acquisition — the one paid surface streams (REQ-119)"
+type = "forbidden"
+source_modules = ["infrastructure.acquisition"]
+forbidden_modules = ["openai"]
+ignore_imports = [
+    # The ONE sanctioned SDK importer — the streaming client. Any OTHER acquisition module importing
+    # openai breaks this contract (a second paid surface that skipped the streaming/billing-halt path).
+    "infrastructure.acquisition.stage7_extract.openrouter -> openai",
+]
 
 [tool.setuptools.packages.find]
 where = ["."]

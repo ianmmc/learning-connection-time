@@ -74,6 +74,12 @@
     });
   }
 
+  // #148: after a review/execute/compose action, refresh the detail + the left-pane badge together
+  // (independent fetches — run in parallel; the pair was duplicated across every action handler).
+  function refreshAfterAction(did) {
+    return Promise.all([openDistrict(did), loadDistricts()]).catch((e) => console.error(e));
+  }
+
   function bandTable(bands) {
     const rows = ["elementary", "middle", "high"].filter((b) => bands[b]).map((b) => {
       const v = bands[b];
@@ -165,8 +171,7 @@
   async function reviewRequest(id, status, did) {
     try { await api(`/api/extract/request/${id}`, postJSON({ status, actor: "ian" })); }
     catch (e) { alert("Review failed: " + e.message); return; }
-    openDistrict(did);          // re-render detail with the new status
-    loadDistricts();            // refresh the left-pane pending badge
+    refreshAfterAction(did);
   }
 
   // 7->6: fire the district's approved alternate-rep re-dispatches as ONE BUNDLE (#153: a single
@@ -181,8 +186,7 @@
     let msg = `Bundled ${out.n_bundled || 1} re-dispatch(es) (${files}) → new handoff ${out.handoff_hash} = one round. Run Stage 7 on it to extract (budget-gated).`;
     if (out.skipped && out.skipped.length) msg += `\nSkipped ${out.skipped.length} directive(s) with no dispatchable alternate left.`;
     alert(msg);
-    openDistrict(did);
-    loadDistricts();
+    refreshAfterAction(did);
   }
 
   // 7->2/7->3/7->1: PREVIEW the follow-up in a modal (#154), then compose on confirm (cancel = no-op).
@@ -249,8 +253,7 @@
     if (out.autoflow_started) msg += `\n\nAuto-flowing to gate@5 in the background… (watch Stage 1/2/3/4, review at gate@5).`;
     alert(msg);
     if (out.autoflow_started) pollAutoflow(out.batch_id);
-    openDistrict(did);
-    loadDistricts();
+    refreshAfterAction(did);
   }
 
   // #157: poll the follow-up auto-flow until it lands at gate@5 (or halts), then notify.

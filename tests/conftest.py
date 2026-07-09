@@ -259,3 +259,16 @@ def snapshot_serializer():
         return json.dumps(data, cls=CustomEncoder, indent=2, sort_keys=True)
 
     return serialize
+
+
+@pytest.fixture(autouse=True)
+def _reset_openrouter_client_cache():
+    """#148: `openrouter._client` is lru-cached per (key, timeout) for connection reuse. Tests swap
+    `openai.OpenAI` for a fake per test — clear the cache before each so a prior test's cached fake
+    client is never served (same (key, timeout))."""
+    try:
+        from infrastructure.acquisition.stage7_extract import openrouter as _OR
+        _OR._client.cache_clear()
+    except Exception:
+        pass
+    yield

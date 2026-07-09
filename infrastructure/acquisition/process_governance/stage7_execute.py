@@ -610,7 +610,8 @@ def _bundle_alternate(s, district_id: str, actor: str, root) -> dict:
     meta = REL.load_district(s, district_id)
     if not meta:
         return {"ok": False, "reason": f"district {district_id} not in the release store"}
-    recs_by_key = {r["rec_key"]: r for r in REL.load_district_records(s, district_id)}
+    # #148: load ONLY the approved requests' target records (a handful), not the whole district.
+    recs_by_key = {r["rec_key"]: r for r in REL.load_records_by_key(s, [req["target"] for req in reqs])}
     sent_by_rec = _sent_files_by_rec(s, district_id)
 
     selections, swept, skipped = [], [], []
