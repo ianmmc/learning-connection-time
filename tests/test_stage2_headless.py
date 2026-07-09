@@ -312,6 +312,8 @@ def inmem_registry(monkeypatch):
     monkeypatch.setattr(DS, "load", lambda: reg)
     monkeypatch.setattr(DS, "save", lambda r, **kw: len(r.get("_events", [])))
     monkeypatch.setattr(DS, "export", lambda: 0)   # run-end export (issue #49) — no Postgres in tests
+    # the #168 abandon guard opens its own DB session — no-op it so the runner needs no Postgres
+    monkeypatch.setattr(H.BG, "assert_runnable", lambda *a, **k: None)
     return reg
 
 
