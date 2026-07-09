@@ -176,8 +176,9 @@ def _attempted_schools(session, district_ids: list) -> dict:
     discovery — its schools were NOT attempted — and an abandoned draft (batch_00009) would poison
     the untried set forever; an APPROVED batch is committed-to-run, so counting it also prevents
     double-queuing the same school across overlapping follow-ups. `abandoned` (#168) is excluded for
-    the same reason as `draft`: it is a retired never-ran draft, so its schools were never attempted
-    (abandon is draft-only precisely to keep this true — see batch_store.abandon_batch)."""
+    the same reason as `draft`: `batch_store.abandon_batch` refuses any batch whose durable
+    `first_approved_at` is set, so `abandoned` provably implies never-approved -> never-ran -> its
+    schools were never attempted (that guard is what keeps this exclusion sound)."""
     if not district_ids:
         return {}
     out: dict = {}

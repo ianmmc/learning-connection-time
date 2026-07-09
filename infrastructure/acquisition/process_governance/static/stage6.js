@@ -108,12 +108,13 @@
         : `<span class="badge ${tone}" title="canonical records that will be sent — labeled targets + unlabeled tier-A${c.n_verified ? `, of which ${c.n_verified} human-verified` : ""} (preview shows exact reps + cost)">${n} send</span>`;
       const verifiedMeta = (!VERIFIED_ONLY && c.n_verified) ? ` · <span title="human-labeled targets — the verified-only subset">${c.n_verified} verified</span>` : "";
       // #171: dispatch-history markers so fresh vs. already-sent districts are distinguishable at a glance.
-      const bench = c.batch_id === "batch_00000"
-        ? `<span class="badge badge-accent" title="benchmark district (batch_00000) — dispatch-walled; generally do not re-send">benchmark</span>` : "";
+      // is_benchmark is server-computed by batch_type membership (matches the dispatch wall), #198 review.
+      const bench = c.is_benchmark
+        ? `<span class="badge badge-accent" title="benchmark district (batch_type=benchmark) — dispatch-walled; generally do not re-send">benchmark</span>` : "";
       const disp = c.n_dispatched > 0
         ? `<span class="badge badge-warn" title="already dispatched ${c.n_dispatched}×${c.last_dispatched_at ? ` — last ${esc(fmt(c.last_dispatched_at))}` : ""}; re-selecting re-dispatches + re-extracts (wasted spend)">dispatched</span>` : "";
       const ext = c.n_extracted > 0
-        ? `<span class="badge badge-neutral" title="${c.n_extracted} production extraction${c.n_extracted === 1 ? "" : "s"} on record for this district">✓ extracted</span>` : "";
+        ? `<span class="badge badge-neutral" title="${c.n_extracted} production extraction${c.n_extracted === 1 ? "" : "s"} with accepted facts on record for this district">✓ extracted</span>` : "";
       el.innerHTML = `<div class="s6-cand-top">
           <input type="checkbox" data-id="${esc(c.district_id)}" ${SELECTED.has(c.district_id) ? "checked" : ""}/>
           <span class="q-batch-id">${esc(c.name || c.district_id)}</span>

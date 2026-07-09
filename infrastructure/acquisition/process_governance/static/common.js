@@ -19,5 +19,14 @@ window.LCT = (function () {
     return r.json();
   }
 
-  return { esc, postJSON, api };
+  // Shared batch-status pill (#168/#198 review) — ONE home so the tone mapping can't fork across the
+  // stage views (gate1 + stage2/3/4 each had their own inline copy; abandoned was added to gate1 only,
+  // so the other panes rendered a retired batch in the neutral draft tone). approved -> success,
+  // abandoned -> red (terminal, retired), anything else (draft/reserving) -> neutral.
+  const statusBadge = (s) => {
+    const tone = s === "approved" ? "badge-success" : s === "abandoned" ? "badge-red" : "badge-neutral";
+    return `<span class="badge ${tone}">${esc(s)}</span>`;
+  };
+
+  return { esc, postJSON, api, statusBadge };
 })();

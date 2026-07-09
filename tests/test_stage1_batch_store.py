@@ -197,16 +197,30 @@ class TestLifecycle:
         with pytest.raises(BS.BatchLocked):
             BS.reject_school(sess, "batch_test_store", "D1", "S_E1")
 
-    def test_abandon_is_draft_only(self, sess):
-        # #168: an APPROVED batch (may have run discovery) can't be abandoned directly — that would
-        # drop its schools out of the attempted set. Must reopen to draft first.
+    def test_abandon_refuses_an_ever_approved_batch(self, sess):
+        # #168 review: abandon is NEVER-APPROVED-only. Once approved, a batch's schools are committed as
+        # attempted; the durable first_approved_at survives reopen, so BOTH direct abandon AND the
+        # reopen->abandon path are refused (closing the #162 poison the terminal status would otherwise
+        # reintroduce for an already-ran batch).
         BS.create_batch(sess, _doc(), actor="t")
         BS.approve_batch(sess, "batch_test_store", "ian")
         with pytest.raises(BS.BatchLocked):
-            BS.abandon_batch(sess, "batch_test_store", "ian")
+            BS.abandon_batch(sess, "batch_test_store", "ian")   # approved -> refused
+        BS.reopen_batch(sess, "batch_test_store", "ian")        # back to draft, but first_approved_at stays set
+        with pytest.raises(BS.BatchLocked):
+            BS.abandon_batch(sess, "batch_test_store", "ian")   # reopen->abandon STILL refused (bypass closed)
+        assert sess.get(Batch, "batch_test_store").status == "draft"
+
+    def test_first_approved_at_is_durable_across_reopen(self, sess):
+        # #168 review: approve stamps the durable first_approved_at; reopen clears approved_at but NOT
+        # first_approved_at (the honest "were these schools ever committed to discovery" signal).
+        BS.create_batch(sess, _doc(), actor="t")
+        BS.approve_batch(sess, "batch_test_store", "ian")
+        fa = sess.get(Batch, "batch_test_store").first_approved_at
+        assert fa
         BS.reopen_batch(sess, "batch_test_store", "ian")
-        BS.abandon_batch(sess, "batch_test_store", "ian")   # now allowed
-        assert sess.get(Batch, "batch_test_store").status == "abandoned"
+        b = sess.get(Batch, "batch_test_store")
+        assert b.approved_at is None and b.first_approved_at == fa
 
 
 class TestReservation:

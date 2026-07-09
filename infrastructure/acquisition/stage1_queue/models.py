@@ -32,9 +32,15 @@ class Batch(gdb.Base):
     nces_year: Mapped[str] = mapped_column(String)
     created_at: Mapped[str] = mapped_column(String, default=utcnow)
     created_by: Mapped[str] = mapped_column(String)
-    approved_at: Mapped[str | None] = mapped_column(String, nullable=True)
+    approved_at: Mapped[str | None] = mapped_column(String, nullable=True)   # CURRENT approval (cleared by reopen)
     approved_by: Mapped[str | None] = mapped_column(String, nullable=True)
-    # #168: retire a superseded DRAFT (never-ran) batch to a terminal `abandoned` status without flipping
+    # #168 review: the DURABLE "was ever approved" stamp — set on the FIRST approve, NEVER cleared by
+    # reopen. This is the honest discriminator for "were this batch's schools committed to discovery
+    # (= attempted)?", which `approved_at` can't answer after a reopen. abandon is gated on it so an
+    # already-approved batch can't be laundered into the terminal `abandoned` status via reopen->abandon
+    # and drop its schools out of the attempted-set (the #162 poison). Additive via _PRECIOUS_ALTERS.
+    first_approved_at: Mapped[str | None] = mapped_column(String, nullable=True)
+    # #168: retire a superseded, never-approved DRAFT to a terminal `abandoned` status without flipping
     # it to a non-draft value that would count its schools as attempted (the #162 poison). Additive
     # columns via common/db.py _PRECIOUS_ALTERS; only set on the draft->abandoned transition.
     abandoned_at: Mapped[str | None] = mapped_column(String, nullable=True)

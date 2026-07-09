@@ -22,6 +22,7 @@ from pathlib import Path
 
 from sqlalchemy import text
 
+from infrastructure.acquisition.common import batch_guard as BG
 from infrastructure.acquisition.common import cache_ingest as CI
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
@@ -218,6 +219,8 @@ def run_batch(batch: dict, *, actor: str = "auto:stage3", on_event=None, _run=su
     the caller passes it from the DB (the console) or the receipt (the CLI), so the runner never reaches
     for the on-disk receipt itself."""
     batch_id = batch["batch_id"]
+    with gdb.session_scope() as _con:      # #168: never run a stage on a terminal abandoned batch
+        BG.assert_runnable(_con, batch_id)
 
     def emit(kind, **payload):
         if on_event:

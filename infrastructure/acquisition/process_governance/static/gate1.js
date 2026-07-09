@@ -7,17 +7,9 @@
   let CURRENT = null;   // batch_id
   let VIEW = null;      // last loaded to_view payload
 
-  const { esc, postJSON, api } = window.LCT;
+  const { esc, postJSON, api, statusBadge } = window.LCT;   // statusBadge shared (#198 review)
   const fmt = (iso) => (iso || "").replace("T", " ").replace("Z", " UTC");
   const fmtnum = (n) => (n == null ? "?" : Number(n).toLocaleString());
-
-
-  function statusBadge(s) {
-    const tone = s === "approved" ? "badge-success"
-               : s === "abandoned" ? "badge-red"       // #168: terminal, retired — distinct from draft
-               : "badge-neutral";
-    return `<span class="badge ${tone}">${esc(s)}</span>`;
-  }
 
   // ----------------------------- view switching (the shared stage switcher) -----------------------------
   // gate1.js hosts the one console switcher (per STAGE2 §4a). Each stage view is its own <main> + JS

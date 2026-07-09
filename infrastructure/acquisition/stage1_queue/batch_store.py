@@ -308,6 +308,8 @@ def approve_batch(sess, batch_id: str, actor: str) -> None:
     b.status = "approved"
     b.approved_at = utcnow()
     b.approved_by = actor
+    if b.first_approved_at is None:      # #168: durable ever-approved stamp — set once, survives reopen
+        b.first_approved_at = b.approved_at
     sess.flush()
 
 
@@ -327,19 +329,24 @@ def reopen_batch(sess, batch_id: str, actor: str) -> None:
 
 
 def abandon_batch(sess, batch_id: str, actor: str, reason: str = "") -> None:
-    """gate@1 abandon — retire a superseded batch to a TERMINAL `abandoned` status (#168).
+    """gate@1 abandon — retire a NEVER-APPROVED draft to a TERMINAL `abandoned` status (#168).
 
-    DRAFT-ONLY BY DESIGN. `_attempted_schools` (stage7_execute) excludes both `draft` and `abandoned`
-    from the already-attempted set on the premise that neither ever ran discovery. That premise only
-    holds if we can *only* abandon a never-ran draft: abandoning an APPROVED batch that already ran
-    discovery would drop its schools back out of the attempted set and re-queue them — the exact #162
-    poison this whole status was added to avoid. So an approved batch must be reopened to draft first."""
+    NEVER-APPROVED BY DESIGN (the invariant lives here, in the method that owns the transition, so no
+    entry point can bypass it). `_attempted_schools` (stage7_execute) excludes both `draft` and
+    `abandoned` from the already-attempted set on the premise that neither ever ran discovery. That
+    premise holds only if `abandoned` implies never-approved: an approved batch commits its schools to
+    discovery (they count as attempted the moment it's approved), so abandoning one — even after a
+    reopen-to-draft — would drop those schools back out of the attempted set and re-queue them, the
+    exact #162 poison this status was added to avoid. We gate on the DURABLE `first_approved_at`, not
+    the reopen-clearable `status`/`approved_at`: reopen->abandon on a once-approved batch is refused."""
     b = sess.get(Batch, batch_id)
     if b is None:
         raise KeyError(batch_id)
+    if b.first_approved_at is not None:
+        raise BatchLocked(f"{batch_id} was approved (its schools are committed as attempted); cannot "
+                          "abandon — a superseded approved batch stays approved, it is not retired")
     if b.status != "draft":
-        raise BatchLocked(f"{batch_id} is {b.status}; only a draft (never-ran) batch can be abandoned"
-                          + (" — re-open to draft first" if b.status == "approved" else ""))
+        raise BatchLocked(f"{batch_id} is {b.status}; only a never-approved draft can be abandoned")
     b.status = "abandoned"
     b.abandoned_at = utcnow()
     b.abandoned_by = actor

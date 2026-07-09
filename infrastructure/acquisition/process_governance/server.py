@@ -747,27 +747,26 @@ async def queue_reopen(batch_id: str, payload: dict):
 
 @app.post("/api/queue/{batch_id}/abandon")
 async def queue_abandon(batch_id: str, payload: dict):
-    """gate@1 abandon — retire a superseded DRAFT batch to a terminal `abandoned` status (#168). Records
-    a per-district gate@1 'abandoned' event carrying who/when/why. Draft-only (see abandon_batch): an
-    approved batch that already ran must be reopened first, else its schools would fall out of the
-    attempted-set and get re-queued."""
+    """gate@1 abandon — retire a NEVER-APPROVED draft batch to a terminal `abandoned` status (#168).
+    Records a per-district gate@1 'abandoned' event carrying who/when/why. Never-approved-only (see
+    abandon_batch): a once-approved batch's schools are committed as attempted, so it can't be retired —
+    the guard is on the durable first_approved_at, so reopen->abandon on a once-approved batch is refused.
+    One session, mirroring queue_reopen: abandon only flips status, so the district rows survive for the
+    same-session to_view (#198 review)."""
     actor = payload.get("actor", "ian")
     reason = payload.get("reason", "")
-    try:
-        with gdb.session_scope() as con:
-            # capture districts BEFORE the transition (an abandoned draft still has its rows)
-            districts = [(d.district_id, d.name, d.state) for d in con.scalars(
-                select(BatchDistrict).where(BatchDistrict.batch_id == batch_id,
-                                            BatchDistrict.included.is_(True)))]
-            BSTORE.abandon_batch(con, batch_id, actor, reason)
-    except BSTORE.BatchLocked as e:
-        raise HTTPException(409, str(e))
-    except KeyError:
-        raise HTTPException(404, f"no such batch {batch_id}")
-    _record_gate1(districts, event_type="abandoned", actor=actor,
-                  note=f"gate@1 abandoned {batch_id}" + (f": {reason}" if reason else ""))
     with gdb.session_scope() as con:
-        return BSTORE.to_view(con, batch_id)
+        try:
+            BSTORE.abandon_batch(con, batch_id, actor, reason)
+        except BSTORE.BatchLocked as e:
+            raise HTTPException(409, str(e))
+        except KeyError:
+            raise HTTPException(404, f"no such batch {batch_id}")
+        view = BSTORE.to_view(con, batch_id)
+    _record_gate1([(d["district_id"], d["name"], d["state"]) for d in view["districts"] if d["included"]],
+                  event_type="abandoned", actor=actor,
+                  note=f"gate@1 abandoned {batch_id}" + (f": {reason}" if reason else ""))
+    return view
 
 
 @app.get("/api/queue/{batch_id}/district/{district_id}/candidates")
@@ -1081,9 +1080,11 @@ def handoff_candidates():
 
     Also carries a per-district DISPATCH-HISTORY signal (#171) so the console can distinguish fresh
     from already-sent districts (re-selecting a dispatched one is wasted spend): `n_dispatched` /
-    `last_dispatched_at` from the gate@6 `dispatched` state_events, `n_extracted` from PRODUCTION
-    extractions (probe A/B runs excluded, mirroring gate@7), and `batch_id` so the client can mark
-    benchmark (batch_00000) districts, which are dispatch-walled and generally should not be re-sent."""
+    `last_dispatched_at` from the gate@6 `dispatched` state_events; `n_extracted` = PRODUCTION
+    extractions that ACCEPTED >=1 fact (n_accepted>0 — an all-errors run persists a row but has no
+    facts, so bare row-existence would falsely read as 'has data'; #198 review); and `is_benchmark`
+    computed server-side by the SAME rule as the dispatch wall (`batch_type='benchmark'` membership,
+    not the batch_00000 id literal — the GT corpus grows into new benchmark batches; #198 review)."""
     # Target labels are a BOUND list parameter computed per request (issue #62): the old module-level
     # _TARGET_IN froze the vocabulary at import time AND string-interpolated it into the SQL.
     targets = sorted(BS.TARGET_LABELS)
@@ -1093,7 +1094,10 @@ def handoff_candidates():
                        COALESCE(t.n_send, 0) AS n_send, COALESCE(t.n_verified, 0) AS n_verified,
                        COALESCE(t.n_hold, 0) AS n_hold,
                        COALESCE(disp.n_dispatched, 0) AS n_dispatched, disp.last_dispatched_at,
-                       COALESCE(ext.n_extracted, 0) AS n_extracted
+                       COALESCE(ext.n_extracted, 0) AS n_extracted,
+                       EXISTS (SELECT 1 FROM batch_district bd JOIN batch b ON b.batch_id = bd.batch_id
+                               WHERE bd.district_id = d.district_id
+                                 AND b.batch_type = 'benchmark') AS is_benchmark
                 FROM district d
                 LEFT JOIN (
                     SELECT r.district_id,
@@ -1113,7 +1117,7 @@ def handoff_candidates():
                 ) disp ON disp.district_id = d.district_id
                 LEFT JOIN (
                     SELECT district_id, COUNT(*) AS n_extracted
-                    FROM extraction WHERE run_kind = 'production'
+                    FROM extraction WHERE run_kind = 'production' AND n_accepted > 0
                     GROUP BY district_id
                 ) ext ON ext.district_id = d.district_id
                 ORDER BY n_send DESC, n_hold DESC, d.district_id"""),
@@ -1492,16 +1496,11 @@ def _autoflow_followup(batch_id: str, actor: str) -> None:
         job["state"], job["error"], job["finished_at"] = "error", f"batch busy: {e.detail}", _now()
         return
     try:
-        # An abandoned batch is terminal — never flow it through the chain. approve_batch raises
-        # BatchLocked for any non-draft status and the auto-approve below swallows that, so guard
-        # explicitly here (#168) rather than let a retired batch silently run.
-        with gdb.session_scope() as con:
-            _b = con.get(Batch, batch_id)
-            if _b is not None and _b.status == "abandoned":
-                job["state"], job["error"], job["finished_at"] = (
-                    "error", f"{batch_id} is abandoned; not running", _now())
-                return
-        # gate@1 auto-approve (idempotent: a re-run finds it already approved)
+        # gate@1 auto-approve (idempotent: a re-run finds it already approved). The swallow is
+        # STATUS-AWARE (#168/#198 review): approve_batch raises BatchLocked for ANY non-draft status, so
+        # only carry on when the batch is genuinely already 'approved'. A terminal 'abandoned' (or a
+        # stray 'reserving' placeholder, or a vanished batch) must HALT the chain, not silently run —
+        # its schools are excluded from the attempted-set, so running it would re-queue them (#162).
         try:
             with gdb.session_scope() as con:
                 BSTORE.approve_batch(con, batch_id, actor)
@@ -1511,7 +1510,13 @@ def _autoflow_followup(batch_id: str, actor: str) -> None:
             _record_gate1(included, event_type="approved", actor=actor,
                           note=f"gate@1 auto-approved (follow-up autoflow) {batch_id}")
         except BSTORE.BatchLocked:
-            pass                                  # already approved — carry on into the stage chain
+            with gdb.session_scope() as con:
+                b = con.get(Batch, batch_id)     # expire_on_commit=False → status readable after close
+            if not b or b.status != "approved":
+                job["state"], job["error"], job["finished_at"] = (
+                    "error", f"{batch_id} is {b.status if b else 'missing'}; not runnable via autoflow", _now())
+                return
+            # else: genuinely already approved (idempotent re-run) — carry on into the stage chain
         job["stages"]["gate1"] = "approved"
 
         job["stage"] = "discover"                 # Stage 2

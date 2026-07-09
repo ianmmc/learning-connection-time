@@ -48,7 +48,7 @@
     // stale gate@1 "approved". A draft shows as a blocker.
     const badge = b.status === "approved"
       ? window.progressBadge(b.progress, "stage4")
-      : `<span class="badge badge-neutral">${esc(b.status)}</span>`;
+      : window.LCT.statusBadge(b.status);   // #198 review: shared tone (abandoned -> red, not draft-neutral)
     el.innerHTML = `<div class="q-batch-top"><span class="q-batch-id">${esc(b.batch_id)}</span>${badge}</div>
       <div class="q-batch-meta">${esc(b.batch_type)} · ${b.n_districts} district${b.n_districts === 1 ? "" : "s"} · ${esc(b.nces_year)}</div>`;
     el.onclick = () => loadStatus(b.batch_id);
@@ -77,7 +77,9 @@
     const canRun = retriable > 0 && !running;
 
     let actionHtml;
-    if (retriable === 0 && r.awaiting_capture > 0 && !running)
+    if (s.batch_status === "abandoned")   // #198 review
+      actionHtml = `<span class="s2-note">This batch is abandoned (retired at gate@1) — it never runs.</span>`;
+    else if (retriable === 0 && r.awaiting_capture > 0 && !running)
       actionHtml = `<span class="s2-note">${r.awaiting_capture} district${r.awaiting_capture === 1 ? "" : "s"} await Stage&nbsp;3 capture before processing.</span>`;
     else if (retriable === 0 && r.awaiting_discovery > 0 && !running)
       actionHtml = `<span class="s2-note">${r.awaiting_discovery} district${r.awaiting_discovery === 1 ? "" : "s"} await Stage&nbsp;2 discovery first.</span>`;
@@ -88,7 +90,7 @@
     // "approved"); a draft still shows as a blocker.
     const headBadge = s.batch_status === "approved"
       ? window.progressBadge({ total: r.total, processed: r.done, flagged: r.manual_flag_all }, "stage4")
-      : `<span class="badge badge-neutral">${esc(s.batch_status || "—")}</span>`;
+      : window.LCT.statusBadge(s.batch_status || "—");   // #198 review: shared tone
     const processable = r.total - r.manual_flag_all;
     const flagNote = r.manual_flag_all ? ` · ${r.manual_flag_all} no-links` : "";
     const failNote = r.failed ? ` · <span class="s3-fail">${r.failed} failed (retriable)</span>` : "";

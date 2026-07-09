@@ -133,9 +133,10 @@ def test_abandon_endpoint_is_terminal(client):
                        json={"op": "reject_school", "district_id": "ZZTESTA", "school_id": "A1"}).status_code == 409
 
 
-def test_abandon_is_draft_only_via_api(client):
-    # #168: an approved batch can't be abandoned directly (409) — reopen to draft first.
+def test_abandon_refuses_ever_approved_via_api(client):
+    # #168 review: once approved, abandon is refused even after reopen (durable first_approved_at) —
+    # the reopen->abandon poison bypass is closed at the endpoint too.
     assert client.post(f"/api/queue/{BID}/approve", json={"actor": "ian"}).json()["status"] == "approved"
     assert client.post(f"/api/queue/{BID}/abandon", json={"actor": "ian"}).status_code == 409
     assert client.post(f"/api/queue/{BID}/reopen", json={"actor": "ian"}).json()["status"] == "draft"
-    assert client.post(f"/api/queue/{BID}/abandon", json={"actor": "ian"}).json()["status"] == "abandoned"
+    assert client.post(f"/api/queue/{BID}/abandon", json={"actor": "ian"}).status_code == 409   # bypass closed
