@@ -46,11 +46,12 @@ source_modules = ["infrastructure.database", "infrastructure.scripts"]
 forbidden_modules = ["infrastructure.acquisition"]
 
 [[tool.importlinter.contracts]]
-# REQ-119 (#148): forbid a MODULE-LEVEL OpenAI SDK import anywhere in acquisition — the exact gap the
-# AST source-guard test can't see (it walks function bodies only, so a module-level un-streamed call
-# escapes it). openrouter's own `import openai` is function-scoped (grimp doesn't graph it), so it
-# needs no exemption; together the two guards cover both scopes of SDK use.
-name = "No module-level OpenAI SDK import in acquisition — the one paid surface streams (REQ-119)"
+# REQ-119 (#148): forbid ANY OpenAI SDK import in acquisition outside the sanctioned streaming client.
+# With include_external_packages=true, grimp graphs function-scoped imports too, so this catches both
+# module-level and in-function SDK use — including the module-level case the AST source-guard test
+# can't see (it walks function bodies only). The ignore below is therefore REQUIRED: openrouter's own
+# function-scoped `import openai` IS in the graph and would break the contract without it.
+name = "No OpenAI SDK import in acquisition outside openrouter — the one paid surface streams (REQ-119)"
 type = "forbidden"
 source_modules = ["infrastructure.acquisition"]
 forbidden_modules = ["openai"]
