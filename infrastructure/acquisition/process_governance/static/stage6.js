@@ -6,10 +6,9 @@
 // Stage-7 calls. Vanilla JS on the MMM tokens; reuses the q-*/badge/btn styles + a few s6-* rules.
 (function () {
   const $g = (s, r = document) => r.querySelector(s);
-  const esc = (s) => (s == null ? "" : String(s)).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  const { esc, postJSON, api } = window.LCT;
   const usd = (n) => "$" + (Number(n) || 0).toFixed(5);
   const fmt = (iso) => (iso || "").replace("T", " ").replace("Z", " UTC");
-  const postJSON = (b) => ({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) });
   let inited = false;
   const SELECTED = new Set();
   let CANDIDATES = [];                                   // all loaded candidates (client-side filtering)
@@ -20,11 +19,6 @@
   let PREVIEW_IDENTITY = null;                           // the previewed package's identity hash (issue #37)
   const effSend = (c) => (VERIFIED_ONLY ? (c.n_verified || 0) : (c.n_send || 0));   // what THIS mode dispatches
 
-  async function api(url, opts) {
-    const r = await fetch(url, opts);
-    if (!r.ok) { let m = r.statusText; try { m = (await r.json()).detail || m; } catch (_) {} throw new Error(`${r.status} — ${m}`); }
-    return r.json();
-  }
 
   window.initStage6 = function () {
     if (!inited) { inited = true; renderShell(); loadCouncils(); }
