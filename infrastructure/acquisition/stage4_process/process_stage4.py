@@ -38,7 +38,6 @@ import argparse
 import json
 import re
 import subprocess
-from datetime import datetime, timezone
 from pathlib import Path
 
 from infrastructure.acquisition.common import cache_ingest as CI

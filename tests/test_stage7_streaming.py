@@ -41,11 +41,16 @@ def _fake_pd(did, name, *_a, **_k):
 def _spend_seed(this_run=None, total=None):
     """Fake `_spend_by_district` (#147): one function serving both governor scopes — `handoff_hash=`
     returns this run's per-district spend (its SUM is the run seed), `district_ids=` the cumulative
-    per-district total. Seeds are CONSISTENT by construction (run total = sum of the per-district
-    dict), unlike the old independent-mock trio that could set run=0 while a district read 999."""
+    per-district total. Seeds are CONSISTENT by construction: run total = sum of the per-district
+    dict, and each district's lifetime total is floored at its this-run spend (a run's rows ARE part
+    of the cumulative SUM in real data) — unlike the old independent-mock trio that could set run=0
+    while a district read 999."""
     this_run, total = this_run or {}, total or {}
     def _f(*, handoff_hash=None, district_ids=None):
-        return dict(total) if district_ids is not None else dict(this_run)
+        if district_ids is not None:
+            return {d: max(total.get(d, 0.0), this_run.get(d, 0.0))
+                    for d in set(total) | set(this_run)}
+        return dict(this_run)
     return _f
 
 
