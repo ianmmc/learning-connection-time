@@ -13,7 +13,7 @@
 > **Update this when:** a stage's purpose/IO changes, a new stage is built, or the flow diagram needs a new
 > edge — for implementation detail within an already-mapped stage, update that stage's own design note instead.
 
-**Current build state (2026-07-05):** the console runs the pipeline live through **`gate@7`** — Stage 1
+**Current build state (2026-07-09):** the console runs the pipeline live through **`gate@7`** — Stage 1
 queue (`gate@1`, REQ-102), Stage 2 deterministic SERP cascade (REQ-104), Stage 3 capture + resilience
 (REQ-110), Stage 4 process + the Stage 4→5 incremental handoff (REQ-111), Stage 5 district-driven
 attention-first filter with the V2 detector/combiner scoring + v2.1 three-axis labeling (REQ-112/113/114/115),
@@ -25,11 +25,18 @@ re-dispatches into ONE round and picks the yield-ranked alternate (not image-fir
 their own follow-up discovery (untried-schools-first, else a widened SERP query set) and **auto-flow**
 through gate@1 + Stages 2→3→4 to gate@5 (gate@6 stays manual); gate@7 now shows request **lineage** +
 blocked/deferred state and an in-Stage-7 compose-preview modal; Stage 6 gained a **"Run extraction"**
-trigger. A clean live non-benchmark end-to-end pass of the now-corrected loop in one sitting is the
-remaining gap (tracked: #122) — the epic's shakedown exercised most of the loop in pieces against real
-districts while finding and fixing what it then hardened. Stages 8–9 are designed, not built (tracked:
-#89, #93). Detail on each stage's present state is in its own `STAGE*_DESIGN_2026-06.md`; the
-governance/DB/gate architecture that ties them together is `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`.
+trigger. **A live #122 shakedown of that loop then drove a 6-batch hygiene campaign (2026-07-05/09, PRs
+#177/#179/#191/#193/#194–#197, all merged)** that found and fixed real defects the shakedown + a code
+review surfaced: run-abort robustness (one bad rep no longer strands the whole batch, #173), silent
+truncation eliminated at the source by pre-sizing `max_tokens` from the roster (#169/#180/#187), the
+request loop now **suppresses follow-ups that can't add coverage** — phantom claimed bands, districts
+already fully covered — measured at ~57% of prior follow-up spend (#176/#170/#175), and a duplication/
+efficiency sweep that promoted the fragile `-image`-hash console filter to a first-class `run_kind` column
+(#147/#148). Full mechanism/measurement detail: `STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§4/§6. A clean live
+non-benchmark end-to-end pass of the now-hardened loop in one sitting remains the natural next exercise
+(tracked: #122). Stages 8–9 are designed, not built (tracked: #89, #93). Detail on each stage's present
+state is in its own `STAGE*_DESIGN_2026-06.md`; the governance/DB/gate architecture that ties them
+together is `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`.
 
 > **What this replaces.** The Jan-2026 "production ready" design on this page — Crawlee *blind-maps* a district site → Ollama *ranks* URLs → Ollama *triages* PDFs — was superseded on 2026-06-13 after benchmarking. **Blind crawling does not find schedules; local Ollama extraction topped out ~37%; the Ollama models were deleted.** The validated design is **search-led discovery → tiered capture → local filtering → cheap-cloud council extraction → modal aggregation → fail-loud statutory fallback.** The salvageable implementation detail from the old design (modal dismissal, Google-Drive handling, edge-case/anti-bot rules, the Crawlee service itself re-cast as a *one-hop fetcher / school enumerator*) is retained below; the dead parts (blind mapping, Ollama rank/triage, the learning loop) are archived in git history.
 
@@ -308,7 +315,7 @@ The real value of the GT-curation exercise turned out to be a **systematic surve
 | 2 | **Multi-column scan**, OCR scrambles columns → false consensus | New Haven CT | route to **vision**; **down-weight confidence** on garbled-capture sources | spec'd; vision validated ✓ |
 | 3 | **Clean image flier** (works via OCR) | Cleveland .webp | **Tier 2.5 OCR** (cheap); no vision needed | handled ✓ |
 | 4 | **Multi-page column-snake** drops tail bands (high) | Broward | use **band-from-school-name** signal; layout-aware/vision reading | superseded — REQ-054's per-school (not positional) extraction sidesteps this; not separately re-tested |
-| 5 | **Input-cap truncation** (`MAX_TEXT_LEN`) silently drops tail | Orange | **chunk + aggregate large inputs, never truncate** | fixed differently — `DEFAULT_MAX_TOKENS` raised 2000→16000 + `finish_reason` truncation tripwire (STAGE7 §6), not chunking |
+| 5 | **Input-cap truncation** (`MAX_TEXT_LEN`) silently drops tail | Orange | **chunk + aggregate large inputs, never truncate** | fixed differently — `DEFAULT_MAX_TOKENS` raised 2000→16000 + `finish_reason` truncation tripwire (STAGE7 §6), not chunking; further hardened 2026-07 — `size_max_tokens()` pre-sizes the OUTPUT ceiling from the roster's time-count so a big table stops truncating-then-retrying (#180/#187, STAGE7 §0/§6) |
 | 6 | **K-8 school assigned to only one band** (should cover elem+middle) | Cleveland K-8 | **queueing applies NCES `bands_for`** (grade-span → bands) before extraction | production queueing handles the general case; **the Cleveland middle-band gap itself reproduced live** in the `batch_00000` run (STAGE7 §0/§4) — one of the 4 real coverage gaps the request-detection engine catches (routes 7→2) |
 | 7 | **Charter** schools present, untagged | Fairbanks | **tag** from NCES `CHARTER_TEXT` (never exclude) | handled ✓ (REQ-060) |
 | 8 | **School-name matching** holds schools out as `unresolved` | Fairbanks, Orange | watch unresolved rate; **do NOT loosen matcher** until it demonstrably blocks | WATCH — open (Open-decision #6); `common/school_match.norm_school` is now the single shared matcher (Stage 7+8) |
@@ -475,7 +482,7 @@ Two independent extractors disagree on a large share of districts; at <1 hr/week
 | Archived: pre-redesign stratified batch picker (superseded by `queue_batch.py`) | `data/archive/training_batch_py-superseded-20260622/training_batch.py` |
 | **Discovery (Stage 2): deterministic half, built + tested 2026-06-23** | `infrastructure/acquisition/stage2_discover/discover_stage2.py` |
 | OBSOLETE (drove the retired agent Wave-1; the SERP cascade replaced it, REQ-104) | `.claude/skills/stage2-discover/SKILL.md` |
-| Discovery utility functions only (manifest-reading/roster parts superseded) | `infrastructure/acquisition/common/discover.py` |
+| **Discovery: live Wave-1 SERP providers (`brightdata_search`/`serper_search`) + URL-gating helpers** — the deprecated non-streaming `openrouter_search`/`perplexity_search` (+ their dead `main()` bench) were removed 2026-07-06, #87 | `infrastructure/acquisition/common/discover.py` |
 | Archived 2026-06-24: GT-manifest-era per-school discovery (bypassed Stage 1's batch) | `data/archive/gt-benchmark-era-tools-superseded-20260624/per_school_run.py` |
 | Superseded skills (built on the above, pre-Stage-1 design) | `.claude/skills/per-school-acquire/`, `.claude/skills/per-school-acquire-training/` |
 | **Capture (Stage 3): built + run live 2026-06-23, 150/150 captured** | `infrastructure/scraper/capture_discovery.mjs` (active) |
@@ -507,6 +514,12 @@ Two independent extractors disagree on a large share of districts; at <1 hr/week
 | **Stage 5 operational filter → `filtered.json` (event-driven release export — BUILT, REQ-094)** | `infrastructure/acquisition/stage5_filter/release.py`; design: `STAGE5_FILTER_DESIGN_2026-06.md` |
 | **Stage 5 scoring V2: detectors + combiner → send/suppress/review (REQ-113)** | `infrastructure/acquisition/stage5_filter/{detectors,combiner}.py` |
 | **Stage 6 dispatch: routing/cost/immutable handoff/request assembly + gate@6 (REQ-101)** | `infrastructure/acquisition/stage6_handoff/`, `process_governance/stage6_dispatch.py`; design: `STAGE6_DISPATCH_DESIGN_2026-06.md` §0 |
+| **Stage 7 extraction: council calls, token sizing, truncation retry, run_kind (REQ-117, REQ-119)** | `infrastructure/acquisition/stage7_extract/{openrouter,models,parse,validate}.py`; design: `STAGE7_EXTRACT_DESIGN_2026-06.md` §0 |
+| **Stage 7: durable/resumable run + persistence + request-more-evidence detection (REQ-117/118)** | `infrastructure/acquisition/process_governance/stage7_run.py`; design: `STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§4 |
+| **Stage 7: request execution (7→6 bundle, 7→2/7→3/7→1 follow-up compose) + budget governor (REQ-051/118)** | `infrastructure/acquisition/process_governance/stage7_execute.py`, `common/budget.py`; design: `STAGE7_EXTRACT_DESIGN_2026-06.md` §3F |
+| **Stage 7: pure request-detection logic (coverage-aware, real_bands-gated) — REQ-118, #176/#170/#175** | `infrastructure/acquisition/stage7_extract/requests.py`, `common/school_sampling.py::real_bands_for_district`; design: `STAGE7_EXTRACT_DESIGN_2026-06.md` §4(f) |
+| **Console: gate@7 review + execute/compose + request lineage (REQ-117/118)** | `process_governance/static/stage7.js`, `server.py` (`/api/extract/*`) |
+| **Council Lab: judge-replay measurement harness (built, first experiment measured)** | `infrastructure/acquisition/process_governance/council_lab.py`; design: `COUNCIL_LAB_DESIGN_2026-06.md` |
 | Discovery→extraction loop test (archived) | `data/archive/gt-benchmark-*/dead_benchmark_scripts/extract_test.py` |
 | Extraction harness + providers — archived 2026-06-24 (GT-benchmark era, no live code imports either) | `data/archive/gt-benchmark-era-tools-superseded-20260624/{extractors,reading,score_minutes,council_extract}.py` |
 | Google Drive handler | `infrastructure/scripts/enrich/google_drive_handler.py` |

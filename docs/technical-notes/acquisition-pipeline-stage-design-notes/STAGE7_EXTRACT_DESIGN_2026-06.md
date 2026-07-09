@@ -41,8 +41,21 @@ on a fresh live batch in one pass. (tracked: #122)
 - `openrouter.py` — the paid OpenRouter chat client. SSE-streaming (`stream: true`), accumulates
   deltas, reads `usage` (tokens/cost) off the final chunk, captures `finish_reason` (a `length` value
   is the truncation tripwire) and `generation_id` (for `/api/v1/generation` audit correlation) on every
-  path including errors. `DEFAULT_MAX_TOKENS = 16000`. Raises `BillingAuthError` on 401/402 (halts the
-  run rather than burning further calls on a dead key).
+  path including errors. `DEFAULT_MAX_TOKENS = 16000` (the floor — every roster seen fits it; a small
+  rep, ~86% of traffic, is never sized below it). `MAX_TOKENS_CEILING = 32000` — one constant shared by
+  two mechanisms so they can never disagree (#187): `size_max_tokens(n_times)` (#180) pre-sizes a call's
+  `max_tokens` from the rep's clock-time count (schools ≈ n_times/2, output ≈ schools × 47 tokens —
+  `EXTRACTION_TOKEN_SIZING_2026-07-06.md`, 840 real calls) and clamps UP to the ceiling, so a big roster
+  is sized right on the FIRST call (no truncate-then-retry double prompt-charge); a truncated reply
+  (`finish_reason == "length"`) below the ceiling is retried ONCE at the ceiling to recover the dropped
+  tail (#169) — a call already sent AT the ceiling that still truncates gets no retry (nowhere higher to
+  go, >680 schools, never observed in 840 calls), and the ⚠ flag persists. The retry's cost/tokens/
+  latency are SUMMED onto the returned `CallResult` (both attempts were real billed calls, #182), so the
+  REQ-051 budget governor sees true spend. `_client()` (the OpenAI SDK client) is `functools.lru_cache`d
+  per `(key, timeout)` (#148) so consecutive calls in a batch reuse one httpx connection pool instead of
+  a fresh TLS handshake each call (was ~30-60s/batch of pure handshake); an autouse conftest fixture
+  clears the cache per test. Raises `BillingAuthError` on 401/402 (halts the run rather than burning
+  further calls on a dead key).
 - `parse.py` — tolerant JSON parser: markdown-fence stripping, salvage-on-truncation, and a
   prompt-example-leak guard (`_is_prompt_leak`) that drops any row whose `school_name` matches a
   **self-evident bracketed placeholder** (e.g. `"[school name]"`) in both the clean-parse and
@@ -63,11 +76,23 @@ on a fresh live batch in one pass. (tracked: #122)
   band-gap 7→2 carries `params.pending_alt_reps` + a **DEFER** reason when the district has barren records
   with an unexhausted 7→6 remedy (#159) — deliberately a **district-level** signal, not per-band
   attribution (the motivating case, an emergent record, has no `intended_schools` to attribute a band from).
+  `detect_requests()` also takes an optional `real_bands` (the bands SERVED by ≥1 real NCES school, via
+  the shared `common/school_sampling.real_bands_for_district` — the SAME logic Stage 1 uses to assign a
+  school's band) that gates the loop against **coverage-blind spend** (#176, measured: ~57% of follow-up
+  spend on the #122 run added zero new coverage): a claimed band absent from `real_bands` is a **phantom**
+  (no school serves those grades) and never emits a 7→2 (#175); once every FILLABLE target band
+  (claimed ∩ real) already has facts — or none is fillable at all — a barren-rep 7→6/7→3 can add no net-new
+  coverage either, so it is **suppressed** too (#170/#176). `real_bands=None` disables the gate (back-compat)
+  and a phantom claimed band never blocks the "fully covered" check. `stage7_execute.plan_followup` re-runs
+  the identical gate **live** at compose time (defense-in-depth, since coverage can change between detect
+  and compose) via the shared `_fillable_gap` predicate, suppressing into a new `suppressed` bucket
+  surfaced in the #154 compose modal.
 - `validate.py` — the GT-scoring harness: `load_gt()`, `score_district()` (per-band hit/miss/gap/extra +
   per-school hit/miss via the shared `common.school_match.norm_school`), `score_run()` (aggregate).
 - `models.py` — SQLAlchemy models on the governance DB (`gdb.Base`), all **precious** (append-only,
   human-reviewed, never touched by Stage-5's drop+rebuild ingest): `Extraction` (rollup + telemetry per
-  run), `SchoolFact` (per-school accepted/unresolved facts), `ExtractionRequest` (the request-more-evidence
+  run — incl. `run_kind` ∈ {production, probe}, first-class since #148/4D; see below), `SchoolFact`
+  (per-school accepted/unresolved facts), `ExtractionRequest` (the request-more-evidence
   directives — `altitude`, `route`, `target`, `band`, `params_json`, `reason`,
   `status` ∈ {pending, approved, rejected, executed}, `reviewed_by`/`reviewed_at`/`review_note`).
 
@@ -77,17 +102,46 @@ on a fresh live batch in one pass. (tracked: #122)
   district's work. **Resumable** (`resume=True`, the default): re-running a handoff skips districts
   already present in `extraction` for that `handoff_hash` (`_already_extracted`). Prints per-rep and
   per-district progress lines as it runs — a snag is visible at the district/rep where it happened, not
-  only at the end.
+  only at the end. **Per-district failure isolation (#173):** a per-district failure (a malformed rep
+  group, an aggregation bug) is caught, recorded into `results["failed"]`, and the batch CONTINUES to the
+  next district — the original #122 symptom (one `FileNotFoundError` reading Marshall's harvest_slice
+  stranded districts 16→18) is fixed. `BillingAuthError`/`SystemExit`/`KeyboardInterrupt` (the
+  `HALTING_EXCEPTIONS` tuple) still propagate and halt the run — every later paid call would fail
+  identically, so these must never degrade to a per-district skip. The background job (`server.py`)
+  surfaces a partial run as `state:'partial'` (`n_failed` + `failed[]`), not a silent success.
+  Seeds the REQ-051 budget governor's three money ceilings from ONE spend-definition query
+  (`_spend_by_district`, #147) so per-run/per-district/per-district-total can never disagree on what
+  "spend" means. Stamps each run's `run_kind` (`doc.get("run_kind") or "production"`) onto every
+  district's `Extraction` row via `persist_run_session` — request-detection (`detect_and_persist_requests`)
+  runs only for `run_kind == "production"`, so a probe's directives never surface as reviewable
+  production work.
 - `_run_district()` — the shared per-district council-run core: 2 voters → `AGG.consensus_school_facts`
   (cross-family, per-school (start,end) pair, ±15 min, REQ-056) → judge fires only on disagreement →
-  `AGG.district_bands_from_facts` (the per-band exact mode, REQ-055 gross bell-to-bell). Reuses Stage 6's
+  `AGG.district_bands_from_facts` (the per-band exact mode, REQ-055 gross bell-to-bell). **Per-rep
+  isolation (#173):** an unreadable/unprocessable rep (e.g. a relocated harvest_slice) becomes a recorded
+  failed rep (no calls, the error captured, counted in `telemetry.rep_errors`) while the district's OTHER
+  reps still extract — this is where the #122 Marshall failure actually originated, one altitude below the
+  district-level guard above. Post-loop band aggregation is guarded too (#183): an aggregation bug keeps
+  the already-billed reps and marks the district errored with empty bands, rather than discarding billed
+  work. Reuses Stage 6's
   request assembly and Stage 8's consensus/mode code — Stage 7 does not re-derive either.
   Model-family membership is read from the single canonical `common/model_families.py` (keyed on full
   OpenRouter ids), also used by Stage 8 — see the decision log (§6) for the bug this fixed.
 - `image_handoff_variant()` — rewrites a text handoff to route PNG reps to the vision council for a
   text-vs-vision compare; `_pick_png()` prefers `raster_p-1.png`, else any `.png`, never `.webp`/`.jpg`.
   Gives the image variant a **distinct `handoff_hash`** (`<base>-<council_id>`, e.g. `-image`) so its
-  resume logic can't collide with the source text handoff's already-persisted districts (§6).
+  resume logic can't collide with the source text handoff's already-persisted districts (§6). Also stamps
+  `run_kind = "probe"` on the variant doc (#148/4D) — a **first-class column** on `Extraction`
+  (`run_kind` ∈ {production, probe}, `models.py`), not a string match on the hash suffix. The earlier
+  design relied on the console filtering `handoff_hash NOT LIKE '%-image'`, which only ever caught the
+  literal `image` council id; a second vision council (e.g. `council_id="vision2"` → hash `…-vision2`)
+  would sail past that filter and shadow the district's real production run in the gate@7 review pane —
+  a real bug, not a hypothetical (the existing custom-council-id test already produced exactly such a
+  suffix). Fixed: the hash suffix now serves ONLY resume-isolation + lineage; `run_kind` is the sole
+  console-visibility discriminator, threaded `doc → run_council_streaming → persist_run_session` and
+  checked by both gate@7 console queries (`WHERE run_kind = 'production'`). An additive migration
+  (`common/db.py`'s `_PRECIOUS_ALTERS`) adds the column NOT NULL / `server_default='production'` and
+  backfills existing `-image` rows to `run_kind='probe'`, guarded and idempotent.
 - `detect_and_persist_requests()` — runs `requests.detect_requests()` against a just-persisted district
   result and writes `ExtractionRequest` rows, natural-key deduped on `(handoff_hash, target, altitude,
   route, band)`; re-detecting an already-reviewed request preserves its human review status rather than
@@ -108,7 +162,11 @@ APPROVED directives into real back-edge work. Two mechanisms (§3F):
   correctly) and rank yield-first; `_sent_files_by_rec()` unions every already-failed file across ALL of
   the district's 7→6 history so a round never re-offers a rep that already failed (F4). `_run_bundle_or_own`
   is the inject-or-own idiom + post-commit best-effort `district_status` export (mirrors `dispatch_handoff`'s
-  commit-order lesson, #143).
+  commit-order lesson, #143). **N+1 fix (#148/4C):** `_bundle_alternate` used to load EVERY district
+  record (1 query + a rep-query PER record) just to look up the handful named by the approved 7→6s; it now
+  calls the new `stage5_filter/release.py:load_records_by_key` — only the requests' `rec_key`s, in 2
+  queries total (records + batched reps). `load_district_records` was refactored onto the same shared
+  shaper so its rep fetch is batched too.
 - **7→2/7→3/7→1 follow-up batch** (`compose_followup_batch` → `plan_followup` (pure) →
   `stage1_queue.build_followup_batch`): collects approved NEW-work into one targeted DRAFT batch. `plan_followup`
   now also **defers** (holds) a district's NEW-work while it has an un-executed 7→6 that could still fire —
@@ -130,8 +188,9 @@ APPROVED directives into real back-edge work. Two mechanisms (§3F):
   (the issue-#47 thread + job-board pattern) runs `run_council_streaming` for a **dispatched** handoff; the
   gate@6 approval IS the go-ahead, no separate approval gate.
 - `GET /api/extract/districts` — attention-sorted (most pending requests first) list; excludes
-  `-image` probe handoffs (the district-first view shows the primary/text extraction).
-- `GET /api/extract/district/{district_id}` — the latest non-image extraction: computed band rollup
+  `run_kind='probe'` extractions (#148/4D — a first-class column, not a `-image` hash-suffix match; the
+  district-first view shows the primary/production extraction).
+- `GET /api/extract/district/{district_id}` — the latest `run_kind='production'` extraction: computed band rollup
   (via `AGG.district_bands_from_facts`), accepted/unresolved facts, and the request directives for
   that district — each now carrying a `lineage` object (#154, `_request_lineage` + `_district_loop_ctx`,
   computed once per detail call from the SAME live checks compose runs, so the card can never disagree
@@ -272,6 +331,38 @@ compose time (never the request's stale detect-time params — a live-vs-cached-
 during epic #163) and exclude districts whose 7→6s are rounds-exhausted, so the defer can't deadlock a
 district's rediscovery forever.
 
+**(f) Coverage-aware suppression — the loop stops firing follow-ups that can't add coverage (#176/#170/
+#175, batch 3A).** The #122 live-run report measured that **~57% of follow-up spend produced zero new
+coverage**: 7→2 rediscovers fired for **phantom** bands (a claimed band with no real school able to serve
+it — unfillable by definition) and 7→6 re-dispatches fired on districts that were already **fully
+covered** for every real band (the Aspire $0.076 vision-escalation-for-nothing). The loop was
+coverage-blind at the point of firing. Fixed with one new shared signal, gated at **both altitudes** and
+**both enforcement points** (detect-time + compose-time, defense-in-depth):
+- **`real_bands`** — the bands a district can actually satisfy (≥1 real NCES school serving them),
+  derived by `common/school_sampling.real_bands_for_district` (by_level's clean levels, rescued per-school
+  for an ambiguous `Secondary`/`Other` span) — the SAME logic Stage 1 uses to assign a school's band, so
+  the loop's gates can never disagree with how bands were assigned upstream. One shared helper, imported
+  by both the detector and the compose planner (DRY, so they can't drift).
+- **`requests.detect_requests(..., real_bands=...)`** — a claimed band absent from `real_bands` is a
+  phantom; no 7→2 is ever emitted for it (#175). Once every FILLABLE target band (claimed ∩ real) already
+  has facts district-wide (or none is fillable at all), a barren-rep 7→6/7→3 is suppressed too — it
+  cannot add claimed coverage (#170/#176). `real_bands=None` disables the gate (back-compat: an
+  all-unknown district keeps its remedies).
+- **`stage7_execute.plan_followup`** re-checks the identical predicate **live** at compose time (the #159
+  lesson generalized: never trust the request's stale detect-time state) — a 7→2 whose band was filled by
+  another round between approval and compose, or that's now recognized as phantom, is moved into a new
+  `suppressed` bucket (auto-rejected with a machine actor + reason, human-reversible at gate@7) rather than
+  composed into a wasted batch.
+- **Measured before/after (live DB, 88 districts):** 24 districts (27%) carry a phantom claimed band —
+  every one `middle` (the K-6/7-12 structural split pattern) — each of which had fired an unfillable 7→2.
+  `real_bands ⊆ claimed` held for all 88 districts, confirming the gate is purely subtractive (no real band
+  is ever suppressed). The 3 phantom 7→2s already in the DB were all `executed` (the measured waste); none
+  were pending/approved, so no request cleanup was needed.
+- **Deliberately deferred:** correcting `lea_claimed_bands` at Stage 1 itself (the single-source-of-truth
+  fix) — complicated by the over-coverage case (real bands may need to *grow* from extracted evidence, not
+  only shrink). The detector/compose gate is the measured, reversible step; a Stage-1 correction can build
+  on it later.
+
 ### 3F. Request execution — BUILT + HARDENED (REQ-118, epic #163)
 
 An approved directive fires the target stage's back-edge. The architectural collapse (Ian, 2026-07-03):
@@ -381,6 +472,12 @@ trigger (§0) — all surfaces call the same underlying functions.
   #152/#156/#157 (console run-extraction, gate@1 refresh, follow-up auto-flow), #154 (lineage + compose
   modal). Follow-on, still open: #151 (inline PNG/PDF viewer), #122 (the live end-to-end run), #164
   (geo-scoped rediscover queries, future).
+- **Hygiene batches 2–3B** (PRs #179, #191, #193, #196, #197 — commit range `4d31b77~1..d44ab24`), all
+  merged: #173 (run-abort robustness) + #169 (truncation retry), PR #179; #176/#170/#175 (coverage-aware
+  request loop), PR #191; #180/#187 (token-sizing + retry-ceiling unification), PR #193; #148 parts
+  4A–4C (spend-seed consolidation, N+1 fix, lru-cached OpenRouter client, and other efficiency items),
+  PR #196; #148 part 4D (`run_kind` first-class column), PR #197. #192 (dead `n_times` handoff-plumbing,
+  surfaced by #180) tracked, not yet fixed.
 
 ---
 
@@ -561,3 +658,71 @@ image-vs-text comparison → the request-detection engine → gate@7 console. Ke
   commit shipping with its own tests and a green suite — the review step, not the tests alone, is what
   caught them. Final: 974 DB-free + 64 govdb tests, `lint-imports` 3 kept/0 broken, console changes
   Playwright self-verified live against the running server. 21 commits, ~2.4k lines, PR #167.
+
+- **Batch 2 — #173 (run-abort robustness) + #169 (truncation recovery), PR #179, merged.** The #122 live
+  shakedown's own symptom motivated the fix: a single `FileNotFoundError` reading Marshall's
+  `harvest_slice` stranded districts 16→18 mid-run. Fixed at two altitudes: per-rep isolation in
+  `_run_district` (an unreadable/unprocessable rep becomes a recorded failed rep; the district's OTHER
+  reps still extract — Marshall would have recovered them) and per-district isolation in
+  `run_council_streaming` (any other per-district failure lands in `results['failed']`, batch continues).
+  `BillingAuthError`/`SystemExit`/`KeyboardInterrupt` still halt, never swallowed — hoisted into the
+  canonical `HALTING_EXCEPTIONS` tuple so a future halting type is added in one place. The background job
+  now reports `state:'partial'` (`n_failed` + `failed[]`) instead of a false clean success. Separately,
+  #169 fixed silent tail-loss: a truncated reply (`finish_reason=length`) now retries ONCE at
+  `MAX_TOKENS_CEILING` (32k then; the constant was later renamed and unified with #180/#187, below) —
+  successful retry replaces the original, a still-truncated retry keeps the ⚠ flag, an erroring retry
+  keeps the first attempt's salvaged head; both attempts' cost/tokens/latency are summed onto the returned
+  result so the REQ-051 governor sees true spend (#182). 988 DB-free + 64 govdb + 120 integration green.
+- **Batch 3A — #176/#170/#175, coverage-aware request loop, PR #191, merged.** See §4(f) for the mechanism.
+  Root cause was the #122 loop report measuring ~57% of follow-up spend added zero new coverage — phantom
+  bands and already-fully-covered districts still fired paid remedies. The `real_bands` gate (from the new
+  shared `school_sampling.real_bands_for_district`, mirroring Stage 1's own band-assignment logic) is
+  applied both at detect-time (`requests.detect_requests`) and, defense-in-depth, at compose-time
+  (`stage7_execute.plan_followup`, live re-check — never the stale detect-time state, the #159 lesson
+  generalized). Measured live: 24/88 districts (27%) carried a phantom claimed band (always `middle`, the
+  K-6/7-12 split), all already `executed` (the measured waste); `real_bands ⊆ claimed` held for every
+  district, confirming the gate is purely subtractive. Correcting `lea_claimed_bands` at the Stage-1 source
+  was considered and deliberately deferred (complicated by the over-coverage case — real bands may need to
+  *grow* from extracted evidence). 1010 DB-free + 65 govdb + 567 integration green.
+- **Batch 3B — #180 (pre-size max_tokens) + #187 (unify the retry ceiling), PR #193, merged.** #169
+  (Batch 2) shipped the truncation *safety net*; this is the *optimization* — size the FIRST call right so
+  the retry rarely fires and the run stops paying the prompt twice on predictable big rosters. Signal:
+  reply length is roster-bound at ~47 completion tokens/school, flat, no verbosity noise, measured over 840
+  real receipt calls (`EXTRACTION_TOKEN_SIZING_2026-07-06.md`); each school ≈ 2 clock times, so
+  `size_max_tokens(n_times) = clamp(ceil(n_times/2 × 47 × 1.5), 16k floor, 32k ceiling)`. One design
+  refinement vs. the issue's original plan: `n_times` is dead-plumbed through freeze (0 of 275 handoff reps
+  carry it — filed as #192, affecting the Stage-6 cost model too), so sizing instead **recomputes the
+  time-count from the resolved content at dispatch** (`stage7_run._content_n_times` →
+  `build_signals.time_positions`) — more robust (works on every handoff, old and new) and uses the exact
+  signal that defines `n_times`; image/scan reps stay at the floor with the #169 retry as backstop. #187
+  closed by construction: the retry ceiling was renamed `ESCALATED_MAX_TOKENS` → `MAX_TOKENS_CEILING`, ONE
+  constant shared by sizing (clamps to it) and the retry (escalates to it, only when below it), so the two
+  mechanisms can never disagree. Measured before/after, replayed over all 840 receipt calls: the 3
+  historical truncations (Baldwin 355 schools, Stroudsburg 420) would size enough on the first call; 0
+  calls newly truncate (the floor prevents regression); 0 image-rep truncations (retry backstop untouched).
+  Time-anchored chunking (for documents that would exceed the 32k/680-school ceiling) was considered and
+  deferred — 0/840 real documents hit that ceiling, so it solves a problem not yet observed. 1022 DB-free +
+  66 govdb + 567 integration green.
+- **Batch 4C/4D, efficiency + run_kind — #148, PR #196 (4C) and PR #197 (4D), merged.** The
+  2026-07-04 code-review's efficiency tier, split into two PRs since the `run_kind` schema change +
+  backfill warranted separate review. #196: the OpenRouter client (`_client`) is now `lru_cache`d per
+  `(key, timeout)` instead of built fresh per paid call (was ~30-60s/batch of pure TLS handshake); the
+  execute-path N+1 (`_bundle_alternate` loading every district record to find a handful named by approved
+  7→6s) is fixed via the new `release.load_records_by_key` (2 queries total); the REQ-119 SDK-streaming
+  guard gained an import-linter `forbidden` contract as a structural complement to its AST walk (which only
+  covers function bodies, not module-level calls); plus smaller fixes to `council_lab` receipt scanning,
+  `stage7.js` refresh deduplication, and 27-GT completeness test coverage. #197 (closing #148): promoted
+  the `handoff_hash NOT LIKE '%-image'` console filter — which only ever caught the literal `image` council
+  id and would let a second vision council (e.g. `council_id="vision2"`) shadow a district's real
+  production run in the gate@7 pane — to a first-class `run_kind` column (`'production'` default |
+  `'probe'`), stamped by `image_handoff_variant` for ANY council_id, threaded through
+  `persist_run_session`, and filtered by both gate@7 console queries. The `-image` hash suffix stays (it
+  still does its other job: resume-isolation + lineage); `run_kind` is purely the visibility discriminator
+  now. Additive migration + guarded, idempotent backfill of legacy `-image` rows. Post-merge adversarial
+  review of both PRs caught real defects before landing: 4C's `council_lab.load_receipts` dropped a
+  district entirely if its newest receipt file was truncated (fixed to fall back to the older valid one);
+  4D's `run_kind` fix stopped extraction ROWS from leaking into the console but left
+  `detect_and_persist_requests` running unconditionally — a persisted probe would still write reviewable
+  `extraction_request` directives, inflating a production district's pending count and risking a paid
+  follow-up sweep of a probe's own findings (fixed: the request loop is now production-only). 1043
+  DB-free + 69 govdb, 567 integration green; `lint-imports` 3-4 kept/0 broken.

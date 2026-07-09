@@ -20,7 +20,7 @@ This note is the architecture for three coupled decisions that span every stage:
 3. **The app's scope** — a single **stage-selectable governance console** at
    `infrastructure/acquisition/process_governance/`, the human-in-the-loop surface for every gate (§7, §11).
 
-**Current build state (2026-07-03):** REQ-098/099/103/094 (packaging, state-event log, Postgres governance
+**Current build state (2026-07-09):** REQ-098/099/103/094 (packaging, state-event log, Postgres governance
 DB, event-driven `filtered.json`) are all COMPLETE — see §1b, §3, §6. The console is built and run live
 through **`gate@7`**: gate@1 (REQ-102), Stage 2 (REQ-104), Stage 3 (REQ-110), Stage 4 + the Stage 4→5
 incremental handoff (REQ-111, §12), the Stage 5 district-driven console (REQ-112), Stage 6 dispatch/freeze
@@ -31,16 +31,30 @@ extraction results + the request-more-evidence **detect/rank/defer/review** loop
 re-dispatches into one round + 7→2/7→3/7→1 via a shaped Stage-1 follow-up batch that auto-flows to gate@5,
 under the REQ-051 budget governor + a per-district rounds depth guard — STAGE7 §3F; gate@7 now has
 execute/compose buttons, request lineage, and a preview modal, §11h/§11i).
+**A live #122 shakedown of that loop (2026-07-05/09) then drove a 6-batch hygiene campaign** (PRs #177,
+#179, #191, #193, #194–#197, all merged) that found and fixed real defects the shakedown + code review
+surfaced: run-abort robustness (#173 — one bad rep no longer strands the whole batch), silent
+truncation/tail-loss (#169) then eliminated at the source by pre-sizing `max_tokens` from the roster
+(#180/#187), the request loop suppressing follow-ups that can't add coverage (phantom/already-covered
+bands, #176/#170/#175 — measured ~57% of follow-up spend was previously wasted), plus a duplication/
+efficiency sweep (#147/#148) that promoted the fragile `handoff_hash NOT LIKE '%-image'` console filter to
+a first-class `run_kind` column (STAGE7 §0/§6) so a second vision-council probe can never shadow a
+district's production run. Dead code + test drift (#125/#87/#126/#166) also retired. Full mechanism/
+measurement detail: `STAGE7_EXTRACT_DESIGN_2026-06.md` §6 (decision log).
 **Not yet built: Stage 8/9.** (tracked: #89, #93) **Gates are stage-numbered (§11):**
 `gate@1` (queue) · `gate@5` (per-URL review) · `gate@6` (dispatch) · `gate@7` (council requests) · `gate@8`
 (results) — **1/5/8 structural (permanent), 6/7 supervision (first to relax) — §11i.** §8, §9, and §9a
 below are **historical** — fully executed planning/sequencing docs kept in place because their section
 numbers (`governance §9a`, etc.) are cross-referenced elsewhere; see the banners on each. **Council Lab
 BUILT, first experiment MEASURED (2026-07-04)** — the judge-replay harness (`council_lab.py`) validated the
-Qwen-VL image-judge swap (#82, closed); see `COUNCIL_LAB_DESIGN_2026-06.md`. Next: Stage 8 (aggregation) +
-the Lab's remaining backlog (`cost_benchmark`, prompt A/B, tracked: #80/#81); still open: REQ-100
-(staleness) (tracked: #100), gate@6 auto mode (tracked: #104), the gate@7 inline PNG/PDF viewer (tracked:
-#151), and a clean live non-benchmark end-to-end pass of the request loop in one sitting (tracked: #122).
+Qwen-VL image-judge swap (#82, closed); see `COUNCIL_LAB_DESIGN_2026-06.md`. Next: a clean live
+non-benchmark end-to-end pass of the now-hardened request loop (tracked: #122 — the natural next exercise
+now that the hygiene campaign is done), Stage 8 (aggregation), or the Lab's remaining backlog
+(`cost_benchmark`, prompt A/B, tracked: #80/#81); still open: REQ-100 (staleness) (tracked: #100), gate@6
+auto mode (tracked: #104), the gate@7 inline PNG/PDF viewer (tracked: #151), a first-class "abandoned"
+batch status + gate@6 already-dispatched indicator (tracked: #168/#171), and the arch-manifest/fitness-test
+infra (tracked: #124, deliberately parked until the hygiene campaign's remaining scoring-detector batch
+lands).
 
 ---
 
