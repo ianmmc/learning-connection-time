@@ -1,0 +1,76 @@
+{
+  "_comment": "Cross-boundary architecture manifest (#124; governance PIPELINE_GOVERNANCE_AND_STATE §10). The DECLARED ground truth for the couplings NO import tool sees — external-process invocations, cross-language dispatch, guarded entry points, and client<->server rule boundaries. tests/test_arch_manifest.py asserts the real code matches this manifest; a NEW undeclared edge FAILS the suite. This is the fitness-function layer that complements import-linter (intra-Python) + dependency-cruiser (intra-Node), which see imports only. Update this file DELIBERATELY when you add such an edge — that edit is the review surface for a new cross-boundary coupling.",
+
+  "external_programs": {
+    "_comment": "Every external program the acquisition pipeline shells out to (argv[0] of a subprocess argv-list, whether via subprocess.* directly or the injectable _run seam). test_no_undeclared_external_program scans argv-list literals and asserts each program is declared here.",
+    "claude": {
+      "why": "Stage 2 Wave-2 discovery — `claude -p` print mode with WebSearch (the speculative residual index).",
+      "callers": ["infrastructure/acquisition/stage2_discover/headless.py"]
+    },
+    "node": {
+      "why": "Stage 3 capture — Python->Node Playwright dispatch (the cross-LANGUAGE edge).",
+      "callers": ["infrastructure/acquisition/stage3_capture/headless.py"],
+      "node_entrypoint": "infrastructure/scraper/capture_discovery.mjs"
+    },
+    "pdftotext": {
+      "why": "PDF -> layout text (poppler). Stage 4 harvest + Stage 5 handbook page slice.",
+      "callers": ["infrastructure/acquisition/stage4_process/process_stage4.py", "infrastructure/acquisition/stage5_filter/build_signals.py"]
+    },
+    "pdftoppm": {
+      "why": "PDF -> raster PNG for OCR (poppler). Stage 4.",
+      "callers": ["infrastructure/acquisition/stage4_process/process_stage4.py"]
+    },
+    "pdfinfo": {
+      "why": "PDF page count (poppler). Stage 5 handbook slice sizing.",
+      "callers": ["infrastructure/acquisition/stage5_filter/build_signals.py"]
+    },
+    "tesseract": {
+      "why": "OCR on rasterized/screenshot images. Stage 4.",
+      "callers": ["infrastructure/acquisition/stage4_process/process_stage4.py"]
+    }
+  },
+
+  "entry_point_guards": [
+    {
+      "_comment": "An invariant guard that MUST be reached by every listed entry point — the fix for the class of bug where a rule is enforced at one entry point (the console) but a sibling (the CLI) skips it. #198 review finding #2: the headless CLI run_batch ran a terminal abandoned batch because the guard lived only in the console. test_entry_point_guards_are_called asserts the guard call appears in each function body.",
+      "guard": "assert_runnable",
+      "why": "#168: never run a pipeline stage on a terminal `abandoned` batch (its schools are excluded from the attempted-set; running it re-queues them — the #162 poison).",
+      "must_be_called_in": [
+        "infrastructure/acquisition/stage2_discover/headless.py::run_batch",
+        "infrastructure/acquisition/stage3_capture/headless.py::run_batch",
+        "infrastructure/acquisition/stage4_process/headless.py::run_batch"
+      ]
+    }
+  ],
+
+  "client_server_boundaries": {
+    "_comment": "Rules about the browser-JS <-> server boundary — a class the import graphs can't see at all.",
+    "forbidden_client_comparisons": [
+      {
+        "_comment": "A server-authoritative rule literal must NOT be re-decided in client JS by COMPARISON (it duplicates a server truth and drifts). #198 review finding #3: the gate@6 benchmark badge keyed on `c.batch_id === 'batch_00000'` instead of the server-computed `is_benchmark` (batch_type='benchmark'), so a second benchmark batch would be walled server-side but unbadged. Checked in COMPARISON context only (=== / !== / == / !=), so an incidental display string like `benchmark-walled (batch_00000)` is allowed.",
+        "literal": "batch_00000",
+        "use_instead": "the server-computed `is_benchmark` field on the candidates payload (batch_type='benchmark')",
+        "scope": "infrastructure/acquisition/process_governance/static"
+      }
+    ],
+    "single_definition_helpers": [
+      {
+        "_comment": "A shared client helper must be defined in exactly ONE file (common.js) so its behavior can't fork across the stage views. #198 review finding #5: the abandoned-status badge tone was added to gate1.js only, leaving stage2/3/4.js rendering a retired batch in the neutral draft tone — fixed by centralizing statusBadge in common.js.",
+        "name": "statusBadge",
+        "home": "infrastructure/acquisition/process_governance/static/common.js",
+        "scope": "infrastructure/acquisition/process_governance/static"
+      }
+    ]
+  },
+
+  "file_dispatches": {
+    "_comment": "The file-based stage handoffs — regenerable, auditable RECEIPTS (the DB is the working store; governance §1). Declared here for provenance; test_file_dispatch_producers_reference_artifact asserts each producer module actually references its artifact filename (a light contract that the declared producer is the real one). NOT the transport between stages.",
+    "receipts": [
+      {"artifact": "discovery.json", "producer": "infrastructure/acquisition/stage2_discover", "role": "per-district full per-school discovery audit trail"},
+      {"artifact": "candidates.json", "producer": "infrastructure/acquisition/stage2_discover", "role": "flattened, deduped, capture-ready URL list"},
+      {"artifact": "captures.json", "producer": "infrastructure/acquisition/stage3_capture", "role": "per-candidate capture record"},
+      {"artifact": "processed.json", "producer": "infrastructure/acquisition/stage4_process", "role": "per-record local-tool text extraction outcomes"},
+      {"artifact": "filtered.json", "producer": "infrastructure/acquisition/stage5_filter", "role": "event-driven release projection (winner + alternates)"}
+    ]
+  }
+}

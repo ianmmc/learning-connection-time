@@ -207,11 +207,16 @@ python3 -c "import grimp; g=grimp.build_graph('infrastructure'); \
                              # grimp: query the real import graph (what a module imports / is imported by)
 vulture infrastructure/acquisition    # dead-code sweep
 cd infrastructure/scraper && npx depcruise --config .dependency-cruiser.cjs lib   # Node (.mjs) side
+pytest tests/test_arch_manifest.py    # cross-boundary FITNESS functions vs arch-manifest.json (#124)
 ```
-> **Caveat (the recurring lesson):** these see **Python/Node imports only**. They do NOT see the
+> **Caveat (the recurring lesson):** the import tools see **Python/Node imports only**. They do NOT see the
 > *environmental* dependencies that often matter most — NCES CSV files read by path/year, **LCT DB
 > tables** accessed via the ORM, `subprocess`/`claude -p` calls, OpenRouter API hosts. After the import
 > graph, **read the code** for those edges. (Toolchain rationale: `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §10.)
+> **`arch-manifest.json` + `tests/test_arch_manifest.py` (#124) now close part of this gap:** the declared
+> ground truth for the cross-boundary edges (external processes, guarded entry points, client↔server rule
+> literals, stage receipts), enforced as fitness functions. **When you add such an edge, update the manifest**
+> — that edit is the review surface, and the suite fails on an undeclared one.
 
 #### Design System for frontend/UI via DesignSync
 To access current design resources, use the claude_design MCP (https://api.anthropic.com/v1/design/mcp, auth via /design-login) to import this project: https://claude.ai/design/p/07ef80cc-f2fe-4393-945e-99f1a40b0809
