@@ -25,6 +25,7 @@ stops billing on DeepSeek but NOT Google/Mistral — a killed run still pays for
 from __future__ import annotations
 
 import json
+import math
 import os
 import time
 from dataclasses import dataclass
@@ -34,17 +35,30 @@ from infrastructure.acquisition.common import paths
 
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 DEFAULT_TIMEOUT = 90               # with stream=True this bounds connect/read GAPS, not total duration
-# 2000 silently beheaded big multi-school replies (Appoquinimink's 19 schools already ran 827 out-
-# tokens; Cleveland's flier carries 93 schools) — the parser salvages the head and the tail schools
-# vanish with no error. 16k clears every roster size we've seen while staying inside all six council
-# models' completion windows; `finish_reason == "length"` (now captured) is the tripwire if not.
+# The FLOOR (small reps, ~86% of traffic): every roster we've seen fits 16k, so a small rep is never
+# sized below this. 2000 once silently beheaded big multi-school replies (Appoquinimink's 19 schools
+# ran 827 out-tokens; Cleveland's flier carries 93) — the salvage parser keeps the head and the tail
+# schools vanish with no error, so `finish_reason == "length"` (captured) is the tripwire.
 DEFAULT_MAX_TOKENS = 16000
-# #169: on a truncated reply (finish_reason == "length") the salvage parser keeps only the head and the
-# tail schools vanish silently. `call()` retries that ONE call ONCE at this higher ceiling to recover
-# the dropped tail (a roster that overflows 16k usually fits 32k); a still-truncated retry keeps
-# finish_reason == "length" so the incompleteness stays visible. If a model's own completion cap is
-# below this, OpenRouter clamps it (no error) and the retry simply can't recover more — honest.
-ESCALATED_MAX_TOKENS = 32000
+# The hard CEILING — inside all six council models' completion windows. ONE constant shared by two
+# mechanisms so they can never disagree (#187):
+#   • #180 pre-sizing: `size_max_tokens(n_times)` clamps UP to here, so a big roster is sized right on
+#     the FIRST call (no truncate-then-retry double prompt-charge);
+#   • #169 retry: a truncated reply is re-run ONCE at here to recover the dropped tail — but only when
+#     the call was BELOW here. A call already sent AT the ceiling that still truncates gets no retry
+#     (nowhere higher to go within the model windows — >680 schools, never observed in 840 calls);
+#     `finish_reason == "length"` persists so the incompleteness stays visible.
+MAX_TOKENS_CEILING = 32000
+# Output-token model (docs/technical-notes/.../EXTRACTION_TOKEN_SIZING_2026-07-06.md, 840 real calls):
+# reply length is roster-bound, ~47 completion tokens/school (flat, no verbosity noise); each school
+# contributes ~2 clock times (start+end). So schools ≈ n_times/2 and output ≈ schools × 47.
+# NB: stage6_handoff/cost.py carries a SECOND output-per-school encoding (per-model fitted
+# `output_tokens_per_school`, and its `_n_schools` proxies n_times 1:1, not /2). It's dead today
+# (#192 — n_times never reaches handoff reps); when #192 revives it, unify with these constants so
+# the gate@6 cost preview and this runtime sizing can't disagree about the same rep.
+_TOKENS_PER_SCHOOL = 47
+_TIMES_PER_SCHOOL = 2
+_SIZING_HEADROOM = 1.5             # grade-band splitting (a K-12 campus emits >1 row/school) + long names
 DEFAULT_TEMPERATURE = 0.1
 BILLING_AUTH_STATUS = {401, 402}   # key/balance — every later call fails identically → halt
 
@@ -53,6 +67,23 @@ ATTRIBUTION_HEADERS = {
     "HTTP-Referer": "https://github.com/ianmmc/learning-connection-time",
     "X-Title": "Learning Connection Time",
 }
+
+
+def size_max_tokens(n_times: Optional[int]) -> int:
+    """Pre-size a call's `max_tokens` from the rep's clock-time count (#180): output ≈ schools × 47
+    and schools ≈ n_times / 2, so a big roster is sized right on the FIRST call instead of truncating
+    then paying the prompt again on the #169 retry. Clamped to [floor, ceiling] — a small rep stays at
+    the 16k floor (never sized DOWN, so nothing that fit before can newly truncate). `n_times` None/0
+    (image/scan reps whose times aren't text-countable, or a rep with no times) → the floor, where the
+    #169 retry is the backstop for the residual we genuinely can't predict.
+
+    NB: `max_tokens` is only a ceiling — OpenRouter bills ACTUAL completion tokens, so sizing higher
+    costs nothing unless the model uses the room (the tail we WANT); the saving is the eliminated
+    duplicate PROMPT charge of the retry."""
+    if not n_times:
+        return DEFAULT_MAX_TOKENS
+    est = math.ceil(n_times / _TIMES_PER_SCHOOL * _TOKENS_PER_SCHOOL * _SIZING_HEADROOM)
+    return max(DEFAULT_MAX_TOKENS, min(est, MAX_TOKENS_CEILING))
 
 
 class BillingAuthError(RuntimeError):
@@ -74,7 +105,7 @@ class CallResult:
     finish_reason: Optional[str] = None  # 'stop' | 'length' (TRUNCATED) | 'error' | ...
     generation_id: Optional[str] = None  # OpenRouter gen-... id (chunk.id) — the handle for
     #                                      GET /api/v1/generation (fallback cost/stats + support)
-    truncation_retried: bool = False     # #169: this call was re-run once at ESCALATED_MAX_TOKENS
+    truncation_retried: bool = False     # #169: this call was re-run once at MAX_TOKENS_CEILING
     #                                      after a first truncated reply (recovery attempt; the tail)
 
     @property
@@ -134,9 +165,10 @@ def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DE
     `stage6_handoff.requests` body ({model, messages}); temperature/max_tokens/usage-telemetry/
     stream are layered on here. Deltas are accumulated to the full content (the caller still sees
     one complete reply); `usage` (native tokens + cost) is read from the final chunk; a mid-stream
-    error event ends the call as non-ok but KEEPS the partial content. On a truncated reply
-    (`finish_reason == "length"`) the call is retried ONCE at `ESCALATED_MAX_TOKENS` to recover the
-    silently-dropped tail (#169). Returns a `CallResult`; raises `BillingAuthError` on 401/402."""
+    error event ends the call as non-ok but KEEPS the partial content. Callers pre-size `max_tokens`
+    from the rep (see `size_max_tokens`, #180); a truncated reply (`finish_reason == "length"`) below
+    the ceiling is still retried ONCE at `MAX_TOKENS_CEILING` to recover the dropped tail (#169).
+    Returns a `CallResult`; raises `BillingAuthError` on 401/402."""
     import openai
 
     model = request_body.get("model", "?")
@@ -194,18 +226,18 @@ def call(request_body: dict, *, api_key: Optional[str] = None, timeout: int = DE
         return CallResult(ok=True, **common)
 
     res = _stream_once(max_tokens)
-    # #169: a truncated reply silently drops the tail schools — retry ONCE at the higher ceiling to
-    # recover them. Keep the retry's CONTENT when it SUCCEEDED (fully recovered, or at least a longer
-    # head — a still-truncated reply is ok=True with finish_reason "length", so the ⚠ flag persists);
-    # a retry that ERRORED keeps the first attempt's salvaged head. Either branch: BOTH attempts were
-    # real billed calls, so their cost/tokens/latency are SUMMED onto the returned result — the budget
+    # #169: a truncated reply silently drops the tail schools — retry ONCE at the ceiling to recover
+    # them. Keep the retry's CONTENT when it SUCCEEDED (fully recovered, or at least a longer head — a
+    # still-truncated reply is ok=True with finish_reason "length", so the ⚠ flag persists); a retry
+    # that ERRORED keeps the first attempt's salvaged head. Either branch: BOTH attempts were real
+    # billed calls, so their cost/tokens/latency are SUMMED onto the returned result — the budget
     # governor (REQ-051) must see true spend, not just the surviving call's (#182).
-    # #187: 32k is inside every council model's completion window today, so a caller already at/above it
-    # gets no retry (nowhere higher to go). #180's n_times sizing clamps to 32k, so this stays correct;
-    # lifting it needs per-model completion ceilings (deferred with #180).
-    if not (res.truncated and max_tokens < ESCALATED_MAX_TOKENS):
+    # #187: the retry escalates to MAX_TOKENS_CEILING and only when the call was BELOW it — the same
+    # constant #180's sizing clamps to, so a rep pre-sized AT the ceiling that still truncates gets no
+    # (futile) retry: it exceeds the model window (>680 schools, never observed), and the ⚠ flag stays.
+    if not (res.truncated and max_tokens < MAX_TOKENS_CEILING):
         return res
-    retry = _stream_once(ESCALATED_MAX_TOKENS)
+    retry = _stream_once(MAX_TOKENS_CEILING)
     keep = retry if retry.ok else res                 # recovered tail vs. salvaged head
     keep.truncation_retried = True
     keep.prompt_tokens = (res.prompt_tokens or 0) + (retry.prompt_tokens or 0)

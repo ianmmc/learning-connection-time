@@ -107,7 +107,8 @@ def run_plumbing(handoff_path, *, limit: int = 1) -> list[dict]:
     for planned in plan[:limit]:
         content = resolve_content(ddirs[planned["district_id"]], planned["rec_key"],
                                   planned["file"], planned["kind"])
-        res = OR.call(R6.build_request(planned, content))
+        res = OR.call(R6.build_request(planned, content),      # #180: size like the production path
+                      max_tokens=OR.size_max_tokens(_content_n_times(planned["kind"], content)))
         facts = PARSE.parse_schedules(res.content)
         out.append({
             "district_id": planned["district_id"], "rec_key": planned["rec_key"],
@@ -228,8 +229,19 @@ def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, u
     return pd
 
 
+def _content_n_times(kind: str, content) -> "int | None":
+    """The clock-time count of a TEXT rep's resolved content — the SAME signal Stage 5 stores as
+    `representation.n_times` (`build_signals.time_positions`), recomputed here from exactly what we're
+    about to send, so #180 sizing needs no handoff plumbing (n_times isn't carried through freeze).
+    Image reps (content is a data/URL) can't be counted → None → the 16k floor + the #169 retry."""
+    return len(BS.time_positions(content)) if kind == "text" and isinstance(content, str) else None
+
+
 def _call(model: str, prompt_id: str, kind: str, content) -> "OR.CallResult":
-    return OR.call(R6.build_request({"model": model, "prompt_id": prompt_id, "kind": kind}, content))
+    body = R6.build_request({"model": model, "prompt_id": prompt_id, "kind": kind}, content)
+    # #180: pre-size max_tokens from the roster (via the rep's time count) so a big table is sized
+    # right on the FIRST call — no truncate-then-retry double prompt-charge. Retry stays the backstop.
+    return OR.call(body, max_tokens=OR.size_max_tokens(_content_n_times(kind, content)))
 
 
 def _call_record(model: str, role: str, res, facts: list) -> dict:
@@ -558,10 +570,10 @@ def _print_district_progress(did: str, pd: dict, gt_data: dict = None) -> None:
             f"acc={len(pd['accepted']):2d} unres={len(pd['unresolved']):2d} "
             f"err={tel.get('errors', 0)} ${tel.get('cost_usd', 0):.4f} | {band_str}")
     if tel.get("truncation_retries"):
-        line += f"  ↻ {tel['truncation_retries']} retried@{OR.ESCALATED_MAX_TOKENS//1000}k"
+        line += f"  ↻ {tel['truncation_retries']} retried@{OR.MAX_TOKENS_CEILING//1000}k"
     if tel.get("truncated"):
-        line += (f"  ⚠ {tel['truncated']} STILL TRUNCATED after the "
-                 f"{OR.ESCALATED_MAX_TOKENS//1000}k retry — roster exceeds the model window; check tail loss")
+        line += (f"  ⚠ {tel['truncated']} STILL TRUNCATED at the "
+                 f"{OR.MAX_TOKENS_CEILING//1000}k ceiling — roster exceeds the model window; check tail loss")
     if gt_data and did in gt_data:
         card = VALID.score_district(pd, gt_data[did])
         hit = sum(1 for b in card["bands"] if b["status"] == "hit")
