@@ -90,7 +90,9 @@ def test_district_detail_404_when_no_extraction(monkeypatch):
 
 # ------------------------------- request review (the mutation) -------------------------------
 def test_review_approve_updates(monkeypatch):
-    _use(monkeypatch, _Con([_Result(rowcount=1)]))
+    # the UPDATE now RETURNs the row's identity (#218: feeds the gate@7 calibration hook — the
+    # follow-on extraction/district lookups + calibration INSERT drain the mock's empty defaults)
+    _use(monkeypatch, _Con([_Result(rows=[{"district_id": "D1", "band": "high", "handoff_hash": "h"}])]))
     r = client.post("/api/extract/request/9", json={"status": "approved", "actor": "ian", "note": "go"})
     assert r.status_code == 200 and r.json() == {"request_id": 9, "status": "approved"}
 

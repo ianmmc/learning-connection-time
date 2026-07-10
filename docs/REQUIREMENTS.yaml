@@ -2908,9 +2908,12 @@ requirements:
       - "It logs the slice keys we certify the WORST of (state, capture_path text/vision, batch_type, run_kind, school_level) — a slice not logged cannot be reconstructed"
       - "It logs whether the human SAW the confidence (blinded flag), for an automation-bias-free error subsample"
       - "The schema is sufficient to sweep θ and certify the worst slice post-hoc WITHOUT baking in a θ at log time (rule of three: ~300 clean audited items in a gate's accept region certify a 1% ceiling; the corpus accrues only forward in time)"
+      - "WIRED at gate@5 (label → sort_score proxy vs tier-derived auto rec, incl. the tier-D-reject-but-human-target survivorship signal), gate@6 (dispatch → n_send proxy, accept-only), gate@7 (extract-request review → council agreement ratio proxy) — each on the SAME transaction as the gate's existing write"
+      - "gate@8 (approving the council's extracted TIMES, school_fact.human_determination) is the STRONGEST signal but is DEFERRED until Stage 8 is built (#88/#89) — approving times is a Stage-8 activity, not gate@7 (Ian, 2026-07-10)"
       - "NON-GOALS (deferred, governance-blocked): θ selection, the auto-escalation policy, per-gate α/δ targets — this is ONLY the instrument"
     tests:
       - tests/test_calibration.py
+      - tests/test_gate_calibration.py
     created: "2026-07-10T00:00:00Z"
     updated: "2026-07-10T00:00:00Z"
     notes: "PURE core + precious schema BUILT first (infrastructure/acquisition/common/calibration.py: the CalibrationEvent
@@ -2919,8 +2922,10 @@ requirements:
       math are locked in code before the live plumbing. Review round (#217, 7afade9): init_precious_schema registers the model
       itself (no caller must remember the import), sweep_worst_slice/normalize/decision inputs are validated (a direction typo
       no longer silently inverts the certification), unknown decision strings are preserved symmetrically, and console-synonym
-      translation stays in the wiring layer, not common/. DEFERRED to the wiring step (console-touching, lands under human
-      inspection per the ramp-up model): calling record_calibration from the gate@5/6/7 handlers so the corpus starts accruing.
-      Decision authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §11b (the 'instrument-now, thresholds-later' decision,
+      translation stays in the wiring layer, not common/. WIRED (2026-07-10): process_governance/gate_calibration.py
+      (console→calibration vocab translation — the wiring layer, not common/) + hooks in save_label (gate@5), stage6_dispatch
+      _record_dispatched_events (gate@6, beside the dispatched state_event), and extract_request_review (gate@7); the corpus now
+      accrues forward from every gate action. gate@8 (verify extracted TIMES) deferred to Stage 8 (#88/#89) — a documented seam
+      in gate_calibration.py. Decision authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §11b (the 'instrument-now, thresholds-later' decision,
       2026-07-10), production-quality-control-research/FINDINGS-AND-DECISIONS.md §0/§3. Sibling instrument: REQ-120/#211
       (exploration quota), same build-now-while-truth-exists logic. Epic #209 Phase 0."

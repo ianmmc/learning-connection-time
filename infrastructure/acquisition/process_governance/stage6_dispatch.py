@@ -9,8 +9,10 @@ pure `package` assembler — producing the in-memory handoff package (slice 5 pe
 import json
 from pathlib import Path
 
+from infrastructure.acquisition.common import calibration as CAL
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import paths
+from infrastructure.acquisition.process_governance import gate_calibration as GCAL
 from infrastructure.acquisition.stage5_filter import release as REL
 from infrastructure.acquisition.stage6_handoff import councils as C6
 from infrastructure.acquisition.stage6_handoff import cost as COST6
@@ -115,6 +117,7 @@ def _record_dispatched_events(session, doc: dict, actor: str, metas: dict) -> No
     here (issue #39): these events are flushed-not-committed, and dispatch_handoff writes the immutable
     file after this — an export now could bake phantom `dispatched` events into the backup if the file
     write then failed and the DB rolled back. The export runs LAST, in dispatch_handoff."""
+    ts = HND._now()
     for d in doc.get("districts", []):
         did = d["district_id"]
         meta = metas.get(did) or {}
@@ -124,7 +127,17 @@ def _record_dispatched_events(session, doc: dict, actor: str, metas: dict) -> No
             "stage": None, "stage_name": None, "checkpoint": "gate@6",
             "event_type": "dispatched", "outcome": None, "topology": meta.get("labeled_topology"),
             "batch_id": None, "fingerprints_json": json.dumps(fp) if fp else None,
-            "actor": actor, "note": doc.get("handoff_hash"), "created_at": HND._now()})
+            "actor": actor, "note": doc.get("handoff_hash"), "created_at": ts})
+        # gate@6 calibration (REQ-121/#210): a shadow-mode row per dispatched district, on THIS session
+        # alongside the state_event — the n_send proxy vs. the accept-only human dispatch decision.
+        # n_send counts records with a decision of "send" AND a non-empty reps list (#218 review):
+        # release.decide can emit decision="send" with zero usable reps (";no-usable-rep"), and a record
+        # that dispatched nothing must not read as a send — that phantom would log agreed=True for a
+        # dispatch that paid for nothing. (Distinct from package.py's n_send_reps, which counts FILES.)
+        n_send = sum(1 for r in d.get("records", []) if r.get("decision") == "send" and r.get("reps"))
+        CAL.record_calibration(session, GCAL.gate6_dispatch_record(
+            handoff_hash=doc.get("handoff_hash"), district_id=did, n_send=n_send,
+            state=meta.get("state"), created_at=ts))
     session.flush()
 
 
