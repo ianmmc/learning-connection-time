@@ -88,6 +88,26 @@ def test_malformed_after_scorecard_degrades_to_unsatisfied_not_crash():
     assert ep["deltas"]["tier_AB_recall"] is None        # the getters degrade the same way
 
 
+def test_episode_promotion_gate_is_none_by_default():
+    # Most tuning rounds don't run the #212 gate; the field is present-but-None so the shape is stable.
+    before = _scorecard("cfgA", "lab1", "dat1", a_prec=0.85, a_rec=0.98)
+    after = _scorecard("cfgB", "lab1", "dat1", a_prec=0.90, a_rec=0.98)
+    ep = TL.build_episode(before, after, knobs_touched=["x"], rationale="r", decided_by="chat")
+    assert "promotion_gate" in ep and ep["promotion_gate"] is None
+
+
+def test_episode_carries_the_promotion_gate_verdict_when_supplied():
+    # #212: a promotion move records the group-aware non-inferiority verdict alongside the scorecard deltas.
+    before = _scorecard("cfgA", "lab1", "dat1", a_prec=0.85, a_rec=0.98)
+    after = _scorecard("cfgB", "lab1", "dat1", a_prec=0.90, a_rec=0.98)
+    verdict = {"promote": True, "margin": 0.02, "ni_lower_bound": -0.005, "deff": 2.4, "reasons": ["ok"]}
+    ep = TL.build_episode(before, after, knobs_touched=["table_min_times"], rationale="tighten",
+                          decided_by="chat", promotion_gate=verdict)
+    assert ep["promotion_gate"]["promote"] is True
+    assert ep["promotion_gate"]["margin"] == 0.02
+    assert ep["promotion_gate"]["deff"] == 2.4
+
+
 def test_episode_records_provenance_fields():
     before = _scorecard("cfgA", "lab1", "dat1", a_prec=0.85, a_rec=0.98)
     after = _scorecard("cfgB", "lab1", "dat1", a_prec=0.90, a_rec=0.98)

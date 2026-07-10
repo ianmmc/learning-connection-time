@@ -148,15 +148,49 @@ def test_logo_cv_holds_out_each_district():
     assert "recall_std" in cv and "precision_mean" in cv
 
 
+# ----------------------------- promotion gate (#212) — champion vs challenger over the same records -----------------------------
+def _records_multi(n_districts=6):
+    """n_districts districts, each with one table target (tier A at default, tier D when table_min_times is
+    tightened to 5) + one empty non-target — enough districts to run the cluster bootstrap (min 3)."""
+    recs = []
+    for di in range(n_districts):
+        d = f"dm{di}"
+        recs.append((d, f"{d}:t", _table_sig(4), "school_bell_table"))   # target: A default, D when tightened
+        recs.append((d, f"{d}:n", _empty_sig(), "target_absent"))         # non-target: D always
+    return recs
+
+
+def test_gate_promotes_an_identical_challenger_trivially():
+    recs = _records_multi()
+    v = FR.gate(recs, DET.DEFAULT_DETECTOR_PARAMS, DET.DEFAULT_DETECTOR_PARAMS, margin=0.02, seed=3)
+    assert v["promote"] is True                            # no change -> non-inferior by construction
+    assert v["non_inferiority"]["lower_bound"] == 0.0
+
+
+def test_gate_holds_a_challenger_that_regresses_recall_across_districts():
+    recs = _records_multi()
+    tightened = {**DET.DEFAULT_DETECTOR_PARAMS, "table_min_times": 5}   # drops every table target A->D
+    v = FR.gate(recs, DET.DEFAULT_DETECTOR_PARAMS, tightened, margin=0.02, seed=3)
+    assert v["promote"] is False
+    assert v["logo_guard"]["passes"] is False              # every district loses its only target
+    assert v["non_inferiority"]["passes"] is False
+
+
+def test_gate_requires_a_pre_declared_margin():
+    recs = _records_multi()
+    with pytest.raises(ValueError):
+        FR.gate(recs, DET.DEFAULT_DETECTOR_PARAMS, DET.DEFAULT_DETECTOR_PARAMS, margin=None)
+
+
 # ----------------------------- DB loader (real governance Postgres, TEMP tables) -----------------------------
-def _seed_mini(sess):
-    """Stand up the two columns load_labeled() needs as CONNECTION-SCOPED TEMP tables on the
-    governance session, seeded with _records(). Auto-dropped when the fixture closes the connection."""
+def _seed(sess, records):
+    """Stand up the two columns load_labeled() needs as CONNECTION-SCOPED TEMP tables on the governance
+    session, seeded with the given records. Auto-dropped when the fixture closes the connection."""
     sess.execute(text("""CREATE TEMP TABLE record (rec_key text PRIMARY KEY, district_id text, tier text,
         category_hypothesis text, signals_json text, duplicate_of text,
         cluster_id text, is_cluster_rep integer)"""))
     sess.execute(text("CREATE TEMP TABLE label (rec_key text PRIMARY KEY, primary_label text, status text)"))
-    for dist, rk, sig, lab in _records():
+    for dist, rk, sig, lab in records:
         sess.execute(text("""INSERT INTO record (rec_key, district_id, tier, category_hypothesis,
             signals_json, duplicate_of, cluster_id, is_cluster_rep)
             VALUES (:rk,:d,'A','x',:sj,NULL,NULL,1)"""), {"rk": rk, "d": dist, "sj": json.dumps(sig)})
@@ -167,7 +201,7 @@ def _seed_mini(sess):
 
 @pytest.mark.govdb   # unmarked gov_session tests never run in CI (#215 review)
 def test_load_labeled_reads_signals_and_labels(gov_session):
-    con = _seed_mini(gov_session)
+    con = _seed(gov_session, _records())
     recs = FR.load_labeled(con)
     assert len(recs) == 4
     dists = {r[0] for r in recs}
@@ -176,3 +210,15 @@ def test_load_labeled_reads_signals_and_labels(gov_session):
     by_key = {r[1]: r for r in recs}
     assert by_key["d1:a"][3] == "school_bell_table"
     assert isinstance(by_key["d1:a"][2], dict)
+
+
+@pytest.mark.govdb
+def test_gate_runs_end_to_end_through_the_db_loader(gov_session):
+    # the #212 gate over records read from the real governance session (load_labeled -> _retier ->
+    # promotion_verdict): a tightened challenger that drops every table target must HOLD, on real DB shape.
+    con = _seed(gov_session, _records_multi())
+    recs = FR.load_labeled(con)
+    assert {r[0] for r in recs} == {f"dm{i}" for i in range(6)}
+    tightened = {**DET.DEFAULT_DETECTOR_PARAMS, "table_min_times": 5}
+    v = FR.gate(recs, DET.DEFAULT_DETECTOR_PARAMS, tightened, margin=0.02, seed=1)
+    assert v["promote"] is False and v["non_inferiority"]["passes"] is False

@@ -365,3 +365,31 @@ def promotion_verdict(champion_rows, challenger_rows, *, margin, fold_margin=Non
         "precision_report": precision_report,
         "reasons": reasons,
     }
+
+
+def verdict_summary(verdict):
+    """A compact, ledger-friendly view of a `promotion_verdict` — every decision-relevant number minus the
+    verbose per-district `deltas` list. This is what the tuning ledger persists and the CLI prints, so a
+    tuning round records the non-inferiority verdict beside the scorecard deltas without bloating the line."""
+    b, logo, icc = verdict["bootstrap"], verdict["logo_guard"], verdict["icc_deff"]
+    return {
+        "promote": verdict["promote"],
+        "margin": verdict["margin"],
+        "fold_margin": verdict["fold_margin"],
+        "metric": verdict["metric"],
+        "positive_tier": verdict["positive_tier"],
+        "n_districts": verdict["n_districts"],
+        "ni_lower_bound": verdict["non_inferiority"]["lower_bound"],
+        "ni_passes": verdict["non_inferiority"]["passes"],
+        "mean_delta": b["mean"],
+        "logo_passes": logo["passes"],
+        "worst_district": logo["worst_district"],
+        "worst_delta": logo["worst_delta"],
+        "icc": icc["icc"],
+        "deff": icc["deff"],
+        "wilcoxon_pvalue": verdict["wilcoxon"]["pvalue"],
+        "mcnemar_pvalue": verdict["decision_flips_mcnemar"]["pvalue"],
+        "tost_ni_pvalue": verdict["tost_parametric"]["ni_pvalue"],
+        "precision_mean_delta": verdict["precision_report"]["mean_delta"],
+        "reasons": verdict["reasons"],
+    }

@@ -210,6 +210,21 @@ def test_verdict_fold_margin_defaults_to_twice_the_aggregate_margin():
     assert v["fold_margin"] == pytest.approx(0.04)
 
 
+def test_verdict_summary_drops_the_deltas_list_but_keeps_every_decision_field():
+    champ = _rows_uniform(6, 3, 2, target_tier="A", nontarget_tier="A")
+    chall = _rows_uniform(6, 3, 2, target_tier="A", nontarget_tier="C")
+    v = PG.promotion_verdict(champ, chall, margin=0.02, seed=1, n_resamples=1000)
+    s = PG.verdict_summary(v)
+    assert "deltas" not in s                                # the verbose per-district list is dropped
+    # ...but every field a ledger/reader needs to reconstruct the decision survives
+    for k in ("promote", "margin", "fold_margin", "n_districts", "ni_lower_bound", "ni_passes",
+              "mean_delta", "logo_passes", "worst_delta", "icc", "deff", "wilcoxon_pvalue",
+              "mcnemar_pvalue", "tost_ni_pvalue", "precision_mean_delta", "reasons"):
+        assert k in s
+    assert s["promote"] == v["promote"]
+    assert s["ni_lower_bound"] == v["non_inferiority"]["lower_bound"]
+
+
 def test_verdict_is_reproducible_for_a_fixed_seed():
     champ = _rows_uniform(9, 4, 1, target_tier="A", nontarget_tier="A")
     chall = []
