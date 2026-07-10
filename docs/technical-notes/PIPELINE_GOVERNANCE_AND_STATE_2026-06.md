@@ -795,6 +795,37 @@ confidence gate must exist *before* the supervision gates (6/7) relax — it is 
 mechanical Stage-9 LCT write; (b) the guardrail ships *with* the automating feature (Council Lab promotion
 substrate = COUNCIL_LAB §5a), never bolted on after.
 
+**The exploration-quota control law — a revocable autonomy license (#211, design session 2026-07-10).**
+The anti-survivorship quota is not a metric we watch; it is a **control law that licenses gate@5's
+autonomy and revokes it automatically.** The one-sentence form: *the filter may run only as autonomously
+as its reject audit is currently validating it — and the moment that validation lapses, autonomy falls
+back one supervision level rather than the pipeline halting.* Three points are easy to get wrong and are
+load-bearing. **(1) It is not a current hole.** Today the operator census-labels every completed district
+— all tiers, rejects included — so the reject bucket is fully observed and the harness recall (A+B 0.9961,
+#208) is already honest, measured over labeled tier-D records, not a survivor-only set. The hole opens at
+exactly one moment: **when gate@5 goes auto and census-labeling stops.** So the quota is the instrument
+that *replaces* census-labeling, switched on before it switches off — the gate on relaxing Stage-5
+supervision, built and calibrated *now* against census truth (run the random sampler retrospectively over
+fully-labeled districts; confirm a 3–5% draw reproduces the census reject-quality before relying on it —
+completed districts are attention-sorted, so that is a worst-case calibration). **(2) The invariant is a
+COUNT over a rolling window of current-config rejects, not a cumulative percentage.** *Auto-suppression at
+gate@5 stays licensed only while the window holds ≥ N randomly-selected, human-labeled rejects from the
+current config generation* — N set by the rule of three (~300 zero-miss rejects ⇒ 95% confidence FN-rate
+< 1%), fed by a p%-of-flow sampler (p sets the flow, N the sufficiency). A cumulative % floats above the
+bar on stale labels; % is too thin on small streams and re-imports the manual-at-100k-scale problem
+(commandment 2) on big ones. Selection randomness is enforced at draw time (a dedicated
+`run_kind = exploration_audit` queue the human works top-down) — "labeled" must mean "*randomly* labeled"
+or the estimate is biased and the license is theater. **(3) Breach DEMOTES, it does not HALT.** Below the
+bar, gate@5 auto reverts to **manual** (census mode) — the safe direction, self-healing (manual review
+regenerates exactly the labels that restore coverage), and scoped to Stage-5 auto-suppress alone
+(discovery/capture/extraction keep draining). The **restart bar is refilling the audit sample, not
+clearing the reject backlog**; a **deadband** (demote < N, re-promote only above ~1.2·N or a clean window)
+prevents auto↔manual flapping. Diagnostics stratify by the suspected bias axes (reader-tier / CMS-family /
+doc-format) to catch *correlated* misses, but the hard gate is on the aggregate plus flagged strata only
+(per-stratum hard gates multiply human cost). Like every #209 guardrail the enforcement **ships dormant** —
+the demote-hook is a no-op until gate@5 is actually set to auto (the `--assert-floor` pattern, #208). Full
+spec: `STAGE5_FILTER_DESIGN_2026-06.md` §5a; issue #211.
+
 **Milestone criteria: DEFERRED; the meter that sets them: STARTS NOW (Ian + assistant, 2026-07-10).** We
 lack the data to chart "gate@N goes auto when confidence θ yields human-agreement ≥ X" — so the *criteria*
 wait. But calibration data accrues only **forward in time** (the #108 facet-accrual lesson: you cannot
