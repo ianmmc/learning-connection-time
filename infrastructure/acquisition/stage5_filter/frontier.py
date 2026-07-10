@@ -89,10 +89,14 @@ def _moves(records, baseline, params):
     return sorted(out, key=lambda m: (m["from"], m["to"], m["rec_key"]))
 
 
-def grid_search(records, grid=None, recall_floor=0.97, positive_tier="A", baseline=None):
-    """Enumerate the grid, score each config, keep those whose `positive_tier` recall >= floor,
-    rank by that tier's precision desc. Returns [{params, metrics, feasible, recall, precision,
-    moves}, ...]. `moves` is vs `baseline` (defaults to detectors.DEFAULT_DETECTOR_PARAMS)."""
+def grid_search(records, grid=None, recall_floor=None, positive_tier="A", floor_tier=None, baseline=None):
+    """Enumerate the grid, score each config, keep those FEASIBLE (their `floor_tier` recall >= floor),
+    rank by `positive_tier` PRECISION desc. The floor tier and the ranking tier are DELIBERATELY different
+    (#208): the floor defends A+B recall (reaches-review — don't drop a target to tier D), while we optimize
+    tier-A PRECISION (the auto-send bucket). Both default to the canonical harness.FLOOR_TIER/RECALL_FLOOR.
+    Returns [{params, metrics, feasible, recall (floor_tier), precision (positive_tier), moves}, ...]."""
+    recall_floor = harness.RECALL_FLOOR if recall_floor is None else recall_floor
+    floor_tier = harness.FLOOR_TIER if floor_tier is None else floor_tier
     grid = grid or DEFAULT_GRID
     baseline = baseline or DET.DEFAULT_DETECTOR_PARAMS
     keys = list(grid)
@@ -100,8 +104,8 @@ def grid_search(records, grid=None, recall_floor=0.97, positive_tier="A", baseli
     for combo in itertools.product(*(grid[k] for k in keys)):
         params = {**baseline, **dict(zip(keys, combo))}
         m = evaluate(records, params)
-        th = m["thresholds"][positive_tier]
-        rec, prec = th["recall"], th["precision"]
+        rec = m["thresholds"][floor_tier]["recall"]            # the FLOORED recall (A+B, reaches-review)
+        prec = m["thresholds"][positive_tier]["precision"]     # the RANKED precision (A, auto-send)
         feasible = rec is not None and rec >= recall_floor
         results.append({"params": {k: params[k] for k in keys}, "metrics": m,
                         "feasible": feasible, "recall": rec, "precision": prec,
@@ -162,8 +166,9 @@ def _fmt(x):
 
 def main():
     ap = argparse.ArgumentParser(description="Stage 5 frontier / grid search over the V2 detector params (REQ-096, advisory)")
-    ap.add_argument("--recall-floor", type=float, default=0.97)
-    ap.add_argument("--tier", default="A", help="positive tier to constrain/rank on (A or A+B)")
+    ap.add_argument("--recall-floor", type=float, default=harness.RECALL_FLOOR)   # canonical (#208)
+    ap.add_argument("--tier", default="A", help="positive tier to RANK precision on (A or A+B)")
+    ap.add_argument("--floor-tier", default=harness.FLOOR_TIER, help="tier whose recall the floor defends (default A+B)")
     ap.add_argument("--cv", action="store_true", help="also run LOGO-by-district on the top config")
     a = ap.parse_args()
 
@@ -174,8 +179,8 @@ def main():
           f"({sum(1 for *_ , lab in records if lab in TARGET)} targets)")
     print(f"baseline tier-{a.tier}: precision={_fmt(base_m['precision'])} recall={_fmt(base_m['recall'])} "
           f"(tp={base_m['tp']} fp={base_m['fp']} fn={base_m['fn']})")
-    print(f"\nfrontier (recall floor {a.recall_floor}, ranked by precision):")
-    res = grid_search(records, recall_floor=a.recall_floor, positive_tier=a.tier)
+    print(f"\nfrontier (floor: tier-{a.floor_tier} recall >= {a.recall_floor}; ranked by tier-{a.tier} precision):")
+    res = grid_search(records, recall_floor=a.recall_floor, positive_tier=a.tier, floor_tier=a.floor_tier)
     for r in res[:10]:
         flag = "" if r["feasible"] else "  (INFEASIBLE — best available)"
         mv = "; ".join(f"{m['rec_key']} {m['from']}->{m['to']}{'*' if m['is_target'] else ''}"

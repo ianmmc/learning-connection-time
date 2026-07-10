@@ -29,6 +29,30 @@ from infrastructure.acquisition.common import db as gdb              # noqa: E40
 
 TARGET = BS.TARGET_LABELS
 
+# ----------------------------- the defended recall floor — SINGLE SOURCE OF TRUTH (#208) -----------------------------
+# The Stage-5 filter's guardrail is "no TARGET is silently dropped below human review" — a target must reach
+# at least tier B (SEND or REVIEW), never be SUPPRESSED to tier D. So the floor defends **A+B recall**, NOT
+# tier-A recall: tier A is the auto-SEND (precision-oriented) bucket, its recall sits ~0.89 BY DESIGN
+# (borderline targets route to review), so a tier-A floor at 0.97/0.98 was unmeetable + non-binding — and
+# frontier (0.97) and the ledger (0.98) disagreed on the value. One canonical (floor, tier) pair now, imported
+# by frontier (feasibility), tuning_ledger (the recorded constraint), and the build_signals re-ingest
+# ENFORCEMENT (the actuation point — was reported, never enforced). NOTE (#214): once the exploration quota
+# exists, the honest floor is measured against the exploration cohort (Rejection-Quality/TNR), not only the
+# approved/labeled set — this constant is the labeled-set floor until then.
+RECALL_FLOOR = 0.98
+FLOOR_TIER = "A+B"
+
+
+def floor_recall(scorecard):
+    """The recall the floor defends (FLOOR_TIER = A+B, reaches-review) from a harness scorecard; None if absent."""
+    return (scorecard.get("tier_vs_target", {}).get("thresholds", {}).get(FLOOR_TIER, {}) or {}).get("recall")
+
+
+def floor_satisfied(scorecard, floor=RECALL_FLOOR):
+    """True iff the scorecard's floor-tier recall meets the canonical floor. A None recall is NOT satisfied."""
+    rec = floor_recall(scorecard)
+    return rec is not None and rec >= floor
+
 # Coarse hub/per-school axis so the (different-vocabulary) guessed and labeled topologies can be
 # compared at all. Values outside {hub, per_school} don't make a hub-vs-per-school claim.
 GUESS_COARSE = {"hub": "hub", "per_school": "per_school", "unknown": "unknown"}

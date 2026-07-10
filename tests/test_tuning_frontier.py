@@ -83,13 +83,27 @@ def test_evaluate_reuses_harness_metrics():
 def test_grid_search_filters_by_recall_floor_and_ranks_by_precision():
     recs = _records()
     grid = {"table_min_times": [4, 5]}
-    res = FR.grid_search(recs, grid, recall_floor=0.99)
+    # floor_tier="A" here exercises the floor MECHANISM on the synthetic set (tier-A recall drops to 0.5
+    # when tightening to 5). The CANONICAL default floor_tier is A+B — see the next test.
+    res = FR.grid_search(recs, grid, recall_floor=0.99, floor_tier="A")
     assert res, "expected at least one feasible config"
     # tightening to 5 drops a real target (recall 0.5) -> infeasible; only the default survives
     assert all(r["feasible"] for r in res)
     assert [r["params"]["table_min_times"] for r in res] == [4]
     precs = [r["metrics"]["thresholds"]["A"]["precision"] for r in res]
     assert precs == sorted(precs, reverse=True)
+
+
+def test_grid_search_defaults_to_the_canonical_ab_recall_floor():
+    # #208: the floor defends A+B recall (reaches-review), NOT tier-A recall, and uses the canonical
+    # harness.RECALL_FLOOR — so the ranking tier (A precision) and the floor tier (A+B recall) differ.
+    from infrastructure.acquisition.stage5_filter import harness
+    recs = _records()
+    res = FR.grid_search(recs, {"table_min_times": [4]})   # no floor args -> canonical defaults
+    r = res[0]
+    # r["recall"] is now the A+B (floor-tier) recall, r["precision"] the A (ranking-tier) precision
+    assert r["recall"] == r["metrics"]["thresholds"][harness.FLOOR_TIER]["recall"]
+    assert r["precision"] == r["metrics"]["thresholds"]["A"]["precision"]
 
 
 def test_grid_search_reports_which_records_move_vs_baseline():

@@ -1204,8 +1204,26 @@ def main():
     ap.add_argument("--root", default=str(RAW_DIR))
     ap.add_argument("--no-release", action="store_true",
                     help="skip regenerating filtered.json after ingest")
+    ap.add_argument("--assert-floor", action="store_true",
+                    help="after ingest, FAIL LOUD if the labeled-set recall floor (harness.FLOOR_TIER "
+                         "recall >= RECALL_FLOOR) is violated — the enforcement point for a config change "
+                         "(#208). Off by default so a routine batch ingest isn't gated; automation requires it.")
     a = ap.parse_args()
     ingest(Path(a.root))
+    if a.assert_floor:
+        # ENFORCE the recall floor at the actuation step (was reported by frontier/ledger, never enforced).
+        # Local import: harness imports build_signals, so a module-level import here would cycle (same reason
+        # the release import below is local). Reads the DB AFTER ingest commits.
+        from infrastructure.acquisition.stage5_filter import harness
+        card = harness.build_scorecard()
+        rec = harness.floor_recall(card)
+        if not harness.floor_satisfied(card):
+            raise SystemExit(
+                f"RECALL FLOOR VIOLATED after ingest: tier-{harness.FLOOR_TIER} recall={rec} < "
+                f"{harness.RECALL_FLOOR} (config={card['fingerprints']['config']} "
+                f"data={card['fingerprints']['data']}). Refusing to let this config stand — re-run without "
+                f"--assert-floor only with an explicit, ledger-recorded override.")
+        print(f"recall floor OK: tier-{harness.FLOOR_TIER} recall={rec} >= {harness.RECALL_FLOOR}")
     # Event-driven: the first scoring pass (and any re-ingest after new discovery adds URLs/reps)
     # regenerates each district's filtered.json projection — no manual trigger (REQ-094). Local
     # import avoids a build_signals<->release module cycle; runs AFTER ingest commits so reads see it.

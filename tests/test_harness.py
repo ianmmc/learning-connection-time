@@ -39,6 +39,18 @@ def test_topology_coarse_agreement_excludes_non_hub_per_school():
     assert m["pairs"]["D3"] == ["hub", "per_school"]
 
 
+def test_recall_floor_helpers_read_the_ab_tier():
+    # #208: the canonical floor defends A+B recall (reaches-review), not tier-A. floor_satisfied is
+    # False on a None recall and on a below-floor recall.
+    assert harness.FLOOR_TIER == "A+B"
+    card = {"tier_vs_target": {"thresholds": {"A": {"recall": 0.80}, "A+B": {"recall": 0.985}}}}
+    assert harness.floor_recall(card) == 0.985                     # read from A+B, not the 0.80 tier-A
+    assert harness.floor_satisfied(card) is True                   # 0.985 >= 0.98
+    assert harness.floor_satisfied(card, floor=0.99) is False      # 0.985 < 0.99
+    assert harness.floor_recall({"tier_vs_target": {"thresholds": {}}}) is None
+    assert harness.floor_satisfied({"tier_vs_target": {"thresholds": {}}}) is False
+
+
 def test_f1_is_zero_not_none_when_precision_and_recall_are_zero():
     # issue #63: tp=0 with fp>0 and fn>0 -> precision 0.0, recall 0.0 — LEGITIMATE values, so f1
     # must be 0.0 (computable), not None (not-computable)
