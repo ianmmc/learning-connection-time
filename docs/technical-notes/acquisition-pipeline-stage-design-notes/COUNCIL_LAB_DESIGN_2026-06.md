@@ -209,6 +209,33 @@ per measured run. Each entry copies the run's fingerprints and records the delta
   never auto-overwrite. An advisory frontier (grid under a hard floor, ranked by the cost-relevant metric)
   can rank candidates — advisory only, like `stage5_filter/frontier.py`.
 
+### 5a. The promotion SUBSTRATE — the guardrail that must ship WITH auto-promotion (planning, 2026-07-10)
+
+The ledger above records a *human-decided* promotion. The moment promotion becomes even semi-automated (a
+recommender applies a frontier pick, or a cost-driven re-composition auto-swaps `council_configs.json`), the
+runtime is **indifferent to how a config got there** — `provenance` is the only tell, and nothing enforces
+it. So the guardrail is not a later add-on; it is part of the definition of "auto-promotion is allowed."
+Build these *with* the Lab's promote capability, never after (the shift-left lesson from the #206 review:
+enforce the invariant at the boundary, not in the reviewer's head). Tracked in the runtime-guardrail epic
+(#209); details here so the Lab build carries them.
+
+1. **Provenance + GT-fingerprint enforced ON LOAD, refuse-to-run on mismatch.** Any config the extraction
+   runtime loads must carry a `provenance` (which ledger episode promoted it) and the GT-version fingerprint
+   it was measured against; if that fingerprint ≠ the current GT corpus, the run **halts loudly** (the
+   yardstick moved — the config's accuracy claim is stale). This is the config analog of the Stage-2/3/4
+   reconcile hard-stop: a control-failure, not a warning. Today `councils.validate()` checks *structure*
+   (cross-family diversity, vision-capable judge) on load — extend it to check *provenance/fingerprint*.
+2. **Cost promotions require a same-GT-version accuracy read.** `cost_benchmark` is cost-only and
+   `escalation_rate` is an assumed constant until §4 lands — so a cost-ranked auto-swap must be blocked
+   unless it carries a *current-GT-version* accuracy number, not a bootstrap. Cost and accuracy are
+   decoupled today; the guardrail re-couples them at the promotion gate.
+3. **Promotion is reversible: champion-challenger with a warm standby.** Config-as-data already makes a
+   config swap a reversible file/row op; formalize it — the prior "champion" config is retained, and a
+   promoted "challenger" that trips a post-promotion floor/drift check (§11b of governance) **auto-reverts**
+   to the champion. This is the small-scale adaptation of MLOps shadow/canary: we can't split live traffic
+   (batch re-score, not a request stream), so the safety comes from the fingerprinted before/after episode +
+   a bounded first production tranche + a recorded rollback, not from a % canary.
+
 ---
 
 ## 6. The console view — AGREED IN PRINCIPLE, SEQUENCED AFTER THE LEDGER

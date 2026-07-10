@@ -782,6 +782,32 @@ blocking call; enforced two ways — behavioral tests on the live client, and an
 (`tests/test_streaming_contract.py`) that fails CI on any *new* blocking OpenAI-SDK completion call added
 anywhere in the tree. Applies pipeline-wide (any future paid stage/provider), not just Stage 7.
 
+**Guardrails for the manual→auto transition — the RUNTIME tier (planning direction, 2026-07-10).** The
+ramp-up's destination (self-governing pipeline + Council Lab auto-promotion + Stage-7/8 outcomes tuning
+Stage-5) is a **different risk category** than the dev-time defect-prevention of epic #200 — it is the ML
+"hidden feedback loop / CACE" surface (Sculley et al.). As the human leaves a gate, the guardrail must move
+from *test-time* to *runtime*: drift monitors, confidence gating, revert-to-last-known-good, and — the one
+the recall floor structurally CANNOT catch — an **anti-survivorship exploration quota** (Stage-5 only sees
+paid outcomes for reps it approved, so it can entrench a wrong prune; a random sample of would-be-pruned
+reps must still be extracted to keep the pruned tail observable). Cataloged in **epic #209** (runtime
+guardrails), a sibling to #200. **Two ordering constraints are load-bearing:** (a) gate@8's calibrated
+confidence gate must exist *before* the supervision gates (6/7) relax — it is the last backstop before the
+mechanical Stage-9 LCT write; (b) the guardrail ships *with* the automating feature (Council Lab promotion
+substrate = COUNCIL_LAB §5a), never bolted on after.
+
+**Milestone criteria: DEFERRED; the meter that sets them: STARTS NOW (Ian + assistant, 2026-07-10).** We
+lack the data to chart "gate@N goes auto when confidence θ yields human-agreement ≥ X" — so the *criteria*
+wait. But calibration data accrues only **forward in time** (the #108 facet-accrual lesson: you cannot
+measure a threshold you never instrumented). So the decision is to **start the gate-decision calibration
+log now**, as a small extension of the existing `state_event` writes: every time a human works a gate,
+also stamp the system's confidence proxy for that item *and whether the human overrode the system's
+recommendation* — gate@5 the combiner `sort_score`/tier, gate@6 `n_send`/`n_verified`, gate@7 council
+agreement / `n_unresolved`. Months of that IS the calibration corpus ("when the system said θ, the human
+agreed X%") that later justifies a threshold. The **ML-Test-Score-style per-gate readiness rubric**
+(config-as-data checklist: data / decision-quality / infra / monitoring) is the companion plumbing — schema
+now, per-gate pass-bar deferred with the milestones. Both are the instrumentation half of #209's
+gate-transition items; the policy/threshold half is explicitly blocked on the transition-governance plan.
+
 ### 11c. Pipeline Overview = "what just happened" (an event-log projection)
 The Overview visualizes the **`state_event` log** — per stage, what just completed + the **attention queue**
 (§7b). It is **NOT a live in-flight feed**: the durable log is deliberately completion-only (no interim
