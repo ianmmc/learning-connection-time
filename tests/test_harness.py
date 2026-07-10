@@ -54,6 +54,23 @@ def test_confounder_facets_parses_v21_dict_and_ignores_axis3():
     assert harness.confounder_facets("{}") == set()
     assert harness.confounder_facets(None) == set()
     assert harness.confounder_facets('["not","a","dict"]') == set()   # legacy/malformed shape -> no confounders
+    # #199 review: only the literal "yes" counts — an explicit negative marker (or any other value a
+    # future writer might store) must NOT read as a present confounder.
+    assert harness.confounder_facets('{"news_feed":"no"}') == set()
+    assert harness.confounder_facets('{"news_feed":true}') == set()
+
+
+def test_parse_facets_is_the_single_tagged_predicate():
+    # #199 review: `tagged` and `confounder_facets` previously used INDEPENDENT checks (raw string vs
+    # dict-shape), letting a non-dict legacy value count into the facet-tagged denominator while never
+    # contributing a hit. parse_facets is now the one predicate: dict-with-content -> reviewed; anything
+    # else (empty, null, non-dict, unparseable) -> not reviewed.
+    assert harness.parse_facets('{"sports":"yes"}') == {"sports": "yes"}
+    assert harness.parse_facets('{"_where":"footer"}') == {"_where": "footer"}   # axis-3-only still = reviewed
+    assert harness.parse_facets("{}") is None
+    assert harness.parse_facets(None) is None
+    assert harness.parse_facets("null") is None
+    assert harness.parse_facets('["not","a","dict"]') is None   # the shape that used to inflate the denominator
 
 
 def test_facet_detector_diagnostics_scores_confounder_not_just_nontarget():

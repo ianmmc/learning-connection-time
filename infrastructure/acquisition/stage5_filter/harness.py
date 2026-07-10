@@ -116,9 +116,15 @@ DETECTOR_POLARITY = {
 # This measures the detector's CLAIM (did it name the right confounder), which the coarse target-accuracy
 # above cannot. The mapping is explicit (NOT the vote `category` field — lf_office_hours and
 # lf_nonstandard_day share category 'other_schedule' but map to different facets). See STAGE5 §5/§8.
+# `lf_no_times` (also negative-polarity) is DELIBERATELY absent: it is the suppress FLOOR — a claim that
+# NO signal is present, not that a specific confounder shape is — so it has no Axis-2 facet to score against.
 DETECTOR_FACET = {
     "lf_news_feed": {"news_feed"},
     "lf_calendar_widget": {"academic_calendar", "community_calendar"},
+    # CAVEAT (#199 review): `other_schedule` has NO live checkbox in the v2.1 questionnaire (app.js
+    # CONFOUNDERS) — its only writer was the one-time v2.0→v2.1 label migration, so this detector's
+    # facet-tagged denominator is FROZEN at the migrated rows and cannot accrue from new gate@5 review
+    # until a nonstandard-day/other-schedule checkbox is added (tracked: #207).
     "lf_nonstandard_day": {"other_schedule"},
     "lf_office_hours": {"office_building_hours"},
     "lf_board": {"board"},
@@ -129,28 +135,40 @@ DETECTOR_FACET = {
 _NON_CONFOUNDER_FACETS = {"buried_handbook", "needs_vision"}
 
 
-def confounder_facets(facets_json):
-    """The set of Axis-2 confounder facets checked 'yes' in a label's facets_json (Axis-3 `_`-prefixed
-    location keys + buried_handbook/needs_vision excluded). facets_json is the v2.1 `{facet: "yes"}` dict;
-    a non-dict shape (a legacy list, null) carries no confounder facets."""
+def parse_facets(facets_json):
+    """Parse a label's facets_json into its v2.1 dict, or None when the value does not represent a v2.1
+    review (empty, null, unparseable, or a non-dict legacy shape). ONE predicate for both 'which facets'
+    and 'was this record facet-reviewed at all' — the #199 review found the two computed independently
+    (a string check vs. a dict-shape check), letting a legacy non-dict value count into the facet-tagged
+    DENOMINATOR while contributing no facets, silently deflating facet_precision."""
     try:
         d = json.loads(facets_json or "{}")
     except (TypeError, ValueError):
-        return set()
-    if not isinstance(d, dict):
+        return None
+    return d if isinstance(d, dict) and d else None
+
+
+def confounder_facets(facets_json):
+    """The set of Axis-2 confounder facets checked 'yes' in a label's facets_json (Axis-3 `_`-prefixed
+    location keys + buried_handbook/needs_vision excluded). Only the literal 'yes' counts — the questionnaire
+    stores a checked box as 'yes' and OMITS unchecked ones, so any other value (e.g. a future explicit 'no')
+    must not read as present (#199 review: the old any-truthy check would have)."""
+    d = parse_facets(facets_json)
+    if d is None:
         return set()
     return {k for k, v in d.items()
-            if v and not k.startswith("_") and k not in _NON_CONFOUNDER_FACETS}
+            if v == "yes" and not k.startswith("_") and k not in _NON_CONFOUNDER_FACETS}
 
 
 def facet_detector_diagnostics(rows):
     """rows: iterable of (fired: list[str], confounders: set[str], facet_tagged: bool) over LABELED records
     (#108). For each NEGATIVE detector, FACET-level precision: among its firings on records whose facets
-    the human actually tagged (non-empty facets_json — i.e. reviewed under the v2.1 questionnaire), the
-    fraction where its claimed confounder facet (DETECTOR_FACET) is present. This is confounder-ID accuracy,
-    orthogonal to whether a target co-occurs. `fires_facet_tagged` is the (transparent) denominator — a
-    small one means facets are still accruing (§8), so read the precision as provisional. Records with no
-    facets tagged can't inform it and are excluded, not counted as misses."""
+    the human actually tagged (a non-empty v2.1 dict — `parse_facets` is the single tagged/untagged
+    predicate), the fraction where its claimed confounder facet (DETECTOR_FACET) is present. This is
+    confounder-ID accuracy, orthogonal to whether a target co-occurs. `fires_facet_tagged` is the
+    (transparent) denominator — a small one means facets are still accruing (§8), so read the precision as
+    provisional (EXCEPT lf_nonstandard_day, whose facet has no live checkbox — see DETECTOR_FACET).
+    Records with no facets tagged can't inform it and are excluded, not counted as misses."""
     rows = list(rows)
     out = {}
     for name, want in sorted(DETECTOR_FACET.items()):
@@ -216,7 +234,9 @@ def score(con):
     # V2 (REQ-113): per-detector diagnostics from the fired votes stored in signals_json.
     det_rows = [(_fired(sj), lab in TARGET) for _t, _cat, lab, sj, _fj in recs]
     # #108: facet-level per-detector diagnostics — negative detectors vs their Axis-2 confounder facets.
-    facet_rows = [(_fired(sj), confounder_facets(fj), bool((fj or "").strip() not in ("", "{}", "null")))
+    # tagged uses the SAME parse_facets predicate as confounder_facets (#199 review: an independent raw-string
+    # check counted non-dict legacy shapes into the denominator while they could never contribute a hit).
+    facet_rows = [(_fired(sj), confounder_facets(fj), parse_facets(fj) is not None)
                   for _t, _cat, _lab, sj, fj in recs]
     topo_rows = con.execute(text(
         "SELECT name, guessed_topology, labeled_topology FROM district ORDER BY name")).fetchall()
