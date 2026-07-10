@@ -23,8 +23,8 @@ high-variance; it is REPORTED alongside the in-sample number, never a gate (CV d
 does not prevent it). See docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE5_FILTER_DESIGN_2026-06.md.
 
 Usage:
-    python3 frontier.py --recall-floor 0.97                 # grid over the detector-threshold knobs
-    python3 frontier.py --recall-floor 0.97 --cv            # + LOGO-by-district on the best feasible
+    python3 frontier.py            # grid over the detector-threshold knobs (canonical A+B floor, #208)
+    python3 frontier.py --cv       # + LOGO-by-district on the best feasible
 """
 import argparse
 import itertools
@@ -97,6 +97,10 @@ def grid_search(records, grid=None, recall_floor=None, positive_tier="A", floor_
     Returns [{params, metrics, feasible, recall (floor_tier), precision (positive_tier), moves}, ...]."""
     recall_floor = harness.RECALL_FLOOR if recall_floor is None else recall_floor
     floor_tier = harness.FLOOR_TIER if floor_tier is None else floor_tier
+    valid = ("A", "A+B")   # the only thresholds tier_target_metrics builds — fail clean, not KeyError
+    if positive_tier not in valid or floor_tier not in valid:
+        raise ValueError(f"positive_tier/floor_tier must be one of {valid} "
+                         f"(got positive_tier={positive_tier!r}, floor_tier={floor_tier!r})")
     grid = grid or DEFAULT_GRID
     baseline = baseline or DET.DEFAULT_DETECTOR_PARAMS
     keys = list(grid)
@@ -167,8 +171,9 @@ def _fmt(x):
 def main():
     ap = argparse.ArgumentParser(description="Stage 5 frontier / grid search over the V2 detector params (REQ-096, advisory)")
     ap.add_argument("--recall-floor", type=float, default=harness.RECALL_FLOOR)   # canonical (#208)
-    ap.add_argument("--tier", default="A", help="positive tier to RANK precision on (A or A+B)")
-    ap.add_argument("--floor-tier", default=harness.FLOOR_TIER, help="tier whose recall the floor defends (default A+B)")
+    ap.add_argument("--tier", default="A", choices=["A", "A+B"], help="positive tier to RANK precision on")
+    ap.add_argument("--floor-tier", default=harness.FLOOR_TIER, choices=["A", "A+B"],
+                    help="tier whose recall the floor defends (default A+B)")
     ap.add_argument("--cv", action="store_true", help="also run LOGO-by-district on the top config")
     a = ap.parse_args()
 

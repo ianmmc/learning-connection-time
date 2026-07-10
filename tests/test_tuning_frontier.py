@@ -9,6 +9,8 @@ loader is exercised against connection-scoped TEMP tables on the real governance
 """
 import json
 
+import pytest
+
 from sqlalchemy import text
 
 from infrastructure.acquisition.stage5_filter import combiner as COMB  # noqa: E402
@@ -94,16 +96,38 @@ def test_grid_search_filters_by_recall_floor_and_ranks_by_precision():
     assert precs == sorted(precs, reverse=True)
 
 
+def _weak_target():
+    # a proximity pair with NO positive keyword -> only lf_weak_times fires -> review / tier B: the
+    # record that makes tier-A recall and A+B recall DIFFERENT numbers (#215 review — without it a
+    # floor_tier/positive_tier swap in grid_search would pass this test unnoticed).
+    return _sig(n_times=2, n_times_in_window=2, proximity_pairs=1)
+
+
 def test_grid_search_defaults_to_the_canonical_ab_recall_floor():
     # #208: the floor defends A+B recall (reaches-review), NOT tier-A recall, and uses the canonical
     # harness.RECALL_FLOOR — so the ranking tier (A precision) and the floor tier (A+B recall) differ.
     from infrastructure.acquisition.stage5_filter import harness
-    recs = _records()
+    recs = _records() + [("d3", "d3:a", _weak_target(), "school_bell_table")]   # a tier-B target
     res = FR.grid_search(recs, {"table_min_times": [4]})   # no floor args -> canonical defaults
     r = res[0]
-    # r["recall"] is now the A+B (floor-tier) recall, r["precision"] the A (ranking-tier) precision
-    assert r["recall"] == r["metrics"]["thresholds"][harness.FLOOR_TIER]["recall"]
+    # the tier-B target splits the two recalls: A+B (the floored one) stays 1.0, tier-A drops to 2/3 —
+    # so these assertions FAIL if grid_search ever reads the floor from positive_tier again.
+    assert r["recall"] == r["metrics"]["thresholds"][harness.FLOOR_TIER]["recall"] == 1.0
+    assert r["metrics"]["thresholds"]["A"]["recall"] == 0.6667
+    assert r["recall"] != r["metrics"]["thresholds"]["A"]["recall"]
     assert r["precision"] == r["metrics"]["thresholds"]["A"]["precision"]
+    assert r["feasible"]                                   # 1.0 >= the canonical 0.98 floor
+
+
+def test_grid_search_rejects_unknown_tier_names():
+    # #215 review: tier_target_metrics only builds "A" and "A+B" — an unknown tier must be a clean
+    # ValueError at the API boundary, not a KeyError from deep inside the scoring loop.
+    import pytest
+    recs = _records()
+    with pytest.raises(ValueError, match="floor_tier"):
+        FR.grid_search(recs, {"table_min_times": [4]}, floor_tier="B")
+    with pytest.raises(ValueError, match="positive_tier"):
+        FR.grid_search(recs, {"table_min_times": [4]}, positive_tier="AB")
 
 
 def test_grid_search_reports_which_records_move_vs_baseline():
@@ -141,6 +165,7 @@ def _seed_mini(sess):
     return sess
 
 
+@pytest.mark.govdb   # unmarked gov_session tests never run in CI (#215 review)
 def test_load_labeled_reads_signals_and_labels(gov_session):
     con = _seed_mini(gov_session)
     recs = FR.load_labeled(con)

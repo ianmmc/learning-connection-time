@@ -19,8 +19,12 @@ at n≈440 labels the small-n methods (Part A) are correct and the scale machine
   stored labels), produces a fully-inspectable precision–recall surface. Built: `frontier.py`.
 - **6–12 knobs → constrained Bayesian opt** (Optuna `TPESampler(constraints_func=…)` / c-TPE, IJCAI'23),
   recall floor as an inequality constraint, precision the objective. Not yet needed.
-- **Recall floor is a POLICY number, not a round one** — set it at/below the *measured* baseline (the live
-  config's canonical tier-A recall), not a naive 0.98. (Confirmed empirically: baseline was 0.9688/0.9756.)
+- **Recall floor is a POLICY number, not a round one** — set it at/below the *measured* baseline of the
+  metric it defends. **The canonical floor (#208, `harness.RECALL_FLOOR = 0.98`) defends A+B recall**
+  (reaches-review — no target suppressed to tier D), whose measured baseline is 0.9961, so 0.98 sits below
+  it as required. The earlier tier-A guidance here (baseline 0.9688/0.9756, "not a naive 0.98") described
+  the pre-#208 floor that targeted tier-A recall — tier-A recall is precision-shaped by design (~0.89 with
+  borderline targets routed to review) and is no longer the floored metric.
 
 **Overfit guards (small n, correlated groups).**
 - **Leave-One-Group-Out CV by district** (`sklearn.LeaveOneGroupOut`) — records within a district share

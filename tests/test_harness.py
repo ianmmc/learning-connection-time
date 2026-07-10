@@ -2,9 +2,14 @@
 reproducible fingerprints. Pure metric functions tested against synthetic inputs (not the
 live DB, whose values shift as labels change); the score/fingerprint DB readers run against the
 real governance Postgres via CONNECTION-SCOPED TEMP tables (the gov_session fixture)."""
+import pytest
 from sqlalchemy import text
 
 from infrastructure.acquisition.stage5_filter import harness  # noqa: E402
+
+# gov_session tests must carry the govdb marker or CI never runs them: the DB-free job skips them
+# (no Docker) and the govdb job deselects unmarked tests (#215 review).
+govdb = pytest.mark.govdb
 
 
 def test_tier_target_metrics_counts_and_thresholds():
@@ -49,6 +54,16 @@ def test_recall_floor_helpers_read_the_ab_tier():
     assert harness.floor_satisfied(card, floor=0.99) is False      # 0.985 < 0.99
     assert harness.floor_recall({"tier_vs_target": {"thresholds": {}}}) is None
     assert harness.floor_satisfied({"tier_vs_target": {"thresholds": {}}}) is False
+
+
+def test_floor_helpers_degrade_on_malformed_scorecards():
+    # #215 review: the ledger loads scorecards from arbitrary on-disk JSON, so a present-but-null or
+    # wrong-typed field must read as None/unsatisfied — never an AttributeError (the try/except these
+    # helpers replaced tolerated exactly these shapes).
+    for bad in ({"tier_vs_target": None}, {"tier_vs_target": []}, {"tier_vs_target": {"thresholds": None}},
+                {"tier_vs_target": {"thresholds": {"A+B": None}}}, {}, None):
+        assert harness.floor_recall(bad) is None
+        assert harness.floor_satisfied(bad) is False
 
 
 def test_f1_is_zero_not_none_when_precision_and_recall_are_zero():
@@ -125,6 +140,7 @@ def _seed_mini(sess):
     return sess
 
 
+@govdb
 def test_score_and_fingerprints_are_deterministic(gov_session):
     con = _seed_mini(gov_session)
     s1 = harness.score(con)
@@ -133,3 +149,24 @@ def test_score_and_fingerprints_are_deterministic(gov_session):
     fp1 = harness.fingerprints(con)
     fp2 = harness.fingerprints(con)
     assert fp1 == fp2 and set(fp1) == {"config", "label_set", "data"}
+
+
+@govdb
+def test_assert_floor_passes_and_returns_the_ab_recall(gov_session):
+    # _seed_mini's one target sits in tier A -> A+B recall = 1.0 >= 0.98: the gate passes and reports it.
+    con = _seed_mini(gov_session)
+    assert harness.assert_floor(con) == 1.0
+
+
+@govdb
+def test_assert_floor_raises_systemexit_on_violation(gov_session):
+    # #215 review: the enforcement branch — a TARGET suppressed to tier D drops A+B recall to 0.5 < 0.98.
+    # assert_floor runs INSIDE the ingest transaction, so this raise is what keeps a violating config's
+    # tiers out of the working store (SystemExit skips session_scope's commit).
+    con = _seed_mini(gov_session)
+    con.execute(text("""INSERT INTO record VALUES
+        ('d:3','D','none','{\"detectors\": [{\"name\": \"lf_no_times\"}]}')"""))
+    con.execute(text("INSERT INTO label VALUES ('d:3','school_bell_table','labeled','[]')"))
+    with pytest.raises(SystemExit, match="RECALL FLOOR VIOLATED"):
+        harness.assert_floor(con)
+    assert harness.assert_floor(con, floor=0.5) == 0.5   # explicit floor: exactly AT the floor passes

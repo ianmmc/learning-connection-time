@@ -77,6 +77,17 @@ def test_floor_reads_ab_recall_not_tier_a_recall():
     assert round(ep["deltas"]["tier_AB_recall"], 4) == -0.04   # the floored metric is now a visible delta
 
 
+def test_malformed_after_scorecard_degrades_to_unsatisfied_not_crash():
+    # #215 review: record_from_files loads scorecards from arbitrary on-disk JSON — a null/legacy
+    # tier_vs_target must record an episode with after_recall=None / satisfied=False, not raise.
+    before = _scorecard("cfgA", "lab1", "dat1", a_prec=0.85, a_rec=0.98)
+    after = {**_scorecard("cfgB", "lab1", "dat1", a_prec=0.90, a_rec=0.98), "tier_vs_target": None}
+    ep = TL.build_episode(before, after, knobs_touched=["x"], rationale="r", decided_by="chat")
+    assert ep["constraint"]["after_recall"] is None
+    assert ep["constraint"]["satisfied"] is False
+    assert ep["deltas"]["tier_AB_recall"] is None        # the getters degrade the same way
+
+
 def test_episode_records_provenance_fields():
     before = _scorecard("cfgA", "lab1", "dat1", a_prec=0.85, a_rec=0.98)
     after = _scorecard("cfgB", "lab1", "dat1", a_prec=0.90, a_rec=0.98)
