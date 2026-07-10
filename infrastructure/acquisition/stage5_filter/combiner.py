@@ -25,8 +25,16 @@ HARD_NEGATIVE = {"lf_no_times", "lf_news_feed", "lf_calendar_widget", "lf_board"
 # Targets grounded in a real hours STRUCTURE (an intentional block/table/declaration) — trustworthy even on a
 # feed page. vs. lf_prose_pair, whose evidence is just two nearby times, which a news post can incidentally trip.
 STRUCTURAL_TARGET = {"lf_footer_hours", "lf_heading_hours", "lf_time_table", "lf_explicit_minutes"}
-# Negatives that specifically UNDERMINE incidental-time evidence (the times are the feed's own post/event times).
+# Negatives that specifically UNDERMINE incidental-time evidence — the times an lf_prose_pair/lf_weak_times
+# saw are probably NOT the regular student day. Two flavors, ONE mechanism (the next such detector joins a
+# set here instead of growing a new one-off boolean — #199 review):
+#   hard: the times are the page's own post/event times (a feed or calendar widget)
+#   soft (#60): a real bell-shape but the WRONG schedule (weather / remote / delay / early-dismissal) —
+#     don't auto-send the pair, route to review so a human confirms the standard day. Structural targets
+#     (footer block / schedule table / explicit minutes) still auto-send: the structure IS the standard
+#     day even amid delay language, and structure beats noise (the combiner's core rule).
 UNDERMINE_TIMES = {"lf_news_feed", "lf_calendar_widget"}
+UNDERMINE_TIMES_SOFT = {"lf_nonstandard_day"}
 
 
 def _by(votes, polarity, strength=None):
@@ -44,25 +52,19 @@ def combine(votes: list) -> dict:
     hard_neg = [v for v in votes if v["polarity"] == "negative" and v["strength"] == "strong"
                 and v["name"] in HARD_NEGATIVE]
     soft_neg = [v for v in votes if v["polarity"] == "negative" and v["strength"] == "soft"]
-    undermines = any(v["name"] in UNDERMINE_TIMES for v in hard_neg)
-
-    # #60: a nonstandard-day soft negative (weather / remote / delay / early-dismissal — a real bell-shape
-    # but the WRONG schedule) means an incidental start/end PAIR is probably the non-standard-day's times,
-    # not the regular day. Treat it like a feed undermining the pair: don't auto-send an incidental target,
-    # route to review (a human confirms the standard day). Structural targets (footer block / schedule
-    # table / explicit minutes) still auto-send — the structure is the standard day even amid delay language,
-    # and structure beats noise (the combiner's core rule). The extraction prompt's 'ignore early-dismissal'
-    # was the only backstop before this.
-    wrong_day = any(v["name"] == "lf_nonstandard_day" for v in soft_neg)
+    # ONE undermined flag (see UNDERMINE_TIMES/_SOFT above): the incidental pair's times are probably not
+    # the regular day — a feed/calendar's own times (hard) or a wrong-day schedule's times (#60, soft).
+    undermined = any(v["name"] in UNDERMINE_TIMES for v in hard_neg) \
+        or any(v["name"] in UNDERMINE_TIMES_SOFT for v in soft_neg)
 
     tconf = max((v["confidence"] for v in strong_t), default=0.0)
     nconf = max((v["confidence"] for v in hard_neg + suppress), default=0.0)
 
     if structural:                                     # a real hours structure beats feed/negative/wrong-day noise
         decision, tier, winner = "send", "A", max(structural, key=lambda v: v["confidence"])
-    elif incidental and not undermines and not wrong_day:   # a clean prose start/end pair, standard day
+    elif incidental and not undermined:                # a clean prose start/end pair, standard day
         decision, tier, winner = "send", "A", max(incidental, key=lambda v: v["confidence"])
-    elif (incidental or weak_t) and (undermines or wrong_day):   # incidental times undermined (feed/calendar/wrong-day) -> human decides
+    elif (incidental or weak_t) and undermined:        # incidental times undermined (feed/calendar/wrong-day) -> human decides
         decision, tier, winner = "review", "B", max(incidental + weak_t, key=lambda v: v["confidence"])
     elif weak_t:
         decision, tier, winner = "review", "B", max(weak_t, key=lambda v: v["confidence"])
