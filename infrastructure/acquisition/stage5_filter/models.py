@@ -71,3 +71,17 @@ class SavedView(Base):
     name: Mapped[str] = mapped_column(String)
     config_json: Mapped[str | None] = mapped_column(String)
     created_at: Mapped[str | None] = mapped_column(String)
+
+
+class ConfigPointer(Base):
+    """The @champion/@challenger/@fallback pointer state for Stage-5 config promotion (#213). A SINGLETON
+    row (id=1) holding the whole pointer state as JSON, so a promotion/rollback is an atomic single-row
+    swap (DB-is-working-store; the immutable artifacts themselves live in git under CONFIG_DIR/promotion,
+    per the 2026-07-10 'artifacts in git, pointers in DB' decision). PRECIOUS — it is the live config's
+    lineage; never dropped on re-ingest. DORMANT until config-promotion goes live: nothing reads the
+    champion pointer to drive the pipeline yet (the pipeline still reads CONFIG_DIR directly)."""
+    __tablename__ = "config_pointer"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)   # singleton (always 1)
+    state_json: Mapped[str | None] = mapped_column(String)
+    updated_at: Mapped[str | None] = mapped_column(String)
