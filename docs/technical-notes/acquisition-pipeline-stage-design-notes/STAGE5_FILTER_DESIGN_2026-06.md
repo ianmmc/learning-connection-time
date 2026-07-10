@@ -409,13 +409,20 @@ promotion machinery, both **advisory / dormant** now (nothing auto-promotes, not
 pointer to drive live scoring) — built with the automating feature per the #206 shift-left lesson. Decision
 record: `production-quality-control-research/FINDINGS-AND-DECISIONS.md` §2.
 
-**Proven libraries, zero hand-rolled estimators (Ian, 2026-07-10).** Statistical math is the wrong thing to
-hand-roll — `statsmodels` (TOST `ttost_paired`, McNemar exact), `pingouin` (ICC `intraclass_corr`), `scipy`
-(Wilcoxon, the seeded cluster bootstrap), `sklearn` (LOGO folds). The only arithmetic written is the DEFF
-*definition* and per-district precision/recall. The **Nadeau–Bengio corrected-t was dropped** — no canonical
-Python impl, and LOGO-CV's disjoint eval folds make the CV-overlap correction unnecessary (Wilcoxon + the
-cluster bootstrap cover it). This same pandas+statsmodels+pingouin stack is what the eventual
-cross-dimensional LCT-by-district/state analysis will stand on.
+**Proven libraries, zero unverified estimators (Ian, 2026-07-10; ICC exception documented below).**
+Statistical math is the wrong thing to hand-roll — `statsmodels` (TOST `ttost_paired`, McNemar exact),
+`scipy` (Wilcoxon, the seeded cluster bootstrap), `sklearn` (LOGO folds). The only arithmetic written is the
+DEFF *definition*, per-district precision/recall, and — the one exception, forced by the PR #220 review —
+**ICC(1)** as the textbook one-way random-effects ANOVA estimator with the unbalanced-cluster `k0`
+correction: `pingouin.intraclass_corr` was tried first and REJECTED for this input, because its long→wide
+pivot + `nan_policy="omit"` **listwise-deletes every district shorter than the largest one** (verified
+empirically: sizes [5,5,5,4,4] silently computed the ICC from 3 of 5 districts while the report's metadata
+claimed all 5), and our corpus is unbalanced by construction (m̄≈4.9). The estimator is **anchored to
+pingouin as the test oracle**: on balanced data (where k0 = n and the two formulas coincide) a regression
+test requires machine-exact agreement with `ICC(1,1)`. The **Nadeau–Bengio corrected-t was dropped** — no
+canonical Python impl, and LOGO-CV's disjoint eval folds make the CV-overlap correction unnecessary
+(Wilcoxon + the cluster bootstrap cover it). This same pandas+statsmodels+pingouin stack is what the
+eventual cross-dimensional LCT-by-district/state analysis will stand on.
 
 **The gate — `promotion_gate.py` (#212), pure + tested.** Consumes the same per-district re-score the
 frontier grid uses (`frontier._retier` → `[(district, rec_key, tier, is_target)]`; no re-ingest, no cash).
@@ -460,6 +467,24 @@ gate-mode persistence, tracked with every other dormant guardrail in the **guard
 (#219)**. The minor/major re-ingest shadow is likewise deferred (knob changes are human-curated + rare; the
 automated tuning path is detector-params). Authority: this section; `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
 §11b; issues #212/#213/#219.
+
+**Review-hardened (PR #220's max-effort round, 2026-07-10 — 11 findings, all fixed).** The highest-severity:
+**(1)** the ICC listwise-deletion bug above (pingouin → the anchored ANOVA estimator); **(2)** the CLI's
+default `--gate` challenger could be an **infeasible** grid config when nothing cleared the recall floor
+(grid_search falls back to the full infeasible list) — `default_challenger()` now refuses, never gating
+against a floor-violating config by default. **`actuate`'s guard chain was rebuilt:** it now actually calls
+`verify_on_load` on both artifacts (the fingerprint-tamper check the docstring had only *named*), refuses a
+decision whose recorded champion/challenger versions don't match the pair being actuated (a stale verdict
+must never promote a different pair), enforces `challenger.semver == bump_semver(champion.semver,
+classify_change(...))` (the semver audit trail can't diverge from the content classification), and runs the
+staleness check **before** any disk write (a rejected promotion leaves no orphaned artifact files). Also:
+`alpha` is now actually threaded through `frontier.gate`/`shadow_evaluate`/`--alpha` (it was accepted and
+silently dropped); a **gt_version-only diff classifies `none`, not `patch`** (it previously fell through the
+version-inequality shortcut and could route a cross-GT pair into the cheap gate — `shadow_evaluate` also
+gained an explicit up-front GT guard returning `shadow="gt_mismatch"`); `active_versions` uses `is not None`
+(the issue-#63 discipline — it is the never-delete set); the `config_pointer` singleton is **DB-enforced**
+(`CHECK (id = 1)` on the model + an idempotent `_PRECIOUS_ALTERS` entry); and `_h`/`_r` now delegate to
+`harness`'s single copies instead of carrying clones that could drift.
 
 ---
 
@@ -538,6 +563,13 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 
 ## Change log
 
+- **2026-07-10 — PR #220 max-effort review round: 11 findings, all fixed — see §5c "Review-hardened".**
+  Headline: pingouin's ICC silently listwise-deletes unbalanced districts (replaced with the
+  pingouin-anchored ANOVA ICC(1) estimator); the CLI's default gate challenger could be an infeasible
+  (recall-floor-violating) grid config; `actuate` now runs the real `verify_on_load`, binds the decision to
+  its exact artifact pair, enforces semver-vs-classification, and checks staleness before any disk write.
+  Plus: alpha threading, gt-only classify fix, `active_versions` is-not-None, the DB-enforced
+  `config_pointer` singleton CHECK, and `_h`/`_r` deduplication. +12 tests.
 - **2026-07-10 — Runtime guardrail Phase 2 (#212/#213), epic #209 — see §5c for the built detail.** The
   group-aware non-inferiority promotion gate (`promotion_gate.py`) + the safe-promotion machinery
   (`config_artifact.py` / `promotion_pointers.py` / `promotion_flow.py`), built + tested, ADVISORY/DORMANT.

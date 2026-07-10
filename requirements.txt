@@ -10,15 +10,17 @@ scikit-learn>=1.4.0       # LeaveOneGroupOut (districts as groups), metrics, CV 
 scikit-optimize>=0.10.0   # Bayesian optimization escalation (gp_minimize) at higher knob dimensionality
 
 # Group-aware non-inferiority promotion gate (epic #209 Phase 2, #212) — proven statistical
-# libraries, no hand-rolled estimators (Ian, 2026-07-10): the district is the resampling unit,
-# so the gate needs cluster-honest variance. statsmodels = TOST (ttost_paired) + McNemar exact;
-# pingouin = ICC (intraclass_corr, the only clean library ICC) + Wilcoxon/TOST on DataFrames.
-# scipy.stats (already present) covers Wilcoxon + the seeded cluster bootstrap; sklearn LeaveOneGroupOut
-# covers the folds. This same pandas+statsmodels+pingouin trio is the mature stack for the eventual
-# cross-dimensional LCT-by-district/state analysis. (Nadeau-Bengio corrected-t dropped: no canonical
-# Python impl + LOGO's disjoint eval folds make the CV-overlap correction unnecessary.)
+# libraries (Ian, 2026-07-10): the district is the resampling unit, so the gate needs
+# cluster-honest variance. statsmodels = TOST (ttost_paired) + McNemar exact; scipy.stats
+# (already present) covers Wilcoxon + the seeded cluster bootstrap; sklearn LeaveOneGroupOut
+# covers the folds. ICC(1) is the textbook ANOVA estimator in promotion_gate.py — pingouin's
+# intraclass_corr listwise-deletes unbalanced clusters (PR #220 review, verified) so it serves
+# as the balanced-case TEST ORACLE instead of the runtime path. This same
+# pandas+statsmodels+pingouin trio is the mature stack for the eventual cross-dimensional
+# LCT-by-district/state analysis. (Nadeau-Bengio corrected-t dropped: no canonical Python
+# impl + LOGO's disjoint eval folds make the CV-overlap correction unnecessary.)
 statsmodels>=0.14.0       # TOST non-inferiority (ttost_paired), McNemar exact, regression across dimensions
-pingouin>=0.5.5           # ICC + DEFF inputs (intraclass_corr), Wilcoxon/TOST, DataFrame-native tests
+pingouin>=0.5.5           # ICC balanced-case test oracle, Wilcoxon/TOST, DataFrame-native tests
 
 # Data acquisition
 requests>=2.31.0

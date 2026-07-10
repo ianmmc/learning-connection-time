@@ -182,6 +182,33 @@ def test_gate_requires_a_pre_declared_margin():
         FR.gate(recs, DET.DEFAULT_DETECTOR_PARAMS, DET.DEFAULT_DETECTOR_PARAMS, margin=None)
 
 
+def test_gate_forwards_every_kwarg_to_the_verdict(monkeypatch):
+    # PR #220 review: alpha was silently unplumbed — gate() had no parameter for it, so no caller could
+    # ever change the NI confidence level. Every kwarg must now reach promotion_verdict.
+    captured = {}
+
+    def fake_verdict(champ_rows, chall_rows, **kw):
+        captured.update(kw)
+        return {"promote": False}
+
+    monkeypatch.setattr(FR.PG, "promotion_verdict", fake_verdict)
+    FR.gate(_records_multi(), DET.DEFAULT_DETECTOR_PARAMS,
+            {**DET.DEFAULT_DETECTOR_PARAMS, "neg_dom_min": 3},
+            margin=0.02, fold_margin=0.1, alpha=0.25, seed=9, n_resamples=77)
+    assert captured == {"margin": 0.02, "fold_margin": 0.1, "alpha": 0.25, "seed": 9, "n_resamples": 77}
+
+
+def test_default_challenger_refuses_an_infeasible_grid_top():
+    # PR #220 review: grid_search falls back to the full INFEASIBLE list when nothing clears the recall
+    # floor — the CLI's default challenger must never silently gate against a floor-violating config (#208).
+    champion = dict(DET.DEFAULT_DETECTOR_PARAMS)
+    feasible = [{"feasible": True, "params": {"table_min_times": 3}}]
+    infeasible = [{"feasible": False, "params": {"table_min_times": 5}}]
+    assert FR.default_challenger(champion, feasible) == {**champion, "table_min_times": 3}
+    assert FR.default_challenger(champion, infeasible) is None
+    assert FR.default_challenger(champion, []) is None
+
+
 # ----------------------------- DB loader (real governance Postgres, TEMP tables) -----------------------------
 def _seed(sess, records):
     """Stand up the two columns load_labeled() needs as CONNECTION-SCOPED TEMP tables on the governance

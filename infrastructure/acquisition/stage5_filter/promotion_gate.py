@@ -45,6 +45,8 @@ from scipy.stats import bootstrap, wilcoxon
 from statsmodels.stats.contingency_tables import mcnemar
 from statsmodels.stats.weightstats import ttost_paired
 
+from infrastructure.acquisition.stage5_filter import harness  # noqa: E402  (_r — one rounding convention)
+
 # The tier sets that count as a positive prediction. A+B = "reaches human review" (the recall the floor
 # defends — harness.FLOOR_TIER); A alone = the auto-send / precision bucket.
 POSITIVE_AB = frozenset({"A", "B"})
@@ -57,8 +59,9 @@ _MIN_DISTRICTS_FOR_BOOTSTRAP = 3     # below this the cluster bootstrap is meani
 
 
 def _r(x, p=6):
-    """Round floats for stable, comparable output; pass through None/ints unchanged (harness._r style)."""
-    return round(x, p) if isinstance(x, float) else x
+    """harness._r at 6 decimals (bootstrap bounds need more precision than scorecard metrics' 4) —
+    a delegate, not a second copy of the rounding convention (PR #220 review)."""
+    return harness._r(x, p)
 
 
 # ----------------------------- per-district metrics (definitions, not estimators) -----------------------------
@@ -113,20 +116,29 @@ def paired_district_deltas(champion_rows, challenger_rows, *, positive, metric):
 def icc_deff(rows, *, positive=POSITIVE_AB):
     """ICC + Kish design effect for the A+B-recall estimate, clustered by district. The per-target-record
     binary outcome is 'did this target reach A+B (tier in `positive`)'; the cluster is the district; m̄ is
-    the mean targets/district. ICC comes from `pingouin.intraclass_corr` (ICC1, one-way random effects —
-    the cluster ICC, correlation of within-district outcomes); DEFF = 1 + (m̄−1)·ICC is the definition.
+    the mean targets/district. ICC(1) is the one-way random-effects ANOVA estimator with the standard
+    unbalanced-cluster correction k0 (Searle/Casella/McCulloch; k0 per Donner 1986):
+
+        MSB = SSB/(k−1)   MSW = SSW/(N−k)   k0 = (N − Σnᵢ²/N)/(k−1)
+        ICC(1) = (MSB − MSW) / (MSB + (k0−1)·MSW)      DEFF = 1 + (m̄−1)·ICC
+
+    **Why not `pingouin.intraclass_corr` (PR #220 review finding, verified empirically):** pingouin pivots
+    long→wide and its `nan_policy="omit"` LISTWISE-DELETES every cluster shorter than the largest one — on
+    districts sized [5,5,5,4,4] it silently computed the ICC from 3 of 5 districts while this report's
+    metadata claimed all 5 contributed. Our real corpus is unbalanced by construction (m̄≈4.9). On BALANCED
+    data (equal nᵢ, where k0 = n exactly) this estimator and pingouin's ICC(1,1) agree to machine precision
+    — locked in as a cross-check test, so this stays a verified textbook formula, not an unanchored one.
 
     Returns {icc, deff, mbar, n_targets, n_districts, note}. Degrades to icc/deff=None (never raises) when
     the outcome is degenerate — the common case here, since A+B recall ≈ 0.996 means nearly every target
     reaches A+B, so between/within variance is near-zero and the ICC is low-information (flagged in `note`).
     A report, not a gate input: the cluster bootstrap handles clustering directly by resampling districts."""
-    import pandas as pd  # local: pandas is only needed for the ICC report path, not the gate decision
-    import pingouin as pg
-
     targets = [(d, 1 if tier in positive else 0) for d, _rk, tier, is_target in rows if is_target]
     n_targets = len(targets)
-    districts = {d for d, _o in targets}
-    n_districts = len(districts)
+    groups = {}
+    for d, o in targets:                        # one pass — every district contributes, unbalanced or not
+        groups.setdefault(d, []).append(o)
+    n_districts = len(groups)
     mbar = (n_targets / n_districts) if n_districts else None
     base = {"icc": None, "deff": None, "mbar": _r(mbar), "n_targets": n_targets,
             "n_districts": n_districts, "note": None}
@@ -138,31 +150,26 @@ def icc_deff(rows, *, positive=POSITIVE_AB):
         base["icc"], base["note"] = 0.0, "outcome is constant (all targets same side) → ICC=0, DEFF=1"
         base["deff"] = 1.0
         return base
-    # pingouin.intraclass_corr wants long format (targets=cluster, raters=within-cluster index, ratings).
-    # Unbalanced clusters are fine — we index each district's records 0..k-1 as pseudo-"raters".
-    recs = []
-    for d in sorted(districts):
-        for i, o in enumerate([o for dd, o in targets if dd == d]):
-            recs.append({"cluster": str(d), "within": i, "outcome": o})
-    df = pd.DataFrame(recs)
-    try:
-        # A degenerate cluster structure (e.g. every cluster internally constant) makes pingouin's F-ratios
-        # divide by a zero within-cluster MS; silence that numeric noise — the non-finite result is caught
-        # right below and reported as unavailable, not surfaced as a warning.
-        with np.errstate(divide="ignore", invalid="ignore"):
-            icc_tbl = pg.intraclass_corr(data=df, targets="cluster", raters="within", ratings="outcome",
-                                         nan_policy="omit")
-        # ICC1 = one-way random, single measures = the cluster ICC we want. The Type label differs across
-        # pingouin versions ("ICC1" in <0.6, "ICC(1,1)" in 0.6.x) — match either, don't pin one string.
-        icc1 = icc_tbl.loc[icc_tbl["Type"].isin(["ICC1", "ICC(1,1)"]), "ICC"]
-        icc = float(icc1.iloc[0]) if len(icc1) else None
-    except Exception as e:                      # unbalanced/degenerate pivots can raise inside pingouin
-        base["note"] = f"ICC estimation failed ({type(e).__name__}); reported as unavailable"
+    if n_targets == n_districts:
+        # every district holds a single target → SSW has 0 degrees of freedom (N−k = 0); the
+        # within-district variance is inestimable, so no honest ICC exists — report, don't fake one.
+        base["note"] = "every district has a single target — within-district variance is inestimable"
         return base
-    if icc is None or not math.isfinite(icc):
-        base["note"] = "ICC non-finite; reported as unavailable"
+    sizes = np.array([len(v) for v in groups.values()], dtype=float)
+    means = np.array([sum(v) / len(v) for v in groups.values()], dtype=float)
+    grand = sum(o for _d, o in targets) / n_targets
+    ssb = float(np.sum(sizes * (means - grand) ** 2))
+    ssw = float(sum((o - groups_mean) ** 2
+                    for v, groups_mean in zip(groups.values(), means) for o in v))
+    msb = ssb / (n_districts - 1)
+    msw = ssw / (n_targets - n_districts)
+    k0 = (n_targets - float(np.sum(sizes ** 2)) / n_targets) / (n_districts - 1)
+    denom = msb + (k0 - 1.0) * msw
+    if denom <= 0 or not math.isfinite(denom):
+        base["note"] = "ICC denominator degenerate; reported as unavailable"
         return base
-    icc = max(0.0, icc)                          # a small negative ICC is an estimation artifact → clamp to 0
+    icc = (msb - msw) / denom
+    icc = min(1.0, max(0.0, icc))                # a small negative ICC is an estimation artifact → clamp
     icc_r = _r(icc)
     base["icc"] = icc_r
     # DEFF from the REPORTED (rounded) ICC, so the two published fields are mutually consistent — a reader

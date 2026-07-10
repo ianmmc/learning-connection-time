@@ -79,18 +79,78 @@ def test_evaluate_minor_and_major_route_to_the_reingest_shadow_and_do_not_promot
     assert dj["change_type"] == "major" and dj["shadow"] == "needs_reingest_shadow" and dj["promote"] is False
 
 
-# ----------------------------- actuate guards (no DB needed) -----------------------------
+def test_evaluate_refuses_a_cross_gt_pair_before_any_gate_runs():
+    # PR #220 review: gt_version isn't part of the surface classification, so without this guard a pair
+    # validated against two DIFFERENT ground truths could come back as a real-looking PROMOTE verdict.
+    champ = _artifact({**DET.DEFAULT_DETECTOR_PARAMS}, gt="gtA")
+    chall = _artifact({**DET.DEFAULT_DETECTOR_PARAMS, "neg_dom_min": 3}, gt="gtB")
+    d = PF.shadow_evaluate(champ, chall, _records(), margin=0.02)
+    assert d["shadow"] == "gt_mismatch" and d["promote"] is False and d["verdict"] is None
+    assert any("GT mismatch" in r for r in d["reasons"])
+
+
+def test_evaluate_forwards_alpha_to_the_gate(monkeypatch):
+    # PR #220 review: alpha was accepted and silently dropped — the gate always ran at the default.
+    captured = {}
+
+    def fake_gate(records, champ_params, chall_params, **kw):
+        captured.update(kw)
+        return {"promote": False, "reasons": ["captured"]}
+
+    monkeypatch.setattr(PF.FR, "gate", fake_gate)
+    champ = _artifact(dict(DET.DEFAULT_DETECTOR_PARAMS))
+    chall = _artifact({**DET.DEFAULT_DETECTOR_PARAMS, "neg_dom_min": 3})
+    PF.shadow_evaluate(champ, chall, _records(), margin=0.02, alpha=0.25, seed=9, n_resamples=77)
+    assert captured["alpha"] == 0.25 and captured["seed"] == 9 and captured["n_resamples"] == 77
+
+
+# ----------------------------- actuate guards (no DB needed — they all fire before load_state) -----------------------------
+def _decision_for(champ, chall, promote=True):
+    """The minimal decision dict actuate accepts: promote + the pair-binding versions."""
+    return {"promote": promote, "verdict": None,
+            "champion_version": champ["version"], "challenger_version": chall["version"]}
+
+
 def test_actuate_refuses_a_non_promote_decision():
     champ = _artifact(dict(DET.DEFAULT_DETECTOR_PARAMS))
     with pytest.raises(ValueError, match="non-promote"):
         PF.actuate(None, champ, champ, {"promote": False}, cycle=1)
 
 
+def test_actuate_refuses_a_decision_computed_for_a_different_pair():
+    # PR #220 review: a stale decision from an earlier shadow_evaluate must never actuate a NEW pair.
+    champ = _artifact(dict(DET.DEFAULT_DETECTOR_PARAMS))
+    chall = _artifact({**DET.DEFAULT_DETECTOR_PARAMS, "neg_dom_min": 3}, semver="1.0.1")
+    other = _artifact({**DET.DEFAULT_DETECTOR_PARAMS, "table_min_times": 5}, semver="1.0.1")
+    stale = _decision_for(champ, other)                 # computed for champ→other, handed champ→chall
+    with pytest.raises(ValueError, match="decision/artifact mismatch"):
+        PF.actuate(None, champ, chall, stale, cycle=1)
+
+
 def test_actuate_refuses_a_cross_gt_promotion():
     champ = _artifact(dict(DET.DEFAULT_DETECTOR_PARAMS), gt="gtA")
-    chall = _artifact({**DET.DEFAULT_DETECTOR_PARAMS, "neg_dom_min": 3}, gt="gtB")
-    with pytest.raises(ValueError, match="GT mismatch"):
-        PF.actuate(None, champ, chall, {"promote": True}, cycle=1)
+    chall = _artifact({**DET.DEFAULT_DETECTOR_PARAMS, "neg_dom_min": 3}, gt="gtB", semver="1.0.1")
+    with pytest.raises(CA.ArtifactVerificationError, match="GT-version mismatch"):
+        PF.actuate(None, champ, chall, _decision_for(champ, chall), cycle=1)
+
+
+def test_actuate_refuses_a_tampered_artifact():
+    # PR #220 review: actuate now runs verify_on_load's fingerprint check, not just the GT comparison —
+    # an artifact whose content no longer matches its stored version must never be frozen/promoted.
+    champ = _artifact(dict(DET.DEFAULT_DETECTOR_PARAMS))
+    chall = _artifact({**DET.DEFAULT_DETECTOR_PARAMS, "neg_dom_min": 3}, semver="1.0.1")
+    tampered = {**chall, "detector_params": {**DET.DEFAULT_DETECTOR_PARAMS, "neg_dom_min": 9}}
+    with pytest.raises(CA.ArtifactVerificationError, match="fingerprint mismatch"):
+        PF.actuate(None, champ, tampered, _decision_for(champ, tampered), cycle=1)
+
+
+def test_actuate_refuses_a_semver_that_diverges_from_the_classified_change():
+    # PR #220 review: the semver audit trail must reflect classify_change — a patch-level challenger
+    # declaring anything but champion-semver+patch is refused.
+    champ = _artifact(dict(DET.DEFAULT_DETECTOR_PARAMS))                              # 1.0.0
+    chall = _artifact({**DET.DEFAULT_DETECTOR_PARAMS, "neg_dom_min": 3}, semver="2.0.0")  # patch declared major
+    with pytest.raises(ValueError, match="semver mismatch"):
+        PF.actuate(None, champ, chall, _decision_for(champ, chall), cycle=1)
 
 
 # ----------------------------- actuate happy path (govdb + tmp artifact dir) -----------------------------
@@ -98,11 +158,10 @@ def test_actuate_refuses_a_cross_gt_promotion():
 def test_actuate_freezes_artifacts_and_swaps_the_champion_pointer(gov_session, tmp_path):
     con = gov_session
     con.execute(text("CREATE TEMP TABLE config_pointer (id integer PRIMARY KEY, state_json text, updated_at text)"))
-    champ = _artifact(dict(DET.DEFAULT_DETECTOR_PARAMS))
-    chall = _artifact({**DET.DEFAULT_DETECTOR_PARAMS, "neg_dom_min": 3})
-    decision = {"promote": True, "verdict": None}
-    state = PF.actuate(con, champ, chall, decision, cycle=1, updated_at="2026-07-10T00:00:00Z",
-                       config_dir=tmp_path)
+    champ = _artifact(dict(DET.DEFAULT_DETECTOR_PARAMS))                                   # 1.0.0
+    chall = _artifact({**DET.DEFAULT_DETECTOR_PARAMS, "neg_dom_min": 3}, semver="1.0.1")   # patch bump
+    state = PF.actuate(con, champ, chall, _decision_for(champ, chall), cycle=1,
+                       updated_at="2026-07-10T00:00:00Z", config_dir=tmp_path)
     # pointer swapped: challenger is champion, old champion retained as fallback
     assert state["champion"] == chall["version"]
     assert [f["version"] for f in state["fallbacks"]] == [champ["version"]]
@@ -119,9 +178,13 @@ def test_actuate_refuses_when_the_live_champion_is_not_the_evaluated_one(gov_ses
     # live pointer says champion is "someone_else"; evaluating against a different champion is stale.
     PP.save_state(con, PP.initial_state("someone_else"))
     champ = _artifact(dict(DET.DEFAULT_DETECTOR_PARAMS))
-    chall = _artifact({**DET.DEFAULT_DETECTOR_PARAMS, "neg_dom_min": 3})
+    chall = _artifact({**DET.DEFAULT_DETECTOR_PARAMS, "neg_dom_min": 3}, semver="1.0.1")
     with pytest.raises(ValueError, match="stale promotion"):
-        PF.actuate(con, champ, chall, {"promote": True}, cycle=1, config_dir=tmp_path)
+        PF.actuate(con, champ, chall, _decision_for(champ, chall), cycle=1, config_dir=tmp_path)
+    # PR #220 review: staleness fires BEFORE any disk write — a rejected promotion must leave NO
+    # orphaned artifact files behind (they'd never be referenced by any pointer).
+    assert not PP.artifact_path(champ["version"], config_dir=tmp_path).exists()
+    assert not PP.artifact_path(chall["version"], config_dir=tmp_path).exists()
 
 
 # ----------------------------- record_episode -----------------------------

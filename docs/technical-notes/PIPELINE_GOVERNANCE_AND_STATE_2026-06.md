@@ -900,7 +900,8 @@ the recall floor (§5b) is a necessary but insufficient guard (a single hard num
 the clustering that makes the naive test lie — DEFF≈2.4). Phase 2 adds **`promotion_gate.py`** — a
 group-aware **non-inferiority** gate (LOGO fold guard + a cluster/"cases" bootstrap over per-district A+B
 recall deltas + TOST against a *pre-declared* Δ, ICC/DEFF reported), built on proven libraries
-(statsmodels/pingouin/scipy/sklearn — no hand-rolled estimators, Ian's redirect) and wired **advisory** into
+(statsmodels/scipy/sklearn; ICC(1) is the anchored ANOVA estimator with pingouin as its balanced-case test
+oracle — pingouin's own ICC listwise-deletes unbalanced clusters, a PR #220 review find) and wired **advisory** into
 `frontier gate()`/`--gate` + a `tuning_ledger` episode block — and the **safe-promotion machinery**
 (`config_artifact.py` immutable fingerprinted artifact that finally brings `DEFAULT_DETECTOR_PARAMS` under
 versioning; `promotion_pointers.py` @champion/@fallback atomic pointer swaps with N-cycle retention;

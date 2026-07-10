@@ -147,27 +147,66 @@ def test_icc_deff_is_degenerate_when_every_target_reaches_the_same_bucket():
     assert icc["icc"] == 0.0 and icc["deff"] == 1.0 and icc["mbar"] == pytest.approx(4.0)
 
 
-def test_icc_deff_computes_a_finite_clustered_icc_and_the_deff_definition_holds():
-    # Within-district correlation with REAL within-cluster variance (not perfect separation, which makes
-    # every cluster internally constant -> MSW=0 -> the ICC F-ratio is undefined). "good" districts reach
-    # A+B on 4 of 5 targets, "bad" on 1 of 5 -> between-district tendency + within-district spread -> a
-    # finite positive ICC in (0,1) via pingouin.
-    rows = []
+def test_icc_deff_matches_pingouin_exactly_on_balanced_data():
+    # The library anchor for the ANOVA ICC(1) estimator: on BALANCED clusters (equal n_i, where the
+    # unbalanced correction k0 reduces to n exactly) our estimator and pingouin's ICC(1,1) are the same
+    # formula and must agree to machine precision. This is what keeps the in-house formula a VERIFIED
+    # textbook estimator rather than an unanchored one (PR #220 review).
+    import warnings
+    import numpy as np
+    import pandas as pd
+    import pingouin as pg
+
+    rows, recs = [], []
     for di in range(8):
         d = f"D{di}"
         n_hit = 4 if di % 2 == 0 else 1
         for j in range(5):
-            rows.append((d, f"{d}-t{j}", "A" if j < n_hit else "D", True))
-    icc = PG.icc_deff(rows)
-    assert icc["icc"] is not None and 0.0 <= icc["icc"] <= 1.0
-    assert icc["mbar"] == pytest.approx(5.0)
+            o = 1 if j < n_hit else 0
+            rows.append((d, f"{d}-t{j}", "A" if o else "D", True))
+            recs.append({"cluster": d, "within": j, "outcome": o})
+    ours = PG.icc_deff(rows)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with np.errstate(divide="ignore", invalid="ignore"):
+            tbl = pg.intraclass_corr(data=pd.DataFrame(recs), targets="cluster", raters="within",
+                                     ratings="outcome")
+    theirs = float(tbl.loc[tbl["Type"].isin(["ICC1", "ICC(1,1)"]), "ICC"].iloc[0])
+    # ours is rounded to 6 decimals for the report (harness._r) — compare at that grain, machine-exact.
+    assert ours["icc"] == pytest.approx(round(theirs, 6), abs=1e-9)
+    assert ours["mbar"] == pytest.approx(5.0)
     # DEFF is the DEFINITION 1 + (m̄−1)·ICC — pin it against the reported ICC/m̄ exactly.
+    assert ours["deff"] == pytest.approx(1.0 + (ours["mbar"] - 1.0) * ours["icc"], abs=1e-6)
+
+
+def test_icc_deff_uses_every_district_when_cluster_sizes_are_unbalanced():
+    # THE PR #220 review bug: pingouin's long→wide pivot + nan_policy='omit' listwise-deleted every
+    # district shorter than the largest one (verified: sizes [5,5,5,4,4] silently computed from 3 of 5),
+    # while the metadata claimed all districts contributed. The ANOVA estimator has no such hole —
+    # a strongly-clustered unbalanced [5,2,5] split must yield a REAL positive ICC, not a silent 0.
+    rows = []
+    for j in range(5):
+        rows.append(("D0", f"D0-t{j}", "A" if j < 4 else "D", True))   # 4/5 reach A+B
+    for j in range(2):
+        rows.append(("D1", f"D1-t{j}", "D", True))                      # 0/2 reach A+B
+    for j in range(5):
+        rows.append(("D2", f"D2-t{j}", "A", True))                      # 5/5 reach A+B
+    icc = PG.icc_deff(rows)
+    assert icc["n_districts"] == 3 and icc["n_targets"] == 12 and icc["mbar"] == pytest.approx(4.0)
+    assert icc["icc"] is not None and icc["icc"] > 0.3                  # strong between-district clustering
     assert icc["deff"] == pytest.approx(1.0 + (icc["mbar"] - 1.0) * icc["icc"], abs=1e-6)
 
 
 def test_icc_deff_degrades_cleanly_with_too_few_targets():
     icc = PG.icc_deff([("D0", "t0", "A", True)])
     assert icc["icc"] is None and "too few" in icc["note"]
+
+
+def test_icc_deff_degrades_cleanly_when_every_district_has_one_target():
+    # N == k → SSW has zero degrees of freedom → within-district variance inestimable → honest None.
+    rows = [("D0", "t0", "A", True), ("D1", "t0", "D", True), ("D2", "t0", "A", True)]
+    icc = PG.icc_deff(rows)
+    assert icc["icc"] is None and "single target" in icc["note"]
 
 
 # ----------------------------- the composed verdict -----------------------------

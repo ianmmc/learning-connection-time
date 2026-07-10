@@ -50,6 +50,16 @@ def test_classify_none_for_an_identical_surface():
     assert CA.classify_change(_artifact(), _artifact(semver="1.0.1")) == "none"
 
 
+def test_classify_gt_only_change_is_none_not_patch():
+    # PR #220 review: gt_version moves the content fingerprint, so the old version-inequality shortcut
+    # sent a gt-only diff down the 'patch' branch — routing two artifacts validated against DIFFERENT
+    # ground truths into the cheap in-memory gate. GT drift is verify_on_load's / the flow's concern;
+    # an identical tunable surface is 'none' regardless of gt.
+    old, new = _artifact(gt="gtA"), _artifact(gt="gtB")
+    assert old["version"] != new["version"]              # the fingerprint DOES move (identity is gt-aware)
+    assert CA.classify_change(old, new) == "none"        # ...but the config surface did not change
+
+
 def test_classify_patch_for_a_detector_param_value_change():
     old, new = _artifact(), _artifact(dp={**_DP, "neg_dom_min": 3})
     assert CA.classify_change(old, new) == "patch"

@@ -99,7 +99,10 @@ def active_versions(state):
     """Every version any pointer references (champion + challenger + all fallbacks) — the NEVER-DELETE set.
     A caller cleaning up artifact files must intersect its on-disk versions against this and keep all of it."""
     vs = {state["champion"]}
-    if state.get("challenger"):
+    # `is not None`, never truthiness (PR #220 review; the issue-#63 discipline): this is the NEVER-DELETE
+    # set — a falsy-but-set challenger silently dropped here is exactly the omission that lets a cleanup
+    # delete an artifact a live pointer still references.
+    if state.get("challenger") is not None:
         vs.add(state["challenger"])
     vs |= {f["version"] for f in state["fallbacks"]}
     return vs

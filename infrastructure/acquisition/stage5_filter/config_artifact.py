@@ -29,12 +29,12 @@ twin for Stage-5 configs.
 PURE CORE + a thin I/O shell (reads `CONFIG_DIR` + `detectors`), mirroring `tuning_ledger.py`. No DB, no
 network. Design authority: STAGE5_FILTER_DESIGN §5c (to be written); issue #213; FINDINGS-AND-DECISIONS §2.
 """
-import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
 
 from infrastructure.acquisition.common import paths  # noqa: E402
+from infrastructure.acquisition.stage5_filter import harness  # noqa: E402  (_h — one fingerprint helper)
 
 SCHEMA = "stage5-config-artifact/v1"
 _CHANGE_ORDER = ("none", "patch", "minor", "major")   # increasing validation burden
@@ -46,10 +46,9 @@ class ArtifactVerificationError(RuntimeError):
     different ground truth, or a tampered/corrupted artifact, must never silently drive the live pipeline."""
 
 
-def _h(s):
-    """md5[:12] over a string — the codebase's fingerprint convention (harness._h), reused so config
-    fingerprints read the same everywhere."""
-    return hashlib.md5(s.encode("utf-8", "replace")).hexdigest()[:12]
+# md5[:12] — THE codebase fingerprint helper (harness._h), imported rather than cloned so the two can
+# never drift apart (PR #220 review: this file carried a byte-identical second copy).
+_h = harness._h
 
 
 def canonical_json(obj):
@@ -99,22 +98,25 @@ def recompute_version(artifact):
 def classify_change(old, new):
     """Classify a champion→challenger diff → 'none' | 'patch' | 'minor' | 'major', the level that sets the
     validation burden (#213):
-      - none  : identical surface (same version).
+      - none  : identical tunable SURFACE (detector params + knobs) — including the gt_version-only case.
       - patch : ONLY detector-param VALUES changed (same knob docs, same param key set) — cheap gates only.
       - minor : a knob DOC changed (a keyword list/weight edited), key sets unchanged — full statistical gate.
       - major : a structural key change — a knob added/removed, or a detector-param key added/removed — full
                 gate + human (a new dimension is not a like-for-like comparison).
-    A GT-version change is orthogonal (handled by `verify_on_load`), not a config semver level."""
-    if old["version"] == new["version"]:
-        return "none"
+    Classification compares the SURFACE, never the content `version`: gt_version is part of the fingerprint
+    (so a GT move changes `version`) but it is NOT a config change — PR #220 review found a gt_version-only
+    diff fell through to 'patch' via the old version-inequality shortcut and could route two artifacts
+    validated against different ground truths into the cheap in-memory gate. GT drift is `verify_on_load`'s
+    and the flow's concern, not a semver level."""
     old_knob_keys, new_knob_keys = set(old["knobs"]), set(new["knobs"])
     old_param_keys, new_param_keys = set(old["detector_params"]), set(new["detector_params"])
     if old_knob_keys != new_knob_keys or old_param_keys != new_param_keys:
         return "major"
     if old["knobs"] != new["knobs"]:
         return "minor"
-    # same knob docs, same key sets, different version -> only detector-param values moved
-    return "patch"
+    if old["detector_params"] != new["detector_params"]:
+        return "patch"
+    return "none"
 
 
 def bump_semver(old_semver, change_type):

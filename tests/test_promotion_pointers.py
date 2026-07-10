@@ -93,6 +93,25 @@ def test_active_versions_is_the_never_delete_set():
     assert PP.active_versions(s) == {"v1", "v2", "v3"}   # champion + all fallbacks + challenger
 
 
+def test_active_versions_keeps_a_falsy_but_set_challenger():
+    # PR #220 review (the issue-#63 discipline): the never-delete set must use `is not None`, never
+    # truthiness — a falsy-but-set challenger silently omitted here is exactly what would let a cleanup
+    # delete an artifact a live pointer still references.
+    s = {**PP.initial_state("v1"), "challenger": ""}
+    assert "" in PP.active_versions(s)
+    s2 = {**PP.initial_state("v1"), "challenger": None}   # genuinely unset stays excluded
+    assert PP.active_versions(s2) == {"v1"}
+
+
+def test_config_pointer_model_enforces_the_singleton_at_the_db_level():
+    # PR #220 review: the singleton was an application convention only (_SINGLETON_ID threaded through
+    # load/save); the model now carries a CHECK (id = 1) so a raw-SQL writer can't create a second row.
+    from sqlalchemy import CheckConstraint
+    from infrastructure.acquisition.stage5_filter.models import ConfigPointer
+    checks = [c for c in ConfigPointer.__table__.constraints if isinstance(c, CheckConstraint)]
+    assert any("id = 1" in str(c.sqltext) for c in checks)
+
+
 # ----------------------------- artifact file store (tmp dir) -----------------------------
 def test_write_artifact_is_idempotent_and_content_addressed(tmp_path):
     art = {"version": "abc123", "detector_params": {"x": 1}, "knobs": {}}

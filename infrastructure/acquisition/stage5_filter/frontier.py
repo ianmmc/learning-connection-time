@@ -165,19 +165,33 @@ def logo_cv(records, params, positive_tier="A"):
 
 
 # ----------------------------- promotion gate (#212) — advisory, group-aware non-inferiority -----------------------------
-def gate(records, champion_params, challenger_params, *, margin, fold_margin=None, seed=0,
-         n_resamples=PG.DEFAULT_N_RESAMPLES):
+def gate(records, champion_params, challenger_params, *, margin, fold_margin=None, alpha=PG.DEFAULT_ALPHA,
+         seed=0, n_resamples=PG.DEFAULT_N_RESAMPLES):
     """Run the group-aware non-inferiority promotion gate (#212) on champion vs challenger over the SAME
     labeled records — the same in-memory re-score the grid uses (`_retier`, no re-ingest, no cash), just
     read through `promotion_gate.promotion_verdict` for a district-clustered, cluster-honest verdict.
 
     ADVISORY, exactly like the grid: nothing is auto-applied. The human reads the verdict, and if they
     promote, records the decision (with this verdict) to the tuning ledger. `margin` (Δ) is required — the
-    gate refuses to run without a pre-declared non-inferiority margin (see promotion_gate)."""
+    gate refuses to run without a pre-declared non-inferiority margin (see promotion_gate). `alpha` is
+    forwarded (PR #220 review: an earlier draft silently dropped it, so every caller's requested confidence
+    level was ignored in favor of the default)."""
     champ_rows = _retier(records, champion_params)
     chall_rows = _retier(records, challenger_params)
     return PG.promotion_verdict(champ_rows, chall_rows, margin=margin, fold_margin=fold_margin,
-                                seed=seed, n_resamples=n_resamples)
+                                alpha=alpha, seed=seed, n_resamples=n_resamples)
+
+
+def default_challenger(champion_params, results):
+    """The CLI's default challenger when --challenger isn't given: the top grid config, but ONLY if it is
+    FEASIBLE (clears the canonical recall floor). None otherwise — grid_search falls back to returning the
+    full INFEASIBLE list when nothing clears the floor, and PR #220's review caught that gating the champion
+    against `results[0]` unconditionally could print PROMOTE for a config the same run's own frontier
+    printout had just flagged '(INFEASIBLE — best available)', bypassing the #208 floor via a convenience
+    default. An infeasible grid means: pass --challenger explicitly, or loosen the grid."""
+    if results and results[0].get("feasible"):
+        return {**champion_params, **results[0]["params"]}
+    return None
 
 
 # ----------------------------- CLI -----------------------------
@@ -197,7 +211,9 @@ def main():
     ap.add_argument("--margin", type=float, default=None,
                     help="Δ: the pre-declared district-level non-inferiority margin the gate needs (e.g. 0.02)")
     ap.add_argument("--challenger", default=None,
-                    help="JSON detector-param overrides for the challenger (default: the top feasible grid config)")
+                    help="JSON detector-param overrides for the challenger (default: the top FEASIBLE grid config)")
+    ap.add_argument("--alpha", type=float, default=PG.DEFAULT_ALPHA,
+                    help="one-sided confidence level for the gate's non-inferiority bound")
     ap.add_argument("--seed", type=int, default=0, help="cluster-bootstrap seed (reproducible verdicts)")
     a = ap.parse_args()
 
@@ -229,11 +245,12 @@ def main():
         champion = DET.DEFAULT_DETECTOR_PARAMS
         if a.challenger:
             challenger = {**champion, **json.loads(a.challenger)}
-        elif res:
-            challenger = {**champion, **res[0]["params"]}     # default: the top feasible grid config
         else:
-            ap.error("no challenger: pass --challenger '<json>' or ensure the grid produced a config")
-        v = gate(records, champion, challenger, margin=a.margin, seed=a.seed)
+            challenger = default_challenger(champion, res)    # top grid config ONLY if feasible (#208)
+            if challenger is None:
+                ap.error("no FEASIBLE default challenger — the grid's best config violates the recall "
+                         "floor (#208); pass --challenger '<json>' explicitly or loosen the grid")
+        v = gate(records, champion, challenger, margin=a.margin, alpha=a.alpha, seed=a.seed)
         s = PG.verdict_summary(v)
         verdict = "PROMOTE" if s["promote"] else "HOLD"
         print(f"\npromotion gate (#212) champion vs challenger {challenger}:")
