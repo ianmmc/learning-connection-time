@@ -24,8 +24,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
+from infrastructure.acquisition.common import batch_guard as BG
 from infrastructure.acquisition.common import cache_ingest as CI
 from infrastructure.acquisition.common import config_loader as CFG
+from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import paths
 
@@ -443,6 +445,11 @@ def main():
 
     a = ap.parse_args()
     batch = load_batch(a.batch)
+    # #168/#206 review: this legacy CLI writes real state (discovery.json + state_events via `finish`,
+    # registry reconciles) — refuse a terminal abandoned batch exactly like headless.run_batch does,
+    # else an abandoned batch's schools re-enter the funnel while excluded from the attempted-set (#162).
+    with gdb.session_scope() as _con:
+        BG.assert_runnable(_con, batch["batch_id"])
 
     if a.cmd == "reconcile":
         registry = DS.load()

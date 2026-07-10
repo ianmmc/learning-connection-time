@@ -7,9 +7,19 @@ fitness-function layer that complements import-linter (intra-Python) + dependenc
 which see imports only (CLAUDE.md's recurring caveat: the graph tools miss environmental edges).
 
 Pure filesystem + AST scan — no DB, no network, no subprocess. Seeded from the 2026-07-09 PR #198
-code-review's three cross-boundary misses (entry-point parity, client<->server literal, forked helper).
+review's three cross-boundary misses, then HARDENED by the PR #206 review: scan scope + variable/runner
+breadth widened (and declared in the manifest's `scan` section), the caller check made bidirectional,
+guard detection scoped to the real top-level function and blind to nested defs, the client-JS scans made
+recursive + multi-line + indirection-aware, manifest schema/emptiness validated so a malformed or emptied
+manifest fails loudly instead of silently collecting zero tests.
+
+HONEST LIMITS (declared in the manifest too): dynamically-assembled argvs and unlisted runner names are
+invisible (semantic coupling — the research doc's conclusion); guard detection is syntactic presence,
+not runtime reachability (dead code still counts — vulture's domain); a behavioral duplicate of a helper
+under a DIFFERENT name is beyond static reach.
 """
 import ast
+import functools
 import json
 import re
 from pathlib import Path
@@ -17,18 +27,59 @@ from pathlib import Path
 import pytest
 
 REPO = Path(__file__).resolve().parent.parent
-ACQ = REPO / "infrastructure" / "acquisition"
 MANIFEST = json.loads((REPO / "arch-manifest.json").read_text())
 
-# argv[0] of a subprocess argv-list is a bare command word (node / claude / pdftotext …), not a path/flag.
-_PROGRAM_RE = re.compile(r"^[a-z][a-z0-9._-]*$")
-# The runner functions an argv-list is passed to — subprocess.* AND the injectable `_run` seams the
-# pipeline uses so tests need no live subprocess (a naive `subprocess.*` scan would miss node/claude).
-_RUNNERS = {"run", "Popen", "call", "check_output", "_run", "_tracked_run"}
+# argv[0] of a subprocess argv-list is a bare command word (node / claude / pg_dump …), not a path/flag.
+_PROGRAM_RE = re.compile(r"^[a-z][a-z0-9._+-]*$")
+# Runner functions an argv-list is passed to — subprocess.* AND the injectable seams the pipeline uses so
+# tests need no live subprocess (a naive `subprocess.*` scan would miss node/claude behind `_run`).
+_RUNNERS = {"run", "Popen", "call", "check_output", "check_call", "create_subprocess_exec",
+            "_run", "_tracked_run"}
+# Variable names an argv-list literal is conventionally assigned to before being passed to a runner.
+_CMD_VARS = {"cmd", "argv", "command"}
 
 
-def _acq_py_files():
-    return [p for p in ACQ.rglob("*.py") if "__pycache__" not in str(p)]
+# ----------------------------- manifest self-checks (schema + emptiness) -----------------------------
+# #206 review: (a) unguarded dict-key access crashed with a raw KeyError on an incomplete entry, and
+# (b) pytest.parametrize over an emptied manifest list silently collects ZERO tests instead of failing.
+# These two tests make a malformed/emptied manifest a loud, readable failure.
+def test_manifest_schema():
+    for prog, spec in MANIFEST["external_programs"].items():
+        if prog == "_comment":
+            continue
+        assert _PROGRAM_RE.match(prog), f"external_programs key {prog!r} is not a bare command word"
+        assert {"why", "callers"} <= set(spec), f"external_programs[{prog!r}] needs why + callers"
+        assert spec["callers"], f"external_programs[{prog!r}].callers must not be empty"
+    for g in MANIFEST["entry_point_guards"]:
+        assert {"guard", "why", "must_be_called_in"} <= set(g), f"entry_point_guards entry incomplete: {g}"
+        assert all("::" in t for t in g["must_be_called_in"]), f"targets must be path::function: {g}"
+    for r in MANIFEST["client_server_boundaries"]["forbidden_client_comparisons"]:
+        assert {"literal", "use_instead", "scope"} <= set(r), f"forbidden_client_comparisons entry incomplete: {r}"
+    for h in MANIFEST["client_server_boundaries"]["single_definition_helpers"]:
+        assert {"name", "home", "scope"} <= set(h), f"single_definition_helpers entry incomplete: {h}"
+    for rec in MANIFEST["file_dispatches"]["receipts"]:
+        assert {"artifact", "producer", "role"} <= set(rec), f"receipts entry incomplete: {rec}"
+    for root in MANIFEST["scan"]["python_roots"]:
+        assert (REPO / root).is_dir(), f"scan.python_roots entry does not exist: {root}"
+
+
+def test_manifest_enforced_sections_are_nonempty():
+    """An emptied section would make its parametrized test silently collect zero cases — a green run
+    with the fitness check gone. Emptying a section must be a DELIBERATE act that edits this test too."""
+    assert len(set(MANIFEST["external_programs"]) - {"_comment"}) > 0
+    assert MANIFEST["entry_point_guards"], "entry_point_guards emptied — the #168 guard check would vanish"
+    assert MANIFEST["client_server_boundaries"]["forbidden_client_comparisons"]
+    assert MANIFEST["client_server_boundaries"]["single_definition_helpers"]
+    assert MANIFEST["file_dispatches"]["receipts"]
+
+
+# ----------------------------- external programs -----------------------------
+def _scanned_py_files():
+    excluded = set(MANIFEST["scan"]["excluded_dirs"])
+    for root in MANIFEST["scan"]["python_roots"]:
+        for p in (REPO / root).rglob("*.py"):
+            if not excluded & set(p.parts):
+                yield p
 
 
 def _argv_head(node):
@@ -39,11 +90,13 @@ def _argv_head(node):
     return None
 
 
+@functools.lru_cache(maxsize=1)
 def _external_program_calls():
-    """{program -> [ 'relpath:line', … ]} over the acquisition tree. An external program is the head of
-    an argv-list assigned to `cmd` or passed as the first arg to a runner call (survives the `_run` seam)."""
+    """{program -> tuple of 'relpath:line'} over the declared scan scope. An external program is the
+    head of an argv-list assigned to a conventional cmd variable or passed as the first arg to a runner
+    call (survives the injectable `_run` seam). Cached — three tests consume it (#206 review)."""
     found = {}
-    for p in _acq_py_files():
+    for p in _scanned_py_files():
         try:
             tree = ast.parse(p.read_text())
         except SyntaxError:
@@ -52,7 +105,7 @@ def _external_program_calls():
         for node in ast.walk(tree):
             lst = None
             if isinstance(node, ast.Assign) and any(
-                    isinstance(t, ast.Name) and t.id == "cmd" for t in node.targets):
+                    isinstance(t, ast.Name) and t.id in _CMD_VARS for t in node.targets):
                 lst = node.value
             elif isinstance(node, ast.Call) and node.args:
                 fn = node.func
@@ -62,16 +115,15 @@ def _external_program_calls():
             prog = _argv_head(lst) if lst is not None else None
             if prog:
                 found.setdefault(prog, []).append(f"{rel}:{node.lineno}")
-    return found
+    return {prog: tuple(sites) for prog, sites in found.items()}
 
 
-# ----------------------------- external programs -----------------------------
 def test_no_undeclared_external_program():
-    """Every external program the pipeline shells out to must be declared in the manifest — a NEW
+    """Every external program the scanned trees shell out to must be declared in the manifest — a NEW
     subprocess / CLI / Node edge that isn't declared fails here (the canonical §10 fitness function)."""
     declared = set(MANIFEST["external_programs"]) - {"_comment"}
-    actual = _external_program_calls()
-    undeclared = {prog: sites for prog, sites in actual.items() if prog not in declared}
+    undeclared = {prog: sites for prog, sites in _external_program_calls().items()
+                  if prog not in declared}
     assert not undeclared, (
         "Undeclared external-process edge(s) — add them to arch-manifest.json `external_programs` "
         f"(with why + callers): {undeclared}")
@@ -80,101 +132,129 @@ def test_no_undeclared_external_program():
 def test_no_stale_external_program_declarations():
     """The reverse — a declared program that no longer appears keeps the manifest honest (prevents rot)."""
     declared = set(MANIFEST["external_programs"]) - {"_comment"}
-    actual = set(_external_program_calls())
-    stale = declared - actual
+    stale = declared - set(_external_program_calls())
     assert not stale, f"arch-manifest.json declares external programs no longer invoked (remove them): {stale}"
 
 
-def test_declared_program_callers_actually_invoke_it():
-    """Each declared program's `callers` list is accurate — the module actually builds an argv for it."""
+def test_program_callers_match_bidirectionally():
+    """BOTH directions (#206 review — the old check only verified declared->found, so a NEW file calling
+    an already-declared program from an undeclared location shipped green): every declared caller is
+    real, and every ACTUAL caller is declared — the callers lists are load-bearing, not documentation."""
     actual = _external_program_calls()
     for prog, spec in MANIFEST["external_programs"].items():
         if prog == "_comment":
             continue
-        caller_files = {site.rsplit(":", 1)[0] for site in actual.get(prog, [])}
-        for declared_caller in spec["callers"]:
-            assert declared_caller in caller_files, (
-                f"arch-manifest.json says {prog!r} is invoked by {declared_caller}, but no argv for "
-                f"{prog!r} was found there (found in: {sorted(caller_files)})")
+        declared_callers = set(spec["callers"])
+        actual_callers = {site.rsplit(":", 1)[0] for site in actual.get(prog, ())}
+        missing = declared_callers - actual_callers
+        assert not missing, (
+            f"arch-manifest.json says {prog!r} is invoked by {sorted(missing)}, but no argv for "
+            f"{prog!r} was found there (found in: {sorted(actual_callers)})")
+        undeclared = actual_callers - declared_callers
+        assert not undeclared, (
+            f"NEW undeclared caller(s) of {prog!r}: {sorted(undeclared)} — add them to "
+            f"external_programs[{prog!r}].callers in arch-manifest.json (that edit is the review surface)")
 
 
 # ----------------------------- entry-point guards -----------------------------
-def _calls_in_function(path: Path, func_name: str):
-    """The set of called names (bare + attribute) inside the top-level function `func_name` in `path`."""
-    tree = ast.parse(path.read_text())
-    fn = next((n for n in ast.walk(tree)
-               if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) and n.name == func_name), None)
-    if fn is None:
-        return None
+def _module_level_function(tree, func_name):
+    """The MODULE-TOP-LEVEL function named `func_name` — not a same-named method/nested def elsewhere in
+    the file (#206 review: a bare ast.walk name match could validate a decoy)."""
+    return next((n for n in tree.body
+                 if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) and n.name == func_name), None)
+
+
+def _direct_calls(fn):
+    """Called names reachable from `fn`'s OWN body — deliberately blind to nested function/lambda bodies
+    (#206 review: a guard tucked into a defined-but-never-invoked inner helper must NOT count as called).
+    Syntactic presence only: dead code after a return still counts (reachability is vulture's domain)."""
     names = set()
-    for node in ast.walk(fn):
-        if isinstance(node, ast.Call):
-            f = node.func
-            if isinstance(f, ast.Attribute):
-                names.add(f.attr)
-            elif isinstance(f, ast.Name):
-                names.add(f.id)
+
+    def visit(node):
+        for child in ast.iter_child_nodes(node):
+            if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+                continue                       # a nested def's body does not run when fn runs
+            if isinstance(child, ast.Call):
+                f = child.func
+                names.add(f.attr if isinstance(f, ast.Attribute) else getattr(f, "id", None))
+            visit(child)
+
+    visit(fn)
     return names
 
 
-@pytest.mark.parametrize("guard_spec", [g for g in MANIFEST["entry_point_guards"]],
+@pytest.mark.parametrize("guard_spec", MANIFEST["entry_point_guards"],
                          ids=[g["guard"] for g in MANIFEST["entry_point_guards"]])
 def test_entry_point_guards_are_called(guard_spec):
     """A declared invariant guard must be reached by EVERY listed entry point — the fix for the class of
-    bug where a rule is enforced at one entry point (the console) but a sibling (the CLI) skips it
-    (#198 review finding #2: the headless run_batch ran a terminal abandoned batch)."""
+    bug where a rule is enforced at one entry point but a sibling skips it (#198 review finding #2:
+    the headless run_batch; #206 review: the older per-district CLIs)."""
     guard = guard_spec["guard"]
     for target in guard_spec["must_be_called_in"]:
         rel, func = target.split("::")
-        calls = _calls_in_function(REPO / rel, func)
-        assert calls is not None, f"arch-manifest.json entry-point guard target not found: {target}"
-        assert guard in calls, (
-            f"entry-point guard `{guard}` is NOT called in {target} — every entry point that runs a "
-            f"stage must pass through it ({guard_spec['why']})")
+        fn = _module_level_function(ast.parse((REPO / rel).read_text()), func)
+        assert fn is not None, f"arch-manifest.json entry-point guard target not found at module level: {target}"
+        assert guard in _direct_calls(fn), (
+            f"entry-point guard `{guard}` is NOT called in {target}'s own body — every entry point that "
+            f"runs a stage must pass through it ({guard_spec['why']})")
 
 
 # ----------------------------- client <-> server boundaries -----------------------------
 def _static_js_files(scope: str):
-    return [p for p in (REPO / scope).glob("*.js")]
+    return sorted((REPO / scope).rglob("*.js"))      # recursive (#206 review: glob missed subdirs)
 
 
-@pytest.mark.parametrize("rule", [r for r in MANIFEST["client_server_boundaries"]["forbidden_client_comparisons"]],
+def _hits(pattern: re.Pattern, path: Path):
+    text = path.read_text()
+    return [f"{path.relative_to(REPO).as_posix()}:{text.count(chr(10), 0, m.start()) + 1}: "
+            f"{text[m.start():m.end()][:80]}"
+            for m in pattern.finditer(text)]
+
+
+@pytest.mark.parametrize("rule", MANIFEST["client_server_boundaries"]["forbidden_client_comparisons"],
                          ids=[r["literal"] for r in MANIFEST["client_server_boundaries"]["forbidden_client_comparisons"]])
 def test_forbidden_client_comparison_literals(rule):
-    """A server-authoritative rule literal must not be re-decided in client JS by COMPARISON (it duplicates
-    a server truth and drifts). #198 review finding #3: the benchmark badge keyed on
-    `c.batch_id === 'batch_00000'` instead of the server-computed is_benchmark. Comparison context only —
-    an incidental display string (`benchmark-walled (batch_00000)`) is allowed."""
+    """A server-authoritative rule literal must not be re-decided in client JS (it duplicates a server
+    truth and drifts — #198 review finding #3). Whole-file scan (multi-line safe) over four decision
+    forms (#206 review widened from same-line equality only): (in)equality comparisons, string-method
+    predicates, switch-case labels, and BINDING the literal to a variable (the indirection vector —
+    `const BENCH_ID = "..."; x === BENCH_ID` would otherwise evade any literal-adjacent pattern).
+    A purely-display occurrence (inside a template string, no decision) is allowed."""
     lit = re.escape(rule["literal"])
-    # the literal on either side of an (in)equality comparison: === / !== / == / !=
-    cmp_re = re.compile(rf"""(?:[=!]==?\s*['"`]{lit}['"`])|(?:['"`]{lit}['"`]\s*[=!]==?)""")
-    hits = []
-    for p in _static_js_files(rule["scope"]):
-        for i, line in enumerate(p.read_text().splitlines(), 1):
-            if cmp_re.search(line):
-                hits.append(f"{p.relative_to(REPO).as_posix()}:{i}: {line.strip()}")
+    q = r"['\"`]"
+    pattern = re.compile(
+        rf"(?:[=!]==?\s*{q}{lit}{q})"                                        # x === "lit" (multi-line via \s)
+        rf"|(?:{q}{lit}{q}\s*[=!]==?)"                                       # "lit" === x
+        rf"|(?:\.(?:includes|startsWith|endsWith|indexOf)\(\s*{q}{lit}{q})"  # x.includes("lit")
+        rf"|(?:\bcase\s+{q}{lit}{q})"                                        # case "lit":
+        rf"|(?:(?<![=!<>+])=(?!=)\s*{q}{lit}{q})")                           # const X = "lit" (indirection)
+    hits = [h for p in _static_js_files(rule["scope"]) for h in _hits(pattern, p)]
     assert not hits, (
-        f"client JS compares against the server-authoritative literal {rule['literal']!r} — use "
+        f"client JS decides against the server-authoritative literal {rule['literal']!r} — use "
         f"{rule['use_instead']} instead:\n  " + "\n  ".join(hits))
 
 
-@pytest.mark.parametrize("helper", [h for h in MANIFEST["client_server_boundaries"]["single_definition_helpers"]],
+@pytest.mark.parametrize("helper", MANIFEST["client_server_boundaries"]["single_definition_helpers"],
                          ids=[h["name"] for h in MANIFEST["client_server_boundaries"]["single_definition_helpers"]])
 def test_single_definition_helpers(helper):
     """A shared client helper must be DEFINED in exactly one file (its home) so it can't fork across the
-    stage views (#198 review finding #5: the abandoned badge tone was added to gate1.js only)."""
+    stage views (#198 review finding #5). Detected forms (#206 review widened): function/const/let/var
+    definitions AND property assignments (`window.LCT.name = ...`). Aliasing via destructuring
+    (`const { statusBadge } = window.LCT`) is a USE, not a definition, and stays allowed."""
     name = re.escape(helper["name"])
-    def_re = re.compile(rf"""(?:function\s+{name}\b|(?:const|let|var)\s+{name}\s*=)""")
-    definers = [p.relative_to(REPO).as_posix() for p in _static_js_files(helper["scope"])
-                if def_re.search(p.read_text())]
-    home = helper["home"]
-    assert definers == [home], (
-        f"client helper `{helper['name']}` must be defined only in {home}, found in: {definers} "
+    def_re = re.compile(
+        rf"(?:function\s+{name}\b)"
+        rf"|(?:(?:const|let|var)\s+{name}\s*=)"
+        rf"|(?:\.\s*{name}\s*=(?!=))")                # window.LCT.statusBadge = ... (property assignment)
+    definers = sorted({p.relative_to(REPO).as_posix()
+                       for p in _static_js_files(helper["scope"]) if def_re.search(p.read_text())})
+    assert definers == [helper["home"]], (
+        f"client helper `{helper['name']}` must be defined only in {helper['home']}, found in: {definers} "
         "(define it once in common.js and alias it off window.LCT elsewhere)")
 
 
 # ----------------------------- file dispatches (receipts) -----------------------------
-@pytest.mark.parametrize("receipt", [r for r in MANIFEST["file_dispatches"]["receipts"]],
+@pytest.mark.parametrize("receipt", MANIFEST["file_dispatches"]["receipts"],
                          ids=[r["artifact"] for r in MANIFEST["file_dispatches"]["receipts"]])
 def test_file_dispatch_producer_references_artifact(receipt):
     """Each declared receipt's producer module actually references its artifact filename — a light contract
