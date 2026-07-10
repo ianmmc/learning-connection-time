@@ -36,6 +36,7 @@ from infrastructure.acquisition.stage5_filter import build_signals as BS  # noqa
 from infrastructure.acquisition.stage5_filter import combiner as COMB  # noqa: E402    (the LIVE V2 scorer)
 from infrastructure.acquisition.stage5_filter import detectors as DET  # noqa: E402    (DEFAULT_DETECTOR_PARAMS — the knob surface)
 from infrastructure.acquisition.stage5_filter import harness  # noqa: E402             (tier_target_metrics — the metric of record)
+from infrastructure.acquisition.stage5_filter import promotion_gate as PG  # noqa: E402  (#212 group-aware NI gate)
 from infrastructure.acquisition.common import db as gdb  # noqa: E402  (governance Postgres — REQ-103)
 
 TARGET = BS.TARGET_LABELS
@@ -163,6 +164,36 @@ def logo_cv(records, params, positive_tier="A"):
             "per_district": {d: dict(zip(("precision", "recall"), _pr(by_dist[d]))) for d in districts}}
 
 
+# ----------------------------- promotion gate (#212) — advisory, group-aware non-inferiority -----------------------------
+def gate(records, champion_params, challenger_params, *, margin, fold_margin=None, alpha=PG.DEFAULT_ALPHA,
+         seed=0, n_resamples=PG.DEFAULT_N_RESAMPLES):
+    """Run the group-aware non-inferiority promotion gate (#212) on champion vs challenger over the SAME
+    labeled records — the same in-memory re-score the grid uses (`_retier`, no re-ingest, no cash), just
+    read through `promotion_gate.promotion_verdict` for a district-clustered, cluster-honest verdict.
+
+    ADVISORY, exactly like the grid: nothing is auto-applied. The human reads the verdict, and if they
+    promote, records the decision (with this verdict) to the tuning ledger. `margin` (Δ) is required — the
+    gate refuses to run without a pre-declared non-inferiority margin (see promotion_gate). `alpha` is
+    forwarded (PR #220 review: an earlier draft silently dropped it, so every caller's requested confidence
+    level was ignored in favor of the default)."""
+    champ_rows = _retier(records, champion_params)
+    chall_rows = _retier(records, challenger_params)
+    return PG.promotion_verdict(champ_rows, chall_rows, margin=margin, fold_margin=fold_margin,
+                                alpha=alpha, seed=seed, n_resamples=n_resamples)
+
+
+def default_challenger(champion_params, results):
+    """The CLI's default challenger when --challenger isn't given: the top grid config, but ONLY if it is
+    FEASIBLE (clears the canonical recall floor). None otherwise — grid_search falls back to returning the
+    full INFEASIBLE list when nothing clears the floor, and PR #220's review caught that gating the champion
+    against `results[0]` unconditionally could print PROMOTE for a config the same run's own frontier
+    printout had just flagged '(INFEASIBLE — best available)', bypassing the #208 floor via a convenience
+    default. An infeasible grid means: pass --challenger explicitly, or loosen the grid."""
+    if results and results[0].get("feasible"):
+        return {**champion_params, **results[0]["params"]}
+    return None
+
+
 # ----------------------------- CLI -----------------------------
 def _fmt(x):
     return f"{x:.4f}" if isinstance(x, float) else ("  —  " if x is None else str(x))
@@ -175,6 +206,15 @@ def main():
     ap.add_argument("--floor-tier", default=harness.FLOOR_TIER, choices=["A", "A+B"],
                     help="tier whose recall the floor defends (default A+B)")
     ap.add_argument("--cv", action="store_true", help="also run LOGO-by-district on the top config")
+    ap.add_argument("--gate", action="store_true",
+                    help="run the #212 group-aware non-inferiority promotion gate (champion vs a challenger)")
+    ap.add_argument("--margin", type=float, default=None,
+                    help="Δ: the pre-declared district-level non-inferiority margin the gate needs (e.g. 0.02)")
+    ap.add_argument("--challenger", default=None,
+                    help="JSON detector-param overrides for the challenger (default: the top FEASIBLE grid config)")
+    ap.add_argument("--alpha", type=float, default=PG.DEFAULT_ALPHA,
+                    help="one-sided confidence level for the gate's non-inferiority bound")
+    ap.add_argument("--seed", type=int, default=0, help="cluster-bootstrap seed (reproducible verdicts)")
     a = ap.parse_args()
 
     with gdb.session_scope() as con:
@@ -198,6 +238,32 @@ def main():
               f"precision {_fmt(cv['precision_mean'])}±{_fmt(cv['precision_std'])}  "
               f"recall {_fmt(cv['recall_mean'])}±{_fmt(cv['recall_std'])}")
         print("  (high std => config leans on particular districts; at small n treat as directional)")
+
+    if a.gate:
+        if a.margin is None:
+            ap.error("--gate needs --margin Δ (the pre-declared non-inferiority margin, e.g. --margin 0.02)")
+        champion = DET.DEFAULT_DETECTOR_PARAMS
+        if a.challenger:
+            challenger = {**champion, **json.loads(a.challenger)}
+        else:
+            challenger = default_challenger(champion, res)    # top grid config ONLY if feasible (#208)
+            if challenger is None:
+                ap.error("no FEASIBLE default challenger — the grid's best config violates the recall "
+                         "floor (#208); pass --challenger '<json>' explicitly or loosen the grid")
+        v = gate(records, champion, challenger, margin=a.margin, alpha=a.alpha, seed=a.seed)
+        s = PG.verdict_summary(v)
+        verdict = "PROMOTE" if s["promote"] else "HOLD"
+        print(f"\npromotion gate (#212) champion vs challenger {challenger}:")
+        print(f"  VERDICT: {verdict}  (Δ={s['margin']}, {s['n_districts']} districts)")
+        print(f"  non-inferiority: bootstrap lower bound {_fmt(s['ni_lower_bound'])} vs −Δ "
+              f"({_fmt(-s['margin'])})  mean Δ={_fmt(s['mean_delta'])}")
+        print(f"  LOGO guard: {'pass' if s['logo_passes'] else 'FAIL'} "
+              f"(worst district {s['worst_district']} {_fmt(s['worst_delta'])}, fold Δ={_fmt(s['fold_margin'])})")
+        print(f"  variance: ICC={_fmt(s['icc'])} DEFF={_fmt(s['deff'])}  "
+              f"wilcoxon p={_fmt(s['wilcoxon_pvalue'])}  precision Δ={_fmt(s['precision_mean_delta'])}")
+        for reason in s["reasons"]:
+            print(f"    · {reason}")
+        print("  (advisory — record the decision + this verdict to the tuning ledger; nothing auto-applied)")
 
 
 if __name__ == "__main__":

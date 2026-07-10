@@ -95,6 +95,15 @@ _PRECIOUS_ALTERS = [
     "UPDATE batch SET first_approved_at = approved_at WHERE first_approved_at IS NULL AND approved_at IS NOT NULL",
     # #148: first-class run-kind for extractions, replacing the `handoff_hash NOT LIKE '%-image'` hack.
     "ALTER TABLE extraction ADD COLUMN IF NOT EXISTS run_kind text NOT NULL DEFAULT 'production'",
+    # #213 / PR #220 review: DB-enforce the config_pointer singleton (id = 1). create_all applies the
+    # model's CheckConstraint on a FRESH table; this covers a table created before the constraint existed.
+    # Guarded by a pg_constraint lookup → idempotent no-op on every re-run (additive, never drops).
+    """DO $$ BEGIN
+        IF to_regclass('config_pointer') IS NOT NULL
+           AND NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'config_pointer_singleton') THEN
+            ALTER TABLE config_pointer ADD CONSTRAINT config_pointer_singleton CHECK (id = 1);
+        END IF;
+    END $$""",
     # Backfill: the ONLY probe ever produced was the `-image` vision variant (image_handoff_variant's
     # default council). Flip those legacy rows so the console filter matches pre-migration behavior.
     # Guarded (only flips still-default rows) → a no-op on every re-run. Real handoff hashes are 12 hex

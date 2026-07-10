@@ -61,13 +61,20 @@ def _delta(before, after, getter):
 
 # ----------------------------- pure core (testable, no I/O) -----------------------------
 def build_episode(before, after, *, knobs_touched, rationale, decided_by,
-                  recall_floor=DEFAULT_RECALL_FLOOR):
+                  recall_floor=DEFAULT_RECALL_FLOOR, promotion_gate=None):
     """Build one tuning episode from two scorecard dicts (the harness's output shape).
 
     Records the before/after fingerprints, the metric deltas, the recall-constraint check, and
     the human provenance. `pure_config_move` is True only when label_set AND data fingerprints
     are unchanged — i.e. the delta is attributable to the config alone (a clean A/B). A move
     where labels/data also changed is flagged so no recommender mistakes it for a tuning result.
+
+    `promotion_gate` (optional) is a `promotion_gate.verdict_summary(...)` dict (#212): the
+    group-aware non-inferiority verdict recorded ALONGSIDE the scorecard deltas, so a promotion
+    episode carries the district-clustered, cluster-honest evidence (the bootstrap lower bound vs
+    Δ, the LOGO guard, ICC/DEFF), not just the approved-set metric movements the deltas capture.
+    The `constraint.recall_floor` above is the labeled-set floor (#208); the gate is the group-aware
+    upgrade for when promotion is even semi-automated. None until a gate was actually run for the move.
     """
     fb, fa = before["fingerprints"], after["fingerprints"]
     deltas = {k: _delta(before, after, g) for k, g in _METRIC_GETTERS.items()}
@@ -82,6 +89,7 @@ def build_episode(before, after, *, knobs_touched, rationale, decided_by,
         "deltas": deltas,
         "constraint": {"recall_floor": recall_floor, "floor_tier": harness.FLOOR_TIER,
                        "after_recall": after_recall, "satisfied": satisfied},
+        "promotion_gate": promotion_gate,
         "knobs_touched": list(knobs_touched),
         "rationale": rationale,
         "decided_by": decided_by,
@@ -107,13 +115,16 @@ def read_episodes(ledger_path=None):
 
 
 def record_from_files(before_path, after_path, *, knobs_touched, rationale, decided_by,
-                      recall_floor=DEFAULT_RECALL_FLOOR, ledger_path=None):
+                      recall_floor=DEFAULT_RECALL_FLOOR, ledger_path=None, gate_verdict_path=None):
     """Load two scorecard JSONs, build an episode, append it. The helper a tuning round calls —
-    chat-driven now, automated later — so both paths write the identical shape."""
+    chat-driven now, automated later — so both paths write the identical shape. `gate_verdict_path`
+    (optional) is a saved `promotion_gate.verdict_summary` JSON — attach it when the move went through
+    the #212 non-inferiority gate."""
     before = json.loads(Path(before_path).read_text())
     after = json.loads(Path(after_path).read_text())
+    gate = json.loads(Path(gate_verdict_path).read_text()) if gate_verdict_path else None
     episode = build_episode(before, after, knobs_touched=knobs_touched, rationale=rationale,
-                            decided_by=decided_by, recall_floor=recall_floor)
+                            decided_by=decided_by, recall_floor=recall_floor, promotion_gate=gate)
     append_episode(episode, ledger_path)
     return episode
 
@@ -139,6 +150,8 @@ def main():
     r.add_argument("--rationale", required=True)
     r.add_argument("--by", default="chat", help="decided_by")
     r.add_argument("--recall-floor", type=float, default=DEFAULT_RECALL_FLOOR)
+    r.add_argument("--gate-verdict", default=None,
+                   help="path to a saved promotion_gate.verdict_summary JSON (#212) to attach")
     r.add_argument("--ledger", default=None)
     s = sub.add_parser("show", help="print the ledger")
     s.add_argument("--ledger", default=None)
@@ -147,11 +160,16 @@ def main():
     if a.cmd == "record":
         knobs = [k.strip() for k in a.knobs.split(",") if k.strip()]
         ep = record_from_files(a.before, a.after, knobs_touched=knobs, rationale=a.rationale,
-                               decided_by=a.by, recall_floor=a.recall_floor, ledger_path=a.ledger)
+                               decided_by=a.by, recall_floor=a.recall_floor, ledger_path=a.ledger,
+                               gate_verdict_path=a.gate_verdict)
         ok = "OK" if ep["constraint"]["satisfied"] else "VIOLATES RECALL FLOOR"
         print(f"recorded episode  {ep['before']['config']} -> {ep['after']['config']}  [{ok}]")
         for k, v in ep["deltas"].items():
             print(f"    {k:22} {_fmt_delta(v)}")
+        if ep["promotion_gate"]:
+            g = ep["promotion_gate"]
+            print(f"    promotion gate (#212): {'PROMOTE' if g['promote'] else 'HOLD'} "
+                  f"Δ={g['margin']} NI-lower={g['ni_lower_bound']} DEFF={g['deff']}")
     elif a.cmd == "show":
         eps = read_episodes(a.ledger)
         if not eps:

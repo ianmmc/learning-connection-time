@@ -396,6 +396,98 @@ the canonical (or an explicit) floor; `assert_floor(con, floor=None)` is the act
 
 ---
 
+## 5c. The group-aware promotion gate + safe-promotion machinery (#212/#213, epic #209 Phase 2)
+
+**The problem.** The recall floor (§5b) is a *hard, single-number* guard — it stops a re-ingest that drops
+A+B recall below 0.98. It is necessary but not sufficient the moment config promotion becomes even
+semi-automated: it can't tell a *real* improvement from a within-noise wiggle, and at n≈440 records over
+~90 districts the clustering makes the naive test lie. The **design effect** DEFF = 1+(m̄−1)·ICC ≈ 2.4
+(m̄≈4.9 targets/district, ICC~0.3) means a naive paired t-test understates variance ~2.4× — it manufactures
+false wins. And a challenger can rarely be *proven better* at this n; the decision we can actually make is
+**"provably not-worse within a pre-declared margin Δ."** So Phase 2 adds a real statistical gate + reversible
+promotion machinery, both **advisory / dormant** now (nothing auto-promotes, nothing reads the champion
+pointer to drive live scoring) — built with the automating feature per the #206 shift-left lesson. Decision
+record: `production-quality-control-research/FINDINGS-AND-DECISIONS.md` §2.
+
+**Proven libraries, zero unverified estimators (Ian, 2026-07-10; ICC exception documented below).**
+Statistical math is the wrong thing to hand-roll — `statsmodels` (TOST `ttost_paired`, McNemar exact),
+`scipy` (Wilcoxon, the seeded cluster bootstrap), `sklearn` (LOGO folds). The only arithmetic written is the
+DEFF *definition*, per-district precision/recall, and — the one exception, forced by the PR #220 review —
+**ICC(1)** as the textbook one-way random-effects ANOVA estimator with the unbalanced-cluster `k0`
+correction: `pingouin.intraclass_corr` was tried first and REJECTED for this input, because its long→wide
+pivot + `nan_policy="omit"` **listwise-deletes every district shorter than the largest one** (verified
+empirically: sizes [5,5,5,4,4] silently computed the ICC from 3 of 5 districts while the report's metadata
+claimed all 5), and our corpus is unbalanced by construction (m̄≈4.9). The estimator is **anchored to
+pingouin as the test oracle**: on balanced data (where k0 = n and the two formulas coincide) a regression
+test requires machine-exact agreement with `ICC(1,1)`. The **Nadeau–Bengio corrected-t was dropped** — no
+canonical Python impl, and LOGO-CV's disjoint eval folds make the CV-overlap correction unnecessary
+(Wilcoxon + the cluster bootstrap cover it). This same pandas+statsmodels+pingouin stack is what the
+eventual cross-dimensional LCT-by-district/state analysis will stand on.
+
+**The gate — `promotion_gate.py` (#212), pure + tested.** Consumes the same per-district re-score the
+frontier grid uses (`frontier._retier` → `[(district, rec_key, tier, is_target)]`; no re-ingest, no cash).
+`promotion_verdict(champion_rows, challenger_rows, *, margin, ...)` runs the layered gate (FINDINGS §2 order):
+**(1)** a LOGO fold guard — no single held-out district degrades more than `fold_margin` (default 2·Δ);
+**(2)** Wilcoxon signed-rank on the per-district deltas + McNemar exact on the send/suppress decision-flip
+concordance (reported); **(3)** a cluster ("cases") bootstrap over the per-district deltas → the
+cluster-honest one-sided lower bound; **(4)** TOST parametric corroboration; **(5)** ICC + DEFF beside every
+verdict. `promote` = the LOGO guard holds AND the bootstrap lower bound > −Δ. The gated metric is **A+B
+recall** (the harm direction — the same thing §5b's floor defends); **tier-A precision** is the reported
+*benefit*. `margin` (Δ) is **required** — the verdict raises without a positive, pre-declared margin (set Δ
+on domain grounds *before* seeing the challenger; a non-significant p-value is insufficient power, never
+evidence of equivalence). Wired advisory into `frontier gate()` + `frontier --gate --margin Δ [--challenger
+'<json>']`, and recorded into a `tuning_ledger` episode's new `promotion_gate` block (`verdict_summary`).
+
+**The machinery — `config_artifact.py` + `promotion_pointers.py` + `promotion_flow.py` (#213), dormant.**
+- **`config_artifact.py`** closes a real gap: `detectors.DEFAULT_DETECTOR_PARAMS` is a Python constant
+  `harness.fingerprints` never hashes, so a detector-param change doesn't move the config fingerprint — two
+  materially different configs can share one. An **artifact** is a self-contained immutable JSON capturing the
+  WHOLE tunable surface (detector params INLINE + a snapshot of every `CONFIG_DIR` knob doc) + the GT version
+  it was validated against, content-addressed by a `version` fingerprint that finally *includes* the detector
+  params. `classify_change` → patch/minor/major sets the validation burden (`requires_full_gate`: patch =
+  cheap gates only; minor/major = the full #212 battery); `verify_on_load` is the refuse-to-run guard
+  (fingerprint or GT mismatch → raise — the COUNCIL_LAB §5a twin).
+- **`promotion_pointers.py`** — promotion/rollback as **pointer swaps over immutable artifacts**. Storage split
+  (the 2026-07-10 decision): artifacts as git files under `CONFIG_DIR/promotion/artifacts/<version>.json`;
+  pointer STATE as a governance-DB singleton row (`ConfigPointer`) so a swap is one atomic upsert. A pure
+  state-machine (`initial_state`/`set_challenger`/`promote`/`rollback`/`evictable`/`prune`/`active_versions`)
+  with **N-cycle retention**: a demoted champion is retained as `@fallback`, `evictable` only *reports*
+  past-window versions, `prune` is the sole deletion path — a prior artifact is **never deleted inside its
+  window**, so rollback stays exact and cheap.
+- **`promotion_flow.py`** composes them: `shadow_evaluate` classifies the change and runs the
+  level-appropriate shadow — **patch** → the cheap in-memory #212 gate (valid: only detector params moved);
+  **minor/major** → routed to a deferred **full re-ingest shadow** (knob docs are baked into the stored
+  signals at ingest, so an in-memory re-score would silently use the champion's knobs — the flow refuses to
+  fake it). `actuate` freezes both artifacts + atomically swaps the champion pointer *only* on a promote,
+  with GT + staleness guards. `record_episode` writes the ledger episode carrying the verdict.
+
+**Dormant boundary (remember to activate — #219).** Nothing loads the champion pointer to drive live scoring;
+the pipeline still reads `CONFIG_DIR` directly. Actuation (pointer-drives-live-config) is gated on the unbuilt
+gate-mode persistence, tracked with every other dormant guardrail in the **guardrail-activation checklist
+(#219)**. The minor/major re-ingest shadow is likewise deferred (knob changes are human-curated + rare; the
+automated tuning path is detector-params). Authority: this section; `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
+§11b; issues #212/#213/#219.
+
+**Review-hardened (PR #220's max-effort round, 2026-07-10 — 11 findings, all fixed).** The highest-severity:
+**(1)** the ICC listwise-deletion bug above (pingouin → the anchored ANOVA estimator); **(2)** the CLI's
+default `--gate` challenger could be an **infeasible** grid config when nothing cleared the recall floor
+(grid_search falls back to the full infeasible list) — `default_challenger()` now refuses, never gating
+against a floor-violating config by default. **`actuate`'s guard chain was rebuilt:** it now actually calls
+`verify_on_load` on both artifacts (the fingerprint-tamper check the docstring had only *named*), refuses a
+decision whose recorded champion/challenger versions don't match the pair being actuated (a stale verdict
+must never promote a different pair), enforces `challenger.semver == bump_semver(champion.semver,
+classify_change(...))` (the semver audit trail can't diverge from the content classification), and runs the
+staleness check **before** any disk write (a rejected promotion leaves no orphaned artifact files). Also:
+`alpha` is now actually threaded through `frontier.gate`/`shadow_evaluate`/`--alpha` (it was accepted and
+silently dropped); a **gt_version-only diff classifies `none`, not `patch`** (it previously fell through the
+version-inequality shortcut and could route a cross-GT pair into the cheap gate — `shadow_evaluate` also
+gained an explicit up-front GT guard returning `shadow="gt_mismatch"`); `active_versions` uses `is not None`
+(the issue-#63 discipline — it is the never-delete set); the `config_pointer` singleton is **DB-enforced**
+(`CHECK (id = 1)` on the model + an idempotent `_PRECIOUS_ALTERS` entry); and `_h`/`_r` now delegate to
+`harness`'s single copies instead of carrying clones that could drift.
+
+---
+
 ## 6. Upstream capture — iframe/embed detection (REQ-115)
 
 Two V2 findings are structural, not heuristic, and best fixed at **Stage 3** (`capture_discovery.mjs`):
@@ -463,12 +555,31 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 | **`lf_nonstandard_day` soft-gate** (an incidental prose-pair + a weather/remote/delay soft negative → review, not auto-send; structural targets still send) | **BUILT (#60, 2026-07-09)** — measured pass: tier-A precision 0.8382→0.8444, tier-A + A+B recall held (0.8906 / 0.9961); 6 pages routed to review, 72 structural preserved |
 | **Canonical recall floor** (`harness.RECALL_FLOOR=0.98`/`FLOOR_TIER="A+B"`, `floor_recall`/`floor_satisfied`/`assert_floor`) — one source of truth replacing frontier's/the ledger's prior inconsistent 0.97/0.98-on-tier-A floors | **BUILT (#208, 2026-07-10)** — **enforced INSIDE `build_signals.ingest()`'s transaction** via `--assert-floor`: a violation raises and rolls back the *whole* re-ingest (not a post-hoc report) — see §5b |
 | **Anti-survivorship exploration quota** (`exploration_audit.py` — rule-of-three sufficiency count, deadband, demote-not-halt) | **PURE CORE BUILT + tested (REQ-120/#211, 2026-07-10)**; live wiring (the randomized console audit queue, the gate@5 demote-hook) still DEFERRED — see §5a |
+| **Group-aware non-inferiority promotion gate** (`promotion_gate.py` — LOGO guard + cluster bootstrap + TOST + ICC/DEFF; proven libs, no hand-rolled stats) wired advisory into `frontier gate()`/`--gate` + the `tuning_ledger` episode | **BUILT + tested (#212, epic #209 Phase 2, 2026-07-10)** — advisory; `margin` (Δ) required; see §5c |
+| **Safe-promotion machinery** (`config_artifact.py` immutable fingerprinted artifact — closes the unhashed-detector-params gap; `promotion_pointers.py` @champion/@fallback swap + N-cycle retention; `promotion_flow.py` shadow→gate→swap→record) | **BUILT + tested (#213, epic #209 Phase 2, 2026-07-10)** — DORMANT (nothing reads the champion pointer live; minor/major re-ingest shadow deferred); activation tracked #219 — see §5c |
 | Learned `LabelModel` combiner · hierarchical/vendor pooling · online-FDR drift · Stage-7/8 outcome feedback | **DEFERRED (scale endgame)** |
 
 ---
 
 ## Change log
 
+- **2026-07-10 — PR #220 max-effort review round: 11 findings, all fixed — see §5c "Review-hardened".**
+  Headline: pingouin's ICC silently listwise-deletes unbalanced districts (replaced with the
+  pingouin-anchored ANOVA ICC(1) estimator); the CLI's default gate challenger could be an infeasible
+  (recall-floor-violating) grid config; `actuate` now runs the real `verify_on_load`, binds the decision to
+  its exact artifact pair, enforces semver-vs-classification, and checks staleness before any disk write.
+  Plus: alpha threading, gt-only classify fix, `active_versions` is-not-None, the DB-enforced
+  `config_pointer` singleton CHECK, and `_h`/`_r` deduplication. +12 tests.
+- **2026-07-10 — Runtime guardrail Phase 2 (#212/#213), epic #209 — see §5c for the built detail.** The
+  group-aware non-inferiority promotion gate (`promotion_gate.py`) + the safe-promotion machinery
+  (`config_artifact.py` / `promotion_pointers.py` / `promotion_flow.py`), built + tested, ADVISORY/DORMANT.
+  The gate replaces the naive paired t-test (invalid at DEFF≈2.4) with LOGO-CV + a cluster bootstrap + TOST
+  non-inferiority against a pre-declared Δ, ICC/DEFF reported — proven libraries (statsmodels/pingouin/scipy/
+  sklearn), zero hand-rolled estimators (Ian's redirect; Nadeau–Bengio dropped as unnecessary under LOGO).
+  The machinery closes the unhashed-detector-params gap (an immutable, fingerprinted, GT-verified artifact)
+  and makes promotion/rollback atomic pointer swaps with N-cycle fallback retention. Added deps:
+  statsmodels + pingouin (the same stack the future cross-dimensional LCT analysis needs). Nothing reads the
+  champion pointer to drive live scoring yet; activation tracked in the guardrail-activation checklist (#219).
 - **2026-07-10 — Runtime guardrail Phase 0/1 groundwork (#208/#211/#210), epic #209.** Three pieces, all
   documentation refresh only here (see §5a/§5b for the built detail): (1) the canonical recall floor
   (`harness.RECALL_FLOOR`/`FLOOR_TIER`) now enforced INSIDE `build_signals.ingest()`'s transaction via
