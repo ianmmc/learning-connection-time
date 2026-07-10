@@ -894,12 +894,35 @@ activity, and Stage 8 isn't built (#88/#89), so that hook is deferred until it l
 gate@7's request-directive review. Detail: `STAGE5_FILTER_DESIGN_2026-06.md` §4,
 `STAGE6_DISPATCH_DESIGN_2026-06.md` §0, `STAGE7_EXTRACT_DESIGN_2026-06.md` §3.
 
+**Phase 2 — the group-aware promotion gate + safe-promotion machinery (#212/#213, built 2026-07-10).** The
+config-tuning analogue of the supervision gates: when a Stage-5 config change becomes even semi-automated,
+the recall floor (§5b) is a necessary but insufficient guard (a single hard number, blind to noise and to
+the clustering that makes the naive test lie — DEFF≈2.4). Phase 2 adds **`promotion_gate.py`** — a
+group-aware **non-inferiority** gate (LOGO fold guard + a cluster/"cases" bootstrap over per-district A+B
+recall deltas + TOST against a *pre-declared* Δ, ICC/DEFF reported), built on proven libraries
+(statsmodels/pingouin/scipy/sklearn — no hand-rolled estimators, Ian's redirect) and wired **advisory** into
+`frontier gate()`/`--gate` + a `tuning_ledger` episode block — and the **safe-promotion machinery**
+(`config_artifact.py` immutable fingerprinted artifact that finally brings `DEFAULT_DETECTOR_PARAMS` under
+versioning; `promotion_pointers.py` @champion/@fallback atomic pointer swaps with N-cycle retention;
+`promotion_flow.py` shadow→gate→swap→record). Storage split per Ian's decision: **artifacts in git**
+(`CONFIG_DIR/promotion/artifacts/`), **pointers in the DB** (`config_pointer` singleton, atomic swap). Full
+detail: `STAGE5_FILTER_DESIGN_2026-06.md` §5c.
+
 **Gate-mode persistence remains UNBUILT.** The "global default + per-gate overrides" toggle described in
 §11b's opening (manual/auto per gate) has no backing settings table anywhere in the codebase today — every
 gate is de-facto always-manual. `exploration_audit.resolve_gate_mode()` is the one function designed to
 consume a stored `configured_mode`, and it has zero live callers. Building that persistence (and the
 console surface to set it) is a prerequisite for any gate actually going auto, including the moment the
 exploration-quota and calibration-log guardrails above go from dormant to live.
+
+**Dormant-guardrail inventory (remember to activate — #219).** Every #209 guardrail ships *built but inert*
+(the `--assert-floor` pattern: ship the guard with the capability it guards, never before). That is correct
+discipline but it accumulates dormant safety code, all blocked on the same prerequisite. The running
+**guardrail-activation checklist is issue #219**: #208 `--assert-floor` (opt-in), #211's exploration-quota
+demote-hook (zero live callers), #210's gate@8 calibration hook (deferred to Stage 8), and #213's
+pointer-drives-live-config actuation + the minor/major re-ingest shadow — all gated on gate-mode persistence,
+with the load-bearing ordering (persistence first; gate@8's calibrated gate before 6/7 relax). When the
+manual→auto transition begins, #219 is the checklist we run so nothing is silently left inert.
 
 The **ML-Test-Score-style per-gate readiness rubric** (config-as-data checklist: data / decision-quality /
 infra / monitoring) is the companion plumbing — schema now, per-gate pass-bar deferred with the milestones.
