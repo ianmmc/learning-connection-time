@@ -2869,8 +2869,8 @@ requirements:
     acceptance_criteria:
       - "The filter runs only as autonomously as its reject audit is currently validating it; a lapse DEMOTES gate@5 auto to manual (census mode) — it NEVER halts the pipeline (autonomy falls back one supervision level)"
       - "The binding sufficiency bar is a COUNT over a rolling window of CURRENT-config rejects (rule of three: ~300 zero-miss audited rejects ⇒ 95% confidence reject FN-rate < 1%), fed by a p%-of-flow sampler — NOT a cumulative percentage (a % floats above the bar on stale labels, is too thin on small streams, and re-imports the manual-inspection-at-100k-scale problem, commandment 2)"
-      - "Selection randomness is enforced at DRAW time: the system presents a randomly-drawn audit queue the human works top-down and never cherry-picks; the sampler is reproducible (same keys/p/seed → identical), unbiased (independent per key), and GROWTH-STABLE (a key's decision never flips as the reject population grows), via a stable hash (hashlib, never PYTHONHASHSEED-salted builtin hash())"
-      - "Re-promotion uses a DEADBAND (re-promote only above ~1.2·floor, not merely at the floor) so coverage hovering at the floor cannot flap the gate auto↔manual"
+      - "Selection randomness is enforced at DRAW time: the system presents a randomly-drawn audit queue the human works top-down and never cherry-picks; the sampler is reproducible (same keys/p/seed → identical), unbiased (independent per key), and GROWTH-STABLE (a key's decision never flips as the reject population grows), via a stable deterministic string-seeded draw (random.Random(seed), never the PYTHONHASHSEED-salted builtin hash())"
+      - "Re-promotion uses a DEADBAND (re-promote only above ~1.2·floor, not merely at the floor) so coverage hovering at the floor cannot flap the gate auto↔manual; a collapsed/inverted deadband (promote_n <= floor_n) is a hard error"
       - "The honest recall signal is Rejection-Quality (reject-cohort false-negative rate + rule-of-three ceiling when zero misses), computed each cycle; diagnostics stratify by suspected bias axes (reader-tier / CMS-family / doc-format) to catch CORRELATED misses, but the hard gate is on the aggregate plus flagged strata only"
       - "Enforcement ships DORMANT: while gate@5 is configured manual the control law is inert (the demote-hook is a no-op — the census-labeling immunity means the recall metric is already honest); it goes live only when gate@5 is set to auto (the --assert-floor pattern, REQ-055/#208)"
       - "Every draw is logged (seed, rec_key, score/tier, outcome) so an outsider can replay 'you rejected class X; your own random audit surfaced it N times'; audit records are first-class run_kind=exploration_audit, walled off from production/funnel stats (#147/#148)"
@@ -2882,14 +2882,45 @@ requirements:
     updated: "2026-07-10T00:00:00Z"
     notes: "PURE control-law core BUILT + tested first (infrastructure/acquisition/stage5_filter/exploration_audit.py:
       rule_of_three_upper_bound, rejection_quality, select_audit_sample, next_license_state, resolve_gate_mode) — no DB,
-      no cash, the harness/frontier precedent; the invariant is locked in code before the live plumbing exists. DEFERRED to
-      the full #211 build: the live wiring (querying the reject population, presenting the randomized audit queue in the
-      console, hooking the demote decision onto the gate@5 auto toggle) + Tier B (paid reject→Stage-7 extraction, likely
-      never a distinct build — a confirmed false-negative just rejoins normal Stage-6→7 dispatch). Reframe (2026-07-10
-      design session with Ian): this is NOT a current hole — the operator census-labels every completed district (all
-      tiers, rejects included), so harness recall (A+B 0.9961) is already honest; the quota is the instrument that REPLACES
-      census-labeling, switched on before it stops (i.e. before gate@5 goes auto). Sibling instrument: REQ-121/#210
-      (calibration meter, same build-now-while-truth-exists logic). Authority: STAGE5_FILTER_DESIGN_2026-06.md §5a,
-      PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §11b, production-quality-control-research/FINDINGS-AND-DECISIONS.md §0/§1.
-      Root cause the instrument is mandatory: the gate is deterministic (Swaminathan & Joachims — counterfactual correction
-      impossible under deterministic filtering; only injected stochasticity recovers the signal)."
+      no cash, the harness/frontier precedent; the invariant is locked in code before the live plumbing exists. Review round
+      (#216, dcfc11b): the deadband refuses a collapsed/inverted band, gate-mode strings are validated, rate/quality sum to
+      exactly 1.0, and the sampler reuses queue_batch's random.Random(seed) pattern. DEFERRED to the full #211 build: the
+      live wiring (querying the reject population, presenting the randomized audit queue in the console, hooking the demote
+      decision onto the gate@5 auto toggle) + Tier B (paid reject→Stage-7 extraction, likely never a distinct build — a
+      confirmed false-negative just rejoins normal Stage-6→7 dispatch). Reframe (2026-07-10 design session with Ian): this is
+      NOT a current hole — the operator census-labels every completed district (all tiers, rejects included), so harness
+      recall (A+B 0.9961) is already honest; the quota is the instrument that REPLACES census-labeling, switched on before it
+      stops (i.e. before gate@5 goes auto). Sibling instrument: REQ-121/#210 (calibration meter, same build-now-while-truth-
+      exists logic). Authority: STAGE5_FILTER_DESIGN_2026-06.md §5a, PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §11b,
+      production-quality-control-research/FINDINGS-AND-DECISIONS.md §0/§1. Root cause the instrument is mandatory: the gate is
+      deterministic (Swaminathan & Joachims — counterfactual correction impossible under deterministic filtering; only
+      injected stochasticity recovers the signal)."
+
+  - id: REQ-121
+    description: "Gate-decision calibration log — a certifiable shadow-mode record per human gate action (the instrument that makes a later auto threshold defensible)"
+    type: functional
+    priority: should
+    status: in-progress
+    acceptance_criteria:
+      - "Every human gate action (gate@5/6/7) records an ITEM-grained shadow-mode row alongside the existing state_event write: gate, item id, district, timestamp"
+      - "The record logs the CONTINUOUS confidence proxy VALUE (not a bucket) — gate@5 combiner sort_score/tier · gate@6 n_send/n_verified · gate@7 council agreement/n_unresolved — so any θ can be swept post-hoc"
+      - "It logs the human's final decision (accept/reject/modified — the ground-truth label), what auto CURRENTLY would do (accept/reject/escalate), and an agreement flag that is defined ONLY in the unilateral-auto region (None when auto would escalate)"
+      - "It logs the slice keys we certify the WORST of (state, capture_path text/vision, batch_type, run_kind, school_level) — a slice not logged cannot be reconstructed"
+      - "It logs whether the human SAW the confidence (blinded flag), for an automation-bias-free error subsample"
+      - "The schema is sufficient to sweep θ and certify the worst slice post-hoc WITHOUT baking in a θ at log time (rule of three: ~300 clean audited items in a gate's accept region certify a 1% ceiling; the corpus accrues only forward in time)"
+      - "NON-GOALS (deferred, governance-blocked): θ selection, the auto-escalation policy, per-gate α/δ targets — this is ONLY the instrument"
+    tests:
+      - tests/test_calibration.py
+    created: "2026-07-10T00:00:00Z"
+    updated: "2026-07-10T00:00:00Z"
+    notes: "PURE core + precious schema BUILT first (infrastructure/acquisition/common/calibration.py: the CalibrationEvent
+      model + normalize_decision / agreement / build_record / sweep_worst_slice + the record_calibration writer) — no cash,
+      base-layer (cross-gate, sibling to district_status.StateEvent), the harness/frontier precedent; the schema + certification
+      math are locked in code before the live plumbing. Review round (#217, 7afade9): init_precious_schema registers the model
+      itself (no caller must remember the import), sweep_worst_slice/normalize/decision inputs are validated (a direction typo
+      no longer silently inverts the certification), unknown decision strings are preserved symmetrically, and console-synonym
+      translation stays in the wiring layer, not common/. DEFERRED to the wiring step (console-touching, lands under human
+      inspection per the ramp-up model): calling record_calibration from the gate@5/6/7 handlers so the corpus starts accruing.
+      Decision authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §11b (the 'instrument-now, thresholds-later' decision,
+      2026-07-10), production-quality-control-research/FINDINGS-AND-DECISIONS.md §0/§3. Sibling instrument: REQ-120/#211
+      (exploration quota), same build-now-while-truth-exists logic. Epic #209 Phase 0."

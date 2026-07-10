@@ -106,9 +106,14 @@ _PRECIOUS_ALTERS = [
 def init_precious_schema() -> None:
     """Create the PRECIOUS tables registered on Base.metadata, if absent, + apply additive column
     migrations. Idempotent; never drops. The regenerable cache tables are NOT here — the ingest manages
-    those via its own DDL. NOTE: the CALLER must import the precious model modules first (so they register
-    on Base.metadata) — common/ deliberately does not import stage modules (layering contract)."""
+    those via its own DDL. NOTE: the CALLER must import the STAGE-level precious model modules first (so
+    they register on Base.metadata) — common/ deliberately does not import stage modules (layering
+    contract). COMMON-level precious models are imported HERE (a common→common import is inside the base
+    layer, so the contract permits it): otherwise their registration depends on every init caller
+    remembering an import, and a forgotten one surfaces as 'relation does not exist' at first write
+    (#217 review — calibration_event was registered nowhere in the live app)."""
     from sqlalchemy import text as _text
+    from infrastructure.acquisition.common import calibration  # noqa: F401  (registers calibration_event; local: calibration imports this module)
     eng = get_engine()
     Base.metadata.create_all(eng)
     with eng.begin() as con:
