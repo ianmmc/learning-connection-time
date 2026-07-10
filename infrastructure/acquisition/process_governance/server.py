@@ -27,6 +27,8 @@ from infrastructure.acquisition.stage5_filter import build_signals as BS    # no
 from infrastructure.acquisition.stage5_filter import release as REL         # noqa: E402  (filtered.json projection — REQ-094)
 from infrastructure.acquisition.common import db as gdb                     # noqa: E402  (isolated governance Postgres — REQ-103)
 from infrastructure.acquisition.common import district_status as DS         # noqa: E402  (state_event log — gate@1 audit events)
+from infrastructure.acquisition.common import calibration as CAL            # noqa: E402  (gate-decision calibration log — REQ-121)
+from infrastructure.acquisition.process_governance import gate_calibration as GCAL  # noqa: E402  (console→calibration vocab)
 from infrastructure.acquisition.common import school_sampling as SS         # noqa: E402  (add-school candidate lookup)
 from infrastructure.acquisition.stage1_queue import queue_batch as Q1       # noqa: E402  (build/persist a batch — REQ-102)
 from infrastructure.acquisition.stage1_queue import batch_store as BSTORE   # noqa: E402  (the batch working store)
@@ -234,8 +236,10 @@ def cascade_facets(facets: dict | None) -> dict | None:
 @app.post("/api/label/{rec_key}")
 async def save_label(rec_key: str, payload: dict):
     with gdb.session_scope() as con:
-        rec = con.execute(text("SELECT district_id, cluster_id, is_cluster_rep FROM record WHERE rec_key=:rk"),
-                          {"rk": rec_key}).mappings().first()
+        rec = con.execute(text(
+            """SELECT r.district_id, r.cluster_id, r.is_cluster_rep, r.tier, r.sort_score, d.state
+               FROM record r LEFT JOIN district d ON d.district_id = r.district_id
+               WHERE r.rec_key = :rk"""), {"rk": rec_key}).mappings().first()
         if not rec:
             raise HTTPException(404, "no such record")
         from datetime import datetime, timezone
@@ -261,6 +265,14 @@ async def save_label(rec_key: str, payload: dict):
                 cascaded += 1
         BS.recompute_labeled_topology(con, rec["district_id"])
         BS.recompute_attention(con, rec["district_id"])   # label/split changed canonical/resolved state -> refresh attention
+        # gate@5 calibration (REQ-121/#210): log the shadow-mode record for this human label — the
+        # combiner sort_score proxy vs. the tier-derived auto recommendation — on the SAME transaction.
+        # None when there's no terminal decision (unlabeled / off-axis label). The corpus accrues forward.
+        cal = GCAL.gate5_label_record(
+            rec_key=rec_key, district_id=rec["district_id"], tier=rec["tier"], sort_score=rec["sort_score"],
+            primary_label=vals["primary_label"], status=vals["status"], state=rec["state"], created_at=ts)
+        if cal:
+            CAL.record_calibration(con, cal)
         con.commit()   # persist before exporting, so the JSON backup only reflects committed state
         # Export-on-save: the precious label is backed up to the tracked JSON before we return,
         # so it survives DB loss with zero action from the user (no reliance on remembering).
@@ -1457,6 +1469,27 @@ async def extract_request_review(request_id: int, payload: dict):
                 raise HTTPException(404, "no such request")
             raise HTTPException(409, "executed directives are terminal — they cannot be reopened "
                                      "(the depth guard and lineage key off the executed status)")
+        # gate@7 calibration (REQ-121/#210): log the shadow-mode record for a TERMINAL review decision —
+        # the council agreement ratio proxy vs. the human's approve/reject of the directive. None for a
+        # 'pending' reopen. Same transaction as the extraction_request UPDATE above.
+        req = con.execute(text(
+            "SELECT district_id, band, handoff_hash FROM extraction_request WHERE request_id = :id"),
+            {"id": request_id}).mappings().first()
+        cal = None
+        if req and status in ("approved", "rejected"):
+            ext = con.execute(text(
+                """SELECT n_accepted, n_unresolved, run_kind FROM extraction
+                   WHERE district_id = :did AND handoff_hash = :hh
+                   ORDER BY extraction_id DESC LIMIT 1"""),
+                {"did": req["district_id"], "hh": req["handoff_hash"]}).mappings().first() or {}
+            st = con.execute(text("SELECT state FROM district WHERE district_id = :did"),
+                             {"did": req["district_id"]}).scalar()
+            cal = GCAL.gate7_request_record(
+                request_id=request_id, district_id=req["district_id"], status=status,
+                n_accepted=ext.get("n_accepted"), n_unresolved=ext.get("n_unresolved"),
+                band=req["band"], state=st, run_kind=ext.get("run_kind"), created_at=_u7())
+        if cal:
+            CAL.record_calibration(con, cal)
     return {"request_id": request_id, "status": status}
 
 
