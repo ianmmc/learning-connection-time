@@ -130,7 +130,11 @@ def _record_dispatched_events(session, doc: dict, actor: str, metas: dict) -> No
             "actor": actor, "note": doc.get("handoff_hash"), "created_at": ts})
         # gate@6 calibration (REQ-121/#210): a shadow-mode row per dispatched district, on THIS session
         # alongside the state_event — the n_send proxy vs. the accept-only human dispatch decision.
-        n_send = sum(1 for r in d.get("records", []) if r.get("decision") == "send")
+        # n_send counts records with a decision of "send" AND a non-empty reps list (#218 review):
+        # release.decide can emit decision="send" with zero usable reps (";no-usable-rep"), and a record
+        # that dispatched nothing must not read as a send — that phantom would log agreed=True for a
+        # dispatch that paid for nothing. (Distinct from package.py's n_send_reps, which counts FILES.)
+        n_send = sum(1 for r in d.get("records", []) if r.get("decision") == "send" and r.get("reps"))
         CAL.record_calibration(session, GCAL.gate6_dispatch_record(
             handoff_hash=doc.get("handoff_hash"), district_id=did, n_send=n_send,
             state=meta.get("state"), created_at=ts))

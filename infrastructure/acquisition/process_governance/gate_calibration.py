@@ -30,11 +30,18 @@ _TIER_TO_AUTO = {"A": "accept", "B": "escalate", "C": "escalate", "D": "reject"}
 
 def gate5_label_record(*, rec_key, district_id, tier, sort_score, primary_label, status,
                        state=None, batch_type=None, created_at):
-    """A calibration record for a gate@5 human label — or None when there is no terminal decision to log:
-    an unlabeled status, a missing primary_label, or an off-vocabulary label (neither a target shape nor a
-    terminal non-target). The proxy is the combiner's continuous `sort_score`; `agreed` is computed by
-    calibration.agreement against the tier-derived auto recommendation."""
-    if status == "unlabeled" or not primary_label:
+    """A calibration record for a gate@5 human label — or None when there is no CONFIDENT terminal
+    decision to log: any status other than "labeled" (WHITELIST, #218 review — the console's "unsure"
+    status means 'reviewed but couldn't decide' and can arrive with a stale primary_label still checked;
+    a hedge must never enter the corpus as a confident decision), a missing primary_label, or an
+    off-vocabulary label. The proxy is the combiner's continuous `sort_score`; `agreed` is computed by
+    calibration.agreement against the tier-derived auto recommendation.
+
+    CASCADE INVARIANT (#218 review, decided): a label that cascades to cluster members logs exactly ONE
+    calibration row — the representative the human actually looked at. Members are near-duplicates of the
+    rep; logging them too would pseudo-replicate a single human judgment N times in certification math
+    (rule of three) that assumes independent trials. Tested in test_gate_calibration."""
+    if status != "labeled" or not primary_label:
         return None
     if primary_label in TARGET_LABELS:
         human = "accept"

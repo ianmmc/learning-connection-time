@@ -1456,12 +1456,15 @@ async def extract_request_review(request_id: int, payload: dict):
         # depth guard COUNTS rows whose current status is 'executed', so a reopen would decrement the
         # safety counter and allow unlimited paid re-fires (and overwrite the lineage of the first
         # firing). The UI hides the button; this WHERE clause is the actual gate.
-        n = con.execute(text(
+        # RETURNING carries the row's identity out of the UPDATE itself (#218 review) — no re-SELECT,
+        # and a None row preserves the exact 404-vs-409 distinction the old rowcount check made.
+        req = con.execute(text(
             "UPDATE extraction_request SET status = :s, reviewed_by = :by, reviewed_at = :now, "
-            "review_note = :note WHERE request_id = :id AND status != 'executed'"),
+            "review_note = :note WHERE request_id = :id AND status != 'executed' "
+            "RETURNING district_id, band, handoff_hash"),
             {"s": status, "by": payload.get("actor", "ian"), "now": _u7(),
-             "note": payload.get("note"), "id": request_id}).rowcount
-        if not n:
+             "note": payload.get("note"), "id": request_id}).mappings().first()
+        if not req:
             cur = con.execute(text(
                 "SELECT status FROM extraction_request WHERE request_id = :id"),
                 {"id": request_id}).scalar()
@@ -1470,16 +1473,13 @@ async def extract_request_review(request_id: int, payload: dict):
             raise HTTPException(409, "executed directives are terminal — they cannot be reopened "
                                      "(the depth guard and lineage key off the executed status)")
         # gate@7 calibration (REQ-121/#210): log the shadow-mode record for a TERMINAL review decision —
-        # the council agreement ratio proxy vs. the human's approve/reject of the directive. None for a
-        # 'pending' reopen. Same transaction as the extraction_request UPDATE above.
-        req = con.execute(text(
-            "SELECT district_id, band, handoff_hash FROM extraction_request WHERE request_id = :id"),
-            {"id": request_id}).mappings().first()
-        cal = None
-        if req and status in ("approved", "rejected"):
+        # the council agreement ratio proxy vs. the human's approve/reject of the directive. Skipped for
+        # a 'pending' reopen. Same transaction as the UPDATE above. run_kind='production' matches the
+        # gate@7 surfaces (#148: a probe run's stats must never masquerade as the reviewed run's).
+        if status in ("approved", "rejected"):
             ext = con.execute(text(
                 """SELECT n_accepted, n_unresolved, run_kind FROM extraction
-                   WHERE district_id = :did AND handoff_hash = :hh
+                   WHERE district_id = :did AND handoff_hash = :hh AND run_kind = 'production'
                    ORDER BY extraction_id DESC LIMIT 1"""),
                 {"did": req["district_id"], "hh": req["handoff_hash"]}).mappings().first() or {}
             st = con.execute(text("SELECT state FROM district WHERE district_id = :did"),
@@ -1488,8 +1488,8 @@ async def extract_request_review(request_id: int, payload: dict):
                 request_id=request_id, district_id=req["district_id"], status=status,
                 n_accepted=ext.get("n_accepted"), n_unresolved=ext.get("n_unresolved"),
                 band=req["band"], state=st, run_kind=ext.get("run_kind"), created_at=_u7())
-        if cal:
-            CAL.record_calibration(con, cal)
+            if cal:
+                CAL.record_calibration(con, cal)
     return {"request_id": request_id, "status": status}
 
 
