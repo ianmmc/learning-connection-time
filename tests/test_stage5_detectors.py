@@ -39,6 +39,43 @@ def test_office_hours_footer_is_a_negative_not_a_target():
     assert "lf_office_hours" in r["fired"] and "lf_footer_hours" not in r["fired"]
 
 
+# ---- #61: footer/header evaluated INDEPENDENTLY (an office footer must not downgrade a school header) ----
+def test_school_header_survives_an_office_footer():
+    # office FOOTER + genuine school-hours HEADER: the old OR-merge downgraded this to office negative,
+    # losing the real header target. Now the non-office segment wins -> target.
+    r = decide(footer_hours={"hit": True, "times": 2, "office": True},
+               header_hours={"hit": True, "times": 2, "office": False})
+    assert r["decision"] == "send" and r["tier"] == "A"
+    assert "lf_footer_hours" in r["fired"] and "lf_office_hours" not in r["fired"]
+
+
+def test_both_segments_office_is_still_the_office_negative():
+    # regression guard: when EVERY hit segment reads office (no positive kw), it stays the office confusable.
+    r = decide(footer_hours={"hit": True, "times": 2, "office": True},
+               header_hours={"hit": True, "times": 2, "office": True})
+    assert r["decision"] != "send"
+    assert "lf_office_hours" in r["fired"] and "lf_footer_hours" not in r["fired"]
+
+
+# ---- #60: a nonstandard-day soft negative undermines an INCIDENTAL pair, not a structural block ----
+def test_nonstandard_day_demotes_an_incidental_pair_to_review():
+    # a delay/weather page with a prose start/end pair used to auto-send tier-A (only the extraction
+    # prompt's 'ignore early-dismissal' backstopped it); now it routes to review.
+    r = decide(n_times_in_window=4, proximity_pairs=2, positive_kw=["start time", "dismissal"],
+               nonstandard_day=True)
+    assert r["decision"] == "review" and r["tier"] == "B"
+    assert "lf_nonstandard_day" in r["fired"] and "lf_prose_pair" in r["fired"]
+
+
+def test_nonstandard_day_does_not_demote_a_structural_block():
+    # a real footer hours block on a page that also mentions a delay is STILL the standard day -> send
+    # (structure beats wrong-day noise, the combiner's core rule).
+    r = decide(footer_hours={"hit": True, "times": 2, "office": False}, positive_kw=["bell schedule"],
+               nonstandard_day=True)
+    assert r["decision"] == "send" and r["tier"] == "A"
+    assert "lf_footer_hours" in r["fired"]
+
+
 def test_weak_times_need_a_proximity_pair_to_leave_suppress():
     # two in-window times but NO proximity pair (V1 tier-B FP source) -> not a weak-target, gets suppressed.
     assert D.lf_weak_times(sig(n_times_in_window=2, proximity_pairs=0), D.DEFAULT_DETECTOR_PARAMS) is None

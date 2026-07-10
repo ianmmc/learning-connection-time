@@ -40,7 +40,9 @@ import re
 import subprocess
 from pathlib import Path
 
+from infrastructure.acquisition.common import batch_guard as BG
 from infrastructure.acquisition.common import cache_ingest as CI
+from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import timeutil as TU
 
@@ -461,6 +463,12 @@ def main():
     elif a.cmd == "run":
         if a.all:
             todo, _, quarantined = reconcile(districts, registry)
+            # #168/#206 review: run writes processed.json + state_events — refuse any district whose
+            # artifacts belong to a terminal abandoned batch (halts the sweep, matching the reconcile
+            # checks' fail-loud convention; the dir's discovery.json records the producing batch).
+            with gdb.session_scope() as _con:
+                for d in todo:
+                    BG.assert_district_runnable(_con, d["dir"])
             for d in quarantined:
                 DS.record_stage(registry, d["district_id"], d["name"], d["state"],
                                  stage_name="process", event_type="failed",
@@ -476,6 +484,8 @@ def main():
                     f"district {a.district_id} not found under {root} "
                     f"(needs captures.json + discovery.json)"
                 )
+            with gdb.session_scope() as _con:   # #168/#206 review: same guard, single-district form
+                BG.assert_district_runnable(_con, district["dir"])
             outcome = finish_district(district, registry)
             print(f"{district['district_id']} {district['name']}: {outcome}")
         else:

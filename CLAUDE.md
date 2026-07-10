@@ -111,33 +111,25 @@ live in the governance DB; `handoff_<hash>_<ts>.json` under `data/acquisition/ha
 `district_status.json` into every commit — on a fresh clone run `git config core.hooksPath .githooks`
 (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-09):** the console runs the pipeline live through **`gate@7`**, and the
-request-more-evidence loop is **built, hardened (epic #163), and just closed a 6-batch "whittle down open
-issues" hygiene campaign** (PRs #177/#179/#191/#193/#194–#197, all merged) triggered by a live #122
-shakedown of that loop. Sequenced dead-code → real-bugs → measured-behavior-change → dedup: run-abort
-isolation so one bad rep can't strand a batch (#173); truncation retry, then eliminated at the source by
-sizing `max_tokens` from the roster's time-count (#169/#180/#187, ~47 tok/school, measured over 840 real
-calls); the request loop now **suppresses follow-ups that can't add coverage** — phantom claimed bands,
-already-fully-covered districts — measured at **~57% of prior follow-up spend wasted** (#176/#170/#175);
-and the fragile `-image`-hash console filter promoted to a first-class **`run_kind` column** (#147/#148),
-closing the exact gap this file used to flag as a known follow-up. Every PR adversarially reviewed before
-merge, including the "just cleanup" ones — which kept finding real defects (a receipt-picker fallback gap,
-a probe run leaking directives into the production review queue). **1043 DB-free + 69 govdb + 567
-integration tests green; `lint-imports` clean.** 14 issues closed. Doc tower refreshed against current
-code same-day: `STAGE7_EXTRACT_DESIGN` (§0/§4(f)/§6), `PIPELINE_GOVERNANCE_AND_STATE`,
-`ACQUISITION_PIPELINE` (incl. a Key Files gap — Stage 7 had no entries — now filled); `PROJECT_HISTORY.md`
-carries one distilled campaign entry. **Deliberately parked:** #124 (arch-manifest/fitness-test infra) —
-by explicit instruction, until this campaign's remaining scope is done.
-**Next — remaining campaign scope, engineer's-discretion order:** Batch 5 (#168 first-class "abandoned"
-batch status, #171 gate@6 already-dispatched indicator — small trouble-preventers); Batch 6 (#60
-`lf_nonstandard_day` soft-gate, #61 `lf_footer_hours` merge bug, #108 facet-level per-detector scoring —
-**requires re-ingest + before/after measurement**, the project's measured-pass discipline); then #124.
-Separately still open: a clean live non-benchmark end-to-end pass of the now-hardened request loop in one
-sitting (#122 — the shakedown that started this campaign exercised the loop in pieces while finding what
-it then fixed, but hasn't run start-to-finish since); Stage 8 (aggregate, not yet built); the Council Lab's
-remaining backlog (`cost_benchmark`, the #81 anti-spray prompt A/B; tracked #80/#81). Full detail:
-`docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§4/§6,
-`PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`, `docs/PROJECT_HISTORY.md` (the campaign entry).
+**Current status (2026-07-09, evening):** the console runs the pipeline live through **`gate@7`**, and the
+**"whittle down open issues" campaign's full scope is done**: Batches 1–4 (PRs #177–#197, merged, 14 issues),
+**Batch 5** (#168 first-class `abandoned` batch status + #171 gate@6 already-dispatched indicator — PR #198,
+**merged**), **Batch 6** (#60 nonstandard-day soft-gate, #61 footer/header merge bug, #108 facet-level
+per-detector scoring — a measured pass, tier-A precision 0.8382→0.8444 with both recalls held — **PR #199,
+open**), and **#124** (cross-boundary `arch-manifest.json` + fitness-function tests, the campaign closer —
+**PR #206, open**, stacked on #199). Both open PRs went through a max-effort adversarial review (15 verified
+findings — notably: the older per-district CLIs bypassed the new abandoned-batch guard, and several fitness
+checks were narrower than their names implied); **all findings are fixed on the PR branches**, including a
+district-grain `assert_district_runnable` guard for the legacy CLIs and a hardened, bidirectional,
+schema-validated fitness suite. The review also seeded **epic #200** (defect-prevention/shift-left: #201
+DB-free test guard, #202 pre-push hook, #203 property-based state-machine tests, #204 mutation testing) +
+follow-ons #205 (datacontract/config schemas) and #207 (nonstandard-day facet checkbox — labeling
+vocabulary, Ian's call). CLAUDE.md gained Critical Rule #7 (research before implementing).
+**Next:** merge PRs #199 + #206 after human review; then the prevention epic #200 items at discretion.
+Separately still open: a clean live non-benchmark end-to-end pass of the hardened request loop in one
+sitting (#122); Stage 8 (aggregate, not yet built — #88/#89); the Council Lab backlog (#80/#81). Full
+detail: `STAGE5_FILTER_DESIGN_2026-06.md` (Batch 6 change log), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
+§10 (the #124 fitness layer), `docs/PROJECT_HISTORY.md` (the campaign entry).
 
 ---
 
@@ -207,11 +199,16 @@ python3 -c "import grimp; g=grimp.build_graph('infrastructure'); \
                              # grimp: query the real import graph (what a module imports / is imported by)
 vulture infrastructure/acquisition    # dead-code sweep
 cd infrastructure/scraper && npx depcruise --config .dependency-cruiser.cjs lib   # Node (.mjs) side
+pytest tests/test_arch_manifest.py    # cross-boundary FITNESS functions vs arch-manifest.json (#124)
 ```
-> **Caveat (the recurring lesson):** these see **Python/Node imports only**. They do NOT see the
+> **Caveat (the recurring lesson):** the import tools see **Python/Node imports only**. They do NOT see the
 > *environmental* dependencies that often matter most — NCES CSV files read by path/year, **LCT DB
 > tables** accessed via the ORM, `subprocess`/`claude -p` calls, OpenRouter API hosts. After the import
 > graph, **read the code** for those edges. (Toolchain rationale: `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §10.)
+> **`arch-manifest.json` + `tests/test_arch_manifest.py` (#124) now close part of this gap:** the declared
+> ground truth for the cross-boundary edges (external processes, guarded entry points, client↔server rule
+> literals, stage receipts), enforced as fitness functions. **When you add such an edge, update the manifest**
+> — that edit is the review surface, and the suite fails on an undeclared one.
 
 #### Design System for frontend/UI via DesignSync
 To access current design resources, use the claude_design MCP (https://api.anthropic.com/v1/design/mcp, auth via /design-login) to import this project: https://claude.ai/design/p/07ef80cc-f2fe-4393-945e-99f1a40b0809

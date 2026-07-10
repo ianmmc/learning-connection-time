@@ -23,7 +23,9 @@ import shutil
 from collections import Counter
 from pathlib import Path
 
+from infrastructure.acquisition.common import batch_guard as BG
 from infrastructure.acquisition.common import cache_ingest as CI
+from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
 
 IMAGE_EXTS = ("png", "jpg", "jpeg", "gif", "webp", "bmp", "tiff")
@@ -341,6 +343,10 @@ def main():
         district = next((d for d in districts if d["district_id"] == a.district_id), None)
         if district is None:
             raise SystemExit(f"district {a.district_id} not found under {root} (needs discovery.json + candidates.json)")
+        # #168/#206 review: finish writes captures.json state + a state_event — refuse if this district's
+        # artifacts belong to a terminal abandoned batch (the dir's discovery.json records which).
+        with gdb.session_scope() as _con:
+            BG.assert_district_runnable(_con, district["dir"])
         registry = DS.load()
         outcome = finish_district(district, registry)
         DS.save(registry)
@@ -350,6 +356,9 @@ def main():
         district = next((d for d in districts if d["district_id"] == a.district_id), None)
         if district is None:
             raise SystemExit(f"district {a.district_id} not found under {root} (needs discovery.json + candidates.json)")
+        # #168/#206 review: the recovery path also writes captures.json + a state_event — same guard.
+        with gdb.session_scope() as _con:
+            BG.assert_district_runnable(_con, district["dir"])
         records = reconstruct_captures(district)
         if a.manual_file:
             if not a.manual_url:

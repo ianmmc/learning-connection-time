@@ -109,6 +109,83 @@ DETECTOR_POLARITY = {
 }
 
 
+# #108: each NEGATIVE detector's Axis-2 confounder facet(s) — the human ground truth for "is the
+# confounder this detector claims actually present?". Scored SEPARATELY from tier-target accuracy above:
+# a page can be a target AND carry a confounder (Las Cruces — a real district_hub_by_school delivered in
+# a news feed), so a negative detector firing on a target is NOT wrong if its confounder facet is checked.
+# This measures the detector's CLAIM (did it name the right confounder), which the coarse target-accuracy
+# above cannot. The mapping is explicit (NOT the vote `category` field — lf_office_hours and
+# lf_nonstandard_day share category 'other_schedule' but map to different facets). See STAGE5 §5/§8.
+# `lf_no_times` (also negative-polarity) is DELIBERATELY absent: it is the suppress FLOOR — a claim that
+# NO signal is present, not that a specific confounder shape is — so it has no Axis-2 facet to score against.
+DETECTOR_FACET = {
+    "lf_news_feed": {"news_feed"},
+    "lf_calendar_widget": {"academic_calendar", "community_calendar"},
+    # CAVEAT (#199 review): `other_schedule` has NO live checkbox in the v2.1 questionnaire (app.js
+    # CONFOUNDERS) — its only writer was the one-time v2.0→v2.1 label migration, so this detector's
+    # facet-tagged denominator is FROZEN at the migrated rows and cannot accrue from new gate@5 review
+    # until a nonstandard-day/other-schedule checkbox is added (tracked: #207).
+    "lf_nonstandard_day": {"other_schedule"},
+    "lf_office_hours": {"office_building_hours"},
+    "lf_board": {"board"},
+    "lf_sports": {"sports"},
+    "lf_transport": {"transportation"},
+}
+# Axis-3 (location) + not-a-confounder keys carried in facets_json — excluded from the confounder set.
+_NON_CONFOUNDER_FACETS = {"buried_handbook", "needs_vision"}
+
+
+def parse_facets(facets_json):
+    """Parse a label's facets_json into its v2.1 dict, or None when the value does not represent a v2.1
+    review (empty, null, unparseable, or a non-dict legacy shape). ONE predicate for both 'which facets'
+    and 'was this record facet-reviewed at all' — the #199 review found the two computed independently
+    (a string check vs. a dict-shape check), letting a legacy non-dict value count into the facet-tagged
+    DENOMINATOR while contributing no facets, silently deflating facet_precision."""
+    try:
+        d = json.loads(facets_json or "{}")
+    except (TypeError, ValueError):
+        return None
+    return d if isinstance(d, dict) and d else None
+
+
+def confounder_facets(facets_json):
+    """The set of Axis-2 confounder facets checked 'yes' in a label's facets_json (Axis-3 `_`-prefixed
+    location keys + buried_handbook/needs_vision excluded). Only the literal 'yes' counts — the questionnaire
+    stores a checked box as 'yes' and OMITS unchecked ones, so any other value (e.g. a future explicit 'no')
+    must not read as present (#199 review: the old any-truthy check would have)."""
+    d = parse_facets(facets_json)
+    if d is None:
+        return set()
+    return {k for k, v in d.items()
+            if v == "yes" and not k.startswith("_") and k not in _NON_CONFOUNDER_FACETS}
+
+
+def facet_detector_diagnostics(rows):
+    """rows: iterable of (fired: list[str], confounders: set[str], facet_tagged: bool) over LABELED records
+    (#108). For each NEGATIVE detector, FACET-level precision: among its firings on records whose facets
+    the human actually tagged (a non-empty v2.1 dict — `parse_facets` is the single tagged/untagged
+    predicate), the fraction where its claimed confounder facet (DETECTOR_FACET) is present. This is
+    confounder-ID accuracy, orthogonal to whether a target co-occurs. `fires_facet_tagged` is the
+    (transparent) denominator — a small one means facets are still accruing (§8), so read the precision as
+    provisional (EXCEPT lf_nonstandard_day, whose facet has no live checkbox — see DETECTOR_FACET).
+    Records with no facets tagged can't inform it and are excluded, not counted as misses."""
+    rows = list(rows)
+    out = {}
+    for name, want in sorted(DETECTOR_FACET.items()):
+        fires = fires_tagged = hits = 0
+        for fired, confounders, tagged in rows:
+            if name not in fired:
+                continue
+            fires += 1
+            if tagged:
+                fires_tagged += 1
+                if confounders & want:
+                    hits += 1
+        out[name] = {"facets": sorted(want), "fires": fires, "fires_facet_tagged": fires_tagged,
+                     "hits": hits, "facet_precision": _r(hits / fires_tagged if fires_tagged else None)}
+    return {"per_detector": out}
+
+
 def detector_diagnostics(rows):
     """rows: iterable of (fired: list[str], is_target: bool) over LABELED records. Per labeling function,
     Snorkel-style diagnostics: COVERAGE (fraction of records it fires on), ACCURACY (when it fires, was its
@@ -141,28 +218,38 @@ def detector_diagnostics(rows):
 # ----------------------------- DB reading + fingerprints -----------------------------
 def _labeled_records(con):
     return con.execute(text(
-        """SELECT r.tier, r.category_hypothesis, l.primary_label, r.signals_json
+        """SELECT r.tier, r.category_hypothesis, l.primary_label, r.signals_json, l.facets_json
            FROM record r JOIN label l ON l.rec_key = r.rec_key
            WHERE l.status != 'unlabeled' AND l.primary_label IS NOT NULL""")).fetchall()
 
 
+def _fired(sj):
+    return [v["name"] for v in (json.loads(sj or "{}").get("detectors") or [])]
+
+
 def score(con):
     recs = _labeled_records(con)
-    tier_rows = [(t, lab in TARGET) for t, _cat, lab, _sj in recs]
-    cat_rows = [(cat, lab) for _t, cat, lab, _sj in recs]
+    tier_rows = [(t, lab in TARGET) for t, _cat, lab, _sj, _fj in recs]
+    cat_rows = [(cat, lab) for _t, cat, lab, _sj, _fj in recs]
     # V2 (REQ-113): per-detector diagnostics from the fired votes stored in signals_json.
-    det_rows = [([v["name"] for v in (json.loads(sj or "{}").get("detectors") or [])], lab in TARGET)
-                for _t, _cat, lab, sj in recs]
+    det_rows = [(_fired(sj), lab in TARGET) for _t, _cat, lab, sj, _fj in recs]
+    # #108: facet-level per-detector diagnostics — negative detectors vs their Axis-2 confounder facets.
+    # tagged uses the SAME parse_facets predicate as confounder_facets (#199 review: an independent raw-string
+    # check counted non-dict legacy shapes into the denominator while they could never contribute a hit).
+    facet_rows = [(_fired(sj), confounder_facets(fj), parse_facets(fj) is not None)
+                  for _t, _cat, _lab, sj, fj in recs]
     topo_rows = con.execute(text(
         "SELECT name, guessed_topology, labeled_topology FROM district ORDER BY name")).fetchall()
     n_rec = con.execute(text("SELECT COUNT(*) FROM record")).scalar()
     n_dist = con.execute(text("SELECT COUNT(*) FROM district")).scalar()
     return {
         "counts": {"records": n_rec, "labeled": len(recs), "districts": n_dist,
-                   "targets": sum(1 for _t, g in tier_rows if g)},
+                   "targets": sum(1 for _t, g in tier_rows if g),
+                   "facet_tagged": sum(1 for _f, _c, tagged in facet_rows if tagged)},
         "tier_vs_target": tier_target_metrics(tier_rows),
         "category_accuracy": category_accuracy(cat_rows),
         "detectors": detector_diagnostics(det_rows),
+        "facet_detectors": facet_detector_diagnostics(facet_rows),
         "topology": topology_report(topo_rows),
     }
 
@@ -223,6 +310,13 @@ def print_summary(card):
         for name, d in det["per_detector"].items():
             print(f"    {name:22} {d['polarity']:8} cov={d['coverage']} acc={d['accuracy']} "
                   f"(fires {d['fires']}: {d['on_target']} target / {d['on_nontarget']} non-target)")
+    fd = card.get("facet_detectors")
+    if fd:
+        ft = card["counts"].get("facet_tagged")
+        print(f"  facet-level negative-detector precision (#108; {ft} labeled records carry facets):")
+        for name, d in fd["per_detector"].items():
+            print(f"    {name:22} facet={'/'.join(d['facets']):24} "
+                  f"facet_prec={d['facet_precision']} ({d['hits']}/{d['fires_facet_tagged']} facet-tagged firings; {d['fires']} total)")
     tp = card["topology"]
     print(f"  topology coarse hub/per-school agreement: {tp['coarse_agreement']} ({tp['coarse_agree']}/{tp['coarse_den']})")
     diverge = {k: v for k, v in tp["pairs"].items() if GUESS_COARSE.get(v[0], "?") != LABEL_COARSE.get(v[1], "?")}

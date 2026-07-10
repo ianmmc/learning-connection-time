@@ -12,7 +12,19 @@ Lives in `common` because the stages are independent siblings under the import-l
 SQL by table name — no stage-module import (the contract is about imports, not table names; see
 PIPELINE_GOVERNANCE_AND_STATE §10). Raising SystemExit matches the headless's existing hard-stop
 convention (`load_batch_any` raises SystemExit for a missing batch); it halts the run loudly.
+
+Two grains (#206 review — the batch-grain guard alone left the older per-district CLIs unguarded):
+  assert_runnable(sess, batch_id)            — batch-grain: the headless run_batch runners + the Stage-2
+                                               legacy CLI, which operate on a whole batch.
+  assert_district_runnable(sess, district_dir) — district-grain: the Stage-3/4 legacy CLIs
+                                               (finish / reconstruct / run) operate on one on-disk
+                                               district dir with no batch argument; the dir's
+                                               discovery.json records the batch that produced it, and
+                                               that batch's terminality is what the work would violate.
 """
+import json
+from pathlib import Path
+
 from sqlalchemy import text
 
 
@@ -24,3 +36,18 @@ def assert_runnable(sess, batch_id: str) -> None:
     if status == "abandoned":
         raise SystemExit(
             f"batch {batch_id} is abandoned (terminal); refusing to run a pipeline stage on it")
+
+
+def assert_district_runnable(sess, district_dir) -> None:
+    """District-grain guard for the per-district CLI ops: the dir's discovery.json records the batch
+    that produced this district's artifacts — refuse (SystemExit) if THAT batch is abandoned. A dir
+    with no discovery.json / no batch_id makes no batch claim and stays runnable (pre-batch dev data)."""
+    disc = Path(district_dir) / "discovery.json"
+    if not disc.exists():
+        return
+    try:
+        batch_id = json.loads(disc.read_text()).get("batch_id")
+    except (OSError, ValueError):
+        return                      # unreadable receipt is the reconcile checks' concern, not the guard's
+    if batch_id:
+        assert_runnable(sess, batch_id)
