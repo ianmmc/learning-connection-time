@@ -111,25 +111,30 @@ live in the governance DB; `handoff_<hash>_<ts>.json` under `data/acquisition/ha
 `district_status.json` into every commit — on a fresh clone run `git config core.hooksPath .githooks`
 (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-09, evening):** the console runs the pipeline live through **`gate@7`**, and the
-**"whittle down open issues" campaign's full scope is done**: Batches 1–4 (PRs #177–#197, merged, 14 issues),
-**Batch 5** (#168 first-class `abandoned` batch status + #171 gate@6 already-dispatched indicator — PR #198,
-**merged**), **Batch 6** (#60 nonstandard-day soft-gate, #61 footer/header merge bug, #108 facet-level
-per-detector scoring — a measured pass, tier-A precision 0.8382→0.8444 with both recalls held — **PR #199,
-open**), and **#124** (cross-boundary `arch-manifest.json` + fitness-function tests, the campaign closer —
-**PR #206, open**, stacked on #199). Both open PRs went through a max-effort adversarial review (15 verified
-findings — notably: the older per-district CLIs bypassed the new abandoned-batch guard, and several fitness
-checks were narrower than their names implied); **all findings are fixed on the PR branches**, including a
-district-grain `assert_district_runnable` guard for the legacy CLIs and a hardened, bidirectional,
-schema-validated fitness suite. The review also seeded **epic #200** (defect-prevention/shift-left: #201
-DB-free test guard, #202 pre-push hook, #203 property-based state-machine tests, #204 mutation testing) +
-follow-ons #205 (datacontract/config schemas) and #207 (nonstandard-day facet checkbox — labeling
-vocabulary, Ian's call). CLAUDE.md gained Critical Rule #7 (research before implementing).
-**Next:** merge PRs #199 + #206 after human review; then the prevention epic #200 items at discretion.
-Separately still open: a clean live non-benchmark end-to-end pass of the hardened request loop in one
-sitting (#122); Stage 8 (aggregate, not yet built — #88/#89); the Council Lab backlog (#80/#81). Full
-detail: `STAGE5_FILTER_DESIGN_2026-06.md` (Batch 6 change log), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
-§10 (the #124 fitness layer), `docs/PROJECT_HISTORY.md` (the campaign entry).
+**Current status (2026-07-10):** the console runs the pipeline live through **`gate@7`**. The **"whittle
+down open issues" hygiene campaign is fully CLOSED** — Batches 1–6 + #124 (arch-manifest/fitness-function
+suite), all merged (PRs #177–#199, #206). **The four commandments** (Ian, 2026-07-09 — auditability the
+north star, minimize-bad-data-at-scale ⇒ automation is a correctness REQUIREMENT not a convenience, tight
+cash spend, best use of one person's time; posture: "as automated as is tolerable") now frame **epic
+#209** (runtime guardrails for the manual→auto transition), whose **Phase 0/1 groundwork shipped
+2026-07-09/10**: **#208** the canonical recall floor, enforced *inside* the re-ingest transaction (PR
+#215 — a violation rolls back the whole re-ingest, not a post-hoc report); **#211/REQ-120** the
+anti-survivorship exploration-quota's pure control-law core, tested + review-hardened (PR #216 — live
+console wiring still deferred, intentionally: the audit's signal already exists via Ian's census-labeling
+habit, so it ships *with* gate@5-auto, not before it); **#210/REQ-121** the gate-decision calibration log
+— schema built (PR #217) **and wired live** at gate@5/6/7 (PR #218), so a shadow-mode audit corpus now
+accrues forward from every human gate action. Every PR in this arc (like the hygiene campaign before it)
+went through a max-effort adversarial review round that found real defects even in "just infrastructure"
+work — see `docs/PROJECT_HISTORY.md`'s two newest entries for the full lesson set.
+**Next:** epic #209 Phase 2 (#212 group-aware non-inferiority promotion gate, #213 safe-promotion
+machinery — no cash spend); then the live gate-mode (manual/auto) persistence + console toggle that both
+Phase-1 guardrails' demote-hooks are waiting on (currently unbuilt — every gate is de-facto always-manual);
+then epic #200's defect-prevention items (#201–#204) at discretion. Separately still open: a clean live
+non-benchmark end-to-end pass of the hardened request loop (#122); Stage 8 (aggregate, not yet built —
+#88/#89, and the natural home for gate@8's calibration hook once it exists); the Council Lab backlog
+(#80/#81). Full detail: `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b (the complete guardrail design +
+as-built detail), `STAGE5_FILTER_DESIGN_2026-06.md` §5a/§5b, `docs/PROJECT_HISTORY.md` (both campaign
+entries).
 
 ---
 

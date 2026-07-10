@@ -231,8 +231,13 @@ Created by `gdb.init_precious_schema()`, **never** in the Stage-5 ingest's `REBU
 re-ingest can't wipe a queued/approved batch. Normalized (not a JSON blob) so edits are real row ops and
 the cross-batch queries the user stories need (a district in multiple batches; per-batch yields) fall out.
 - **`batch`** — lifecycle: `batch_id` (PK), `batch_type` (`first-run`|`follow-up`), `status`
-  (`draft`|`approved`), `nces_year`, `created_at`/`_by`, `approved_at`/`_by`, `meta_json` (the batch-level
-  prose carried to the receipt: stratification method, denominator criteria, cap, over-cap rule).
+  (`draft`|`approved`|`abandoned`|`reserving` — `reserving` is the id-reservation placeholder, §6b;
+  `abandoned` is a TERMINAL, never-approved-only status, #168, below), `nces_year`, `created_at`/`_by`,
+  `approved_at`/`_by` (CURRENT approval — cleared by `reopen_batch`), `first_approved_at`/`_by` (the
+  DURABLE first-ever-approval stamp, never cleared by reopen — the honest "were this batch's schools
+  committed to discovery" discriminator `abandon_batch` gates on), `abandoned_at`/`_by`/`abandon_reason`,
+  `meta_json` (the batch-level prose carried to the receipt: stratification method, denominator criteria,
+  cap, over-cap rule).
 - **`batch_district`** — one row per district; `ord` (stratified-pick order, for a stable receipt),
   the denominators + per-band selection-time counts (`band_meta`), and `included` (the soft-reject flag).
 - **`batch_school`** — one row per (district, school); `bands` lists every band it's selected into (a
@@ -268,6 +273,15 @@ the cross-batch queries the user stories need (a district in multiple batches; p
   (`source="manual_add"`), or re-include a previously-rejected row. All blocked when `status="approved"`
   (`BatchLocked`); `reopen_batch` returns to draft. Each edit re-emits the receipt **and** records a
   per-district `gate@1 "edited"` event (transparency/auditability — the standing principle).
+- **`abandon_batch`** (#168, built 2026-07-09) — a DIFFERENT exit from `reject_*`: retires a whole
+  **never-approved draft** to the TERMINAL `status="abandoned"` (e.g. a batch superseded before it was
+  ever run). Gated on the DURABLE `first_approved_at` being `None` — an approved-then-reopened batch cannot
+  be abandoned, because its schools already committed to discovery (counted as attempted) the moment it
+  was first approved; abandoning it would silently drop them back out of the attempted-set and re-queue
+  them (the #162 poison this status exists to prevent). `abandoned` is TERMINAL: `reopen_batch` explicitly
+  refuses it (`BatchLocked`) — recovering one is a deliberate un-abandon action, not an incidental reopen.
+  Both `draft` and `abandoned` batches are excluded from `stage7_execute._attempted_schools` on the premise
+  that neither ever ran discovery.
 
 ### 6d. The console API (`process_governance/server.py`)
 The Stage-5 review app grows into the stage-selectable governance console; gate@1 is one of its surfaces:

@@ -13,7 +13,7 @@
 > **Update this when:** a stage's purpose/IO changes, a new stage is built, or the flow diagram needs a new
 > edge — for implementation detail within an already-mapped stage, update that stage's own design note instead.
 
-**Current build state (2026-07-09):** the console runs the pipeline live through **`gate@7`** — Stage 1
+**Current build state (2026-07-10):** the console runs the pipeline live through **`gate@7`** — Stage 1
 queue (`gate@1`, REQ-102), Stage 2 deterministic SERP cascade (REQ-104), Stage 3 capture + resilience
 (REQ-110), Stage 4 process + the Stage 4→5 incremental handoff (REQ-111), Stage 5 district-driven
 attention-first filter with the V2 detector/combiner scoring + v2.1 three-axis labeling (REQ-112/113/114/115),
@@ -32,11 +32,25 @@ truncation eliminated at the source by pre-sizing `max_tokens` from the roster (
 request loop now **suppresses follow-ups that can't add coverage** — phantom claimed bands, districts
 already fully covered — measured at ~57% of prior follow-up spend (#176/#170/#175), and a duplication/
 efficiency sweep that promoted the fragile `-image`-hash console filter to a first-class `run_kind` column
-(#147/#148). Full mechanism/measurement detail: `STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§4/§6. A clean live
-non-benchmark end-to-end pass of the now-hardened loop in one sitting remains the natural next exercise
-(tracked: #122). Stages 8–9 are designed, not built (tracked: #89, #93). Detail on each stage's present
-state is in its own `STAGE*_DESIGN_2026-06.md`; the governance/DB/gate architecture that ties them
-together is `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`.
+(#147/#148). Full mechanism/measurement detail: `STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§4/§6.
+
+**The hygiene campaign closed out (2026-07-09/10):** Batch 5 (#168 a first-class `abandoned` batch status +
+#171 gate@6 already-dispatched indicator), Batch 6 (a measured Stage-5 scoring pass — #60/#61/#108), and
+#124 (the cross-boundary `arch-manifest.json` + fitness-function suite) all merged. **Runtime guardrails
+for the manual→auto transition (epic #209) then landed their Phase 0/1 groundwork:** the canonical Stage-5
+recall floor now enforced *inside* the re-ingest transaction (#208 — a violation rolls back the whole
+re-ingest, not a post-hoc report), the anti-survivorship exploration-quota's pure control-law core
+(REQ-120/#211, live wiring still deferred), and the gate-decision calibration log — built AND wired live at
+gate@5/6/7 (REQ-121/#210), so a shadow-mode audit corpus now accrues from every human gate action, forward
+in time. None of this changes the stage flow below (it's cross-cutting instrumentation on the existing
+gates, not a new stage) — full detail: `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b, each stage's own
+design note.
+
+A clean live non-benchmark end-to-end pass of the now-hardened request loop in one sitting remains the
+natural next exercise (tracked: #122); Phase 2 of epic #209 (a group-aware promotion gate + safe-promotion
+machinery, #212/#213) is next after that. Stages 8–9 are designed, not built (tracked: #89, #93). Detail on
+each stage's present state is in its own `STAGE*_DESIGN_2026-06.md`; the governance/DB/gate architecture
+that ties them together is `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`.
 
 > **What this replaces.** The Jan-2026 "production ready" design on this page — Crawlee *blind-maps* a district site → Ollama *ranks* URLs → Ollama *triages* PDFs — was superseded on 2026-06-13 after benchmarking. **Blind crawling does not find schedules; local Ollama extraction topped out ~37%; the Ollama models were deleted.** The validated design is **search-led discovery → tiered capture → local filtering → cheap-cloud council extraction → modal aggregation → fail-loud statutory fallback.** The salvageable implementation detail from the old design (modal dismissal, Google-Drive handling, edge-case/anti-bot rules, the Crawlee service itself re-cast as a *one-hop fetcher / school enumerator*) is retained below; the dead parts (blind mapping, Ollama rank/triage, the learning loop) are archived in git history.
 
@@ -74,7 +88,7 @@ flowchart TD
         Q_OUT["persist_batch: write the batch WORKING STORE in the governance DB<br/>(batch / batch_district / batch_school — normalized, PRECIOUS;<br/>included flag = soft-reject, source = stratified/manual_add)<br/>+ regenerate batch_NNNNN.json FROM the rows as the RECEIPT<br/>(structured params only, no prompts; + nces_school_counts {total, by_level})<br/>+ stage=1 'queued' state_events"]
         Q_SRC --> Q_EXCL1 --> Q_EXCL2 --> Q_EXCL3 --> Q_EXCL4 --> Q_STRAT --> Q_SCHOOLS --> Q_OUT
     end
-    CPA{{"gate@1 — IN-BAND console approval (was Checkpoint A) — BUILT (UI + API)<br/>BATCH-level: batch.status draft -> approved + per-district gate@1 events<br/>soft + REVERSIBLE + audited edits: reject/restore district & school, add school<br/>(included flips / row inserts; locked once approved, reopen to edit)<br/>batch-of-record created + advanced ONLY via the console (CLI = dev/test)<br/>FOLLOW-UP batches AUTO-PASS this gate + auto-chain Stages 2->3->4 to gate@5<br/>(REQ-118/#157 — a follow-up carries an already-approved gate@7 decision;<br/>first-run batches are unaffected, still fully manual)"}}
+    CPA{{"gate@1 — IN-BAND console approval (was Checkpoint A) — BUILT (UI + API)<br/>BATCH-level: batch.status draft -> approved + per-district gate@1 events<br/>soft + REVERSIBLE + audited edits: reject/restore district & school, add school<br/>(included flips / row inserts; locked once approved, reopen to edit)<br/>+ a TERMINAL abandoned status for a never-approved draft (#168) — reopen refuses it<br/>batch-of-record created + advanced ONLY via the console (CLI = dev/test)<br/>FOLLOW-UP batches AUTO-PASS this gate + auto-chain Stages 2->3->4 to gate@5<br/>(REQ-118/#157 — a follow-up carries an already-approved gate@7 decision;<br/>first-run batches are unaffected, still fully manual)"}}
 
     subgraph STAGE2 ["Stage 2 — Discover (deterministic SERP cascade; re-architected + run live via console 2026-06-28, REQ-104)"]
         direction TB
@@ -170,7 +184,7 @@ flowchart TD
         F_OUT["filtered.json (EVENT-DRIVEN projection) — carries the winner<br/>+ ALTERNATE target-flagged reps (REQ-094 follow-up), so gate@6 can<br/>offer representation override and the 7→6 back-edge has reps to pick"]
         F_ING --> F_SCORE --> F_DECIDE --> F_OUT
     end
-    G5{{"gate@5 — per-URL representation review (was Checkpoint B) — BUILT<br/>labeling v2.1: 3-axis (target SHAPE / confounder facets / location);<br/>detail pane text-first + per-rep unique-times readout.<br/>The critical gate before any PAID extraction"}}
+    G5{{"gate@5 — per-URL representation review (was Checkpoint B) — BUILT<br/>labeling v2.1: 3-axis (target SHAPE / confounder facets / location);<br/>detail pane text-first + per-rep unique-times readout.<br/>The critical gate before any PAID extraction<br/>Every confident label writes a calibration_event row (REQ-121/#210, LIVE)<br/>Recall floor (#208) + exploration-quota control law (#211) guard this gate — governance §11b"}}
 
     subgraph STAGE6 ["Stage 6 — Dispatch · BUILT to the seam (REQ-101)"]
         direction TB
@@ -180,7 +194,7 @@ flowchart TD
         H_REQ["Assemble the OpenRouter requests — STOP before the paid call"]
         H_IN --> H_ROUTE --> H_FREEZE --> H_REQ
     end
-    G6{{"gate@6 — dispatch approval — BUILT (manual)<br/>console: preview routed/priced package -> Approve &amp; freeze<br/>send set tier-gated (targets + tier-A; B/C held; handbook harvest_slice)<br/>+ verified-only mode (labeled targets only); + a 'Run extraction' trigger<br/>on the dispatch list (REQ-118/#152 — the gate@6 approval IS the go-ahead)<br/>auto + budget cost-gate deferred"}}
+    G6{{"gate@6 — dispatch approval — BUILT (manual)<br/>console: preview routed/priced package -> Approve &amp; freeze<br/>send set tier-gated (targets + tier-A; B/C held; handbook harvest_slice)<br/>+ verified-only mode (labeled targets only); + a 'Run extraction' trigger<br/>on the dispatch list (REQ-118/#152 — the gate@6 approval IS the go-ahead)<br/>+ already-dispatched indicator/filter (#171) — re-selecting re-dispatches at cost<br/>+ writes a calibration_event row per district (REQ-121/#210, LIVE, accept-only)<br/>auto + budget cost-gate deferred"}}
 
     subgraph STAGE7 ["Stage 7 — Extract · council + the request-loop, EXECUTION BUILT + HARDENED (REQ-117 + REQ-118, epic #163)"]
         direction TB
@@ -190,7 +204,7 @@ flowchart TD
         X_DETECT["Request-more-evidence DETECT (deterministic, zero model calls): 0-fact rep w/<br/>alternate -> 7→6 (alternates RANKED yield-first, text before vision) · URL exhausted -> 7→3<br/>· claimed band 0 facts (district-wide, not just this result) -> 7→2, DEFERRED<br/>if the district has a cheaper unexhausted 7→6 remedy"]
         X_BUD --> X_COUNCIL --> X_PERSIST --> X_DETECT
     end
-    G7{{"gate@7 — review results + directives — BUILT (manual, PURE review)<br/>district-first: band rollup + accepted/unresolved facts<br/>+ directive approve/reject/reopen + EXECUTE/compose-preview<br/>+ request LINEAGE (where an executed directive went, live state)<br/>+ blocked (depth-exhausted)/deferred badges (fact/band editing is gate@8)"}}
+    G7{{"gate@7 — review results + directives — BUILT (manual, PURE review)<br/>district-first: band rollup + accepted/unresolved facts<br/>+ directive approve/reject/reopen + EXECUTE/compose-preview<br/>+ request LINEAGE (where an executed directive went, live state)<br/>+ blocked (depth-exhausted)/deferred badges (fact/band editing is gate@8)<br/>Directive approve/reject writes a calibration_event row — council-agreement<br/>proxy vs. human decision (REQ-121/#210, LIVE) — the highest-value of the 3 hooks"}}
     X_EXEC["Request EXECUTION (REQ-118, hardened epic #163) — a SEPARATE step from gate@7 approval:<br/>· 7→6: BUNDLE a district's whole approved 7→6 set into ONE Stage-6 dispatch = ONE round<br/>&nbsp;&nbsp;(no new capture; bypasses Stage 1 + Stage 5); picks each record's alternate yield-ranked<br/>· 7→2/7→3/7→1 compose_followup_batch (+ preview/dry-run): collect approved directives into<br/>&nbsp;&nbsp;ONE targeted DRAFT Stage-1 follow-up batch (12-cap, spillover), SHAPED — untried NCES<br/>&nbsp;&nbsp;schools preferred, else a widened SERP query set; dormant 7→3 seed-URL plumbing<br/>depth-guarded by ROUNDS not rows (budget max_request_rounds); flips each directive -> executed (lineage)"]
 
     S8[8. Aggregate — DESIGNED, not built<br/>per-band modal daily minutes; manual override requires a reason]
@@ -520,6 +534,10 @@ Two independent extractors disagree on a large share of districts; at <1 hr/week
 | **Stage 7: pure request-detection logic (coverage-aware, real_bands-gated) — REQ-118, #176/#170/#175** | `infrastructure/acquisition/stage7_extract/requests.py`, `common/school_sampling.py::real_bands_for_district`; design: `STAGE7_EXTRACT_DESIGN_2026-06.md` §4(f) |
 | **Console: gate@7 review + execute/compose + request lineage (REQ-117/118)** | `process_governance/static/stage7.js`, `server.py` (`/api/extract/*`) |
 | **Council Lab: judge-replay measurement harness (built, first experiment measured)** | `infrastructure/acquisition/process_governance/council_lab.py`; design: `COUNCIL_LAB_DESIGN_2026-06.md` |
+| **Cross-boundary architecture fitness functions (#124) — declared ground truth for edges the import graph can't see (subprocess/config/file/client-server), enforced as tests** | `arch-manifest.json` (repo root), `tests/test_arch_manifest.py`; design: `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §10 |
+| **Recall floor: canonical constant + transaction-scoped enforcement (#208)** | `infrastructure/acquisition/stage5_filter/harness.py` (`RECALL_FLOOR`/`assert_floor`), `build_signals.py` (`ingest(assert_floor=)`); design: `STAGE5_FILTER_DESIGN_2026-06.md` §5b |
+| **Exploration-quota control law: pure core, tested (REQ-120/#211) — live wiring deferred** | `infrastructure/acquisition/stage5_filter/exploration_audit.py`; design: `STAGE5_FILTER_DESIGN_2026-06.md` §5a |
+| **Gate-decision calibration log: schema + wiring at gate@5/6/7 (REQ-121/#210) — the corpus accrues live** | `infrastructure/acquisition/common/calibration.py`, `process_governance/gate_calibration.py`; design: `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b |
 | Discovery→extraction loop test (archived) | `data/archive/gt-benchmark-*/dead_benchmark_scripts/extract_test.py` |
 | Extraction harness + providers — archived 2026-06-24 (GT-benchmark era, no live code imports either) | `data/archive/gt-benchmark-era-tools-superseded-20260624/{extractors,reading,score_minutes,council_extract}.py` |
 | Google Drive handler | `infrastructure/scripts/enrich/google_drive_handler.py` |

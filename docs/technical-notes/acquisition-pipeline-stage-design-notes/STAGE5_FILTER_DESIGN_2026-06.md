@@ -237,6 +237,18 @@ the confounder facet; v2.0 flags fold into Axis-3 facets. 128 targets preserved.
 per-rep "unique-times-vs-densest" readout, so the human confirms the target is in a TEXT rep (the council
 reads text) before the image can anchor a premature check-off.
 
+**Every confident label also writes a gate-decision calibration row (REQ-121/#210, built 2026-07-10).**
+Saving a label with a real target-shape or terminal non-target decision (status `labeled` — never a
+`unsure`/hedged review, and never more than once per cascade: a label that cascades to cluster members
+logs exactly one row, for the representative the human actually looked at) calls
+`process_governance.gate_calibration.gate5_label_record`, which compares the human's accept/reject against
+what the record's tier says auto would currently do (`release.decide`'s tier gate: A→accept, B/C→escalate
+(no unilateral-auto data point), D→reject) and persists it via `common.calibration.record_calibration` on
+the same DB transaction as the label write. This is the mechanism that surfaces the survivorship signal
+directly: a tier-D record (auto would reject) that a human labels a real target logs `agreed=False` — a
+false negative auto would have made. See `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b for the full
+calibration-log design; gate@6 and gate@7 get the analogous hooks.
+
 ---
 
 ## 5. The learning loop (REQ-113 harness extension; scale endgame deferred)
@@ -281,7 +293,7 @@ recall collapse in the reject pile — is real in general but **inactive here to
 queue is actually worked: districts are attention-sorted, but **within a district every URL is labeled,
 all tiers, rejects included.** That is a *census*, not a filter-gated sample. `harness._labeled_records`
 pulls every labeled record regardless of tier, so a tier-D page labeled `school_bell_table` already counts
-as a false negative in the A+B recall denominator — **the recall we defend (A+B 0.9961, §8/#208) is
+as a false negative in the A+B recall denominator — **the recall we defend (A+B 0.9961, §5b/#208) is
 therefore already honest.** The hole opens at exactly one moment: **when gate@5 goes auto and
 census-labeling stops.** So the quota is the instrument that *replaces* census-labeling, switched on before
 it switches off — the gate on relaxing Stage-5 supervision, not a fix for today. (Root cause the instrument
@@ -322,7 +334,7 @@ current-config-scoped** — a reject audited under an old config says nothing ab
 (c) **Stratify the diagnostics, gate on the aggregate** — break the audit down by suspected bias axes
 (reader-tier / CMS-family / doc-format) to *catch correlated misses*, but hard-gate on the aggregate plus
 flagged strata only (per-stratum hard gates multiply human cost). (d) **Enforcement ships DORMANT** — the
-demote-hook is a no-op until gate@5 is actually set to auto (the `--assert-floor` pattern, §8/#208: the
+demote-hook is a no-op until gate@5 is actually set to auto (the `--assert-floor` pattern, §5b/#208: the
 guard ships *with* the capability it guards).
 
 **Calibrate NOW against census truth (the cheap, closing window).** Build the pure control-law core
@@ -341,6 +353,46 @@ console, the demote-hook on the gate@5 auto toggle) follows in the full #211 bui
 stays dormant until gate@5 auto exists. **Explicitly NOT:** never impute reject labels (reject-inference
 entrenches / can reverse the bias); no active/uncertainty sampling as the primary mechanism (it
 under-covers the confident-reject region — the exact region that entrenches a wrongly-rejected class).
+
+**As BUILT (`exploration_audit.py`, PR #216 + its review round, 2026-07-10):** `rule_of_three_upper_bound`,
+`rejection_quality`, `select_audit_sample`, `next_license_state`/`resolve_gate_mode` — 17 tests, no DB, no
+cash. Sampling is `random.Random(f"{seed}:{key}").random()`, **not** a hand-rolled hash — the same
+deterministic string-seeded pattern `stage1_queue.queue_batch` already uses for `stratified_pick`/
+`select_schools` (one precedent in the codebase, not two). The review round hardened three invariants a
+first draft got wrong: `promote_threshold`/`next_license_state` now **raise** if the deadband factor is
+`<= 1` or an explicit `promote_n <= floor_n` (a caller could otherwise collapse or invert the deadband and
+get the exact auto↔manual flapping it exists to prevent); `next_license_state`/`resolve_gate_mode` **raise**
+on an unrecognized mode string instead of silently routing it into the manual branch (a typo'd stored state
+must surface, not masquerade as a conservative decision); `rejection_quality`'s two published fields
+(`false_negative_rate`/`rejection_quality`) are now complements of the *rounded* rate so they always sum to
+exactly 1.0 (independent rounding had let them drift to 0.999999 at some counts). **Still deferred:** the
+live wiring named above — the reject-population query, the randomized console audit queue, and the gate@5
+demote-hook — none of which exist yet; `resolve_gate_mode` has zero live callers today.
+
+---
+
+## 5b. The canonical recall floor — enforced at the re-ingest actuation point (#208, built 2026-07-10)
+
+**One constant, one enforcement point.** `harness.py` defines `RECALL_FLOOR = 0.98` and `FLOOR_TIER = "A+B"`
+as the single source of truth — `frontier.py` and `tuning_ledger.py` both import it (previously frontier
+used 0.97 and the ledger used 0.98, independently, both pinned to tier-A recall, which sits ~0.89 by design
+since borderline targets route to review — an **unmeetable, non-binding** floor). The floor defends **A+B
+recall** (reaches-review: no target silently dropped to tier D), not the tier-A auto-send bucket.
+
+**Enforcement is transactional, not advisory.** `harness.assert_floor(con)` scores the labeled set and
+raises `SystemExit` if `FLOOR_TIER` recall is below `RECALL_FLOOR`. `build_signals.ingest(root,
+assert_floor=True)` calls it **from inside** the same `with gdb.session_scope() as sess:` block that does
+the full drop-and-rebuild re-ingest — so a violation aborts *before* `session_scope`'s commit, and the
+entire re-ingest (every record's re-tiered signals) rolls back atomically. This closes a real gap an
+earlier draft of the flag had: checking the floor *after* the transaction committed only reported a
+violation post-hoc, leaving the bad config's tiers already live in the DB (the working store every console
+read hits). `--assert-floor` is off by default (a routine batch ingest isn't gated); a deliberate config
+change should pass it.
+
+**Helper functions** (`harness.py`): `floor_recall(scorecard)` reads the A+B recall from a harness
+scorecard (tolerant of a malformed/legacy shape — returns `None`, never raises, since the tuning ledger
+loads scorecards from arbitrary on-disk JSON); `floor_satisfied(scorecard, floor=None)` compares against
+the canonical (or an explicit) floor; `assert_floor(con, floor=None)` is the actuation-point gate.
 
 ---
 
@@ -409,12 +461,24 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 | **Facet-level per-detector scoring** (negative detectors vs. their Axis-2 confounder facets — `harness.DETECTOR_FACET` + `facet_detector_diagnostics`, scored over the 339/667 labels that carry facets) | **BUILT (#108, 2026-07-09)** — surfaced low confounder-precision the coarse target-accuracy hid (office_hours 0.18, sports 0.13 — provisional; nonstandard_day 0.17 — FROZEN, its facet has no live checkbox, tracked #207) |
 | **`lf_footer_hours` footer/header evaluated independently** (an office footer no longer downgrades a school header) | **BUILT (#61, 2026-07-09)** — a bug guard; 0 current-corpus triggers, no metric change |
 | **`lf_nonstandard_day` soft-gate** (an incidental prose-pair + a weather/remote/delay soft negative → review, not auto-send; structural targets still send) | **BUILT (#60, 2026-07-09)** — measured pass: tier-A precision 0.8382→0.8444, tier-A + A+B recall held (0.8906 / 0.9961); 6 pages routed to review, 72 structural preserved |
+| **Canonical recall floor** (`harness.RECALL_FLOOR=0.98`/`FLOOR_TIER="A+B"`, `floor_recall`/`floor_satisfied`/`assert_floor`) — one source of truth replacing frontier's/the ledger's prior inconsistent 0.97/0.98-on-tier-A floors | **BUILT (#208, 2026-07-10)** — **enforced INSIDE `build_signals.ingest()`'s transaction** via `--assert-floor`: a violation raises and rolls back the *whole* re-ingest (not a post-hoc report) — see §5b |
+| **Anti-survivorship exploration quota** (`exploration_audit.py` — rule-of-three sufficiency count, deadband, demote-not-halt) | **PURE CORE BUILT + tested (REQ-120/#211, 2026-07-10)**; live wiring (the randomized console audit queue, the gate@5 demote-hook) still DEFERRED — see §5a |
 | Learned `LabelModel` combiner · hierarchical/vendor pooling · online-FDR drift · Stage-7/8 outcome feedback | **DEFERRED (scale endgame)** |
 
 ---
 
 ## Change log
 
+- **2026-07-10 — Runtime guardrail Phase 0/1 groundwork (#208/#211/#210), epic #209.** Three pieces, all
+  documentation refresh only here (see §5a/§5b for the built detail): (1) the canonical recall floor
+  (`harness.RECALL_FLOOR`/`FLOOR_TIER`) now enforced INSIDE `build_signals.ingest()`'s transaction via
+  `--assert-floor` — a violation rolls back the whole re-ingest, not a post-hoc report; (2) the
+  anti-survivorship exploration quota's pure control-law core (`exploration_audit.py`) built + tested,
+  hardened through a review round (deadband/mode-string validation, complementary rounding, the codebase's
+  own `random.Random(seed)` sampling pattern) — live wiring still deferred; (3) the gate-decision
+  calibration log (`common/calibration.py` + `process_governance/gate_calibration.py`) now WIRED LIVE at
+  gate@5 (`save_label`) — see §4 — logging a shadow-mode row per confident label, the corpus accruing
+  forward from every gate action.
 - **2026-07-09 — Batch 6 detector/combiner hygiene + facet-level scoring (#60/#61/#108), a measured pass.**
   Three interrelated Stage-5 scoring items, shipped through the harness discipline (before→after re-ingest,
   recorded in `tuning_ledger`). **#108 (facet-level per-detector scoring):** the harness now scores each

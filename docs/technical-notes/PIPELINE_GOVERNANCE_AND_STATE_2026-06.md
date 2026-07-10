@@ -47,14 +47,29 @@ measurement detail: `STAGE7_EXTRACT_DESIGN_2026-06.md` §6 (decision log).
 below are **historical** — fully executed planning/sequencing docs kept in place because their section
 numbers (`governance §9a`, etc.) are cross-referenced elsewhere; see the banners on each. **Council Lab
 BUILT, first experiment MEASURED (2026-07-04)** — the judge-replay harness (`council_lab.py`) validated the
-Qwen-VL image-judge swap (#82, closed); see `COUNCIL_LAB_DESIGN_2026-06.md`. Next: a clean live
-non-benchmark end-to-end pass of the now-hardened request loop (tracked: #122 — the natural next exercise
-now that the hygiene campaign is done), Stage 8 (aggregation), or the Lab's remaining backlog
-(`cost_benchmark`, prompt A/B, tracked: #80/#81); still open: REQ-100 (staleness) (tracked: #100), gate@6
-auto mode (tracked: #104), the gate@7 inline PNG/PDF viewer (tracked: #151), a first-class "abandoned"
-batch status + gate@6 already-dispatched indicator (tracked: #168/#171), and the arch-manifest/fitness-test
-infra (tracked: #124, deliberately parked until the hygiene campaign's remaining scoring-detector batch
-lands).
+Qwen-VL image-judge swap (#82, closed); see `COUNCIL_LAB_DESIGN_2026-06.md`.
+
+**The "whittle down open issues" hygiene campaign is fully CLOSED (2026-07-09/10):** Batch 5 (#168 a
+first-class "abandoned" batch status + #171 gate@6 already-dispatched indicator, PR #198), Batch 6 (#60
+`lf_nonstandard_day` soft-gate + #61 footer/header independence + #108 facet-level scoring, PR #199, a
+measured pass), and #124 (the cross-boundary `arch-manifest.json` + fitness-function suite, PR #206) — all
+merged. Full detail: each stage's own design note change log; `PROJECT_HISTORY.md`.
+
+**Runtime guardrails for the manual→auto transition, epic #209, Phase 0/1 groundwork BUILT (2026-07-10):**
+three pieces, all born from `production-quality-control-research/FINDINGS-AND-DECISIONS.md`'s synthesis —
+**(1)** the canonical recall floor (`harness.RECALL_FLOOR=0.98`/`FLOOR_TIER="A+B"`) now **enforced inside**
+`build_signals.ingest()`'s transaction via `--assert-floor` (#208, PR #215 — a violation rolls back the
+*whole* re-ingest, not a post-hoc report); **(2)** the anti-survivorship exploration quota's pure
+control-law core, tested and review-hardened (REQ-120/#211, PR #216 — live console wiring still deferred);
+**(3)** the gate-decision calibration log — schema built (REQ-121/#210, PR #217) and **wired live** at
+gate@5/6/7 (PR #218), so the corpus is now accruing forward from every gate action. Full detail: §11b
+below and each stage's own design note.
+
+Next: a clean live non-benchmark end-to-end pass of the now-hardened request loop (tracked: #122 — the
+natural next exercise), Stage 8 (aggregation), or the Lab's remaining backlog (`cost_benchmark`, prompt
+A/B, tracked: #80/#81); the rest of epic #209 (Phase 2: the group-aware promotion gate #212 + safe-promotion
+machinery #213); still open: REQ-100 (staleness) (tracked: #100), gate@6 auto mode (tracked: #104), the
+gate@7 inline PNG/PDF viewer (tracked: #151), and no persisted gate-mode (manual/auto) toggle yet — see §11b.
 
 ---
 
@@ -823,21 +838,73 @@ clearing the reject backlog**; a **deadband** (demote < N, re-promote only above
 prevents auto↔manual flapping. Diagnostics stratify by the suspected bias axes (reader-tier / CMS-family /
 doc-format) to catch *correlated* misses, but the hard gate is on the aggregate plus flagged strata only
 (per-stratum hard gates multiply human cost). Like every #209 guardrail the enforcement **ships dormant** —
-the demote-hook is a no-op until gate@5 is actually set to auto (the `--assert-floor` pattern, #208). Full
-spec: `STAGE5_FILTER_DESIGN_2026-06.md` §5a; issue #211.
+the demote-hook is a no-op until gate@5 is actually set to auto. Full spec: `STAGE5_FILTER_DESIGN_2026-06.md`
+§5a; issue #211.
+
+**As BUILT (`exploration_audit.py`, PR #216 + its review round, 2026-07-10):** the pure control-law core —
+`rule_of_three_upper_bound`, `rejection_quality`, `select_audit_sample`, `next_license_state`/
+`resolve_gate_mode` — is tested (17 tests), with three invariants hardened past a first draft:
+`promote_threshold`/`next_license_state` now **raise** on a collapsed/inverted deadband (`factor <= 1` or
+an explicit `promote_n <= floor_n`), an unrecognized mode string now **raises** rather than silently
+demoting (a typo'd stored state must surface, not masquerade as a conservative decision), and the sampler
+uses the codebase's own `random.Random(seed)` string-seeding pattern (matching `stage1_queue.queue_batch`),
+not a hand-rolled hash. **Still deferred:** the live wiring — the reject-population query, the randomized
+console audit queue, and the gate@5 demote-hook itself; `resolve_gate_mode` has zero live callers today.
+Detail: `STAGE5_FILTER_DESIGN_2026-06.md` §5a.
+
+**The recall floor's enforcement mechanism, precisely (#208, built 2026-07-10).** `harness.assert_floor(con)`
+is called **from inside** `build_signals.ingest()`'s DB transaction (via `--assert-floor`) — a violation
+raises `SystemExit` *before* the transaction commits, so the entire re-ingest (every record's re-tiered
+signals) rolls back atomically, not a post-hoc report against an already-committed bad config. Detail:
+`STAGE5_FILTER_DESIGN_2026-06.md` §5b.
 
 **Milestone criteria: DEFERRED; the meter that sets them: STARTS NOW (Ian + assistant, 2026-07-10).** We
 lack the data to chart "gate@N goes auto when confidence θ yields human-agreement ≥ X" — so the *criteria*
 wait. But calibration data accrues only **forward in time** (the #108 facet-accrual lesson: you cannot
-measure a threshold you never instrumented). So the decision is to **start the gate-decision calibration
-log now**, as a small extension of the existing `state_event` writes: every time a human works a gate,
-also stamp the system's confidence proxy for that item *and whether the human overrode the system's
-recommendation* — gate@5 the combiner `sort_score`/tier, gate@6 `n_send`/`n_verified`, gate@7 council
-agreement / `n_unresolved`. Months of that IS the calibration corpus ("when the system said θ, the human
-agreed X%") that later justifies a threshold. The **ML-Test-Score-style per-gate readiness rubric**
-(config-as-data checklist: data / decision-quality / infra / monitoring) is the companion plumbing — schema
-now, per-gate pass-bar deferred with the milestones. Both are the instrumentation half of #209's
-gate-transition items; the policy/threshold half is explicitly blocked on the transition-governance plan.
+measure a threshold you never instrumented). So the decision was to **start the gate-decision calibration
+log now** — and it is now BUILT and WIRED LIVE (REQ-121/#210, PRs #217+#218, 2026-07-10).
+
+**As BUILT — not what the paragraph above originally sketched.** The design session's first draft imagined
+this as "a small extension of the existing `state_event` writes." What actually shipped is a dedicated
+**sibling table**, `calibration_event` (`common/calibration.py`), at the ITEM grain (one row per gate
+decision — gate@5 acts on records, gate@7 on extractions, a different grain than `state_event`'s
+per-district lifecycle rows), never a column bolted onto `state_event`. Each row carries: the gate id +
+item id; the **continuous** confidence proxy value (never a bucket, so any θ can be swept post-hoc) —
+gate@5 the combiner's `sort_score`, gate@6 `n_send` (records that actually dispatched a rep, not merely
+decision-labeled `send` with none), gate@7 the district's council agreement ratio
+(`n_accepted/(n_accepted+n_unresolved)`); the human's terminal decision (`accept`/`reject`/`modified` — a
+**whitelist**: gate@5's hook only fires on a genuinely confident `labeled` status, never the console's
+`unsure` hedge, which can arrive carrying a stale label); what auto currently would do
+(`accept`/`reject`/`escalate`) and an `agreed` flag defined *only* where auto would act unilaterally (None
+when auto would escalate — the human-in-the-loop region isn't a calibration data point); the slice keys
+(state/capture_path/batch_type/run_kind/school_level) needed to certify the *worst* slice, not just the
+aggregate; and a `blinded` flag for an automation-bias-free subsample. `sweep_worst_slice()` is the
+post-hoc θ-sweep the schema exists to enable, without baking in a θ at log time.
+
+**Wiring (PR #218, live as of 2026-07-10):** `process_governance/gate_calibration.py` translates console
+vocabulary into the calibration vocabulary (deliberately kept OUT of `common/` — that translation is the
+wiring layer's job, not the base layer's) and is called from `save_label` (gate@5), `_record_dispatched_events`
+(gate@6), and `extract_request_review` (gate@7), each on the SAME transaction as the gate's existing write —
+**the corpus is accruing now, not a dormant instrument.** Two decisions worth recording: **(a)** a label
+that cascades to cluster members logs exactly ONE row (the representative), never one per member — members
+are near-duplicates, and logging them separately would pseudo-replicate a single human judgment N times in
+rule-of-three math that assumes independent trials. **(b)** gate@8 — approving the council's extracted
+**times** (`school_fact.human_determination`) — is explicitly **NOT** part of this wiring: it is a Stage-8
+activity, and Stage 8 isn't built (#88/#89), so that hook is deferred until it lands, not conflated with
+gate@7's request-directive review. Detail: `STAGE5_FILTER_DESIGN_2026-06.md` §4,
+`STAGE6_DISPATCH_DESIGN_2026-06.md` §0, `STAGE7_EXTRACT_DESIGN_2026-06.md` §3.
+
+**Gate-mode persistence remains UNBUILT.** The "global default + per-gate overrides" toggle described in
+§11b's opening (manual/auto per gate) has no backing settings table anywhere in the codebase today — every
+gate is de-facto always-manual. `exploration_audit.resolve_gate_mode()` is the one function designed to
+consume a stored `configured_mode`, and it has zero live callers. Building that persistence (and the
+console surface to set it) is a prerequisite for any gate actually going auto, including the moment the
+exploration-quota and calibration-log guardrails above go from dormant to live.
+
+The **ML-Test-Score-style per-gate readiness rubric** (config-as-data checklist: data / decision-quality /
+infra / monitoring) is the companion plumbing — schema now, per-gate pass-bar deferred with the milestones.
+Both this and the calibration log are the instrumentation half of #209's gate-transition items; the
+policy/threshold half is explicitly blocked on the transition-governance plan.
 
 ### 11c. Pipeline Overview = "what just happened" (an event-log projection)
 The Overview visualizes the **`state_event` log** — per stage, what just completed + the **attention queue**
@@ -915,8 +982,10 @@ The immutable Stage-6 dispatch freeze is what keeps "what we sent" recoverable a
 The first stage view's **backend** is built; it's also the first concrete instance of the §7a-A receipts
 reframe and the batch_00002-forcing-function plan (the batch-of-record advances only through the console).
 - **The batch is now a first-class entity in the governance DB — the working store.** New normalized
-  PRECIOUS tables (`stage1_queue/models.py`): **`batch`** (lifecycle `draft → approved` + actor/timestamps
-  + prose meta), **`batch_district`** (`included` soft-reject + `ord` for a stable receipt), **`batch_school`**
+  PRECIOUS tables (`stage1_queue/models.py`): **`batch`** (lifecycle `draft → approved`, plus a terminal
+  `abandoned` exit for a never-approved draft and a `reserving` id-placeholder status — #168, built
+  2026-07-09; see `STAGE1_QUEUE_DESIGN_2026-06.md` §6a/§6c — + actor/timestamps + prose meta),
+  **`batch_district`** (`included` soft-reject + `ord` for a stable receipt), **`batch_school`**
   (`bands`, `included`, `source` = stratified|manual_add). Normalized, **not a JSON blob** — so edits are
   real row ops and the cross-batch queries the user stories need fall out. **PRECIOUS** = never in the
   Stage-5 `REBUILD_DDL` drop list (a re-ingest can't wipe a queued/approved batch). `batch_NNNNN.json` is

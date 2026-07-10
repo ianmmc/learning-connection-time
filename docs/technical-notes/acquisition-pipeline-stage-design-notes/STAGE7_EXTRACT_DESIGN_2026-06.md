@@ -276,6 +276,19 @@ approve/reject/reopen/execute, lineage/blocked/deferred visibility, the compose 
   is proven. This is why a **follow-up** batch (which carries an already-approved gate@7 decision) can
   auto-pass gate@1 and auto-flow Stages 2→3→4 (§3F, #157) while gate@5 (new URLs = data quality, a
   structural gate) and gate@6 (spend, a supervision gate Ian still wants manual) do not auto-advance.
+- **gate@7's review decision also feeds the calibration corpus (REQ-121/#210, wired live 2026-07-10).**
+  Every terminal approve/reject of a request-more-evidence directive (not a `pending` reopen) calls
+  `process_governance.gate_calibration.gate7_request_record`, logging the district's council **agreement
+  ratio** (`n_accepted/(n_accepted+n_unresolved)`, read from the run this directive's `handoff_hash`
+  actually produced — filtered to `run_kind='production'` so a later probe run's stats can't leak in,
+  #218 review) against the human's accept/reject of the directive itself (auto's implicit recommendation is
+  "accept" — the deterministic detector proposed the directive in the first place). This is the
+  **highest-value** of the three wired calibration hooks per the module's own design note: it directly
+  tests whether low council agreement predicts a human overriding the detector. **Not the same thing as
+  gate@8:** approving the council's extracted TIMES (`school_fact.human_determination`) is a Stage-8
+  activity and is explicitly deferred until Stage 8 exists (#88/#89) — gate@7's calibration hook only
+  scores the request-more-evidence directive, never the extracted values themselves. See
+  `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b for the full calibration-log design.
 
 ---
 
