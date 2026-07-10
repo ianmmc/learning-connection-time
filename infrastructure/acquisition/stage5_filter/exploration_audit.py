@@ -19,8 +19,8 @@ Four pure pieces, each killing a named failure mode:
   - select_audit_sample(keys, p, seed)— reproducible, unbiased, GROWTH-STABLE random selection
   - resolve_gate_mode(...)            — the revocable license: dormant-until-auto, demote-not-halt, deadband
 """
-import hashlib
 import math
+import random
 
 # The audit's binding sufficiency bar is a COUNT, not a percentage (a % is too thin on small streams and
 # re-imports the manual-inspection-at-100k-scale problem on big ones — commandment 2). Rule of three:
@@ -29,8 +29,11 @@ DEFAULT_FLOOR_N = 300
 # The p%-of-flow sampler sets the FLOW that feeds the count; the count (FLOOR_N) sets sufficiency.
 DEFAULT_SAMPLE_RATE = 0.05
 # Deadband: re-promote to auto only once coverage clears PROMOTE_FACTOR·floor, so a count hovering at the
-# floor cannot flap the gate auto↔manual every batch.
+# floor cannot flap the gate auto↔manual every batch. 1.2 is an ENGINEERING hysteresis width (a
+# Schmitt-trigger band), not statistically derived like FLOOR_N — recalibrate it from the observed
+# window-count variance during the #211 census-calibration step.
 PROMOTE_FACTOR = 1.2
+_GATE_MODES = ("auto", "manual")
 
 
 def rule_of_three_upper_bound(n):
@@ -44,7 +47,9 @@ def rule_of_three_upper_bound(n):
 
 def promote_threshold(floor_n, factor=PROMOTE_FACTOR):
     """The upper edge of the deadband — coverage must reach this (not merely the floor) to RE-promote a
-    demoted gate back to auto. ceil so it is always strictly above floor_n for any factor > 1."""
+    demoted gate back to auto. factor must be > 1 or the deadband inverts/collapses (review #216)."""
+    if factor <= 1:
+        raise ValueError(f"deadband factor must be > 1 (got {factor}) — promote must sit above the floor")
     return math.ceil(floor_n * factor)
 
 
@@ -64,21 +69,23 @@ def rejection_quality(labels):
     if n == 0:
         return {"n": 0, "false_neg": 0, "true_neg": 0,
                 "false_negative_rate": None, "rejection_quality": None, "fnr_upper_bound_95": None}
-    fnr = false_neg / n
+    fnr = round(false_neg / n, 6)
     # When we observed zero misses, the point estimate (0.0) understates the risk — report the rule-of-three
     # bound as the honest ceiling; when we DID see misses, the observed rate is the estimate.
     bound = rule_of_three_upper_bound(n) if false_neg == 0 else None
+    # quality is the complement of the ROUNDED rate (not independently rounded from the raw fnr), so the two
+    # published fields always sum to exactly 1.0 (review #216: independent rounding broke that at e.g. 7/640).
     return {"n": n, "false_neg": false_neg, "true_neg": true_neg,
-            "false_negative_rate": round(fnr, 6), "rejection_quality": round(1.0 - fnr, 6),
+            "false_negative_rate": fnr, "rejection_quality": round(1.0 - fnr, 6),
             "fnr_upper_bound_95": bound}
 
 
 def _unit_interval(seed, key):
-    """A STABLE hash of (seed, key) into [0, 1). Uses hashlib, NOT Python's builtin hash() — builtin hash
-    is salted per-process (PYTHONHASHSEED) so it would make selection non-reproducible across runs, the
-    exact footgun this audit cannot tolerate. Reproducible given (seed, key) forever."""
-    h = hashlib.md5(f"{seed}:{key}".encode("utf-8")).hexdigest()
-    return int(h[:12], 16) / 0x1000000000000        # top 48 bits → [0, 1)
+    """A STABLE draw for (seed, key) in [0, 1) — this codebase's established pattern for deterministic
+    string-seeded randomness (stage1_queue.queue_batch's `random.Random(f"{batch_id}:{district_id}:{b}")`,
+    review #216). str seeding hashes via sha512 (`random.seed(a, version=2)`), NOT the PYTHONHASHSEED-salted
+    builtin hash(), so it is reproducible across processes forever — the property this audit cannot lose."""
+    return random.Random(f"{seed}:{key}").random()
 
 
 def select_audit_sample(reject_keys, p=DEFAULT_SAMPLE_RATE, seed="exploration-audit"):
@@ -102,8 +109,15 @@ def next_license_state(current, window_count, floor_n=DEFAULT_FLOOR_N, promote_n
       - manual → re-promote to "auto" only once coverage clears promote_n (> floor_n) — the hysteresis gap
                  that stops auto↔manual flapping when the count hovers near the floor.
     Returns only "auto"/"manual" — never "halt": losing the audit demotes autonomy one level, it does not
-    stop the pipeline."""
+    stop the pipeline. Both inputs are VALIDATED (review #216): an unknown `current` raises instead of
+    silently demoting (a typo'd stored state must surface, not masquerade as a conservative decision), and
+    an explicit promote_n <= floor_n raises — a collapsed/inverted deadband re-promotes below the demote
+    floor and flaps auto↔manual every batch, the exact chatter the deadband exists to prevent."""
+    if current not in _GATE_MODES:
+        raise ValueError(f"license state must be one of {_GATE_MODES} (got {current!r})")
     promote_n = promote_threshold(floor_n) if promote_n is None else promote_n
+    if promote_n <= floor_n:
+        raise ValueError(f"promote_n ({promote_n}) must exceed floor_n ({floor_n}) — the deadband is the guarantee")
     if current == "auto":
         return "auto" if window_count >= floor_n else "manual"
     return "auto" if window_count >= promote_n else "manual"
@@ -119,7 +133,10 @@ def resolve_gate_mode(configured_mode, license_state, window_count,
                   against `window_count`, i.e. auto while the audit validates the filter, demoted to manual
                   the moment coverage lapses.
     This is the one function the live gate@5 toggle will call once auto exists; until then it always
-    returns "manual" because configured_mode is "manual"."""
+    returns "manual" because configured_mode is "manual". An unknown configured_mode raises (review #216) —
+    a typo'd toggle value must surface as a wiring bug, never pass silently as permanent manual."""
+    if configured_mode not in _GATE_MODES:
+        raise ValueError(f"configured_mode must be one of {_GATE_MODES} (got {configured_mode!r})")
     if configured_mode != "auto":
         return "manual"
     return next_license_state(license_state, window_count, floor_n, promote_n)

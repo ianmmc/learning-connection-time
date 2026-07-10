@@ -37,6 +37,16 @@ def test_rejection_quality_uses_the_rule_of_three_bound_when_zero_misses():
     assert m["fnr_upper_bound_95"] == pytest.approx(0.01)   # "<1% with 95% confidence", not "0%"
 
 
+def test_rate_and_quality_are_exact_complements_after_rounding():
+    # #216 review: independently rounding both fields let them sum to 0.999999 (e.g. 7/640). quality must be
+    # the complement of the ROUNDED rate so the published pair always sums to exactly 1.0.
+    m = EA.rejection_quality([True] * 7 + [False] * 633)     # n=640, the found counterexample
+    assert m["false_negative_rate"] + m["rejection_quality"] == 1.0
+    for n, fn in ((3, 1), (7, 2), (599, 13), (997, 41)):
+        m = EA.rejection_quality([True] * fn + [False] * (n - fn))
+        assert m["false_negative_rate"] + m["rejection_quality"] == 1.0
+
+
 def test_rejection_quality_empty_cohort_is_all_none_not_a_crash():
     m = EA.rejection_quality([])
     assert m["n"] == 0
@@ -76,12 +86,14 @@ def test_sample_rate_is_approximately_p_and_unbiased():
     assert 0.04 < len(sel) / len(keys) < 0.06              # ~5% of the flow, independent per key
 
 
-def test_sample_uses_a_stable_hash_not_builtin_hash():
+def test_sample_draw_is_deterministic_and_uses_the_codebase_seeding_pattern():
     # builtin hash() is PYTHONHASHSEED-salted -> non-reproducible across processes, fatal for an audit that
-    # must replay. Guard: the unit-interval draw is deterministic for a fixed (seed,key) in THIS process,
-    # and the documented contract is hashlib-based. (Cross-process stability is covered by the md5 impl.)
+    # must replay. The draw uses random.Random(string_seed) — the same deterministic (sha512-seeded) pattern
+    # queue_batch.py already trusts for stratified_pick/select_schools (#216 review: one precedent, not two).
+    import random
     assert EA._unit_interval("s", "k") == EA._unit_interval("s", "k")
     assert 0.0 <= EA._unit_interval("s", "k") < 1.0
+    assert EA._unit_interval("s", "k") == random.Random("s:k").random()   # pinned to the shared pattern
 
 
 # ----------------------------- the license state machine (deadband, demote-not-halt) -----------------------------
@@ -105,6 +117,33 @@ def test_license_never_returns_halt_only_demotes():
     for cur in ("auto", "manual"):
         for count in (0, 150, 300, 1000):
             assert EA.next_license_state(cur, count) in {"auto", "manual"}
+
+
+def test_deadband_cannot_be_collapsed_or_inverted():
+    # #216 review: promote_n <= floor_n collapses the deadband to a point (or inverts it) — a demoted gate
+    # would re-promote at a coverage that immediately re-demotes, flapping auto↔manual every batch. Both
+    # entry points must refuse: a factor <= 1 and an explicit promote_n <= floor_n.
+    with pytest.raises(ValueError, match="factor"):
+        EA.promote_threshold(300, factor=1.0)
+    with pytest.raises(ValueError, match="factor"):
+        EA.promote_threshold(300, factor=0.5)
+    with pytest.raises(ValueError, match="promote_n"):
+        EA.next_license_state("manual", 300, floor_n=300, promote_n=300)   # collapsed to a point
+    with pytest.raises(ValueError, match="promote_n"):
+        EA.next_license_state("manual", 250, floor_n=300, promote_n=200)   # inverted (promote below floor)
+
+
+def test_unknown_gate_mode_strings_raise_not_silently_demote():
+    # #216 review: a typo'd stored state ("Auto", None) must surface as a wiring bug — silently routing it
+    # into the manual branch would mask a persistent caller bug as a conservative-looking demotion.
+    with pytest.raises(ValueError, match="license state"):
+        EA.next_license_state("Auto", 1000, floor_n=300)
+    with pytest.raises(ValueError, match="license state"):
+        EA.next_license_state(None, 1000, floor_n=300)
+    with pytest.raises(ValueError, match="configured_mode"):
+        EA.resolve_gate_mode("Manual", "auto", window_count=0)
+    with pytest.raises(ValueError, match="configured_mode"):
+        EA.resolve_gate_mode(None, "auto", window_count=0)
 
 
 # ----------------------------- enforcement ships DORMANT (the --assert-floor pattern) -----------------------------
