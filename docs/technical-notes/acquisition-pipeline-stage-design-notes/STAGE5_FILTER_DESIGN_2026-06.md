@@ -267,6 +267,83 @@ episodes), config-as-data with `provenance`.
 
 ---
 
+## 5a. The anti-survivorship exploration quota — a revocable autonomy license (#211, REQ-120)
+
+**The one-sentence thesis:** *the filter may run only as autonomously as its reject audit is currently
+validating it — and the moment that validation lapses, autonomy falls back one supervision level rather
+than the pipeline halting.* This is not a metric we watch; it is a **control law** that licenses gate@5's
+autonomy and revokes it automatically. Full governance context: `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
+§11b; decision record: `production-quality-control-research/FINDINGS-AND-DECISIONS.md` §0/§1.
+
+**Why it is NOT a current hole (the census-labeling immunity).** The selective-labels / "illusion of
+improvement" risk — tuning the filter and measuring before/after only on the *approved* set, blind to
+recall collapse in the reject pile — is real in general but **inactive here today**, because of how the
+queue is actually worked: districts are attention-sorted, but **within a district every URL is labeled,
+all tiers, rejects included.** That is a *census*, not a filter-gated sample. `harness._labeled_records`
+pulls every labeled record regardless of tier, so a tier-D page labeled `school_bell_table` already counts
+as a false negative in the A+B recall denominator — **the recall we defend (A+B 0.9961, §8/#208) is
+therefore already honest.** The hole opens at exactly one moment: **when gate@5 goes auto and
+census-labeling stops.** So the quota is the instrument that *replaces* census-labeling, switched on before
+it switches off — the gate on relaxing Stage-5 supervision, not a fix for today. (Root cause the instrument
+is mandatory, not optional: the gate is **deterministic** — Swaminathan & Joachims, counterfactual
+correction is impossible under deterministic filtering even with infinite data; only injected stochasticity
+recovers the signal.)
+
+**Core mechanism = a human label on a random reject sample (Tier A, ZERO cash).** A human label answers the
+load-bearing question ("was this a target we wrongly dropped?") and, stratified, tells random loss from
+**correlated** bias. Paid reject→Stage-7 extraction (the old "route rejects to the council") is a distinct,
+costlier measurement (Tier B — "could the council *extract* it," narrow marginal signal over Tier A) that
+is **deferred, likely never a separate build:** the instant Tier A confirms a false-negative, that record
+rejoins the normal Stage-6 → Stage-7 dispatch like any confirmed target — no new plumbing.
+
+**The invariant (a COUNT over a rolling window, not a cumulative %).**
+
+> Auto-suppression at gate@5 stays licensed only while a rolling window holds **≥ N randomly-selected,
+> human-labeled rejects drawn from the CURRENT config generation.** N is a count (rule of three:
+> ~300 zero-miss rejects ⇒ 95% confidence the reject FN-rate is < 1%), fed by a **p%-of-flow sampler**
+> (p sets the flow, N the sufficiency). Below the bar, **gate@5 auto DEMOTES to manual** (census mode)
+> until the audit sample refills — **the restart bar is the sample, not the whole reject backlog.**
+> A **deadband** (demote < N; re-promote only above ~1.2·N or a full clean window) prevents auto↔manual
+> flapping.
+
+Why not "5% of all rejects, always": a cumulative % floats above the bar on stale labels; % is
+statistically too thin on small streams and re-imports the manual-inspection-at-100k-scale problem
+(commandment 2) on big ones; and "labeled" must mean **"*randomly* labeled"** — selection randomness is
+enforced at *draw* time (a dedicated `run_kind = exploration_audit` queue the human works top-down, never
+cherry-picks), or the estimate is biased and the license is theater. Every draw is logged
+(seed, rec_key, score/tier, outcome) so an outsider can replay "you rejected class X; your own random audit
+surfaced it N times" (the auditability north star, concrete). The honest recall signal is
+**Rejection-Quality = TNR on the exploration cohort**, computed each cycle.
+
+**Design criteria that fall out.** (a) **Demote, don't halt** — losing the signal pushes the gate *toward
+more* supervision, the safe direction; self-healing (manual review regenerates exactly the labels that
+restore coverage); scoped to Stage-5 auto-suppress alone (other stages keep draining). (b) **Windowed +
+current-config-scoped** — a reject audited under an old config says nothing about the live one.
+(c) **Stratify the diagnostics, gate on the aggregate** — break the audit down by suspected bias axes
+(reader-tier / CMS-family / doc-format) to *catch correlated misses*, but hard-gate on the aggregate plus
+flagged strata only (per-stratum hard gates multiply human cost). (d) **Enforcement ships DORMANT** — the
+demote-hook is a no-op until gate@5 is actually set to auto (the `--assert-floor` pattern, §8/#208: the
+guard ships *with* the capability it guards).
+
+**Calibrate NOW against census truth (the cheap, closing window).** Build the pure control-law core
+(license state-machine, count-sufficiency, reproducible sampler, TNR metric) and the coverage meter now,
+and **validate the sampler retrospectively against the census we already have:** run a 3–5% random draw
+over completed (fully-labeled) districts and confirm it *reproduces* the reject-quality the full labels
+report. If it does, we've earned trust in it before the census stops; if not, we learn N must be larger
+*first* (measured-pass discipline applied to the instrument). Only works while census labels still accrue —
+build the gauge while the truth is observable (same logic as the calibration meter, #210). Caveat:
+completed districts are attention-sorted (messiest-first) → this is a **worst-case** calibration, labeled
+as such.
+
+**Build order.** The pure core + its invariant tests land first (no DB, no cash — the harness/frontier
+precedent); the live wiring (querying the reject population, presenting the randomized audit queue in the
+console, the demote-hook on the gate@5 auto toggle) follows in the full #211 build, and its enforcement
+stays dormant until gate@5 auto exists. **Explicitly NOT:** never impute reject labels (reject-inference
+entrenches / can reverse the bias); no active/uncertainty sampling as the primary mechanism (it
+under-covers the confident-reject region — the exact region that entrenches a wrongly-rejected class).
+
+---
+
 ## 6. Upstream capture — iframe/embed detection (REQ-115)
 
 Two V2 findings are structural, not heuristic, and best fixed at **Stage 3** (`capture_discovery.mjs`):
