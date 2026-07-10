@@ -27,16 +27,20 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from infrastructure.acquisition.common import paths  # noqa: E402
+from infrastructure.acquisition.stage5_filter import harness  # noqa: E402  (canonical RECALL_FLOOR/FLOOR_TIER, #208)
 
-# Default recall floor for the Stage 5 operational filter: the human at CP-B is the precision
-# backstop, so the constraint we defend automatically is RECALL on targets (tier A).
-DEFAULT_RECALL_FLOOR = 0.98
+# The defended recall floor is the SINGLE SOURCE OF TRUTH in harness (#208) — it defends A+B recall
+# (reaches-review: no target silently dropped to tier D), NOT tier-A recall (the auto-send bucket, ~0.89
+# by design). Previously the ledger hard-coded 0.98 on tier-A recall while frontier used 0.97 — inconsistent
+# AND non-binding (tier-A recall can't reach 0.98). Re-exported for back-compat.
+DEFAULT_RECALL_FLOOR = harness.RECALL_FLOOR
 
 # The metrics we diff between scorecards. Each maps a delta key -> how to pull it from a scorecard.
 _METRIC_GETTERS = {
     "tier_A_precision": lambda c: c["tier_vs_target"]["thresholds"]["A"]["precision"],
     "tier_A_recall": lambda c: c["tier_vs_target"]["thresholds"]["A"]["recall"],
     "tier_AB_precision": lambda c: c["tier_vs_target"]["thresholds"]["A+B"]["precision"],
+    "tier_AB_recall": lambda c: c["tier_vs_target"]["thresholds"]["A+B"]["recall"],   # the floored metric (#208)
     "category_accuracy": lambda c: c["category_accuracy"]["overall"],
     "topology_agreement": lambda c: c["topology"]["coarse_agreement"],
     "labeled": lambda c: c["counts"]["labeled"],
@@ -67,10 +71,8 @@ def build_episode(before, after, *, knobs_touched, rationale, decided_by,
     """
     fb, fa = before["fingerprints"], after["fingerprints"]
     deltas = {k: _delta(before, after, g) for k, g in _METRIC_GETTERS.items()}
-    try:
-        after_recall = after["tier_vs_target"]["thresholds"]["A"]["recall"]
-    except (KeyError, TypeError):
-        after_recall = None
+    # The floor defends A+B recall (harness.FLOOR_TIER) — reaches-review, not the tier-A auto-send bucket (#208).
+    after_recall = harness.floor_recall(after)
     satisfied = (after_recall is not None and after_recall >= recall_floor)
     return {
         "recorded_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -78,8 +80,8 @@ def build_episode(before, after, *, knobs_touched, rationale, decided_by,
         "after": {"config": fa["config"], "label_set": fa["label_set"], "data": fa["data"]},
         "pure_config_move": (fb["label_set"] == fa["label_set"] and fb["data"] == fa["data"]),
         "deltas": deltas,
-        "constraint": {"recall_floor": recall_floor, "after_recall": after_recall,
-                       "satisfied": satisfied},
+        "constraint": {"recall_floor": recall_floor, "floor_tier": harness.FLOOR_TIER,
+                       "after_recall": after_recall, "satisfied": satisfied},
         "knobs_touched": list(knobs_touched),
         "rationale": rationale,
         "decided_by": decided_by,

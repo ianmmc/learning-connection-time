@@ -7,16 +7,18 @@ import json
 from infrastructure.acquisition.stage5_filter import tuning_ledger as TL  # noqa: E402
 
 
-def _scorecard(cfg, labels, data, a_prec, a_rec, ab_prec=0.5, cat=0.43, topo=0.8,
+def _scorecard(cfg, labels, data, a_prec, a_rec, ab_prec=0.5, ab_rec=None, cat=0.43, topo=0.8,
                records=150, labeled=150, targets=41, districts=12):
-    """A minimal scorecard in the harness's output shape (only the fields the ledger reads)."""
+    """A minimal scorecard in the harness's output shape (only the fields the ledger reads). `ab_rec`
+    (the A+B recall the floor defends, #208) defaults to a_rec for the legacy fixtures."""
+    ab_rec = a_rec if ab_rec is None else ab_rec
     return {
         "generated_at": "2026-06-25T00:00:00Z",
         "fingerprints": {"config": cfg, "label_set": labels, "data": data},
         "counts": {"records": records, "labeled": labeled, "targets": targets, "districts": districts},
         "tier_vs_target": {"thresholds": {
             "A": {"precision": a_prec, "recall": a_rec, "f1": 0.9, "tp": 40, "fp": 7, "fn": 1},
-            "A+B": {"precision": ab_prec, "recall": a_rec, "f1": 0.6, "tp": 40, "fp": 13, "fn": 1},
+            "A+B": {"precision": ab_prec, "recall": ab_rec, "f1": 0.6, "tp": 40, "fp": 13, "fn": 1},
         }},
         "category_accuracy": {"overall": cat, "n": labeled, "correct": int(cat * labeled)},
         "topology": {"coarse_agreement": topo, "coarse_agree": 8, "coarse_den": 10, "pairs": {}},
@@ -50,6 +52,7 @@ def test_recall_constraint_holds_when_after_recall_meets_floor():
     ep = TL.build_episode(before, after, knobs_touched=["x"], rationale="r",
                           decided_by="chat", recall_floor=0.98)
     assert ep["constraint"]["recall_floor"] == 0.98
+    assert ep["constraint"]["floor_tier"] == "A+B"        # #208: the floor defends A+B, not tier-A
     assert ep["constraint"]["after_recall"] == 0.98
     assert ep["constraint"]["satisfied"] is True
 
@@ -60,6 +63,29 @@ def test_recall_constraint_violated_when_after_recall_drops_below_floor():
     ep = TL.build_episode(before, after, knobs_touched=["x"], rationale="r",
                           decided_by="chat", recall_floor=0.98)
     assert ep["constraint"]["satisfied"] is False
+
+
+def test_floor_reads_ab_recall_not_tier_a_recall():
+    # #208: a config with GREAT tier-A recall but a target dropped BELOW review (A+B recall < floor) must
+    # FAIL the constraint — the floor defends reaches-review, not the auto-send bucket.
+    before = _scorecard("cfgA", "lab1", "dat1", a_prec=0.85, a_rec=0.90, ab_rec=0.99)
+    after = _scorecard("cfgB", "lab1", "dat1", a_prec=0.95, a_rec=0.99, ab_rec=0.95)  # tier-A up, A+B dropped
+    ep = TL.build_episode(before, after, knobs_touched=["x"], rationale="r",
+                          decided_by="chat", recall_floor=0.98)
+    assert ep["constraint"]["after_recall"] == 0.95      # read from A+B, not the 0.99 tier-A
+    assert ep["constraint"]["satisfied"] is False
+    assert round(ep["deltas"]["tier_AB_recall"], 4) == -0.04   # the floored metric is now a visible delta
+
+
+def test_malformed_after_scorecard_degrades_to_unsatisfied_not_crash():
+    # #215 review: record_from_files loads scorecards from arbitrary on-disk JSON — a null/legacy
+    # tier_vs_target must record an episode with after_recall=None / satisfied=False, not raise.
+    before = _scorecard("cfgA", "lab1", "dat1", a_prec=0.85, a_rec=0.98)
+    after = {**_scorecard("cfgB", "lab1", "dat1", a_prec=0.90, a_rec=0.98), "tier_vs_target": None}
+    ep = TL.build_episode(before, after, knobs_touched=["x"], rationale="r", decided_by="chat")
+    assert ep["constraint"]["after_recall"] is None
+    assert ep["constraint"]["satisfied"] is False
+    assert ep["deltas"]["tier_AB_recall"] is None        # the getters degrade the same way
 
 
 def test_episode_records_provenance_fields():

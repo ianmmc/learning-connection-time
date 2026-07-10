@@ -29,6 +29,56 @@ from infrastructure.acquisition.common import db as gdb              # noqa: E40
 
 TARGET = BS.TARGET_LABELS
 
+# ----------------------------- the defended recall floor — SINGLE SOURCE OF TRUTH (#208) -----------------------------
+# The Stage-5 filter's guardrail is "no TARGET is silently dropped below human review" — a target must reach
+# at least tier B (SEND or REVIEW), never be SUPPRESSED to tier D. So the floor defends **A+B recall**, NOT
+# tier-A recall: tier A is the auto-SEND (precision-oriented) bucket, its recall sits ~0.89 BY DESIGN
+# (borderline targets route to review), so a tier-A floor at 0.97/0.98 was unmeetable + non-binding — and
+# frontier (0.97) and the ledger (0.98) disagreed on the value. One canonical (floor, tier) pair now, imported
+# by frontier (feasibility), tuning_ledger (the recorded constraint), and assert_floor below — the
+# ENFORCEMENT gate build_signals --assert-floor runs INSIDE the ingest transaction. NOTE (#214): once the exploration quota
+# exists, the honest floor is measured against the exploration cohort (Rejection-Quality/TNR), not only the
+# approved/labeled set — this constant is the labeled-set floor until then.
+RECALL_FLOOR = 0.98
+FLOOR_TIER = "A+B"
+
+
+def floor_recall(scorecard):
+    """The recall the floor defends (FLOOR_TIER = A+B, reaches-review) from a harness scorecard; None for
+    ANY malformed/legacy shape, never a crash — the ledger loads scorecards from arbitrary on-disk JSON
+    (record_from_files), so this must degrade the way the try/except it replaced did."""
+    try:
+        return scorecard["tier_vs_target"]["thresholds"][FLOOR_TIER].get("recall")
+    except (KeyError, TypeError, AttributeError):
+        return None
+
+
+def floor_satisfied(scorecard, floor=None):
+    """True iff the scorecard's floor-tier recall meets the floor (>= — exactly AT the floor passes).
+    `floor=None` reads RECALL_FLOOR at call time, so a runtime override of the module constant is honored."""
+    floor = RECALL_FLOOR if floor is None else floor
+    rec = floor_recall(scorecard)
+    return rec is not None and rec >= floor
+
+
+def assert_floor(con, floor=None):
+    """The floor ENFORCEMENT gate (#208): score the labeled set on `con` and raise SystemExit if the
+    floor-tier recall is below the floor; returns that recall when it passes. Designed to run INSIDE the
+    ingest transaction (build_signals --assert-floor): SystemExit skips session_scope's commit and close()
+    discards the uncommitted work (Postgres DDL included), so a violating config's tiers NEVER reach the
+    working store — the console keeps serving the prior config. SystemExit matches the batch_guard
+    hard-stop convention."""
+    floor = RECALL_FLOOR if floor is None else floor
+    card = {"fingerprints": fingerprints(con), **score(con)}
+    rec = floor_recall(card)
+    if rec is None or rec < floor:
+        raise SystemExit(
+            f"RECALL FLOOR VIOLATED: tier-{FLOOR_TIER} recall={rec} < {floor} "
+            f"(config={card['fingerprints']['config']} data={card['fingerprints']['data']}). "
+            f"Ingest NOT committed — the prior config's tiers remain live. Loosen the config or record "
+            f"an explicit tuning-ledger override before re-running.")
+    return rec
+
 # Coarse hub/per-school axis so the (different-vocabulary) guessed and labeled topologies can be
 # compared at all. Values outside {hub, per_school} don't make a hub-vs-per-school claim.
 GUESS_COARSE = {"hub": "hub", "per_school": "per_school", "unknown": "unknown"}
