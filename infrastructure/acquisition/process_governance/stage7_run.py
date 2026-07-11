@@ -664,6 +664,20 @@ def _district_request_inputs(session, result: dict):
     sent: dict = {}
     for rep in result.get("reps", []):
         sent.setdefault(rep["rec_key"], set()).add(rep["file"])
+    # #231: that invariant must hold across ROUNDS, not just within this dispatch — the record's own
+    # request lineage IS its dispatch history (every barren round persisted a request naming what it
+    # sent; emission itself proves the send, so status doesn't matter). Union those files in too.
+    # Without this, round 2's detect re-offers round 1's failed rep and the bounded retry budget
+    # circles known-barren reps instead of reaching the untried ones (live #122: Union Hill #3624
+    # re-asked for round-1's tesseract_raster.txt, Brownsville #3622 for page.txt).
+    for tgt, pj in session.execute(
+            text("SELECT target, params_json FROM extraction_request "
+                 "WHERE district_id = :d AND route IN (:r6, :r3)"),
+            {"d": did, "r6": RQ.ROUTE_ALT_REP, "r3": RQ.ROUTE_RECAPTURE}).all():
+        p = json.loads(pj or "{}")
+        hist = p.get("sent_files") or ([p["sent_file"]] if p.get("sent_file") else [])
+        if hist:
+            sent.setdefault(tgt, set()).update(hist)
     row = session.execute(text("SELECT lea_claimed_bands_json, schools_by_band_json, nces_by_level_json "
                                "FROM district_target WHERE district_id = :d"), {"d": did}).fetchone()
     claimed = json.loads(row[0]) if row and row[0] else []

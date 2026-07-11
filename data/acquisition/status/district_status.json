@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-11T17:33:53Z",
+  "last_updated": "2026-07-11T18:12:55Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -3836,9 +3836,18 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-05T02:18:51Z"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-11T18:12:55Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "77d066cb5324"
+      "notes": "2e1a86849c01"
     },
     "1928020": {
       "name": "Tri-County Comm School District",

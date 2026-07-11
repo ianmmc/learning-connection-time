@@ -45,6 +45,16 @@ def _sent_file(result: dict) -> dict:
     return out
 
 
+def _sent_files(result: dict) -> dict:
+    """rec_key → sorted list of ALL files sent this result (#231). One dispatch can send several reps
+    of a record; the persisted request must name every one so the NEXT round's history exclusion can
+    subtract them all — the single first-seen `sent_file` stays for the human-readable reason."""
+    out: dict = {}
+    for rep in result.get("reps", []):
+        out.setdefault(rep["rec_key"], set()).add(rep.get("file"))
+    return {k: sorted(f for f in v if f) for k, v in out.items()}
+
+
 def _bands_with_facts(result: dict) -> set:
     return {f.get("band") for f in (result.get("accepted") or []) if f.get("band") in BANDS}
 
@@ -130,6 +140,7 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
     band_schools = band_schools or {}
     did = result.get("district_id")
     files = _sent_file(result)
+    files_all = _sent_files(result)   # #231: the full send, recorded on the request as lineage
     reqs: list = []
 
     # Coverage state, computed ONCE up front (both gates read it). `have` = this result's bands ∪ the
@@ -167,13 +178,14 @@ def detect_requests(result: dict, *, claimed_bands, alternates_by_rec: dict = No
             reqs.append({
                 "district_id": did, "altitude": "representation", "route": ROUTE_ALT_REP,
                 "target": rec_key, "band": None,
-                "params": {"sent_file": sent, "alternate_reps": ranked},
+                "params": {"sent_file": sent, "sent_files": files_all.get(rec_key, []),
+                           "alternate_reps": ranked},
                 "reason": _alt_reason(sent, ranked)})
         else:
             reqs.append({
                 "district_id": did, "altitude": "url", "route": ROUTE_RECAPTURE,
                 "target": rec_key, "band": None,
-                "params": {"sent_file": sent},
+                "params": {"sent_file": sent, "sent_files": files_all.get(rec_key, [])},
                 "reason": f"sent rep '{sent}' yielded 0 accepted facts and no alternate rep exists — "
                           f"recapture the URL"})
 

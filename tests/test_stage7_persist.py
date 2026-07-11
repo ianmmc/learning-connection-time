@@ -185,3 +185,53 @@ def test_detect_and_persist_requests_dedups(gov_session, monkeypatch):
     still = s.execute(text("SELECT status, COUNT(*) c FROM extraction_request "
                            "WHERE handoff_hash='hhreqtest' GROUP BY status")).all()
     assert len(still) == 1 and still[0].status == "approved" and still[0].c == 1
+
+
+# --------------------------- #231: history-aware alternate exclusion ---------------------------
+def test_request_inputs_exclude_reps_sent_in_prior_rounds(gov_session):
+    """#231: the 7->6 alternate list must subtract every rep the record's request lineage names as
+    sent in ANY prior round — not just this dispatch's reps. Live counterexample: Union Hill round 2
+    re-offered round-1's failed tesseract_raster.txt as the TOP alternate (#3624)."""
+    gdb.init_precious_schema()
+    s = gov_session
+    rk = "ZZTEST31:r1"
+    # the record's captured, dispatchable inventory: 4 usable reps
+    for fn, kind, nt in (("a.txt", "text", 30), ("b.txt", "text", 20),
+                         ("c.png", "image", None), ("d.txt", "text", 10)):
+        s.execute(text("INSERT INTO representation (rec_key, source, filename, file_kind, n_chars, "
+                       "n_times, usable) VALUES (:k, 'test', :f, :kd, 100, :nt, 1)"),
+                  {"k": rk, "f": fn, "kd": kind, "nt": nt})
+    # round 1's lineage: a request naming a.txt as sent (single legacy sent_file — the fallback path)
+    s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                   "target, params_json, reason, status, created_at) VALUES "
+                   "('ZZTEST31', 'h1', 'representation', '7->6', :t, :p, 'r', 'executed', 't1')"),
+              {"t": rk, "p": json.dumps({"sent_file": "a.txt"})})
+    # round 2's lineage: a request naming BOTH files of a multi-rep send (the sent_files list path)
+    s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                   "target, params_json, reason, status, created_at) VALUES "
+                   "('ZZTEST31', 'h2', 'representation', '7->6', :t, :p, 'r', 'pending', 't2')"),
+              {"t": rk, "p": json.dumps({"sent_file": "b.txt", "sent_files": ["b.txt", "d.txt"]})})
+    # the current (round 3) result sent c.png, barren
+    result = {"district_id": "ZZTEST31", "reps": [{"rec_key": rk, "file": "c.png", "accepted": []}]}
+    _, _, alts, _, _ = R7._district_request_inputs(s, result)
+    # a.txt (round 1), b.txt + d.txt (round 2), c.png (current) are ALL excluded -> nothing remains
+    assert rk not in alts or [a["file"] for a in alts[rk]] == []
+
+
+def test_request_inputs_status_does_not_matter_for_history_exclusion(gov_session):
+    """#231: emission itself proves the send — a REJECTED request's sent rep was still dispatched
+    and barren, so it must stay excluded (a human 'no' on the retry doesn't un-send the original)."""
+    gdb.init_precious_schema()
+    s = gov_session
+    rk = "ZZTEST32:r1"
+    for fn, kind, nt in (("a.txt", "text", 30), ("b.png", "image", None)):
+        s.execute(text("INSERT INTO representation (rec_key, source, filename, file_kind, n_chars, "
+                       "n_times, usable) VALUES (:k, 'test', :f, :kd, 100, :nt, 1)"),
+                  {"k": rk, "f": fn, "kd": kind, "nt": nt})
+    s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                   "target, params_json, reason, status, created_at) VALUES "
+                   "('ZZTEST32', 'h1', 'representation', '7->6', :t, :p, 'r', 'rejected', 't1')"),
+              {"t": rk, "p": json.dumps({"sent_file": "a.txt"})})
+    result = {"district_id": "ZZTEST32", "reps": [{"rec_key": rk, "file": "zz.txt", "accepted": []}]}
+    _, _, alts, _, _ = R7._district_request_inputs(s, result)
+    assert [a["file"] for a in alts.get(rk, [])] == ["b.png"]   # only the untried image remains
