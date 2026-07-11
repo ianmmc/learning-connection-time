@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-11T21:52:14Z",
+  "last_updated": "2026-07-11T21:52:40Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -1716,8 +1716,8 @@
       "name": "Aspen Ridge Public District",
       "state": "CA",
       "furthest_stage": 7,
-      "stage_name": "process",
-      "outcome": "processed_all",
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -1894,6 +1894,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-11T21:52:40Z"
         }
       ],
       "notes": "9e786ee44873"
