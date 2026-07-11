@@ -1,0 +1,198 @@
+{
+  "handoff_hash": "6c1ec345254c",
+  "district": {
+    "district_id": "0602559",
+    "name": "Aspen Ridge Public District",
+    "reps": [
+      {
+        "rec_key": "0602559:4c1bdf91ac",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:30",
+                "end_time": "15:55",
+                "school_name": "Aspen Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:30",
+                "end_time": "15:55",
+                "school_name": "Aspen Public Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 712,
+            "completion_tokens": 88,
+            "cost_usd": 0.0001064,
+            "latency_ms": 574,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783802996-gxYrFb8Vk582Hks1L126",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:58",
+                "end_time": "15:55",
+                "school_name": "Aspen Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:58",
+                "end_time": "15:55",
+                "school_name": "Aspen Public Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 720,
+            "completion_tokens": 126,
+            "cost_usd": 4.608e-05,
+            "latency_ms": 1740,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783802997-oPutu6prsvzbqUlp16JA",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:58",
+                "end_time": "15:55",
+                "school_name": "Aspen Public Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 699,
+            "completion_tokens": 41,
+            "cost_usd": 0.00030093,
+            "latency_ms": 2395,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783802999-DUNZf11JqSziLDGtOMkO",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "aspen public schools",
+            "start": "08:58",
+            "end": "15:55",
+            "gross": 417,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0602559:4c1bdf91ac",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "aspen public schools",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:30",
+              "mistralai/mistral-small-24b-instruct-2501": "08:58"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:55",
+              "mistralai/mistral-small-24b-instruct-2501": "15:55"
+            },
+            "rec_key": "0602559:4c1bdf91ac",
+            "source_file": "page.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "aspen public schools",
+        "start": "08:58",
+        "end": "15:55",
+        "gross": 417,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0602559:4c1bdf91ac",
+        "source_file": "page.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "aspen public schools",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:30",
+          "mistralai/mistral-small-24b-instruct-2501": "08:58"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:55",
+          "mistralai/mistral-small-24b-instruct-2501": "15:55"
+        },
+        "rec_key": "0602559:4c1bdf91ac",
+        "source_file": "page.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "high": {
+        "gross_minutes": 417,
+        "start_time": "08:58",
+        "end_time": "15:55",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "aspen public schools",
+            "start_time": "08:58",
+            "end_time": "15:55",
+            "gross": 417,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 2131,
+      "completion_tokens": 255,
+      "cost_usd": 0.00045341
+    },
+    "state": "CA"
+  }
+}

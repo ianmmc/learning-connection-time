@@ -19,6 +19,74 @@ from datetime import datetime, date
 from decimal import Decimal
 
 
+# --- #201: DB-free test-job guard -------------------------------------------------------------------
+# The CI test matrix splits into `test` (`-m "not integration"`, no database at all) and `governance-db`
+# (`-m govdb`, a Postgres service container). Two failure modes this guards against:
+#   (1) a `govdb` test that forgot the `integration` marker still matches `-m "not integration"`, so it
+#       runs in the DB-free job and merely SKIPS (gov_session skips on an unreachable DB) — masking a test
+#       that genuinely needs Postgres. `pytest_collection_modifyitems` enforces the marker doc's promise
+#       ("every govdb is also integration") so those tests are cleanly EXCLUDED, not silently skipped.
+#   (2) a genuinely DB-free test that opens a Postgres connection passes locally (Docker up) but skips or
+#       fails confusingly in CI. `_guard_no_postgres_in_dbfree_tests` makes that a LOUD, named failure.
+
+def pytest_collection_modifyitems(config, items):
+    """#201: every `govdb` test is ALSO `integration` (the marker doc's stated contract), enforced here so
+    the DB-free selection excludes them by marker rather than by the fixture's skip-on-unavailable."""
+    for item in items:
+        if item.get_closest_marker("govdb") and not item.get_closest_marker("integration"):
+            item.add_marker(pytest.mark.integration)
+
+
+@pytest.fixture(autouse=True)
+def _guard_no_postgres_in_dbfree_tests(request):
+    """#201: a test NOT marked integration/govdb that opens a Postgres connection is a latent bug — it
+    passes locally with Docker up but skips/fails in CI's DB-free job. Fail it loudly, naming the fix.
+    Non-Postgres engines (e.g. an in-memory SQLite) pass through untouched — only the postgresql backend
+    is blocked, so this catches 'touched the real DB' precisely, not 'built any engine'."""
+    if request.node.get_closest_marker("integration") or request.node.get_closest_marker("govdb"):
+        yield
+        return
+    # Fixture-name check first: the connect() interception below can't see a SESSION-SCOPED fixture's
+    # already-open cached connection (real_db_connection opens once for the whole session), so an
+    # unmarked test requesting one would slip past the patch. Requesting a real-DB fixture at all is
+    # the violation — fail on the request, not the (possibly absent) connect call.
+    real_db_fixtures = {"real_db_connection", "real_db_transaction", "gov_session"} \
+        .intersection(request.fixturenames)
+    if real_db_fixtures:
+        raise RuntimeError(
+            f"DB-free test '{request.node.nodeid}' requests real-DB fixture(s) "
+            f"{sorted(real_db_fixtures)} without @pytest.mark.integration/@pytest.mark.govdb — "
+            f"add the marker (#201).")
+    import psycopg2
+    from sqlalchemy.engine import Engine
+    real_engine_connect = Engine.connect
+    real_pg_connect = psycopg2.connect
+    nodeid = request.node.nodeid
+
+    def _blocked(entrypoint):
+        raise RuntimeError(
+            f"DB-free test '{nodeid}' opened a Postgres connection via {entrypoint}. A test not marked "
+            f"@pytest.mark.integration (or @pytest.mark.govdb for the isolated governance DB) must not "
+            f"touch Postgres — it passes locally but skips/fails in CI's DB-free job. Add the marker, or "
+            f"mock the database (#201).")
+
+    def guarded_engine_connect(self, *a, **k):
+        if self.url.get_backend_name() == "postgresql":
+            _blocked("Engine.connect")
+        return real_engine_connect(self, *a, **k)
+
+    def guarded_pg_connect(*a, **k):
+        _blocked("psycopg2.connect")
+
+    Engine.connect = guarded_engine_connect
+    psycopg2.connect = guarded_pg_connect
+    try:
+        yield
+    finally:
+        Engine.connect = real_engine_connect
+        psycopg2.connect = real_pg_connect
+
+
 # --- Governance Postgres fixture (REQ-103) ---
 
 @pytest.fixture

@@ -8,6 +8,7 @@ Two layers:
     governance Postgres via the gov_session fixture; inserts are made on the session and ROLLED BACK
     at teardown (test-specific district_ids, so the live 36-district data is never touched).
 """
+import pytest
 from sqlalchemy import text
 
 from infrastructure.acquisition.common import district_status as DS
@@ -79,6 +80,7 @@ def _insert(sess, did, **over):
     sess.execute(DS.INSERT_STATE_EVENT, row)
 
 
+@pytest.mark.govdb   # #201: hits the governance DB via gov_session — the in-memory registry tests above stay DB-free
 def test_current_state_projects_max_stage_and_latest_snapshot(gov_session):
     DS.ensure_schema()                          # real table + view (committed, idempotent)
     did = "TST0001"
@@ -100,6 +102,7 @@ def test_current_state_projects_max_stage_and_latest_snapshot(gov_session):
     gov_session.rollback()
 
 
+@pytest.mark.govdb   # #201
 def test_current_state_name_state_survive_null_writers(gov_session):
     """#165 — name/state resolve to the latest NON-NULL value across all events, so a writer that
     doesn't carry them (the old stage-7 extract wrote state NULL; gate@6 writes name='') can't null
@@ -126,6 +129,7 @@ def test_current_state_name_state_survive_null_writers(gov_session):
     gov_session.rollback()
 
 
+@pytest.mark.govdb   # #201
 def test_save_then_load_round_trips_through_db(gov_session):
     """record_stage -> the buffered events INSERT into state_event -> current_state reflects them.
     Done on the rolled-back session (no commit, no save()) so the live data is untouched."""

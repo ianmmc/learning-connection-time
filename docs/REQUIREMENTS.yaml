@@ -2929,3 +2929,30 @@ requirements:
       in gate_calibration.py. Decision authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §11b (the 'instrument-now, thresholds-later' decision,
       2026-07-10), production-quality-control-research/FINDINGS-AND-DECISIONS.md §0/§3. Sibling instrument: REQ-120/#211
       (exploration quota), same build-now-while-truth-exists logic. Epic #209 Phase 0."
+
+  - id: REQ-122
+    description: "Stage-7 follow-up rounds fill gaps, never regress solid signal — a district's review/aggregation truth is the cumulative merge of accepted facts across ALL production extraction runs"
+    type: functional
+    priority: must
+    status: implemented
+    acceptance_criteria:
+      - "The extraction history is append-only (a run never deletes/updates a prior run's school_fact rows); the CUMULATIVE view is a pure, deterministic merge over that history — never a latest-run-only read"
+      - "Merge rule, per (band, school): an ACCEPTED fact beats any unresolved in either run order (a scoped 7->6 retry that yields nothing cannot make an earlier solid extraction disappear from gate@7 or the band rollup)"
+      - "Among multiple ACCEPTED facts for the same (band, school): the EARLIEST run wins — follow-up rounds FILL gaps, they never silently overwrite; correcting a solid fact is a gate@8 human determination"
+      - "Among UNRESOLVED-only facts: the LATEST run's diagnostic wins (freshest disagreement detail)"
+      - "Every merged fact carries run provenance (extraction_id + handoff_hash) so a reviewer can trace which run produced it"
+      - "Both gate@7 read surfaces obey the merge: the district detail (accepted/unresolved/bands) and the left-pane counts (n_accepted/n_unresolved = cumulative distinct (band,school), a pair counting unresolved only if NO run ever accepted it); the latest-run header (cost, handoff, timestamp) remains per-run telemetry"
+      - "NOT: no destructive remediation — restoring visibility after the latest-run-only defect (#232) required zero data surgery because the facts were never lost, only the read was wrong"
+    tests:
+      - tests/test_aggregate.py
+      - tests/test_stage7_api.py
+    created: "2026-07-11T00:00:00Z"
+    updated: "2026-07-11T00:00:00Z"
+    notes: "Root cause (#232, found live in the #122 shakedown): gate@7's extract_district read ORDER BY extraction_id
+      DESC LIMIT 1 and fed the band rollup only that run's school_fact rows, so Brownsville Ascend's scoped 7->6 vision
+      retry (ext 806, 0 accepted) made its run-1 facts (ext 797, 7 accepted) vanish from the console and bands — the
+      facts persisted; only the view regressed. Fix: pure merge core stage8_aggregate/aggregate.py::merge_fact_runs
+      (accepted-beats-unresolved / earliest-accepted-wins / latest-diagnostic-wins) + cross-run queries in
+      process_governance/server.py (extract_district, extract_districts). Sibling issue #231 (auto-withdraw directives
+      whose target band is no longer barren per the CUMULATIVE state) builds on this same merge. Discovered because the
+      ramp-up model had a human eyeballing real gate@7 output (governance §11b) — the gate caught what review missed."

@@ -90,12 +90,20 @@ def test_bump_semver_by_level():
 
 
 def test_bump_semver_rejects_malformed_input_and_unknown_level():
-    with pytest.raises(ValueError):
+    # #204: match the MESSAGE, not just ValueError — the validation is `len != 3 OR not all-digit`; an
+    # `and` mutant would fall through to an unpack/int ValueError with a different (opaque) message.
+    with pytest.raises(ValueError, match="MAJOR.MINOR.PATCH"):
         CA.bump_semver("1.2", "patch")                     # not MAJOR.MINOR.PATCH
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="MAJOR.MINOR.PATCH"):
         CA.bump_semver("1.2.x", "patch")                   # non-integer
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="change_type"):
         CA.bump_semver("1.2.3", "rewrite")                 # unknown change level
+
+
+def test_build_artifact_defaults_provenance_to_an_empty_dict():
+    # #204: `provenance or {}` — omitting provenance yields {}, not None (an `and` mutant would give None).
+    a = CA.build_artifact(_DP, _KNOBS, "gt", semver="1.0.0", created_at="x")
+    assert a["provenance"] == {}
 
 
 # ----------------------------- verify_on_load: the refuse-to-run guard -----------------------------
@@ -121,10 +129,21 @@ def test_verify_raises_when_the_artifact_content_was_mutated_after_freezing():
 
 # ----------------------------- I/O shell (reads the real CONFIG_DIR knob files) -----------------------------
 def test_current_artifact_reads_the_live_surface_and_is_verifiable():
-    a = CA.current_artifact("gtLIVE", semver="1.0.0")
+    a = CA.current_artifact("gtLIVE", semver="1.0.0", created_at="2026-07-11T00:00:00Z")
     assert a["schema"] == CA.SCHEMA
     assert a["detector_params"] == CA.live_detector_params()
     assert "stage5_neg_board" in a["knobs"]                # a real knob doc was snapshotted
+    assert a["created_at"] == "2026-07-11T00:00:00Z"       # #204: an explicit created_at passes through (not now())
+    assert CA.verify_on_load(a, live_gt_version="gtLIVE")["version"] == a["version"]
+
+
+def test_current_artifact_default_clock_stamp_is_well_formed_and_verifiable():
+    """PR #221 review: the #204 determinism edit left the live-clock default branch (created_at
+    omitted → now()) with zero coverage. This is the only call site allowed to exercise it: the
+    stamp must be the artifact's exact UTC format and the artifact must still verify."""
+    import re
+    a = CA.current_artifact("gtLIVE", semver="1.0.0")      # no created_at → the clock branch
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", a["created_at"])
     assert CA.verify_on_load(a, live_gt_version="gtLIVE")["version"] == a["version"]
 
 

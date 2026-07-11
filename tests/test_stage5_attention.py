@@ -10,6 +10,7 @@ and explicit flags score HIGH.
 """
 import json
 
+import pytest
 from sqlalchemy import text
 
 from infrastructure.acquisition.stage5_filter import attention as AT
@@ -102,6 +103,7 @@ def _add_record(s, did, rk, tier, sig, status="unlabeled"):
     s.execute(text("INSERT INTO label (rec_key, status) VALUES (:rk,:st)"), {"rk": rk, "st": status})
 
 
+@pytest.mark.govdb   # #201: hits the governance DB via gov_session (TEMP tables) — the pure band-model tests above stay DB-free
 def test_recompute_attention_persists_record_and_district(gov_session):
     _temp_schema(gov_session)
     gov_session.execute(text("INSERT INTO district (district_id) VALUES ('d1')"))
@@ -121,6 +123,7 @@ def test_recompute_attention_persists_record_and_district(gov_session):
     assert out["reasons"][0] == "image_only"
 
 
+@pytest.mark.govdb   # #201
 def test_recompute_attention_all_labeled_is_complete(gov_session):
     _temp_schema(gov_session)
     gov_session.execute(text("INSERT INTO district (district_id) VALUES ('d2')"))
@@ -131,6 +134,7 @@ def test_recompute_attention_all_labeled_is_complete(gov_session):
     assert drow[0] == 0 and drow[1] == "complete" and drow[2] == 0
 
 
+@pytest.mark.govdb   # #201
 def test_recompute_attention_honors_unresolved_followup_flag(gov_session):
     """An unresolved record flag floors that record (and so the district) at the manual-flag weight —
     even though its signals are a clean tier-A that would otherwise score low."""

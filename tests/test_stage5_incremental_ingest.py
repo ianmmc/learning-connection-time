@@ -11,10 +11,15 @@ real governance data (safe even while the console is open):
 """
 import json
 
+import pytest
 from sqlalchemy import text
 
 from infrastructure.acquisition.common import cache_ingest as CI
 from infrastructure.acquisition.stage5_filter import build_signals as BS
+
+# #201: all 3 tests hit the governance DB via gov_session (CONNECTION-SCOPED TEMP tables) — mark govdb so
+# they run in CI's governance-db job and are excluded from the DB-free job (was leaking as a skip).
+pytestmark = pytest.mark.govdb
 
 USABLE_TXT = "School begins at 8:20 AM and dismisses at 3:20 PM. " * 6  # > 120 printable chars
 

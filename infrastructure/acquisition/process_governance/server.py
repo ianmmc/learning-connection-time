@@ -1316,15 +1316,36 @@ def handoff_inspect(district_id: str, rec_key: str, file: str):
     return FileResponse(fp)
 
 
+# REQ-122 cumulative counts — the SQL twin of AGG.merge_fact_runs's accepted/unresolved rule ("a pair
+# counts unresolved only if NO run ever accepted it"). Module-level so tests can execute THIS text and
+# cross-check it against merge_fact_runs on shared fixture rows — the two must never drift.
+CUMULATIVE_FACT_COUNTS_SQL = """SELECT f.district_id,
+       COUNT(DISTINCT (f.band, f.school))
+         FILTER (WHERE f.status = 'accepted') AS n_accepted,
+       COUNT(DISTINCT (f.band, f.school))
+         - COUNT(DISTINCT (f.band, f.school))
+             FILTER (WHERE f.status = 'accepted') AS n_unresolved
+FROM school_fact f
+JOIN extraction fe ON fe.extraction_id = f.extraction_id
+WHERE fe.run_kind = 'production'
+GROUP BY f.district_id"""
+
+
 @app.get("/api/extract/districts")
 def extract_districts():
-    """gate@7 left pane: districts with a Stage-7 extraction, each showing the LATEST run's summary +
-    its pending-request count. Attention-first (most pending requests, then most unresolved).
-    Excludes PROBE runs (`run_kind='probe'` — the vision-council A/B from image_handoff_variant, not a
-    production dispatch), which are experiments, not a review surface (#148)."""
+    """gate@7 left pane: districts with a Stage-7 extraction. `handoff_hash`/`cost_usd`/`created_at`
+    are the LATEST run's header; `n_accepted`/`n_unresolved` are CUMULATIVE distinct (band, school)
+    counts across ALL production runs (REQ-122/#232 — the latest-run rollup columns made a district
+    whose scoped retry yielded 0 read as a total failure). A pair counts unresolved only if NO run
+    ever accepted it — the same rule as AGG.merge_fact_runs. Attention-first (most pending requests,
+    then most unresolved). Excludes PROBE runs (`run_kind='probe'` — the vision-council A/B from
+    image_handoff_variant, not a production dispatch), which are experiments, not a review surface
+    (#148)."""
     with gdb.session_scope() as con:
         rows = con.execute(text(
-            """SELECT e.district_id, e.handoff_hash, e.n_accepted, e.n_unresolved, e.cost_usd,
+            f"""SELECT e.district_id, e.handoff_hash,
+                      COALESCE(cf.n_accepted, 0) AS n_accepted,
+                      COALESCE(cf.n_unresolved, 0) AS n_unresolved, e.cost_usd,
                       e.n_reps, e.created_at, d.name, d.state,
                       COALESCE(rq.n_pending, 0) AS n_pending, COALESCE(rq.n_requests, 0) AS n_requests
                FROM extraction e
@@ -1332,11 +1353,13 @@ def extract_districts():
                      WHERE run_kind = 'production' GROUP BY district_id) L
                  ON L.mx = e.extraction_id
                LEFT JOIN district d ON d.district_id = e.district_id
+               LEFT JOIN ({CUMULATIVE_FACT_COUNTS_SQL}) cf
+                 ON cf.district_id = e.district_id
                LEFT JOIN (SELECT district_id,
                                  COUNT(*) FILTER (WHERE status = 'pending') n_pending, COUNT(*) n_requests
                           FROM extraction_request GROUP BY district_id) rq
                  ON rq.district_id = e.district_id
-               ORDER BY n_pending DESC, e.n_unresolved DESC, e.district_id""")).mappings().all()
+               ORDER BY n_pending DESC, n_unresolved DESC, e.district_id""")).mappings().all()
         return [dict(r) for r in rows]
 
 
@@ -1396,8 +1419,11 @@ def _request_lineage(con, district_id: str, req: dict, ctx: dict) -> dict | None
 
 @app.get("/api/extract/district/{district_id}")
 def extract_district(district_id: str):
-    """gate@7 detail: the district's LATEST extraction — computed band rollup + accepted/unresolved
-    per-school facts + its request-more-evidence directives (from the same run's handoff)."""
+    """gate@7 detail: the district's CUMULATIVE Stage-7 truth — accepted/unresolved per-school facts
+    merged across ALL production runs (REQ-122/#232: a follow-up round fills gaps, it never regresses
+    solid signal — the latest-run-only read made a scoped 7→6 retry LOOK like it erased an earlier
+    run's accepted facts) + the band rollup over that merge + the request-more-evidence directives.
+    `extraction` stays the LATEST run's header (what ran last, at what cost)."""
     with gdb.session_scope() as con:
         ext = con.execute(text(
             "SELECT extraction_id, handoff_hash, created_at, created_by, cost_usd, "
@@ -1407,12 +1433,16 @@ def extract_district(district_id: str):
         if not ext:
             raise HTTPException(404, "no extraction for this district")
         facts = con.execute(text(
-            "SELECT band, school, status, start_time, end_time, gross_minutes, method, "
-            "models_json, detail_json, rec_key, source_file FROM school_fact "
-            "WHERE extraction_id = :e ORDER BY status, band, school"),
-            {"e": ext["extraction_id"]}).mappings().all()
-        accepted = [dict(f) for f in facts if f["status"] == "accepted"]
-        unresolved = [dict(f) for f in facts if f["status"] == "unresolved"]
+            # every production run's facts, each carrying its run id + handoff (per-fact provenance
+            # a reviewer can trace); the pure merge picks the per-(band,school) winner (REQ-122).
+            "SELECT f.extraction_id, e.handoff_hash, f.band, f.school, f.status, f.start_time, "
+            "f.end_time, f.gross_minutes, f.method, f.models_json, f.detail_json, f.rec_key, "
+            "f.source_file FROM school_fact f "
+            "JOIN extraction e ON e.extraction_id = f.extraction_id "
+            "WHERE f.district_id = :d AND e.run_kind = 'production' "
+            "ORDER BY f.status, f.band, f.school"),
+            {"d": district_id}).mappings().all()
+        accepted, unresolved = AGG.merge_fact_runs([dict(f) for f in facts])
         agg = [{"band": a["band"], "school": a["school"], "gross": a["gross_minutes"],
                 "start": a["start_time"], "end": a["end_time"],
                 "models": json.loads(a["models_json"] or "[]"), "method": a["method"]}
@@ -1438,7 +1468,13 @@ def extract_district(district_id: str):
             d["is_alt_rep"] = d["route"] == EX.RQ.ROUTE_ALT_REP    # 7->6 → executes on its own
             d["lineage"] = _request_lineage(con, district_id, d, ctx)  # where it went / why it can't
             req_dicts.append(d)
-        return {"extraction": dict(ext), "bands": bands, "accepted": accepted,
+        # The extraction header keeps the LATEST run's identity/cost, but its per-run n_accepted/
+        # n_unresolved are overridden with the CUMULATIVE counts — otherwise the payload ships two
+        # contradictory counts of the same thing (REQ-122 one field deeper: a barren scoped retry
+        # would show n_accepted=0 beside a non-empty accepted[]).
+        ext_out = dict(ext)
+        ext_out["n_accepted"], ext_out["n_unresolved"] = len(accepted), len(unresolved)
+        return {"extraction": ext_out, "bands": bands, "accepted": accepted,
                 "unresolved": unresolved, "requests": req_dicts}
 
 

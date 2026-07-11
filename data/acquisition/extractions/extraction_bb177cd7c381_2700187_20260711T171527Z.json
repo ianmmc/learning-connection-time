@@ -1,0 +1,313 @@
+{
+  "handoff_hash": "bb177cd7c381",
+  "district": {
+    "district_id": "2700187",
+    "name": "AVALON SCHOOL",
+    "reps": [
+      {
+        "rec_key": "2700187:eac4ce80da",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:35",
+                "school_name": "Avalon Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 765,
+            "completion_tokens": 49,
+            "cost_usd": 9.61e-05,
+            "latency_ms": 737,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790120-n2mnfTRrfFwAKF5e9xnQ",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "09:20",
+                "end_time": "15:35",
+                "school_name": "Avalon Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 768,
+            "completion_tokens": 72,
+            "cost_usd": 4.416e-05,
+            "latency_ms": 1118,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790120-JbaNkDVF5uT8Xne03aZY",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:55",
+                "end_time": "15:40",
+                "school_name": "Avalon Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 755,
+            "completion_tokens": 42,
+            "cost_usd": 7.215e-05,
+            "latency_ms": 2745,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790121-4nrMknOX6bBaRpNdcsch",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "avalon",
+            "start": "08:55",
+            "end": "15:40",
+            "gross": 405,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2700187:eac4ce80da",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2700187:db18dbbbfe",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "09:00",
+                "end_time": "15:40",
+                "school_name": "Avalon School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "15:40",
+                "school_name": "Avalon School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2291,
+            "completion_tokens": 86,
+            "cost_usd": 0.0002635,
+            "latency_ms": 671,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790124-jFUKWdFh1XijxUIhC1uu",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "09:00",
+                "end_time": "15:40",
+                "school_name": "Avalon School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "15:40",
+                "school_name": "Avalon School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2418,
+            "completion_tokens": 126,
+            "cost_usd": 0.00013098,
+            "latency_ms": 1988,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790125-mSZ27Gl1FIIwxS0LHaqG",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "avalon",
+            "start": "09:00",
+            "end": "15:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2700187:db18dbbbfe",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "avalon",
+            "start": "09:00",
+            "end": "15:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2700187:db18dbbbfe",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "middle",
+        "school": "avalon",
+        "start": "08:55",
+        "end": "15:40",
+        "gross": 405,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2700187:eac4ce80da",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "avalon",
+        "start": "09:00",
+        "end": "15:40",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2700187:db18dbbbfe",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "avalon",
+        "start": "09:00",
+        "end": "15:40",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2700187:db18dbbbfe",
+        "source_file": "page.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 2,
+    "n_judged": 1,
+    "bands": {
+      "middle": {
+        "gross_minutes": 402,
+        "start_time": "09:00",
+        "end_time": "15:40",
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "avalon",
+            "start_time": "08:55",
+            "end_time": "15:40",
+            "gross": 405,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "avalon",
+            "start_time": "09:00",
+            "end_time": "15:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 400,
+        "start_time": "09:00",
+        "end_time": "15:40",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "avalon",
+            "start_time": "09:00",
+            "end_time": "15:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 5,
+      "judge_calls": 1,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 6997,
+      "completion_tokens": 375,
+      "cost_usd": 0.00060689
+    },
+    "state": "MN"
+  }
+}

@@ -1,0 +1,52 @@
+#!/bin/bash
+# Pre-push hook for Learning Connection Time (#202, epic #200)
+#
+# TRACKED + SHARED: lives in .githooks/ (version-controlled), activated per clone with
+#   git config core.hooksPath .githooks
+# (one-time; see docs/GETTING_STARTED.md "Git hooks"). Same mechanism as .githooks/pre-commit.
+#
+# Runs the CI-equivalent DB-FREE gates locally BEFORE a push, so a preventable red CI is caught in a
+# few seconds at the desk instead of a push -> wait -> red -> fix round-trip:
+#   1. the import-layering contracts (`lint-imports` — mirrors the CI `lint` job)
+#   2. the DB-free test suite (`pytest -m "not integration"` — the CI `test` job; already INCLUDES the
+#      #124 arch-manifest fitness tests, which are themselves DB-free)
+# It deliberately does NOT run the govdb suite: that needs Postgres, and a hook must never block a push
+# when Docker is down (CI's governance-db job covers it).
+#
+# Escape hatch: `SKIP_PREPUSH=1 git push` bypasses the local gates (WIP branches, docs-only emergencies).
+# CI still runs on the pushed branch either way — this is a fast local mirror, not a replacement.
+
+set -uo pipefail
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
+
+if [ "${SKIP_PREPUSH:-}" = "1" ]; then
+    echo -e "${YELLOW}pre-push: SKIP_PREPUSH=1 — skipping local gates (CI still runs).${NC}"
+    exit 0
+fi
+
+# 1. Import-layering contracts. Skip-with-warning (don't block) if the dev tool isn't installed, so a
+#    fresh/minimal checkout can still push; a machine that HAS it gets the full gate.
+if command -v lint-imports >/dev/null 2>&1; then
+    echo -e "${GREEN}pre-push: import-layering contracts (lint-imports)...${NC}"
+    if ! lint-imports; then
+        echo -e "${RED}pre-push: lint-imports FAILED — fix the layering contract before pushing"
+        echo -e "(or 'SKIP_PREPUSH=1 git push' to bypass; CI still runs).${NC}"
+        exit 1
+    fi
+else
+    echo -e "${YELLOW}pre-push: lint-imports not installed — skipping the layering check (pip install -r requirements.txt).${NC}"
+fi
+
+# 2. DB-free test suite (mirrors the CI `test` job; includes the arch-manifest fitness tests).
+echo -e "${GREEN}pre-push: DB-free test suite (pytest -m \"not integration\")...${NC}"
+if ! python3 -m pytest tests/ -q -m "not integration" -p no:cacheprovider; then
+    echo -e "${RED}pre-push: DB-free tests FAILED — fix before pushing"
+    echo -e "(or 'SKIP_PREPUSH=1 git push' to bypass; CI still runs).${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}pre-push: all local DB-free gates passed.${NC}"
+exit 0

@@ -19,6 +19,8 @@ scikit-optimize>=0.10.0   # Bayesian optimization escalation (gp_minimize) at hi
 # pandas+statsmodels+pingouin trio is the mature stack for the eventual cross-dimensional
 # LCT-by-district/state analysis. (Nadeau-Bengio corrected-t dropped: no canonical Python
 # impl + LOGO's disjoint eval folds make the CV-overlap correction unnecessary.)
+scipy>=1.10.0             # Wilcoxon + the seeded cluster bootstrap in promotion_gate.py (a DIRECT import;
+                          # was resolving only transitively via statsmodels/sklearn — declare it, #221 review)
 statsmodels>=0.14.0       # TOST non-inferiority (ttost_paired), McNemar exact, regression across dimensions
 pingouin>=0.5.5           # ICC balanced-case test oracle, Wilcoxon/TOST, DataFrame-native tests
 
@@ -43,6 +45,8 @@ xlrd>=2.0.0
 pytest>=7.4.0
 pytest-cov>=4.1.0
 pytest-mock>=3.12.0
+hypothesis>=6.100.0       # property-based tests (#203): the promotion_pointers stateful machine + @given
+                          # guardrail-core invariants. REQUIRED in CI — undeclared, it aborted #221 at collection.
 
 # Jupyter
 jupyterlab>=4.0.0

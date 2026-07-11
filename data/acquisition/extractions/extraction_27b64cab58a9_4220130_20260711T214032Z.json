@@ -1,0 +1,165 @@
+{
+  "handoff_hash": "27b64cab58a9",
+  "district": {
+    "district_id": "4220130",
+    "name": "Redbank Valley SD",
+    "reps": [
+      {
+        "rec_key": "4220130:059feb5851",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 940,
+            "completion_tokens": 5,
+            "cost_usd": 9.6e-05,
+            "latency_ms": 533,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783806028-fCY4EZJBQuoNPxKTt3od",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 967,
+            "completion_tokens": 51,
+            "cost_usd": 5.243e-05,
+            "latency_ms": 923,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783806028-Lvy3hkeFCl0LOBwnxkc9",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4220130:5ea2e85cc4",
+        "file": "harvest_slice.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:07",
+                "school_name": "HS Bell Schedule",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1027,
+            "completion_tokens": 43,
+            "cost_usd": 0.0001199,
+            "latency_ms": 502,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783806029-mWJsQdAFuKoDBvjN1pkI",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1080,
+            "completion_tokens": 51,
+            "cost_usd": 5.808e-05,
+            "latency_ms": 1111,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783806030-Kul4wf9LQ8zPaiw2VSx5",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:07",
+                "school_name": "HS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1038,
+            "completion_tokens": 38,
+            "cost_usd": 0.0001842,
+            "latency_ms": 1427,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783806031-bOHNQdkP1eIUzlTxUeB9",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "hs bell schedule",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:07"
+            },
+            "rec_key": "4220130:5ea2e85cc4",
+            "source_file": "harvest_slice.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [],
+    "unresolved": [
+      {
+        "band": "high",
+        "school": "hs bell schedule",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:07"
+        },
+        "rec_key": "4220130:5ea2e85cc4",
+        "source_file": "harvest_slice.txt"
+      }
+    ],
+    "n_reps": 2,
+    "n_judged": 1,
+    "bands": {},
+    "telemetry": {
+      "calls": 5,
+      "judge_calls": 1,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 5052,
+      "completion_tokens": 188,
+      "cost_usd": 0.00051061
+    },
+    "state": "PA"
+  }
+}

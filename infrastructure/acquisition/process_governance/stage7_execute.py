@@ -245,9 +245,13 @@ def _covered_bands_now(session, district_ids: list) -> dict:
     if not district_ids:
         return {}
     out: dict = {}
+    # run_kind='production' only: a vision-lab PROBE's accepted fact is a measurement, never coverage —
+    # without this join a probe could auto-reject a human-approved 7->2/7->3/7->1 as "already covered".
     for did, band in session.execute(text(
-            "SELECT DISTINCT district_id, band FROM school_fact "
-            "WHERE district_id = ANY(:d) AND status = 'accepted' AND band IS NOT NULL"),
+            "SELECT DISTINCT f.district_id, f.band FROM school_fact f "
+            "JOIN extraction e ON e.extraction_id = f.extraction_id "
+            "WHERE f.district_id = ANY(:d) AND f.status = 'accepted' AND f.band IS NOT NULL "
+            "AND e.run_kind = 'production'"),
             {"d": list(district_ids)}):
         out.setdefault(did, set()).add(band)
     return out
@@ -561,17 +565,27 @@ def _executed_rounds_76(session, district_id: str) -> int:
 
 
 def _sent_files_by_rec(session, district_id: str) -> dict:
-    """{rec_key: {failed files}} for the district — the union of `sent_file` across ALL its 7->6
+    """{rec_key: {failed files}} for the district — the union of every sent file across ALL its 7->6
     requests (F4: a rep that failed once, and so generated a 7->6, must never be re-dispatched — not
     even in a later round for a different rec-key request). DB-only: a failed-and-requested rep is
-    exactly some 7->6's sent_file, so no handoff-doc I/O is needed."""
+    exactly some 7->6's sent_file(s), so no handoff-doc I/O is needed.
+    Reads BOTH `sent_files` (#231: the FULL set of files one dispatch sent for this record) and the
+    legacy single `sent_file` (older persisted requests, and the field detect_requests still writes for
+    the human-readable reason) — a dispatch that sent two reps of one record, only one of which the
+    request names via `sent_file`, must not leave the other re-offerable next round.
+    Routes match stage7_run._district_request_inputs (#231): 7->6 AND 7->3 — a file recorded only on a
+    RECAPTURE request is just as sent/failed as one on an alternate-rep request."""
     out: dict = {}
     for target, pj in session.execute(text(
-            "SELECT target, params_json FROM extraction_request WHERE district_id = :d AND route = :r"),
-            {"d": district_id, "r": RQ.ROUTE_ALT_REP}).all():
-        sf = (json.loads(pj or "{}")).get("sent_file")
-        if sf:
-            out.setdefault(target, set()).add(sf)
+            "SELECT target, params_json FROM extraction_request "
+            "WHERE district_id = :d AND route IN (:r6, :r3)"),
+            {"d": district_id, "r6": RQ.ROUTE_ALT_REP, "r3": RQ.ROUTE_RECAPTURE}).all():
+        p = json.loads(pj or "{}")
+        files = set(p.get("sent_files") or [])
+        if p.get("sent_file"):
+            files.add(p["sent_file"])
+        if files:
+            out.setdefault(target, set()).update(files)
     return out
 
 

@@ -6,10 +6,15 @@ TEMP tables (the gov_session fixture), so the SQL + funnel roll-ups run on the a
 touching real governance data. The TEMP tables are derived from the live REBUILD_DDL so the test
 can't drift from the production schema.
 """
+import pytest
 from sqlalchemy import text
 
 from infrastructure.acquisition.common import cache_ingest as CI  # noqa: E402  (cache schema + UPSERTs now live here)
 from infrastructure.acquisition.stage5_filter import build_signals as BS  # noqa: E402
+
+# #201: all 4 tests hit the governance DB via gov_session (CONNECTION-SCOPED TEMP tables) — mark govdb so
+# they run in CI's governance-db job and are excluded from the DB-free job (was leaking as a skip).
+pytestmark = pytest.mark.govdb
 
 CACHE_TABLES = ("discovery_school", "candidate", "capture", "processed_doc")
 

@@ -494,3 +494,12 @@ differently depending on request order, weakening the same-content dedup; (6) an
 selection could still freeze a 0-district handoff, and an unknown per-rep council override silently fell
 back to auto-routing instead of surfacing the stale reference. All six fixed; see §0's table for the
 present-state description of each fix.
+
+**2026-07-11 — initial rep-selection doesn't apply the request loop's yield-ranking (#230, logged, not
+yet fixed).** Found in the batch_00013 shakedown: Redbank Valley's round-1 dispatch sent a
+`harvest_slice.txt` rep (0 detected time-patterns) while the SAME record's `pdftotext.txt` (90 detected
+time-patterns) sat unsent as an alternate — Stage 7's request loop caught it and recovered via a `7→6`
+retry (§3F), but only after a wasted paid round. `rank_alternates` (STAGE7 §4, #155) already encodes the
+correct yield-first ladder for RETRIES; the initial Stage-6 dispatch pick doesn't reuse it. Fix direction:
+apply the same ranking to the FIRST send, not just the request-loop's retries — reusing `rank_alternates`
+rather than a second ranking implementation.

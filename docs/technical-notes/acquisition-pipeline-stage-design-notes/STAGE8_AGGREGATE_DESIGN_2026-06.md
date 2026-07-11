@@ -4,6 +4,13 @@
 > mode-then-mean logic is a real, tested prototype and is already reused by Stage 7's own per-district
 > rollup (`STAGE7_EXTRACT_DESIGN_2026-06.md` §0) — but Stage 8 itself (a standalone stage: its own gate,
 > console, aggregation-record schema, and per-band satisfaction signal) isn't wired end-to-end. (tracked: #89)
+> **2026-07-11 addition:** `merge_fact_runs` (REQ-122/#232) — a pure, deterministic merge of a
+> district's per-`(band, school)` facts across ALL its Stage-7 production runs (accepted beats
+> unresolved in either run order; among duplicate accepteds the earliest wins — a follow-up round FILLS
+> gaps, it never silently overwrites solid signal; correcting one is a gate@8 human determination). Built
+> to fix a gate@7 view bug, but it is exactly the cumulative-truth question Stage 8's own aggregation
+> will need answered when it's built — the eventual Stage-8 design should consume this merge (or its
+> direct descendant) rather than re-solve "which run's facts win" independently.
 > **Audience:** whoever designs/builds Stage 8.
 > **Companions:** `ACQUISITION_PIPELINE.md` §8 (the slim map), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
 > §11 (gates/console; §11e cyclic back-edges), `METHODOLOGY.md` (the metric: gross bell-to-bell, the mode).

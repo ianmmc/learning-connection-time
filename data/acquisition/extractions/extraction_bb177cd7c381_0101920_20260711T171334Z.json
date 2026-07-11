@@ -1,0 +1,531 @@
+{
+  "handoff_hash": "bb177cd7c381",
+  "district": {
+    "district_id": "0101920",
+    "name": "Jefferson County",
+    "reps": [
+      {
+        "rec_key": "0101920:9b7acad643",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:45",
+                "end_time": "14:55",
+                "school_name": "Rudd Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 659,
+            "completion_tokens": 49,
+            "cost_usd": 8.55e-05,
+            "latency_ms": 1074,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790004-6qcnaiybbZUuRBeSGgeE",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:45",
+                "end_time": "14:55",
+                "school_name": "Rudd Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 667,
+            "completion_tokens": 49,
+            "cost_usd": 3.727e-05,
+            "latency_ms": 1330,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790005-mo3IlTo84bBJMEK5pg5u",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "rudd",
+            "start": "07:45",
+            "end": "14:55",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0101920:9b7acad643",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0101920:8b826184aa",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "14:45",
+                "school_name": "Warrior Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 640,
+            "completion_tokens": 43,
+            "cost_usd": 8.12e-05,
+            "latency_ms": 719,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790006-vMMNu3fTtlLbN7AQ7WKB",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "14:45",
+                "school_name": "Warrior Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 655,
+            "completion_tokens": 45,
+            "cost_usd": 3.635e-05,
+            "latency_ms": 1618,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790007-G63mBUiBgUPy1iovC7Jm",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "warrior",
+            "start": "07:55",
+            "end": "14:45",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0101920:8b826184aa",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0101920:3a842d4f2d",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "14:55",
+                "school_name": "Fultondale Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 678,
+            "completion_tokens": 50,
+            "cost_usd": 8.78e-05,
+            "latency_ms": 928,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790008-6WR2eJDQDa6yKJOseu9O",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "14:55",
+                "school_name": "Fultondale Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 690,
+            "completion_tokens": 52,
+            "cost_usd": 3.866e-05,
+            "latency_ms": 1121,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790009-2ck03va4mr2wZNtxvEFO",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "fultondale",
+            "start": "07:50",
+            "end": "14:55",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0101920:3a842d4f2d",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0101920:05fb66ded0",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:00",
+                "school_name": "JCIB Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 656,
+            "completion_tokens": 49,
+            "cost_usd": 8.52e-05,
+            "latency_ms": 546,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790010-RjBC8DJ9EwL6g8JMaaKG",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:00",
+                "school_name": "JCIB Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 664,
+            "completion_tokens": 45,
+            "cost_usd": 3.68e-05,
+            "latency_ms": 1270,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790011-shmQfDAbXXVoFQCh54wr",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "jcib",
+            "start": "07:50",
+            "end": "15:00",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0101920:05fb66ded0",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0101920:98a6322f8d",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:45",
+                "school_name": "Hueytown Primary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 644,
+            "completion_tokens": 50,
+            "cost_usd": 8.44e-05,
+            "latency_ms": 585,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790012-yLsPRG0s6Am13qlLMd11",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:45",
+                "school_name": "Hueytown Primary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 651,
+            "completion_tokens": 47,
+            "cost_usd": 3.631e-05,
+            "latency_ms": 1149,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790013-pWBwGTzztc75KzLRKpyP",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "hueytown primary",
+            "start": "07:45",
+            "end": "14:45",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0101920:98a6322f8d",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "middle",
+        "school": "rudd",
+        "start": "07:45",
+        "end": "14:55",
+        "gross": 430,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0101920:9b7acad643",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "warrior",
+        "start": "07:55",
+        "end": "14:45",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0101920:8b826184aa",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "fultondale",
+        "start": "07:50",
+        "end": "14:55",
+        "gross": 425,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0101920:3a842d4f2d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "jcib",
+        "start": "07:50",
+        "end": "15:00",
+        "gross": 430,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0101920:05fb66ded0",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "hueytown primary",
+        "start": "07:45",
+        "end": "14:45",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0101920:98a6322f8d",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 5,
+    "n_judged": 0,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 418,
+        "start_time": "07:45",
+        "end_time": "14:45",
+        "n_schools": 3,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "warrior",
+            "start_time": "07:55",
+            "end_time": "14:45",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "fultondale",
+            "start_time": "07:50",
+            "end_time": "14:55",
+            "gross": 425,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hueytown primary",
+            "start_time": "07:45",
+            "end_time": "14:45",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 430,
+        "start_time": "07:45",
+        "end_time": "14:55",
+        "n_schools": 2,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "rudd",
+            "start_time": "07:45",
+            "end_time": "14:55",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "jcib",
+            "start_time": "07:50",
+            "end_time": "15:00",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 10,
+      "judge_calls": 0,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 6604,
+      "completion_tokens": 479,
+      "cost_usd": 0.0006094900000000001
+    },
+    "state": "AL"
+  }
+}

@@ -1,0 +1,221 @@
+{
+  "handoff_hash": "bb177cd7c381",
+  "district": {
+    "district_id": "3904705",
+    "name": "Evergreen Local",
+    "reps": [
+      {
+        "rec_key": "3904705:b1dc14153d",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Evergreen High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Evergreen Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Evergreen Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1302,
+            "completion_tokens": 207,
+            "cost_usd": 0.000213,
+            "latency_ms": 956,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790275-wbolUPeXdMguVlph2nNt",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Evergreen High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1291,
+            "completion_tokens": 45,
+            "cost_usd": 6.815e-05,
+            "latency_ms": 1286,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790276-eT1eQ77nMd1YXMDA8czc",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Evergreen High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1543,
+            "completion_tokens": 34,
+            "cost_usd": 0.00041975,
+            "latency_ms": 1166,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790277-5UxOZSHCKG2mVdFVqy5Y",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "evergreen",
+            "start": "08:00",
+            "end": "14:50",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3904705:b1dc14153d",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "evergreen",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:50"
+            },
+            "rec_key": "3904705:b1dc14153d",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "evergreen",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:50"
+            },
+            "rec_key": "3904705:b1dc14153d",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "evergreen",
+        "start": "08:00",
+        "end": "14:50",
+        "gross": 410,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3904705:b1dc14153d",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "evergreen",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:50"
+        },
+        "rec_key": "3904705:b1dc14153d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "evergreen",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:50"
+        },
+        "rec_key": "3904705:b1dc14153d",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "high": {
+        "gross_minutes": 410,
+        "start_time": "08:00",
+        "end_time": "14:50",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "evergreen",
+            "start_time": "08:00",
+            "end_time": "14:50",
+            "gross": 410,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 4136,
+      "completion_tokens": 286,
+      "cost_usd": 0.0007009
+    },
+    "state": "OH"
+  }
+}

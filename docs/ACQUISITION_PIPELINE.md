@@ -46,11 +46,29 @@ in time. None of this changes the stage flow below (it's cross-cutting instrumen
 gates, not a new stage) — full detail: `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b, each stage's own
 design note.
 
-A clean live non-benchmark end-to-end pass of the now-hardened request loop in one sitting remains the
-natural next exercise (tracked: #122); Phase 2 of epic #209 (a group-aware promotion gate + safe-promotion
-machinery, #212/#213) is next after that. Stages 8–9 are designed, not built (tracked: #89, #93). Detail on
-each stage's present state is in its own `STAGE*_DESIGN_2026-06.md`; the governance/DB/gate architecture
-that ties them together is `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`.
+**Epic #209 Phase 2 landed 2026-07-10 (merged, PR #220):** a group-aware non-inferiority promotion gate
+(LOGO-CV + cluster bootstrap + TOST + ICC/DEFF, proven stats libraries, #212) wired advisory into Stage
+5's frontier tuning, plus safe-promotion machinery (an immutable content-addressed config artifact +
+@champion/@fallback pointers, #213) — shipped **dormant** (activation tracked as one checklist, #219).
+**Epic #200 (shift-left defect-prevention test infra)** — a DB-free test-job guard, a pre-push hook, and
+property/mutation testing (#201–#204) — is built on branch `epic-200-shift-left-defect-prevention` (PR
+#221), not yet merged.
+
+**#122 (the first live non-benchmark end-to-end pass of the request loop) CLOSED 2026-07-06** — the
+natural-next-exercise line above is now history, not a to-do; full report:
+`docs/technical-notes/stage-7-loop-reports/2026-07-06T0458Z-stage7-loop-report.md`. **A SECOND live
+shakedown (batch_00013) ran 2026-07-11** to re-validate the loop against the epic #200/#209-hardened
+pipeline — in progress as of this writing. It found and fixed two request-loop regressions (riding on PR
+#221): a stale-alternate display/exclusion gap across rounds (#231) and a gate@7 view that read
+latest-extraction-only, so a scoped retry could make an earlier run's solid facts disappear (#232, fixed
+via a new cumulative-merge core, codified as REQ-122). Several upstream findings (Stages 1/2/3/5) were
+also logged, not yet fixed: #222/#225/#227/#223/#224/#226/#228/#229. Full detail:
+`STAGE7_EXTRACT_DESIGN_2026-06.md` §6 and each affected stage's own decision log.
+
+Stages 8–9 are designed, not built (tracked: #89, #93). The live gate-mode (manual/auto) persistence +
+console toggle (#104) — which #211's live wiring and #214's measured-pass both wait on — is next up after
+PR #221 merges. Detail on each stage's present state is in its own `STAGE*_DESIGN_2026-06.md`; the
+governance/DB/gate architecture that ties them together is `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`.
 
 > **What this replaces.** The Jan-2026 "production ready" design on this page — Crawlee *blind-maps* a district site → Ollama *ranks* URLs → Ollama *triages* PDFs — was superseded on 2026-06-13 after benchmarking. **Blind crawling does not find schedules; local Ollama extraction topped out ~37%; the Ollama models were deleted.** The validated design is **search-led discovery → tiered capture → local filtering → cheap-cloud council extraction → modal aggregation → fail-loud statutory fallback.** The salvageable implementation detail from the old design (modal dismissal, Google-Drive handling, edge-case/anti-bot rules, the Crawlee service itself re-cast as a *one-hop fetcher / school enumerator*) is retained below; the dead parts (blind mapping, Ollama rank/triage, the learning loop) are archived in git history.
 

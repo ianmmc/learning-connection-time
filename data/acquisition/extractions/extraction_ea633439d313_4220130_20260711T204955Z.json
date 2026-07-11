@@ -1,0 +1,89 @@
+{
+  "handoff_hash": "ea633439d313",
+  "district": {
+    "district_id": "4220130",
+    "name": "Redbank Valley SD",
+    "reps": [
+      {
+        "rec_key": "4220130:059feb5851",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": null,
+                "end_time": null,
+                "school_name": "Redbank Valley Primary School (K - 2)",
+                "confidence": "low"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": null,
+                "end_time": null,
+                "school_name": "Redbank Valley Intermediate School (3 - 6)",
+                "confidence": "low"
+              },
+              {
+                "grade_level": "high",
+                "start_time": null,
+                "end_time": null,
+                "school_name": "Redbank Valley High School (7-12)",
+                "confidence": "low"
+              }
+            ],
+            "prompt_tokens": 21143,
+            "completion_tokens": 148,
+            "cost_usd": 0.0021735,
+            "latency_ms": 2768,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783802994-aYkUgEJojjTmqM8U5FIA",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": false,
+            "error": "Error code: 400 - {'error': {'message': \"This endpoint's maximum context length is 32768 tokens. However, you requested about 41110 tokens (25110 of text input, 16000 in the output). Please reduce the length of either one, or use the context-compression plugin to compress your prompt automatically.\", 'code': 400, 'metadata': {'provider_name': None}}, 'user_id': 'user_3F6G2u57EqCPewKcTHYL5cGYfne'}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 158,
+            "finish_reason": null,
+            "generation_id": null,
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      }
+    ],
+    "accepted": [],
+    "unresolved": [],
+    "n_reps": 1,
+    "n_judged": 0,
+    "bands": {},
+    "telemetry": {
+      "calls": 2,
+      "judge_calls": 0,
+      "errors": 1,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 21143,
+      "completion_tokens": 148,
+      "cost_usd": 0.0021735
+    },
+    "state": "PA"
+  }
+}

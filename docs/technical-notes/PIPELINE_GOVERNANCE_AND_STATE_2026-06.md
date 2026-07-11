@@ -55,21 +55,45 @@ first-class "abandoned" batch status + #171 gate@6 already-dispatched indicator,
 measured pass), and #124 (the cross-boundary `arch-manifest.json` + fitness-function suite, PR #206) — all
 merged. Full detail: each stage's own design note change log; `PROJECT_HISTORY.md`.
 
-**Runtime guardrails for the manual→auto transition, epic #209, Phase 0/1 groundwork BUILT (2026-07-10):**
-three pieces, all born from `production-quality-control-research/FINDINGS-AND-DECISIONS.md`'s synthesis —
-**(1)** the canonical recall floor (`harness.RECALL_FLOOR=0.98`/`FLOOR_TIER="A+B"`) now **enforced inside**
-`build_signals.ingest()`'s transaction via `--assert-floor` (#208, PR #215 — a violation rolls back the
-*whole* re-ingest, not a post-hoc report); **(2)** the anti-survivorship exploration quota's pure
-control-law core, tested and review-hardened (REQ-120/#211, PR #216 — live console wiring still deferred);
-**(3)** the gate-decision calibration log — schema built (REQ-121/#210, PR #217) and **wired live** at
-gate@5/6/7 (PR #218), so the corpus is now accruing forward from every gate action. Full detail: §11b
-below and each stage's own design note.
+**Runtime guardrails for the manual→auto transition, epic #209 — Phase 0/1 groundwork BUILT (2026-07-10),
+Phase 2 BUILT + MERGED (2026-07-10):** all born from `production-quality-control-research/
+FINDINGS-AND-DECISIONS.md`'s synthesis. Phase 0/1: **(1)** the canonical recall floor
+(`harness.RECALL_FLOOR=0.98`/`FLOOR_TIER="A+B"`) now **enforced inside** `build_signals.ingest()`'s
+transaction via `--assert-floor` (#208, PR #215 — a violation rolls back the *whole* re-ingest, not a
+post-hoc report); **(2)** the anti-survivorship exploration quota's pure control-law core, tested and
+review-hardened (REQ-120/#211, PR #216 — live console wiring still deferred); **(3)** the gate-decision
+calibration log — schema built (REQ-121/#210, PR #217) and **wired live** at gate@5/6/7 (PR #218), so the
+corpus is now accruing forward from every gate action. Phase 2 (merged PR #220): **(4)** the group-aware
+non-inferiority promotion gate — LOGO-CV + cluster bootstrap + TOST + ICC/DEFF, proven stats libraries not
+hand-rolled (#212), wired advisory into `frontier gate()`; **(5)** safe-promotion machinery — an immutable
+content-addressed config artifact + @champion/@fallback pointers + the shadow→gate→swap→record flow
+(#213), shipped **DORMANT** (nothing reads the champion pointer live yet). Full detail: §11b below and
+each stage's own design note; activation of the dormant pieces tracked as one checklist (#219).
 
-Next: a clean live non-benchmark end-to-end pass of the now-hardened request loop (tracked: #122 — the
-natural next exercise), Stage 8 (aggregation), or the Lab's remaining backlog (`cost_benchmark`, prompt
-A/B, tracked: #80/#81); the rest of epic #209 (Phase 2: the group-aware promotion gate #212 + safe-promotion
-machinery #213); still open: REQ-100 (staleness) (tracked: #100), gate@6 auto mode (tracked: #104), the
-gate@7 inline PNG/PDF viewer (tracked: #151), and no persisted gate-mode (manual/auto) toggle yet — see §11b.
+**Epic #200 (shift-left defect-prevention infra) BUILT, on branch, not yet merged (2026-07-09/11):**
+the DB-free test-job guard (#201), a pre-push git hook running the DB-free suite + lint-imports (#202),
+property-based (hypothesis) state-machine tests for the batch lifecycle + request-loop directives (#203),
+and an AST mutation sweeper for the highest-stakes pure cores (#204) — all on `epic-200-
+shift-left-defect-prevention` (PR #221, open).
+
+**#122 (the first live non-benchmark end-to-end pass of the request loop) CLOSED 2026-07-06** — 23 fresh
+districts, both back-edges proven end-to-end; full report:
+`docs/technical-notes/stage-7-loop-reports/2026-07-06T0458Z-stage7-loop-report.md`. **A SECOND live
+shakedown ran 2026-07-11** (batch_00013) to re-validate the loop against the epic #200/#209-hardened
+pipeline — IN PROGRESS as of this writing. It found and fixed two request-loop regressions riding on PR
+#221 (**#231** — the `7→6` alternate list could re-offer an already-failed rep across rounds; **#232** —
+gate@7's view/rollup read latest-extraction-only, so a scoped retry could make an earlier run's solid
+facts disappear — fixed via a new cumulative merge, codified as **REQ-122**); logged, not yet fixed:
+**#230** (Stage 6's initial rep pick doesn't apply the retry loop's yield-ranking) and **#233** (whether
+to auto-withdraw a pending request once its target is no longer barren). Upstream findings from the same
+pass, each stage's own doc: #222/#225 (Stage 1/3), #227 (Stage 2), #223/#224/#226/#228 (Stage 5), #229
+(Stage 1). Full detail: `STAGE7_EXTRACT_DESIGN_2026-06.md` §6 (decision log).
+
+Next: merge PR #221 (closes #201–204, #231, #232 on merge); Stage 8 (aggregation, tracked: #89/#90) or the
+Council Lab's remaining backlog (`cost_benchmark`, prompt A/B, tracked: #80/#81); the live gate-mode
+(manual/auto) persistence + console toggle (tracked: #104) that #211's live wiring and #214's
+measured-pass both wait on; still open: REQ-100 (staleness, tracked: #100), the gate@7 inline PNG/PDF
+viewer (tracked: #151).
 
 ---
 

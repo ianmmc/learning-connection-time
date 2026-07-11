@@ -625,3 +625,32 @@ def test_compose_auto_rejects_suppressed_directives(gov_session):
     assert out2["suppressed"] == []
     s.execute(text("DELETE FROM extraction_request WHERE district_id = 'ZZSUP1'"))
     s.execute(text("DELETE FROM district_target WHERE district_id = 'ZZSUP1'"))
+
+
+@govdb
+def test_sent_files_by_rec_unions_the_full_sent_files_list_not_just_sent_file(gov_session):
+    """#231: a dispatch that sent TWO reps of one record only names the first-seen in `sent_file`
+    (kept for the human-readable reason) — the FULL send lives in `sent_files`. The execution-side
+    exclusion (`_bundle_alternate`'s live re-pick) must union BOTH fields, or the second rep of that
+    dispatch could be re-offered as a 'new' alternate in a later round."""
+    gdb.init_precious_schema()
+    s = gov_session
+    s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                   "target, params_json, reason, status, created_at) VALUES "
+                   "('ZZ231', 'h', 'representation', '7->6', 'ZZ231:r1', :p, 'r', 'executed', 't')"),
+              {"p": json.dumps({"sent_file": "a.txt", "sent_files": ["a.txt", "b.txt"]})})
+    s.flush()
+    assert EX._sent_files_by_rec(s, "ZZ231") == {"ZZ231:r1": {"a.txt", "b.txt"}}
+
+
+@govdb
+def test_sent_files_by_rec_still_reads_the_legacy_single_field(gov_session):
+    """A request persisted before #231 (no `sent_files` key) must still exclude its one sent_file."""
+    gdb.init_precious_schema()
+    s = gov_session
+    s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                   "target, params_json, reason, status, created_at) VALUES "
+                   "('ZZ231B', 'h', 'representation', '7->6', 'ZZ231B:r1', :p, 'r', 'executed', 't')"),
+              {"p": json.dumps({"sent_file": "old.txt"})})
+    s.flush()
+    assert EX._sent_files_by_rec(s, "ZZ231B") == {"ZZ231B:r1": {"old.txt"}}

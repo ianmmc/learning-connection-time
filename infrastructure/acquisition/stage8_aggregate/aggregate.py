@@ -170,6 +170,36 @@ def consensus_school_facts(model_rows, judge_rows=None):
                          "gross": gross, "models": models, "method": method})
     return accepted, unresolved
 
+def merge_fact_runs(facts):
+    """Cumulative Stage-7 truth across a district's production runs (REQ-122, #232): follow-up
+    rounds FILL GAPS, they never regress solid signal advancing to Stage 8. `facts`: school_fact
+    dicts from ANY number of runs, each carrying `extraction_id` (run order), `band`, `school`,
+    `status`. Returns (accepted, unresolved), deduped per (band, school):
+      - an ACCEPTED fact beats any unresolved for the same school, in either run order — a later
+        thin retry cannot knock out an earlier solid extraction (the Brownsville 7→0 case);
+      - among multiple ACCEPTED: the EARLIEST run wins (fill-gaps-not-overwrite; correcting a
+        solid fact is a gate@8 human determination, never a silent later-run override);
+      - among UNRESOLVED only: the LATEST run wins (the freshest disagreement diagnostic).
+    Pure + deterministic (output sorted by (band, school)); the caller supplies rows from
+    run_kind='production' extractions only."""
+    best = {}
+    for f in facts:
+        key, cur = (f["band"], f["school"]), best.get((f["band"], f["school"]))
+        if cur is None:
+            best[key] = f; continue
+        acc_new, acc_cur = f["status"] == "accepted", cur["status"] == "accepted"
+        if acc_new and not acc_cur:
+            best[key] = f                                             # solid signal fills the gap
+        elif acc_new and acc_cur:
+            if f["extraction_id"] < cur["extraction_id"]: best[key] = f   # earliest accepted stands
+        elif not acc_new and not acc_cur:
+            if f["extraction_id"] > cur["extraction_id"]: best[key] = f   # freshest diagnostic
+        # unresolved-new vs accepted-current: keep current (never regress)
+    key_fn = lambda f: (f["band"], f["school"])  # noqa: E731
+    return (sorted((f for f in best.values() if f["status"] == "accepted"), key=key_fn),
+            sorted((f for f in best.values() if f["status"] != "accepted"), key=key_fn))
+
+
 def district_bands_from_facts(accepted):
     """Mode (deterministic) over accepted per-school gross values, per band. Returns
     {band: {gross_minutes, start, end, n_schools, method, schools:[...]}}."""

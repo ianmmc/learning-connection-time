@@ -1,0 +1,375 @@
+{
+  "handoff_hash": "27b64cab58a9",
+  "created_at": "2026-07-11T21:40:03Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "fingerprints": {
+    "3601002": {
+      "config": "e2d24d579723",
+      "labels": "20f67e550491",
+      "data": "c925094c0b2d"
+    },
+    "4220130": {
+      "config": "e2d24d579723",
+      "labels": "ae9e3d089eff",
+      "data": "4c2cfc602d2e"
+    },
+    "4843560": {
+      "config": "e2d24d579723",
+      "labels": "9f6ce283b121",
+      "data": "d8b5ccb60d41"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v1"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.0071400000000000005,
+    "n_reps": 7,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "3601002",
+      "name": "BROWNSVILLE ASCEND CHARTER SCHOOL",
+      "state": "NY",
+      "topology": "single_school",
+      "records": [
+        {
+          "rec_key": "3601002:6fb0dfadce",
+          "url": "https://www.ascendlearning.org/schools/middle-schools/",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3601002:af4ea4bf6f",
+          "url": "https://www.ascendlearning.org/schools/lower-schools/",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3601002:9821f27b80",
+          "url": "https://www.ascendlearning.org/middle-schools/bushwick-ascend-middle/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:fbd5b39e24",
+          "url": "https://www.ascendlearning.org/lower-schools/canarsie-ascend-lower/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:0cb97685dd",
+          "url": "https://www.ascendlearning.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:696f2434bb",
+          "url": "https://www.ascendlearning.org/lower-schools/brooklyn-ascend-lower/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:654259307b",
+          "url": "https://www.ascendlearning.org/enroll/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:04ea3f4aa7",
+          "url": "https://www.ascendlearning.org/high-schools/brooklyn-ascend-high-school/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:0f047e1bfb",
+          "url": "https://www.ascendlearning.org/middle-schools/canarsie-ascend-middle/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:cf220cebfe",
+          "url": "https://www.ascendlearning.org/lower-schools/brownsville-ascend-lower/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:95ccf38d52",
+          "url": "https://www.ascendlearning.org/2022/11/01/ascend-public-charter-schools-get-usd11-million-donation-from-philanthropist-mackenzie-scott/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:d1436a5b29",
+          "url": "https://www.ascendlearning.org/2021/02/25/recy-benjamin-dunn-to-join-ascend-public-charter-schools-as-chief-executive-officer/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:ae2b0e4a56",
+          "url": "https://www.ascendlearning.org/lower-schools/bushwick-ascend-lower/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:10b663588c",
+          "url": "https://www.ascendlearning.org/2026/05/13/2026-2027-school-year-at-ascend/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:c738c83041",
+          "url": "https://www.ascendlearning.org/2022/02/15/why-black-educational-leadership-matters/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:fb46787b20",
+          "url": "https://www.ascendlearning.org/governance/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:03cab24008",
+          "url": "https://www.ascendlearning.org/schools/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:b0e30d480e",
+          "url": "https://www.ascendlearning.org/lower-schools/cypress-hills-ascend-lower/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 2,
+      "est_usd": 0.00204
+    },
+    {
+      "district_id": "4220130",
+      "name": "Redbank Valley SD",
+      "state": "PA",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "4220130:9f2ff8eab8",
+          "url": "https://www.redbankvalley.net/index.php/schools/rvhs/9-high-school.html",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4220130:059feb5851",
+          "url": "http://www.redbankvalley.net/images/pdf/Elem_Handbook.pdf",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "rec_key": "4220130:5ea2e85cc4",
+          "url": "http://www.redbankvalley.net/images/High_School/21-22_HS_Handbook.pdf",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                5
+              ]
+            }
+          ]
+        },
+        {
+          "rec_key": "4220130:89c87945c6",
+          "url": "https://redbankvalley.net/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4220130:1d9f9e991a",
+          "url": "https://www.redbankvalley.net/images/Title_1/RVIS_ParentTeacher_Compact_2025-2026.pdf",
+          "decision": "reject",
+          "reason": "non-target:unusable",
+          "reps": []
+        },
+        {
+          "rec_key": "4220130:ea18ab1f7f",
+          "url": "http://redbankvalley.net/images/District/Redbank-Valley-SD_Comprehensive-Plan_2020-2023.pdf",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4220130:ab77a8bf02",
+          "url": "http://redbankvalley.net/images/School_Board/2018/Minutes_October_1_2018.pdf",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 2,
+      "est_usd": 0.00204
+    },
+    {
+      "district_id": "4843560",
+      "name": "UNION HILL ISD",
+      "state": "TX",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "4843560:ab5b280978",
+          "url": "https://www.uhisd.com/86026_2",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4843560:fe6b1cc806",
+          "url": "https://www.uhisd.com/index.php?pageID=smartSiteFeed&psqFeed=true&articleID=79404429",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4843560:2c2688daff",
+          "url": "https://www.uhisd.com/196778_2",
+          "decision": "send",
+          "reason": "target-label:explicit_instructional_time",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4843560:4e1ea028f0",
+          "url": "https://www.uhisd.com/85997_2",
+          "decision": "send",
+          "reason": "target-label:explicit_instructional_time",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4843560:fb01c2fbc8",
+          "url": "https://www.uhisd.com/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 3,
+      "est_usd": 0.0030600000000000002
+    }
+  ]
+}

@@ -252,3 +252,13 @@ before the package promotion to `stage3_capture/`._
 **2026-07-01 — Stage 3 gained iframe/embed capture + `cms_hint` promotion (REQ-115).** Two Stage-5 V2 findings — `embedded_feed` pollution and embedded-calendar clusters — turned out to be structural (an `<iframe>`/`<embed>` pointing at a known third-party host), not a heuristic Stage 5 could reliably guess from URL/keyword patterns alone. See §2c.
 
 **2026-07-02 — capture-manifest integrity gaps closed (fable review issues #18, #35, #42, #43, #44).** Adversarial review found the screenshot success path could leave a phantom `files.png` manifest entry on timeout (fixed — mirrors the pdf `.then()` pattern), a single task exception could abort every district's manifest in a run (fixed — whole-task try/catch + `Promise.allSettled`), emergent dedup didn't account for redirect targets (fixed — `noteFinalUrl`), and the Python-side reconstruct tool's URL normalization diverged from Node's `new URL()` and mis-keyed generic Drive downloads (both fixed — see §3). See §2b/§2e for the present-state description.
+
+**2026-07-11 — capture throughput truncates large/slow districts under the per-district deadline
+(#225, logged, not yet fixed).** Observed in the batch_00013 shakedown: Jefferson County (AL) captured
+85/112 URLs (100% of those captured were usable) before `CAPTURE_DEADLINE_S` cut the district off — the
+math Ian named live: (per-URL time limit × total URLs) can exceed the whole-district time limit for a
+large enough district, independent of any per-URL slowness bug. Not an ad hoc re-trigger candidate (Ian
+explicitly declined a bandage re-capture) — the fix belongs at the capacity-planning level (raise the
+district deadline for large districts, shard the capture, or accept partial + a targeted top-up), not a
+one-off retry. Whether Jefferson's partial 85 compromises the concurrent #122 shakedown was assessed and
+confirmed NOT a conflict — logged for later, independent of the loop-validation work.

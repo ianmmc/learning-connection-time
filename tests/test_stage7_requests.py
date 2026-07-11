@@ -233,3 +233,26 @@ def test_explain_reports_detect_time_suppression():
                               real_bands={"elementary"}, explain=explain)
     assert reqs == []                                       # e covered; middle phantom; rep suppressed
     assert explain == {"phantom_bands": ["middle"], "suppressed_barren_reps": 1}
+
+
+# --------------------------- #231: the request records its FULL send (round lineage) ---------------------------
+def test_7to6_params_record_all_sent_files_not_just_the_first():
+    # One dispatch sent TWO reps of the same record, both barren. The single first-seen `sent_file`
+    # stays for the human reason, but `sent_files` must name BOTH — it is the lineage the next
+    # round's history exclusion subtracts, so a file it omits could be circularly re-offered (#231).
+    res = _result(reps=[{"rec_key": "D1:aa", "file": "page.txt", "accepted": []},
+                        {"rec_key": "D1:aa", "file": "harvest_slice.txt", "accepted": []}])
+    reqs = RQ.detect_requests(res, claimed_bands=["elementary"],
+                              alternates_by_rec={"D1:aa": [{"file": "page.png", "kind": "image"}]})
+    r = next(r for r in reqs if r["route"] == RQ.ROUTE_ALT_REP)
+    assert r["params"]["sent_file"] == "page.txt"                       # first seen, for the reason
+    assert r["params"]["sent_files"] == ["harvest_slice.txt", "page.txt"]   # the FULL send, sorted
+
+
+def test_7to3_recapture_params_also_record_sent_files():
+    # The recapture route is part of the same lineage: after a recapture produces new reps, the old
+    # failed file must still be excludable from future 7->6 alternate lists.
+    res = _result(reps=[{"rec_key": "D1:bb", "file": "page.txt", "accepted": []}])
+    reqs = RQ.detect_requests(res, claimed_bands=["elementary"])        # no alternates -> 7->3
+    r = next(r for r in reqs if r["route"] == RQ.ROUTE_RECAPTURE)
+    assert r["params"]["sent_files"] == ["page.txt"]
