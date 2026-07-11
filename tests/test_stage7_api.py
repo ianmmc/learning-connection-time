@@ -67,10 +67,12 @@ def test_district_detail_shape(monkeypatch):
                          "created_by": "x", "cost_usd": 0.003, "n_accepted": 1,
                          "n_unresolved": 1, "n_reps": 1}])
     facts = _Result(rows=[
-        {"band": "elementary", "school": "a", "status": "accepted", "start_time": "08:00",
+        {"extraction_id": 1, "handoff_hash": "h", "band": "elementary", "school": "a",
+         "status": "accepted", "start_time": "08:00",
          "end_time": "14:00", "gross_minutes": 360, "method": "council_agree",
          "models_json": '["m1"]', "detail_json": None, "rec_key": "D1:aa", "source_file": "f"},
-        {"band": "high", "school": "b", "status": "unresolved", "start_time": None, "end_time": None,
+        {"extraction_id": 1, "handoff_hash": "h", "band": "high", "school": "b",
+         "status": "unresolved", "start_time": None, "end_time": None,
          "gross_minutes": None, "method": "disagree", "models_json": None,
          "detail_json": '{"starts": {}}', "rec_key": "D1:bb", "source_file": "f"}])
     reqs = _Result(rows=[{"request_id": 9, "altitude": "district", "route": "7->2", "target": "D1",
@@ -81,6 +83,31 @@ def test_district_detail_shape(monkeypatch):
     assert body["bands"]["elementary"]["gross_minutes"] == 360
     assert len(body["accepted"]) == 1 and len(body["unresolved"]) == 1
     assert body["requests"][0]["route"] == "7->2"
+
+
+def test_district_detail_is_cumulative_a_barren_retry_does_not_regress_the_view(monkeypatch):
+    # REQ-122 / #232 (the Brownsville case): the header row is the LATEST run (a scoped 7->6 retry
+    # that accepted nothing), but accepted/bands must still show run 1's solid facts — the facts
+    # query spans ALL production runs and merge_fact_runs keeps the accepted winner per school.
+    ext = _Result(rows=[{"extraction_id": 2, "handoff_hash": "h2", "created_at": "t2",
+                         "created_by": "x", "cost_usd": 0.001, "n_accepted": 0,
+                         "n_unresolved": 0, "n_reps": 1}])           # latest run: 0 accepted
+    facts = _Result(rows=[                                           # cross-run query result
+        {"extraction_id": 1, "handoff_hash": "h1", "band": "elementary", "school": "a",
+         "status": "accepted", "start_time": "08:00", "end_time": "14:00", "gross_minutes": 360,
+         "method": "council_agree", "models_json": '["m1"]', "detail_json": None,
+         "rec_key": "D1:aa", "source_file": "f"},
+        {"extraction_id": 2, "handoff_hash": "h2", "band": "elementary", "school": "a",
+         "status": "unresolved", "start_time": None, "end_time": None, "gross_minutes": None,
+         "method": "disagree", "models_json": None, "detail_json": None,
+         "rec_key": "D1:aa", "source_file": "f"}])                   # the retry's barren echo
+    _use(monkeypatch, _Con([ext, facts, _Result()]))
+    body = client.get("/api/extract/district/D1").json()
+    assert body["extraction"]["extraction_id"] == 2                  # header = latest run
+    assert len(body["accepted"]) == 1                                # run 1's fact survives
+    assert body["accepted"][0]["extraction_id"] == 1                 # with its provenance
+    assert body["unresolved"] == []                                  # accepted beats the retry echo
+    assert body["bands"]["elementary"]["gross_minutes"] == 360       # rollup over the merge
 
 
 def test_district_detail_404_when_no_extraction(monkeypatch):

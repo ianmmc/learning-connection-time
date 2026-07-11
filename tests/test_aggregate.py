@@ -106,3 +106,68 @@ class TestModeStability:
     def test_not_stable_when_scattered_or_bimodal(self):
         assert A.mode_stable([390, 450, 395, 470, 300, 360]) is False   # drift, low share
         assert A.mode_stable([390, 390, 470, 470, 390, 470]) is False   # 50/50 bimodal
+
+
+# ------------------------------------------------- REQ-122 cumulative merge (#232, fill-not-overwrite)
+def _f(ext, band, school, status, gross=None):
+    return {"extraction_id": ext, "band": band, "school": school, "status": status,
+            "gross_minutes": gross, "detail_json": None}
+
+
+class TestMergeFactRuns:
+    """REQ-122: a follow-up round FILLS GAPS, it never regresses solid signal advancing to Stage 8."""
+
+    def test_the_brownsville_case_a_barren_retry_cannot_erase_an_earlier_accepted_run(self):
+        # run 1 accepted 2 schools; the scoped 7->6 retry (run 2) yielded NOTHING for them.
+        run1 = [_f(1, "elementary", "a", "accepted", 360), _f(1, "middle", "b", "accepted", 380)]
+        run2 = []                                                    # the retry accepted 0 facts
+        accepted, unresolved = A.merge_fact_runs(run1 + run2)
+        assert [f["school"] for f in accepted] == ["a", "b"]         # solid signal survives
+        assert unresolved == []
+
+    def test_a_later_run_fills_a_gap_left_unresolved_by_an_earlier_run(self):
+        facts = [_f(1, "high", "h", "unresolved"), _f(2, "high", "h", "accepted", 400)]
+        accepted, unresolved = A.merge_fact_runs(facts)
+        assert accepted[0]["extraction_id"] == 2 and unresolved == []   # gap filled
+
+    def test_an_accepted_fact_beats_unresolved_in_either_run_order(self):
+        # a later retry that DISAGREES (unresolved) must not displace the earlier accepted fact.
+        facts = [_f(1, "high", "h", "accepted", 400), _f(2, "high", "h", "unresolved")]
+        accepted, unresolved = A.merge_fact_runs(facts)
+        assert accepted[0]["extraction_id"] == 1 and unresolved == []
+
+    def test_among_duplicate_accepted_the_earliest_run_wins_fill_not_overwrite(self):
+        # correcting a solid fact is a gate@8 human determination, never a silent later-run override.
+        facts = [_f(2, "middle", "m", "accepted", 390), _f(1, "middle", "m", "accepted", 380)]
+        accepted, _ = A.merge_fact_runs(facts)
+        assert len(accepted) == 1
+        assert accepted[0]["extraction_id"] == 1 and accepted[0]["gross_minutes"] == 380
+
+    def test_among_unresolved_only_the_latest_diagnostic_wins(self):
+        facts = [_f(1, "high", "h", "unresolved"), _f(2, "high", "h", "unresolved")]
+        _, unresolved = A.merge_fact_runs(facts)
+        assert len(unresolved) == 1 and unresolved[0]["extraction_id"] == 2
+
+    def test_distinct_schools_and_bands_never_collide(self):
+        facts = [_f(1, "elementary", "x", "accepted", 350), _f(2, "elementary", "y", "accepted", 355),
+                 _f(2, "middle", "x", "accepted", 370)]              # same school name, other band
+        accepted, _ = A.merge_fact_runs(facts)
+        assert len(accepted) == 3
+
+    def test_output_is_deterministic_band_school_sorted_and_input_order_free(self):
+        facts = [_f(2, "middle", "b", "accepted", 1), _f(1, "elementary", "z", "accepted", 2),
+                 _f(1, "elementary", "a", "unresolved")]
+        a1, u1 = A.merge_fact_runs(facts)
+        a2, u2 = A.merge_fact_runs(list(reversed(facts)))
+        assert (a1, u1) == (a2, u2)
+        assert [(f["band"], f["school"]) for f in a1] == [("elementary", "z"), ("middle", "b")]
+
+    def test_merged_accepted_feed_the_band_rollup_unchanged(self):
+        # the merge's output is what district_bands_from_facts consumes at gate@7 (server wiring).
+        facts = [_f(1, "elementary", "a", "accepted", 360), _f(2, "elementary", "b", "accepted", 360)]
+        accepted, _ = A.merge_fact_runs(facts)
+        agg = [{"band": f["band"], "school": f["school"], "gross": f["gross_minutes"],
+                "start": "08:00", "end": "14:00", "models": ["m1", "m2"], "method": "council_agree"}
+               for f in accepted]
+        bands = A.district_bands_from_facts(agg)
+        assert bands["elementary"]["gross_minutes"] == 360 and bands["elementary"]["n_schools"] == 2
