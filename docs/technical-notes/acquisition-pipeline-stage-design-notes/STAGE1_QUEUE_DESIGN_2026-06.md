@@ -415,3 +415,16 @@ instead of measuring the council). Built `stage1_queue/benchmark_batch.py`: a th
 fixed district list, injecting each district's frozen curation files directly at the Stage-3 seam and
 freezing the batch as created+approved in one step. `batch_type` is the enforcement key for the wall
 (never Stage-9-written, never counted in enrichment stats) that Stages 7–9 must respect. See §2h.
+
+**2026-07-11 — two findings logged from the batch_00013 shakedown, neither yet fixed.**
+- **#222 — juvenile-justice / alternative-facility "schools" can enter a district's draw and get
+  matched to the wrong conventional school.** Surfaced when Jackson County Juvenile Ctr (MO) appeared
+  matched to DeLaSalle Charter School — a juvenile-justice facility's day is a fundamentally different
+  thing from a conventional school day and should never stand in for one. Fix direction: an exclusion
+  filter recognizing juvenile-justice/alternative-facility NCES types at the draw, not a per-district
+  hand-fix.
+- **#229 — batch creation should refuse (or loudly flag) any selected district with a blank NCES
+  `website` column.** Root cause of #227 (Stage 2 unscoped-discovery contamination — see that doc): an
+  empty `website` produces `domain=''`, which flips discovery to its unscoped branch and lets common
+  school names collide nationwide. A Stage-1 pre-flight guard closes this at the source; `batch_00000`
+  (benchmark) is exempt since its curated GT files bypass discovery entirely.

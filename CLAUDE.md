@@ -111,30 +111,42 @@ live in the governance DB; `handoff_<hash>_<ts>.json` under `data/acquisition/ha
 `district_status.json` into every commit — on a fresh clone run `git config core.hooksPath .githooks`
 (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-10):** the console runs the pipeline live through **`gate@7`**. The **"whittle
+**Current status (2026-07-11):** the console runs the pipeline live through **`gate@7`**. The **"whittle
 down open issues" hygiene campaign is fully CLOSED** — Batches 1–6 + #124 (arch-manifest/fitness-function
-suite), all merged (PRs #177–#199, #206). **The four commandments** (Ian, 2026-07-09 — auditability the
-north star, minimize-bad-data-at-scale ⇒ automation is a correctness REQUIREMENT not a convenience, tight
-cash spend, best use of one person's time; posture: "as automated as is tolerable") now frame **epic
-#209** (runtime guardrails for the manual→auto transition), whose **Phase 0/1 groundwork shipped
-2026-07-09/10**: **#208** the canonical recall floor, enforced *inside* the re-ingest transaction (PR
-#215 — a violation rolls back the whole re-ingest, not a post-hoc report); **#211/REQ-120** the
-anti-survivorship exploration-quota's pure control-law core, tested + review-hardened (PR #216 — live
-console wiring still deferred, intentionally: the audit's signal already exists via Ian's census-labeling
-habit, so it ships *with* gate@5-auto, not before it); **#210/REQ-121** the gate-decision calibration log
-— schema built (PR #217) **and wired live** at gate@5/6/7 (PR #218), so a shadow-mode audit corpus now
-accrues forward from every human gate action. Every PR in this arc (like the hygiene campaign before it)
-went through a max-effort adversarial review round that found real defects even in "just infrastructure"
-work — see `docs/PROJECT_HISTORY.md`'s two newest entries for the full lesson set.
-**Next:** epic #209 Phase 2 (#212 group-aware non-inferiority promotion gate, #213 safe-promotion
-machinery — no cash spend); then the live gate-mode (manual/auto) persistence + console toggle that both
-Phase-1 guardrails' demote-hooks are waiting on (currently unbuilt — every gate is de-facto always-manual);
-then epic #200's defect-prevention items (#201–#204) at discretion. Separately still open: a clean live
-non-benchmark end-to-end pass of the hardened request loop (#122); Stage 8 (aggregate, not yet built —
-#88/#89, and the natural home for gate@8's calibration hook once it exists); the Council Lab backlog
-(#80/#81). Full detail: `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b (the complete guardrail design +
-as-built detail), `STAGE5_FILTER_DESIGN_2026-06.md` §5a/§5b, `docs/PROJECT_HISTORY.md` (both campaign
-entries).
+suite), all merged (PRs #177–#199, #206). **Epic #209** (runtime guardrails for the manual→auto
+transition, framed by the four commandments — auditability the north star, minimize-bad-data-at-scale ⇒
+automation is a correctness REQUIREMENT, tight cash spend, best use of one person's time) has now shipped
+**both Phase 0/1 (2026-07-09/10) and Phase 2 (2026-07-10, MERGED — PR #220)**: #208 recall floor
+(enforced inside the re-ingest transaction), #211/REQ-120 exploration-quota control law (live wiring
+deferred), #210/REQ-121 gate-decision calibration log (wired live at gate@5/6/7, corpus accruing), #212
+group-aware promotion gate + #213 safe-promotion machinery (both **dormant** — activation tracked as one
+checklist, #219). **Epic #200** (shift-left defect-prevention: DB-free test guard #201, pre-push hook
+#202, property tests #203, mutation testing #204) is built on branch
+`epic-200-shift-left-defect-prevention` — **PR #221 open, not yet merged.**
+
+**#122 (first live non-benchmark end-to-end pass of the request loop) CLOSED 2026-07-06** (full report:
+`docs/technical-notes/stage-7-loop-reports/2026-07-06T0458Z-stage7-loop-report.md`). **A SECOND live
+shakedown (batch_00013) ran 2026-07-11** to re-validate the loop against the epic #200/#209-hardened
+pipeline — **IN PROGRESS** (8/12 districts through gate@7, several pending requests awaiting review). It
+found + fixed two real request-loop regressions riding on PR #221: **#232** gate@7's view/rollup read
+latest-extraction-only, so a scoped retry could make an earlier run's solid facts disappear (fixed via a
+new cumulative-merge core, `stage8_aggregate.aggregate.merge_fact_runs`, codified as **REQ-122**); **#231**
+the `7→6` alternate list could re-offer an already-failed rep across rounds (fixed on both the detection
+AND execution layers — a real gap between them, found while verifying). Both riding on PR #221. Logged,
+not yet fixed: **#230** (Stage 6's initial rep pick doesn't reuse the retry loop's yield-ranking), **#233**
+(auto-withdraw a request once its target is no longer barren — a design question), and upstream findings
+#222/#223/#224/#225/#226/#227/#228/#229 (Stages 1/2/3/5). Every PR in this arc (like the hygiene campaign
+before it) went through a max-effort adversarial review round that found real defects even in "just
+infrastructure" work — see `docs/PROJECT_HISTORY.md`'s newest entries for the full lesson set.
+
+**Next:** merge PR #221 (closes #201–204, #231, #232 on merge); then the live gate-mode (manual/auto)
+persistence + console toggle (#104) that both Phase-1 guardrails' demote-hooks are waiting on (currently
+unbuilt — every gate is de-facto always-manual); then #211 live wiring + #214 measured-pass. Separately
+still open: finish the batch_00013 shakedown (dispatch remaining districts, resolve pending requests);
+Stage 8 (aggregate, not yet built — #89/#90, and the natural home for gate@8's calibration hook + REQ-122's
+merge logic once it exists); the Council Lab backlog (#80/#81). Full detail:
+`PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (current-status banner + §11b), `STAGE7_EXTRACT_DESIGN_2026-06.md`
+§6 (the shakedown's decision log), `docs/PROJECT_HISTORY.md` (newest entries).
 
 ---
 

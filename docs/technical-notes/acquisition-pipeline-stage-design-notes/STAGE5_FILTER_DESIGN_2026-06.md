@@ -563,6 +563,23 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 
 ## Change log
 
+- **2026-07-11 — four findings logged from the batch_00013 live shakedown (#122's second pass), none
+  yet fixed.** Found by the human at gate@5 while labeling in parallel with the shakedown, not by a
+  planned review:
+  - **#223 — "Summer School" has no Axis-2 confounder checkbox/negative detector**, so a summer-program
+    page (e.g. a district's `students-families/summer-school.cfm`) has nowhere honest to be labeled.
+  - **#224 — 0-link districts sort to the top of "Needs Attention" even with "Hide Resolved" on**
+    (Denton Elem MT, East Chicago Urban Enterprise Academy IN) — a district with nothing left to
+    evaluate shouldn't compete for attention against districts that do.
+  - **#226 — "feed"/"live-feed" in a URL is not yet a negative scoring signal**, though it correlates
+    with the news/social-feed confounder that already has a detector for other shapes.
+  - **#228 — no "Reset labels" action exists** to return a record/district to `unlabeled`. Motivating
+    case: batch_00013's Millard Public Schools (NE) discovery ran unscoped (empty NCES domain, #227) and
+    pulled real bell schedules from OTHER districts — pages that ARE target-shaped but belong to the
+    wrong entity. Neither `target_absent` nor `unusable` is an honest label for them (mislabeling a real
+    schedule as non-target would corrupt the detectors' training signal), so the only truthful state is
+    unlabeled — which the console currently has no way to reach once a label is applied.
+
 - **2026-07-10 — PR #220 max-effort review round: 11 findings, all fixed — see §5c "Review-hardened".**
   Headline: pingouin's ICC silently listwise-deletes unbalanced districts (replaced with the
   pingouin-anchored ANOVA ICC(1) estimator); the CLI's default gate challenger could be an infeasible

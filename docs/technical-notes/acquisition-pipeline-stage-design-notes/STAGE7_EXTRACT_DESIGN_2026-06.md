@@ -27,11 +27,45 @@ request cards with **lineage** (where an executed directive went + its live stat
 badges (#154), and an in-Stage-7 **preview modal** before composing (#154). All gated by the REQ-051
 budget governor + a per-district round depth guard (rounds, not rows — the #153 fix).
 
-**Live-exercised, not yet a full clean end-to-end pass:** the shakedown that produced epic #163 ran real
-(non-benchmark) districts — Marion, Pittsylvania, Las Cruces — through much of this loop repeatedly while
-building it, surfacing and fixing real bugs (the #158 release cluster-drop, the image-first picker, the
-row-vs-round depth guard, a live defer-deadlock). The *corrected* code has not yet been run start-to-finish
-on a fresh live batch in one pass. (tracked: #122)
+**Live-exercised across TWO full shakedowns.** The epic #163 build shakedown ran real (non-benchmark)
+districts — Marion, Pittsylvania, Las Cruces — through much of this loop repeatedly while building it,
+surfacing and fixing real bugs (the #158 release cluster-drop, the image-first picker, the row-vs-round
+depth guard, a live defer-deadlock); **issue #122 (the first clean end-to-end pass) closed 2026-07-06**
+(23 fresh districts, 37 runs, $0.195, both back-edges proven — full report:
+`docs/technical-notes/stage-7-loop-reports/2026-07-06T0458Z-stage7-loop-report.md`).
+
+**A SECOND live shakedown ran 2026-07-11** (batch_00013, 12 districts) to re-validate the loop against
+the epic #200/#209-hardened pipeline — IN PROGRESS as of this writing (8/12 districts dispatched +
+extracted, 6 requests still pending review). It surfaced two real request-loop regressions, both fixed
+on this pass:
+- **#232 — gate@7's view/rollup read latest-extraction-only**, so a scoped `7→6` retry made an earlier
+  run's solid facts (Brownsville: 7 accepted) disappear from the console (read as 0). Facts were never
+  lost, only the read was wrong. Fixed: `aggregate.merge_fact_runs` — a pure, deterministic per-`(band,
+  school)` merge across ALL production runs (accepted beats unresolved in either run order; among
+  duplicate accepteds the EARLIEST wins — fill gaps, never silently overwrite; among unresolved-only the
+  latest diagnostic wins). Codified as **REQ-122** (*follow-up rounds fill gaps, never regress solid
+  signal*) — see §0 below.
+- **#231 — the `7→6` alternate list shown at DETECTION excluded only the current dispatch's sent reps**,
+  not the record's whole round history, so a NEW pending request's displayed top alternate could name a
+  rep already tried and failed in an earlier round (live: Union Hill's new request re-named round-1's
+  `tesseract_raster.txt`; Brownsville's re-named round-1's `page.txt`). This was a detection/display bug,
+  not an execution one — `stage7_execute._sent_files_by_rec` already unions every prior round's
+  `sent_file` at EXECUTION time (a pre-existing "F4" protection, §0), so approving and firing the stale
+  display would still have picked a genuinely-untried rep live; the defect was that gate@7's own review
+  surface showed the human a misleading "next step." Fixed on BOTH sides for full detect/execute
+  consistency: `stage7_run._district_request_inputs` now unions every prior `7→6`/`7→3` request's
+  `sent_file`/`sent_files` into the DETECTION-time exclusion set (the record's own request lineage IS its
+  dispatch history); the detector now records `sent_files` — ALL files of a multi-rep send, not just the
+  first-seen — on every emitted request; and `stage7_execute._sent_files_by_rec` now also reads
+  `sent_files`, closing the one real gap that survived from before: a dispatch sending TWO reps of one
+  record left the second, un-named rep re-offerable at EXECUTE time too (the legacy single `sent_file`
+  field couldn't record it).
+
+Two more findings from the same pass are logged, not yet fixed: **#230** (Stage 6's initial rep pick
+doesn't apply the retry loop's yield-ranking, so a predictably-barren rep is sometimes sent round 1) and
+**#233** (whether/how to auto-withdraw a pending request once its target is no longer barren under the
+cumulative state — a design question, not yet resolved). Both fixes above are on branch
+`epic-200-shift-left-defect-prevention` (PR #221), not yet merged to `main`.
 
 ---
 
@@ -160,7 +194,8 @@ APPROVED directives into real back-edge work. Two mechanisms (§3F):
   several, execute once. `pick_alternate()` + `live_alternates()` derive the candidate from the record's
   **live** representation rows (not the request's stored params, so a pre-#155 request still picks
   correctly) and rank yield-first; `_sent_files_by_rec()` unions every already-failed file across ALL of
-  the district's 7→6 history so a round never re-offers a rep that already failed (F4). `_run_bundle_or_own`
+  the district's 7→6 history (F4; both the `sent_files` list and the legacy single `sent_file`, #231) so
+  a round never re-offers a rep that already failed. `_run_bundle_or_own`
   is the inject-or-own idiom + post-commit best-effort `district_status` export (mirrors `dispatch_handoff`'s
   commit-order lesson, #143). **N+1 fix (#148/4C):** `_bundle_alternate` used to load EVERY district
   record (1 query + a rep-query PER record) just to look up the handful named by the approved 7→6s; it now
@@ -190,9 +225,13 @@ APPROVED directives into real back-edge work. Two mechanisms (§3F):
 - `GET /api/extract/districts` — attention-sorted (most pending requests first) list; excludes
   `run_kind='probe'` extractions (#148/4D — a first-class column, not a `-image` hash-suffix match; the
   district-first view shows the primary/production extraction).
-- `GET /api/extract/district/{district_id}` — the latest `run_kind='production'` extraction: computed band rollup
-  (via `AGG.district_bands_from_facts`), accepted/unresolved facts, and the request directives for
-  that district — each now carrying a `lineage` object (#154, `_request_lineage` + `_district_loop_ctx`,
+- `GET /api/extract/district/{district_id}` — the LATEST `run_kind='production'` extraction supplies the
+  header (cost/handoff/timestamp, per-run telemetry only); accepted/unresolved facts and the band rollup
+  are the **CUMULATIVE merge across every production run** (`AGG.merge_fact_runs` → `district_bands_from_facts`,
+  REQ-122/#232 — a scoped `7→6` retry's own barren extraction row must never make an earlier run's solid
+  facts disappear from the console). Each fact carries its originating `extraction_id`/`handoff_hash` so a
+  reviewer can trace which round produced it. The request directives for that district each carry a
+  `lineage` object (#154, `_request_lineage` + `_district_loop_ctx`,
   computed once per detail call from the SAME live checks compose runs, so the card can never disagree
   with what compose would actually do): an executed 7→6 → its handoff + live extraction state; an executed
   7→2/3/1 → its follow-up batch + auto-flow state; an approved 7→6 with rounds exhausted → `blocked` +
@@ -739,3 +778,40 @@ image-vs-text comparison → the request-detection engine → gate@7 console. Ke
   `extraction_request` directives, inflating a production district's pending count and risking a paid
   follow-up sweep of a probe's own findings (fixed: the request loop is now production-only). 1043
   DB-free + 69 govdb, 567 integration green; `lint-imports` 3-4 kept/0 broken.
+- **2026-07-11 — second live shakedown (batch_00013) against the epic #200/#209-hardened pipeline, two
+  request-loop regressions found and fixed (#231, #232, REQ-122).** With #122 (the first clean
+  end-to-end pass) closed 2026-07-06, a fresh live non-benchmark batch was run to re-validate the loop
+  after the epic #200 shift-left/epic #209 guardrail work landed. IN PROGRESS as of this writing (8/12
+  districts through gate@7, 6 requests pending review). Findings:
+  - **#232 — gate@7's district view and band rollup read the LATEST production extraction only.** A
+    scoped `7→6` retry creates a NEW extraction row holding just the retried rep; reading only that row
+    made an earlier round's solid facts invisible (Brownsville Ascend: 7 accepted middle-school facts
+    vanished from the console after a barren vision retry, though never deleted). Fixed with a new pure
+    core, `stage8_aggregate.aggregate.merge_fact_runs` — deterministic per-`(band, school)` merge across
+    every production run for a district (accepted beats unresolved in either run order; among duplicate
+    accepteds the EARLIEST wins, since a follow-up round fills gaps and never silently overwrites solid
+    signal — correcting one is a gate@8 human determination; among unresolved-only the latest diagnostic
+    wins) — codified as **REQ-122**. `extract_district`/`extract_districts` now read across all
+    production runs with per-fact provenance (extraction_id + handoff_hash); the latest run's header
+    (cost/handoff/timestamp) stays per-run telemetry. Remediation needed zero data surgery — the merge
+    restores visibility by construction. 8 pure merge tests (incl. the named Brownsville case) + an
+    endpoint regression test.
+  - **#231 — the `7→6` alternate list shown at gate@7 could re-offer an already-failed rep.** Detection
+    (`stage7_run._district_request_inputs`) built its sent-file exclusion set from the CURRENT dispatch's
+    reps only, so a NEW pending request's displayed "next alternate" could name a file already tried and
+    failed in an earlier round (Union Hill, Brownsville). The pre-existing execution-side protection
+    (`stage7_execute._sent_files_by_rec`, "F4") meant approving the stale display would still have picked
+    a genuinely-untried rep — the bug was a misleading review surface, not a real re-dispatch — but
+    auditing it surfaced a genuine second gap: a dispatch sending TWO reps of one record only names the
+    first-seen file in `sent_file`, so the second could still be re-offered at EXECUTE time too (the
+    single-field history had no way to record it). Fixed on both sides for full detect/execute
+    consistency: the detector now emits `sent_files` (the complete send) alongside the legacy
+    `sent_file`; both `_district_request_inputs` (detection) and `_sent_files_by_rec` (execution) union
+    it into their exclusion sets. 2 pure + 4 govdb tests.
+  - Two further findings logged, not yet fixed: **#230** (Stage 6's initial rep pick doesn't apply the
+    retry loop's yield-ranking, so a predictably-barren rep can be sent round 1 — self-correcting via the
+    loop, but a wasted paid round each time) and **#233** (whether/how to auto-withdraw a pending request
+    once its target is no longer barren under the cumulative state — an open design question, not a bug).
+  - Both #231/#232 fixes are on branch `epic-200-shift-left-defect-prevention` (PR #221), not yet merged
+    to `main`. Also logged from this pass, upstream of Stage 7 (Stages 1/2/3/5/6): #222/#223/#224/#225/
+    #226/#227/#228/#229 — see the respective stage docs.

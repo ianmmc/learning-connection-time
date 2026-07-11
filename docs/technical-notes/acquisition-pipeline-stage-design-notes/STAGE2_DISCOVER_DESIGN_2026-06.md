@@ -242,3 +242,16 @@ found by adversarial review:
 
 Also: `run_wave2`'s `search_fn` parameter lost its retired-`openrouter_search` default (now required); the
 CLI `finish` subcommand refuses on a nonempty residual rather than silently using the retired provider.
+
+**2026-07-11 — a district with an empty NCES website runs UNSCOPED discovery, and common school names
+collide nationwide (#227, logged, not yet fixed).** Found + root-caused in the batch_00013 shakedown:
+Millard Public Schools (NE) is the only district in the batch with `domain=''` (NCES `website` column
+blank, `queue_batch.py`'s `domain = host_of(web) if web else ""`), which flips `discover.py`'s `gate()`
+to its unscoped branch (`return True, "unscoped"` — keeps any non-news result when there's no domain to
+scope to). For common school names ("Reagan", "Russell", "North") the unscoped Google SERP pulled
+same-named schools from OTHER districts nationwide (102 distinct hosts over 147 captures; only 44 on the
+real `mpsomaha.org`). All 11 scoped districts in the same batch were clean (0 off-domain discovered) —
+this is specifically the unscoped-fallback path, not a general discovery-quality problem. Millard's 44
+legitimate captures are still valid; the contamination is confined to gate@5 labeling (STAGE5 change log,
+#228) and quarantined from dispatch until fixed. Companion issue #229 (Stage 1: refuse/flag a blank NCES
+website at batch creation) closes this at the source rather than only downstream at discovery.
