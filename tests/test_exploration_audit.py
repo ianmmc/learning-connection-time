@@ -49,9 +49,22 @@ def test_rate_and_quality_are_exact_complements_after_rounding():
 
 def test_rejection_quality_empty_cohort_is_all_none_not_a_crash():
     m = EA.rejection_quality([])
-    assert m["n"] == 0
+    assert m["n"] == 0 and m["false_neg"] == 0 and m["true_neg"] == 0   # #204: pin the empty-cohort counts
     assert m["false_negative_rate"] is None and m["rejection_quality"] is None
     assert m["fnr_upper_bound_95"] is None
+
+
+def test_rejection_quality_is_reported_to_six_decimals():
+    # #204: 1 of 3 audited rejects was a target -> fnr 1/3, quality 2/3, each rounded to SIX decimals —
+    # the rounding grain the complementary-fields invariant (fnr + quality == 1.0) is built on.
+    m = EA.rejection_quality([True, False, False])
+    assert m["false_negative_rate"] == 0.333333
+    assert m["rejection_quality"] == 0.666667
+
+
+def test_default_sampler_rate_is_a_valid_probability():
+    # #204: the p%-of-flow rate must be a real probability (a mutated 1.05 or -0.95 is not a flow rate).
+    assert 0.0 < EA.DEFAULT_SAMPLE_RATE <= 1.0
 
 
 # ----------------------------- the randomized draw (reproducible, unbiased, growth-stable) -----------------------------
