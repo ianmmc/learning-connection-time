@@ -37,22 +37,25 @@ def _accepted_by_record(result: dict) -> dict:
     return counts
 
 
-def _sent_file(result: dict) -> dict:
-    """rec_key → the file we sent (first rep seen) — for the request's human reason."""
+def _sent_inventory(result: dict) -> dict:
+    """rec_key → files in first-seen order — the ONE traversal of `reps` both views below derive
+    from, so 'first sent' and 'all sent' can never disagree on what a dispatch actually sent."""
     out: dict = {}
     for rep in result.get("reps", []):
-        out.setdefault(rep["rec_key"], rep.get("file"))
+        out.setdefault(rep["rec_key"], []).append(rep.get("file"))
     return out
+
+
+def _sent_file(result: dict) -> dict:
+    """rec_key → the file we sent (first rep seen) — for the request's human reason."""
+    return {k: v[0] for k, v in _sent_inventory(result).items()}
 
 
 def _sent_files(result: dict) -> dict:
     """rec_key → sorted list of ALL files sent this result (#231). One dispatch can send several reps
     of a record; the persisted request must name every one so the NEXT round's history exclusion can
     subtract them all — the single first-seen `sent_file` stays for the human-readable reason."""
-    out: dict = {}
-    for rep in result.get("reps", []):
-        out.setdefault(rep["rec_key"], set()).add(rep.get("file"))
-    return {k: sorted(f for f in v if f) for k, v in out.items()}
+    return {k: sorted({f for f in v if f}) for k, v in _sent_inventory(result).items()}
 
 
 def _bands_with_facts(result: dict) -> set:

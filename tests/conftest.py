@@ -46,6 +46,17 @@ def _guard_no_postgres_in_dbfree_tests(request):
     if request.node.get_closest_marker("integration") or request.node.get_closest_marker("govdb"):
         yield
         return
+    # Fixture-name check first: the connect() interception below can't see a SESSION-SCOPED fixture's
+    # already-open cached connection (real_db_connection opens once for the whole session), so an
+    # unmarked test requesting one would slip past the patch. Requesting a real-DB fixture at all is
+    # the violation — fail on the request, not the (possibly absent) connect call.
+    real_db_fixtures = {"real_db_connection", "real_db_transaction", "gov_session"} \
+        .intersection(request.fixturenames)
+    if real_db_fixtures:
+        raise RuntimeError(
+            f"DB-free test '{request.node.nodeid}' requests real-DB fixture(s) "
+            f"{sorted(real_db_fixtures)} without @pytest.mark.integration/@pytest.mark.govdb — "
+            f"add the marker (#201).")
     import psycopg2
     from sqlalchemy.engine import Engine
     real_engine_connect = Engine.connect

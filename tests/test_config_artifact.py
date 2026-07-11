@@ -137,6 +137,16 @@ def test_current_artifact_reads_the_live_surface_and_is_verifiable():
     assert CA.verify_on_load(a, live_gt_version="gtLIVE")["version"] == a["version"]
 
 
+def test_current_artifact_default_clock_stamp_is_well_formed_and_verifiable():
+    """PR #221 review: the #204 determinism edit left the live-clock default branch (created_at
+    omitted → now()) with zero coverage. This is the only call site allowed to exercise it: the
+    stamp must be the artifact's exact UTC format and the artifact must still verify."""
+    import re
+    a = CA.current_artifact("gtLIVE", semver="1.0.0")      # no created_at → the clock branch
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", a["created_at"])
+    assert CA.verify_on_load(a, live_gt_version="gtLIVE")["version"] == a["version"]
+
+
 def test_current_artifact_honors_a_detector_params_override():
     base = CA.current_artifact("gtLIVE", semver="1.0.0", created_at="x")
     chall = CA.current_artifact("gtLIVE", semver="1.0.1", created_at="x",

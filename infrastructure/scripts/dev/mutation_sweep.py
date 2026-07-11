@@ -94,8 +94,14 @@ def sweep(module_path, test_files):
             if mutated == original:
                 continue
             module_path.write_text(mutated)
-            rc = subprocess.run([sys.executable, "-m", "pytest", "-x", "-q", "-p", "no:cacheprovider",
-                                 *test_files], capture_output=True).returncode
+            try:
+                # timeout: a mutant that flips a loop/recursion bound can hang its pytest run forever;
+                # a hang IS a detected defect, so TimeoutExpired counts as killed (mutmut's convention).
+                rc = subprocess.run([sys.executable, "-m", "pytest", "-x", "-q", "-p",
+                                     "no:cacheprovider", *test_files],
+                                    capture_output=True, timeout=300).returncode
+            except subprocess.TimeoutExpired:
+                rc = 1
             if rc == 0:
                 survived.append(label)
                 print(f"  SURVIVED  {label}")

@@ -104,6 +104,10 @@ def test_district_detail_is_cumulative_a_barren_retry_does_not_regress_the_view(
     _use(monkeypatch, _Con([ext, facts, _Result()]))
     body = client.get("/api/extract/district/D1").json()
     assert body["extraction"]["extraction_id"] == 2                  # header = latest run
+    # the header's counts are overridden with the CUMULATIVE truth — the payload must never ship
+    # a latest-run-only n_accepted (0 here) beside a non-empty accepted[] (REQ-122 one field deeper)
+    assert body["extraction"]["n_accepted"] == len(body["accepted"]) == 1
+    assert body["extraction"]["n_unresolved"] == len(body["unresolved"]) == 0
     assert len(body["accepted"]) == 1                                # run 1's fact survives
     assert body["accepted"][0]["extraction_id"] == 1                 # with its provenance
     assert body["unresolved"] == []                                  # accepted beats the retry echo

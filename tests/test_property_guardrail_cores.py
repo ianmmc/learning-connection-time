@@ -146,3 +146,68 @@ def test_a_config_is_non_inferior_to_itself(rows, margin):
     if v["n_districts"] >= PG._MIN_DISTRICTS_FOR_BOOTSTRAP:
         assert v["promote"] is True
         assert v["non_inferiority"]["lower_bound"] == 0.0
+
+
+# ----------------------------- stage-8 cumulative merge (REQ-122, #232) -----------------------------
+# PR #221 review: the merge core shipped with only incident-pinned example tests (the Brownsville
+# case). These are the general invariants — any run count, any order, forced key collisions.
+from infrastructure.acquisition.stage8_aggregate import aggregate as AGG  # noqa: E402
+
+_fact = st.fixed_dictionaries({
+    "extraction_id": st.integers(min_value=1, max_value=9),
+    "band": st.sampled_from(["elementary", "middle", "high"]),
+    "school": st.sampled_from(["a", "b", "c"]),
+    "status": st.sampled_from(["accepted", "unresolved"]),
+})
+
+
+@given(facts=st.lists(_fact, max_size=30), data=st.data())
+def test_merge_fact_runs_is_order_independent_and_never_evicts_an_accept(facts, data):
+    accepted, unresolved = AGG.merge_fact_runs(facts)
+    # order-independence: any permutation of the rows merges to the same cumulative truth
+    perm = data.draw(st.permutations(facts))
+    assert AGG.merge_fact_runs(list(perm)) == (accepted, unresolved)
+    # the winners PARTITION the input keys — one winner per (band, school), no key on both sides
+    keys_in = {(f["band"], f["school"]) for f in facts}
+    keys_acc = [(f["band"], f["school"]) for f in accepted]
+    keys_unr = [(f["band"], f["school"]) for f in unresolved]
+    assert len(keys_acc) == len(set(keys_acc)) and len(keys_unr) == len(set(keys_unr))
+    assert set(keys_acc) | set(keys_unr) == keys_in and not set(keys_acc) & set(keys_unr)
+    # a key ever accepted in ANY run is accepted in the merge — no barren echo can evict it
+    assert set(keys_acc) == {(f["band"], f["school"]) for f in facts if f["status"] == "accepted"}
+    # tie-breaks: earliest accepted stands (fill gaps, never overwrite); pure-unresolved keys keep
+    # the freshest diagnostic
+    for f in accepted:
+        assert f["extraction_id"] == min(
+            x["extraction_id"] for x in facts if x["status"] == "accepted"
+            and (x["band"], x["school"]) == (f["band"], f["school"]))
+    for f in unresolved:
+        assert f["extraction_id"] == max(
+            x["extraction_id"] for x in facts
+            if (x["band"], x["school"]) == (f["band"], f["school"]))
+
+
+# ----------------------------- sent-files lineage (#231) -----------------------------
+_rep = st.fixed_dictionaries({
+    "rec_key": st.sampled_from(["r1", "r2", "r3"]),
+    "file": st.one_of(st.none(), st.sampled_from(["a.txt", "b.txt", "c.png"])),
+})
+
+
+@given(reps=st.lists(_rep, max_size=15))
+def test_sent_file_and_sent_files_are_two_views_of_one_send(reps):
+    result = {"reps": reps}
+    first, full = RQ._sent_file(result), RQ._sent_files(result)
+    assert set(first) == set(full)                       # same rec_key coverage
+    # first-seen semantics: exactly the first rep's file per rec_key, even a None
+    seen: dict = {}
+    for rep in reps:
+        seen.setdefault(rep["rec_key"], rep.get("file"))
+    assert first == seen
+    # full-send semantics: sorted, deduped, no falsy — and COMPLETE (every sent file is recorded,
+    # so the next round's history exclusion can never re-offer one)
+    for k, files in full.items():
+        assert files == sorted(set(files)) and all(files)
+    for rep in reps:
+        if rep["file"]:
+            assert rep["file"] in full[rep["rec_key"]]

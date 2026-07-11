@@ -1316,6 +1316,21 @@ def handoff_inspect(district_id: str, rec_key: str, file: str):
     return FileResponse(fp)
 
 
+# REQ-122 cumulative counts — the SQL twin of AGG.merge_fact_runs's accepted/unresolved rule ("a pair
+# counts unresolved only if NO run ever accepted it"). Module-level so tests can execute THIS text and
+# cross-check it against merge_fact_runs on shared fixture rows — the two must never drift.
+CUMULATIVE_FACT_COUNTS_SQL = """SELECT f.district_id,
+       COUNT(DISTINCT (f.band, f.school))
+         FILTER (WHERE f.status = 'accepted') AS n_accepted,
+       COUNT(DISTINCT (f.band, f.school))
+         - COUNT(DISTINCT (f.band, f.school))
+             FILTER (WHERE f.status = 'accepted') AS n_unresolved
+FROM school_fact f
+JOIN extraction fe ON fe.extraction_id = f.extraction_id
+WHERE fe.run_kind = 'production'
+GROUP BY f.district_id"""
+
+
 @app.get("/api/extract/districts")
 def extract_districts():
     """gate@7 left pane: districts with a Stage-7 extraction. `handoff_hash`/`cost_usd`/`created_at`
@@ -1328,7 +1343,7 @@ def extract_districts():
     (#148)."""
     with gdb.session_scope() as con:
         rows = con.execute(text(
-            """SELECT e.district_id, e.handoff_hash,
+            f"""SELECT e.district_id, e.handoff_hash,
                       COALESCE(cf.n_accepted, 0) AS n_accepted,
                       COALESCE(cf.n_unresolved, 0) AS n_unresolved, e.cost_usd,
                       e.n_reps, e.created_at, d.name, d.state,
@@ -1338,16 +1353,7 @@ def extract_districts():
                      WHERE run_kind = 'production' GROUP BY district_id) L
                  ON L.mx = e.extraction_id
                LEFT JOIN district d ON d.district_id = e.district_id
-               LEFT JOIN (SELECT f.district_id,
-                                 COUNT(DISTINCT (f.band, f.school))
-                                   FILTER (WHERE f.status = 'accepted') AS n_accepted,
-                                 COUNT(DISTINCT (f.band, f.school))
-                                   - COUNT(DISTINCT (f.band, f.school))
-                                       FILTER (WHERE f.status = 'accepted') AS n_unresolved
-                          FROM school_fact f
-                          JOIN extraction fe ON fe.extraction_id = f.extraction_id
-                          WHERE fe.run_kind = 'production'
-                          GROUP BY f.district_id) cf
+               LEFT JOIN ({CUMULATIVE_FACT_COUNTS_SQL}) cf
                  ON cf.district_id = e.district_id
                LEFT JOIN (SELECT district_id,
                                  COUNT(*) FILTER (WHERE status = 'pending') n_pending, COUNT(*) n_requests
@@ -1462,7 +1468,13 @@ def extract_district(district_id: str):
             d["is_alt_rep"] = d["route"] == EX.RQ.ROUTE_ALT_REP    # 7->6 → executes on its own
             d["lineage"] = _request_lineage(con, district_id, d, ctx)  # where it went / why it can't
             req_dicts.append(d)
-        return {"extraction": dict(ext), "bands": bands, "accepted": accepted,
+        # The extraction header keeps the LATEST run's identity/cost, but its per-run n_accepted/
+        # n_unresolved are overridden with the CUMULATIVE counts — otherwise the payload ships two
+        # contradictory counts of the same thing (REQ-122 one field deeper: a barren scoped retry
+        # would show n_accepted=0 beside a non-empty accepted[]).
+        ext_out = dict(ext)
+        ext_out["n_accepted"], ext_out["n_unresolved"] = len(accepted), len(unresolved)
+        return {"extraction": ext_out, "bands": bands, "accepted": accepted,
                 "unresolved": unresolved, "requests": req_dicts}
 
 

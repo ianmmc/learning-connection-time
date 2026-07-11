@@ -25,3 +25,15 @@ is *equivalent* (no test can distinguish it) and leave it.
   measure-zero).
 - `config_artifact.py`: 26/27 killed (96.3%); the 1 survivor is `ensure_ascii=False`→`True` (ASCII-only
   fingerprints, internally consistent either way).
+- `stage8_aggregate/aggregate.py` (whole module, vs `test_aggregate.py` + the property suite):
+  96/167 killed (57.5%). The PR #221 review's targeted read: **`merge_fact_runs` (the REQ-122 core)
+  had exactly 2 real survivors** — the strict `<`/`>` equal-run tie-breaks at L194/L196 — killed by
+  `test_equal_run_ties_keep_the_first_row_seen`. The remaining survivors sit in the OLDER council/
+  consensus functions (L21–L169: `_cluster`, `council_school`, `mode_stable`, `consensus_school_facts`),
+  whose deeper coverage lives in the stage-7 integration suites this per-module sweep deliberately
+  doesn't run; treat those as the module's known pre-#221 debt, not a regression.
+- `stage7_extract/requests.py` (whole module, vs `test_stage7_requests.py` + the property suite):
+  40/54 killed (74.1%). **The #231 sent-files core (`_sent_inventory`/`_sent_file`/`_sent_files`) had
+  ZERO survivors.** The 14 survivors are rank-key tier constants (`rank_alternates`) that are
+  equivalent mutants — flipping a tier number preserves the ladder's relative order — plus
+  `_accepted_counts` arithmetic only observable through detect_requests' DB-marked paths.

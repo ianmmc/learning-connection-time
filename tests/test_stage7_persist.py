@@ -235,3 +235,88 @@ def test_request_inputs_status_does_not_matter_for_history_exclusion(gov_session
     result = {"district_id": "ZZTEST32", "reps": [{"rec_key": rk, "file": "zz.txt", "accepted": []}]}
     _, _, alts, _, _ = R7._district_request_inputs(s, result)
     assert [a["file"] for a in alts.get(rk, [])] == ["b.png"]   # only the untried image remains
+
+
+def _run_for(did, hh, accepted=(), unresolved=(), run_kind=None):
+    """A minimal persistable run dict: accepted/unresolved as (band, school) pairs."""
+    tel = {"calls": 1, "judge_calls": 0, "errors": 0,
+           "prompt_tokens": 10, "completion_tokens": 5, "cost_usd": 0.0001}
+    d = {"district_id": did, "name": "Testville", "state": "IA", "n_reps": 1, "n_judged": 1,
+         "telemetry": tel,
+         "accepted": [{"band": b, "school": sc, "start": "08:00", "end": "15:00", "gross": 420,
+                       "models": ["m1"], "method": "council_agree", "rec_key": f"{did}:x",
+                       "source_file": "f"} for b, sc in accepted],
+         "unresolved": [{"band": b, "school": sc, "reason": "disagree", "starts": {}, "ends": {},
+                         "rec_key": f"{did}:x", "source_file": "f"} for b, sc in unresolved]}
+    run = {"handoff_hash": hh, "districts": {did: d}, "telemetry": tel}
+    if run_kind:
+        run["run_kind"] = run_kind
+    return run
+
+
+def test_covered_bands_ignore_probe_run_facts(gov_session):
+    """PR #221 review: a probe's accepted fact is a measurement, never coverage — it must neither
+    suppress remedy detection (_district_request_inputs) nor let compose auto-reject an approved
+    directive (_covered_bands_now). Only a PRODUCTION run's accepted fact covers a band."""
+    from infrastructure.acquisition.process_governance import stage7_execute as EX
+    gdb.init_precious_schema()
+    s = gov_session
+    did = "ZZTEST33"
+    R7.persist_run_session(s, _run_for(did, "h-probe", accepted=[("elementary", "brick mill")],
+                                       run_kind="probe"), created_by="zz-test")
+    s.flush()
+    _, _, _, covered, _ = R7._district_request_inputs(s, {"district_id": did, "reps": []})
+    assert covered == set()                        # the probe's accepted fact is not coverage
+    assert EX._covered_bands_now(s, [did]) == {}   # the compose twin agrees
+    R7.persist_run_session(s, _run_for(did, "h-prod", accepted=[("middle", "jones middle")]),
+                           created_by="zz-test")
+    s.flush()
+    _, _, _, covered, _ = R7._district_request_inputs(s, {"district_id": did, "reps": []})
+    assert covered == {"middle"}                   # production coverage counts; probe's still doesn't
+    assert EX._covered_bands_now(s, [did]) == {did: {"middle"}}
+
+
+def test_sent_files_by_rec_includes_recapture_route_history(gov_session):
+    """PR #221 review: the EXECUTION-side exclusion (_sent_files_by_rec, feeding _bundle_alternate)
+    must read 7->3 lineage too, matching the detection side (#231) — a file recorded only on a
+    RECAPTURE request was still sent and barren (F4), so it must never be re-dispatched."""
+    from infrastructure.acquisition.process_governance import stage7_execute as EX
+    gdb.init_precious_schema()
+    s = gov_session
+    rk = "ZZTEST34:r1"
+    s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                   "target, params_json, reason, status, created_at) VALUES "
+                   "('ZZTEST34', 'h1', 'url', :r3, :t, :p, 'r', 'executed', 't1')"),
+              {"r3": EX.RQ.ROUTE_RECAPTURE, "t": rk, "p": json.dumps({"sent_file": "a.txt"})})
+    assert EX._sent_files_by_rec(s, "ZZTEST34") == {rk: {"a.txt"}}
+
+
+def test_list_view_sql_matches_merge_fact_runs(gov_session):
+    """PR #221 review: the gate@7 list view's cumulative-count SQL (CUMULATIVE_FACT_COUNTS_SQL) and
+    AGG.merge_fact_runs are two expressions of ONE rule — 'a pair counts unresolved only if NO run
+    ever accepted it', production runs only. This cross-check on shared rows is what keeps the badge
+    counts and the detail view from silently drifting apart."""
+    from infrastructure.acquisition.process_governance import server as SRV
+    from infrastructure.acquisition.stage8_aggregate import aggregate as AGG
+    gdb.init_precious_schema()
+    s = gov_session
+    did = "ZZTEST35"
+    R7.persist_run_session(s, _run_for(did, "h1", accepted=[("elementary", "brick mill")],
+                                       unresolved=[("high", "special program")]), created_by="zz")
+    R7.persist_run_session(s, _run_for(did, "h2", accepted=[("middle", "jones middle")],
+                                       unresolved=[("elementary", "brick mill")]), created_by="zz")
+    R7.persist_run_session(s, _run_for(did, "h3", accepted=[("high", "special program")],
+                                       run_kind="probe"), created_by="zz")
+    s.flush()
+    sql_rows = {r["district_id"]: r for r in
+                s.execute(text(SRV.CUMULATIVE_FACT_COUNTS_SQL)).mappings().all()}
+    facts = s.execute(text(
+        "SELECT f.extraction_id, e.handoff_hash, f.band, f.school, f.status, f.start_time, "
+        "f.end_time, f.gross_minutes, f.method, f.models_json, f.detail_json, f.rec_key, "
+        "f.source_file FROM school_fact f JOIN extraction e ON e.extraction_id = f.extraction_id "
+        "WHERE f.district_id = :d AND e.run_kind = 'production'"), {"d": did}).mappings().all()
+    accepted, unresolved = AGG.merge_fact_runs([dict(f) for f in facts])
+    # accepted: run1's elementary + run2's middle; unresolved: high (its only accept was the probe's)
+    assert (len(accepted), len(unresolved)) == (2, 1)
+    assert (sql_rows[did]["n_accepted"], sql_rows[did]["n_unresolved"]) \
+        == (len(accepted), len(unresolved))

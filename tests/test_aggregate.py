@@ -148,6 +148,17 @@ class TestMergeFactRuns:
         _, unresolved = A.merge_fact_runs(facts)
         assert len(unresolved) == 1 and unresolved[0]["extraction_id"] == 2
 
+    def test_equal_run_ties_keep_the_first_row_seen(self):
+        # two rows for the SAME (band, school) in the SAME run (two URLs both describing a school):
+        # the tie-breaks are strict (< / >), so the first row encountered stands on both sides —
+        # kills the PR #221 review's surviving Lt->LtE / Gt->GtE mutants on the tie-break lines.
+        a1, a2 = _f(1, "elementary", "a", "accepted", 400), _f(1, "elementary", "a", "accepted", 410)
+        accepted, _ = A.merge_fact_runs([a1, a2])
+        assert accepted == [a1]
+        u1, u2 = _f(2, "high", "h", "unresolved", 111), _f(2, "high", "h", "unresolved", 222)
+        _, unresolved = A.merge_fact_runs([u1, u2])
+        assert unresolved == [u1]
+
     def test_distinct_schools_and_bands_never_collide(self):
         facts = [_f(1, "elementary", "x", "accepted", 350), _f(2, "elementary", "y", "accepted", 355),
                  _f(2, "middle", "x", "accepted", 370)]              # same school name, other band

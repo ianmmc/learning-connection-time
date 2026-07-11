@@ -707,9 +707,12 @@ def _district_request_inputs(session, result: dict):
     # doesn't cover — the live Las Cruces #285-287/#289-291 spurious 7->2s.
     # `band IS NOT NULL` keeps the covered set band-only — aligned with the batched twin
     # `stage7_execute._covered_bands_now` (the compose gate) so the two never disagree on membership.
+    # run_kind='production' only, matching the twin: a probe's accepted fact must not mask a real gap.
     covered = {b for (b,) in session.execute(
-        text("SELECT DISTINCT band FROM school_fact WHERE district_id = :d AND status = 'accepted' "
-             "AND band IS NOT NULL"),
+        text("SELECT DISTINCT f.band FROM school_fact f "
+             "JOIN extraction e ON e.extraction_id = f.extraction_id "
+             "WHERE f.district_id = :d AND f.status = 'accepted' AND f.band IS NOT NULL "
+             "AND e.run_kind = 'production'"),
         {"d": did}).all()}
     return claimed, band_schools, alts, covered, real_bands
 
