@@ -81,12 +81,18 @@ The repo ships a **tracked** pre-commit hook in `.githooks/`. Git can't auto-ena
 git config core.hooksPath .githooks
 ```
 
-What it does: (1) sweeps the **precious-state JSON backups** — `data/acquisition/stage5_review/labels.json`
+What **pre-commit** does: (1) sweeps the **precious-state JSON backups** — `data/acquisition/stage5_review/labels.json`
 (the `label` table) and `data/acquisition/status/district_status.json` (the `state_event` log) — into
 every commit so they never drift behind the governance DB (both are written automatically on save/ingest;
 this guarantees they reach version control, managed **symmetrically**); (2) verifies any enrichment counts
 in staged docs against the DB (Rule #6 — no hallucinated counts). Editing `.githooks/pre-commit` is the
 single source of truth; a stale local `.git/hooks/pre-commit` is ignored once `core.hooksPath` is set.
+
+The same `core.hooksPath` also activates a tracked **pre-push** hook (#202): before every push it runs the
+CI-equivalent DB-free gates locally — `lint-imports` (the CI `lint` job) + `pytest -m "not integration"`
+(the CI `test` job, ~5s, which already includes the #124 arch-manifest fitness tests) — so a preventable
+red CI is caught at the desk instead of a round-trip. It does **not** run the govdb suite (that needs
+Postgres; CI's `governance-db` job covers it). Bypass for a WIP/docs-only push with `SKIP_PREPUSH=1 git push`.
 
 ### 2. Database Connection
 
