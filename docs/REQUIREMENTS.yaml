@@ -1883,22 +1883,30 @@ requirements:
 
   - id: REQ-079
     github_issue: "#127 — capture_discovery.mjs test harness (doc-migration 2026-07)"
-    description: "WATCH-ITEM: capture_discovery.mjs has no automated test harness beyond capture_drive.mjs's pure-function tests"
+    description: "capture_discovery.mjs's browser-driving logic has an automated test harness (pure decision cores + a real-Chromium page.route fixture harness), closing the watch-item gap"
     type: functional
     priority: should
     status: tested
     acceptance_criteria:
       - capture_drive.mjs's URL-pattern-matching and export-candidate logic is unit-tested (node:test, no new dependency) and runs via `npm test` in infrastructure/scraper/
-      - The browser-driving logic in capture_discovery.mjs itself (modal dismissal, page.pdf(), emergent-candidate scanning, the overall branch dispatch) is verified only by manual smoke test (a local HTML fixture plus one real district) during this implementation session, not by an automated, repeatable test suite
+      - The four browser-driving behaviors named in #127 are covered by an automated, repeatable suite (#127) - branch dispatch (classifyFetchKind/driveFormatOutcome) and emergent-candidate selection (findEmergentLinks/selectEmergentTargets) are extracted as pure decision cores the capture call sites actually use, unit-tested with node:test; modal dismissal, the emergent DOM read, page.pdf(), and the DOM fingerprint/de-chrome segmentation run against a REAL headless Chromium driven over Playwright page.route() in-memory HTML fixtures (offline, no fixture server, no fake page)
+      - The Node suite runs in CI (test.yml `node-tests` job - npm test + dependency-cruiser, with a cached Chromium install); the browser harness self-skips cleanly when the Chromium binary is absent so a bare checkout stays green
     tests:
       - infrastructure/scraper/capture_drive.test.mjs
+      - infrastructure/scraper/capture_dispatch.test.mjs (branch-dispatch + withTimeout cores, node:test)
+      - infrastructure/scraper/capture_emergent.test.mjs (emergent match + one-hop selection cores, node:test)
+      - infrastructure/scraper/capture_browser.test.mjs (real-Chromium harness: modal dismissal, emergent DOM read, page.pdf(), domFingerprint, segmentChrome)
     created: "2026-06-23T00:00:00Z"
-    updated: "2026-06-23T00:00:00Z"
-    notes: "Recorded as a deliberate, named gap rather than silently shipping without test coverage. A real
-      automated harness for capture_discovery.mjs's browser-driving logic would need either a local
-      fixture-server convention (serving the smoke-test HTML fixtures used during implementation from a
-      fixed path) or a Playwright-test-style mocking approach - worth building before this script sees
-      heavy use at scale, not before this first batch."
+    updated: "2026-07-11T00:00:00Z"
+    notes: "Originally a deliberate, named watch-item gap (browser-driving logic smoke-tested only). Closed by
+      #127: rather than a fixture HTTP server or a hand-faked page (the Playwright community advises against
+      the latter), the harness drives a real headless Chromium against in-memory HTML fixtures via
+      page.route().fulfill() - offline, deterministic, zero new dependencies (node:test + the already-installed
+      playwright library, keeping the repo's zero-dep Node-test convention). The decision cores (dispatch,
+      emergent) were extracted as pure functions that the live captureInto now calls, so the tests pin
+      production behavior rather than a parallel copy. withTimeout was hardened to clear its timer (was leaking
+      a 45s timer on every fast op). Same session also wired the previously-CI-less Node suite into CI and
+      closed the lint-imports enforcement gap (arch-lint job)."
 
   - id: REQ-080
     description: "Stage 4 (Local processing) reconciliation - registry consistency AND a new, finer-grained file-existence consistency check, both fail loud"

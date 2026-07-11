@@ -37,6 +37,42 @@ jobs:
         run: |
           pytest tests/ -v --tb=short -m "not integration"
 
+  # The Node/Playwright capture layer (infrastructure/scraper/). Runs the node:test suite — pure
+  # decision cores AND the real-Chromium browser harness (#127/REQ-079) driven against page.route
+  # fixtures — plus the dependency-cruiser layer check. Previously this suite ran nowhere in CI.
+  node-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infrastructure/scraper
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: infrastructure/scraper/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('infrastructure/scraper/package-lock.json') }}
+
+      - name: Install Chromium (with OS deps)
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Node tests (node --test)
+        run: npm test
+
+      - name: Dependency-cruiser (.mjs capture layer)
+        run: npm run lint:deps
+
   governance-db:
     runs-on: ubuntu-latest
 

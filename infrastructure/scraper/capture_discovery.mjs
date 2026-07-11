@@ -69,8 +69,15 @@ const SCHED_KW = ['bell', 'schedule', 'hours', 'start-time', 'start_time', 'dail
 // budget (Brookwood SD 167 burned 1800s this way). The lingering op is aborted by the page.close() in
 // the per-task finally. The per-district budget (stage3 headless CAPTURE_TIMEOUT_S) is the backstop.
 const OP_TIMEOUT_MS = 45000;
-const withTimeout = (p, ms, label) =>
-  Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(`${label} timed out after ${ms}ms`)), ms))]);
+// Exported for unit testing (#127/REQ-079). The reject timer is CLEARED once the race settles, so a
+// fast-resolving op leaves no 45s timer dangling on the event loop (also lets node:test exit cleanly).
+export const withTimeout = (p, ms, label) => {
+  let timer;
+  const timeout = new Promise((_, rej) => {
+    timer = setTimeout(() => rej(new Error(`${label} timed out after ${ms}ms`)), ms);
+  });
+  return Promise.race([p, timeout]).finally(() => clearTimeout(timer));
+};
 // Cap emergent (one-hop) candidates per district so a link-dense page can't explode the task queue.
 const EMERGENT_CAP = 25;
 
@@ -93,7 +100,7 @@ const CMS_HOSTS = loadConfigValues('cms_hosts');
 // De-chrome landmark selectors (REQ-091) — the SAME config knob Stage 5 documents. innerText of
 // these is captured as page.header/footer/nav.txt; page.main.txt = body minus these (the de-chromed
 // text Stage 5 tiers on, so footer building-hours / school-switcher nav can't inject false signal).
-const DE_CHROME_LANDMARKS = loadConfigValues('de_chrome_landmarks');
+export const DE_CHROME_LANDMARKS = loadConfigValues('de_chrome_landmarks');
 
 // --- Fingerprint helpers (raw signals only, no classification) ---------------------------
 // The pure ones are exported for unit testing (capture_fingerprint.test.mjs); the
@@ -147,7 +154,7 @@ export function strippedLen(html) {
 // precision when present) and the set of distinct resource hostnames (script/link/img srcs --
 // vendor CDN bundles betray the platform). Ephemeral: innerText can't reconstruct these once
 // the page closes, so they MUST be read at render time.
-async function domFingerprint(page) {
+export async function domFingerprint(page) {
   return page.evaluate(() => {
     const gen = document.querySelector('meta[name="generator" i]');
     const hosts = {};
@@ -190,7 +197,7 @@ export function embedCategories(iframeHosts) {
 // structure once the page closes, exactly like the fingerprint above. `main` = body.innerText after
 // removing the landmark (chrome) elements from the live DOM; the named segments are the chrome
 // elements' innerText, grabbed before removal. innerText throughout = VISIBLE text, mirroring page.txt.
-async function segmentChrome(page, landmarks) {
+export async function segmentChrome(page, landmarks) {
   const removeSel = landmarks.join(',');
   return page.evaluate((removeSel) => {
     const grab = (sel) => {
@@ -288,7 +295,7 @@ function setupPageDialogHandler(page) {
   page.on('dialog', async (dialog) => { await dialog.dismiss().catch(() => {}); });
 }
 
-async function dismissModals(page) {
+export async function dismissModals(page) {
   let dismissed = false;
   try { await page.addStyleTag({ content: MODAL_HIDING_CSS }); dismissed = true; } catch {}
   for (const selector of DISMISS_SELECTORS) {
@@ -376,13 +383,53 @@ export function seedFromPriorCaptures(district, priorRecords, candidateUrls) {
   }
 }
 
-function findEmergentLinks(anchors) {
+// Pure, unit-testable (#127/REQ-079): the emergent-scan DECISION -- from a page's anchors
+// ({text, href}), the fragment-stripped hrefs whose text or href hits a schedule keyword. The
+// browser-driving part (reading the anchors off the DOM) is the only impure step around this.
+export function findEmergentLinks(anchors) {
   const out = [];
   for (const a of anchors) {
     const hay = `${a.text} ${a.href}`.toLowerCase();
     if (SCHED_KW.some((k) => hay.includes(k))) out.push(stripFragment(a.href));
   }
   return out;
+}
+
+// Pure, unit-testable (#127/REQ-079): the emergent one-hop SELECTION -- take the schedule-matching
+// links not already seen, up to the per-district cap, mutating `seen` and returning the new targets
+// plus the advanced counter. captureInto calls THIS, so the tested logic is the production logic.
+export function selectEmergentTargets(links, seen, emergent, cap) {
+  const targets = [];
+  for (const eu of links) {
+    if (emergent >= cap) break;
+    if (seen.has(eu)) continue;
+    seen.add(eu);
+    emergent += 1;
+    targets.push(eu);
+  }
+  return { targets, emergent };
+}
+
+// Pure, unit-testable (#127/REQ-079): the fetch-branch DISPATCH -- given a Content-Type, decide
+// whether the bytes are a directly-savable binary (PDF/image, no browser render) or need the HTML
+// render path, and the extension to save under. Mirrors captureInto's routing via this call.
+export function classifyFetchKind(contentType = '') {
+  const ct = contentType.toLowerCase();
+  if (ct.includes('pdf')) return { binary: true, kind: 'pdf', ext: 'pdf' };
+  if (ct.includes('image')) return { binary: true, kind: 'image', ext: (ct.split('/')[1] || 'img').split(';')[0] };
+  return { binary: false, kind: 'html', ext: null };
+}
+
+// Pure, unit-testable (#127/REQ-079): a Google Drive export fetch returns HTML when the requested
+// format isn't available (interstitial/error) -- that format is skipped, never saved. Otherwise the
+// extension: 'auto' sniffs pdf vs the content subtype; a named format is its own extension.
+export function driveFormatOutcome(contentType = '', format) {
+  const ct = contentType.toLowerCase();
+  if (ct.includes('html')) return { skip: true, ext: null };
+  const ext = format === 'auto'
+    ? (ct.includes('pdf') ? 'pdf' : (ct.split('/')[1] || 'bin').split(';')[0])
+    : format;
+  return { skip: false, ext };
 }
 
 // Re-visit a single HTML URL and return ONLY its fingerprint (no file writes). Shared by the
@@ -466,8 +513,9 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
             try {
               const r = await fetch(fetchUrl, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
               const ct = (r.headers.get('content-type') || '').toLowerCase();
-              if (ct.includes('html')) continue; // interstitial/error page -- this format failed, try the next
-              const ext = format === 'auto' ? (ct.includes('pdf') ? 'pdf' : (ct.split('/')[1] || 'bin').split(';')[0]) : format;
+              const outcome = driveFormatOutcome(ct, format);
+              if (outcome.skip) continue; // interstitial/error page -- this format failed, try the next
+              const ext = outcome.ext;
               const buf = Buffer.from(await r.arrayBuffer());
               const filename = format === 'auto' ? `file.${ext}` : `${format}.${ext}`;
               writeFileSync(path.join(recDir, filename), buf);
@@ -497,11 +545,11 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
         ct = (r.headers.get('content-type') || '').toLowerCase();
         rec.final_url = r.url;
         noteFinalUrl(byDistrict[did], rec.final_url);
-        if (ct.includes('pdf') || ct.includes('image')) {
-          const ext = ct.includes('pdf') ? 'pdf' : ((ct.split('/')[1] || 'img').split(';')[0]);
-          writeFileSync(path.join(recDir, `original.${ext}`), Buffer.from(await r.arrayBuffer()));
-          rec.kind = ct.includes('pdf') ? 'pdf' : 'image';
-          rec.files.bin = `original.${ext}`;
+        const cls = classifyFetchKind(ct);
+        if (cls.binary) {
+          writeFileSync(path.join(recDir, `original.${cls.ext}`), Buffer.from(await r.arrayBuffer()));
+          rec.kind = cls.kind;
+          rec.files.bin = `original.${cls.ext}`;
           rec.fingerprint = buildFetchFingerprint(r);
           rec.ok = true;
         }
@@ -577,11 +625,10 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
             const anchors = await page
               .evaluate(() => Array.from(document.querySelectorAll('a[href]')).map((a) => ({ text: a.innerText || '', href: a.href })))
               .catch(() => []);
-            for (const eu of findEmergentLinks(anchors)) {
-              if (byDistrict[did].emergent >= EMERGENT_CAP) break;
-              if (byDistrict[did].seen.has(eu)) continue;
-              byDistrict[did].seen.add(eu);
-              byDistrict[did].emergent += 1;
+            const { targets, emergent } = selectEmergentTargets(
+              findEmergentLinks(anchors), byDistrict[did].seen, byDistrict[did].emergent, EMERGENT_CAP);
+            byDistrict[did].emergent = emergent;
+            for (const eu of targets) {
               tasks.push({ did, url: eu, tools: [], source: 'emergent', found_on: rec.final_url, capDir });
             }
           }
