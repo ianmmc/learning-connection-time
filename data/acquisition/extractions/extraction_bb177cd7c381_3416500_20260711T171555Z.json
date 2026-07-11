@@ -1,0 +1,346 @@
+{
+  "handoff_hash": "bb177cd7c381",
+  "district": {
+    "district_id": "3416500",
+    "name": "Township of Union School District",
+    "reps": [
+      {
+        "rec_key": "3416500:1cb2b717e4",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:15",
+                "school_name": "Franklin Pre-K Center",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:15",
+                "school_name": "Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "14:30",
+                "school_name": "Burnet/Kawameeh",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:35",
+                "end_time": "13:47",
+                "school_name": "Union High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:26",
+                "end_time": "14:35",
+                "school_name": "Union High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1266,
+            "completion_tokens": 336,
+            "cost_usd": 0.000261,
+            "latency_ms": 1210,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790139-AvJ9jYHyVRmbAAHKxqPR",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:59",
+                "end_time": "14:30",
+                "school_name": "Burnet/Kawameeh",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:35",
+                "end_time": "13:47",
+                "school_name": "Union High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1285,
+            "completion_tokens": 128,
+            "cost_usd": 7.449e-05,
+            "latency_ms": 2736,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790140-bpQ1Oaois2q6wHe7OQc2",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:15",
+                "school_name": "Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "14:30",
+                "school_name": "Burnet/Kawameeh",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:35",
+                "end_time": "13:47",
+                "school_name": "Union High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1266,
+            "completion_tokens": 112,
+            "cost_usd": 0.00012514,
+            "latency_ms": 12304,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790143-kbi7o57UnxtWsRIOJHND",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "schools",
+            "start": "08:55",
+            "end": "15:15",
+            "gross": 380,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3416500:1cb2b717e4",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "middle",
+            "school": "burnetkawameeh",
+            "start": "07:59",
+            "end": "14:30",
+            "gross": 391,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3416500:1cb2b717e4",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "high",
+            "school": "union",
+            "start": "07:35",
+            "end": "13:47",
+            "gross": 372,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3416500:1cb2b717e4",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "franklin prek center",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:55"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:15"
+            },
+            "rec_key": "3416500:1cb2b717e4",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "burnetkawameeh",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:59"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:30"
+            },
+            "rec_key": "3416500:1cb2b717e4",
+            "source_file": "tesseract_raster.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "schools",
+        "start": "08:55",
+        "end": "15:15",
+        "gross": 380,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3416500:1cb2b717e4",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "burnetkawameeh",
+        "start": "07:59",
+        "end": "14:30",
+        "gross": 391,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3416500:1cb2b717e4",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "union",
+        "start": "07:35",
+        "end": "13:47",
+        "gross": 372,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3416500:1cb2b717e4",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "franklin prek center",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:55"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:15"
+        },
+        "rec_key": "3416500:1cb2b717e4",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "burnetkawameeh",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:59"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:30"
+        },
+        "rec_key": "3416500:1cb2b717e4",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 380,
+        "start_time": "08:55",
+        "end_time": "15:15",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "schools",
+            "start_time": "08:55",
+            "end_time": "15:15",
+            "gross": 380,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 391,
+        "start_time": "07:59",
+        "end_time": "14:30",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "burnetkawameeh",
+            "start_time": "07:59",
+            "end_time": "14:30",
+            "gross": 391,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 372,
+        "start_time": "07:35",
+        "end_time": "13:47",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "union",
+            "start_time": "07:35",
+            "end_time": "13:47",
+            "gross": 372,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 3817,
+      "completion_tokens": 576,
+      "cost_usd": 0.00046063000000000007
+    },
+    "state": "NJ"
+  }
+}

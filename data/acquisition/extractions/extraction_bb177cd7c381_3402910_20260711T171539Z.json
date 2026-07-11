@@ -1,0 +1,469 @@
+{
+  "handoff_hash": "bb177cd7c381",
+  "district": {
+    "district_id": "3402910",
+    "name": "Central Regional School District",
+    "reps": [
+      {
+        "rec_key": "3402910:0a6dacb1fa",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:42",
+                "end_time": "13:45",
+                "school_name": "Central Regional High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:08",
+                "end_time": "13:45",
+                "school_name": "Central Regional High School",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:39",
+                "end_time": "11:49",
+                "school_name": "Central Regional High School",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:38",
+                "end_time": "11:09",
+                "school_name": "Central Regional High School",
+                "confidence": "medium"
+              }
+            ],
+            "prompt_tokens": 1414,
+            "completion_tokens": 216,
+            "cost_usd": 0.0002278,
+            "latency_ms": 974,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790131-gKiFNBnsrpcCBuCQaxq4",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:42",
+                "end_time": "13:45",
+                "school_name": "Central Regional High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1482,
+            "completion_tokens": 49,
+            "cost_usd": 7.802e-05,
+            "latency_ms": 1225,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790132-UHp1wgQTpIZZxoHCmgrb",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "central regional",
+            "start": "07:42",
+            "end": "13:45",
+            "gross": 363,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3402910:0a6dacb1fa",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3402910:1749f0be9c",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:42",
+                "end_time": "14:40",
+                "school_name": "Central Regional Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "10:07",
+                "end_time": "14:42",
+                "school_name": "Central Regional Middle School",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "13:10",
+                "school_name": "Central Regional Middle School",
+                "confidence": "medium"
+              }
+            ],
+            "prompt_tokens": 1462,
+            "completion_tokens": 165,
+            "cost_usd": 0.0002122,
+            "latency_ms": 866,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790133-k7kZgEidoBq9LOGfj9pE",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:42",
+                "end_time": "14:40",
+                "school_name": "Central Regional Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1475,
+            "completion_tokens": 71,
+            "cost_usd": 7.943e-05,
+            "latency_ms": 1474,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790134-409a8RKnTcbLhtYaXoJf",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "central regional",
+            "start": "08:42",
+            "end": "14:40",
+            "gross": 358,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3402910:1749f0be9c",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3402910:baa483a03d",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:42",
+                "end_time": "14:40",
+                "school_name": "Central Regional Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1537,
+            "completion_tokens": 44,
+            "cost_usd": 0.0001713,
+            "latency_ms": 671,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790136-2dQnRUAyHxD5jxq0VBUJ",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:42",
+                "end_time": "14:40",
+                "school_name": "Central Regional Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1603,
+            "completion_tokens": 44,
+            "cost_usd": 8.367e-05,
+            "latency_ms": 900,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790137-wnHhuFyxrLfNI7dWUz0k",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "central regional",
+            "start": "08:42",
+            "end": "14:40",
+            "gross": 358,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3402910:baa483a03d",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3402910:763e575372",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:42",
+                "end_time": "13:45",
+                "school_name": "Central Regional High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1411,
+            "completion_tokens": 59,
+            "cost_usd": 0.0001647,
+            "latency_ms": 575,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790137-tZ9rMjyv7LUJZQGl5iRp",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:42",
+                "end_time": "13:45",
+                "school_name": "Central Regional High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1477,
+            "completion_tokens": 49,
+            "cost_usd": 7.777e-05,
+            "latency_ms": 1043,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790138-SxWAkG7iAfRfRooDEbKG",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "central regional",
+            "start": "07:42",
+            "end": "13:45",
+            "gross": 363,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3402910:763e575372",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "central regional",
+        "start": "07:42",
+        "end": "13:45",
+        "gross": 363,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3402910:0a6dacb1fa",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "central regional",
+        "start": "08:42",
+        "end": "14:40",
+        "gross": 358,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3402910:1749f0be9c",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "central regional",
+        "start": "08:42",
+        "end": "14:40",
+        "gross": 358,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3402910:baa483a03d",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "central regional",
+        "start": "07:42",
+        "end": "13:45",
+        "gross": 363,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3402910:763e575372",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 4,
+    "n_judged": 0,
+    "bands": {
+      "middle": {
+        "gross_minutes": 358,
+        "start_time": "08:42",
+        "end_time": "14:40",
+        "n_schools": 2,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "central regional",
+            "start_time": "08:42",
+            "end_time": "14:40",
+            "gross": 358,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "central regional",
+            "start_time": "08:42",
+            "end_time": "14:40",
+            "gross": 358,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 363,
+        "start_time": "07:42",
+        "end_time": "13:45",
+        "n_schools": 2,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "central regional",
+            "start_time": "07:42",
+            "end_time": "13:45",
+            "gross": 363,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "central regional",
+            "start_time": "07:42",
+            "end_time": "13:45",
+            "gross": 363,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 8,
+      "judge_calls": 0,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 11861,
+      "completion_tokens": 697,
+      "cost_usd": 0.00109489
+    },
+    "state": "NJ"
+  }
+}

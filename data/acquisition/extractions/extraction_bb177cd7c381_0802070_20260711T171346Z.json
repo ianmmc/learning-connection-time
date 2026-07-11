@@ -1,0 +1,443 @@
+{
+  "handoff_hash": "bb177cd7c381",
+  "district": {
+    "district_id": "0802070",
+    "name": "Alamosa School District No. Re-11J",
+    "reps": [
+      {
+        "rec_key": "0802070:fcb4b3b615",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:20",
+                "school_name": "Alamosa Elementary K-2",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 924,
+            "completion_tokens": 47,
+            "cost_usd": 0.0001112,
+            "latency_ms": 600,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790018-XEjIur8OOra4qGUOIpjY",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:20",
+                "school_name": "Alamosa Elementary K-2",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 981,
+            "completion_tokens": 53,
+            "cost_usd": 5.329e-05,
+            "latency_ms": 876,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790018-p4aiA66aFZU4tV8alvhG",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "alamosa k2",
+            "start": "08:00",
+            "end": "15:20",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0802070:fcb4b3b615",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0802070:d37af63d6e",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:20",
+                "school_name": "Alamosa Elementary 3-5",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1011,
+            "completion_tokens": 53,
+            "cost_usd": 0.0001223,
+            "latency_ms": 553,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790019-zA04buAAspWU8D3pFpTa",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "15:20",
+                "school_name": "Alamosa Elementary 3-5",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1073,
+            "completion_tokens": 54,
+            "cost_usd": 5.797e-05,
+            "latency_ms": 3066,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790020-nGRF4ySY2uEhkfRvWE8n",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "alamosa 35",
+            "start": "08:05",
+            "end": "15:20",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0802070:d37af63d6e",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0802070:a6992b0b8d",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "16:05",
+                "school_name": "Alamosa High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 947,
+            "completion_tokens": 45,
+            "cost_usd": 0.0001127,
+            "latency_ms": 582,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790023-5KZGtcfsWTSUWfCmDrU5",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:55",
+                "end_time": "16:05",
+                "school_name": "Alamosa High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1005,
+            "completion_tokens": 50,
+            "cost_usd": 5.425e-05,
+            "latency_ms": 1067,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790024-4XNnTlWBxYul7z7AuXo6",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "alamosa",
+            "start": "07:55",
+            "end": "16:05",
+            "gross": 490,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0802070:a6992b0b8d",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0802070:e6054d1ee1",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:25",
+                "school_name": "Ortega Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1121,
+            "completion_tokens": 49,
+            "cost_usd": 0.0001317,
+            "latency_ms": 656,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790025-5hFdTkUjjXIDpPT7r5WS",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:25",
+                "school_name": "Ortega Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1187,
+            "completion_tokens": 72,
+            "cost_usd": 6.511e-05,
+            "latency_ms": 1244,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790025-hW0yFzT8c8g5tANLYkCr",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "ortega",
+            "start": "07:50",
+            "end": "15:25",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0802070:e6054d1ee1",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "alamosa k2",
+        "start": "08:00",
+        "end": "15:20",
+        "gross": 440,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0802070:fcb4b3b615",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "alamosa 35",
+        "start": "08:05",
+        "end": "15:20",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0802070:d37af63d6e",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "alamosa",
+        "start": "07:55",
+        "end": "16:05",
+        "gross": 490,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0802070:a6992b0b8d",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "ortega",
+        "start": "07:50",
+        "end": "15:25",
+        "gross": 455,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0802070:e6054d1ee1",
+        "source_file": "page.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 4,
+    "n_judged": 0,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 438,
+        "start_time": "08:00",
+        "end_time": "15:20",
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "alamosa k2",
+            "start_time": "08:00",
+            "end_time": "15:20",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "alamosa 35",
+            "start_time": "08:05",
+            "end_time": "15:20",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 455,
+        "start_time": "07:50",
+        "end_time": "15:25",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "ortega",
+            "start_time": "07:50",
+            "end_time": "15:25",
+            "gross": 455,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 490,
+        "start_time": "07:55",
+        "end_time": "16:05",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "alamosa",
+            "start_time": "07:55",
+            "end_time": "16:05",
+            "gross": 490,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 8,
+      "judge_calls": 0,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 8249,
+      "completion_tokens": 423,
+      "cost_usd": 0.00070852
+    },
+    "state": "CO"
+  }
+}

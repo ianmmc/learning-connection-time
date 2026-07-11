@@ -1,0 +1,220 @@
+{
+  "handoff_hash": "bb177cd7c381",
+  "district": {
+    "district_id": "3805460",
+    "name": "DUNSEITH 1",
+    "reps": [
+      {
+        "rec_key": "3805460:a294b71351",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Dunseith Elementary School",
+                "confidence": "low"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Dunseith High School",
+                "confidence": "low"
+              }
+            ],
+            "prompt_tokens": 1874,
+            "completion_tokens": 85,
+            "cost_usd": 0.0002214,
+            "latency_ms": 999,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790270-wV8LRkDT0HMjDnqxacMC",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "16:00",
+                "school_name": "Dunseith Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "16:00",
+                "school_name": "Dunseith High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1921,
+            "completion_tokens": 128,
+            "cost_usd": 0.00010629,
+            "latency_ms": 2346,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790271-LwfyU8Nz2j4v34IHk7KS",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "16:00",
+                "school_name": "Dunseith Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "16:00",
+                "school_name": "Dunseith High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1873,
+            "completion_tokens": 79,
+            "cost_usd": 0.00021439,
+            "latency_ms": 1599,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790273-4cXowUNcOA65GoH4irGc",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "dunseith",
+            "start": "08:00",
+            "end": "16:00",
+            "gross": 480,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3805460:a294b71351",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "high",
+            "school": "dunseith",
+            "start": "08:00",
+            "end": "16:00",
+            "gross": 480,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "3805460:a294b71351",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "dunseith",
+        "start": "08:00",
+        "end": "16:00",
+        "gross": 480,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3805460:a294b71351",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "dunseith",
+        "start": "08:00",
+        "end": "16:00",
+        "gross": 480,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "3805460:a294b71351",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 480,
+        "start_time": "08:00",
+        "end_time": "16:00",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "dunseith",
+            "start_time": "08:00",
+            "end_time": "16:00",
+            "gross": 480,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 480,
+        "start_time": "08:00",
+        "end_time": "16:00",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "dunseith",
+            "start_time": "08:00",
+            "end_time": "16:00",
+            "gross": 480,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 5668,
+      "completion_tokens": 292,
+      "cost_usd": 0.00054208
+    },
+    "state": "ND"
+  }
+}

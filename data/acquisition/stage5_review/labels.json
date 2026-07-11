@@ -1512,12 +1512,60 @@
     "updated_at": "2026-06-29T07:48:42Z"
   },
   {
+    "rec_key": "0602559:123a8b519b",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-11T21:34:29Z"
+  },
+  {
+    "rec_key": "0602559:1733483566",
+    "primary_label": "target_absent",
+    "facets_json": "{\"academic_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-11T21:34:12Z"
+  },
+  {
     "rec_key": "0602559:4c1bdf91ac",
     "primary_label": "school_bell_table",
     "facets_json": "{}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-11T06:18:50Z"
+  },
+  {
+    "rec_key": "0602559:879922f32e",
+    "primary_label": "target_absent",
+    "facets_json": "{\"board\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-11T21:32:41Z"
+  },
+  {
+    "rec_key": "0602559:8d85694863",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-11T21:33:18Z"
+  },
+  {
+    "rec_key": "0602559:98755559ee",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-11T21:33:31Z"
+  },
+  {
+    "rec_key": "0602559:e515f32540",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-11T21:33:59Z"
   },
   {
     "rec_key": "0626910:0a0b114129",
@@ -5312,12 +5360,44 @@
     "updated_at": "2026-07-04T05:47:19Z"
   },
   {
+    "rec_key": "3601002:03cab24008",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-11T21:37:22Z"
+  },
+  {
+    "rec_key": "3601002:04ea3f4aa7",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-11T21:35:05Z"
+  },
+  {
     "rec_key": "3601002:0cb97685dd",
     "primary_label": "target_absent",
     "facets_json": "{}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-11T03:57:08Z"
+  },
+  {
+    "rec_key": "3601002:0f047e1bfb",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-11T21:35:26Z"
+  },
+  {
+    "rec_key": "3601002:10b663588c",
+    "primary_label": "target_absent",
+    "facets_json": "{\"academic_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-11T21:37:06Z"
   },
   {
     "rec_key": "3601002:654259307b",
@@ -5344,12 +5424,28 @@
     "updated_at": "2026-07-11T03:54:01Z"
   },
   {
+    "rec_key": "3601002:95ccf38d52",
+    "primary_label": "target_absent",
+    "facets_json": "{\"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-11T21:35:53Z"
+  },
+  {
     "rec_key": "3601002:9821f27b80",
     "primary_label": "target_absent",
     "facets_json": "{}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-11T03:56:12Z"
+  },
+  {
+    "rec_key": "3601002:ae2b0e4a56",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-11T21:36:38Z"
   },
   {
     "rec_key": "3601002:af4ea4bf6f",
@@ -5366,6 +5462,30 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-11T03:55:59Z"
+  },
+  {
+    "rec_key": "3601002:c738c83041",
+    "primary_label": "target_absent",
+    "facets_json": "{\"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-11T21:36:47Z"
+  },
+  {
+    "rec_key": "3601002:cf220cebfe",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-11T21:36:26Z"
+  },
+  {
+    "rec_key": "3601002:d1436a5b29",
+    "primary_label": "target_absent",
+    "facets_json": "{\"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-11T21:36:04Z"
   },
   {
     "rec_key": "3601002:fb46787b20",
@@ -7168,6 +7288,14 @@
     "updated_at": "2026-06-29T09:02:17Z"
   },
   {
+    "rec_key": "4843560:2c2688daff",
+    "primary_label": "explicit_instructional_time",
+    "facets_json": "{\"academic_calendar\": \"yes\"}",
+    "note": "At bottom of academic calendar:\nDaily Minutes = 520",
+    "status": "labeled",
+    "updated_at": "2026-07-11T21:31:55Z"
+  },
+  {
     "rec_key": "4843560:4e1ea028f0",
     "primary_label": "explicit_instructional_time",
     "facets_json": "{\"academic_calendar\": \"yes\"}",
@@ -7176,12 +7304,28 @@
     "updated_at": "2026-07-02T07:07:16Z"
   },
   {
+    "rec_key": "4843560:ab5b280978",
+    "primary_label": "school_bell_table",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-11T21:30:02Z"
+  },
+  {
     "rec_key": "4843560:fb01c2fbc8",
     "primary_label": "target_absent",
     "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-02T07:07:37Z"
+  },
+  {
+    "rec_key": "4843560:fe6b1cc806",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-11T21:30:13Z"
   },
   {
     "rec_key": "4900540:b6de222ea5",

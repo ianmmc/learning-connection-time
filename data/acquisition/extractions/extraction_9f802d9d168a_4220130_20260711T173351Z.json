@@ -1,0 +1,298 @@
+{
+  "handoff_hash": "9f802d9d168a",
+  "district": {
+    "district_id": "4220130",
+    "name": "Redbank Valley SD",
+    "reps": [
+      {
+        "rec_key": "4220130:059feb5851",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Redbank Valley Primary School",
+                "confidence": "low"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Redbank Valley Intermediate School",
+                "confidence": "low"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:50",
+                "school_name": "Redbank Valley High School",
+                "confidence": "low"
+              }
+            ],
+            "prompt_tokens": 21896,
+            "completion_tokens": 210,
+            "cost_usd": 0.0022736,
+            "latency_ms": 5597,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783791222-yNBdN7PIMakleKnM3Y5g",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": false,
+            "error": "Error code: 400 - {'error': {'message': \"This endpoint's maximum context length is 32768 tokens. However, you requested about 43457 tokens (27457 of text input, 16000 in the output). Please reduce the length of either one, or use the context-compression plugin to compress your prompt automatically.\", 'code': 400, 'metadata': {'provider_name': None}}, 'user_id': 'user_3F6G2u57EqCPewKcTHYL5cGYfne'}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 303,
+            "finish_reason": null,
+            "generation_id": null,
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 21818,
+            "completion_tokens": 6,
+            "cost_usd": 0.0043672,
+            "latency_ms": 1927,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783791224-FVvRzEss2mkadR3TR5fm",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "redbank valley primary",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:50"
+            },
+            "rec_key": "4220130:059feb5851",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "redbank valley intermediate",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:50"
+            },
+            "rec_key": "4220130:059feb5851",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "redbank valley",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:50"
+            },
+            "rec_key": "4220130:059feb5851",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "4220130:5ea2e85cc4",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "end_time": "15:07",
+                "grade_level": "high",
+                "school_name": "Redbank Valley Jr.-Sr. H.S.",
+                "start_time": "07:55",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 34488,
+            "completion_tokens": 56,
+            "cost_usd": 0.0034712,
+            "latency_ms": 1576,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783791226-h2DQrMwhEdml79JqfMJ1",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": false,
+            "error": "Error code: 400 - {'error': {'message': \"This endpoint's maximum context length is 32768 tokens. However, you requested about 58652 tokens (42652 of text input, 16000 in the output). Please reduce the length of either one, or use the context-compression plugin to compress your prompt automatically.\", 'code': 400, 'metadata': {'provider_name': None}}, 'user_id': 'user_3F6G2u57EqCPewKcTHYL5cGYfne'}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 315,
+            "finish_reason": null,
+            "generation_id": null,
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:07",
+                "school_name": "Redbank Valley Jr.-Sr. H.S.",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 33997,
+            "completion_tokens": 46,
+            "cost_usd": 0.00306433,
+            "latency_ms": 2957,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783791228-87luaDX9mkFsihYwrYw3",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "redbank valley jrsr hs",
+            "start": "08:00",
+            "end": "15:07",
+            "gross": 427,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "4220130:5ea2e85cc4",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "redbank valley jrsr hs",
+        "start": "08:00",
+        "end": "15:07",
+        "gross": 427,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "4220130:5ea2e85cc4",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "redbank valley primary",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:50"
+        },
+        "rec_key": "4220130:059feb5851",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "redbank valley intermediate",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:50"
+        },
+        "rec_key": "4220130:059feb5851",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "redbank valley",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:50"
+        },
+        "rec_key": "4220130:059feb5851",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "n_reps": 2,
+    "n_judged": 2,
+    "bands": {
+      "high": {
+        "gross_minutes": 427,
+        "start_time": "08:00",
+        "end_time": "15:07",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "redbank valley jrsr hs",
+            "start_time": "08:00",
+            "end_time": "15:07",
+            "gross": 427,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 6,
+      "judge_calls": 2,
+      "errors": 2,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 112199,
+      "completion_tokens": 318,
+      "cost_usd": 0.01317633
+    },
+    "state": "PA"
+  }
+}

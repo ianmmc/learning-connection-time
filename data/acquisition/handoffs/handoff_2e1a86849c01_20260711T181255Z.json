@@ -1,0 +1,70 @@
+{
+  "handoff_hash": "2e1a86849c01",
+  "created_at": "2026-07-11T18:12:55Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "fingerprints": {
+    "1918690": {
+      "config": "e2d24d579723",
+      "labels": "8585fe34cda9",
+      "data": "66b06f0c14f4"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v1"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.00102,
+    "n_reps": 1,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "1918690",
+      "name": "Marion Independent School District",
+      "state": "IA",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "1918690:1c693ea3aa",
+          "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/1559/Mhs/642dd49a-f5f7-4ab0-a3c8-ffc72cafc5a5/MHS_Bell_Schedule_24-25_1.pdf?disposition=inline",
+          "decision": "send",
+          "reason": "7->6 alternate-rep re-dispatch (REQ-118)",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    }
+  ]
+}

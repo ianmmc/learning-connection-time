@@ -1,0 +1,3263 @@
+{
+  "handoff_hash": "bb177cd7c381",
+  "created_at": "2026-07-11T17:11:32Z",
+  "created_by": "ian",
+  "verified_only": true,
+  "fingerprints": {
+    "5103060": {
+      "config": "e2d24d579723",
+      "labels": "142f5e71a432",
+      "data": "c8b462b4b51b"
+    },
+    "3501110": {
+      "config": "e2d24d579723",
+      "labels": "2c2590139c82",
+      "data": "35f37a240301"
+    },
+    "0101920": {
+      "config": "e2d24d579723",
+      "labels": "c3a0c24a9514",
+      "data": "f2ff64d7810e"
+    },
+    "3904817": {
+      "config": "e2d24d579723",
+      "labels": "794eb7b3851c",
+      "data": "5924fd9ee4ba"
+    },
+    "0802070": {
+      "config": "e2d24d579723",
+      "labels": "34cdd48ddc17",
+      "data": "b12239b995b2"
+    },
+    "2500587": {
+      "config": "e2d24d579723",
+      "labels": "0bfdf4b3d19b",
+      "data": "1815087fd915"
+    },
+    "3402910": {
+      "config": "e2d24d579723",
+      "labels": "5946b146fe34",
+      "data": "4c156ade7205"
+    },
+    "2200283": {
+      "config": "e2d24d579723",
+      "labels": "5f235634a534",
+      "data": "f965058b37bf"
+    },
+    "2507080": {
+      "config": "e2d24d579723",
+      "labels": "d800d55d5aee",
+      "data": "1a209ad46720"
+    },
+    "2700187": {
+      "config": "e2d24d579723",
+      "labels": "e7a610f817fb",
+      "data": "28c98c9b4dd0"
+    },
+    "3601002": {
+      "config": "e2d24d579723",
+      "labels": "adfa01be4676",
+      "data": "83f9b9991f69"
+    },
+    "3601176": {
+      "config": "e2d24d579723",
+      "labels": "f42baa74ddd2",
+      "data": "a8351354401e"
+    },
+    "4220130": {
+      "config": "e2d24d579723",
+      "labels": "ae9e3d089eff",
+      "data": "4c2cfc602d2e"
+    },
+    "0602559": {
+      "config": "e2d24d579723",
+      "labels": "3473f366f53e",
+      "data": "33bf7be8432d"
+    },
+    "2700311": {
+      "config": "e2d24d579723",
+      "labels": "8c7f75b5027f",
+      "data": "43be6e81d32b"
+    },
+    "3416500": {
+      "config": "e2d24d579723",
+      "labels": "696a01dede2d",
+      "data": "d9e77cf46178"
+    },
+    "3805460": {
+      "config": "e2d24d579723",
+      "labels": "910bce01a892",
+      "data": "eae0524938ec"
+    },
+    "3904705": {
+      "config": "e2d24d579723",
+      "labels": "df27616ecd53",
+      "data": "769212d54d1d"
+    },
+    "4843560": {
+      "config": "e2d24d579723",
+      "labels": "3486bf1bd8bf",
+      "data": "b41d790bfd1b"
+    }
+  },
+  "councils": {
+    "image": {
+      "id": "image",
+      "name": "Image / vision council",
+      "input_kinds": [
+        "image"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash",
+        "mistralai/mistral-large-2512"
+      ],
+      "judge": "qwen/qwen3-vl-235b-a22b-instruct",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.vision.v1"
+      }
+    },
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v1"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.065955,
+    "n_reps": 61,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "5103060",
+      "name": "Prince Edward County Public Schools",
+      "state": "VA",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "5103060:f46575fdb9",
+          "url": "https://www.pecps.k12.va.us/o/pecps/page/for-families",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5103060:0ea79ec9c1",
+          "url": "https://www.ms.pecps.k12.va.us/",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5103060:10ff83e771",
+          "url": "https://www.pecps.k12.va.us/page/calendars",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5103060:6231c0a3a5",
+          "url": "https://www.pecps.k12.va.us/",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5103060:4609970576",
+          "url": "https://www.es.pecps.k12.va.us/",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5103060:b20c529dc0",
+          "url": "https://www.hs.pecps.k12.va.us/",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5103060:456fe5edf6",
+          "url": "https://www.pecps.k12.va.us/events?id=53264140",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5103060:3675f8d615",
+          "url": "https://www.ms.pecps.k12.va.us/live-feed?page_no=32",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5103060:57da3dee73",
+          "url": "https://www.hs.pecps.k12.va.us/live-feed?page_no=20",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5103060:af055581ed",
+          "url": "https://www.es.pecps.k12.va.us/live-feed?page_no=1",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5103060:8817f5dac0",
+          "url": "https://www.hs.pecps.k12.va.us/o/pechs/live-feed",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5103060:1924c47c0f",
+          "url": "https://www.es.pecps.k12.va.us/o/pecms/live-feed",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5103060:92062700fa",
+          "url": "https://www.pecps.k12.va.us/live-feed?page_no=4",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "5103060:f8403f4e32",
+          "url": "https://www.es.pecps.k12.va.us/o/peces/live-feed?page_no=37",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 14,
+      "est_usd": 0.014280000000000001
+    },
+    {
+      "district_id": "3501110",
+      "name": "GALLUP",
+      "state": "NM",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "3501110:065e94268b",
+          "url": "https://www.gmcs.org/o/cphs/events?id=35123658",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:430e728be2",
+          "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/5125/Nms/191c3e85-1c5c-436b-aa18-baf1be3604a4/GMCS_Staff_Operations_Manual_25-26__1__organiz.pdf?disposition=inline",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3501110:8f9b5e3052",
+          "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/5125/Cms/62a8b836-4580-4021-a59f-aeb44b0375e0/Bell_Schedule_25.26.pdf?disposition=inline",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3501110:793e910318",
+          "url": "https://www.gmcs.org/page/gmcs-school-times",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                2,
+                3
+              ]
+            }
+          ]
+        },
+        {
+          "rec_key": "3501110:071335d0fe",
+          "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/5125/Cphs/2cfb37f9-297c-40a5-9e76-4585008713eb/CHS_25-26_Bell_Schedule.pdf?disposition=inline",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3501110:ab50724201",
+          "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/5125/Gphs/7463b986-84e3-40cd-8ce3-34fe91841905/GPH_BELL_SCHEDULE_25-26__1_.pdf?disposition=inline",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3501110:b76392ddbc",
+          "url": "https://www.gmcs.org/o/gphs/live-feed?page_no=2",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:a6d82161d5",
+          "url": "https://www.gmcs.org/live-feed?page_no=1",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:04218ec432",
+          "url": "https://toh.gmcs.org/o/tohs/live-feed?page_no=1",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:ecaed976e4",
+          "url": "https://cph.gmcs.org/live-feed",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:c151b0bb75",
+          "url": "https://www.gmcs.org/o/mkas/live-feed",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:70ac384281",
+          "url": "https://sce.gmcs.org/o/ses/live-feed",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:6dbf62c46e",
+          "url": "https://www.gmcs.org/o/gpm/live-feed",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:eb3ba9f862",
+          "url": "https://the.gmcs.org/o/gphs/live-feed?page_no=4",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:2043999c5f",
+          "url": "https://www.gmcs.org/o/dnes/live-feed",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:fa9c81ea14",
+          "url": "https://tue.gmcs.org/o/gpm/live-feed?page_no=2",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:4d064f421b",
+          "url": "https://the.gmcs.org/o/ihes/live-feed?page_no=1",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:8fe6b23693",
+          "url": "https://www.gmcs.org/o/hmhs/live-feed?page_no=7",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:35562e1913",
+          "url": "https://hmh.gmcs.org/live-feed?page_no=11",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:f4202d1e1d",
+          "url": "https://www.gmcs.org/o/dses/live-feed",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:5ca23201c2",
+          "url": "https://toh.gmcs.org/o/tohs/article/2339283",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3501110:9a84a8ae66",
+          "url": "https://www.gmcs.org/o/tom/live-feed",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:dc639d7371",
+          "url": "https://dne.gmcs.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:ed61346ff2",
+          "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/5125/Gphs/2472b857-668e-4a0d-aa37-d9d18c1860ae/Bus_Schedule.pdf?disposition=inline",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:109eae9f7f",
+          "url": "https://cme.gmcs.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:91f374b5dc",
+          "url": "https://the.gmcs.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:97b9e1fdf6",
+          "url": "https://bfd.gmcs.org/o/IHES",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:63e06fe939",
+          "url": "https://cpm.gmcs.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:6720f51d30",
+          "url": "https://www.gmcs.org/o/tom",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:357654cdcd",
+          "url": "https://www.gmcs.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:894a8a5eb6",
+          "url": "https://tue.gmcs.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:662ee49cf9",
+          "url": "https://lne.gmcs.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:c18549b36d",
+          "url": "https://cpe.gmcs.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:c623014239",
+          "url": "https://jfe.gmcs.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:0fd777f509",
+          "url": "https://nvm.gmcs.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:5cc14e07d1",
+          "url": "https://rre.gmcs.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:db2b1f55f5",
+          "url": "https://sce.gmcs.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:c908024fa5",
+          "url": "https://tle.gmcs.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:70878fc4d3",
+          "url": "https://www.gmcs.org/o/HMHS",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:bb1215a5c7",
+          "url": "https://kem.gmcs.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:edcf88b8b9",
+          "url": "https://thm.gmcs.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:893629d8cd",
+          "url": "https://www.gmcs.org/o/thhs",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:dadd661d8a",
+          "url": "https://tgh.gmcs.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:59fd88b323",
+          "url": "https://www.gmcs.org/o/GPM",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:37d66d8d92",
+          "url": "https://cmm.gmcs.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:04dcb22252",
+          "url": "https://cph.gmcs.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:f1e9ceac52",
+          "url": "https://cph.gmcs.org/o/cphs/live-feed?page_no=2",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:22f48b3225",
+          "url": "https://toe.gmcs.org/o/nms/live-feed?page_no=4",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:9580fdfbfd",
+          "url": "https://rah.gmcs.org/o/rahs/live-feed?page_no=8",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:93e13b46ef",
+          "url": "https://www.gmcs.org/o/rahs/live-feed?page_no=5",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:bc8ad49512",
+          "url": "https://tgh.gmcs.org/o/thhs/live-feed?page_no=3",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:7007a70c4e",
+          "url": "https://tle.gmcs.org/o/cdes/live-feed?page_no=2",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:716a209065",
+          "url": "https://kem.gmcs.org/o/kms/news",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:4caa5dda9e",
+          "url": "https://sce.gmcs.org/o/rahs/live-feed?page_no=1",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:fd275ac0fa",
+          "url": "https://nvm.gmcs.org/o/nms/live-feed",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:3940176788",
+          "url": "https://www.gmcs.org/events?id=59189533",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:87e7fb1cb7",
+          "url": "https://www.gmcs.org/o/nphs",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:217c9622c8",
+          "url": "https://www.gmcs.org/o/cms/documents/students-%26-parents/716715",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:db55fde15a",
+          "url": "https://cpm.gmcs.org/o/cms/news",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:243bff484d",
+          "url": "https://www.gmcs.org/page/impact-aid",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:9043b0c449",
+          "url": "https://cpm.gmcs.org/o/cms/article/2416927",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:fcf8e6d3bd",
+          "url": "https://www.gmcs.org/news",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:f2cc72a4f2",
+          "url": "https://www.gmcs.org/page/career-opportunities",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:885a00de8d",
+          "url": "https://www.gmcs.org/o/gphs/documents/students-%26-parents/bus-%26-bell-schedules/716886",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:44f93767bd",
+          "url": "https://toe.gmcs.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:5c56388e57",
+          "url": "https://www.gmcs.org/o/ces/page/bus-schedules",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:77fb1584c5",
+          "url": "https://core-docs.s3.amazonaws.com/gallup-mckinley_county_schools_ar/live_feed_image/image/17728374/large_Screenshot_2025-08-05_172756.png",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "original.png",
+              "kind": "image",
+              "councils": [
+                "image"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "image-rep",
+              "est_usd": 0.0047550000000000005
+            }
+          ]
+        },
+        {
+          "rec_key": "3501110:5acf18f3d6",
+          "url": "https://www.gmcs.org/o/cms/documents/students-%26-parents/bus-%26-bell-schedules/24321599",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:a7b6b39661",
+          "url": "https://kem.gmcs.org/o/kms/article/2416925",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:b7acae0a56",
+          "url": "https://www.gmcs.org/article/1842468",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:6866bc540d",
+          "url": "https://www.gmcs.org/page/school-year-calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:5c1e1f2222",
+          "url": "https://rah.gmcs.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:90759c0a86",
+          "url": "https://www.gmcs.org/o/nms/documents/students-%26-parents/716482",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:24dd7f4b25",
+          "url": "https://www.gmcs.org/o/ces/page/bell-schedule",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:c5f34ecc36",
+          "url": "https://www.gmcs.org/athletics",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:1ab7d8e8a0",
+          "url": "https://www.gmcs.org/o/gphs",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:f3c9900e2a",
+          "url": "https://www.gmcs.org/page/salary-schedules-and-addenda",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:ecbb82db29",
+          "url": "https://gmcs.org/parents-students/gmcs-school-times/",
+          "decision": "reject",
+          "reason": "non-target:unusable",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:e53ba140a3",
+          "url": "https://gpm.gmcs.org/o/nms/events",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:71bbee93b0",
+          "url": "https://cpe.gmcs.org/o/ces/article/1842476",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:e805d4f01a",
+          "url": "https://dne.gmcs.org/o/nms/events?id=48932810",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3501110:187d1f4dd5",
+          "url": "https://www.gmcs.org/o/cphs/documents/students-%26-parents/bell-schedules/841864",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 7,
+      "est_usd": 0.010875000000000001
+    },
+    {
+      "district_id": "0101920",
+      "name": "Jefferson County",
+      "state": "AL",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "0101920:2638244a6d",
+          "url": "https://www.jefcoed.com/brightons",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:9b7acad643",
+          "url": "https://www.jefcoed.com/o/ruddms/page/visit-our-school",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0101920:8b826184aa",
+          "url": "https://www.jefcoed.com/o/warriores/page/visit-our-school",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0101920:3a842d4f2d",
+          "url": "https://www.jefcoed.com/o/fultondalees/page/visit-our-school",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0101920:05fb66ded0",
+          "url": "https://www.jefcoed.com/o/jcibpc/page/visit-our-school",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0101920:98a6322f8d",
+          "url": "https://www.jefcoed.com/o/hueytownps/page/visit-our-school",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0101920:0f0ab6a541",
+          "url": "https://www.jefcoed.com/o/braggms/article/1795166",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:98d398e231",
+          "url": "https://www.jefcoed.com/uwclemones",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:c6eb2cb366",
+          "url": "https://www.jefcoed.com/erwinms",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:42e8188766",
+          "url": "https://www.jefcoed.com/hueytownps",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:4e25614254",
+          "url": "https://www.jefcoed.com/o/hueytownis",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:3cab9bbc36",
+          "url": "https://www.jefcoed.com/pleasantgrovees",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:d6830c3993",
+          "url": "https://www.jefcoed.com/pinsonvalleyhs",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:e49f11417a",
+          "url": "https://www.jefcoed.com/pinsones",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:a368064c97",
+          "url": "https://www.jefcoed.com/o/jcibpc",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:7ecfd66035",
+          "url": "https://www.jefcoed.com/JCIBIC",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:2389e7efe5",
+          "url": "https://www.jefcoed.com/snowrogerses",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:f591f691cb",
+          "url": "https://www.jefcoed.com/warriores",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:76a7441bad",
+          "url": "https://www.jefcoed.com/grantswoodcs",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:b049587b05",
+          "url": "https://www.jefcoed.com/o/chalkvillees",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:d43a42c932",
+          "url": "https://www.jefcoed.com/hueytownms",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:748c6695a8",
+          "url": "https://www.jefcoed.com/irondalecs",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:277504ed45",
+          "url": "https://www.jefcoed.com/cornerms",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:d7f00eed5d",
+          "url": "https://www.jefcoed.com/cornerhs",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:cfc37ee63a",
+          "url": "https://www.jefcoed.com/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:a194efcc5b",
+          "url": "https://www.jefcoed.com/o/concordes",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:f3b64835e9",
+          "url": "https://www.jefcoed.com/erwinis",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:dc80e5d27f",
+          "url": "https://www.jefcoed.com/fultondalees",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:f47bb8744f",
+          "url": "https://www.jefcoed.com/gardendalees",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:5148ebe36b",
+          "url": "https://www.jefcoed.com/o/bryanes",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:d9213bb6cb",
+          "url": "https://www.jefcoed.com/bryantparkes",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:5dc5232766",
+          "url": "https://www.jefcoed.com/claychalkvillems",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:cd5b84cbe9",
+          "url": "https://www.jefcoed.com/minorms",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:33ffc6ce71",
+          "url": "https://www.jefcoed.com/ruddms",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:68bb620a8d",
+          "url": "https://www.jefcoed.com/braggms",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:60e106c5f9",
+          "url": "https://www.jefcoed.com/irondalems",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:64784a63a6",
+          "url": "https://www.jefcoed.com/northjeffersonms",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:6075b86146",
+          "url": "https://www.jefcoed.com/mcadoryhs",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:de0804d315",
+          "url": "https://www.jefcoed.com/claychalkvillehs",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:37b7f83a98",
+          "url": "https://www.jefcoed.com/mcadoryms",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:33675a5500",
+          "url": "https://www.jefcoed.com/mcadoryes",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:101e4d32cc",
+          "url": "https://www.jefcoed.com/o/pinsones/article/2303689",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:a28046093d",
+          "url": "https://www.jefcoed.com/o/hueytownps/article/2303668",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:2cff79b6f6",
+          "url": "https://www.jefcoed.com/o/concordes/article/2241059",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:ef0a21c9f6",
+          "url": "https://www.jefcoed.com/o/ruddms/article/2303693",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:7f3b9e5ba6",
+          "url": "https://www.jefcoed.com/o/jcibpc/article/2723553",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:d06ebea45c",
+          "url": "https://www.jefcoed.com/o/concordes/events",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:1997a9ee8e",
+          "url": "https://www.jefcoed.com/o/jcibic/events",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:2e7f4d5f31",
+          "url": "https://www.jefcoed.com/o/hueytownps/events",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:4775f5e5fb",
+          "url": "https://www.jefcoed.com/o/warriores/events",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:773aad30db",
+          "url": "https://www.jefcoed.com/o/pinsones/events",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:c47ae77f84",
+          "url": "https://www.jefcoed.com/o/gardendalees/events",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:b6899e3771",
+          "url": "https://www.jefcoed.com/o/gardendalees/article/2873618",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:4ea41b11e1",
+          "url": "https://www.jefcoed.com/o/ruddms/article/2248338",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:68a7ea8a6a",
+          "url": "https://www.jefcoed.com/o/jcibpc/news",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:2030c7ea09",
+          "url": "https://www.jefcoed.com/o/pleasantgrovehs/news",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:b2d62b54ba",
+          "url": "https://www.jefcoed.com/o/claychalkvillems/news",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:dc45060a41",
+          "url": "https://www.jefcoed.com/o/fultondalees/news",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:0c341f77b5",
+          "url": "https://www.jefcoed.com/o/jcibic/news",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:c02a8d5250",
+          "url": "https://www.jefcoed.com/o/northjeffersonms/live-feed?page_no=3",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:8077c26272",
+          "url": "https://www.jefcoed.com/o/pinsones/article/2232577",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:46f53a65fe",
+          "url": "https://www.jefcoed.com/o/gardendalehs/live-feed?page_no=5",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:d2f6d9cb66",
+          "url": "https://www.jefcoed.com/o/ruddms/article/2232581",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:b4a5af56d3",
+          "url": "https://www.jefcoed.com/o/fultondalees/events?id=46626566",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:008ba005ae",
+          "url": "https://www.jefcoed.com/o/jcibic/article/2327799",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:668ec3cd89",
+          "url": "https://www.jefcoed.com/o/jcs/page/transportation",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:27af7c2b67",
+          "url": "https://www.jefcoed.com/o/ruddms/staff",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:3e17a2b094",
+          "url": "https://www.jefcoed.com/page/district-overview",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:d616c7ed6d",
+          "url": "https://www.jefcoed.com/o/jcibic/article/2232558",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:8f0506ccb6",
+          "url": "https://www.jefcoed.com/live-feed",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:b0da0edb6c",
+          "url": "https://www.jefcoed.com/o/gardendalees/live_feeds/12479060",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:e4fb968bb9",
+          "url": "https://www.jefcoed.com/o/gardendalees/article/2327790",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:c0e79f28e7",
+          "url": "https://www.jefcoed.com/o/gardendalees/live_feeds/12600322",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:59fbf65217",
+          "url": "https://www.jefcoed.com/o/jcs/page/career-opportunities",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:ccffea5dd1",
+          "url": "https://www.jefcoed.com/page/pre-k-program",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:93dc556ff1",
+          "url": "https://www.jefcoed.com/documents/calendar/698577",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:8c1eff71e8",
+          "url": "https://www.jefcoed.com/o/claychalkvillehs/live-feed?page_no=3",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:df2ebcf7fc",
+          "url": "https://www.jefcoed.com/o/ruddms/events?id=33707536",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:b198867715",
+          "url": "https://www.jefcoed.com/o/ruddms/live_feeds/12613639",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:b74d1a708e",
+          "url": "https://www.jefcoed.com/o/ruddms/news?page_no=4",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:73c9bb7db5",
+          "url": "https://www.jefcoed.com/o/gardendalees/article/2232549",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:9859194386",
+          "url": "https://www.jefcoed.com/o/fultondalees/article/2232547",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:fb505b91c5",
+          "url": "https://www.jefcoed.com/o/hueytownps/article/2232555",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:0c9f3c1d61",
+          "url": "https://www.jefcoed.com/calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0101920:f7d2df6a3f",
+          "url": "https://www.jefcoed.com/o/ruddms/live-feed?page_no=2",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 5,
+      "est_usd": 0.0051
+    },
+    {
+      "district_id": "3904817",
+      "name": "Midview Local",
+      "state": "OH",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "3904817:2007d8b64e",
+          "url": "https://www.midviewk12.org/o/mhs/page/bell-schedules",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3904817:5e0484c344",
+          "url": "https://www.midviewk12.org/o/east-intermediate/page/bell-testing-schedules",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3904817:92c8a8b3ef",
+          "url": "https://www.midviewk12.org/o/north-elementary/page/north-bell-schedules",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3904817:4efe73ecdc",
+          "url": "https://www.midviewk12.org/o/west-elementary",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904817:7beb9ad9e5",
+          "url": "https://www.midviewk12.org/o/west-elementary/page/bell-schedules",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3904817:4ba2bbd6f9",
+          "url": "https://www.midviewk12.org/o/mms/page/bell-schedules",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3904817:0bc432b1a4",
+          "url": "https://www.midviewk12.org/o/north-elementary",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904817:06f89d548e",
+          "url": "https://www.midviewk12.org/o/mms",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904817:ef34251a78",
+          "url": "https://www.midviewk12.org/o/mhs/article/1591408",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904817:9e76424b0e",
+          "url": "https://www.midviewk12.org/o/mhs/live-feed?page_no=1",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904817:2c62976084",
+          "url": "https://www.midviewk12.org/o/north-elementary/live-feed?page_no=7",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904817:adae83e2c8",
+          "url": "https://www.midviewk12.org/o/west-elementary/live-feed?page_no=1",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904817:c1f04cee18",
+          "url": "https://www.midviewk12.org/live-feed",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904817:ed9a79ce54",
+          "url": "https://www.midviewk12.org/o/mhs",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904817:094c6b74f6",
+          "url": "https://www.midviewk12.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904817:24345245de",
+          "url": "https://www.midviewk12.org/page/calendars",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 5,
+      "est_usd": 0.0051
+    },
+    {
+      "district_id": "0802070",
+      "name": "Alamosa School District No. Re-11J",
+      "state": "CO",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "0802070:fcb4b3b615",
+          "url": "https://k2.alamosaschools.org/apps/pages/?type=d&uREC_ID=571194&pREC_ID=1101914",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0802070:d37af63d6e",
+          "url": "https://35.alamosaschools.org/apps/pages/index.jsp?type=d&uREC_ID=571031&pREC_ID=1101605",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0802070:a6992b0b8d",
+          "url": "https://ahs.alamosaschools.org/apps/pages/index.jsp?type=d&uREC_ID=572586&pREC_ID=1104208",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0802070:e6054d1ee1",
+          "url": "https://oms.alamosaschools.org/apps/pages/?type=d&uREC_ID=572858&pREC_ID=1104666",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "0802070:f7f9247c78",
+          "url": "https://www.alamosaschools.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0802070:488f736e85",
+          "url": "https://k2.alamosaschools.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0802070:1e5b97b16c",
+          "url": "https://oms.alamosaschools.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0802070:db21469781",
+          "url": "https://35.alamosaschools.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0802070:5665630a45",
+          "url": "https://oms.alamosaschools.org/apps/news/show_news.jsp?REC_ID=896654&id=0",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0802070:f8072df25a",
+          "url": "https://35.alamosaschools.org/apps/events/index.jsp?id=1",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0802070:1e11eb6025",
+          "url": "https://www.alamosaschools.org/apps/pages/index.jsp?uREC_ID=549653&type=d&termREC_ID=&pREC_ID=1064564",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0802070:e80b272b5b",
+          "url": "https://35.alamosaschools.org/apps/video/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0802070:1fe3869d93",
+          "url": "https://35.alamosaschools.org/apps/news/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0802070:b847f21a85",
+          "url": "https://www.alamosaschools.org/apps/events/index.jsp?id=3",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "0802070:67d03186a4",
+          "url": "https://k2.alamosaschools.org/apps/events/index.jsp?id=0",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 4,
+      "est_usd": 0.00408
+    },
+    {
+      "district_id": "2500587",
+      "name": "Old Sturbridge Academy Charter Public School",
+      "state": "MA",
+      "topology": "single_school",
+      "records": [
+        {
+          "rec_key": "2500587:e73f4a6458",
+          "url": "https://www.osacps.org/family-resources",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "2500587:5c304d23f2",
+          "url": "https://www.osacps.org/uploads/b/335ab900-5c92-11ee-97a8-81a88d6cae61/a6fc3ef0-75ee-11ef-9455-1b443c456c96.pdf",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "2500587:03a29a7796",
+          "url": "https://www.osacps.org/uploads/b/335ab900-5c92-11ee-97a8-81a88d6cae61/ca630940-3c00-11f0-8d31-23a6ce02226c.pdf",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "2500587:05be0ab59e",
+          "url": "https://www.osacps.org/uploads/b/335ab900-5c92-11ee-97a8-81a88d6cae61/2c5ac720-6f69-11ee-b72f-159d9e5dca07.pdf",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "2500587:3897522a4f",
+          "url": "https://www.osacps.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2500587:2d49cd2ca2",
+          "url": "https://www.osacps.org/uploads/b/335ab900-5c92-11ee-97a8-81a88d6cae61/8da4dfa0-3df1-11ef-ae12-cfe7d1e1bfde.pdf",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2500587:784c5de6ce",
+          "url": "https://www.osacps.org/about",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2500587:8e07db9e7c",
+          "url": "https://www.osacps.org/academics",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2500587:067cbd437e",
+          "url": "https://www.osacps.org/admissions",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2500587:b606c55ec6",
+          "url": "https://www.osacps.org/uploads/b/335ab900-5c92-11ee-97a8-81a88d6cae61/OSACPS%20Special%20Education%20Policies%20and%20Procedures%20Manual.pdf",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 4,
+      "est_usd": 0.00408
+    },
+    {
+      "district_id": "3402910",
+      "name": "Central Regional School District",
+      "state": "NJ",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "3402910:0a6dacb1fa",
+          "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/4380/Crsd/ec150878-b22e-4e6a-9c45-1a3eb5bb13bd/24.25_HS_Bell_Schedules_-_Sheet1__1_.pdf?disposition=inline",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3402910:1749f0be9c",
+          "url": "https://aptg.co/v9czdc",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3402910:baa483a03d",
+          "url": "https://files-backend.assets.thrillshare.com/documents/asset/uploaded_file/4380/Crsd/eea5b69d-016f-46eb-9b76-02166e3ce0e3/24.25_MS_Bell_Schedules_-_Sheet1__2__1.pdf?disposition=inline",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3402910:763e575372",
+          "url": "https://aptg.co/r85bpY",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3402910:e7f9036579",
+          "url": "https://www.centralreg.k12.nj.us/live-feed?page_no=12",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3402910:b028d00fd6",
+          "url": "https://www.centralreg.k12.nj.us/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3402910:04bffb23f9",
+          "url": "https://www.centralreg.k12.nj.us/o/crms/live-feed",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3402910:6870add7da",
+          "url": "https://www.centralreg.k12.nj.us/page/about-board-of-education",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3402910:98f358d5b1",
+          "url": "https://www.centralreg.k12.nj.us/documents/district/calendars/546764",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3402910:5275f28935",
+          "url": "https://www.centralreg.k12.nj.us/o/crhs/live-feed?page_no=3",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3402910:a065e5c980",
+          "url": "https://www.centralreg.k12.nj.us/o/crhs/news",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3402910:603c8f8caa",
+          "url": "https://www.centralreg.k12.nj.us/page/calendars-and-bell-schedules-district",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3402910:09a7f2cbce",
+          "url": "https://www.centralreg.k12.nj.us/o/crms/page/calendars-and-bell-schedules-ms",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3402910:c38db5399e",
+          "url": "https://www.centralreg.k12.nj.us/o/crhs/page/calendars-and-bell-schedules-hs",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3402910:5e46319868",
+          "url": "https://www.centralreg.k12.nj.us/o/crhs/article/1507414",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3402910:7c292f207d",
+          "url": "https://www.centralreg.k12.nj.us/o/crhs",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3402910:0cc92504dc",
+          "url": "https://www.centralreg.k12.nj.us/o/crms",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3402910:e2c32aa4e9",
+          "url": "https://www.centralreg.k12.nj.us/news",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 4,
+      "est_usd": 0.00408
+    },
+    {
+      "district_id": "2200283",
+      "name": "Einstein Charter School at Village De L'Est",
+      "state": "LA",
+      "topology": "single_school",
+      "records": [
+        {
+          "rec_key": "2200283:bd9dadb816",
+          "url": "https://www.gbaps.org/aboutgbaps/ourschools/school-hours",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "2200283:e43130e49c",
+          "url": "https://einstein.ssd412.org/about-us/daily-schedules",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "2200283:2daaa30554",
+          "url": "https://www.gbaps.org/fs/pages/11344",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2200283:f3452f47db",
+          "url": "https://nolapublicschools.com/news/press-releases/opsb-approves-einstein-group-inc-s-charter-relinquishment-and-school-consolidation-plan",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2200283:0ca2c76cf4",
+          "url": "https://www.einsteincharterschools.com/transportation",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2200283:92a5e66fc0",
+          "url": "https://www.einsteincharterschools.com/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2200283:6dda0feb74",
+          "url": "https://www.einsteincharterschools.com/villagedelest",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2200283:287cdd207a",
+          "url": "https://www.einsteincharterschools.com/currentstudents",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2200283:0515175631",
+          "url": "https://www.einsteincharterschools.com/_files/ugd/4d01de_18bd1cc7db5d4567ba69272304d29bfb.pdf",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 2,
+      "est_usd": 0.00204
+    },
+    {
+      "district_id": "2507080",
+      "name": "Lunenburg",
+      "state": "MA",
+      "topology": "mixed",
+      "records": [
+        {
+          "rec_key": "2507080:213f1318bd",
+          "url": "https://sites.google.com/a/lunenburgschools.net/newlhswebsite/school-start-end-times",
+          "decision": "send",
+          "reason": "target-label:school_start_end_prose",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "2507080:44c4451fe7",
+          "url": "https://www.lunenburgschools.net/about-the-district/start-dismissal-times",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_school",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "2507080:258942eaeb",
+          "url": "https://lhs.lunenburgschools.net/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2507080:6a9ed83f0e",
+          "url": "https://www.lunenburgschools.net/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2507080:817546b4e5",
+          "url": "https://www.lunenburgschools.net/technology-quick-links",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2507080:a127394f99",
+          "url": "https://lhs.lunenburgschools.net/about-our-school",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2507080:707d096528",
+          "url": "https://www.mwlma.org/public/genie/382/school/112/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2507080:2e92ff39a3",
+          "url": "https://drive.google.com/file/d/1qrHeaStlIirllZvM0UYTs5pUBj4cpUCT/view?usp=sharing",
+          "decision": "reject",
+          "reason": "non-target:unusable",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 2,
+      "est_usd": 0.00204
+    },
+    {
+      "district_id": "2700187",
+      "name": "AVALON SCHOOL",
+      "state": "MN",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "2700187:eac4ce80da",
+          "url": "https://docs.google.com/document/d/1MqbqxLhq6fCMkj7I3Tt-FwD_Wm7Py_dktDh11E5X4VI/edit?usp=sharing",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "2700187:db18dbbbfe",
+          "url": "https://www.avalonschool.org/enrollment/learn-more",
+          "decision": "send",
+          "reason": "target-label:school_start_end_prose",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "2700187:e9894c7079",
+          "url": "https://www.avalonschool.org/students/pseo",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2700187:d1704602bc",
+          "url": "https://www.avalonschool.org/students/schedules-seminars",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2700187:95f5e7b951",
+          "url": "https://drive.google.com/file/d/1YrnkycEscYAf5FMaMO_ZCGdXBDKhA95N/view?usp=sharing",
+          "decision": "reject",
+          "reason": "non-target:unusable",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 2,
+      "est_usd": 0.00204
+    },
+    {
+      "district_id": "3601002",
+      "name": "BROWNSVILLE ASCEND CHARTER SCHOOL",
+      "state": "NY",
+      "topology": "single_school",
+      "records": [
+        {
+          "rec_key": "3601002:af4ea4bf6f",
+          "url": "https://www.ascendlearning.org/schools/lower-schools/",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3601002:6fb0dfadce",
+          "url": "https://www.ascendlearning.org/schools/middle-schools/",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3601002:9821f27b80",
+          "url": "https://www.ascendlearning.org/middle-schools/bushwick-ascend-middle/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:fbd5b39e24",
+          "url": "https://www.ascendlearning.org/lower-schools/canarsie-ascend-lower/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:0cb97685dd",
+          "url": "https://www.ascendlearning.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:696f2434bb",
+          "url": "https://www.ascendlearning.org/lower-schools/brooklyn-ascend-lower/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:fb46787b20",
+          "url": "https://www.ascendlearning.org/governance/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:654259307b",
+          "url": "https://www.ascendlearning.org/enroll/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601002:b0e30d480e",
+          "url": "https://www.ascendlearning.org/lower-schools/cypress-hills-ascend-lower/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 2,
+      "est_usd": 0.00204
+    },
+    {
+      "district_id": "3601176",
+      "name": "KIPP FREEDOM CHARTER SCHOOL",
+      "state": "NY",
+      "topology": "single_school",
+      "records": [
+        {
+          "rec_key": "3601176:0dc03656f6",
+          "url": "https://kippnyc.org/wp-content/uploads/2025/08/2025-2026-K-8-School-Calendar-for-Families.pdf",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601176:a85f615879",
+          "url": "https://kippnyc.org/wp-content/uploads/2023/03/ACA-ES-Student-and-Family-Handbook-22-23-English.pdf",
+          "decision": "send",
+          "reason": "target-label:school_start_end_prose",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                22
+              ]
+            }
+          ]
+        },
+        {
+          "rec_key": "3601176:33eb55257e",
+          "url": "https://kippnyc.org/wp-content/uploads/2025/10/FREE-MS-25-26-Student-and-Family-Handbook-Final.pdf",
+          "decision": "send",
+          "reason": "target-label:school_start_end_prose",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                14,
+                15
+              ]
+            }
+          ]
+        },
+        {
+          "rec_key": "3601176:32b648e299",
+          "url": "https://kippnyc.org/wp-content/uploads/2023/12/KIPP-FREEDOM.pdf",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601176:56e2bef504",
+          "url": "https://kippnyc.org/individual-schools/kipp-freedom-elementary-school/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601176:6ab12ef4b5",
+          "url": "https://kippnyc.org/individual-schools/kipp-infinity-elementary-school/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601176:ae533fe659",
+          "url": "https://kippnyc.org/individual-schools/kipp-academy-elementary-school/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601176:f259306eac",
+          "url": "https://kippnyc.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601176:f9009e334f",
+          "url": "https://kippnyc.org/individual-schools/kipp-beyond-middle-school/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3601176:013823fd3e",
+          "url": "https://kippnyc.org/individual-schools/kipp-amp-middle-school/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 2,
+      "est_usd": 0.00204
+    },
+    {
+      "district_id": "4220130",
+      "name": "Redbank Valley SD",
+      "state": "PA",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "4220130:9f2ff8eab8",
+          "url": "https://www.redbankvalley.net/index.php/schools/rvhs/9-high-school.html",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4220130:059feb5851",
+          "url": "http://www.redbankvalley.net/images/pdf/Elem_Handbook.pdf",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "rec_key": "4220130:5ea2e85cc4",
+          "url": "http://www.redbankvalley.net/images/High_School/21-22_HS_Handbook.pdf",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "harvest_slice.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102,
+              "pages": [
+                5
+              ]
+            }
+          ]
+        },
+        {
+          "rec_key": "4220130:89c87945c6",
+          "url": "https://redbankvalley.net/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4220130:1d9f9e991a",
+          "url": "https://www.redbankvalley.net/images/Title_1/RVIS_ParentTeacher_Compact_2025-2026.pdf",
+          "decision": "reject",
+          "reason": "non-target:unusable",
+          "reps": []
+        },
+        {
+          "rec_key": "4220130:ea18ab1f7f",
+          "url": "http://redbankvalley.net/images/District/Redbank-Valley-SD_Comprehensive-Plan_2020-2023.pdf",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4220130:ab77a8bf02",
+          "url": "http://redbankvalley.net/images/School_Board/2018/Minutes_October_1_2018.pdf",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 2,
+      "est_usd": 0.00204
+    },
+    {
+      "district_id": "0602559",
+      "name": "Aspen Ridge Public District",
+      "state": "CA",
+      "topology": "single_school",
+      "records": [
+        {
+          "rec_key": "0602559:4c1bdf91ac",
+          "url": "https://ridge.aspenps.org/resource/bell-schedule/",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "2700311",
+      "name": "ASPEN ACADEMY",
+      "state": "MN",
+      "topology": "single_school",
+      "records": [
+        {
+          "rec_key": "2700311:0860e2fe4b",
+          "url": "https://aspenacademymn.org/wp-content/uploads/2021/04/Tour-Handout-2021.pdf",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "2700311:06cf5a7b4d",
+          "url": "https://aspenacademymn.org/wp-content/uploads/2024/02/Newsletter-1109.pdf",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2700311:8d98d248bd",
+          "url": "https://aspenacademymn.org/wp-content/uploads/2023/11/Annual-Report-23-finalfinalfinal.pdf",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2700311:88c2768b1f",
+          "url": "https://aspenacademymn.org/",
+          "decision": "reject",
+          "reason": "non-target:unusable",
+          "reps": []
+        },
+        {
+          "rec_key": "2700311:c591f8cb09",
+          "url": "https://aspenacademymn.org/wp-content/uploads/2023/01/Aspen-Academy-TSES-12.22.pdf",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2700311:d2f706a501",
+          "url": "https://aspenacademymn.org/wp-content/uploads/2021/05/4-20-21-Minutes.pdf",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "2700311:90d155deba",
+          "url": "https://aspenacademymn.org/wp-content/uploads/2024/10/Policy-515-7-15-24.pdf",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "3416500",
+      "name": "Township of Union School District",
+      "state": "NJ",
+      "topology": "district_hub",
+      "records": [
+        {
+          "rec_key": "3416500:1cb2b717e4",
+          "url": "https://tups.org/index.php?pageID=smartSiteFeed&psqFeed=true&articleID=82782328",
+          "decision": "send",
+          "reason": "target-label:district_hub_by_band",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3416500:cb0e62a199",
+          "url": "http://www.twpunionschools.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "3805460",
+      "name": "DUNSEITH 1",
+      "state": "ND",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "3805460:a294b71351",
+          "url": "https://www.dunseith.k12.nd.us/o/dps/page/2025-2026-school-year-calendar",
+          "decision": "send",
+          "reason": "target-label:explicit_instructional_time",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3805460:84db5b8100",
+          "url": "https://www.dunseith.k12.nd.us/live-feed",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3805460:574a093366",
+          "url": "https://www.dunseith.k12.nd.us/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3805460:95519bda9c",
+          "url": "https://www.dunseith.k12.nd.us/page/elementary",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3805460:b657f56ee8",
+          "url": "https://lindamoodbell.com/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "3904705",
+      "name": "Evergreen Local",
+      "state": "OH",
+      "topology": "incomplete_coverage",
+      "records": [
+        {
+          "rec_key": "3904705:7fa5283db6",
+          "url": "https://www.evgvikings.org/common/pages/DisplayFile.aspx?itemId=26703545",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904705:b1dc14153d",
+          "url": "https://www.evgvikings.org/cms/One.aspx?portalId=60824&pageId=26399151",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "3904705:79e153c53e",
+          "url": "http://evgvikings.org/departments/preschool",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904705:6ad602910b",
+          "url": "http://evgvikings.org/about_us/calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904705:72f518c6ab",
+          "url": "http://evgvikings.org/students_and_families/supply_lists___fees",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904705:d2628d70b3",
+          "url": "http://evgvikings.org/staff_directory",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904705:374e8f285b",
+          "url": "http://evgvikings.org/about_us/viking_navigator_news",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904705:e6c6d85d21",
+          "url": "http://evgvikings.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904705:3b0d74203e",
+          "url": "http://evgvikings.org/departments/power_school",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904705:4a9a1a060a",
+          "url": "https://www.evgvikings.org/cms/one.aspx?portalId=60824&pageId=1406131",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904705:52ed393657",
+          "url": "http://evgvikings.org/departments/treasurer",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904705:d56d99e287",
+          "url": "http://evgvikings.org/students_and_families/honor_roll",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904705:3afc101e73",
+          "url": "http://evgvikings.org/about_us",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "3904705:7c31064f43",
+          "url": "http://evgvikings.org/buildings",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    },
+    {
+      "district_id": "4843560",
+      "name": "UNION HILL ISD",
+      "state": "TX",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "4843560:4e1ea028f0",
+          "url": "https://www.uhisd.com/85997_2",
+          "decision": "send",
+          "reason": "target-label:explicit_instructional_time",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4843560:fb01c2fbc8",
+          "url": "https://www.uhisd.com/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    }
+  ]
+}

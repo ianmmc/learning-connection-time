@@ -1,0 +1,446 @@
+{
+  "handoff_hash": "bb177cd7c381",
+  "district": {
+    "district_id": "2507080",
+    "name": "Lunenburg",
+    "reps": [
+      {
+        "rec_key": "2507080:213f1318bd",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Lunenburg High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 618,
+            "completion_tokens": 49,
+            "cost_usd": 8.14e-05,
+            "latency_ms": 691,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790110-wXV3cAWAjoeyc6CM623v",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Lunenburg High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 638,
+            "completion_tokens": 72,
+            "cost_usd": 3.766e-05,
+            "latency_ms": 1539,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790111-kbeG1fhGhX3uZM8dDA3L",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "lunenburg",
+            "start": "08:00",
+            "end": "14:30",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2507080:213f1318bd",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2507080:44c4451fe7",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "LMS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "LHS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "THES",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:20",
+                "school_name": "Primary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 730,
+            "completion_tokens": 171,
+            "cost_usd": 0.0001414,
+            "latency_ms": 828,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790112-AssVQJhXqED770Q16ksL",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Lunenburg Public Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Turkey Hill Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:20",
+                "school_name": "Primary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 745,
+            "completion_tokens": 183,
+            "cost_usd": 5.189e-05,
+            "latency_ms": 4929,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790113-DCi4kNRHTk2z6GBsYb1p",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:30",
+                "school_name": "Middle - High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:50",
+                "end_time": "15:10",
+                "school_name": "Turkey Hill Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:20",
+                "school_name": "Primary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 714,
+            "completion_tokens": 110,
+            "cost_usd": 0.00012806,
+            "latency_ms": 1773,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790118-mQ1M4T8ErOlNoWTYo1to",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "primary",
+            "start": "09:00",
+            "end": "15:20",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2507080:44c4451fe7",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "turkey hill",
+            "start": "08:50",
+            "end": "15:10",
+            "gross": 380,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2507080:44c4451fe7",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "lms",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:30"
+            },
+            "rec_key": "2507080:44c4451fe7",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "high",
+            "school": "lhs",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:30"
+            },
+            "rec_key": "2507080:44c4451fe7",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "thes",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:10"
+            },
+            "rec_key": "2507080:44c4451fe7",
+            "source_file": "page.txt"
+          },
+          {
+            "band": "middle",
+            "school": "lunenburg public schools",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:00"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:30"
+            },
+            "rec_key": "2507080:44c4451fe7",
+            "source_file": "page.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "lunenburg",
+        "start": "08:00",
+        "end": "14:30",
+        "gross": 390,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2507080:213f1318bd",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "primary",
+        "start": "09:00",
+        "end": "15:20",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2507080:44c4451fe7",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "turkey hill",
+        "start": "08:50",
+        "end": "15:10",
+        "gross": 380,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2507080:44c4451fe7",
+        "source_file": "page.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "lms",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:30"
+        },
+        "rec_key": "2507080:44c4451fe7",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "lhs",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:30"
+        },
+        "rec_key": "2507080:44c4451fe7",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "thes",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:10"
+        },
+        "rec_key": "2507080:44c4451fe7",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "lunenburg public schools",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:00"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:30"
+        },
+        "rec_key": "2507080:44c4451fe7",
+        "source_file": "page.txt"
+      }
+    ],
+    "n_reps": 2,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 380,
+        "start_time": "09:00",
+        "end_time": "15:20",
+        "n_schools": 2,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "primary",
+            "start_time": "09:00",
+            "end_time": "15:20",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "turkey hill",
+            "start_time": "08:50",
+            "end_time": "15:10",
+            "gross": 380,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 390,
+        "start_time": "08:00",
+        "end_time": "14:30",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "lunenburg",
+            "start_time": "08:00",
+            "end_time": "14:30",
+            "gross": 390,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 5,
+      "judge_calls": 1,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 3445,
+      "completion_tokens": 585,
+      "cost_usd": 0.00044041
+    },
+    "state": "MA"
+  }
+}

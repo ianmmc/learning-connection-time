@@ -1,0 +1,196 @@
+{
+  "handoff_hash": "bb177cd7c381",
+  "district": {
+    "district_id": "2700311",
+    "name": "ASPEN ACADEMY",
+    "reps": [
+      {
+        "rec_key": "2700311:0860e2fe4b",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:40",
+                "school_name": "Aspen Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:00",
+                "end_time": "15:40",
+                "school_name": "Aspen Academy",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 7217,
+            "completion_tokens": 140,
+            "cost_usd": 0.0007777,
+            "latency_ms": 1032,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790127-zbPjX1f3j590sl7JRTV4",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "15:40",
+                "school_name": "Aspen Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "09:00",
+                "end_time": "15:40",
+                "school_name": "Aspen Academy",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 7250,
+            "completion_tokens": 125,
+            "cost_usd": 0.0003725,
+            "latency_ms": 3278,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790128-bLazsdAvHkw1mo8tfO15",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "aspen",
+            "start": "09:00",
+            "end": "15:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2700311:0860e2fe4b",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "middle",
+            "school": "aspen",
+            "start": "09:00",
+            "end": "15:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2700311:0860e2fe4b",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "aspen",
+        "start": "09:00",
+        "end": "15:40",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2700311:0860e2fe4b",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "aspen",
+        "start": "09:00",
+        "end": "15:40",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2700311:0860e2fe4b",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 1,
+    "n_judged": 0,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 400,
+        "start_time": "09:00",
+        "end_time": "15:40",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "aspen",
+            "start_time": "09:00",
+            "end_time": "15:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 400,
+        "start_time": "09:00",
+        "end_time": "15:40",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "aspen",
+            "start_time": "09:00",
+            "end_time": "15:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 2,
+      "judge_calls": 0,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 14467,
+      "completion_tokens": 265,
+      "cost_usd": 0.0011502
+    },
+    "state": "MN"
+  }
+}

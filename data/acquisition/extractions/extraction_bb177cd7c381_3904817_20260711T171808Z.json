@@ -1,0 +1,547 @@
+{
+  "handoff_hash": "bb177cd7c381",
+  "district": {
+    "district_id": "3904817",
+    "name": "Midview Local",
+    "reps": [
+      {
+        "rec_key": "3904817:2007d8b64e",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:40",
+                "end_time": "14:35",
+                "school_name": "Midview High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1165,
+            "completion_tokens": 77,
+            "cost_usd": 0.0001473,
+            "latency_ms": 1537,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790279-Mycmr1hFWQTyCtzlYZmS",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:40",
+                "end_time": "14:35",
+                "school_name": "Midview High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1168,
+            "completion_tokens": 45,
+            "cost_usd": 6.2e-05,
+            "latency_ms": 876,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790280-PYIN8MjC5vY3QlxXWjfK",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "midview",
+            "start": "07:40",
+            "end": "14:35",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3904817:2007d8b64e",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3904817:5e0484c344",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:20",
+                "end_time": "14:35",
+                "school_name": "Midview East Intermediate",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:20",
+                "end_time": "12:15",
+                "school_name": "Midview East Intermediate",
+                "confidence": "low"
+              }
+            ],
+            "prompt_tokens": 1159,
+            "completion_tokens": 114,
+            "cost_usd": 0.0001615,
+            "latency_ms": 746,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790281-nI9PNgf811NSOsOBwEel",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:20",
+                "end_time": "14:35",
+                "school_name": "Midview East Intermediate",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1160,
+            "completion_tokens": 49,
+            "cost_usd": 6.192e-05,
+            "latency_ms": 934,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790282-vv1tXU6WwyzMas8nJm9d",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "midview east intermediate",
+            "start": "07:20",
+            "end": "14:35",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3904817:5e0484c344",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3904817:92c8a8b3ef",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:15",
+                "school_name": "Midview North Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 856,
+            "completion_tokens": 49,
+            "cost_usd": 0.0001052,
+            "latency_ms": 584,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790283-ZsYRbFhGRnp01RGeZ6Oi",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:15",
+                "school_name": "Midview North Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 868,
+            "completion_tokens": 50,
+            "cost_usd": 4.74e-05,
+            "latency_ms": 956,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790283-gjC6KaBh4oNNKPy6Cq0K",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "midview north",
+            "start": "08:20",
+            "end": "15:15",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3904817:92c8a8b3ef",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3904817:7beb9ad9e5",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:15",
+                "school_name": "Midview West Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 854,
+            "completion_tokens": 49,
+            "cost_usd": 0.000105,
+            "latency_ms": 806,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790284-JGPgng5GBD0QPPCNjFZZ",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:15",
+                "school_name": "Midview West Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 866,
+            "completion_tokens": 45,
+            "cost_usd": 4.69e-05,
+            "latency_ms": 850,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790285-yDW13NmJUUbiXlojJW7s",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "midview west",
+            "start": "08:20",
+            "end": "15:15",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3904817:7beb9ad9e5",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "3904817:4ba2bbd6f9",
+        "file": "tesseract_screenshot.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:20",
+                "school_name": "Midview Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 935,
+            "completion_tokens": 49,
+            "cost_usd": 0.0001131,
+            "latency_ms": 588,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790286-lpTAwAgXNhvCXqzbVDyn",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:20",
+                "school_name": "Midview Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 937,
+            "completion_tokens": 71,
+            "cost_usd": 5.253e-05,
+            "latency_ms": 1969,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783790287-0lpKU5iCVJB7WkkNxam0",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "midview",
+            "start": "07:25",
+            "end": "14:20",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "3904817:4ba2bbd6f9",
+            "source_file": "tesseract_screenshot.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "midview",
+        "start": "07:40",
+        "end": "14:35",
+        "gross": 415,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3904817:2007d8b64e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "midview east intermediate",
+        "start": "07:20",
+        "end": "14:35",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3904817:5e0484c344",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "midview north",
+        "start": "08:20",
+        "end": "15:15",
+        "gross": 415,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3904817:92c8a8b3ef",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "midview west",
+        "start": "08:20",
+        "end": "15:15",
+        "gross": 415,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3904817:7beb9ad9e5",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "midview",
+        "start": "07:25",
+        "end": "14:20",
+        "gross": 415,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "3904817:4ba2bbd6f9",
+        "source_file": "tesseract_screenshot.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 5,
+    "n_judged": 0,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 415,
+        "start_time": "08:20",
+        "end_time": "15:15",
+        "n_schools": 2,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "midview north",
+            "start_time": "08:20",
+            "end_time": "15:15",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "midview west",
+            "start_time": "08:20",
+            "end_time": "15:15",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 425,
+        "start_time": "07:20",
+        "end_time": "14:35",
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "midview east intermediate",
+            "start_time": "07:20",
+            "end_time": "14:35",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "midview",
+            "start_time": "07:25",
+            "end_time": "14:20",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 415,
+        "start_time": "07:40",
+        "end_time": "14:35",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "midview",
+            "start_time": "07:40",
+            "end_time": "14:35",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 10,
+      "judge_calls": 0,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 9968,
+      "completion_tokens": 598,
+      "cost_usd": 0.0009028499999999999
+    },
+    "state": "OH"
+  }
+}

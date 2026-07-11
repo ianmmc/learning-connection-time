@@ -1,0 +1,134 @@
+{
+  "handoff_hash": "2e1a86849c01",
+  "district": {
+    "district_id": "1918690",
+    "name": "Marion Independent School District",
+    "reps": [
+      {
+        "rec_key": "1918690:1c693ea3aa",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "MARION HIGH SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 963,
+            "completion_tokens": 44,
+            "cost_usd": 0.0001139,
+            "latency_ms": 4118,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783802994-vTcJvvoGdjateAoVMaNV",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "MARION HIGH SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 995,
+            "completion_tokens": 48,
+            "cost_usd": 5.359e-05,
+            "latency_ms": 1379,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783802994-WmIkMUcZKSHIF3hy2pSX",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "marion",
+            "start": "08:00",
+            "end": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "1918690:1c693ea3aa",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "marion",
+        "start": "08:00",
+        "end": "15:00",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "1918690:1c693ea3aa",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 1,
+    "n_judged": 0,
+    "bands": {
+      "high": {
+        "gross_minutes": 420,
+        "start_time": "08:00",
+        "end_time": "15:00",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "marion",
+            "start_time": "08:00",
+            "end_time": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 2,
+      "judge_calls": 0,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 1958,
+      "completion_tokens": 92,
+      "cost_usd": 0.00016749
+    },
+    "state": "IA"
+  }
+}

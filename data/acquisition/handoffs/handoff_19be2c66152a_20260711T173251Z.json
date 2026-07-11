@@ -1,0 +1,70 @@
+{
+  "handoff_hash": "19be2c66152a",
+  "created_at": "2026-07-11T17:32:51Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "fingerprints": {
+    "4843560": {
+      "config": "e2d24d579723",
+      "labels": "3486bf1bd8bf",
+      "data": "b41d790bfd1b"
+    }
+  },
+  "councils": {
+    "image": {
+      "id": "image",
+      "name": "Image / vision council",
+      "input_kinds": [
+        "image"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash",
+        "mistralai/mistral-large-2512"
+      ],
+      "judge": "qwen/qwen3-vl-235b-a22b-instruct",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.vision.v1"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.0047550000000000005,
+    "n_reps": 1,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "4843560",
+      "name": "UNION HILL ISD",
+      "state": "TX",
+      "topology": "unknown",
+      "records": [
+        {
+          "rec_key": "4843560:4e1ea028f0",
+          "url": "https://www.uhisd.com/85997_2",
+          "decision": "send",
+          "reason": "7->6 alternate-rep re-dispatch (REQ-118)",
+          "reps": [
+            {
+              "file": "page.png",
+              "kind": "image",
+              "councils": [
+                "image"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "override:image",
+              "est_usd": 0.0047550000000000005
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.0047550000000000005
+    }
+  ]
+}
