@@ -14,14 +14,19 @@ import os from 'os';
 import path from 'path';
 import { chromium } from 'playwright';
 import {
-  dismissModals, findEmergentLinks, domFingerprint, segmentChrome,
+  dismissModals, findEmergentLinks, readAnchors, domFingerprint, segmentChrome,
   withTimeout, noteFileResult, DE_CHROME_LANDMARKS,
 } from './capture_discovery.mjs';
 
 // Serve one HTML string for every request this page makes (main doc + any subresource), so the test
-// is fully offline. Mirrors how captureInto navigates, minus the network.
+// is fully offline. Mirrors how captureInto navigates, minus the network. Favicon gets an explicit
+// 404 -- without it, the browser's automatic /favicon.ico request would be mis-served the fixture
+// HTML as text/html (harmless today, but a surprise for any future subresource-sensitive fixture).
 async function loadFixture(page, html) {
-  await page.route('**/*', (route) => route.fulfill({ contentType: 'text/html', body: html }));
+  await page.route('**/*', (route) => {
+    if (route.request().url().endsWith('/favicon.ico')) return route.fulfill({ status: 404 });
+    return route.fulfill({ contentType: 'text/html', body: html });
+  });
   await page.goto('https://fixture.test/', { waitUntil: 'load' });
 }
 
@@ -32,6 +37,10 @@ before(async () => {
   try {
     browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
   } catch (e) {
+    // In CI, an unlaunchable Chromium is a broken environment, not an optional feature: fail LOUD.
+    // Skipped tests exit 0 (`node --test` passes on all-skip), so a silent skip here would let an
+    // environment regression quietly disable this whole file while the job stays green.
+    if (process.env.CI) throw e;
     skipReason = `Chromium unavailable (${String(e).split('\n')[0]}); run: npx playwright install chromium`;
   }
 });
@@ -53,8 +62,9 @@ test('dismissModals fires the CLICK path: an Accept button removes its banner', 
       <div id="banner">We use cookies.
         <button onclick="document.getElementById('banner').remove()">Accept</button></div>
       <main>Real page content</main></body></html>`);
-    const dismissed = await dismissModals(page);
-    assert.equal(dismissed, true);
+    // NOTE: dismissModals' boolean return is trivially true whenever the CSS injection succeeds
+    // (see the no-modal test below), so it proves nothing about the click -- the DOM is the witness.
+    await dismissModals(page);
     assert.equal(await page.locator('#banner').count(), 0, 'the Accept click removed the banner');
     assert.equal(await page.locator('main').count(), 1, 'real content is untouched');
   });
@@ -65,8 +75,7 @@ test('dismissModals fires the DOM-REMOVAL path: a .cookie-banner with no button 
     await loadFixture(page, `<!doctype html><html><body>
       <div class="cookie-banner">We use cookies.</div>
       <main>Real page content</main></body></html>`);
-    const dismissed = await dismissModals(page);
-    assert.equal(dismissed, true);
+    await dismissModals(page);   // return value is vacuous (see CLICK-path note); assert on the DOM
     assert.equal(await page.locator('.cookie-banner').count(), 0, 'the consent banner was removed');
     assert.equal(await page.locator('main').count(), 1);
   });
@@ -90,9 +99,9 @@ test('the emergent scan reads anchors off a real DOM and keeps only schedule-bea
       <a href="/athletics">Athletics</a>
       <a href="/office-hours">Office Hours</a>
       <a href="https://other.org/schedule">External Schedule</a></body></html>`);
-    // Exactly the read captureInto does before handing anchors to findEmergentLinks.
-    const anchors = await page.evaluate(() =>
-      Array.from(document.querySelectorAll('a[href]')).map((a) => ({ text: a.innerText || '', href: a.href })));
+    // THE production DOM read (readAnchors), not a hand-copied evaluate -- an edit to the
+    // production selector/fields is caught here (PR #239 review).
+    const anchors = await readAnchors(page);
     assert.deepEqual(findEmergentLinks(anchors), [
       'https://fixture.test/bell-schedule.pdf',
       'https://fixture.test/office-hours',
@@ -146,5 +155,20 @@ test('segmentChrome captures header/footer/nav and excludes them from main', asy
     assert.match(seg.footer, /Copyright 2026/);
     assert.match(seg.main, /UNIQUEBODY/, 'the body content is in main');
     assert.doesNotMatch(seg.main, /Copyright 2026/, 'chrome (footer) is stripped from main -- no false Stage-5 signal');
+  });
+});
+
+test('segmentChrome honors a WIDENED landmarks list -- new chrome leaves main AND lands in its segment', async (t) => {
+  // PR #239 review: header/footer/nav grabs used to be hardcoded, so the old test passed only
+  // because the config coincidentally matched. This widened list diverges from the defaults on
+  // purpose: .site-footer must flow through to BOTH main-exclusion and the footer segment.
+  await withPage(t, async (page) => {
+    await loadFixture(page, `<!doctype html><html><body>
+      <div class="site-footer">District Office Hours 8:00-4:30 WIDEFOOTER</div>
+      <main>First bell 8:05 AM UNIQUEBODY</main></body></html>`);
+    const seg = await segmentChrome(page, [...DE_CHROME_LANDMARKS, '.site-footer']);
+    assert.match(seg.footer, /WIDEFOOTER/, 'the widened selector is attributed to the footer segment');
+    assert.doesNotMatch(seg.main, /WIDEFOOTER/, 'and stripped from main');
+    assert.match(seg.main, /UNIQUEBODY/);
   });
 });

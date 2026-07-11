@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  classifyFetchKind, driveFormatOutcome, withTimeout,
+  classifyFetchKind, driveFormatOutcome, withTimeout, segmentBuckets,
 } from './capture_discovery.mjs';
 
 // ----------------------------- classifyFetchKind: fetch-branch dispatch -----------------------------
@@ -32,6 +32,15 @@ test('classifyFetchKind is case-insensitive on the content-type', () => {
   assert.equal(classifyFetchKind('Image/PNG').kind, 'image');
 });
 
+test('both dispatch cores accept a NULL content-type (Headers.get() returns null, not undefined)', () => {
+  // PR #239 review: a `= ""` default only substitutes on strict undefined -- these are exported
+  // reusable cores, so a raw Headers.get('content-type') passed straight through must not throw.
+  assert.deepEqual(classifyFetchKind(null), { binary: false, kind: 'html', ext: null });
+  assert.deepEqual(classifyFetchKind(undefined), { binary: false, kind: 'html', ext: null });
+  assert.deepEqual(driveFormatOutcome(null, 'auto'), { skip: false, ext: 'bin' });
+  assert.deepEqual(driveFormatOutcome(null, 'pdf'), { skip: false, ext: 'pdf' });
+});
+
 // ----------------------------- driveFormatOutcome: Drive export routing -----------------------------
 test('driveFormatOutcome skips an HTML interstitial (the requested format was unavailable)', () => {
   assert.deepEqual(driveFormatOutcome('text/html', 'pdf'), { skip: true, ext: null });
@@ -53,6 +62,8 @@ test('driveFormatOutcome sniffs auto: pdf vs the content subtype', () => {
 
 // ----------------------------- withTimeout: the page.pdf()/screenshot resilience race --------------
 test('withTimeout resolves with the wrapped value when it wins the race', async () => {
+  // This also proves the reject timer is CLEARED on settle: if it weren't, this file would hang
+  // ~10s after the assertion passes (node:test waits for the event loop to drain).
   const v = await withTimeout(Promise.resolve('done'), 10_000, 'pdf');
   assert.equal(v, 'done');
 });
@@ -69,9 +80,26 @@ test('withTimeout propagates the wrapped rejection unchanged', async () => {
   );
 });
 
-test('withTimeout clears its timer so a resolved op leaves nothing pending on the event loop', async () => {
-  // If the reject timer weren't cleared, this test file would hang ~10s after the assertions pass
-  // (node:test waits for the loop to drain). Reaching the end quickly IS the assertion.
-  await withTimeout(Promise.resolve(1), 10_000, 'pdf');
-  assert.ok(true);
+// ----------------------------- segmentBuckets: the de-chrome grab derivation -----------------------
+test('segmentBuckets reproduces the segment split for the live config defaults', () => {
+  const b = segmentBuckets(['header', 'footer', 'nav',
+    '[role="banner"]', '[role="contentinfo"]', '[role="navigation"]']);
+  assert.deepEqual(b, {
+    header: ['header', '[role="banner"]'],
+    footer: ['footer', '[role="contentinfo"]'],
+    nav: ['nav', '[role="navigation"]'],
+  });
+});
+
+test('segmentBuckets routes widened heuristics to their segment (the config note anticipates these)', () => {
+  const b = segmentBuckets(['.site-footer', '#colophon', '.main-nav', '.masthead']);
+  assert.deepEqual(b.footer, ['.site-footer', '#colophon']);
+  assert.deepEqual(b.nav, ['.main-nav']);
+  assert.deepEqual(b.header, ['.masthead']);
+});
+
+test('segmentBuckets leaves an unclassifiable selector out of every named segment', () => {
+  // Still removed from main by segmentChrome (removeSel covers ALL landmarks) -- just unattributed.
+  const b = segmentBuckets(['.some-widget']);
+  assert.deepEqual(b, { header: [], footer: [], nav: [] });
 });

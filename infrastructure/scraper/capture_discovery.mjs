@@ -197,10 +197,29 @@ export function embedCategories(iframeHosts) {
 // structure once the page closes, exactly like the fingerprint above. `main` = body.innerText after
 // removing the landmark (chrome) elements from the live DOM; the named segments are the chrome
 // elements' innerText, grabbed before removal. innerText throughout = VISIBLE text, mirroring page.txt.
+// Pure, unit-testable (PR #239 review): bucket the landmark selectors into the named segments the
+// grabs below read. Previously header/footer/nav were HARDCODED selector strings that ignored the
+// `landmarks` argument — so widening de_chrome_landmarks.json (its governance note anticipates
+// adding .site-footer/#colophon/.main-nav-style heuristics) would have stripped the new chrome from
+// `main` while page.header/footer/nav.txt silently missed it. Buckets by substring; a selector that
+// matches no bucket is still removed from main, its text just isn't attributed to a named segment.
+export function segmentBuckets(landmarks) {
+  const b = { header: [], footer: [], nav: [] };
+  for (const sel of landmarks || []) {
+    const s = sel.toLowerCase();
+    if (s.includes('footer') || s.includes('contentinfo') || s.includes('colophon')) b.footer.push(sel);
+    else if (s.includes('header') || s.includes('banner') || s.includes('masthead')) b.header.push(sel);
+    else if (s.includes('nav')) b.nav.push(sel);
+  }
+  return b;
+}
+
 export async function segmentChrome(page, landmarks) {
   const removeSel = landmarks.join(',');
-  return page.evaluate((removeSel) => {
+  const buckets = segmentBuckets(landmarks);   // grabs + removal now share ONE source: `landmarks`
+  return page.evaluate(({ removeSel, buckets }) => {
     const grab = (sel) => {
+      if (!sel) return '';
       try { return Array.from(document.querySelectorAll(sel)).map((e) => e.innerText || '').join('\n').trim(); }
       catch { return ''; }
     };
@@ -209,13 +228,13 @@ export async function segmentChrome(page, landmarks) {
     // run on the live tree -- a detached clone's textContent pulls in hidden menus/modals/JSON-LD
     // (caught on real Marion data: 98KB of hidden cruft vs 3KB visible). Mutating the live dom is
     // safe -- the page is already captured/throwaway by now.
-    const header = grab('header,[role="banner"]');
-    const footer = grab('footer,[role="contentinfo"]');
-    const nav = grab('nav,[role="navigation"]');
+    const header = grab(buckets.header.join(','));
+    const footer = grab(buckets.footer.join(','));
+    const nav = grab(buckets.nav.join(','));
     if (removeSel) { try { document.querySelectorAll(removeSel).forEach((el) => el.remove()); } catch { /* ignore */ } }
     const main = (document.body && document.body.innerText ? document.body.innerText : '').trim();
     return { main, header, footer, nav };
-  }, removeSel).catch(() => ({ main: '', header: '', footer: '', nav: '' }));
+  }, { removeSel, buckets }).catch(() => ({ main: '', header: '', footer: '', nav: '' }));
 }
 
 // Persist the segments (only non-empty ones) as page.main/header/footer/nav.txt. Stage 5 reads
@@ -383,9 +402,18 @@ export function seedFromPriorCaptures(district, priorRecords, candidateUrls) {
   }
 }
 
+// The emergent scan's DOM read: every anchor's visible text + resolved href. Exported so the
+// browser harness exercises THIS code (not a hand-copied evaluate) -- a future edit to the selector
+// or mapped fields is then caught by the test (PR #239 review).
+export async function readAnchors(page) {
+  return page
+    .evaluate(() => Array.from(document.querySelectorAll('a[href]')).map((a) => ({ text: a.innerText || '', href: a.href })))
+    .catch(() => []);
+}
+
 // Pure, unit-testable (#127/REQ-079): the emergent-scan DECISION -- from a page's anchors
 // ({text, href}), the fragment-stripped hrefs whose text or href hits a schedule keyword. The
-// browser-driving part (reading the anchors off the DOM) is the only impure step around this.
+// browser-driving part (reading the anchors off the DOM) is readAnchors above.
 export function findEmergentLinks(anchors) {
   const out = [];
   for (const a of anchors) {
@@ -410,25 +438,30 @@ export function selectEmergentTargets(links, seen, emergent, cap) {
   return { targets, emergent };
 }
 
+// The shared subtype-to-extension rule: "text after the slash, minus any ;charset param". ONE
+// definition for both dispatch cores below, so a future parsing fix (e.g. +xml suffixes) can't
+// silently diverge the direct-fetch and Drive-export paths (PR #239 review).
+const subtypeExt = (ct, fallback) => (ct.split('/')[1] || fallback).split(';')[0];
+
 // Pure, unit-testable (#127/REQ-079): the fetch-branch DISPATCH -- given a Content-Type, decide
 // whether the bytes are a directly-savable binary (PDF/image, no browser render) or need the HTML
 // render path, and the extension to save under. Mirrors captureInto's routing via this call.
-export function classifyFetchKind(contentType = '') {
-  const ct = contentType.toLowerCase();
+// `contentType` may be null (Headers.get() returns null when absent) -- normalized, never thrown on.
+export function classifyFetchKind(contentType) {
+  const ct = (contentType || '').toLowerCase();
   if (ct.includes('pdf')) return { binary: true, kind: 'pdf', ext: 'pdf' };
-  if (ct.includes('image')) return { binary: true, kind: 'image', ext: (ct.split('/')[1] || 'img').split(';')[0] };
+  if (ct.includes('image')) return { binary: true, kind: 'image', ext: subtypeExt(ct, 'img') };
   return { binary: false, kind: 'html', ext: null };
 }
 
 // Pure, unit-testable (#127/REQ-079): a Google Drive export fetch returns HTML when the requested
 // format isn't available (interstitial/error) -- that format is skipped, never saved. Otherwise the
 // extension: 'auto' sniffs pdf vs the content subtype; a named format is its own extension.
-export function driveFormatOutcome(contentType = '', format) {
-  const ct = contentType.toLowerCase();
+// `contentType` may be null, same normalization as classifyFetchKind.
+export function driveFormatOutcome(contentType, format) {
+  const ct = (contentType || '').toLowerCase();
   if (ct.includes('html')) return { skip: true, ext: null };
-  const ext = format === 'auto'
-    ? (ct.includes('pdf') ? 'pdf' : (ct.split('/')[1] || 'bin').split(';')[0])
-    : format;
+  const ext = format === 'auto' ? (ct.includes('pdf') ? 'pdf' : subtypeExt(ct, 'bin')) : format;
   return { skip: false, ext };
 }
 
@@ -622,9 +655,7 @@ async function runCapture(ROOT, CONC, only = null, deadlineMs = 0) {
           // --- Emergent candidates: exactly one hop, never recursive. An emergent
           // candidate's own page is never scanned for further emergent candidates. ---
           if (source === 'discovered') {
-            const anchors = await page
-              .evaluate(() => Array.from(document.querySelectorAll('a[href]')).map((a) => ({ text: a.innerText || '', href: a.href })))
-              .catch(() => []);
+            const anchors = await readAnchors(page);
             const { targets, emergent } = selectEmergentTargets(
               findEmergentLinks(anchors), byDistrict[did].seen, byDistrict[did].emergent, EMERGENT_CAP);
             byDistrict[did].emergent = emergent;
