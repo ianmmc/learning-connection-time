@@ -11,6 +11,10 @@ from infrastructure.acquisition.stage1_queue import batch_store as BS
 from infrastructure.acquisition.stage1_queue import models  # noqa: F401  (registers the batch tables)
 from infrastructure.acquisition.stage1_queue.models import Batch
 
+# #201: every test here hits the governance DB via gov_session (rolling-back) + init_precious_schema —
+# mark govdb so it runs in CI's governance-db job and is cleanly excluded from the DB-free job.
+pytestmark = pytest.mark.govdb
+
 
 @pytest.fixture
 def sess(gov_session):

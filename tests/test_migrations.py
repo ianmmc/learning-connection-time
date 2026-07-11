@@ -73,6 +73,9 @@ def engine_or_skip():
         pytest.skip(f"database not reachable: {e}")
 
 
+# #201: the migration ledger runs against the LCT production DB (integration-only — run locally, never in
+# CI's DB-free job). TestMigrationDiscovery above stays DB-free (pure filename/checksum logic).
+@pytest.mark.integration
 class TestMigrationLedger:
     SENTINEL = "999_test_sentinel.sql"
 

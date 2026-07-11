@@ -371,6 +371,9 @@ def engine_or_skip():
         pytest.skip(f"database not reachable: {e}")
 
 
+# #201: the LCT production DB (needs pre-populated lct_calculations — not the isolated governance DB, and
+# not data CI can provide), so integration-only (run locally), never selected into the DB-free job.
+@pytest.mark.integration
 class TestRegressionPrevention:
     """Real DB-backed regression tests for REQ-008/REQ-009.
 

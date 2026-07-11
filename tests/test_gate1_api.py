@@ -12,6 +12,10 @@ from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.stage1_queue import batch_store as BS
 from infrastructure.acquisition.stage1_queue import models  # noqa: F401  (registers tables)
 
+# #201: every test here hits the governance DB (self-bootstraps via init_precious_schema) — mark govdb so
+# it runs in CI's governance-db job and is cleanly excluded from the DB-free job (was leaking as a skip).
+pytestmark = pytest.mark.govdb
+
 BID = "batch_test_api"
 DISTRICTS = ("ZZTESTA", "ZZTESTB")
 

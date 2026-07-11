@@ -9,6 +9,7 @@ at teardown so the live data is untouched.
 """
 import json
 
+import pytest
 from sqlalchemy import text
 
 from infrastructure.acquisition.stage5_filter import release as R
@@ -177,6 +178,10 @@ def _seed_district(sess, did, district_dir):
                                  "file_kind": "text", "n_chars": 200, "n_times": 4, "usable": 1})
 
 
+# #201: this test seeds the SIGNAL tables (district/record/representation) which gov_session does NOT
+# bootstrap — it needs a pre-populated DB, so it's integration-only (run locally), NOT govdb (a fresh CI
+# container lacks those tables). The other 16 tests in this file are pure release.decide logic (DB-free).
+@pytest.mark.integration
 def test_generate_writes_traceable_filtered_json(gov_session, tmp_path):
     did = "RELTEST"
     (tmp_path / "reltest_dir").mkdir()
