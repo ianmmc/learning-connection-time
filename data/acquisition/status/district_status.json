@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-06T14:15:46Z",
+  "last_updated": "2026-07-11T03:45:55Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -225,6 +225,47 @@
         }
       ],
       "notes": "gate@1 approved batch_00002"
+    },
+    "0101920": {
+      "name": "Jefferson County",
+      "state": "AL",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "found_all",
+      "topology": null,
+      "batch_id": "batch_00013",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-11T03:32:22Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-11T03:34:47Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-11T03:38:58Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-11T03:41:58Z"
+        }
+      ],
+      "notes": "gate@1 approved batch_00013"
     },
     "0102370": {
       "name": "Mobile County",
@@ -1622,6 +1663,47 @@
       ],
       "notes": "reject district 0602459"
     },
+    "0602559": {
+      "name": "Aspen Ridge Public District",
+      "state": "CA",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "found_all",
+      "topology": null,
+      "batch_id": "batch_00013",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-11T03:32:22Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-11T03:34:47Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-11T03:38:58Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-11T03:39:20Z"
+        }
+      ],
+      "notes": "gate@1 approved batch_00013"
+    },
     "0616080": {
       "name": "Greenfield Union Elementary",
       "state": "CA",
@@ -1797,6 +1879,47 @@
         }
       ],
       "notes": "a2bc80c004ca-image"
+    },
+    "0802070": {
+      "name": "Alamosa School District No. Re-11J",
+      "state": "CO",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "found_all",
+      "topology": null,
+      "batch_id": "batch_00013",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-11T03:32:22Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-11T03:34:47Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-11T03:38:58Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-11T03:39:55Z"
+        }
+      ],
+      "notes": "gate@1 approved batch_00013"
     },
     "0806750": {
       "name": "Strasburg School District 31J",
@@ -2758,6 +2881,47 @@
         }
       ],
       "notes": "2c3680a6428e"
+    },
+    "1720640": {
+      "name": "County of Union Sch Dist No43",
+      "state": "IL",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "found_all",
+      "topology": null,
+      "batch_id": "batch_00013",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-11T03:32:22Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-11T03:34:47Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-11T03:38:58Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-11T03:39:22Z"
+        }
+      ],
+      "notes": "gate@1 approved batch_00013"
     },
     "1724390": {
       "name": "Manteno CUSD 5",
@@ -4529,6 +4693,47 @@
       ],
       "notes": "gate@1 approved batch_00005"
     },
+    "2700311": {
+      "name": "ASPEN ACADEMY",
+      "state": "MN",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "found_all",
+      "topology": null,
+      "batch_id": "batch_00013",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-11T03:32:22Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-11T03:34:47Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-11T03:38:58Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-11T03:39:26Z"
+        }
+      ],
+      "notes": "gate@1 approved batch_00013"
+    },
     "2700361": {
       "name": "ACADEMIC ARTS HIGH SCHOOL",
       "state": "MN",
@@ -4582,6 +4787,56 @@
         }
       ],
       "notes": "reject district 2804020"
+    },
+    "2900593": {
+      "name": "DELASALLE CHARTER SCHOOL",
+      "state": "MO",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "manual_flag_all",
+      "topology": null,
+      "batch_id": "batch_00013",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-11T03:32:22Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-11T03:33:47Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-11T03:34:47Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-11T03:38:58Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "manual_flag_all",
+          "at": "2026-07-11T03:39:19Z"
+        }
+      ],
+      "notes": "gate@1 approved batch_00013"
     },
     "2900601": {
       "name": "HOPE LEADERSHIP ACADEMY",
@@ -5055,6 +5310,47 @@
       ],
       "notes": "a2bc80c004ca-image"
     },
+    "3173740": {
+      "name": "MILLARD PUBLIC SCHOOLS",
+      "state": "NE",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "found_all",
+      "topology": null,
+      "batch_id": "batch_00013",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-11T03:32:22Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-11T03:34:47Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-11T03:38:58Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-11T03:45:55Z"
+        }
+      ],
+      "notes": "gate@1 approved batch_00013"
+    },
     "3200480": {
       "name": "Washoe County",
       "state": "NV",
@@ -5453,6 +5749,47 @@
         }
       ],
       "notes": "gate@1 approved batch_00006"
+    },
+    "3501110": {
+      "name": "GALLUP",
+      "state": "NM",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "found_partial",
+      "topology": null,
+      "batch_id": "batch_00013",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-11T03:32:22Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-11T03:34:47Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-11T03:38:58Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_partial",
+          "at": "2026-07-11T03:44:29Z"
+        }
+      ],
+      "notes": "gate@1 approved batch_00013"
     },
     "3501500": {
       "name": "LAS CRUCES",
@@ -5956,6 +6293,47 @@
         }
       ],
       "notes": "gate@1 approved batch_00006"
+    },
+    "3601176": {
+      "name": "KIPP FREEDOM CHARTER SCHOOL",
+      "state": "NY",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "found_all",
+      "topology": null,
+      "batch_id": "batch_00013",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-11T03:32:22Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-11T03:34:47Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-11T03:38:58Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-11T03:39:28Z"
+        }
+      ],
+      "notes": "gate@1 approved batch_00013"
     },
     "3601197": {
       "name": "UNIVERSITY PREP CHARTER MIDDLE SCHOOL",
@@ -6744,6 +7122,47 @@
       ],
       "notes": "a2bc80c004ca"
     },
+    "3904705": {
+      "name": "Evergreen Local",
+      "state": "OH",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "found_all",
+      "topology": null,
+      "batch_id": "batch_00013",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-11T03:32:22Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-11T03:34:47Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-11T03:38:58Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-11T03:39:45Z"
+        }
+      ],
+      "notes": "gate@1 approved batch_00013"
+    },
     "3904817": {
       "name": "Midview Local",
       "state": "OH",
@@ -6896,6 +7315,47 @@
         }
       ],
       "notes": "51849a4688a4"
+    },
+    "4000787": {
+      "name": "JOHN REX CHARTER SCHOOL",
+      "state": "OK",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "found_all",
+      "topology": null,
+      "batch_id": "batch_00013",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-11T03:32:22Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-11T03:34:47Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-11T03:38:58Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-11T03:39:29Z"
+        }
+      ],
+      "notes": "gate@1 approved batch_00013"
     },
     "4026640": {
       "name": "SOUTH COFFEYVILLE",
@@ -8412,6 +8872,47 @@
         }
       ],
       "notes": "bdefebeba6c3"
+    },
+    "5103060": {
+      "name": "Prince Edward County Public Schools",
+      "state": "VA",
+      "furthest_stage": 2,
+      "stage_name": "discover",
+      "outcome": "found_all",
+      "topology": null,
+      "batch_id": "batch_00013",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-11T03:32:22Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-11T03:34:47Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-11T03:38:58Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-11T03:39:37Z"
+        }
+      ],
+      "notes": "gate@1 approved batch_00013"
     },
     "5103480": {
       "name": "Scott County Public Schools",
