@@ -1545,6 +1545,25 @@ def extract_district(district_id: str):
                 "models": json.loads(a["models_json"] or "[]"), "method": a["method"]}
                for a in accepted if a["gross_minutes"] is not None]
         bands = AGG.district_bands_from_facts(agg)
+        # #237: flag single-school-LEA over-extraction (charter-network sibling contamination on a
+        # shared CMO domain, or a blank-domain unscoped capture — the Millard #227 class) for the
+        # reviewing human. DETECT-AND-FLAG ONLY, never auto-reject: picking the real school is
+        # unreliable (shared network names recur, acronyms fail a name match), so the human decides.
+        # Display-only — does not touch stored fact status.
+        meta = con.execute(text(
+            "SELECT d.nces_school_count AS nces, dt.schools_by_band_json AS sbb FROM district d "
+            "LEFT JOIN district_target dt ON dt.district_id = d.district_id WHERE d.district_id = :d"),
+            {"d": district_id}).mappings().first()
+        roster = []
+        if meta and meta["sbb"]:
+            try:
+                for _band, info in json.loads(meta["sbb"]).items():
+                    roster += [s.get("name") or s.get("school") for s in (info or {}).get("schools", [])
+                               if isinstance(s, dict)]
+            except (ValueError, AttributeError):
+                roster = []
+        contamination = AGG.detect_single_school_over_extraction(
+            agg, meta["nces"] if meta else None, roster)
         # ALL of the district's directives, across every handoff (#137): pinning to the latest
         # extraction's handoff_hash made pending directives from an earlier handoff invisible (and
         # unreviewable) the moment a newer extraction landed — e.g. right after a 7->6 re-dispatch ran.
@@ -1572,7 +1591,7 @@ def extract_district(district_id: str):
         ext_out = dict(ext)
         ext_out["n_accepted"], ext_out["n_unresolved"] = len(accepted), len(unresolved)
         return {"extraction": ext_out, "bands": bands, "accepted": accepted,
-                "unresolved": unresolved, "requests": req_dicts}
+                "unresolved": unresolved, "requests": req_dicts, "contamination": contamination}
 
 
 @app.post("/api/extract/request/{request_id}")

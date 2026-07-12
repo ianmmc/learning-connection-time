@@ -218,3 +218,32 @@ def district_bands_from_facts(accepted):
                                   "human_determination": ""}   # USER verifies each school's start/end here
                                  for f in facts]}
     return out
+
+
+def detect_single_school_over_extraction(accepted, nces_school_count, roster_names=None):
+    """Cross-LEA contamination detector (#237). A single-school LEA (NCES school count == 1) that
+    yields MORE THAN ONE distinct school is contaminated: a charter-network campus (its own 1-school
+    LEA) whose siblings' schedules were pulled from a shared CMO website (e.g. ascendlearning.org
+    serves all 12 Ascend campuses), or a blank-domain unscoped capture (the Millard #227 class).
+    Detection is reliable — a 1-school LEA cannot legitimately have >1 school. Picking WHICH school is
+    the real one is NOT reliable (shared network names like 'ascend' recur across every sibling;
+    acronyms like 'DECA' == 'Dayton Early College Academy' fail a name match), so this FLAGS for human
+    review and does NOT auto-reject — matching the manual-gate posture. `roster_matched` is the one
+    trustworthy keeper hint (the LEA's own Stage-1 roster), surfaced when available. Returns None when
+    not applicable (not a single-school LEA, or only one distinct school extracted).
+
+    `accepted`: per-school fact dicts whose 'school' is already norm_school-normalized.
+    `roster_names`: the LEA's Stage-1 schools_by_band school names, if available (the allow-list)."""
+    if nces_school_count != 1:
+        return None
+    distinct = sorted({f["school"] for f in accepted if f.get("school")})
+    if len(distinct) <= 1:
+        return None
+    roster = {_norm_school(r) for r in (roster_names or []) if _norm_school(r)}
+    return {
+        "suspected": True,
+        "reason": "single_school_lea_over_extraction",
+        "n_distinct_schools": len(distinct),
+        "distinct_schools": distinct,
+        "roster_matched": [k for k in distinct if k in roster],  # reliable keepers when roster present
+    }

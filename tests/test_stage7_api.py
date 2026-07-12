@@ -78,11 +78,13 @@ def test_district_detail_shape(monkeypatch):
     reqs = _Result(rows=[{"request_id": 9, "altitude": "district", "route": "7->2", "target": "D1",
                           "band": "high", "params_json": "{}", "reason": "gap", "status": "pending",
                           "reviewed_by": None, "reviewed_at": None, "review_note": None, "created_at": "t"}])
-    _use(monkeypatch, _Con([ext, facts, reqs]))
+    meta = _Result(rows=[{"nces": 5, "sbb": None}])            # #237 detector inputs (multi-school LEA)
+    _use(monkeypatch, _Con([ext, facts, meta, reqs]))
     body = client.get("/api/extract/district/D1").json()
     assert body["bands"]["elementary"]["gross_minutes"] == 360
     assert len(body["accepted"]) == 1 and len(body["unresolved"]) == 1
     assert body["requests"][0]["route"] == "7->2"
+    assert body["contamination"] is None                       # not a single-school LEA -> no flag
 
 
 def test_district_detail_is_cumulative_a_barren_retry_does_not_regress_the_view(monkeypatch):
