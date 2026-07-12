@@ -8920,6 +8920,14 @@
     "updated_at": "2026-07-12T21:11:55Z"
   },
   {
+    "rec_key": "4207560:139da33d6a",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-12T21:42:41Z"
+  },
+  {
     "rec_key": "4207560:1a38fed69f",
     "primary_label": "school_bell_table",
     "facets_json": "{}",
@@ -8928,12 +8936,44 @@
     "updated_at": "2026-07-12T21:13:30Z"
   },
   {
+    "rec_key": "4207560:32f064d9e3",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-12T21:41:22Z"
+  },
+  {
+    "rec_key": "4207560:3602ed7014",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "Has link to schedule, but no schedule content.",
+    "status": "labeled",
+    "updated_at": "2026-07-12T21:42:34Z"
+  },
+  {
     "rec_key": "4207560:396fa05c77",
     "primary_label": "target_absent",
     "facets_json": "{}",
     "note": "Early dismissal bell schedule, not regular day schedule.",
     "status": "labeled",
     "updated_at": "2026-07-12T21:11:01Z"
+  },
+  {
+    "rec_key": "4207560:3e9e6adc56",
+    "primary_label": "school_bell_table",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-12T21:40:19Z"
+  },
+  {
+    "rec_key": "4207560:43d2d85ac0",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-12T21:42:57Z"
   },
   {
     "rec_key": "4207560:44d3d86b5a",
@@ -8992,12 +9032,36 @@
     "updated_at": "2026-07-12T21:11:01Z"
   },
   {
+    "rec_key": "4207560:958efb07fd",
+    "primary_label": "school_bell_table",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-12T21:40:19Z"
+  },
+  {
+    "rec_key": "4207560:97f8eeb06f",
+    "primary_label": "school_bell_table",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-12T21:40:38Z"
+  },
+  {
     "rec_key": "4207560:9eca67c26e",
     "primary_label": "target_absent",
     "facets_json": "{}",
     "note": "Early dismissal bell schedule, not regular day schedule.",
     "status": "labeled",
     "updated_at": "2026-07-12T21:11:01Z"
+  },
+  {
+    "rec_key": "4207560:a2c78d80bb",
+    "primary_label": "target_absent",
+    "facets_json": "{\"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-12T21:42:51Z"
   },
   {
     "rec_key": "4207560:cfd139452a",
@@ -9008,12 +9072,28 @@
     "updated_at": "2026-07-12T21:13:08Z"
   },
   {
+    "rec_key": "4207560:d065f02d3f",
+    "primary_label": "school_bell_table",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-12T21:40:48Z"
+  },
+  {
     "rec_key": "4207560:d0781f0238",
     "primary_label": "target_absent",
     "facets_json": "{}",
     "note": "Early Dismissal Bell Schedule, not regular school day",
     "status": "labeled",
     "updated_at": "2026-07-12T21:11:41Z"
+  },
+  {
+    "rec_key": "4207560:d324721316",
+    "primary_label": "target_absent",
+    "facets_json": "{\"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-12T21:43:14Z"
   },
   {
     "rec_key": "4220130:059feb5851",

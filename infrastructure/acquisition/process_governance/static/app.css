@@ -500,3 +500,16 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 .s7-unres { display: flex; flex-wrap: wrap; gap: 4px; }
 .s7-chip { font-size: var(--fs-xs); padding: 1px 7px; border-radius: var(--radius-pill);
   background: transparent; color: var(--text-secondary); border: var(--border-hair) solid var(--border-subtle); }
+
+/* Settings — per-gate manual/auto toggle (#104) */
+.settings-panel { max-width: 720px; padding: 20px 24px; }
+.settings-panel h2 { margin: 0 0 4px; }
+.settings-rows { margin-top: 16px; display: flex; flex-direction: column; gap: 6px; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); }
+.settings-row-default { background: var(--mmm-purple-50); border-color: var(--action-primary); font-weight: 600; }
+.settings-gate { font-size: var(--fs-sm); }
+.settings-lic { margin-left: 6px; }
+.settings-toggle { display: inline-flex; gap: 4px; flex: none; }
+.settings-toggle .btn-mini.active { background: var(--action-primary); color: #fff; border-color: var(--action-primary); }
+.settings-toggle .toggle-auto.active { background: var(--accent-red); border-color: var(--accent-red); }

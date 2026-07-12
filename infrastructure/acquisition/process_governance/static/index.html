@@ -24,6 +24,7 @@
         <option value="stage5" selected>Stage&nbsp;5 · Capture Review (gate@5)</option>
         <option value="stage6">Stage&nbsp;6 · Dispatch (gate@6)</option>
         <option value="stage7">Stage&nbsp;7 · Extract (gate@7)</option>
+        <option value="settings">⚙ Settings</option>
       </select>
     </div>
     <div class="topbar-right">
@@ -50,6 +51,8 @@
 
   <main id="stage7view" class="cols gate1 hidden" aria-label="Stage 7 extraction review (gate@7)"></main>
 
+  <main id="settingsview" class="cols gate1 hidden" aria-label="Settings — per-gate manual/auto mode"></main>
+
   <div id="glossary" class="modal hidden">
     <div class="modal-card">
       <div class="modal-head"><h2>Glossary &amp; Instructions</h2><button id="glossaryClose" class="btn btn-ghost">Close</button></div>
@@ -66,5 +69,6 @@
   <script src="/static/stage4.js"></script>
   <script src="/static/stage6.js"></script>
   <script src="/static/stage7.js"></script>
+  <script src="/static/settings.js"></script>
 </body>
 </html>
