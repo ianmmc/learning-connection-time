@@ -142,26 +142,36 @@ school → flagged for human review at gate@7, **detect-and-flag, never auto-rej
 structure-C dependent-charter carve-out (20.6% of enrollment), #245 junk-name facts, #246 gate@7 banner
 render. Also still open: #238 (deferred efficiency follow-ups).
 
+**#104 part (a) shipped (`d487f6a`, REQ-108):** the per-gate manual/auto **Settings store + console
+toggle** — the ramp-up control surface the #209 guardrails were waiting on. A precious `gate_mode` table
+(`common/gate_mode.py`: `configured_mode` + `license_state` per key, global 'default' + gate@1..8
+overrides), `GET`/`POST /api/gate-mode`, a console **⚙ Settings** panel (Playwright-verified), git-backed
+`gate_modes.json`. **Behavior-neutral by design:** every gate still runs manual — no handler branches on
+the mode yet; setting a gate 'auto' persists intent only. Part (b) (per-gate confidence-escalating AUTO)
+is the follow-on per-gate work, #211 first. Detail: governance §11b + REQ-108.
+
 **The full stage-design-notes tower + `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` + `ACQUISITION_PIPELINE.md`
 (incl. the Mermaid diagram) were resynced against current code 2026-07-12** (a multi-agent audit-then-rewrite
 pass, verified by spot-checking rewrite claims against real file:line evidence) — treat every doc under
 `docs/technical-notes/acquisition-pipeline-stage-design-notes/` plus those two as current as of this commit,
 not as carrying drift from the PR #240/#242 arc.
 
-**Next (RESUME HERE — 2026-07-12):** resume the **pipeline sequence** — **#104** first: live gate-mode
-(manual/auto) persistence + console toggle, the dependency both Phase-1 guardrails' demote-hooks wait on
-(currently unbuilt — every gate except #233's auto-withdraw is de-facto always-manual). Then **#211** live
-wiring (exploration-quota control law, REQ-120) → **#214** measured-pass → close **epic #209**. Then **Stage
-8** (the fact-based aggregation *algorithm* is live inside gate@7 today; the standalone stage/gate@8/console
-is not built — #89/#90). Backlog: the charter track (#243/#244/#245/#246), Council Lab (#80/#81), #238.
-Branch `fix/aggregation-quality-236-237` is committed but **not pushed / no PR yet** — merge or continue on
-it as you prefer. Untracked and left for Ian's call: earlier-run extraction/handoff receipts under
-`data/acquisition/{extractions,handoffs}/` + the Millard remediation restore-point under
-`data/acquisition/remediation/`. Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`)
-→ `git config core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect 4 kept/0 broken) +
-`pytest -q -m "not integration"` (expect ~1187 pass) + `pytest -q -m govdb` (Postgres up). Full detail:
-`PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (§11a/§11b), `STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§6,
-`docs/PROJECT_HISTORY.md` (newest entries, incl. the 2026-07-12 charter reframe).
+**Next (RESUME HERE — 2026-07-12):** #104 part (a) is done — resume the **pipeline sequence** at **#211**:
+gate@5's auto **live wiring** (the exploration-quota control law, REQ-120) — the reject-population query,
+the randomized `run_kind=exploration_audit` console audit queue, and the gate@5 demote-hook that finally
+calls `exploration_audit.resolve_gate_mode` live (its pure core is built + 17-tested; it has zero live
+callers today). It reads the `gate_mode` store #104 just shipped. Then **#214** measured-pass → close
+**epic #209**. Then **Stage 8** (the fact-based aggregation *algorithm* is live inside gate@7 today; the
+standalone stage/gate@8/console is not built — #89/#90). Backlog: the charter track (#243/#244/#245/#246),
+Council Lab (#80/#81), #238. **Branch state:** `fix/aggregation-quality-236-237` is pushed (6 commits, **no
+PR yet**) but now spans MIXED concerns — #236/#237 + research + Millard + parallel receipts + the #104
+gates feature; when opening PRs, likely split #104 (gates) from the aggregation-quality work. Untracked,
+left for Ian: earlier-run receipts under `data/acquisition/{extractions,handoffs}/`. Resume-essentials:
+`pip install -e .` → Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh
+clone only) → `lint-imports` (expect 4 kept/0 broken) + `pytest -q -m "not integration"` (expect ~1191
+pass) + `pytest -q -m govdb` (expect 178, Postgres up). Full detail:
+`PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (§11b — the gate-mode + exploration-quota control law),
+`STAGE5_FILTER_DESIGN_2026-06.md` §5a (the #211 spec), `docs/PROJECT_HISTORY.md` (newest entries).
 
 ---
 
