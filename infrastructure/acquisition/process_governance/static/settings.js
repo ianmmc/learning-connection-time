@@ -22,6 +22,7 @@
   window.initSettings = function () {
     if (!inited) { inited = true; renderShell(); }
     loadModes();
+    loadExplorationAudit();
   };
 
   function renderShell() {
@@ -33,6 +34,12 @@
           the global default. Setting a gate here persists the decision — it does not change a gate's
           behavior until that gate's auto path is built.</p>
         <div id="settings-rows" class="settings-rows"><div class="empty">Loading…</div></div>
+        <h2 class="settings-audit-h">gate@5 reject audit <span class="muted">(anti-survivorship license)</span></h2>
+        <p class="muted">gate@5 auto stays licensed only while a rolling window holds ≥ N randomly-drawn,
+          human-labeled rejects (the tier-D bucket auto would drop). Below the floor the license
+          <strong>demotes to manual</strong> (census mode) — it never halts the pipeline. Today the audit is
+          <strong>informational</strong>: gate@5 is manual (census-labeling), so the control law is inert.</p>
+        <div id="settings-audit" class="settings-audit"><div class="empty">Loading…</div></div>
       </section>`;
   }
 
@@ -75,6 +82,48 @@
     try {
       await api("/api/gate-mode", postJSON({ gate, mode, actor: "ian" }));
       loadModes();   // re-render: an inherited gate must reflect a changed global default immediately
+      loadExplorationAudit();   // gate@5's license readout tracks its configured toggle
     } catch (_) { /* leave the UI unchanged on failure */ }
+  }
+
+  // gate@5 reject-audit coverage meter (#211/REQ-120). Read-only status of the anti-survivorship license:
+  // window coverage vs the rule-of-three floor, the reject-cohort quality, and the pending randomized draw.
+  async function loadExplorationAudit() {
+    const box = $g("#settings-audit");
+    if (!box) return;
+    try {
+      const d = await api("/api/exploration-audit");
+      const q = d.quality || {};
+      const pct = d.floor_n ? Math.min(100, Math.round((d.window_count / d.floor_n) * 100)) : 0;
+      const met = d.window_count >= d.floor_n;
+      const qualityTxt = q.rejection_quality == null
+        ? "—" : `${(q.rejection_quality * 100).toFixed(2)}%`;
+      const bound = q.fnr_upper_bound_95 == null
+        ? "" : ` <span class="muted">(FN-rate &lt; ${(q.fnr_upper_bound_95 * 100).toFixed(2)}% @95%)</span>`;
+      const pend = d.pending || [];
+      box.innerHTML = `
+        <div class="audit-grid">
+          <div class="audit-stat"><span class="audit-k">Effective mode</span>
+            <span class="audit-v">${esc(d.effective_mode)} <span class="muted">(configured ${esc(d.configured_mode)})</span></span></div>
+          <div class="audit-stat"><span class="audit-k">Reject bucket (tier D)</span>
+            <span class="audit-v">${d.population_size} records · ${d.sample_size} sampled (${(d.sample_rate * 100).toFixed(0)}%)</span></div>
+          <div class="audit-stat"><span class="audit-k">Reject-cohort quality</span>
+            <span class="audit-v">${qualityTxt}${bound}</span></div>
+        </div>
+        <div class="audit-cov">
+          <div class="audit-cov-label">Window coverage <strong>${d.window_count} / ${d.floor_n}</strong>
+            ${met ? '<span class="audit-ok">✓ floor met</span>' : `<span class="muted">re-promote at ${d.promote_n}</span>`}</div>
+          <div class="audit-bar"><div class="audit-bar-fill${met ? " met" : ""}" style="width:${pct}%"></div></div>
+        </div>
+        <div class="audit-pending">
+          <div class="audit-cov-label">Pending audit draw <span class="muted">(${d.n_pending} unlabeled — the queue to work top-down)</span></div>
+          ${pend.length === 0
+            ? '<div class="empty">No pending draws — the sampled rejects are all labeled.</div>'
+            : `<ul class="audit-list">${pend.slice(0, 25).map((r) =>
+                `<li><code>${esc(r.rec_key)}</code>${r.url ? ` <a href="${esc(r.url)}" target="_blank" rel="noopener" class="muted">${esc(r.url)}</a>` : ""}</li>`).join("")}</ul>`}
+        </div>`;
+    } catch (_) {
+      box.innerHTML = `<div class="empty">Failed to load reject-audit status.</div>`;
+    }
   }
 })();

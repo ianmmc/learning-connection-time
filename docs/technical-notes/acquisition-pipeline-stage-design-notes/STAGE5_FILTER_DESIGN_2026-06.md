@@ -405,9 +405,36 @@ get the exact auto↔manual flapping it exists to prevent); `next_license_state`
 on an unrecognized mode string instead of silently routing it into the manual branch (a typo'd stored state
 must surface, not masquerade as a conservative decision); `rejection_quality`'s two published fields
 (`false_negative_rate`/`rejection_quality`) are now complements of the *rounded* rate so they always sum to
-exactly 1.0 (independent rounding had let them drift to 0.999999 at some counts). **Still deferred:** the
-live wiring named above — the reject-population query, the randomized console audit queue, and the gate@5
-demote-hook — none of which exist yet; `resolve_gate_mode` has zero live callers today.
+exactly 1.0 (independent rounding had let them drift to 0.999999 at some counts).
+
+**As BUILT — the live wiring (`exploration_live.py`, #211/REQ-120, 2026-07-12).** The DB half named above
+now exists, binding the pure core to the governance store; enforcement still ships DORMANT (gate@5 is
+configured manual, so the hook returns "manual" and writes nothing). Three pieces + a calibration probe:
+- **`reject_population(con)`** — the audit universe: the current **tier-D (SUPPRESS)** bucket, representative
+  + non-duplicate rows only (one audit unit per physical page, matching the label cascade). The reject
+  decision is read live from `record.tier`, so the population IS the current-config reject set.
+- **`audit_sample` / `coverage`** — the pure `select_audit_sample` bound to that live population, partitioned
+  into the audited **window** and the **pending** queue, plus `rejection_quality` over the audited labels.
+- **`resolve_gate5_mode(con, *, persist)`** — THE gate@5 demote-hook and the (finally) live caller of
+  `exploration_audit.resolve_gate_mode`. Reads `configured_mode`/`license_state` from the `gate_mode` store
+  (#104), computes the live `window_count`, applies the deadband law, and — only when configured auto —
+  **persists the transition back to `license_state`** (the hysteresis memory). Wired into `save_label`
+  (self-healing: each gate@5 label re-evaluates the license on the same transaction) and surfaced read-only
+  at **`GET /api/exploration-audit`** → a Settings-console coverage meter (window vs floor, reject-cohort
+  quality with the rule-of-three ceiling, the pending draw).
+- **`calibrate_against_census(con)`** — the retrospective validator feeding #214's measured-pass: does a p%
+  draw over the fully-labeled reject bucket reproduce the census reject-quality?
+
+**Current-config scoping is STRUCTURAL, not a stored fingerprint** (the key design call): the window is
+recomputed over the live tier-D set every call, so a reject *rescued* to tier B by a config change simply
+leaves the population — no reject-audit table, no persisted config generation. The sampler is pure +
+growth-stable, so the draw replays from `(seed, the DB's current reject set)` and the outcome is the human's
+label already in `label` (precious, git-backed) — the auditability replay needs nothing more persisted.
+Verified live: 566 tier-D rejects, 24 sampled @5%, all 24 census-labeled with zero misses → quality 1.0,
+window 24/300 (informational, as expected while census-labeling is still on). 7 govdb tests + an endpoint
+smoke. **Still deferred:** a *dedicated* `run_kind=exploration_audit` queue MODE in the Stage-5 tree (the
+pending list in Settings is the working surface today, sufficient while census-labeling means every reject
+is already labeled); Tier B (paid reject→Stage-7 extraction); the doubly-robust retrainer fast-follow.
 
 ---
 
@@ -594,7 +621,7 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 | **`lf_footer_hours` footer/header evaluated independently** (an office footer no longer downgrades a school header) | **BUILT (#61, 2026-07-09)** — a bug guard; 0 current-corpus triggers, no metric change |
 | **`lf_nonstandard_day` soft-gate** (an incidental prose-pair + a weather/remote/delay soft negative → review, not auto-send; structural targets still send) | **BUILT (#60, 2026-07-09)** — measured pass: tier-A precision 0.8382→0.8444, tier-A + A+B recall held (0.8906 / 0.9961); 6 pages routed to review, 72 structural preserved |
 | **Canonical recall floor** (`harness.RECALL_FLOOR=0.98`/`FLOOR_TIER="A+B"`, `floor_recall`/`floor_satisfied`/`assert_floor`) — one source of truth replacing frontier's/the ledger's prior inconsistent 0.97/0.98-on-tier-A floors | **BUILT (#208, 2026-07-10)** — **enforced INSIDE `build_signals.ingest()`'s transaction** via `--assert-floor`: a violation raises and rolls back the *whole* re-ingest (not a post-hoc report) — see §5b |
-| **Anti-survivorship exploration quota** (`exploration_audit.py` — rule-of-three sufficiency count, deadband, demote-not-halt) | **PURE CORE BUILT + tested (REQ-120/#211, 2026-07-10)**; live wiring (the randomized console audit queue, the gate@5 demote-hook) still DEFERRED — see §5a |
+| **Anti-survivorship exploration quota** (`exploration_audit.py` pure core + `exploration_live.py` live wiring — rule-of-three sufficiency count, deadband, demote-not-halt) | **BUILT + tested (REQ-120/#211): pure core 2026-07-10, live wiring 2026-07-12** — reject-population query, randomized draw/coverage meter, gate@5 demote-hook wired into `save_label` + `GET /api/exploration-audit` Settings meter. Enforcement DORMANT (gate@5 configured manual). See §5a |
 | **Group-aware non-inferiority promotion gate** (`promotion_gate.py` — LOGO guard + cluster bootstrap + TOST + ICC/DEFF; proven libs, no hand-rolled stats) wired advisory into `frontier gate()`/`--gate` + the `tuning_ledger` episode | **BUILT + tested (#212, epic #209 Phase 2, 2026-07-10)** — advisory; `margin` (Δ) required; see §5c |
 | **Safe-promotion machinery** (`config_artifact.py` immutable fingerprinted artifact — closes the unhashed-detector-params gap; `promotion_pointers.py` @champion/@fallback swap + N-cycle retention; `promotion_flow.py` shadow→gate→swap→record) | **BUILT + tested (#213, epic #209 Phase 2, 2026-07-10)** — DORMANT (nothing reads the champion pointer live; minor/major re-ingest shadow deferred); activation tracked #219 — see §5c |
 | **Reset labels** (`POST /api/reset-labels` + `build_signals.reset_labels_bulk`, record/district scope, reverses the cluster cascade, no calibration row) | **BUILT (#228, 2026-07-11)** — see §4 |
