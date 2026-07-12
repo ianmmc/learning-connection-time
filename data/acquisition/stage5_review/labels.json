@@ -9024,6 +9024,14 @@
     "updated_at": "2026-07-12T04:48:21Z"
   },
   {
+    "rec_key": "5507770:56502ba0ba",
+    "primary_label": "school_bell_table",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"_pages\": \"30\", \"_pages_list\": [30]}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-12T04:52:52Z"
+  },
+  {
     "rec_key": "5507770:6fa314ff50",
     "primary_label": "target_absent",
     "facets_json": "{}",

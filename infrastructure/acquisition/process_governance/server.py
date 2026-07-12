@@ -218,6 +218,21 @@ UPSERT_LABEL = text(
          facets_json=excluded.facets_json, note=excluded.note, status=excluded.status,
          updated_at=excluded.updated_at""")
 
+# #228 "Reset labels": return a record to a truthful UNLABELED state (primary/facets/note nulled,
+# status='unlabeled'). Deliberately an UPSERT-to-unlabeled, NOT a DELETE — ingest models an unlabeled
+# record as a ROW with the DB-default status='unlabeled' (not an absent row), and export_labels() only
+# dumps status != 'unlabeled', so this correctly evicts the record from labels.json on the next export.
+# Leaves flags_json untouched (legacy/inert, same as UPSERT_LABEL). The motivating case: a page that IS
+# a valid schedule but for the WRONG district (Millard's unscoped contamination, #227) has no honest v2.1
+# label — target_absent and unusable both assert a false non-target ground truth — so unlabeled is the
+# only truthful state, and it was unreachable until now.
+RESET_LABEL = text(
+    """INSERT INTO label (rec_key, primary_label, facets_json, note, status, updated_at)
+       VALUES (:rec_key, NULL, NULL, NULL, 'unlabeled', :updated_at)
+       ON CONFLICT (rec_key) DO UPDATE SET
+         primary_label=NULL, facets_json=NULL, note=NULL, status='unlabeled',
+         updated_at=excluded.updated_at""")
+
 
 # Facet keys that describe the REPRESENTATIVE's own file (the Axis-3 print-dialog handbook page
 # range), not the cluster's shared content — cascading them stamped one file's page numbers onto
@@ -279,6 +294,58 @@ async def save_label(rec_key: str, payload: dict):
         BS.export_labels(con, LABELS_JSON)
         _refresh_filtered(con, rec["district_id"])   # label event -> refresh filtered.json
     return {"ok": True, "cascaded": cascaded}
+
+
+@app.post("/api/reset-labels")
+async def reset_labels(payload: dict):
+    """#228 gate@5 "Reset labels": return a record (scope='record') or a whole district
+    (scope='district') to unlabeled — clearing primary + facets + note back to a neutral,
+    truthful state. Mirrors save_label's side-effect set exactly (topology + attention recompute,
+    then post-commit labels.json export + filtered.json refresh) so all derived state stays coherent
+    and the JSON backup drops the reset rows. Reverses the cluster cascade: resetting a cluster
+    REPRESENTATIVE resets every current member (same predicate the forward cascade used; split
+    members have cluster_id cleared, so they self-exclude), matching how labeling a rep cascaded in.
+
+    A reset carries no terminal decision, so it logs NO gate@5 calibration record (consistent with
+    gate5_label_record returning None for an unlabeled status) — and it does NOT rewrite prior
+    calibration history (auditability: past decisions stay on the log)."""
+    scope = payload.get("scope")
+    target_id = payload.get("target_id")
+    if scope not in ("district", "record") or not target_id:
+        raise HTTPException(400, "scope must be 'district'|'record' and target_id is required")
+    from datetime import datetime, timezone
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    with gdb.session_scope() as con:
+        if scope == "district":
+            did = target_id
+            keys = [r[0] for r in con.execute(
+                text("SELECT rec_key FROM record WHERE district_id=:d"), {"d": did}).fetchall()]
+            if not keys:
+                raise HTTPException(404, f"no records for district {did}")
+        else:
+            rec = con.execute(text("SELECT district_id, cluster_id, is_cluster_rep "
+                                   "FROM record WHERE rec_key=:rk"), {"rk": target_id}).mappings().first()
+            if not rec:
+                raise HTTPException(404, f"no such record {target_id}")
+            did = rec["district_id"]
+            if rec["cluster_id"] and rec["is_cluster_rep"]:
+                # reverse the cascade: reset the rep + every current member (rep's cluster_id included)
+                keys = [r[0] for r in con.execute(
+                    text("SELECT rec_key FROM record WHERE cluster_id=:c"), {"c": rec["cluster_id"]}).fetchall()]
+            else:
+                keys = [target_id]
+        # count the MEANINGFUL resets (rows that actually carried a label) before we clear them
+        n_meaningful = con.execute(
+            text("SELECT COUNT(*) FROM label WHERE rec_key = ANY(:ks) AND status != 'unlabeled'"),
+            {"ks": keys}).scalar() or 0
+        for k in keys:
+            con.execute(RESET_LABEL, {"rec_key": k, "updated_at": ts})
+        BS.recompute_labeled_topology(con, did)
+        BS.recompute_attention(con, did)
+        con.commit()   # persist before exporting, so the JSON backup only reflects committed state
+        BS.export_labels(con, LABELS_JSON)   # evicts the now-unlabeled rows from the tracked backup
+        _refresh_filtered(con, did)
+    return {"ok": True, "district_id": did, "scope": scope, "reset": int(n_meaningful), "records": len(keys)}
 
 
 @app.post("/api/split/{rec_key}")
@@ -663,14 +730,19 @@ async def queue_create(payload: dict):
         batch_id = BSTORE.reserve_next_batch(con, actor=actor)
     try:
         registry = DS.load()
-        batch_doc, _gap, _n_elig = Q1.build_batch(year, n, batch_id, registry)
+        batch_doc, _gap, domain_excluded, _n_elig = Q1.build_batch(year, n, batch_id, registry)
         Q1.persist_batch(batch_doc, registry, batch_type=batch_type, actor=actor)
     except BaseException:
         with gdb.session_scope() as con:   # failed build — free the number (don't leave a dead placeholder)
             BSTORE.release_reservation(con, batch_id)
         raise
     with gdb.session_scope() as con:
-        return BSTORE.to_view(con, batch_id)
+        view = BSTORE.to_view(con, batch_id)
+    # #229: districts refused for a blank/unusable NCES domain were hard-dropped from the batch of
+    # record (never persisted). Surface them at gate@1 so the draw isn't silently short -- the
+    # operator sees which same-named-school contamination risks were kept out.
+    view["domain_excluded"] = domain_excluded
+    return view
 
 
 @app.get("/api/queue/{batch_id}")
