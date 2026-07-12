@@ -112,51 +112,44 @@ live in the governance DB; `handoff_<hash>_<ts>.json` under `data/acquisition/ha
 (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript (`GETTING_STARTED.md` §1a).
 
 **Current status (2026-07-12):** the console runs the pipeline live through **`gate@7`**. The **"whittle
-down open issues" hygiene campaign is fully CLOSED** — Batches 1–6 + #124 (arch-manifest/fitness-function
-suite), all merged (PRs #177–#199, #206). **Epic #209** (runtime guardrails for the manual→auto
-transition, framed by the four commandments — auditability the north star, minimize-bad-data-at-scale ⇒
-automation is a correctness REQUIREMENT, tight cash spend, best use of one person's time) has shipped
-**Phase 0/1 (2026-07-09/10) and Phase 2 (2026-07-10, MERGED — PR #220)**: #208 recall floor (enforced
-inside the re-ingest transaction), #211/REQ-120 exploration-quota control law (live wiring deferred),
-#210/REQ-121 gate-decision calibration log (wired live at gate@5/6/7, corpus accruing), #212 group-aware
-promotion gate + #213 safe-promotion machinery (both **dormant** — activation tracked as one checklist,
-#219). **Epic #200** (shift-left defect-prevention: DB-free test guard #201, pre-push hook #202, property
-tests #203, mutation testing #204) **MERGED 2026-07-11 (PR #221)** after a max-effort review found 15 real
-findings in the merge candidate. **Epic #123** (tech-debt/hygiene cleanup) **CLOSED 2026-07-12** — its last
-sub-issue, #127 (an automated `node:test` harness for `capture_discovery.mjs`'s browser-driving logic,
-real Chromium via `page.route()` fixtures), merged as **PR #239**.
+down open issues" hygiene campaign is fully CLOSED** (Batches 1–6 + #124, PRs #177–#199, #206), as is
+**epic #123** (tech-debt/hygiene, closed via #127's `node:test` harness, PR #239). **Epic #209** (runtime
+guardrails for the manual→auto transition, framed by the four commandments) has shipped **Phase 0/1/2**
+(PRs #217/#218/#220): #208 recall floor, #210/REQ-121 gate-decision calibration log (live at gate@5/6/7),
+#211/REQ-120 exploration-quota control law (live wiring deferred), #212/#213 group-aware promotion gate +
+safe-promotion machinery (**dormant**, activation tracked as one checklist, #219). **Epic #200**
+(shift-left defect prevention: #201–#204) **MERGED (PR #221)**.
 
-**#122 (first live non-benchmark end-to-end pass of the request loop) CLOSED 2026-07-06** (full report:
-`docs/technical-notes/stage-7-loop-reports/2026-07-06T0458Z-stage7-loop-report.md`). **A SECOND live
-shakedown (batch_00013) ran 2026-07-11**, finding **six** real request-loop/pipeline bugs across two merged
-PRs. **PR #221:** **#232** gate@7's view/rollup read latest-extraction-only, so a scoped retry could make
-an earlier run's solid facts disappear (fixed via `stage8_aggregate.aggregate.merge_fact_runs`, codified as
-**REQ-122**); **#231** the `7→6` alternate list could re-offer an already-failed rep across rounds. **PR
-#240 (request-loop integrity, MERGED 2026-07-12):** **#234** executing one request duplicated its
-still-open siblings (dedup was scoped to a single handoff); **#235** the follow-up autoflow silently never
-ran the Stage 4→5 ingest at all — fixed at the source (`run_stage4_with_ingest()` is now the ONE operation
-every caller uses, CI-enforced); **#230** Stage 6's initial rep pick ignored the retry loop's own
-yield-ranking; **#233/REQ-123** gate@7 now **auto-withdraws** a directive once the cumulative state
-satisfies its premise — the **one deliberate exception** to the manual-gate ramp-up posture, justified by
-risk asymmetry (*"auto-act in the spend-conservative direction when the failure mode is observable and
-reversible"* — Ian, 2026-07-11/12; see `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b). Also found + not
-yet fixed: **#236**/**#237** (Stage 5/7 aggregation quality — a school double-counted under two name
-spellings; NCES's school-count column overriding a multi-campus charter network's real topology) and
-**#238** (deferred efficiency follow-ups), plus upstream #222/#223/#224/#225/#226/#227/#228/#229 (Stages
-1/2/3/5). Every PR in this arc went through a max-effort adversarial review round that found real defects
-even in "just infrastructure" work, including in its OWN first-draft fixes (#240's review found the
-auto-withdraw logic didn't yet live up to its own stated risk-asymmetry rule) — see `docs/PROJECT_HISTORY.md`'s
-newest entries for the full lesson set.
+**The batch_00013 live shakedown** (started 2026-07-06, #122) surfaced a chain of real request-loop and
+data-quality bugs, closed across three PRs: **PR #221** (#231/#232, incl. REQ-122's cumulative-merge fix),
+**PR #240** (#230/#233/#234/#235 — request-loop integrity; #233/REQ-123 is gate@7's auto-withdraw, the
+**one deliberate exception** to the manual-gate ramp-up posture, justified by risk asymmetry — see
+`PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b), and **PR #242** (the empty-domain contamination chain —
+#229 prevention at Stage-1 admission **plus** Stage 2's own `gate_urls()` failing closed as
+defense-in-depth, #228's gate@5 "Reset labels" remedy, #227's `remediate_contamination.py` cleanup
+tooling). Every PR in this arc went through a max-effort adversarial review that found real defects even
+in already-passing code, including in its own first-draft fixes (PR #240's auto-withdraw logic, PR #242's
+guard depth and a remediation-script transaction-safety bug) — see `docs/PROJECT_HISTORY.md`'s newest
+entries for the full lesson set. **Still open from the shakedown:** #236/#237 (Stage 5/7
+aggregation-quality — school name-variant double-counting, topology-column precedence) and #238 (deferred
+efficiency follow-ups).
 
-**Next:** the empty-domain contamination chain (#229 prevention → #227 Millard purge/scoped re-run → #228
-reset-labels console button); the aggregation-quality fixes (#236/#237); then the live gate-mode
+**The full stage-design-notes tower + `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` + `ACQUISITION_PIPELINE.md`
+(incl. the Mermaid diagram) were resynced against current code 2026-07-12** (a multi-agent audit-then-rewrite
+pass, verified by spot-checking rewrite claims against real file:line evidence) — treat every doc under
+`docs/technical-notes/acquisition-pipeline-stage-design-notes/` plus those two as current as of this commit,
+not as carrying drift from the PR #240/#242 arc.
+
+**Next (RESUME HERE — 2026-07-12):** the aggregation-quality fixes (#236/#237); then the live gate-mode
 (manual/auto) persistence + console toggle (#104) that both Phase-1 guardrails' demote-hooks are waiting on
 (currently unbuilt — every gate except #233's auto-withdraw is de-facto always-manual); then #211 live
-wiring + #214 measured-pass. Separately still open: Stage 8 (aggregate, not yet built — #89/#90, and the
-natural home for gate@8's calibration hook + REQ-122's merge logic once it exists); the Council Lab backlog
-(#80/#81). Full detail: `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (current-status banner + §11b),
-`STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§6 (the request-loop mechanism + decision log), `docs/PROJECT_HISTORY.md`
-(newest entries).
+wiring + #214 measured-pass. Separately still open: Stage 8 (aggregate — the fact-based aggregation
+*algorithm* is live production code inside gate@7 today; the standalone stage/gate@8/console is not built,
+#89/#90); the Council Lab backlog (#80/#81). Resume-essentials: `pip install -e .` → Docker up
+(`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh clone only) → `lint-imports`
+(expect 4 kept/0 broken) + `pytest -q -m "not integration"`. Full detail:
+`PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (current-status banner + §11a/§11b),
+`STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§6, `docs/PROJECT_HISTORY.md` (newest entries).
 
 ---
 

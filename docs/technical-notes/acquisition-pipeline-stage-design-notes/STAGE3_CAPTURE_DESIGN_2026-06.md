@@ -12,16 +12,22 @@
 > §6 (Decision log), not here.
 
 **Status: BUILT + run live**, including de-chrome, hosting/CMS fingerprinting, the console + resilience
-layer (node-owns-shutdown, manifest recovery), and iframe/embed capture (REQ-115). Drive Tier 2 (OAuth) is
-deliberately deferred, not built (§5).
+layer (node-owns-shutdown, manifest recovery), iframe/embed capture (REQ-115), follow-up/redo delta-capture
+(#174), the `batch_guard` abandoned-batch refusal (#168/#206), and an automated `node:test` harness for the
+Node capture layer (REQ-079/#127, PR #239). Drive Tier 2 (OAuth) is deliberately deferred, not built (§5).
 
-**Code:** `stage3_capture/capture_stage3.py` (reconcile/outcome/`finish_district`) imports
-`common.district_status` (state events) + `common.cache_ingest` (the Stage-3 cache hook — governance DB
-only, never the LCT DB). `stage3_capture/headless.py` is the batch runner the console drives. The browser
-work is Node: `infrastructure/scraper/capture_discovery.mjs` (`segmentChrome`/`dismissModals`/
-`stripFragment`/`buildHtmlFingerprint`/`runCapture`/`processTask`/`noteFileResult`/`noteFinalUrl`) +
-`capture_drive.mjs` (Tier 1 Drive export-URL logic). Python orchestrates and owns the registry; Node does
-the risky/external work — the same split as Stage 2.
+**Code:** `stage3_capture/capture_stage3.py` (`reconcile`/`compute_outcome`/`finish_district`) imports
+`common.district_status` (state events), `common.cache_ingest` (the Stage-3 cache hook — governance DB
+only, never the LCT DB), and `common.batch_guard` (abandoned-batch refusal — see §3). `stage3_capture/
+headless.py` is the batch runner the console drives. The browser work is Node:
+`infrastructure/scraper/capture_discovery.mjs` — top-level flow (`segmentChrome`/`dismissModals`/
+`stripFragment`/`buildHtmlFingerprint`/`runCapture`/`processTask`/`noteFileResult`/`noteFinalUrl`/
+`seedFromPriorCaptures`) plus pure decision-core functions extracted for testability by #127
+(`classifyFetchKind`, `driveFormatOutcome`, `categorizeEmbedHost`/`embedCategories`, `segmentBuckets`,
+`findEmergentLinks`/`selectEmergentTargets`, `withTimeout`) — + `capture_drive.mjs` (Tier 1 Drive
+export-URL logic). Three top-level CLI modes patch already-captured data with no browser/re-capture:
+`backfill-fingerprints`, `backfill-segments`, `recompute-cms-hint` (§2c/§2d). Python orchestrates and owns
+the registry; Node does the risky/external work — the same split as Stage 2.
 
 ---
 
@@ -57,11 +63,28 @@ available*, decide which representation to trust downstream.
 
 ## 2. The design (settled)
 
-### 2a. Reconciliation — filesystem-authoritative
+### 2a. Reconciliation — filesystem-authoritative, redo-aware for follow-up batches
 `captures.json` on disk IS "Stage 3 done"; the registry is a cache, reconciled *from* disk. Disk-ahead
 reconciles up silently and skips; **registry-ahead-of-disk raises `SystemExit` CONTROL FAILURE** and halts
 the whole run — the same severity as Stage 2's reconcile (a registry claiming completion the filesystem
-can't back up signals lost data or a bad migration, not a per-district problem).
+can't back up signals lost data or a bad migration, not a per-district problem). This first-run behavior is
+the default, but it is not the only mode: see CLAUDE.md's **three batch types** (`first-run`/`follow-up`/
+`benchmark`) — Stage 3 now genuinely branches on `batch_type`.
+
+`reconcile(districts, registry, *, redo=False)` takes a `redo` flag; `headless.py`'s `run_batch()` passes
+`redo=batch.get("batch_type") == "follow-up"`. When `redo=True`, an existing `captures.json` no longer means
+skip — every district in a follow-up batch is `todo` regardless of on-disk state (issue #174, the
+"deliberate redo"). The registry-ahead-of-disk control failure is unchanged in either mode. The delta
+capture itself happens on the Node side: `runCapture()` calls `seedFromPriorCaptures()` (capture_discovery
+.mjs) to seed each district's in-memory record set + `seen` set from its prior round's `captures.json`
+before dispatching any new fetches, so a follow-up only re-hits the URL delta (new/changed candidates), not
+every URL again. One rule governs replacement: **a prior record with `ok === false` whose URL is a
+candidate again this round is dropped, not carried** — the retry's fresh record replaces it rather than
+sitting behind it forever; every other prior record (successes, and failures not being retried) is kept
+verbatim. The manifest `writeVersioned()` writes at the end of a follow-up run is therefore the **union** of
+the prior round's records plus this round's new/replaced ones, never a slice — Stage 5 does a per-district
+delete+rebuild ingest keyed off the *complete* manifest, so a partial file would silently drop prior
+evidence from Stage 5 onward.
 
 ### 2b. Per-candidate branch logic
 Every URL (and any emergent candidate) is `stripFragment()`-normalized before the `seen` dedup, then routed:
@@ -95,12 +118,14 @@ function over these signals, refinable retroactively without re-capturing. `back
 `recompute-cms-hint` apply a human-approved `cms_hosts`/signal change to already-captured data with no
 browser, no re-capture.
 
-**Capture-completeness note:** the capture reads `document.body.innerText` of the top document only —
-`innerText` does not recurse into iframes (and cross-origin frames are browser-blocked outright), so a
-schedule rendered *inside* an iframe is absent from `page.txt`. It is **not silently lost**: the visual
-path (screenshot → raster → tesseract OCR) renders iframe content, so it's recoverable via the vision/OCR
-tier. Left as-is by design; `embed_present`/`embed_hosts` flags such pages so routing can prefer the
-visual rep.
+**Capture-completeness note:** both the live capture (`captureInto`, capture_discovery.mjs:608-610) and the
+fingerprint-backfill path (`htmlFingerprintFor`, lines 479-481) iterate `page.frames()` and concatenate
+`document.body.innerText` across the main document **and every accessible child frame**, not just the top
+document — so same-origin iframe content IS captured into `page.txt` today. Only a genuinely cross-origin
+frame is skipped (browser-blocked; caught by a per-frame try/catch and silently dropped, logged nowhere).
+For that residual cross-origin case, the visual path (screenshot → raster → tesseract OCR) still renders
+the iframe's content, so it remains recoverable via the vision/OCR tier even when `page.txt` can't see it.
+`embed_present`/`iframe_srcs[]` flag such pages so routing can prefer the visual rep when needed.
 
 ### 2d. DOM de-chrome segmentation (REQ-091, measured)
 CMS chrome (a footer "Building Hours", a school-switcher nav, footer board/athletics links) injects false
@@ -125,6 +150,17 @@ same content and not captured twice.
 live array of open issues; a human generates the triage list on demand by scanning `captures.json`. One
 `record_stage()` write per district at completion. **Redo is versioned** (`writeVersioned` renames aside
 with a UTC timestamp), never an overwrite.
+
+### 2g. Abandoned-batch refusal (`batch_guard`, #168/#206)
+`common/batch_guard.py` gives every Stage 3 write path a check against a batch that has been marked
+terminal-`abandoned`, so no one can accidentally write more work into a batch that's been formally closed
+out. `assert_runnable(sess, batch_id)` is **batch-grain**: `headless.py`'s `run_batch()` calls it before
+doing anything else. `assert_district_runnable(sess, district_dir)` is **district-grain**:
+`capture_stage3.py`'s `finish` and `reconstruct` CLI subcommands call it immediately before writing
+`captures.json` state + a `state_event`, so even a district-scoped manual/recovery write is refused if that
+district's artifacts belong to an abandoned batch. Either check failing raises `SystemExit` — the same
+control-failure posture as reconciliation (§2a): an abandoned batch receiving a new write is a governance
+bug, not a routine per-district condition, so it halts rather than silently proceeding.
 
 ---
 
@@ -190,6 +226,18 @@ ported from `capturer.ts` (confirmed pure-Playwright, zero coupling to the dead 
 design); `google_drive_handler.py`'s Playwright-preview + Gemini tiers (only its Tier-1 export logic
 carried forward into `capture_drive.mjs`).
 
+**Automated test suite (REQ-079, github #127, PR #239).** The Node capture layer has a `node:test` harness
+under `infrastructure/scraper/`, wired into CI's `node-tests` job: `capture_browser.test.mjs` (a real
+headless-Chromium harness using `page.route()` fixtures to exercise `dismissModals`/`readAnchors`/
+`domFingerprint`/`segmentChrome` against actual DOM behavior, not mocks — self-skips if Chromium isn't
+installed on the runner), `capture_dispatch.test.mjs` (`classifyFetchKind`/`driveFormatOutcome`/
+`withTimeout`/`segmentBuckets`), `capture_drive.test.mjs`, `capture_emergent.test.mjs`
+(`findEmergentLinks`/`selectEmergentTargets`), and `capture_records.test.mjs`. This closes the gap §6's
+2026-07-02 entry left open (no automated harness existed for `capture_discovery.mjs`'s browser-driving
+logic) — the #127 refactor pulled the decision cores listed in §0 out of the monolithic capture flow
+specifically so they'd be unit-testable without a live browser, then added the browser-driven suite on top
+for the DOM-touching functions that can't be faked that way.
+
 ## 5. Open decisions
 - **Drive Tier 2 (OAuth Drive API) — deferred, not blocked** (REQ-078, `must`→`should`). Build it when a
   real Drive link actually needs it; zero real links have needed it so far. (tracked: #115)
@@ -201,6 +249,13 @@ carried forward into `capture_drive.mjs`).
   write an incremental per-task JSONL line so even a hard kill preserves emergent URLs. (tracked: #117)
 - **Politeness / rate-limiting.** A capture burst can trigger transient stalls on a target site; consider
   a small per-request delay or lower per-district concurrency if this recurs.
+- **Per-district deadline can truncate large districts (#225, logged 2026-07-11, not yet fixed).** The
+  math: (per-URL time limit × total URLs) can exceed `CAPTURE_DEADLINE_S` for a large enough district,
+  independent of any per-URL slowness bug — observed on Jefferson County AL (85/112 captured before
+  cutoff, 100% of what was captured usable). Node-owns-shutdown (§3) means this degrades to
+  `captured_partial` rather than lost work, but the district is still incomplete. The fix belongs at the
+  capacity-planning level (raise the deadline for large districts, shard the capture, or accept partial +
+  a targeted top-up), not a one-off retry — see §6's newest entry for the full finding.
 
 ---
 
@@ -262,3 +317,12 @@ explicitly declined a bandage re-capture) — the fix belongs at the capacity-pl
 district deadline for large districts, shard the capture, or accept partial + a targeted top-up), not a
 one-off retry. Whether Jefferson's partial 85 compromises the concurrent #122 shakedown was assessed and
 confirmed NOT a conflict — logged for later, independent of the loop-validation work.
+
+**2026-07-12 — doc audit: corrected this note against code that had moved on without it.** An independent
+audit found the §2c iframe-capture note still described pre-REQ-115-fix behavior (page.txt now DOES
+capture same-origin iframe innerText via a `page.frames()` loop, added alongside the REQ-115 iframe/embed
+*detection* work but never reflected in this note's prose); and found four undocumented, already-shipped
+mechanisms: the follow-up/redo delta-capture path (#174, `reconcile`'s `redo` param +
+`seedFromPriorCaptures`), `batch_guard`'s abandoned-batch refusal (#168/#206), the #127/PR #239 `node:test`
+harness, and the pure decision-core functions #127 extracted for testability. All four folded into §0/§2a/
+§2c/§2g/§4 above; §5 gained a pointer to the #225 capacity-planning finding already in this log.

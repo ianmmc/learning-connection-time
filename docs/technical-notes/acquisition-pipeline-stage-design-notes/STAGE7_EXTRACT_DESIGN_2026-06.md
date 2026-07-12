@@ -35,8 +35,7 @@ depth guard, a live defer-deadlock); **issue #122 (the first clean end-to-end pa
 `docs/technical-notes/stage-7-loop-reports/2026-07-06T0458Z-stage7-loop-report.md`).
 
 **A SECOND live shakedown ran 2026-07-11** (batch_00013, 12 districts) to re-validate the loop against
-the epic #200/#209-hardened pipeline — IN PROGRESS as of this writing (8/12 districts dispatched +
-extracted, 6 requests still pending review). It surfaced two real request-loop regressions, both fixed
+the epic #200/#209-hardened pipeline. It surfaced two real request-loop regressions, both fixed
 on this pass:
 - **#232 — gate@7's view/rollup read latest-extraction-only**, so a scoped `7→6` retry made an earlier
   run's solid facts (Brownsville: 7 accepted) disappear from the console (read as 0). Facts were never
@@ -65,6 +64,17 @@ on this pass:
 batches then surfaced two MORE regressions (**#234**, **#235**) and resolved the **#230**/**#233** open
 findings above — all four fixed together in **PR #240** (merged 2026-07-12; REQ-123 codifies #233's
 auto-withdraw rule). See the decision-log entry below for the full mechanism.
+
+**batch_00013's 7→2 follow-up journey ran to completion.** The four-district follow-up (Union Hill ISD,
+Brownsville Ascend, Redbank Valley, Aspen Ridge) that this second shakedown spawned went through Stage 7
+round 3 and concluded **still barren on model disagreement, not missing data** — i.e. the loop terminated
+correctly rather than looping forever or masking a real gap as resolved. The open thread from here is
+aggregation-quality, not request-loop mechanics: a same-physical-school double-count under name variants
+(**#236**, open) and NCES's school-count column overriding a multi-campus charter network's real topology
+(**#237**, open) — both tracked as Stage 5/7 aggregation-quality issues, separate from the request-loop
+regressions this shakedown was built to exercise. **Issue #122 itself (the first clean end-to-end pass)
+closed 2026-07-06**, on the FIRST shakedown described above; this second shakedown was a re-validation
+exercise against the #200/#209-hardened pipeline, not a distinct issue awaiting its own closure.
 
 ---
 
@@ -127,7 +137,10 @@ auto-withdraw rule). See the decision-log entry below for the full mechanism.
   run — incl. `run_kind` ∈ {production, probe}, first-class since #148/4D; see below), `SchoolFact`
   (per-school accepted/unresolved facts), `ExtractionRequest` (the request-more-evidence
   directives — `altitude`, `route`, `target`, `band`, `params_json`, `reason`,
-  `status` ∈ {pending, approved, rejected, executed}, `reviewed_by`/`reviewed_at`/`review_note`).
+  `status` ∈ {pending, approved, rejected, executed, withdrawn}, `reviewed_by`/`reviewed_at`/`review_note`).
+  `withdrawn` (#233/REQ-123) is machine-set by `withdraw_satisfied_requests` when the cumulative
+  production state already satisfies an open directive's premise — see below — and renders as its own
+  badge at gate@7 (`stage7.js`).
 
 **App-layer glue:** `process_governance/stage7_run.py` (mirrors `stage6_dispatch.py`):
 - `run_council_streaming()` — the production entry point. Processes **one district at a time**,
@@ -541,6 +554,13 @@ trigger (§0) — all surfaces call the same underlying functions.
   `EXTRACTION_BENCHMARK_FINDINGS.md`.
 - REQ-054 (read-times invariant), REQ-055 (gross metric), REQ-056 (cross-family consensus), REQ-051
   (budget governor), REQ-117 (this build), REQ-118 (request execution).
+  **Ledger drift to note:** `docs/REQUIREMENTS.yaml`'s own REQ-117/REQ-118 entries have not been
+  updated to match this doc's status banner — REQ-117's last acceptance criterion still reads
+  request-EXECUTION as "NOT MET, deferred," and REQ-118's `status:` field still reads `in-progress`,
+  despite execution being built and hardened across epic #163 and PR #240 (2026-07-12) and REQ-122/
+  REQ-123 (which build on top of REQ-117/118) already carrying `implemented`/`tested` statuses. This
+  doc is the accurate present-state source; REQUIREMENTS.yaml's REQ-117/118 entries need a follow-up
+  correction pass, tracked separately from this rewrite.
 - **Council Lab** (the producer that tunes the councils/prompts/cost the request loop routes on): design in
   `COUNCIL_LAB_DESIGN_2026-06.md`; GitHub #80 (infra), #81 (spray A/B), #82 (image-council vision judge —
   fixed), #85 (camelot reader-routing).
@@ -807,8 +827,10 @@ image-vs-text comparison → the request-detection engine → gate@7 console. Ke
 - **2026-07-11 — second live shakedown (batch_00013) against the epic #200/#209-hardened pipeline, two
   request-loop regressions found and fixed (#231, #232, REQ-122).** With #122 (the first clean
   end-to-end pass) closed 2026-07-06, a fresh live non-benchmark batch was run to re-validate the loop
-  after the epic #200 shift-left/epic #209 guardrail work landed. IN PROGRESS as of this writing (8/12
-  districts through gate@7, 6 requests pending review). Findings:
+  after the epic #200 shift-left/epic #209 guardrail work landed. The batch's 7→2 follow-up journey
+  (Union Hill ISD, Brownsville Ascend, Redbank Valley, Aspen Ridge) ran through Stage 7 round 3 and
+  concluded still barren on model disagreement, not missing data — the open thread from here is
+  aggregation-quality (#236/#237), not the request loop. Findings:
   - **#232 — gate@7's district view and band rollup read the LATEST production extraction only.** A
     scoped `7→6` retry creates a NEW extraction row holding just the retried rep; reading only that row
     made an earlier round's solid facts invisible (Brownsville Ascend: 7 accepted middle-school facts

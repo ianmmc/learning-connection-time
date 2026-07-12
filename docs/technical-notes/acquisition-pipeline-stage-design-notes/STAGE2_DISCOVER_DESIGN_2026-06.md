@@ -14,8 +14,17 @@
 district, `data/raw/lea-website-captures/<id>_<slug>/discovery.json` (audit trail) + `candidates.json`
 (capture-ready URL list). The `stage2-discover` skill (the retired agent-wave orchestrator) is **obsolete**.
 
-**Code:** `common/discover.py` (`brightdata_search`, `serper_search`, the gate — the retired
-`openrouter_search`/`perplexity_search` were deleted 2026-07-06, #87);
+**Known code-level inconsistency (not fixed here, worth knowing):** `discover_stage2.py`'s own module
+docstring (its top-of-file comment) still describes the retired agent-in-the-loop framing as current —
+"Orchestration is agent-in-the-loop: Wave 1 needs a Haiku WebSearch subagent, which this script cannot
+spawn... See `.claude/skills/stage2-discover/SKILL.md`" — even though the module is invoked today via
+`headless.py`'s deterministic SERP path (`discover_stage2.py` retains a legacy `reconcile`/`roster`/
+`finish` CLI that still exercises the original agent-handoff contract, §2's "legacy CLI" note below, but
+that is no longer the primary path). A reader of the raw source risks being misled by the docstring
+itself, independent of this design doc.
+
+**Code:** `common/discover.py` (`brightdata_search`, `serper_search`, `domain_of`, `is_scoping_domain`,
+the gate — the retired `openrouter_search`/`perplexity_search` were deleted 2026-07-06, #87);
 `stage2_discover/discover_stage2.py` (`build_roster`, `run_wave1(search_fn)`, `run_wave2(search_fn)`,
 `flatten`, gate/residual/write/registry); `stage2_discover/headless.py`
 (`brightdata_then_serper` — Wave-1 + failover, `_wave2_claude`, `discover_district`, sequential
@@ -89,15 +98,31 @@ Wave 2 is skipped entirely** — no call at all, not merely a no-op scope. `run_
 unreachable; the CLI `finish` subcommand refuses on a nonempty residual and points at the console/headless
 path instead.
 
+`discover_stage2.py`'s legacy `reconcile`/`roster`/`finish` CLI subcommands are still live code (not
+deleted) and remain the only path that still exercises the *original* agent-in-the-loop Wave-1
+contract (`merge_wave1`, `validate_wave1_result` — the subagent-returns-strict-JSON handoff described
+in §5's 2026-06-23 entries). They're superseded for routine use by `headless.py`'s deterministic
+`run_batch`, but not removed.
+
 ### 2c. Gate, flatten, provenance
-- **Gate** (`gate_urls` → `common.discover.gate`, per-school): reject no-host and news/aggregator hosts
-  always; when the district has a domain (scoped), keep only **on-domain** URLs or a **CMS-slug** match
-  (host ends with an approved `cms_hosts` suffix on a **dot boundary** — `h == suffix or
+- **Gate** (`discover_stage2.gate_urls`, per-school) — the single gating chokepoint every Wave 1/Wave 2
+  URL passes through, regardless of which path fed it: **first**, `is_scoping_domain(domain)` — a real
+  dotted hostname, non-blank, no whitespace. If the domain fails that check, `gate_urls` **fails closed**:
+  every URL for that district is rejected outright, reason `"no-scoping-domain — unscoped discovery
+  refused (#229)"`, before `common.discover.gate()` is ever called. This is defense-in-depth against a
+  blank/junk domain reaching Stage 2 through *any* path (a Stage-1 admission-guard gap, a manual DB edit,
+  a future batch builder, a remediation script) — not just Stage 1's own admission check. Only for a
+  domain that **passes** `is_scoping_domain` does `gate_urls` fall into `gate()`'s on-domain/CMS-slug/news
+  logic: reject no-host and news/aggregator hosts always; keep only **on-domain** URLs or a **CMS-slug**
+  match (host ends with an approved `cms_hosts` suffix on a **dot boundary** — `h == suffix or
   h.endswith("." + suffix)` — **and** the URL contains the district slug); reject off-district otherwise.
   The dot-boundary check matters: a naive suffix match would reject `halifax.com` as the news host
-  `x.com`, or accept `evilschoolwires.com` as the CMS vendor `schoolwires.com`. No domain → unscoped, keep
-  any non-news result. `cms_hosts` is human-curated config-as-data, school-district vendors only (never
-  general CDNs).
+  `x.com`, or accept `evilschoolwires.com` as the CMS vendor `schoolwires.com`. `cms_hosts` is
+  human-curated config-as-data, school-district vendors only (never general CDNs). `gate()` itself still
+  carries an unscoped fallback (`return True, "unscoped"` for a blank domain, keep any non-news result) —
+  that branch is still used directly by Stage 1/benchmark code elsewhere, but for a genuinely blank/junk
+  domain reaching Stage 2, `gate_urls`'s pre-check now short-circuits before `gate()`'s unscoped branch is
+  ever reached (§5's 2026-07-11/12 entry).
 - **`flatten()`** dedups all kept URLs across schools by normalized URL, collapsing a shared hub page into
   one capture target listing all its schools. Each candidate's `tools[]` records the **true serving
   provider** per URL — `"brightdata"` / `"serper"` (whichever the Wave-1 cascade actually used) or
@@ -111,6 +136,31 @@ path instead.
   aside with a UTC timestamp before a redo (never overwritten — `data/raw/` is write-once in spirit).
 - **`finish_district()`** — one registry write per district, at completion only.
 
+### 2c-bis. Widened queries for follow-up rediscovery (foundation, #160/epic #163)
+
+`build_roster()` reads an optional per-band `query_strategy` field off the batch. A band flagged
+`"widen_queries"` (its untried schools already exhausted the default query in a prior round) gets each
+school's `queries` list extended past the single default `query_for()` string with
+`differentiated_queries()` — a config-driven set of materially different phrasings
+(`common/config/stage2_query_templates.json`, e.g. `"{school} {state} bell schedule filetype:pdf"`,
+`"{school} {state} student handbook daily schedule"`) rendered per school and composed with the same
+domain scoping every SERP call already applies (`site:{domain}` appended by the provider). The rationale
+for casting a *wider* query set rather than just re-running the same query again: a 7→2 rediscovery round
+wants maximum recall in one cheap SERP pass, and different phrasings surface different pages within the
+same Google index (unlike Wave 2's Claude WebSearch, which earns its keep from a *different* index).
+
+`run_wave1()` runs **every** query in a school's `queries` list (not just the default) and unions the
+returned URLs with order-preserving dedup — a widen-strategy school can accumulate hits across several
+differently-phrased searches into one candidate set. This is **lossy on provenance**: with multiple
+queries, `wave1_provider` records only the **last** query's serving provider, per-school, not a
+per-query breakdown — acceptable because `tools[]` in `flatten()`'s output only needs to distinguish
+Wave-1-vs-Wave-2 broadly, not which of several Wave-1 queries won.
+
+This machinery is **foundation only** (epic #163's own framing): first-run and plain `new_schools`
+follow-up bands still get the single default query; nothing yet sets `query_strategy=="widen_queries"`
+on a live batch. It ships tested and wired so a later follow-up-builder chunk can flip it on without a
+Stage-2 code change.
+
 ### 2d. Paths, reconciliation, concurrency
 - **Secrets and data paths are anchored to `paths.REPO_ROOT`**, not CWD-relative — `SECRETS_FILE`
   (`config/secrets.local.json`, load-bearing for the live providers) and the NCES/discovery-output paths.
@@ -118,13 +168,50 @@ path instead.
 - **Reconciliation** (before any searching): filesystem is authoritative. Disk-yes/registry-behind
   reconciles up and skips; disk-yes/registry-yes skips; disk-no/registry-says-done is a **hard
   `SystemExit`** (control failure — registry ahead of disk signals lost data or a bad migration,
-  affecting potentially more than one district); disk-no/registry-behind is `todo`.
+  affecting potentially more than one district); disk-no/registry-behind is `todo`. **Follow-up batches
+  are the sanctioned exception** (§2e) — every district in a follow-up batch is `todo` regardless of
+  disk state; the registry-ahead-of-disk control-failure check still applies unchanged.
 - **`run_batch` is sequential** — one registry writer, no race; providers are fast enough at batch scale
-  (parallelize via Bright Data's unlimited concurrency later, at full-corpus scale).
+  (parallelize via Bright Data's unlimited concurrency later, at full-corpus scale). Before touching the
+  batch at all, `run_batch()` and the legacy CLI's `finish` subcommand both call `batch_guard.
+  assert_runnable()` — a **terminal abandoned batch refuses to run** (#168/#206): without this guard, an
+  abandoned batch's schools could silently re-enter the discovery funnel while still excluded from the
+  attempted-set accounting (#162).
 - **Topology classification is deliberately not done at Stage 2** — not enough signal from search results
   alone before any page content is read; `flatten()`'s URL-dedup already captures the practical benefit
   (a hub page collapses to one capture target regardless of a topology label). Stage 5 reconstructs a
   *labeled* topology downstream from captured content + the NCES denominator.
+
+### 2e. Follow-up batches: redo-and-merge, not replace (#174)
+
+A `batch_type=="follow-up"` batch (a 7→1/7→2/7→3 redo directive) needs materially different Stage-2
+behavior than a first run, because its whole purpose is to re-discover districts Stage 2 already
+finished:
+
+- **`reconcile()`'s follow-up carve-out:** the "disk already has `discovery.json` → skip" rule is
+  *disabled* for a follow-up batch — every included district is `todo`, unconditionally, because a
+  follow-up exists precisely to redo discovery for districts already discovered. The
+  registry-ahead-of-disk control-failure check still applies unchanged (a follow-up district silently
+  missing its prior `discovery.json` is exactly as alarming as in a first run).
+- **`write_discovery(..., merge=True)`'s union semantics:** the redo does not replace the prior round's
+  manifests — it merges with them, because Stage 5's ingest reads only the current on-disk manifests
+  (per-district delete + rebuild), so a slice-only manifest would erase the district's existing records
+  and orphan their gate@5 labels at the next ingest. Concretely: `discovery.json` schools are **per-school
+  latest-wins with carryover** — a re-queried school's new entry replaces its old one, but a school not
+  re-queried this round survives verbatim, so the roster stays complete. `candidates.json` is the old
+  list plus this round's new URLs, deduped by normalized URL; only the **new** round's candidates get an
+  inline `batch_id` stamp (the old ones keep their original provenance unstamped), giving round-level
+  provenance without touching untouched entries.
+- Both `discover_district()` (headless) and the legacy CLI's `finish` subcommand pass
+  `merge=batch.get("batch_type") == "follow-up"` through to `finish_district()`/`write_discovery()` — the
+  merge decision is made once, off the batch's own type field, not re-derived per call site.
+
+**Seed-URL injection (dormant, #161):** `write_discovery()` also injects any `seed_urls` present on the
+district entry straight into `candidates.json` (tool `seed_7to3`, deduped by normalized URL against
+whatever discovery already produced) — pre-specified capture targets carried on a 7→3 recapture
+directive, bypassing discovery entirely so Stage 3 captures them through the ordinary candidates.json
+pipe. No current producer sets `seed_urls` on a batch; the plumbing is wired ahead of a future judge-fed
+producer.
 
 ---
 
@@ -134,10 +221,26 @@ Stage 2 is **ungated** — the console surfaces it as **status/observability** o
 Wave-1 vs. Wave-2 found counts, the deduped candidate count, and `manual_flag` schools needing eventual
 human follow-up. The reviewer's first real decision point on this batch's discovery output is `gate@5`.
 
-**Reads the DB `discovery_school` cache**, not `discovery.json` off disk — the Stage-2 finish hook
-(`common.cache_ingest.cache_discovery`) upserts each district's funnel on completion (per-district
-DELETE-then-UPSERT, so a re-discovery's stale rows never linger). Self-healing: a district discovered
-before the cache hook existed gets ingested on first console view.
+**`headless.status_for_batch()` / `rollup()`** are the functions actually backing this view. Lifecycle
+(`todo`/`done`) is read from disk — a district is `done` iff its `discovery.json` exists, the
+authoritative data source — while the metrics (per-district Wave-1/Wave-2 found counts, the
+`manual_flag` school list, deduped candidate count, outcome) come from the DB's `discovery_school`/
+`candidate` cache tables, upserted by the Stage-2 finish hook (`common.cache_ingest.cache_discovery`,
+per-district DELETE-then-UPSERT, so a re-discovery's stale rows never linger). **Self-healing:**
+`status_for_batch()` itself backfills the cache inline for any district that's `done` on disk but missing
+from `discovery_school` (e.g. a district discovered before the cache hook existed), so the view repairs
+itself on first read rather than needing a backfill script. `rollup()` reduces the per-district rows to
+the batch-level header counts (total/done/todo, found_all/found_partial/manual_flag_all, manual_flag
+school count).
+
+**Live progress via a job-feed event stream:** `run_batch()` takes an `on_event(kind, payload)` callback
+and emits `reconciled` (todo/skipped district lists), `dispatched` (per district, before it runs),
+`completed` (per district, with outcome), and `failed` (per district, with error) — the mechanism the
+console's job feed consumes to show a run in flight rather than only a post-hoc status page. Per-district
+registry writes during a run use `DS.save(registry, export=False)`, deferring the full
+`district_status.json` regeneration (an O(N²) cost over a run, #49) to exactly one `DS.export()` call at
+the very end, in a `finally` — so a crash mid-run still leaves the backup file current with whatever
+events actually committed.
 
 **Shared UI labels + left-pane progress:** `static/outcomes.js` (`outcomeBadge`, `progressBadge`) — the
 same elements Stage 3/4 use, so a label rename is one edit. The active batch's chip live-syncs to the
@@ -244,14 +347,29 @@ Also: `run_wave2`'s `search_fn` parameter lost its retired-`openrouter_search` d
 CLI `finish` subcommand refuses on a nonempty residual rather than silently using the retired provider.
 
 **2026-07-11 — a district with an empty NCES website runs UNSCOPED discovery, and common school names
-collide nationwide (#227, logged, not yet fixed).** Found + root-caused in the batch_00013 shakedown:
-Millard Public Schools (NE) is the only district in the batch with `domain=''` (NCES `website` column
-blank, `queue_batch.py`'s `domain = host_of(web) if web else ""`), which flips `discover.py`'s `gate()`
-to its unscoped branch (`return True, "unscoped"` — keeps any non-news result when there's no domain to
-scope to). For common school names ("Reagan", "Russell", "North") the unscoped Google SERP pulled
-same-named schools from OTHER districts nationwide (102 distinct hosts over 147 captures; only 44 on the
-real `mpsomaha.org`). All 11 scoped districts in the same batch were clean (0 off-domain discovered) —
-this is specifically the unscoped-fallback path, not a general discovery-quality problem. Millard's 44
-legitimate captures are still valid; the contamination is confined to gate@5 labeling (STAGE5 change log,
-#228) and quarantined from dispatch until fixed. Companion issue #229 (Stage 1: refuse/flag a blank NCES
-website at batch creation) closes this at the source rather than only downstream at discovery.
+collide nationwide (#227, root-caused).** Found in the batch_00013 shakedown: Millard Public Schools (NE)
+is the only district in the batch with `domain=''` (NCES `website` column blank,
+`queue_batch.py`'s `domain = host_of(web) if web else ""`), which flipped `discover.py`'s `gate()` to its
+unscoped branch (`return True, "unscoped"` — keeps any non-news result when there's no domain to scope
+to). For common school names ("Reagan", "Russell", "North") the unscoped Google SERP pulled same-named
+schools from OTHER districts nationwide (102 distinct hosts over 147 captures; only 44 on the real
+`mpsomaha.org`). All 11 scoped districts in the same batch were clean (0 off-domain discovered) — this
+was specifically the unscoped-fallback path, not a general discovery-quality problem. Millard's 44
+legitimate captures were still valid; the contamination was confined to gate@5 labeling (STAGE5 change
+log, #228) and quarantined from dispatch pending a fix.
+
+**2026-07-12 — #229 shipped: refuse a non-scoping domain at the source, plus Stage 2's own
+defense-in-depth (PR #242).** Two layers, not one: (1) Stage 1's `build_batch` now refuses/flags a
+blank-or-junk NCES `website` cell at batch-creation time, using the new `common.discover.domain_of()` +
+`is_scoping_domain()` helpers (`domain_of` normalizes a raw NCES `WEBSITE` cell to a bare host or `''`;
+`is_scoping_domain` validates whether that host can actually scope discovery — rejects blank, `N/A`→`n`,
+`none`, and address-like junk like `375 LEE ST`→`375 lee st`, requires a dotted hostname with no
+whitespace) — so a Millard-shaped district should no longer reach Stage 2 with an unscoped domain in the
+first place. (2) **Stage 2 does not merely trust that upstream guard** — `discover_stage2.gate_urls()`
+(§2c) independently calls `is_scoping_domain(domain)` and fails closed, rejecting every URL with reason
+`"no-scoping-domain — unscoped discovery refused (#229)"` before `gate()`'s old unscoped branch is ever
+reached. The two-layer design is deliberate: Stage 1's admission guard prevents the common case, but
+Stage 2's own chokepoint means a blank/junk domain arriving by any *other* path (a manual DB edit, a
+future batch builder, a remediation script) still can't silently reopen the same nationwide-collision
+failure mode — the run visibly yields nothing for that district instead. Shipped alongside #228
+(a console reset-labels button) and the Millard remediation itself, all in commit 7655277/PR #242.

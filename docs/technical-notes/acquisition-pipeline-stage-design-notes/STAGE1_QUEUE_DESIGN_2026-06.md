@@ -180,6 +180,16 @@ an accuracy yardstick (per-school times hand-verified against these exact files)
 several source documents are deliberately older school years. See `STAGE6_DISPATCH_DESIGN_2026-06.md`
 §3C C.6.
 
+`create_and_inject()` never calls `reserve_next_batch()` — it goes straight `create_batch()` +
+`approve_batch()` back-to-back, so the batch is created and approved in one step rather than passing
+through the normal reserve → draft → edit → approve lifecycle §6b/§6c describe (there's nothing to
+review at gate@1: the district list and per-school facts are frozen curation inputs, not a fresh draw).
+The same fixed-list rationale extends benchmark's exemption beyond the pre-queue exclusion filters
+(line above) to the **#229 domain-scoping guard** too (`build_batch_doc()`'s own comment: "Benchmark is
+EXEMPT from the #229 domain guard... discovery never runs, so the domain is cosmetic") — a blank/bogus
+NCES `website` can't cause the unscoped-discovery contamination #229 guards against when discovery is
+skipped entirely.
+
 ---
 
 ## 3. Sampling policy (queue-time)
@@ -215,7 +225,11 @@ discovery), not the individual district; rejecting districts/schools happens *be
 - **Manual batch construction** (hand-pick untouched NCES districts; APGA story 32) and **follow-up /
   re-queue batches** (stories 33–35; need the Stage-8 per-band satisfaction signal, not built) — deferred. (tracked: #98)
   First-run stratified draw + soft edits is what's built.
-- **gate@1 auto mode** — confidence-escalating auto-approve (governance §11b); manual-only today.
+- **gate@1 auto mode** — confidence-escalating auto-approve (governance §11b); manual-only today. Not
+  "no auto-anything has been justified" — a narrower carve-out doctrine now exists elsewhere in the gate
+  model (gate@7's #233/REQ-123 auto-withdraw: auto-act in the spend-conservative direction only when the
+  failure mode is both observable and reversible). gate@1 hasn't been shown to fit that doctrine yet;
+  this stays an open decision, not a settled no.
 - **Extraction-time early-exit** — §3, deferred to Stage 7.
 
 ---
@@ -230,7 +244,8 @@ data-transmission vehicle to an auditable receipt).
 Created by `gdb.init_precious_schema()`, **never** in the Stage-5 ingest's `REBUILD_DDL` drop list, so a
 re-ingest can't wipe a queued/approved batch. Normalized (not a JSON blob) so edits are real row ops and
 the cross-batch queries the user stories need (a district in multiple batches; per-batch yields) fall out.
-- **`batch`** — lifecycle: `batch_id` (PK), `batch_type` (`first-run`|`follow-up`), `status`
+- **`batch`** — lifecycle: `batch_id` (PK), `batch_type` (`first-run`|`follow-up`|`benchmark` — §2h; the
+  `models.py` column comment still only says `first-run | follow-up` and should be updated to match), `status`
   (`draft`|`approved`|`abandoned`|`reserving` — `reserving` is the id-reservation placeholder, §6b;
   `abandoned` is a TERMINAL, never-approved-only status, #168, below), `nces_year`, `created_at`/`_by`,
   `approved_at`/`_by` (CURRENT approval — cleared by `reopen_batch`), `first_approved_at`/`_by` (the
@@ -297,9 +312,16 @@ The first stage view, built on the **MMM Design System** (imported via the **Des
 **`index.html`** — a **stage selector** in the topbar + a `stage1view` container; **`gate1.js`** — the
 view (batch list, the district→band→school tree with `included` flags + each school's LEVEL/grade-range
 surfaced for classification review, the soft edit controls, a loading overlay for the synchronous
-~10–20s create, Approve/Reopen); **`app.css`** — gate@1 styles (badges, the selector, the two-pane
+~10–20s create, Approve/Reopen, Abandon); **`app.css`** — gate@1 styles (badges, the selector, the two-pane
 layout, the overlay/spinner). The create path reads NCES CSVs and the LCT DB password via
 `paths.DATA_ROOT` / the repo-root `.env` — CWD-independent regardless of launch directory.
+
+The lifecycle controls rendered depend on batch state: a **draft** batch shows Approve **and**
+Abandon…; an **approved** batch shows only Re-open (abandon is draft-only — §6c's DURABLE-stamp
+rationale); an **abandoned** batch shows no action buttons at all — a `q-locked` banner reports who
+abandoned it, when, and the optional reason, and states plainly that the batch can't be edited,
+approved, or re-opened. The Abandon button itself prompts for an optional reason before firing
+`POST /api/queue/{id}/abandon`.
 
 ---
 
@@ -315,6 +337,32 @@ layout, the overlay/spinner). The create path reads NCES CSVs and the LCT DB pas
   Stage-8 per-band satisfaction signal).
 - Create multiple batches that only advance when approved — **✅** (per-batch `status`, independent approval).
 - All batches capped at ≤ 12 districts — **✅** (§2g).
+
+---
+
+### 6g. `common/batch_guard.py` — enforcing `abandoned` outside the console (#168/#206)
+The console's own Stage-2 run endpoint already refuses a non-approved batch, but the headless CLI
+runners (`python3 -m infrastructure.acquisition.stageN.headless run <batch_id>`, plus the older
+per-district Stage 3/4 CLIs) load the on-disk receipt, which carries no status field — without a shared
+guard they would happily keep running a stage on a batch retired via `abandon_batch` (§6c), recording
+discovery/capture events for districts already excluded from `stage7_execute._attempted_schools` (the
+#162 double-queue poison `abandoned` exists to prevent). `batch_guard.py` closes that gap with two
+entry points, one per grain a caller might hold:
+- **`assert_runnable(sess, batch_id)`** — batch-grain, for the headless `run_batch` runners and the
+  Stage-2 legacy CLI, which take a batch id directly.
+- **`assert_district_runnable(sess, district_dir)`** — district-grain, for the Stage-3/4 legacy CLIs
+  (`finish`/`reconstruct`/`run`), which operate on one on-disk district directory with no batch argument;
+  it reads the batch id out of that directory's `discovery.json` and defers to `assert_runnable`.
+
+Both raise `SystemExit` on an `abandoned` batch (matching the headless tooling's existing hard-stop
+convention for a missing batch) and no-op for every other status, including a batch this DB has never
+seen (a receipt-only dev batch stays runnable). The module lives in `common`, not in Stage 1 or any
+consuming stage, because the acquisition stages are import-linter-enforced siblings that may not import
+each other (§ architecture tools, top of `CLAUDE.md`) — a guard shared across Stage 2/3/4 entry points
+has to sit in the shared base layer. It queries the `batch` table by raw SQL rather than importing
+`stage1_queue`'s models, for the same layering reason. Called from `stage2_discover/{headless,
+discover_stage2}.py`, `stage3_capture/{headless, capture_stage3}.py`, `stage4_process/{headless,
+process_stage4}.py`, and `stage5_filter/harness.py`.
 
 ---
 

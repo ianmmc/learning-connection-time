@@ -14,8 +14,13 @@
 
 **Status: BUILT to the Stage 6→7 seam.** Stage 6 reads the Stage-5 release decision from the DB, routes
 each representation to a council, prices it, freezes an immutable dispatch, records the dispatch, and
-assembles the OpenRouter requests — **stopping *before* the paid call** (that's Stage 7). `gate@6` is live
-in the console (manual approve; a preview→freeze identity check closes the staleness gap — §0).
+assembles the OpenRouter requests — the `stage6_handoff` package itself **stops before the paid call**
+(routing/pricing/freeze only; that boundary is real and important — §1). But the **gate@6 console** is
+also where a human fires the paid Stage-7 run directly: a "Run extraction ▶" control on each dispatched
+handoff (#152, built pre-2026-07-11) starts Stage 7's council extraction as a background job from the
+console itself — see the gate@6 console row in §0. So "Stage 6 never makes the paid call" is true of the
+package, not of the operator experience end-to-end. `gate@6` is live in the console (manual approve; a
+preview→freeze identity check closes the staleness gap — §0).
 
 ---
 
@@ -27,9 +32,11 @@ that decision, never the transport.
 
 **Handoff to next stage:** the immutable `handoff_<hash>_<timestamp>.json` (the assembled, priced,
 routed dispatch package) + the precious `handoff` index row + a `dispatched` state_event are Stage 7's
-input. Stage 7 makes the paid OpenRouter call against the frozen package; everything it needs (routed
+input. Stage 7's council extraction runs against the frozen package; everything it needs (routed
 council per representation, per-model prompts, the capture-fidelity flag, the harvest-slice page range) is
-assembled here so Stage 7 never has to re-derive routing decisions.
+assembled here so Stage 7 never has to re-derive routing decisions. That paid run can be triggered two
+ways: Stage 7 running standalone against the frozen handoff, or — the same code path — the gate@6 console's
+"Run extraction" control firing it directly (§0's run-extraction-background-job row).
 
 ---
 
@@ -37,7 +44,9 @@ assembled here so Stage 7 never has to re-derive routing decisions.
 
 The Stage 6 package is `infrastructure/acquisition/stage6_handoff/` (pure, `common`-only imports — independent
 of the other stages, enforced by import-linter) + the app-layer bridge in `process_governance/`. Built
-slice-by-slice; **~63 tests** (incl. govdb Postgres) + a live end-to-end dispatch.
+slice-by-slice; **68 tests** across `test_stage6_*.py` (councils 19, package 9, cost 9, routing 9, handoff_api
+7, handoff_artifact 8, dispatch 6, requests 6, dispatch_bridge 4; incl. govdb Postgres) + a live end-to-end
+dispatch.
 
 | piece | code | what it does |
 |---|---|---|
@@ -48,8 +57,11 @@ slice-by-slice; **~63 tests** (incl. govdb Postgres) + a live end-to-end dispatc
 | release→routing bridge | `process_governance/stage6_dispatch.py` | reads the DB release decision (`release.load_district_records`/`decide`), enriches reps with size signals, assembles; the one module that imports **both** stage5 + stage6 (the §12 independence contract). The `district_status.json` backup export now happens only **after** the handoff file write succeeds (issue #39 — it used to export flushed-but-uncommitted events before the file write, so a failed write could leave phantom `dispatched` events in the git-swept backup) |
 | immutable artifact | `stage6_handoff/handoff.py` | `handoff_<hash>_<ts>.json` under `data/acquisition/handoffs/`; a **price-independent** content-identity hash (which also folds in the `verified_only` mode, below), now **order-insensitive** — districts/records/reps are sorted before hashing, so the same selection made in a different order hashes identically (issue #52). `write()` refuses to overwrite. `package_identity()` exposes the hash publicly for the preview→freeze check below |
 | dispatch record | `stage6_handoff/models.py` (precious `handoff` table) + `stage6_dispatch.record_dispatch` | the index row + a per-district `dispatched` gate@6 `state_event`, recorded **atomically on one session** (current_state is a view); the file is written **last** so a DB failure rolls back cleanly. An empty effective selection now **refuses** rather than freezing a 0-district handoff (issue #53). **Calibration hook (REQ-121/#210, built 2026-07-10):** the same session also writes a `calibration_event` row per district — the proxy is `n_send` (records that actually dispatched a rep, not merely decision-labeled `send` with none — a #218 review fix), the human decision is accept-only by construction (a district not selected leaves no row). Weak by design (auto is near-tautological here — see `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b) but logged for a forward-accruing corpus |
-| request assembly (the seam) | `stage6_handoff/prompts.py` + `requests.py` | the ported extraction prompt (reads TIMES only, REQ-054) + a vision variant; `plan_requests` (the first-pass voter calls; judge deferred to Stage 7) + `build_request` (materialize) — **stops here; the paid POST is Stage 7**. `pages` now flows through to the plan (issue #38) |
-| gate@6 console | `process_governance/server.py` (`/api/handoff/{candidates,councils,preview,dispatch,inspect}`, `/api/handoffs`) + `static/stage6.js` | pick send-eligible districts (each showing **n_send / n_verified / n_hold**) → preview the routed/priced package → **Approve & freeze (gate@6)**. Controls: left-pane filters (name/state/topology · has-send · has-held), the **verified-only** mode (§3E), per-rep **council override** (`/councils`), click-to-**inspect** a representation (`/inspect`), remove-a-district, + a recent-dispatches list. **Preview→freeze staleness closed (issue #37):** preview returns the package's identity hash; dispatch verifies it against a freshly-rebuilt package and returns HTTP 409 ("release changed since preview — re-preview") on mismatch, before anything freezes — what Ian approves is now verifiably what freezes. `serve_file`/`inspect` resolve `source=="harvest_slice"` reps via `resolve_harvest_slice()` (new-location-first, legacy fallback — the STAGE5 harvest-slice relocation). **Already-dispatched indicator (#171, built 2026-07-09):** each candidate row also carries `n_dispatched`/`last_dispatched_at` (from the gate@6 `dispatched` state_events), rendered as a warning badge + an optional "hide already-dispatched" filter — re-selecting a dispatched district re-sends and re-extracts at cost, so the console makes that wasted-spend risk visible before Approve, not after |
+| request assembly (the seam) | `stage6_handoff/prompts.py` + `requests.py` | the ported extraction prompt (reads TIMES only, REQ-054) + a vision variant; `plan_requests` (the first-pass voter calls; judge deferred to Stage 7) + `build_request` (materialize) — the **package** stops here; it never issues the POST. `pages` now flows through to the plan (issue #38) |
+| gate@6 console | `process_governance/server.py` (`/api/handoff/{candidates,councils,preview,dispatch,inspect}`, `/api/handoffs`) + `static/stage6.js` | pick send-eligible districts (each showing **n_send / n_verified / n_hold**) → preview the routed/priced package → **Approve & freeze (gate@6)**. Controls: left-pane filters (name/state/topology · has-send · has-held), the **verified-only** mode (§3E), per-rep **council override** (`/councils`), click-to-**inspect** a representation (`/inspect`), remove-a-district (client-side preview editing only —
+`stage6.js:164,179,188`, no server endpoint; it narrows what gets previewed/dispatched, it doesn't persist
+anything by itself), + a recent-dispatches list. **Preview→freeze staleness closed (issue #37):** preview returns the package's identity hash; dispatch verifies it against a freshly-rebuilt package and returns HTTP 409 ("release changed since preview — re-preview") on mismatch, before anything freezes — what Ian approves is now verifiably what freezes. `serve_file`/`inspect` resolve `source=="harvest_slice"` reps via `resolve_harvest_slice()` (new-location-first, legacy fallback — the STAGE5 harvest-slice relocation). **Already-dispatched indicator (#171, built 2026-07-09):** each candidate row also carries `n_dispatched`/`last_dispatched_at` (from the gate@6 `dispatched` state_events), rendered as a warning badge + an optional "hide already-dispatched" filter — re-selecting a dispatched district re-sends and re-extracts at cost, so the console makes that wasted-spend risk visible before Approve, not after. **Run-extraction control (#152):** the recent-dispatches list's row for each handoff also carries a "Run extraction ▶" / "Resume extraction" button (`stage6.js:246-296`) wired to `POST /api/extract/{handoff_hash}/run` + `GET /api/extract/run/{handoff_hash}` (`server.py:1310-1380`) — see the dedicated row below; `/api/handoffs` (`server.py:1288-1304`) carries the `n_extracted`/`running` fields that drive that button's state |
+| **run-extraction background job (#152)** | `process_governance/server.py:1310-1380` (`_EXTRACT_JOBS`, `POST /api/extract/{handoff_hash}/run`, `GET /api/extract/run/{handoff_hash}`) | fires the actual **paid Stage-7 call** (`R7.run_council_streaming`) directly from a dispatched handoff, in a background thread keyed by `handoff_hash` in an in-process dict — "**the gate@6 dispatch approval IS the go-ahead — no separate approval**" (server.py:1331). Resumable: districts already extracted for the handoff are skipped, so re-clicking after a partial run only retries what's left. States mirror #173's partial-failure semantics: `running` → `done` (clean) / `partial` (some districts failed, good ones durable) / `halted` (billing/auth or a control failure — e.g. no API key) / `error` (unexpected exception). Streams per-district progress events (accepted/unresolved counts, per-band gross minutes, cost) that the console polls into the handoff row. This is the one place gate@6 crosses the seam it otherwise respects — see §1 for why the routing/pricing/freeze boundary is unaffected |
 
 **The send set (the 5/6 seam — tier-gated, `stage5_filter/release.decide`).** A canonical record is **send** if it
 carries a human **TARGET label**, or is unlabeled **tier-A** (`auto:tier-A` — the confident auto-dispatch);
@@ -70,8 +82,10 @@ remaining wrinkle, not a defect: the human now records the real handbook **page 
 (`facets_json._pages_list`), but the `harvest_slice` still materializes off the *auto* `harvest_pages` — a
 worthwhile future edge (prefer the human-labeled pages once they accrue), tracked as a follow-up. (tracked: #109)
 
-**The seam:** everything needed to POST is assembled here; **Stage 7** makes the paid call, runs the
-judge-on-disagreement loop, and the "request more evidence" back-edges (§3F). **Deferred (own tracks):**
+**The seam:** everything needed to POST is assembled here; **Stage 7's code** makes the paid call, runs the
+judge-on-disagreement loop, and the "request more evidence" back-edges (§3F) — and the gate@6 console is
+one of the places that Stage-7 code gets invoked from (the run-extraction control, §0), not a separate
+implementation of it. **Deferred (own tracks):**
 the **council lab** (`cost_benchmark` — replaces the bootstrap with measured token rates + live OpenRouter
 pricing, and re-benchmarks council **composition** on clean data; §3A/§3C — *designed, not run*); gate@6
 **auto** mode + the budget-governor cost-gate (REQ-051) — the console does *manual* approve today; the
@@ -83,8 +97,14 @@ persistence (§3F).
 ## 1. Purpose & boundary
 
 **Stage 6 decides *which representations* go to *which extraction council(s)*, and performs the
-release/dispatch.** It is **routing + release** — the gate is `gate@6`. It does **no extraction itself**
-(that's Stage 7); it routes.
+release/dispatch.** It is **routing + release** — the gate is `gate@6`. The `stage6_handoff` package itself
+does **no extraction** — it routes, prices, and freezes, and never issues the paid OpenRouter call. That
+boundary is real at the code level (imports, testing, layering — §12 contract) and is the more important
+architectural fact. It is *not*, however, an operator-facing boundary: the gate@6 **console** (the app layer
+above the package) is also where a human explicitly fires Stage 7's paid extraction against a dispatched
+handoff (the "Run extraction ▶" control, #152 — §0), on the reasoning that the dispatch approval already
+*is* the spend go-ahead. So "Stage 6 does no extraction" describes the `stage6_handoff/` package's contract,
+not everything reachable from the gate@6 screen.
 
 - **Input (from the DB — the working store):** the Stage-5 `record` / `representation` / `label` tables +
   the release decision (`decision`/`reason`, the best `send` rep per sent record + approved alternate

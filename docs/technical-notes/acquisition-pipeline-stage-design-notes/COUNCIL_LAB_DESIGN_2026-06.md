@@ -14,16 +14,20 @@
 > **Update this when:** the Lab's code behavior, artifacts, or workload backlog changes. Design turns and
 > superseded approaches belong in §7 (Provenance / decision log), not here.
 
-**Status: EMERGING — first experiment BUILT AND MEASURED (#82 validated + closed, 2026-07-04).** The
-Council Lab crystallized from the Stage 6/7 build as a distinct, cross-stage concern (it was first
-imagined as a Stage-6 module — STAGE6 §2a — but its scope now spans Stage 4 reader-routing, Stage 6
+**Status: EMERGING — first experiment BUILT AND MEASURED (#82 validated + closed, 2026-07-04); DORMANT
+SINCE.** The Council Lab crystallized from the Stage 6/7 build as a distinct, cross-stage concern (it was
+first imagined as a Stage-6 module — STAGE6 §2a — but its scope now spans Stage 4 reader-routing, Stage 6
 councils/routing/cost, Stage 7 prompts/judge/extraction quality, and the Stage-8-grown GT yardstick).
 BUILT today: the config-as-data it produces (council configs + validator, the bootstrap cost model, the
 prompt registry) and the **judge-replay harness** (`council_lab.py`, the #82 first workload) + the
 Stage-7 GT scorer it reuses. The harness has now RUN for real: the Qwen-VL image-judge swap was measured
 end-to-end (§0 "First result") and #82 closed on the evidence. **Not yet built:** the append-only run
 **ledger**, the **cost benchmark** (`cost_benchmark`, §3), clean-data **composition** re-benchmarking
-(§4), and the dedicated **console view** (§6 — sequenced after the ledger + a few experiments).
+(§4), and the dedicated **console view** (§6 — sequenced after the ledger + a few experiments). **None of
+this has moved in over a week**: two full epics (#209 Phases 0–2, #200) landed in between with zero
+Council Lab activity — the backlog in §2 is unchanged since 2026-07-04. This is a priority call (the
+request-loop/data-integrity bugs found by the #122 shakedowns took precedence), not a stall; treat §2's
+ranking as still current but not urgent until reprioritized.
 
 ---
 
@@ -82,6 +86,11 @@ end-to-end (§0 "First result") and #82 closed on the evidence. **Not yet built:
 **The runtime/consumer side lives elsewhere** — `STAGE6_DISPATCH_DESIGN` §0/§3 (councils/routing/cost) and
 `STAGE7_EXTRACT_DESIGN` §0. The Lab NEVER changes the runtime path to run; the contract is the
 config-as-data artifact + its `provenance`.
+
+**Package boundary note:** `stage6_handoff/` is a shared package — `councils.py`, `cost.py`, and
+`prompts.py` are the config-as-data surface the Lab produces and this doc covers; `handoff.py`,
+`models.py`, `package.py`, `requests.py`, and `routing.py` in the same directory are STAGE6_DISPATCH's
+runtime-path files (the request-loop mechanics), out of scope here — see `STAGE6_DISPATCH_DESIGN_2026-06.md`.
 
 ---
 
@@ -219,6 +228,19 @@ Build these *with* the Lab's promote capability, never after (the shift-left les
 enforce the invariant at the boundary, not in the reviewer's head). Tracked in the runtime-guardrail epic
 (#209); details here so the Lab build carries them.
 
+**A concrete template now exists — port it, don't design from scratch.** The identical guardrail shape
+for the Stage-5 sibling (config-as-data promotion for the filter/scoring config) shipped and closed via
+#212 (group-aware non-inferiority promotion gate) + #213 (safe-promotion machinery), merged 2026-07-10
+(PR #220): `stage5_filter/config_artifact.py` (the immutable, fingerprinted config artifact),
+`promotion_gate.py` (the non-inferiority check gating a promotion), `promotion_pointers.py` (the
+`@champion`/`@fallback` pointer-swap — reversible by construction, no file mutation), and
+`promotion_flow.py` (the flow tying artifact + gate + pointers together), with `tests/test_promotion_gate.py`
+covering it. **It is real, working code — but DORMANT**: per CLAUDE.md's current-status banner, activation
+(wiring it live into the Stage-5 path) is tracked as its own checklist, #219, and has not happened yet. So
+the Council Lab's own promotion substrate below should be read as "port this pattern," not "invent an
+analogous one" — but a reader should not conclude Stage-5 promotion (or, by the same token, a future
+Council Lab promotion built on this template) is live or unblocked just because the modules exist on disk.
+
 1. **Provenance + GT-fingerprint enforced ON LOAD, refuse-to-run on mismatch.** Any config the extraction
    runtime loads must carry a `provenance` (which ledger episode promoted it) and the GT-version fingerprint
    it was measured against; if that fingerprint ≠ the current GT corpus, the run **halts loudly** (the
@@ -260,13 +282,20 @@ unproven workflow; the con of waiting is only that results live in JSONL + termi
 ## 7. References + provenance / decision log
 
 **GitHub (the live backlog):** #80 (Council Lab infra — parent), #81 (anti-spray prompt A/B), #82 (image
-judge not vision-capable — reopened, code fix landed, measurement pending), #85 (camelot reader-routing).
+judge not vision-capable — reopened, code fix landed, measurement pending), #85 (camelot reader-routing),
+#132 (route-by-modality experiment, §2 item 6).
 
 **References:** `models-and-council-composition/` (`LLM_COUNCIL_RESEARCH_2026-06.md`;
 `models-and-council-composition.md` — the batch_00000 report + §6 backlog; the non-reasoning + compass model
-catalogs); `EXTRACTION_BENCHMARK_FINDINGS.md`; `stage7_extract/validate.py` (scorer); the Stage-5 tuning
-trio (`harness`/`tuning_ledger`/`frontier`) as the template. REQ-054/055/056 (read-times, gross, cross-family),
-REQ-117 (Stage 7 build).
+catalogs); `EXTRACTION_BENCHMARK_FINDINGS.md` (**caveat:** as of this writing it still documents a 3-model
+non-reasoning council — Gemini Flash + DeepSeek V3.2 + Mistral Small, ~$0.0029/call — and per-call costs
+that predate and are superseded by the current 2-voter+judge cascade template and the
+`council_cost_model.json` bootstrap rates (e.g. `mistral-small-24b-instruct-2501` at $0.00022/call,
+`gemini-2.5-flash-lite` at $0.00050); read its leaderboard for model-quality signal, not its cost table);
+`stage7_extract/validate.py` (scorer); the Stage-5 tuning trio (`harness`/`tuning_ledger`/`frontier`) as the
+template. REQ-054/055/056 (read-times, gross, cross-family), REQ-117 (Stage 7 build). No REQ currently
+tracks the Council Lab's own deliverables (the cost benchmark, the run ledger) — its status is purely
+GitHub-tracked (#80 and children above), not requirements-tracked.
 
 **Decision log:**
 - **2026-06-30 — the two-layer producer/consumer split named (Ian).** Conflating the runtime dispatch path

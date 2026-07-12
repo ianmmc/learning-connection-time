@@ -89,7 +89,8 @@ is unavailable.
 districts, both back-edges proven end-to-end; full report:
 `docs/technical-notes/stage-7-loop-reports/2026-07-06T0458Z-stage7-loop-report.md`. **A SECOND live
 shakedown ran 2026-07-11** (batch_00013) to re-validate the loop against the epic #200/#209-hardened
-pipeline, finding **six** real request-loop/pipeline regressions across two merged PRs:
+pipeline, finding **six** real request-loop/pipeline regressions, fixed across two merged PRs (a third,
+unrelated PR closed out epic #123 the same day — see below):
 - **PR #221 (2026-07-11):** **#231** — the `7→6` alternate list could re-offer an already-failed rep
   across rounds; **#232** — gate@7's view/rollup read latest-extraction-only, so a scoped retry could make
   an earlier run's solid facts disappear — fixed via a new cumulative merge, codified as **REQ-122**.
@@ -99,19 +100,44 @@ pipeline, finding **six** real request-loop/pipeline regressions across two merg
   never reached gate@5; fixed at the source — `run_stage4_with_ingest()` is now the ONE operation every
   caller uses, CI-enforced); **#230** — Stage 6's initial rep pick ignored the retry loop's own
   yield-ranking; **#233/REQ-123** — gate@7 now **auto-withdraws** an open request once its premise is
-  satisfied under the cumulative state (§11b below — the ONE deliberate exception to the manual-gate
+  satisfied under the cumulative state (§11b below — a deliberate exception to the manual-gate
   posture, and the review of the first draft found the fillable-band logic silently reproduced the exact
   bug it was fixing for an all-phantom/empty-real-bands district, plus a production-only staleness bug
   where the withdraw check couldn't see its own round's just-persisted facts under `autoflush=False`).
-- Upstream findings from the same pass, each stage's own doc: #222/#225 (Stage 1/3), #227 (Stage 2),
-  #223/#224/#226/#228 (Stage 5), #229 (Stage 1); also #236/#237 (Stage 5/7 aggregation-quality — topology
-  precedence, school name-variant double-counting; open) and #238 (deferred efficiency follow-ups). Full
-  detail: `STAGE7_EXTRACT_DESIGN_2026-06.md` §6 (decision log).
+
+**PR #239 (2026-07-12), unrelated to the shakedown above:** the #127 `node:test` harness for
+`capture_discovery.mjs`'s browser-driving logic (real Chromium via `page.route()` fixtures, no fixture
+server) — closes epic #123 (tech-debt/hygiene cleanup); its own review caught a latent `segmentChrome` bug
+(header/footer/nav grabs ignored the `landmarks` argument) and hardened the harness to fail loud in CI
+rather than silently skip if Chromium is unavailable.
+
+**A separate contamination-chain finding from the same shakedown was fixed one PR later:**
+- **PR #242 (2026-07-11/12), the empty-domain contamination chain — the three items previously tracked as
+  "not yet fixed" are now shipped:** **#229** (prevention) — Stage 1's `build_batch`/`build_followup_batch`
+  refuse a district whose NCES `WEBSITE` yields no usable scoping domain (new `common/discover.py` helpers
+  `domain_of`/`is_scoping_domain`, surfaced in the gate@1 console as a `domain_excluded` refusal list) as
+  the admission-time guard, **plus Stage 2's `gate_urls()` fails closed as defense-in-depth** — a blank/junk
+  domain now rejects every URL with an explicit reason instead of falling through to the old unscoped
+  branch that kept everything (that fallthrough was the actual Millard mechanism, #227); benchmark
+  (`batch_00000`) is exempt by structure (never routes through `build_batch`). **#228** (remedy) — a
+  gate@5 "Reset labels" console action + `POST /api/reset-labels`, backed by the one shared
+  `build_signals.reset_labels_bulk` (an UPDATE-to-unlabeled, not a delete), for the case a label asserts
+  a false non-target ground truth (a valid schedule for the *wrong* district) that neither `target_absent`
+  nor `unusable` can honestly express. **#227** (cleanup) — `remediate_contamination.py`, a manifest-first,
+  dry-run-by-default tool generalized from the Millard one-off: resets the exact enumerated rec_keys,
+  purges the district's regenerable signal + cross-stage-cache rows, corrects `batch_district.domain`,
+  and records a `state_event` — all after a verified restore point, and only after the reset transaction
+  commits does it re-export `labels.json`/regenerate the batch receipt (never leaves disk ahead of a
+  rolled-back DB). It does not re-spend on discovery; the scoped re-run still goes through the normal
+  gated console flow.
+- Upstream findings from the same shakedown, each stage's own doc: #222/#225 (Stage 1/3), #223/#224/#226
+  (Stage 5, still open); also #236/#237 (Stage 5/7 aggregation-quality — topology precedence, school
+  name-variant double-counting; open) and #238 (deferred efficiency follow-ups). Full detail:
+  `STAGE7_EXTRACT_DESIGN_2026-06.md` §6 (decision log).
 
 Next: Stage 8 (aggregation, tracked: #89/#90) or the Council Lab's remaining backlog (`cost_benchmark`,
-prompt A/B, tracked: #80/#81); the empty-domain contamination chain (#229 prevention → #227 Millard
-purge/scoped re-run → #228 reset-labels console button); the aggregation-quality fixes (#236/#237); the
-live gate-mode (manual/auto) persistence + console toggle (tracked: #104) that #211's live wiring and
+prompt A/B, tracked: #80/#81); the remaining Stage-5 aggregation-quality fixes (#223/#224/#226, #236/#237);
+the live gate-mode (manual/auto) persistence + console toggle (tracked: #104) that #211's live wiring and
 #214's measured-pass both wait on; still open: REQ-100 (staleness, tracked: #100), the gate@7 inline
 PNG/PDF viewer (tracked: #151).
 
@@ -133,7 +159,7 @@ retired when the cross-stage cache became a live working store — REQ-110/111/1
 | **SIGNALS** | signal vectors, detector votes + the send/suppress/review decision, tier, category, clusters, attention (REQ-113 V2) | **DB** (working store) | regenerable; a **never-dropped live store on the incremental path** (REQ-110/111/112) — full drop+rebuild only for schema changes / recovery |
 | **FACETS** (v2.1) | the human's target-shape + confounder + location answers (`label.facets_json`, REQ-114) | **DB** (working store) | **precious** — JSON-backed with the label; the per-detector ground truth |
 | **CROSS-STAGE DATA** | the queryable projection of every stage's output — `discovery_school` / `candidate` / `capture` / `processed_doc` (`common/cache_ingest.py`) + `record` / `representation` / `district_target` (Stage 5) | **DB** (working store) | regenerable from disk; **what each stage reads to drive the next**, kept fresh by each stage's finish hook |
-| **LABELS / SPLITS / BATCHES / FLAGS** | human ground truth, cluster-split overrides, the queued/approved batch, follow-up flags | **DB** | **precious** — never in the ingest drop list; JSON-backed |
+| **LABELS / SPLITS / BATCHES / FLAGS** | human ground truth, cluster-split overrides, the queued/approved batch (incl. `batch_district.domain`), follow-up flags | **DB** | **precious** — never in the ingest drop list; JSON-backed; a label's honest terminal states are `target_present` / `target_absent` / `unusable` / **`unlabeled`** — #228's `reset_labels_bulk` (a plain UPDATE, not a delete) is the one shared path back to `unlabeled` when a label turns out to assert a false non-target ground truth, the case a Millard-style contamination (#227) forces |
 | **CAPTURE BINARIES** | the captured PDFs / PNGs / extracted text files | **disk**, authoritative | regenerable from the **web** (not the DB); referenced by `filename` from `representation`; relocatable as one tree (REQ-087) |
 | **JSON RECEIPTS** | `discovery.json` / `candidates.json` / `captures.json` / `processed.json` / `filtered.json` / `batch_*.json` | **disk** | regenerable; the auditable record of each stage's output + the DB-recovery source (`batch_*.json` / `filtered.json` are generated *from* the DB); **NOT stage-to-stage transmitters** |
 
@@ -803,6 +829,14 @@ Stage-9 DB write are ungated:
 (CP-A/B/C) and decide something genuinely new each time; they're permanent. 6/7 emerged later, from
 API-spend caution during a context-clear cycle, not first-principles design — they're the first to relax.
 
+**gate@1 also now surfaces automatic *refusals*, not just the reviewable pool (#229, 2026-07-11/12).** A
+district whose NCES `WEBSITE` yields no usable scoping domain is dropped from the batch before it ever
+reaches the human — there's no alternate domain source to fall back to, so this is a hard exclusion, not a
+judgment call the gate is meant to make. The gate@1 console renders these as a distinct `domain_excluded`
+list (name/state/district_id/raw `website` value) alongside the normal queue, so the human still sees *why*
+a district didn't make it in, without being asked to approve or reject something that was never admissible.
+This is refusal-visibility, not a relaxation of gate@1's own approve/reject judgment.
+
 ### 11b. Settings: per-gate manual/auto (global default + overrides); AUTO is confidence-escalating
 
 **The ramp-up model (the governing philosophy — Ian, standing since 2026-06-22).** The gate toggles
@@ -828,12 +862,13 @@ still executable — both under the **REQ-051 budget governor** (`common/budget.
 step** materializes the batch (so gate@7 isn't coupled to batch creation), and now **previews** it
 (dry-run, no persistence) before the operator commits. The toggle below is the ramp-up's control surface.
 
-**The one deliberate exception: gate@7's auto-withdraw (#233/REQ-123, 2026-07-11/12).** Every gate above
-is manual-until-earned — EXCEPT retiring a request-more-evidence directive once the cumulative production
-state has satisfied its premise (`stage7_run.withdraw_satisfied_requests`), which runs with **no human
-sign-off at all**, always, not confidence-gated. Ian's rule for admitting this exception: ***auto-act in
-the spend-conservative direction when the failure mode is observable and reversible.*** The test isn't
-"is a human in the loop" — it's the RISK ASYMMETRY between the two failure modes:
+**The one deliberate exception TO A GATE'S OWN JUDGMENT: gate@7's auto-withdraw (#233/REQ-123,
+2026-07-11/12).** Every gate above is manual-until-earned — EXCEPT retiring a request-more-evidence
+directive once the cumulative production state has satisfied its premise
+(`stage7_run.withdraw_satisfied_requests`), which runs with **no human sign-off at all**, always, not
+confidence-gated. Ian's rule for admitting this exception: ***auto-act in the spend-conservative direction
+when the failure mode is observable and reversible.*** The test isn't "is a human in the loop" — it's the
+RISK ASYMMETRY between the two failure modes:
 - **Not auto-withdrawing** risks a human approving/executing an already-satisfied directive — real,
   unbounded, non-self-correcting **paid** council spend, directly against the four commandments' tight-
   cash-spend priority (§0 above).
@@ -852,6 +887,23 @@ deterministic, reversible bookkeeping action retiring stale work is a different 
 judgment call on extraction quality — see REQ-123 and `STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§6 for the
 full mechanism and the review that found (and closed) two real defects in the first draft's actual
 implementation of this rule.
+
+**A second, differently-shaped automatic behavior: Stage 2's fail-closed domain guard (#229, 2026-07-11/12).**
+`stage2_discover/discover_stage2.py`'s `gate_urls()` now refuses **every** URL, unconditionally and with no
+human involved, the instant its district's domain fails `is_scoping_domain()` — it never falls through to
+the old unscoped branch that used to keep everything (that fallthrough was the actual mechanism behind the
+Millard cross-district contamination, #227). This is not the same kind of exception as gate@7's
+auto-withdraw — it isn't a gate relaxing its own judgment at all; `gate_urls()` sits *inside* stage logic,
+below any gate, and Stage 1's `build_batch`/`build_followup_batch` already refuse the same districts earlier
+still (§11a above). It's included here because it passes the same risk-asymmetry test by construction:
+refusing is the fail-**safe**, spend-conservative direction (an unscoped run risks contaminating the
+candidate set with nationwide same-named-school noise, a data-quality failure that is expensive to detect
+and clean up after — see #227/#228 above), and a wrongly-refused district is trivially visible (it shows up
+as a `domain_excluded` refusal, or Stage 2 yielding zero candidates for a district that should have some) and
+reversible (fix the domain, re-run). The two defenses — Stage 1 admission, Stage 2 defense-in-depth — are
+deliberately redundant: a domain problem reaching Stage 2 through any *other* path (a manual DB edit, a future
+batch builder, a remediation script) still can't contaminate a run, because the fail-closed check is the
+single gating chokepoint for all discovery waves, not a rule that only fires when Stage 1 is on the path.
 
 Each gate toggles **manual** (human acts) / **auto** (self-advance), via a **global default + per-gate
 overrides**. **Auto is never blind: auto-with-confidence-escalation** — auto-accept the high-confidence,

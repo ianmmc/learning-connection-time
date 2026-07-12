@@ -27,7 +27,7 @@ class Batch(gdb.Base):
     __tablename__ = "batch"
 
     batch_id: Mapped[str] = mapped_column(String, primary_key=True)        # e.g. batch_00002
-    batch_type: Mapped[str] = mapped_column(String, default="first-run")   # first-run | follow-up
+    batch_type: Mapped[str] = mapped_column(String, default="first-run")   # first-run | follow-up | benchmark
     status: Mapped[str] = mapped_column(String, default="draft")           # draft | approved | abandoned | reserving
     nces_year: Mapped[str] = mapped_column(String)
     created_at: Mapped[str] = mapped_column(String, default=utcnow)

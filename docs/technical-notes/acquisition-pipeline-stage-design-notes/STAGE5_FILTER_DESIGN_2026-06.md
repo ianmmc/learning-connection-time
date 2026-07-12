@@ -122,8 +122,15 @@ list is involved (config-as-data, §5). Seed set — the polarity is the directi
 | `lf_calendar_widget` | a calendar embed/iframe host, or `NEG_CALENDAR` dominance with no proximity pair | **−negative** | the Pittsylvania month-view cluster |
 | `lf_board` / `lf_sports` / `lf_transport` | the respective negative-keyword class dominant | **−negative** | V1 neg classes, now independent votes |
 | `lf_nonstandard_day` | weather/remote/delay/early-dismissal-only schedule language | **−negative (soft)** | genuine bell-shape but the *wrong* schedule (Stroudsburg `?id=`, TCUSD2 weather articles) |
-| `lf_office_hours` | a time-range whose nearest heading is `office`/`staff`/`workday` | **−negative (soft)** | the office-vs-school-hours confusable (research §5.2); the LCPS staff-hours page |
 | `lf_no_times` | zero in-window times anywhere (incl. raw reps) | **−suppress** | §2a-3, the corrected suppress floor |
+
+**`lf_office_hours` is not a 14th standalone detector** — there is no `lf_office_hours` function in the
+`DETECTORS` registry (`detectors.py`). It is a shared **negative Vote** that `lf_footer_hours` and
+`lf_heading_hours` each emit inline, as a side effect, when their own evidence (a time-range whose
+nearest heading/segment reads `office`/`staff`/`workday`) points to building/office hours rather than the
+school day — the office-vs-school-hours confusable (research §5.2; the LCPS staff-hours page). Both
+producing functions are already counted above; this row exists so a reader doesn't go hunting for a
+`def lf_office_hours(...)` that doesn't exist.
 
 **The combiner** (`combiner.py`) is deliberately transparent — a **weighted vote** first (weights =
 config-as-data), *not* a learned model, per the research's "start with weighted majority vote; only
@@ -248,6 +255,39 @@ the same DB transaction as the label write. This is the mechanism that surfaces 
 directly: a tier-D record (auto would reject) that a human labels a real target logs `agreed=False` — a
 false negative auto would have made. See `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b for the full
 calibration-log design; gate@6 and gate@7 get the analogous hooks.
+
+**Reset labels — an honest path back to `unlabeled` (#228).** A label can be wrong in a way neither
+`target_absent` nor `unusable` can truthfully represent: a page that IS target-shaped but belongs to the
+**wrong entity** (a real bell schedule pulled in from another district — the #227 Millard contamination,
+where unscoped discovery mixed same-named schools nationwide into the candidate set). Mislabeling a real
+schedule as a non-target to get it out of the way would corrupt the detectors' training signal, so the
+only truthful state is unlabeled. `POST /api/reset-labels` (`{scope: "record"|"district", target_id}`)
+clears `primary_label`/`facets_json`/`note` and sets `status='unlabeled'` via the single shared bulk
+helper `build_signals.reset_labels_bulk` — the one definition of what "reset" means, reused by both the
+console endpoint and the remediation tooling (below) so the two never drift apart. It mirrors
+`save_label`'s side-effect set (topology + attention recompute, then a post-commit `labels.json`
+export + `filtered.json` refresh) so derived state stays coherent, and it **reverses the cluster
+cascade**: resetting a cluster representative resets every current member the same way labeling a rep
+cascades a label onto them. A reset carries no terminal decision, so it deliberately logs **no** gate@5
+calibration row (consistent with `gate5_label_record` returning `None` for an unlabeled status) and never
+rewrites prior calibration history — past human decisions stay on the log (auditability). Two console
+entry points: a district-level reset button (`static/app.js`'s `.dist-resetbtn` → `resetLabels("district",
+...)`) and a record-detail reset button (`#resetLabelBtn` → `resetLabels("record", ...)`).
+
+**Upstream of Stage 5: closing the empty-domain contamination chain that motivated #228 (#229/#227).**
+The Millard case above was possible because a district could enter a batch with a blank or junk NCES
+`WEBSITE` value, flipping Stage 2 discovery to its unscoped national-scope branch. `common/discover.py`
+now centralizes `domain_of()` (normalizes a raw NCES cell to a bare host, or `""` if blank) and
+`is_scoping_domain()` (true only for a real dotted hostname with no whitespace — rejects blank, `N/A`,
+`none`, address-like junk), and Stage 1 batch admission refuses a district that fails the check rather
+than silently letting it through to the unscoped branch. `process_governance/remediate_contamination.py`
+is the paired remediation tool for districts that got through before this guard existed (the #227 Millard
+case is its default): a manifest-first, dry-run-by-default CLI that resets the contaminated labels via
+the same `reset_labels_bulk` helper, purges the district's regenerable signal/cache rows, corrects the
+batch's stored domain, and records a `state_event` — without touching the precious `label`
+history it didn't reset or re-spending on discovery (the scoped re-run is a separate, gated console
+action). Both fixes land upstream of Stage 5 (Stage 1 admission, a Stage-1/2 remediation tool) but are
+noted here because Stage 5 labeling is what surfaced the contamination and what #228 exists to repair.
 
 ---
 
@@ -557,14 +597,28 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 | **Anti-survivorship exploration quota** (`exploration_audit.py` — rule-of-three sufficiency count, deadband, demote-not-halt) | **PURE CORE BUILT + tested (REQ-120/#211, 2026-07-10)**; live wiring (the randomized console audit queue, the gate@5 demote-hook) still DEFERRED — see §5a |
 | **Group-aware non-inferiority promotion gate** (`promotion_gate.py` — LOGO guard + cluster bootstrap + TOST + ICC/DEFF; proven libs, no hand-rolled stats) wired advisory into `frontier gate()`/`--gate` + the `tuning_ledger` episode | **BUILT + tested (#212, epic #209 Phase 2, 2026-07-10)** — advisory; `margin` (Δ) required; see §5c |
 | **Safe-promotion machinery** (`config_artifact.py` immutable fingerprinted artifact — closes the unhashed-detector-params gap; `promotion_pointers.py` @champion/@fallback swap + N-cycle retention; `promotion_flow.py` shadow→gate→swap→record) | **BUILT + tested (#213, epic #209 Phase 2, 2026-07-10)** — DORMANT (nothing reads the champion pointer live; minor/major re-ingest shadow deferred); activation tracked #219 — see §5c |
+| **Reset labels** (`POST /api/reset-labels` + `build_signals.reset_labels_bulk`, record/district scope, reverses the cluster cascade, no calibration row) | **BUILT (#228, 2026-07-11)** — see §4 |
+| **Empty-domain admission guard** (`common/discover.py` `domain_of()`/`is_scoping_domain()`, refuses blank/junk-domain districts at Stage-1 batch build) | **BUILT (#229, 2026-07-11)** — see §4 |
+| **Millard contamination remediation** (`process_governance/remediate_contamination.py`, manifest-first dry-run-by-default cleanup tool) | **BUILT (#227, 2026-07-11)** — see §4 |
 | Learned `LabelModel` combiner · hierarchical/vendor pooling · online-FDR drift · Stage-7/8 outcome feedback | **DEFERRED (scale endgame)** |
 
 ---
 
 ## Change log
 
-- **2026-07-11 — four findings logged from the batch_00013 live shakedown (#122's second pass), none
-  yet fixed.** Found by the human at gate@5 while labeling in parallel with the shakedown, not by a
+- **2026-07-11 (later) — #228 "Reset labels" shipped, alongside #229/#227 (commit 7655277, PR #242).**
+  `POST /api/reset-labels` + the shared `build_signals.reset_labels_bulk` helper now let a record or
+  whole district return to `unlabeled` (see §4 for the design rationale and both console entry points).
+  In the same commit: **#229** closes the empty-domain contamination chain at its source — Stage-1 batch
+  admission now hard-refuses a district with a blank/junk NCES domain via `common/discover.py`'s new
+  `domain_of()`/`is_scoping_domain()` guards, rather than letting it reach Stage 2's unscoped branch; and
+  **#227** (the Millard Public Schools, NE cross-district contamination that motivated #228) has a
+  dedicated remediation tool, `process_governance/remediate_contamination.py` — manifest-first,
+  dry-run-by-default, reusing `reset_labels_bulk` for the label side of the cleanup. All three tested
+  (`tests/test_stage5_facets_api.py`, `tests/test_remediate_contamination.py`, `tests/test_domain_guard.py`).
+
+- **2026-07-11 — three findings logged from the batch_00013 live shakedown (#122's second pass), still
+  open.** Found by the human at gate@5 while labeling in parallel with the shakedown, not by a
   planned review:
   - **#223 — "Summer School" has no Axis-2 confounder checkbox/negative detector**, so a summer-program
     page (e.g. a district's `students-families/summer-school.cfm`) has nowhere honest to be labeled.
@@ -573,12 +627,6 @@ existing plain-text footer capture is already sufficient for the heading-proximi
     evaluate shouldn't compete for attention against districts that do.
   - **#226 — "feed"/"live-feed" in a URL is not yet a negative scoring signal**, though it correlates
     with the news/social-feed confounder that already has a detector for other shapes.
-  - **#228 — no "Reset labels" action exists** to return a record/district to `unlabeled`. Motivating
-    case: batch_00013's Millard Public Schools (NE) discovery ran unscoped (empty NCES domain, #227) and
-    pulled real bell schedules from OTHER districts — pages that ARE target-shaped but belong to the
-    wrong entity. Neither `target_absent` nor `unusable` is an honest label for them (mislabeling a real
-    schedule as non-target would corrupt the detectors' training signal), so the only truthful state is
-    unlabeled — which the console currently has no way to reach once a label is applied.
 
 - **2026-07-10 — PR #220 max-effort review round: 11 findings, all fixed — see §5c "Review-hardened".**
   Headline: pingouin's ICC silently listwise-deletes unbalanced districts (replaced with the

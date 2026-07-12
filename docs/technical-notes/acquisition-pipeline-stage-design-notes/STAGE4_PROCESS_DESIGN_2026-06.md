@@ -10,10 +10,11 @@
 > **Update this when:** Stage 4's code behavior changes. Design turns and superseded approaches belong in
 > §6 (Decision log), not here.
 
-**Status: BUILT + run live**, including the console (status + run trigger + tool-effectiveness readout)
-and the Stage 4→5 incremental handoff. Produces, per district, `processed.json` + per-record
-`extracted.txt`/`<tool>.txt`/`raster_p-<N>.png` in each `captures/<hash>/` — the local-text layer Stage 5
-consumes.
+**Status: BUILT + run live**, including the console (status + run trigger + tool-effectiveness readout),
+the Stage 4→5 incremental handoff, follow-up-batch redo (reconcile's `redo` kwarg, #174, 2026-07-05), and
+the batch-guard/district-guard mutual-exclusion machinery shared with Stage 2/3 (#168, #206). Produces, per
+district, `processed.json` + per-record `extracted.txt`/`<tool>.txt`/`raster_p-<N>.png` in each
+`captures/<hash>/` — the local-text layer Stage 5 consumes.
 
 **Code:** `stage4_process/process_stage4.py` imports exactly `common.district_status` (no LCT DB — ungated
 middle stage). **Unlike Stages 2/3 it does the real extraction work itself** (pdftotext/pdfplumber/
@@ -69,6 +70,23 @@ is better at merged/spanning cells than deterministic code).
    already-processed ones. `ok: false` records (`files: {}`) are exempt by design. `finish_district`
    (the direct `run <id>` CLI path) still raises a district-scoped `InconsistentCapturesError`.
 
+### 2a-i. `reconcile()`'s `redo` parameter — follow-up batches must not no-op on an existing `processed.json`
+`reconcile(districts, registry, *, redo=False)` (process_stage4.py:124): normally `done_on_disk` (a
+`processed.json` already on disk) means "skip, already done" — the check in §2a above. But for a
+**follow-up batch** (`batch.get("batch_type") == "follow-up"`, wired at `headless.py`'s `run_batch`, which
+passes `redo=batch.get("batch_type") == "follow-up"` into `reconcile`), that shortcut is wrong: Stage
+2/3 have already **union-merged** new discovery/capture results into the district's on-disk
+`captures.json`, so an old `processed.json` is now stale — it doesn't reflect the new records the
+follow-up run added. With `redo=True`, `done_on_disk` no longer skips the district; it goes back to
+`todo`, and `process_district` rebuilds `processed.json` from scratch against the union-merged
+`captures.json` (the old file is renamed aside, per §2e's redo-versioning convention). This is an
+orthogonal axis from the disk-vs-registry consistency checks above (§2a still applies unchanged once a
+district is in `todo`) — `redo` only changes whether an existing `processed.json` counts as "done."
+Fixed as issue #174 (2026-07-05, commit 63e16e5): before this fix, a follow-up batch would silently
+no-op straight through Stage 2/3/4 whenever a district already had prior-run artifacts on disk, so the
+new discovery/capture work a follow-up batch exists to make never got processed — a real, previously
+unnoticed bug in the request-loop machinery (#122).
+
 ### 2b. Run every kept tool against every applicable input, always — no waterfall
 This superseded a first-pass "stop at the first usable representation" design: a real test (Longfellow
 Elementary's `page.pdf`) showed `pdftotext` surfacing the literal `8:20-School Begins`/`3:20-School Ends`
@@ -114,6 +132,29 @@ correctly calls them `usable: true`; Stage 5 is what rejects them as irrelevant.
 One `record_stage()` write per district at completion. **Redo is versioned** (rename-aside with a UTC
 timestamp — a convention retrofitted into `capture_discovery.mjs`'s `captures.json` write in the same round).
 
+### 2f. `batch_guard` — refusing to run a stage on a terminal `abandoned` batch
+`infrastructure/acquisition/common/batch_guard.py` is a shared guard, deliberately living in `common`
+because stage2/3/4 are independent siblings under the import-linter layering contract and may not import
+each other — a check shared across stages has to sit in the base layer, using raw SQL by table name
+rather than importing any stage module. It has two grains:
+- **`assert_runnable(sess, batch_id)`** — batch-grain: SystemExit if `batch_id`'s DB status is
+  `abandoned`; a no-op for any other status, including a batch this DB has never seen (a receipt-only dev
+  batch stays runnable). Called at the top of `headless.py`'s `run_batch` (headless.py:219).
+- **`assert_district_runnable(sess, district_dir)`** — district-grain: reads the district's own
+  `discovery.json` for the `batch_id` that produced it, and defers to `assert_runnable` on that batch; a
+  dir with no `discovery.json`/no `batch_id` makes no batch claim and stays runnable. Called from
+  `process_stage4.py`'s CLI `run --all` (process_stage4.py:466-471, inside `gdb.session_scope()`, checked
+  for every district in `todo` before any work starts) and `run <district_id>` (process_stage4.py:487-488).
+
+Both raise `SystemExit`, matching the existing hard-stop convention for control failures (§2a). The
+batch-grain guard alone (from issue #168) left Stage 3/4's older per-district legacy CLIs unguarded —
+those operate on one on-disk district dir with no batch argument, so they need the district-grain form
+instead; issue #206 extended the module with `assert_district_runnable` specifically to close that gap.
+What it prevents: running a pipeline stage against a batch that's already been retired (`abandoned`),
+which would record discovery/state events and processed results for districts excluded from the
+attempted-set the request loop tracks — the #162 double-queue-poison risk (working data reappearing for a
+batch the system has already written off).
+
 ---
 
 ## 3. The tool roster — resolved by an empirical spike, not from research alone
@@ -146,14 +187,18 @@ winning representation's `source` (governance §11f). Same fingerprinted-scoreca
 Built by copying the Stage 3 view; Stage 4 was the simplest case (no external worker, no browser, no
 timeouts). What landed (code is authoritative — this records the shape + the decisions):
 
-- **`stage4_process/headless.py`** — `run_batch(batch, …)` (reconcile → SEQUENTIAL per-district →
+- **`stage4_process/headless.py`** — `run_batch(batch, …)` (guard → reconcile → SEQUENTIAL per-district →
   `dispatched`/`completed`/`failed` events) + `status_for_batch` (reads the `processed_doc` cache;
   self-heal; rollup) + `_rollup`. **The structural difference from Stage 3: the work is IN-PROCESS** —
   `run_batch` calls `process_stage4.finish_district` directly (pdftotext/pdfplumber/camelot/tesseract are
   fast local subprocess calls), NOT a separate long-lived worker. So there is **no node-owns-shutdown / no
   per-district SIGKILL budget** and **no injectable `_run`** — a district is a Python function call; a
   crash mid-district just leaves `processed.json` unwritten so reconcile re-runs it (idempotent). The
-  Stage-3 deadline/partial-manifest pattern deliberately does NOT transfer.
+  Stage-3 deadline/partial-manifest pattern deliberately does NOT transfer. `run_batch` opens with
+  `BG.assert_runnable(_con, batch_id)` (`batch_guard`, §2f) — refuses to do any work on an `abandoned`
+  batch — before reconcile ever runs. `reconcile` itself is called with
+  `redo=batch.get("batch_type") == "follow-up"` (§2a-i): a follow-up batch's districts go back to `todo`
+  even with an existing `processed.json`, so the union-merged captures.json actually gets (re)processed.
 - **`stage2_complete(root)` is a LOCAL helper, not an import of Stage 3.** The status view needs the
   Stage-2-complete universe (discovery + candidates on disk) to classify `awaiting_capture` vs
   `manual_flag_all`, which is what `stage3_capture.find_districts` returns — but importing it broke the
@@ -169,6 +214,12 @@ timeouts). What landed (code is authoritative — this records the shape + the d
 - **`server.py`** — `GET /api/process/{batch_id}` (status) + `POST /api/process/{batch_id}/run`
   (background job, `_PROCESS_JOBS`); the batch is resolved from the **DB working store** via the shared
   **`_batch_from_db`** (renamed from `_capture_batch_from_db`; now used by capture + process).
+  `process_run` also calls **`_acquire_batch_run(batch_id)`** (server.py:1078, issue #47) before starting
+  the job — the same cross-stage per-batch mutex `capture_run` uses (server.py:1006), preventing e.g. a
+  concurrent capture-run and process-run from both operating on the same `batch_id`. Unlike `capture_run`,
+  `process_run`'s `_work()` closure has no `_run=_tracked_run` injection — there's no Node child process to
+  track (Stage 4 has no subprocess worker to babysit, consistent with headless.py's "no injectable `_run`"
+  above): it's plain in-process Python, so `run_stage4_with_ingest` is called directly.
 - **`static/stage4.js`** + the `index.html` selector option + the `gate1.js` switcher hook
   (`if (which==="stage4" && window.initStage4) …`) — copied `stage3.js` (shared
   `outcomeBadge`/`progressBadge`, left-pane chip live-sync, `.run-anim` button, list re-fetch on
@@ -264,3 +315,20 @@ document"; fixed to check the return code. (3) `run_tesseract_multi`/`rasterize`
 every prior page's OCR), and ignored `pdftoppm`'s exit code, silently reusing stale rasters from a failed
 prior run; fixed with a page cap, per-page tolerance, and a returncode check + stale-raster clear. See §2a
 and §2b for the present-state description.
+
+**2026-07-05 — follow-up-batch redo (#174).** A follow-up batch's districts were silently skipping Stage
+2/3/4 entirely whenever prior-run artifacts already existed on disk — `processed.json` present read as
+"already done," so the new discovery/capture work the follow-up batch exists to process never actually
+got processed. Fixed by adding `reconcile()`'s `redo` keyword, wired from `headless.py`'s
+`batch.get("batch_type") == "follow-up"`: a follow-up batch's districts go back to `todo` regardless of an
+existing `processed.json`, and `process_district` rebuilds it from the union-merged `captures.json`. See
+§2a-i.
+
+**2026-07-05/07-06 — batch-runnability guard added, then extended to the per-district legacy CLIs
+(#168, #206).** The headless CLI runners loaded batches straight from the on-disk receipt, which carries
+no status, so they had no way to refuse a terminal `abandoned` batch — risking the #162
+double-queue-poison failure mode. #168 added `common/batch_guard.assert_runnable` (batch-grain), wired
+into `headless.py`'s `run_batch`. The #206 review found this left Stage 3/4's older per-district CLIs
+(`run --all` / `run <district_id>`, which take a district dir, not a batch_id) unguarded; extended the
+module with the district-grain `assert_district_runnable`, which resolves the producing batch via the
+district's own `discovery.json`. See §2f.
