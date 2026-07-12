@@ -24,6 +24,7 @@ from pathlib import Path
 from sqlalchemy import text
 
 from infrastructure.acquisition.stage5_filter import build_signals as BS   # noqa: E402  (TARGET_LABELS + the path constants)
+from infrastructure.acquisition.stage5_filter import exploration_audit as EA  # noqa: E402  (#214 exploration-cohort TNR)
 from infrastructure.acquisition.common import paths                  # noqa: E402
 from infrastructure.acquisition.common import db as gdb              # noqa: E402  (governance Postgres — REQ-103)
 
@@ -111,6 +112,30 @@ def tier_target_metrics(rows):
         thresholds[name] = {"tp": tp, "fp": fp, "fn": fn,
                             "precision": _r(prec), "recall": _r(rec), "f1": _r(f1)}
     return {"per_tier": {k: dict(v) for k, v in sorted(per_tier.items())}, "thresholds": thresholds}
+
+
+def exploration_cohort(rows, p=EA.DEFAULT_SAMPLE_RATE, seed=EA.DEFAULT_SEED):
+    """The #214 measurement-hole fix — Rejection-Quality/TNR on the EXPLORATION COHORT (the pruned tail),
+    the signal the approved-set precision/recall metrics are structurally blind to. Under a *deterministic*
+    filter, tuning measured only on the approved set can bless a recall collapse as a win (the 'illusion of
+    improvement', FINDINGS §0) — the wrongly-rejected docs never enter the measurement. This closes that
+    hole: `rows` is an iterable of `(rec_key, tier, is_target)` over LABELED records; we take the reject
+    (tier-D) sub-cohort, draw the SAME randomized audit sample the live quota uses (`select_audit_sample`,
+    reproducible + growth-stable), and report `rejection_quality` over the drawn rejects' human labels — the
+    honest recall signal, with the rule-of-three ceiling when zero misses were seen.
+
+    Pure + config-relative: pass the CURRENT tiers for the live scorecard, or a candidate config's re-tiered
+    rows (frontier `_retier`) for a measured-pass — the cohort is always that config's OWN pruned tail, so a
+    challenger that suppresses more real targets shows lower reject-quality here even as approved-set
+    precision rises. `audited` is the whole labeled reject cohort; `sampled` is the audited∩drawn window the
+    quality is computed over (the same random draw the console audit works)."""
+    rows = list(rows)
+    audited = [(rk, is_t) for rk, tier, is_t in rows if tier == EA.REJECT_TIER]
+    drawn = set(EA.select_audit_sample([rk for rk, _ in audited], p=p, seed=seed))
+    sampled_labels = [is_t for rk, is_t in audited if rk in drawn]
+    q = EA.rejection_quality(sampled_labels)
+    return {"cohort_size": len(audited), "sampled_n": len(sampled_labels),
+            "seed": seed, "sample_rate": p, **q}
 
 
 def category_accuracy(rows):
@@ -268,7 +293,7 @@ def detector_diagnostics(rows):
 # ----------------------------- DB reading + fingerprints -----------------------------
 def _labeled_records(con):
     return con.execute(text(
-        """SELECT r.tier, r.category_hypothesis, l.primary_label, r.signals_json, l.facets_json
+        """SELECT r.tier, r.category_hypothesis, l.primary_label, r.signals_json, l.facets_json, r.rec_key
            FROM record r JOIN label l ON l.rec_key = r.rec_key
            WHERE l.status != 'unlabeled' AND l.primary_label IS NOT NULL""")).fetchall()
 
@@ -279,15 +304,19 @@ def _fired(sj):
 
 def score(con):
     recs = _labeled_records(con)
-    tier_rows = [(t, lab in TARGET) for t, _cat, lab, _sj, _fj in recs]
-    cat_rows = [(cat, lab) for _t, cat, lab, _sj, _fj in recs]
+    tier_rows = [(t, lab in TARGET) for t, _cat, lab, _sj, _fj, _rk in recs]
+    cat_rows = [(cat, lab) for _t, cat, lab, _sj, _fj, _rk in recs]
     # V2 (REQ-113): per-detector diagnostics from the fired votes stored in signals_json.
-    det_rows = [(_fired(sj), lab in TARGET) for _t, _cat, lab, sj, _fj in recs]
+    det_rows = [(_fired(sj), lab in TARGET) for _t, _cat, lab, sj, _fj, _rk in recs]
     # #108: facet-level per-detector diagnostics — negative detectors vs their Axis-2 confounder facets.
     # tagged uses the SAME parse_facets predicate as confounder_facets (#199 review: an independent raw-string
     # check counted non-dict legacy shapes into the denominator while they could never contribute a hit).
     facet_rows = [(_fired(sj), confounder_facets(fj), parse_facets(fj) is not None)
-                  for _t, _cat, _lab, sj, fj in recs]
+                  for _t, _cat, _lab, sj, fj, _rk in recs]
+    # #214: the exploration-cohort TNR — the honest recall signal on the pruned (tier-D) tail, over the
+    # SAME randomized audit draw the live quota uses. Closes the 'illusion of improvement' hole (FINDINGS §0):
+    # a measured-pass reads this beside the approved-set metrics, so recall collapse can't hide.
+    reject_rows = [(rk, t, lab in TARGET) for t, _cat, lab, _sj, _fj, rk in recs]
     topo_rows = con.execute(text(
         "SELECT name, guessed_topology, labeled_topology FROM district ORDER BY name")).fetchall()
     n_rec = con.execute(text("SELECT COUNT(*) FROM record")).scalar()
@@ -301,6 +330,7 @@ def score(con):
         "detectors": detector_diagnostics(det_rows),
         "facet_detectors": facet_detector_diagnostics(facet_rows),
         "topology": topology_report(topo_rows),
+        "exploration_cohort": exploration_cohort(reject_rows),
     }
 
 
@@ -367,6 +397,14 @@ def print_summary(card):
         for name, d in fd["per_detector"].items():
             print(f"    {name:22} facet={'/'.join(d['facets']):24} "
                   f"facet_prec={d['facet_precision']} ({d['hits']}/{d['fires_facet_tagged']} facet-tagged firings; {d['fires']} total)")
+    ec = card.get("exploration_cohort")
+    if ec:
+        # #214: the honest recall signal on the pruned tail — read this BESIDE the approved-set metrics
+        # above (a rise there with a fall here is the illusion of improvement, not a win).
+        rq = ec.get("rejection_quality")
+        bound = f", FN-rate<{ec['fnr_upper_bound_95']} @95%" if ec.get("fnr_upper_bound_95") is not None else ""
+        print(f"  exploration cohort (tier-{EA.REJECT_TIER} pruned tail): reject-quality/TNR="
+              f"{rq if rq is not None else '—'} over {ec['sampled_n']}/{ec['cohort_size']} audited rejects{bound}")
     tp = card["topology"]
     print(f"  topology coarse hub/per-school agreement: {tp['coarse_agreement']} ({tp['coarse_agree']}/{tp['coarse_den']})")
     diverge = {k: v for k, v in tp["pairs"].items() if GUESS_COARSE.get(v[0], "?") != LABEL_COARSE.get(v[1], "?")}

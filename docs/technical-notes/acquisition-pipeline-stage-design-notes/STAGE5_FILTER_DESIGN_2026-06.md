@@ -555,6 +555,45 @@ gained an explicit up-front GT guard returning `shadow="gt_mismatch"`); `active_
 
 ---
 
+## 5d. Every measured-pass evaluates against the exploration cohort (#214, built 2026-07-12)
+
+**The hole this closes (FINDINGS §0 — the single highest-value finding).** Our measured-pass discipline and
+the #108 facet-scoring measured-pass evaluate before/after **only on the approved/labeled set** — which is
+*structurally blind to recall collapse*. Under a **deterministic** filter (Swaminathan & Joachims:
+counterfactual correction is provably impossible even with infinite data), the wrongly-rejected docs never
+enter the measurement, so a tuning pass can certify a **regression as a win** — approved-set precision rises
+at the exact moment true-population recall falls (the "illusion of improvement"). More labels can't fix it;
+only the injected stochasticity of the reject audit (§5a) can. So a cross-cutting rule falls out: **every
+scoring measured-pass must ALSO report Rejection-Quality/TNR on the exploration cohort** (the pruned tail),
+or the discipline itself blesses the illusion.
+
+**As built.** One pure instrument, threaded through all three measured-pass surfaces:
+- **`harness.exploration_cohort(rows)`** — pure over `(rec_key, tier, is_target)`: takes the tier-D
+  sub-cohort, draws the SAME reproducible+growth-stable audit sample the live quota uses
+  (`exploration_audit.select_audit_sample`), and reports `rejection_quality` (TNR + the rule-of-three
+  ceiling). Config-relative: pass the live tiers for the scorecard, or a candidate's re-tiered rows for a
+  measured-pass — the cohort is always that config's OWN pruned tail. Added as a **new scorecard section**
+  (`build_scorecard`→`exploration_cohort`) + a `print_summary` line.
+- **`frontier.reject_cohort_quality(records, params)`** — the candidate-config twin (in-memory `_retier`,
+  no re-ingest/cash); every grid result carries `reject_quality`, and `frontier --gate` prints the
+  champion→challenger reject-quality with a **⚠ REGRESSED** warning (a challenger that lifts tier-A
+  precision by suppressing more real targets shows a lower reject-quality here — caught).
+- **`tuning_ledger`** — a `reject_cohort_quality` metric getter (diffed like every other metric) + an
+  advisory `constraint.reject_quality_regressed` flag, so a tail regression is **self-incriminating in the
+  episode** even when the approved-set deltas look like a win. A missing section (legacy scorecard) reads
+  as `None`, never as a pass.
+
+**Retroactive #108 re-verification (the issue's explicit ask).** #108's facet-scoring measured pass
+(tier-A precision 0.8382→0.8444) was measured on the approved set only. Re-checked against the exploration
+cohort under the live config: **reject-quality/TNR = 1.0** (zero false negatives in the audited reject
+sample, rule-of-three ceiling FN-rate <~11% @95%) — the approved-set win does **not** hide a pruned-tail
+recall collapse. Confirmed clean. (Note two internally-consistent denominators: the harness scorecard
+counts all labeled tier-D records incl. cluster members; frontier counts canonical reps only — each
+before/after comparison is like-with-like.) Enforcement is advisory here (the hard gate is the live quota's
+demote-hook, §5a); this is the *measurement* fix — the discipline can no longer bless a regression.
+
+---
+
 ## 6. Upstream capture — iframe/embed detection (REQ-115)
 
 Two V2 findings are structural, not heuristic, and best fixed at **Stage 3** (`capture_discovery.mjs`):

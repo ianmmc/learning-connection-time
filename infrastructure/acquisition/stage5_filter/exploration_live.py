@@ -35,8 +35,8 @@ from infrastructure.acquisition.stage5_filter import build_signals as BS  # TARG
 from infrastructure.acquisition.stage5_filter import exploration_audit as EA
 
 GATE = "gate@5"
-REJECT_TIER = "D"                  # combiner tier D == decision "suppress" == the auto-reject bucket
-DEFAULT_SEED = "exploration-audit"
+REJECT_TIER = EA.REJECT_TIER       # combiner tier D == decision "suppress" == the auto-reject bucket
+DEFAULT_SEED = EA.DEFAULT_SEED
 
 
 def _is_target(primary_label):
