@@ -1,0 +1,583 @@
+{
+  "handoff_hash": "f33790e63820",
+  "district": {
+    "district_id": "1730540",
+    "name": "Northwestern CUSD 2",
+    "reps": [
+      {
+        "rec_key": "1730540:49be09d9ce",
+        "file": "pdfplumber_lines.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "15:00",
+                "school_name": "Northwestern Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:12",
+                "end_time": "15:06",
+                "school_name": "Northwestern Junior/Senior High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:12",
+                "end_time": "15:06",
+                "school_name": "Northwestern Junior/Senior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 42006,
+            "completion_tokens": 133,
+            "cost_usd": 0.0042538,
+            "latency_ms": 2310,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840680-dZQErhw3jUONT4oWOBqB",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": false,
+            "error": "Error code: 400 - {'error': {'message': \"This endpoint's maximum context length is 32768 tokens. However, you requested about 65370 tokens (49370 of text input, 16000 in the output). Please reduce the length of either one, or use the context-compression plugin to compress your prompt automatically.\", 'code': 400, 'metadata': {'provider_name': None}}, 'user_id': 'user_3F6G2u57EqCPewKcTHYL5cGYfne'}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 420,
+            "finish_reason": null,
+            "generation_id": null,
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "15:00",
+                "school_name": "Northwestern Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:12",
+                "end_time": "15:06",
+                "school_name": "Northwestern Junior/Senior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 41898,
+            "completion_tokens": 81,
+            "cost_usd": 0.00634545,
+            "latency_ms": 5755,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840682-mnjTLQYeCWwizT9pS7bs",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "northwestern",
+            "start": "08:10",
+            "end": "15:00",
+            "gross": 410,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "1730540:49be09d9ce",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "high",
+            "school": "northwestern juniorsenior",
+            "start": "08:12",
+            "end": "15:06",
+            "gross": 414,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "1730540:49be09d9ce",
+            "source_file": "pdfplumber_lines.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "northwestern juniorsenior",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:12"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:06"
+            },
+            "rec_key": "1730540:49be09d9ce",
+            "source_file": "pdfplumber_lines.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "1730540:ad9a99efba",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:00",
+                "school_name": "Northwestern Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:06",
+                "end_time": "15:06",
+                "school_name": "Northwestern Junior/Senior High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:06",
+                "end_time": "15:06",
+                "school_name": "Northwestern Junior/Senior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 46175,
+            "completion_tokens": 213,
+            "cost_usd": 0.0047027,
+            "latency_ms": 2553,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840689-9Br2znbhs0avg59qMho7",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": false,
+            "error": "Error code: 400 - {'error': {'message': \"This endpoint's maximum context length is 32768 tokens. However, you requested about 77493 tokens (61493 of text input, 16000 in the output). Please reduce the length of either one, or use the context-compression plugin to compress your prompt automatically.\", 'code': 400, 'metadata': {'provider_name': None}}, 'user_id': 'user_3F6G2u57EqCPewKcTHYL5cGYfne'}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 296,
+            "finish_reason": null,
+            "generation_id": null,
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "15:00",
+                "school_name": "Northwestern Community Unit Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:06",
+                "end_time": "15:06",
+                "school_name": "Northwestern Junior/Senior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 45390,
+            "completion_tokens": 82,
+            "cost_usd": 0.0091272,
+            "latency_ms": 5099,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840691-ULYAtxdraYMJTBMkJDNU",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "northwestern juniorsenior",
+            "start": "08:06",
+            "end": "15:06",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "1730540:ad9a99efba",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "northwestern",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:45"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "1730540:ad9a99efba",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "northwestern juniorsenior",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:06"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:06"
+            },
+            "rec_key": "1730540:ad9a99efba",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "1730540:a35304d4ee",
+        "file": "pdfplumber_lines.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "15:00",
+                "school_name": "Northwestern Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:45",
+                "end_time": "15:06",
+                "school_name": "Junior/Senior High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "15:06",
+                "school_name": "Junior/Senior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 44739,
+            "completion_tokens": 129,
+            "cost_usd": 0.0045255,
+            "latency_ms": 2048,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840696-32FH2sqUrMhxD2HvPIlJ",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": false,
+            "error": "Error code: 400 - {'error': {'message': \"This endpoint's maximum context length is 32768 tokens. However, you requested about 69729 tokens (53729 of text input, 16000 in the output). Please reduce the length of either one, or use the context-compression plugin to compress your prompt automatically.\", 'code': 400, 'metadata': {'provider_name': None}}, 'user_id': 'user_3F6G2u57EqCPewKcTHYL5cGYfne'}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 317,
+            "finish_reason": null,
+            "generation_id": null,
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:10",
+                "end_time": "15:00",
+                "school_name": "Northwestern Community Unit Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:10",
+                "end_time": "15:06",
+                "school_name": "Northwestern Community Unit Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 44692,
+            "completion_tokens": 78,
+            "cost_usd": 0.006728098,
+            "latency_ms": 8416,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840698-eMrp8kfcaL0K4xLuajRs",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "northwestern",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:45"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:00"
+            },
+            "rec_key": "1730540:a35304d4ee",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "middle",
+            "school": "juniorsenior",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:45"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:06"
+            },
+            "rec_key": "1730540:a35304d4ee",
+            "source_file": "pdfplumber_lines.txt"
+          },
+          {
+            "band": "high",
+            "school": "juniorsenior",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:45"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:06"
+            },
+            "rec_key": "1730540:a35304d4ee",
+            "source_file": "pdfplumber_lines.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "northwestern",
+        "start": "08:10",
+        "end": "15:00",
+        "gross": 410,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "1730540:49be09d9ce",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "high",
+        "school": "northwestern juniorsenior",
+        "start": "08:12",
+        "end": "15:06",
+        "gross": 414,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "1730540:49be09d9ce",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "high",
+        "school": "northwestern juniorsenior",
+        "start": "08:06",
+        "end": "15:06",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "1730540:ad9a99efba",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "northwestern juniorsenior",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:12"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:06"
+        },
+        "rec_key": "1730540:49be09d9ce",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "northwestern",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:45"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "1730540:ad9a99efba",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "northwestern juniorsenior",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:06"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:06"
+        },
+        "rec_key": "1730540:ad9a99efba",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "northwestern",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:45"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:00"
+        },
+        "rec_key": "1730540:a35304d4ee",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "middle",
+        "school": "juniorsenior",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:45"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:06"
+        },
+        "rec_key": "1730540:a35304d4ee",
+        "source_file": "pdfplumber_lines.txt"
+      },
+      {
+        "band": "high",
+        "school": "juniorsenior",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:45"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:06"
+        },
+        "rec_key": "1730540:a35304d4ee",
+        "source_file": "pdfplumber_lines.txt"
+      }
+    ],
+    "n_reps": 3,
+    "n_judged": 3,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 410,
+        "start_time": "08:10",
+        "end_time": "15:00",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "northwestern",
+            "start_time": "08:10",
+            "end_time": "15:00",
+            "gross": 410,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 417,
+        "start_time": "08:12",
+        "end_time": "15:06",
+        "n_schools": 2,
+        "method": "mean_tiebreak",
+        "schools": [
+          {
+            "school": "northwestern juniorsenior",
+            "start_time": "08:12",
+            "end_time": "15:06",
+            "gross": 414,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "northwestern juniorsenior",
+            "start_time": "08:06",
+            "end_time": "15:06",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 9,
+      "judge_calls": 3,
+      "errors": 3,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 264900,
+      "completion_tokens": 716,
+      "cost_usd": 0.03568274800000001
+    },
+    "state": "IL"
+  }
+}
