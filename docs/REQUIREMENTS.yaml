@@ -2486,10 +2486,16 @@ requirements:
       - AUTO mode is confidence-escalating — auto-accept high-confidence, auto-escalate/flag low-confidence to manual; gate@8 never writes minutes to the LCT DB without confidence
       - Auto-advance through the paid stages (6/7) is cost-gated by the budget governor (REQ-051)
     created: "2026-06-27T00:00:00Z"
-    updated: "2026-06-27T00:00:00Z"
-    notes: "Decided 2026-06-27 (governance §11) from the APGA console user-stories review. Console UI not yet
-      built — the stage-selectable governance console (Overview = event-log projection, Settings, Stage 1-4
-      views) needs its own design pass first. Replaces 'CP-A/B/C / 3 checkpoints' language throughout the docs."
+    updated: "2026-07-12T00:00:00Z"
+    notes: "Decided 2026-06-27 (governance §11) from the APGA console user-stories review. Replaces
+      'CP-A/B/C / 3 checkpoints' language throughout the docs. PART (a) SHIPPED 2026-07-12: the per-gate
+      manual/auto Settings store + console toggle — precious `gate_mode` table (common/gate_mode.py:
+      configured_mode + license_state per key, global default + gate@1..8 overrides), GET/POST
+      /api/gate-mode, a console Settings panel, git-backed gate_modes.json, effective_gate_mode resolver
+      (default manual). Tests: test_gate_mode.py + endpoint/backup-guard tests; UI self-verified. STILL
+      DEFERRED (keeps status 'accepted', not done): the confidence-escalating AUTO behavior itself — no
+      live gate handler branches on the mode yet, so setting a gate 'auto' persists intent without changing
+      behavior. That per-gate auto path + cost-gating are follow-on work (#211 first, for gate@5)."
 
   - id: REQ-109
     github_issue: "#90 — per-band satisfaction / completion grain (doc-migration 2026-07)"

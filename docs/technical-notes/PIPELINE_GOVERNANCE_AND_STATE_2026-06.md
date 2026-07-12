@@ -1030,12 +1030,19 @@ versioning; `promotion_pointers.py` @champion/@fallback atomic pointer swaps wit
 (`CONFIG_DIR/promotion/artifacts/`), **pointers in the DB** (`config_pointer` singleton, atomic swap). Full
 detail: `STAGE5_FILTER_DESIGN_2026-06.md` §5c.
 
-**Gate-mode persistence remains UNBUILT.** The "global default + per-gate overrides" toggle described in
-§11b's opening (manual/auto per gate) has no backing settings table anywhere in the codebase today — every
-gate is de-facto always-manual. `exploration_audit.resolve_gate_mode()` is the one function designed to
-consume a stored `configured_mode`, and it has zero live callers. Building that persistence (and the
-console surface to set it) is a prerequisite for any gate actually going auto, including the moment the
-exploration-quota and calibration-log guardrails above go from dormant to live.
+**Gate-mode persistence — the store + console toggle shipped (#104/REQ-108, 2026-07-12); per-gate AUTO
+behavior still deferred.** The "global default + per-gate overrides" toggle described in §11b's opening now
+has a backing store: a precious `gate_mode` table (`common/gate_mode.py`) holding `configured_mode`
+(manual|auto, the human toggle) + `license_state` (the #211 demote-hook's deadband state) per key
+('default' + 'gate@1'..'gate@8'), read via `effective_gate_mode(con, gate)` (own override → global default
+→ manual), set via `GET`/`POST /api/gate-mode` and a console **Settings** panel, git-backed as the precious
+`gate_modes.json`. **What is NOT built and what this deliberately does NOT change:** every gate still
+behaves manually — `effective_gate_mode` returns the configured mode with a manual default, but no live
+gate handler branches on it yet, so setting a gate 'auto' persists the intent without altering behavior.
+`exploration_audit.resolve_gate_mode()` (the gate@5 license layering over `license_state` + a live
+`window_count`) still has **zero live callers** — its wiring, and each gate's actual confidence-escalating
+auto path, are the follow-on per-gate work (#211 first, for gate@5). The store is the prerequisite the
+exploration-quota and calibration-log guardrails were waiting on to go from dormant to live; it now exists.
 
 **Dormant-guardrail inventory (remember to activate — #219).** Every #209 guardrail ships *built but inert*
 (the `--assert-floor` pattern: ship the guard with the capability it guards, never before). That is correct
