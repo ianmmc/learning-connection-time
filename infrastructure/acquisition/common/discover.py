@@ -26,6 +26,32 @@ def host_of(url):
     try: return urlparse(url).netloc.lower().split(":")[0].replace("www.","")
     except Exception: return ""
 
+def domain_of(website: str) -> str:
+    """Normalize a raw NCES CCD `WEBSITE` cell to a bare host, or '' if blank. Centralizes the
+    prefix-then-host_of dance Stage 1 used inline in three places (queue_batch build_batch /
+    build_followup_batch, benchmark_batch). NOTE: a non-blank-but-junk cell can still normalize to a
+    non-empty nonsense host (`http://N/A` -> 'n', `http://none` -> 'none', `http://375 LEE ST` ->
+    '375 lee st') -- validate the result with is_scoping_domain(), never truthiness alone."""
+    web = (website or "").strip()
+    if not web:
+        return ""
+    return host_of(web if "//" in web else "http://" + web)
+
+def is_scoping_domain(host: str) -> bool:
+    """True iff `host` can actually scope Stage-2 discovery: a real dotted hostname with no
+    whitespace. Rejects blank, the junk tail the raw NCES `WEBSITE` column carries (2,409 blank
+    cells plus `N/A`->'n', 'none', address-like '375 lee st'), and any bare label with no TLD dot.
+    A host that fails this flips Stage 2 to its UNSCOPED, national-scope branch (gate() line ~50),
+    which for common school names pulls same-named schools nationwide into the district's candidate
+    set -- the Millard cross-district contamination (#227). The Stage-1 admission guard (#229).
+
+    Deliberately lenient in one direction: a dotted-but-bogus host ('n.a', 'x.y') still passes. That
+    fails SAFE -- it SCOPES discovery to a nonexistent domain (which just yields nothing), it does NOT
+    reopen the unscoped-national failure mode -- so we accept the rare wasted scoped run rather than
+    risk rejecting a legitimate short/IP/IDN host."""
+    h = (host or "").strip()
+    return bool(h) and "." in h and not any(c.isspace() for c in h)
+
 def slugify(name: str, maxlen: int = 40) -> str:
     """lowercase, non-alphanumeric -> underscore, collapsed, truncated. district_id is the
     real disambiguator (see stage2_discover.discover_stage2.lea_dir()) -- this is for human

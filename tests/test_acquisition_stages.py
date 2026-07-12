@@ -167,7 +167,7 @@ class TestBuildBatch:
     def test_assembles_valid_doc_without_io(self):
         registry = {"districts": {}}
         bid = "batch_test_build_batch"
-        batch_doc, gap_excluded, n_eligible = Q.build_batch("2024_25", n=6, batch_id=bid, registry=registry)
+        batch_doc, gap_excluded, domain_excluded, n_eligible = Q.build_batch("2024_25", n=6, batch_id=bid, registry=registry)
 
         # shape
         assert batch_doc["batch_id"] == bid
@@ -177,7 +177,10 @@ class TestBuildBatch:
         for d in batch_doc["districts"]:
             assert self.BAND_KEYS <= set(d), f"missing keys: {self.BAND_KEYS - set(d)}"
             assert set(d["schools_by_band"]) <= set(Q.BANDS)
+            # #229: every district admitted to a batch of record has a usable scoping domain.
+            assert Q.is_scoping_domain(d["domain"]), f"admitted district has unusable domain: {d['domain']!r}"
         assert isinstance(gap_excluded, list)
+        assert isinstance(domain_excluded, list)
         assert n_eligible > 0
 
         # purity: no batch file written, registry untouched (build_batch only READS the registry)
@@ -188,8 +191,8 @@ class TestBuildBatch:
         """Same batch_id + same registry must select the identical districts (seeded) --
         batches are logged and repeatable, not silently random."""
         reg = {"districts": {}}
-        a, _, _ = Q.build_batch("2024_25", n=6, batch_id="batch_test_bb_repro", registry=reg)
-        b, _, _ = Q.build_batch("2024_25", n=6, batch_id="batch_test_bb_repro", registry=reg)
+        a, _, _, _ = Q.build_batch("2024_25", n=6, batch_id="batch_test_bb_repro", registry=reg)
+        b, _, _, _ = Q.build_batch("2024_25", n=6, batch_id="batch_test_bb_repro", registry=reg)
         assert [d["district_id"] for d in a["districts"]] == [d["district_id"] for d in b["districts"]]
 
 

@@ -37,7 +37,7 @@ from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import paths
 from infrastructure.acquisition.common import cache_ingest as CI
-from infrastructure.acquisition.common.discover import host_of, slugify
+from infrastructure.acquisition.common.discover import domain_of, slugify
 from infrastructure.acquisition.stage1_queue import batch_store as BSTORE
 from infrastructure.acquisition.stage1_queue.queue_batch import eligible_pool, select_schools
 
@@ -107,8 +107,9 @@ def build_batch_doc(year: str = DEFAULT_YEAR) -> tuple[dict, list]:
         if info is None:
             skipped.append((did, "not in the NCES eligible pool (closed/CTC/gap?)"))
             continue
-        web = info["website"] or ""
-        domain = host_of(web if "//" in web else "http://" + web) if web else ""
+        # Benchmark is EXEMPT from the #229 domain guard: its captures are frozen gt:// artifacts,
+        # discovery never runs, so the domain is cosmetic. Just normalize (no usability gate).
+        domain = domain_of(info["website"])
         order, schools_by_band = select_schools(BATCH_ID, did, sch_idx.get(did, {}))
         districts_out.append({
             "district_id": did,

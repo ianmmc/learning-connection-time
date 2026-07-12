@@ -57,3 +57,32 @@ def test_no_shaping_args_is_backward_compatible(monkeypatch):
     d = doc["districts"][0]
     assert [s["school_id"] for s in d["schools_by_band"]["high"]["schools"]] == ["s1"]
     assert d["schools_by_band"]["high"]["query_strategy"] == "new_schools" and d["seed_urls"] == []
+
+
+def test_followup_skips_a_blank_domain_district_instead_of_running_unscoped(monkeypatch):
+    """#229: a 7->2 rediscover for a district whose NCES website is blank would run UNSCOPED,
+    national-scope discovery (the Millard contamination, #227). build_followup_batch must SKIP it
+    with the #229 reason, not emit a domain-less district."""
+    idx = {"D1": {"high": [_sch("s1", "A High", "high")]}}
+    monkeypatch.setattr(Q1.S, "lea_info", lambda y: {"D1": {"name": "Nodomain", "state": "NE",
+                                                             "website": "", "claimed_bands": {"high"}}})
+    monkeypatch.setattr(Q1.S, "school_index", lambda y: idx)
+    monkeypatch.setattr(Q1.S, "school_level_counts", lambda y: {"D1": {"total": 9, "by_level": {}}})
+    monkeypatch.setattr(Q1, "load_enrollment", lambda: {"D1": 5000})
+    doc, skipped = Q1.build_followup_batch("2024_25", "batch_00099", {"D1": ["high"]})
+    assert doc["districts"] == []
+    assert skipped == [{"district_id": "D1", "reason": "no usable scoping domain -- would run UNSCOPED discovery (#229)"}]
+
+
+def test_followup_skips_a_junk_domain_that_normalizes_to_a_nonsense_host(monkeypatch):
+    """The raw NCES WEBSITE column carries junk that is non-blank but useless: 'http://N/A' -> host
+    'n', physical addresses -> '375 lee st'. These must be refused too -- a bare non-emptiness check
+    would let them through into unscoped discovery."""
+    idx = {"D1": {"high": [_sch("s1", "A High", "high")]}}
+    monkeypatch.setattr(Q1.S, "lea_info", lambda y: {"D1": {"name": "Junk", "state": "NE",
+                                                            "website": "http://N/A", "claimed_bands": {"high"}}})
+    monkeypatch.setattr(Q1.S, "school_index", lambda y: idx)
+    monkeypatch.setattr(Q1.S, "school_level_counts", lambda y: {"D1": {"total": 9, "by_level": {}}})
+    monkeypatch.setattr(Q1, "load_enrollment", lambda: {"D1": 5000})
+    doc, skipped = Q1.build_followup_batch("2024_25", "batch_00099", {"D1": ["high"]})
+    assert doc["districts"] == [] and len(skipped) == 1 and "#229" in skipped[0]["reason"]
