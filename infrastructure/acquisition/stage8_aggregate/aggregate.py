@@ -106,6 +106,7 @@ import re as _re
 # School-name normalization is shared with the Stage-7 GT validator (they must match identically) —
 # one home in common (REQ-117). See common.school_match.
 from infrastructure.acquisition.common.school_match import norm_school as _norm_school
+from infrastructure.acquisition.common.school_match import norm_school_strict as _norm_school_strict
 
 def _to_min(t):
     if not t: return None
@@ -181,10 +182,17 @@ def merge_fact_runs(facts):
         solid fact is a gate@8 human determination, never a silent later-run override);
       - among UNRESOLVED only: the LATEST run wins (the freshest disagreement diagnostic).
     Pure + deterministic (output sorted by (band, school)); the caller supplies rows from
-    run_kind='production' extractions only."""
+    run_kind='production' extractions only.
+
+    The dedup key RE-NORMALIZES the stored school string through the CURRENT norm_school (PR #247
+    review): school_fact.school is persisted at extraction time, so rows written under an older
+    stopword list carry a stale key ('lincoln unified district' vs today's 'lincoln') — exact-string
+    matching would treat the same physical school as two, fragmenting the cross-run merge with no
+    backfill path. norm_school is idempotent, so re-normalizing current-vintage keys is a no-op."""
     best = {}
     for f in facts:
-        key, cur = (f["band"], f["school"]), best.get((f["band"], f["school"]))
+        key = (f["band"], _norm_school(f["school"]))
+        cur = best.get(key)
         if cur is None:
             best[key] = f; continue
         acc_new, acc_cur = f["status"] == "accepted", cur["status"] == "accepted"
@@ -232,14 +240,19 @@ def detect_single_school_over_extraction(accepted, nces_school_count, roster_nam
     trustworthy keeper hint (the LEA's own Stage-1 roster), surfaced when available. Returns None when
     not applicable (not a single-school LEA, or only one distinct school extracted).
 
-    `accepted`: per-school fact dicts whose 'school' is already norm_school-normalized.
+    `accepted`: per-school fact dicts whose 'school' was norm_school-normalized at WRITE time — the
+    distinct-count re-normalizes through the CURRENT function so a stopword-list change can't split
+    one school into two stale-vintage keys (a false contamination flag; norm_school is idempotent so
+    current keys pass through unchanged). The roster is filtered through norm_school_strict: an
+    all-stopword roster entry (a scraped 'School District' header) is junk, not a matchable school —
+    the plain form's empty-key fallback would smuggle it through as a roster_matched keeper hint.
     `roster_names`: the LEA's Stage-1 schools_by_band school names, if available (the allow-list)."""
     if nces_school_count != 1:
         return None
-    distinct = sorted({f["school"] for f in accepted if f.get("school")})
+    distinct = sorted({_norm_school(f["school"]) for f in accepted if f.get("school")})
     if len(distinct) <= 1:
         return None
-    roster = {_norm_school(r) for r in (roster_names or []) if _norm_school(r)}
+    roster = {k for r in (roster_names or []) if (k := _norm_school_strict(r))}
     return {
         "suspected": True,
         "reason": "single_school_lea_over_extraction",

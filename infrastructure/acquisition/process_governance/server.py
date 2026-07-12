@@ -1621,7 +1621,10 @@ def extract_district(district_id: str):
                 for _band, info in json.loads(meta["sbb"]).items():
                     roster += [s.get("name") or s.get("school") for s in (info or {}).get("schools", [])
                                if isinstance(s, dict)]
-            except (ValueError, AttributeError):
+            except (ValueError, TypeError, AttributeError):
+                # TypeError included (PR #247 review): json.loads raises it (not ValueError) on a
+                # non-str input — e.g. a text->JSONB column migration handing back a pre-parsed dict —
+                # and the intent here is degrade-to-no-roster, never a 500.
                 roster = []
         contamination = AGG.detect_single_school_over_extraction(
             agg, meta["nces"] if meta else None, roster)

@@ -155,6 +155,44 @@ class TestMergeFactRuns:
         a1, a2 = _f(1, "elementary", "a", "accepted", 400), _f(1, "elementary", "a", "accepted", 410)
         accepted, _ = A.merge_fact_runs([a1, a2])
         assert accepted == [a1]
+        u1, u2 = _f(2, "high", "h", "unresolved", 111), _f(2, "high", "h", "unresolved", 222)
+        _, unresolved = A.merge_fact_runs([u1, u2])
+        assert unresolved == [u1]
+
+    def test_distinct_schools_and_bands_never_collide(self):
+        facts = [_f(1, "elementary", "x", "accepted", 350), _f(2, "elementary", "y", "accepted", 355),
+                 _f(2, "middle", "x", "accepted", 370)]              # same school name, other band
+        accepted, _ = A.merge_fact_runs(facts)
+        assert len(accepted) == 3
+
+    def test_output_is_deterministic_band_school_sorted_and_input_order_free(self):
+        facts = [_f(2, "middle", "b", "accepted", 1), _f(1, "elementary", "z", "accepted", 2),
+                 _f(1, "elementary", "a", "unresolved")]
+        a1, u1 = A.merge_fact_runs(facts)
+        a2, u2 = A.merge_fact_runs(list(reversed(facts)))
+        assert (a1, u1) == (a2, u2)
+        assert [(f["band"], f["school"]) for f in a1] == [("elementary", "z"), ("middle", "b")]
+
+    def test_merged_accepted_feed_the_band_rollup_unchanged(self):
+        # the merge's output is what district_bands_from_facts consumes at gate@7 (server wiring).
+        facts = [_f(1, "elementary", "a", "accepted", 360), _f(2, "elementary", "b", "accepted", 360)]
+        accepted, _ = A.merge_fact_runs(facts)
+        agg = [{"band": f["band"], "school": f["school"], "gross": f["gross_minutes"],
+                "start": "08:00", "end": "14:00", "models": ["m1", "m2"], "method": "council_agree"}
+               for f in accepted]
+        bands = A.district_bands_from_facts(agg)
+        assert bands["elementary"]["gross_minutes"] == 360 and bands["elementary"]["n_schools"] == 2
+
+    def test_stale_vintage_persisted_keys_merge_with_current_keys(self):
+        # PR #247 review: school_fact.school is PERSISTED at write time, so a stopword-list change
+        # leaves old rows keyed under the old normalization ('lincoln unified district') while a new
+        # run writes the current key ('lincoln'). The merge re-normalizes through the CURRENT
+        # norm_school at read time — the same physical school must dedupe, not fragment.
+        old = _f(1, "high", "lincoln unified district", "accepted", 400)   # pre-#236 vintage key
+        new = _f(2, "high", "lincoln", "accepted", 410)                    # current-vintage key
+        accepted, unresolved = A.merge_fact_runs([old, new])
+        assert len(accepted) == 1 and unresolved == []
+        assert accepted[0]["extraction_id"] == 1                            # earliest accepted stands
 
 
 # ------------------------------------------------- #237 single-school-LEA over-extraction contamination
@@ -206,30 +244,19 @@ class TestDetectSingleSchoolOverExtraction:
         facts = [_s("brownsville ascend charter"), _s("brooklyn ascend charter")]
         got = A.detect_single_school_over_extraction(facts, nces_school_count=1)
         assert got["roster_matched"] == []
-        u1, u2 = _f(2, "high", "h", "unresolved", 111), _f(2, "high", "h", "unresolved", 222)
-        _, unresolved = A.merge_fact_runs([u1, u2])
-        assert unresolved == [u1]
 
-    def test_distinct_schools_and_bands_never_collide(self):
-        facts = [_f(1, "elementary", "x", "accepted", 350), _f(2, "elementary", "y", "accepted", 355),
-                 _f(2, "middle", "x", "accepted", 370)]              # same school name, other band
-        accepted, _ = A.merge_fact_runs(facts)
-        assert len(accepted) == 3
+    def test_junk_all_stopword_roster_entries_never_match(self):
+        # PR #247 review: a scraped 'School District' header captured as a roster entry is junk, not
+        # a school — it must be FILTERED (norm_school_strict), not smuggled through the empty-key
+        # fallback where a junk-named fact could spuriously read as a trustworthy roster_matched hint.
+        facts = [_s("the school district"), _s("brooklyn ascend charter")]
+        got = A.detect_single_school_over_extraction(
+            facts, nces_school_count=1, roster_names=["School District", "The School District"])
+        assert got["roster_matched"] == []
 
-    def test_output_is_deterministic_band_school_sorted_and_input_order_free(self):
-        facts = [_f(2, "middle", "b", "accepted", 1), _f(1, "elementary", "z", "accepted", 2),
-                 _f(1, "elementary", "a", "unresolved")]
-        a1, u1 = A.merge_fact_runs(facts)
-        a2, u2 = A.merge_fact_runs(list(reversed(facts)))
-        assert (a1, u1) == (a2, u2)
-        assert [(f["band"], f["school"]) for f in a1] == [("elementary", "z"), ("middle", "b")]
-
-    def test_merged_accepted_feed_the_band_rollup_unchanged(self):
-        # the merge's output is what district_bands_from_facts consumes at gate@7 (server wiring).
-        facts = [_f(1, "elementary", "a", "accepted", 360), _f(2, "elementary", "b", "accepted", 360)]
-        accepted, _ = A.merge_fact_runs(facts)
-        agg = [{"band": f["band"], "school": f["school"], "gross": f["gross_minutes"],
-                "start": "08:00", "end": "14:00", "models": ["m1", "m2"], "method": "council_agree"}
-               for f in accepted]
-        bands = A.district_bands_from_facts(agg)
-        assert bands["elementary"]["gross_minutes"] == 360 and bands["elementary"]["n_schools"] == 2
+    def test_stale_vintage_fact_keys_count_as_one_school(self):
+        # PR #247 review: two facts for the SAME school persisted under different norm_school
+        # vintages must not read as 2 distinct schools (a false contamination flag) — the detector
+        # re-normalizes through the current function.
+        facts = [_s("lincoln unified district"), _s("lincoln")]      # old + current vintage, same school
+        assert A.detect_single_school_over_extraction(facts, nces_school_count=1) is None
