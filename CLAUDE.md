@@ -120,15 +120,19 @@ guardrails for the manual→auto transition, framed by the four commandments) ha
 promotion gate + safe-promotion machinery (**dormant**, activation tracked as one checklist, #219). **Epic
 #200** (shift-left defect prevention: #201–#204) **MERGED (PR #221)**.
 
-**#211 live wiring SHIPPED (2026-07-12, `exploration_live.py`):** the DB half of the anti-survivorship
-exploration quota — the reject-population query (the tier-D SUPPRESS bucket), the randomized draw + coverage
-meter, and **`resolve_gate5_mode`** (the gate@5 demote-hook and the first live caller of
-`exploration_audit.resolve_gate_mode`, reading the `gate_mode` store #104). Wired into `save_label`
-(self-healing) + `GET /api/exploration-audit` → a Settings-console coverage meter (Playwright-verified).
-**Enforcement DORMANT** — gate@5 configured manual → returns manual, writes nothing. Current-config scoping
-is STRUCTURAL (window recomputed over the live tier-D set; no reject-audit table). Verified live: 566
-rejects, 24 sampled @5%, all census-labeled zero-miss → quality 1.0, window 24/300. REQ-120 → **tested**.
-7 govdb tests + an endpoint smoke (suite: **1192** DB-free + **185** govdb).
+**Epic #209 BUILD-COMPLETE (2026-07-12) — Phase 1 shipped (#211 + #214):** the anti-survivorship
+exploration quota, end to end. **#211 (`817d78e`, `exploration_live.py`):** the DB half — reject-population
+query (tier-D SUPPRESS bucket), randomized draw + coverage meter, and **`resolve_gate5_mode`** (the gate@5
+demote-hook, first live caller of `exploration_audit.resolve_gate_mode`, reading the `gate_mode` store
+#104), wired into `save_label` (self-healing) + `GET /api/exploration-audit` → a Settings meter
+(Playwright-verified). Current-config scoping is STRUCTURAL (window recomputed over the live tier-D set; no
+reject-audit table). **#214 (`ce5ba03`):** closed the "illusion of improvement" hole — `harness.exploration_cohort`
+reports Rejection-Quality/TNR on the pruned tail, threaded through the scorecard + `frontier` (per grid
+config + a champion→challenger ⚠ warning in `--gate`) + `tuning_ledger` (reject-quality delta + regression
+flag), so every measured-pass now sees the pruned tail. Retroactive #108 re-verify: reject-Q **1.0**.
+**Enforcement DORMANT** throughout (gate@5 manual → returns manual, writes nothing). REQ-120 → **tested**.
+Suite: **1200** DB-free + **185** govdb. Phase 0 (#208/#210) + Phase 2 (#212/#213 dormant) already closed;
+**#219** is the forward-looking dormant→live activation checklist (outlives the epic).
 
 **The batch_00013 live shakedown** (started 2026-07-06, #122) surfaced a chain of real request-loop and
 data-quality bugs, closed across three PRs: **PR #221** (#231/#232, incl. REQ-122's cumulative-merge fix),
@@ -166,27 +170,26 @@ pass, verified by spot-checking rewrite claims against real file:line evidence) 
 `docs/technical-notes/acquisition-pipeline-stage-design-notes/` plus those two as current as of this commit,
 not as carrying drift from the PR #240/#242 arc.
 
-**Next (RESUME HERE — 2026-07-12):** **#104 part (a) AND #211 live wiring are both DONE** — resume the
-**pipeline sequence** at **#214**: the **measured-pass** that closes **epic #209**. Its instrument now
-exists — `exploration_live.calibrate_against_census(con)` (does a p% random draw over the fully-labeled
-reject bucket reproduce the census reject-quality? — the retrospective validation §5a describes). #214 is:
-*run* it over the live census, confirm the sampler reproduces reject-quality within tolerance (worst-case:
-completed districts are attention-sorted/messiest-first), record the measured-pass verdict, and — if it
-passes — that's the evidence to trust the exploration quota before census-labeling stops. Then close epic
-#209 (the four-commandments guardrail epic). Then **Stage 8** (the fact-based aggregation *algorithm* is
-live inside gate@7 today; the standalone stage/gate@8/console is not built — #89/#90). Backlog: the charter
-track (#243/#244/#245/#246), Council Lab (#80/#81), #238; and the *dedicated* `run_kind=exploration_audit`
-queue MODE in the Stage-5 tree (deferred — the Settings pending list is today's working surface, sufficient
-while census-labeling means every reject is already labeled). **Branch state:**
-`fix/aggregation-quality-236-237` (now spans MIXED concerns — #236/#237 + research + Millard + parallel
-receipts + #104 gates + #211 wiring; when opening PRs, likely split #104/#211 gate-automation work from the
-aggregation-quality work). Untracked, left for Ian: earlier-run receipts under
-`data/acquisition/{extractions,handoffs}/`. Resume-essentials: `pip install -e .` → Docker up
-(`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect
-4 kept/0 broken) + `pytest -q -m "not integration"` (expect **1192** pass) + `pytest -q -m govdb` (expect
-**185**, Postgres up). Full detail: `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (§11b — the gate-mode +
-exploration-quota control law, live wiring As-Built), `STAGE5_FILTER_DESIGN_2026-06.md` §5a (the #211 spec +
-As-Built), `docs/PROJECT_HISTORY.md` (newest entries).
+**Next (RESUME HERE — 2026-07-12):** **#104(a), #211, and #214 are all DONE — epic #209's BUILD is
+complete** (all Phase 0/1/2 shipped). **First decision for Ian: PR strategy + issue-closing.** The whole arc
+sits UNMERGED on `fix/aggregation-quality-236-237` (now spans MIXED concerns — #236/#237 + charter research
++ Millard + parallel receipts + #104 gates + #211 quota + #214 measured-pass). Recommended split when
+opening PRs: (1) the **gate-automation / guardrail** work (#104 + #211 + #214) — this closes epic #209; (2)
+the **aggregation-quality** work (#236/#237). Issues **#211/#214/#209** should close on that PR MERGE, not
+before (they're built + committed but not on main); **#219** (activation checklist) stays open by design.
+Then the **next BUILD is Stage 8** (#89/#90) — the fact-based aggregation *algorithm* is live inside gate@7
+today, but the standalone stage / gate@8 / console is not built; note ordering constraint (epic #209): the
+gate@8 calibrated-confidence gate must exist before gates 6/7 relax. Backlog: the charter track
+(#243/#244/#245/#246), Council Lab (#80/#81), #238; deferred within #209 (gated on unbuilt stages/data):
+drift monitors, budget-governor hardening, Stage-9 write-boundary invariants, per-gate transition
+thresholds; and the *dedicated* `run_kind=exploration_audit` queue MODE in the Stage-5 tree (the Settings
+pending list is today's working surface, sufficient while census-labeling labels every reject). Untracked,
+left for Ian: earlier-run receipts under `data/acquisition/{extractions,handoffs}/`. Resume-essentials:
+`pip install -e .` → Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh clone
+only) → `lint-imports` (expect 4 kept/0 broken) + `pytest -q -m "not integration"` (expect **1200** pass) +
+`pytest -q -m govdb` (expect **185**, Postgres up). Full detail: `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
+(§11b), `STAGE5_FILTER_DESIGN_2026-06.md` §5a (the quota) + §5d (the measured-pass fix),
+`docs/PROJECT_HISTORY.md` (newest entry — epic #209 build-complete).
 
 ---
 
