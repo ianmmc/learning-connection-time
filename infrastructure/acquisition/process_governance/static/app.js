@@ -224,6 +224,7 @@ function renderDistrict(d) {
       <div class="district-name">${d.name}${flagged}</div>
       <div class="district-meta">${d.state} · ${d.n_unlabeled}/${d.n_records} unlabeled${nces}${enr}</div>
       <div class="attn-row">${attnChips(d.attention_reasons, d.attention_score)}</div></div>
+    <button class="dist-resetbtn btn btn-ghost" title="reset ALL labels in this district back to unlabeled (#228)">⟲</button>
     <button class="dist-flagbtn btn btn-ghost" title="flag this district for follow-up">⚑</button>`;
   const ul = document.createElement("ul"); ul.className = "rec-list";
 
@@ -243,6 +244,7 @@ function renderDistrict(d) {
   });
 
   head.querySelector(".dist-flagbtn").onclick = (e) => { e.stopPropagation(); flagTarget("district", d.district_id, d.name); };
+  head.querySelector(".dist-resetbtn").onclick = (e) => { e.stopPropagation(); resetLabels("district", d.district_id, d.name); };
   head.onclick = () => ul.classList.toggle("hidden");
   wrap.append(head, ul);
   return wrap;
@@ -293,6 +295,34 @@ async function flagTarget(scope, target_id, label) {
       body: JSON.stringify({ scope, target_id, directive, actor: "ian" }) });
   } catch (e) { alert("Couldn't flag: " + e.message); return; }
   loadTree();   // attention changed server-side -> the flagged item jumps to the top
+}
+
+// #228 "Reset labels": return a record (or a whole district) to a truthful unlabeled state. Destructive
+// to precious label state, so it CONFIRMS first. The motivating case is a valid schedule for the WRONG
+// district (Millard's unscoped contamination, #227) — neither target_absent nor unusable is honest, so
+// unlabeled is the only truthful label. A record-scope reset of a cluster rep reverses the cascade (its
+// members reset too); a district-scope reset clears every record in the district.
+async function resetLabels(scope, target_id, label) {
+  const msg = scope === "district"
+    ? `Reset ALL labels in this district back to unlabeled?\n(${label})\n\nClears primary + facets + note on every record — the truthful neutral state. Real DB change (the tracked labels.json backup updates too).`
+    : `Reset this record's label back to unlabeled?\n(${label})\n\nClears primary + facets + note. If it's a cluster representative, its members reset too.`;
+  if (!confirm(msg)) return;
+  let resp;
+  try {
+    resp = await fetch("/api/reset-labels", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ scope, target_id, actor: "ian" }) });
+  } catch (e) { alert("Couldn't reset labels: " + e.message); return; }
+  if (!resp.ok) { alert(`Couldn't reset labels: HTTP ${resp.status}`); return; }   // destructive — don't fake success
+  await loadTree();                                   // labels/topology/attention changed -> rebuild the tree
+  // Re-render the open panel in its cleared state. For a record reset, re-select it (with its
+  // rebuilt tree row, so the .active highlight survives loadTree — PR #242 review); for a district
+  // reset, the open record may BELONG to that district (rec_key = "<district_id>:<hash>") and would
+  // otherwise keep showing stale pre-reset label state.
+  const reselect = scope === "record" ? target_id
+    : (CURRENT && CURRENT.startsWith(target_id + ":") ? CURRENT : null);
+  if (reselect) {
+    await selectRecord(reselect, document.querySelector(`.rec-row[data-rec-key="${reselect}"]`));
+  }
 }
 
 async function populateViewSelect(sel) {
@@ -485,7 +515,8 @@ function renderPanel(d) {
       <div class="axis-label">Confounding signals present — check all that apply</div>${confChecks}
       <div class="axis-label">Note (optional)</div>
       <textarea class="note" placeholder="anything worth recording…">${lab.note || ""}</textarea>
-      <div class="btn-row"><button id="unsureBtn" class="btn btn-secondary">Mark reviewed — unsure</button></div>
+      <div class="btn-row"><button id="unsureBtn" class="btn btn-secondary">Mark reviewed — unsure</button>
+        <button id="resetLabelBtn" class="btn btn-ghost" title="clear this label back to unlabeled (reverses any cluster cascade) — #228">Reset label</button></div>
       <div id="guess" class="guess"></div>
     </div>`;
 
@@ -495,6 +526,8 @@ function renderPanel(d) {
   const fw = $("#facetWhere"); if (fw) fw.onchange = () => save(currentStatus());
   const fp = $("#facetPage"); if (fp) fp.onblur = () => save(currentStatus());
   $("#unsureBtn").onclick = () => save("unsure");
+  // the confirm() shows `label` to the human — pass the URL, not the opaque rec_key (PR #242 review)
+  $("#resetLabelBtn").onclick = () => resetLabels("record", CURRENT, (DATA && DATA.url) || CURRENT);
   $("#panel").querySelectorAll("[data-go]").forEach((a) => a.onclick = (e) => { e.preventDefault(); selectRecord(a.dataset.go); });
   $("#panel").querySelectorAll("[data-split]").forEach((b) => b.onclick = (e) => { e.preventDefault(); splitRecord(b.dataset.split); });
   renderGuess(d, lab.status);

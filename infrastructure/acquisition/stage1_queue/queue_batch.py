@@ -37,7 +37,7 @@ from infrastructure.acquisition.common import district_status as DS
 
 from infrastructure.acquisition.common import paths  # noqa: E402  (single source of truth for runtime-state locations — REQ-087)
 from infrastructure.acquisition.common import db as gdb  # noqa: E402  (governance DB = the batch working store — REQ-102/103)
-from infrastructure.acquisition.common.discover import host_of
+from infrastructure.acquisition.common.discover import domain_of, is_scoping_domain
 from infrastructure.acquisition.stage1_queue import batch_store as BSTORE
 
 project_root = Path(__file__).parent.parent.parent.parent
@@ -171,22 +171,35 @@ def select_schools(batch_id: str, district_id: str, district_school_index: dict,
     return order, result
 
 
-def build_batch(year: str, n: int, batch_id: str, registry: dict) -> tuple[dict, list, int]:
+def build_batch(year: str, n: int, batch_id: str, registry: dict) -> tuple[dict, list, list, int]:
     """Pure batch construction: apply the pre-queue exclusions, stratified-pick, select per-band
     schools, and assemble the batch_doc. Does NO I/O -- no file write, no registry mutation, no
     printing (it only READS the registry, via eligible_pool's already-attempted filter). The caller
     (CLI main() or the gate@1 console 'create' action) persists via persist_batch().
 
-    Returns (batch_doc, gap_excluded, n_eligible)."""
+    Returns (batch_doc, gap_excluded, domain_excluded, n_eligible)."""
     pool, sch_idx, gap_excluded = eligible_pool(year, registry)
+    # #229 pre-flight guard: refuse any district whose NCES WEBSITE yields no usable scoping domain.
+    # A blank/junk domain flips Stage 2 into its UNSCOPED, national-scope branch, which for common
+    # school names pulls same-named schools nationwide into the candidate set (the Millard cross-
+    # district contamination, #227). No usable alternate domain source exists, so this is a hard
+    # refusal, not a fallback -- the district is dropped from the pool and reported, exactly like the
+    # grade-span-gap exclusion, so a first-run batch of record never carries an unscoped district.
+    # Benchmark (batch_00000) is exempt by structure: it calls eligible_pool directly (own build path)
+    # and never routes through here.
+    domain_excluded = []
+    for did in list(pool):
+        if not is_scoping_domain(domain_of(pool[did]["website"])):
+            info = pool.pop(did)
+            domain_excluded.append({"district_id": did, "name": info["name"],
+                                    "state": info["state"], "website": info["website"]})
     level_counts = S.school_level_counts(year)   # did -> {total, by_level} (the topology denominator)
     picked_ids = stratified_pick(pool, batch_id, n=n)
 
     districts_out = []
     for did in picked_ids:
         info = pool[did]
-        web = info["website"] or ""
-        domain = host_of(web if "//" in web else "http://" + web) if web else ""
+        domain = domain_of(info["website"])
         order, schools_by_band = select_schools(batch_id, did, sch_idx.get(did, {}))
         districts_out.append({
             "district_id": did,
@@ -221,9 +234,12 @@ def build_batch(year: str, n: int, batch_id: str, registry: dict) -> tuple[dict,
             "can't fill the cap. Seed = f'{batch_id}:{district_id}:{band}'. No approval field needed "
             "-- CP-A review is out-of-band."
         ),
+        # #229: carried in the doc (-> Batch.meta_json -> to_view/receipt) so the refusals stay
+        # visible at gate@1 across reloads and in the audit receipt, not only in the create response.
+        "domain_excluded": domain_excluded,
         "districts": districts_out,
     }
-    return batch_doc, gap_excluded, len(pool)
+    return batch_doc, gap_excluded, domain_excluded, len(pool)
 
 
 def build_followup_batch(year: str, batch_id: str, targets: dict, *,
@@ -270,6 +286,15 @@ def build_followup_batch(year: str, batch_id: str, targets: dict, *,
         if not info:
             skipped.append({"district_id": did, "reason": "not in NCES lea_info for the year"})
             continue
+        # #229 guard applies here too: a 7->2 rediscover for a blank/junk-domain district would run
+        # UNSCOPED national-scope discovery. lea_info is NCES (not the batch_district row), so a
+        # genuinely domain-less district stays domain-less across follow-ups -- skip rather than
+        # contaminate. (Millard's #227 remediation re-runs its EXISTING batch with a hand-set domain,
+        # not through here, so this guard does not block that path.)
+        domain = domain_of(info["website"])
+        if not is_scoping_domain(domain):
+            skipped.append({"district_id": did, "reason": "no usable scoping domain -- would run UNSCOPED discovery (#229)"})
+            continue
         dsi = sch_idx.get(did, {})
         want = [b for b in BANDS if b in set(targets[did]) and dsi.get(b)]   # normalize + drop empties
         if not want:
@@ -290,8 +315,6 @@ def build_followup_batch(year: str, batch_id: str, targets: dict, *,
         order, schools_by_band = select_schools(batch_id, did, restricted)
         for b in schools_by_band:                          # #162/#160: the per-band signal Stage 2 reads
             schools_by_band[b]["query_strategy"] = query_strategy.get(b)
-        web = info["website"] or ""
-        domain = host_of(web if "//" in web else "http://" + web) if web else ""
         districts_out.append({
             "district_id": did,
             "name": info["name"],
@@ -347,14 +370,22 @@ def main():
     batch_id = f"batch_{a.batch:05d}"
     registry = DS.load()
 
-    batch_doc, gap_excluded, n_eligible = build_batch(a.year, a.n, batch_id, registry)
+    batch_doc, gap_excluded, domain_excluded, n_eligible = build_batch(a.year, a.n, batch_id, registry)
 
-    print(f"Eligible pool: {n_eligible:,} districts (excluded {len(gap_excluded)} for grade-span gap)")
-    if gap_excluded:
-        for g in gap_excluded[:10]:
-            print(f"  grade-span gap: [{g['state']}] {g['name']} ({g['district_id']}) -- missing {g['gap_bands']}")
-        if len(gap_excluded) > 10:
-            print(f"  ... and {len(gap_excluded) - 10} more")
+    print(f"Eligible pool: {n_eligible:,} districts (excluded {len(gap_excluded)} for grade-span gap, "
+          f"{len(domain_excluded)} for blank/unusable NCES domain)")
+
+    def _print_excluded(items, detail):
+        """First 10 + '... and N more' — shared by every exclusion report (one shape, N reasons)."""
+        for x in items[:10]:
+            print(f"  {detail(x)}")
+        if len(items) > 10:
+            print(f"  ... and {len(items) - 10} more")
+
+    _print_excluded(gap_excluded,
+                    lambda g: f"grade-span gap: [{g['state']}] {g['name']} ({g['district_id']}) -- missing {g['gap_bands']}")
+    _print_excluded(domain_excluded,
+                    lambda e: f"blank/unusable domain: [{e['state']}] {e['name']} ({e['district_id']}) -- website={e['website']!r}")
 
     print(f"{batch_id}: picked {len(batch_doc['districts'])} districts")
     for d in batch_doc["districts"]:

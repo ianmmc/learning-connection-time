@@ -103,6 +103,13 @@
         <div class="q-actions">${actions}</div></div>`;
     if (abandoned) html += `<div class="q-locked">Abandoned${v.abandon_reason ? ` — ${esc(v.abandon_reason)}` : ""}. Terminal: this batch can't be edited, approved, or re-opened.</div>`;
     else if (!draft) html += `<div class="q-locked">Approved — editing is locked. Re-open to make changes.</div>`;
+    // #229: districts refused at draw time for a blank/junk NCES domain (they'd run UNSCOPED
+    // discovery — the Millard contamination class, #227). Persisted in Batch.meta_json, so this
+    // renders on every open, not just at create — the draw is never silently short.
+    if (v.domain_excluded && v.domain_excluded.length) {
+      html += `<div class="q-locked q-domain-excluded"><b>${v.domain_excluded.length} district${v.domain_excluded.length === 1 ? "" : "s"} refused — no usable NCES domain (#229):</b> ${
+        v.domain_excluded.map((e) => `${esc(e.name)} [${esc(e.state)}] (${esc(e.district_id)}, website=${esc(JSON.stringify(e.website))})`).join(" · ")}</div>`;
+    }
     html += v.districts.map((d) => districtBlock(d, draft)).join("");
     $g("#q-detail").innerHTML = html;
     wireDetail();

@@ -31,7 +31,7 @@ from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import paths
 
-from infrastructure.acquisition.common.discover import host_of, gate, slugify
+from infrastructure.acquisition.common.discover import host_of, gate, is_scoping_domain, slugify
 from infrastructure.acquisition.common import timeutil as TU
 
 # Anchored to the repo (paths.RAW_CAPTURES), never a CWD-relative literal -- this script and the
@@ -148,12 +148,21 @@ def reconcile(batch: dict, registry: dict) -> tuple[list, list]:
 
 def gate_urls(urls: list, domain: str) -> list:
     """The same on-domain/CMS-slug/news-aggregator gate as the legacy district-level
-    discover.py, applied per-school. Returns [{"url", "kept", "reason"}, ...]."""
-    scoped = bool(domain)
-    slug = domain.split(".")[0] if domain else ""
+    discover.py, applied per-school. Returns [{"url", "kept", "reason"}, ...].
+
+    #229 defense-in-depth (PR #242 review): Stage 2 FAILS CLOSED on a non-scoping domain instead
+    of trusting Stage 1's admission guard. A blank domain used to flip gate() to its UNSCOPED
+    branch (keep everything -> the Millard national-scope contamination, #227); now every URL is
+    rejected with an explicit reason. This is the single gating chokepoint for all waves, so a
+    blank/junk domain reaching Stage 2 through ANY path (manual DB edit, a future batch builder,
+    a remediation script) can no longer contaminate — the run visibly yields nothing instead."""
+    if not is_scoping_domain(domain):
+        return [{"url": u, "kept": False, "reason": "no-scoping-domain — unscoped discovery refused (#229)"}
+                for u in urls]
+    slug = domain.split(".")[0]
     out = []
     for u in urls:
-        ok, why = gate(u, domain, slug, scoped)
+        ok, why = gate(u, domain, slug, True)
         out.append({"url": u, "kept": ok, "reason": why})
     return out
 

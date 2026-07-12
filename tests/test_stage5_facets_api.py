@@ -210,6 +210,119 @@ def test_label_cascade_strips_pages_from_members(client, monkeypatch):
     assert mem_f == {"schedule_table": "yes", "_where": "handbook"}   # members get the shared answers only
 
 
+# ----------------------------- #228 reset labels -----------------------------
+def _no_backup_side_effects(monkeypatch):
+    """Keep the endpoint's export_labels/_refresh_filtered away from the real tracked backups."""
+    from infrastructure.acquisition.process_governance import server
+    monkeypatch.setattr(server.BS, "export_labels", lambda *a, **k: 0)
+    monkeypatch.setattr(server, "_refresh_filtered", lambda *a, **k: None)
+
+
+def test_reset_record_returns_to_unlabeled(client, monkeypatch):
+    """A record-scope reset nulls primary + facets + note and sets status='unlabeled'."""
+    _no_backup_side_effects(monkeypatch)
+    with gdb.session_scope() as con:   # give DL:r some facets+note to prove they're all cleared
+        con.execute(text("UPDATE label SET facets_json='{\"schedule_table\":\"yes\"}', note='seen' WHERE rec_key=:rk"),
+                    {"rk": f"{DL}:r"})
+    r = client.post("/api/reset-labels", json={"scope": "record", "target_id": f"{DL}:r"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["reset"] == 1 and body["records"] == 1 and body["district_id"] == DL and body["scope"] == "record"
+    with gdb.session_scope() as con:
+        row = con.execute(text("SELECT status, primary_label, facets_json, note FROM label WHERE rec_key=:rk"),
+                          {"rk": f"{DL}:r"}).fetchone()
+    assert tuple(row) == ("unlabeled", None, None, None)
+
+
+def test_reset_keeps_the_row_never_deletes_it(client, monkeypatch):
+    """Unlabeled must stay a ROW (ingest models it as the DB-default status), not an absent row —
+    a DELETE would diverge from how ingest represents an unlabeled record."""
+    _no_backup_side_effects(monkeypatch)
+    client.post("/api/reset-labels", json={"scope": "record", "target_id": f"{DL}:r"})
+    with gdb.session_scope() as con:
+        assert con.execute(text("SELECT COUNT(*) FROM label WHERE rec_key=:rk"), {"rk": f"{DL}:r"}).scalar() == 1
+
+
+def test_reset_already_unlabeled_reports_zero_meaningful(client, monkeypatch):
+    """Resetting an already-unlabeled record is a harmless no-op: records=1 touched, reset=0 meaningful."""
+    _no_backup_side_effects(monkeypatch)
+    r = client.post("/api/reset-labels", json={"scope": "record", "target_id": f"{DH}:r"})   # DH:r is unlabeled
+    assert r.json()["reset"] == 0 and r.json()["records"] == 1
+
+
+def test_reset_district_clears_every_record(client, monkeypatch):
+    _no_backup_side_effects(monkeypatch)
+    with gdb.session_scope() as con:   # a second labeled record so "all" is exercised, not just one
+        con.execute(text("""INSERT INTO record (rec_key, district_id, url, tier, is_cluster_rep)
+            VALUES (:rk,:d,'http://z/l2','A',1)"""), {"rk": f"{DL}:r2", "d": DL})
+        con.execute(text("INSERT INTO label (rec_key, status, primary_label) VALUES (:rk,'labeled','target')"),
+                    {"rk": f"{DL}:r2"})
+    r = client.post("/api/reset-labels", json={"scope": "district", "target_id": DL})
+    body = r.json()
+    assert body["scope"] == "district" and body["records"] == 2 and body["reset"] == 2
+    with gdb.session_scope() as con:
+        rows = con.execute(text("SELECT l.status FROM label l JOIN record r USING (rec_key) WHERE r.district_id=:d"),
+                           {"d": DL}).fetchall()
+    assert rows and all(s == "unlabeled" for (s,) in rows)
+
+
+def test_reset_rep_reverses_the_cluster_cascade(client, monkeypatch):
+    """Resetting a cluster REPRESENTATIVE reverses the forward cascade — every current member returns
+    to unlabeled too (same predicate labeling used), so a mistaken label leaves no stale member ground
+    truth (#228 ask)."""
+    _no_backup_side_effects(monkeypatch)
+    rep, mem = f"{DH}:crep", f"{DH}:cmem"
+    with gdb.session_scope() as con:
+        for rk, is_rep in ((rep, 1), (mem, 0)):
+            con.execute(text("""INSERT INTO record (rec_key, district_id, url, tier, is_cluster_rep,
+                cluster_id, cluster_size) VALUES (:rk,:d,'http://z/c','A',:rep,'ZZRESETCL',2)"""),
+                {"rk": rk, "d": DH, "rep": is_rep})
+    client.post(f"/api/label/{rep}", json={"primary_label": "school_bell_table",
+                                           "facets": {"schedule_table": "yes"}, "status": "labeled"})
+    with gdb.session_scope() as con:
+        assert con.execute(text("SELECT COUNT(*) FROM label WHERE rec_key IN (:a,:b) AND status!='unlabeled'"),
+                           {"a": rep, "b": mem}).scalar() == 2      # cascade applied to both
+    r = client.post("/api/reset-labels", json={"scope": "record", "target_id": rep})
+    assert r.json()["records"] == 2 and r.json()["reset"] == 2
+    with gdb.session_scope() as con:
+        rows = con.execute(text("SELECT status FROM label WHERE rec_key IN (:a,:b)"), {"a": rep, "b": mem}).fetchall()
+    assert all(s == "unlabeled" for (s,) in rows)
+
+
+def test_reset_unknown_record_is_404(client, monkeypatch):
+    _no_backup_side_effects(monkeypatch)
+    assert client.post("/api/reset-labels", json={"scope": "record", "target_id": "NOPE:x"}).status_code == 404
+
+
+def test_reset_district_with_no_records_is_404(client, monkeypatch):
+    _no_backup_side_effects(monkeypatch)
+    assert client.post("/api/reset-labels", json={"scope": "district", "target_id": "ZZNODISTRICT"}).status_code == 404
+
+
+def test_reset_bad_scope_is_400(client):
+    assert client.post("/api/reset-labels", json={"scope": "bogus", "target_id": "x"}).status_code == 400
+
+
+def test_reset_labels_button_present_in_console():
+    """UI-visibility regression (memory: catalog must-be-visible console features + guard them). The
+    reset affordance must exist at BOTH the per-record and per-district sites, wired to the endpoint —
+    so it can't silently disappear in a future refactor."""
+    from pathlib import Path
+    repo = Path(__file__).resolve().parent.parent   # the test_arch_manifest.py cwd-proof convention
+    js = (repo / "infrastructure/acquisition/process_governance/static/app.js").read_text()
+    assert "dist-resetbtn" in js, "district-level Reset labels button missing"
+    assert "resetLabelBtn" in js, "per-record Reset label button missing"
+    assert "async function resetLabels" in js and "/api/reset-labels" in js
+    assert 'resetLabels("district"' in js and 'resetLabels("record"' in js
+    # PR #242 review fixes: readable confirm text (URL, not the opaque rec_key), the .active row
+    # highlight survives the post-reset tree rebuild, and a district reset refreshes the open panel
+    # when the open record belongs to that district (no stale pre-reset label state on screen).
+    assert "(DATA && DATA.url) || CURRENT" in js, "confirm() must show the URL, not the rec_key"
+    assert 'CURRENT.startsWith(target_id + ":")' in js, "district reset must refresh the open panel"
+    assert 'document.querySelector(`.rec-row[data-rec-key="${reselect}"]`)' in js, \
+        "post-reset reselect must re-apply the .active row highlight"
+
+
 # ----------------------------- progress counts (issue #51) -----------------------------
 def test_progress_counts_never_report_labeled_over_total(gov_session):
     """After a shrinking re-ingest the precious `label` table keeps rows whose record vanished; the

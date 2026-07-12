@@ -764,6 +764,24 @@ def delete_district_signal_rows(sess, district_id: str) -> None:
 BIN_KINDS = {"png": "image", "pdf": "pdf", "bin": "binary"}
 
 
+def reset_labels_bulk(s, rec_keys: list, ts: str) -> int:
+    """#228: return labels to the truthful UNLABELED state — primary/facets/note nulled,
+    status='unlabeled' — in ONE bulk statement. THE single source of truth for what 'reset' means
+    (PR #242 review: the console endpoint and the remediation tooling each hand-rolled their own
+    reset SQL, a silent-drift risk). A plain UPDATE, not an upsert: ingest guarantees every record
+    a label row (the bare INSERT..ON CONFLICT DO NOTHING seed), so there is never a row to create,
+    and rows already unlabeled are deliberately untouched (their updated_at stays honest).
+    Leaves the legacy flags_json archive column alone, same as UPSERT_LABEL. Returns the number of
+    rows that actually carried a label (the meaningful resets)."""
+    if not rec_keys:
+        return 0
+    return s.execute(text(
+        """UPDATE label SET primary_label=NULL, facets_json=NULL, note=NULL, status='unlabeled',
+                            updated_at=:ts
+           WHERE rec_key = ANY(:ks) AND status != 'unlabeled'"""),
+        {"ts": ts, "ks": list(rec_keys)}).rowcount
+
+
 def export_labels(s, out: Path = LABELS_JSON) -> int:
     """Dump all non-unlabeled rows to a tracked JSON (atomic write). The label backup.
     Under pytest the tracked file is quarantine-redirected (issue #178)."""
