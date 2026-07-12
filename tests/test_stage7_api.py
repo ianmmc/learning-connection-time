@@ -299,3 +299,20 @@ def test_gate_mode_set_persists_and_backs_up(monkeypatch):
          "updated_at": "t", "actor": "ian"}])]))
     r = client.post("/api/gate-mode", json={"gate": "gate@7", "mode": "auto", "actor": "ian"})
     assert r.status_code == 200 and r.json() == {"ok": True, "gate": "gate@7", "mode": "auto"}
+
+
+# ------------------------------- exploration audit (gate@5 reject audit, #211) -------------------------------
+def test_exploration_audit_status_is_dormant_and_well_shaped(monkeypatch):
+    # execute order for GET /api/exploration-audit with an EMPTY reject bucket:
+    #   1 reject_population SELECT (resolve→coverage→audit_sample) -> []
+    #   2 get_configured_mode own -> None, 3 get_configured_mode default -> None (=> "manual")
+    #   4 get_license_state -> None
+    #   5 audit_sample SELECT again (the endpoint's pending payload) -> []
+    _use(monkeypatch, _Con([_Result(rows=[]), _Result(scalar=None), _Result(scalar=None),
+                            _Result(scalar=None), _Result(rows=[])]))
+    body = client.get("/api/exploration-audit").json()
+    # DORMANT: configured manual → effective manual, empty bucket → zero window, all-None quality
+    assert body["configured_mode"] == "manual" and body["effective_mode"] == "manual"
+    assert body["population_size"] == 0 and body["window_count"] == 0 and body["pending"] == []
+    assert body["quality"]["rejection_quality"] is None
+    assert body["floor_n"] == 300 and body["promote_n"] == 360

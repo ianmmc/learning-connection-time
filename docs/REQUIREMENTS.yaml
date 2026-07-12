@@ -2879,7 +2879,7 @@ requirements:
     description: "Anti-survivorship exploration quota — a REVOCABLE autonomy license on gate@5 auto-suppression (control law, not a watched metric)"
     type: functional
     priority: should
-    status: in-progress
+    status: tested
     acceptance_criteria:
       - "The filter runs only as autonomously as its reject audit is currently validating it; a lapse DEMOTES gate@5 auto to manual (census mode) — it NEVER halts the pipeline (autonomy falls back one supervision level)"
       - "The binding sufficiency bar is a COUNT over a rolling window of CURRENT-config rejects (rule of three: ~300 zero-miss audited rejects ⇒ 95% confidence reject FN-rate < 1%), fed by a p%-of-flow sampler — NOT a cumulative percentage (a % floats above the bar on stale labels, is too thin on small streams, and re-imports the manual-inspection-at-100k-scale problem, commandment 2)"
@@ -2892,16 +2892,26 @@ requirements:
       - "NOT: never impute reject labels (reject-inference entrenches/can reverse the bias); no active/uncertainty sampling as the primary mechanism (it under-covers the confident-reject region that entrenches a wrongly-rejected class)"
     tests:
       - tests/test_exploration_audit.py
+      - tests/test_exploration_live.py
     created: "2026-07-10T00:00:00Z"
-    updated: "2026-07-10T00:00:00Z"
+    updated: "2026-07-12T00:00:00Z"
     notes: "PURE control-law core BUILT + tested first (infrastructure/acquisition/stage5_filter/exploration_audit.py:
       rule_of_three_upper_bound, rejection_quality, select_audit_sample, next_license_state, resolve_gate_mode) — no DB,
       no cash, the harness/frontier precedent; the invariant is locked in code before the live plumbing exists. Review round
       (#216, dcfc11b): the deadband refuses a collapsed/inverted band, gate-mode strings are validated, rate/quality sum to
-      exactly 1.0, and the sampler reuses queue_batch's random.Random(seed) pattern. DEFERRED to the full #211 build: the
-      live wiring (querying the reject population, presenting the randomized audit queue in the console, hooking the demote
-      decision onto the gate@5 auto toggle) + Tier B (paid reject→Stage-7 extraction, likely never a distinct build — a
-      confirmed false-negative just rejoins normal Stage-6→7 dispatch). Reframe (2026-07-10 design session with Ian): this is
+      exactly 1.0, and the sampler reuses queue_batch's random.Random(seed) pattern.
+      LIVE WIRING SHIPPED 2026-07-12 (exploration_live.py): reject_population (the tier-D SUPPRESS bucket, reps only),
+      audit_sample/coverage (the pure sampler bound to the live population + rejection_quality window), resolve_gate5_mode
+      (THE gate@5 demote-hook + the first live caller of resolve_gate_mode — reads configured_mode/license_state from the
+      gate_mode store #104, persists the deadband transition when configured auto), and calibrate_against_census (feeds
+      REQ-... #214's measured-pass). Wired into save_label (self-healing: each gate@5 label re-evaluates the license on the
+      same transaction) + GET /api/exploration-audit → a Settings-console coverage meter. Current-config scoping is STRUCTURAL
+      (the window is recomputed over the live tier-D set — a rescued reject leaves the population; no reject-audit table, no
+      persisted config generation). Enforcement DORMANT: gate@5 configured manual → returns manual, writes nothing. Verified
+      live (566 tier-D rejects, 24 sampled @5%, all census-labeled zero-miss → quality 1.0, window 24/300). Still DEFERRED: a
+      dedicated run_kind=exploration_audit queue MODE in the Stage-5 tree (the Settings pending list is the working surface
+      today, sufficient while census-labeling means every reject is already labeled) + Tier B (paid reject→Stage-7 extraction,
+      likely never a distinct build — a confirmed false-negative just rejoins normal Stage-6→7 dispatch). Reframe (2026-07-10 design session with Ian): this is
       NOT a current hole — the operator census-labels every completed district (all tiers, rejects included), so harness
       recall (A+B 0.9961) is already honest; the quota is the instrument that REPLACES census-labeling, switched on before it
       stops (i.e. before gate@5 goes auto). Sibling instrument: REQ-121/#210 (calibration meter, same build-now-while-truth-
