@@ -1,0 +1,82 @@
+{
+  "batch_id": "batch_00013",
+  "district_id": "3173740",
+  "generated_at": "2026-07-12T06:53:04Z",
+  "district_name": "MILLARD PUBLIC SCHOOLS",
+  "district_state": "NE",
+  "domain": {
+    "current": "",
+    "new": "mpsomaha.org"
+  },
+  "labels_to_reset": [
+    {
+      "rec_key": "3173740:038ada8a58",
+      "primary_label": "unusable",
+      "status": "labeled"
+    },
+    {
+      "rec_key": "3173740:0a3671ab7b",
+      "primary_label": "unusable",
+      "status": "labeled"
+    },
+    {
+      "rec_key": "3173740:40dfb4f640",
+      "primary_label": "unusable",
+      "status": "labeled"
+    },
+    {
+      "rec_key": "3173740:6830c6c359",
+      "primary_label": "target_absent",
+      "status": "labeled"
+    },
+    {
+      "rec_key": "3173740:708e037040",
+      "primary_label": "unusable",
+      "status": "labeled"
+    },
+    {
+      "rec_key": "3173740:a6ce5c21b4",
+      "primary_label": "target_absent",
+      "status": "labeled"
+    },
+    {
+      "rec_key": "3173740:ace6d87ad4",
+      "primary_label": "unusable",
+      "status": "labeled"
+    },
+    {
+      "rec_key": "3173740:d1f8437281",
+      "primary_label": "target_absent",
+      "status": "labeled"
+    }
+  ],
+  "captures": {
+    "total": 147,
+    "on_real_domain": 44,
+    "off_domain": 103
+  },
+  "purge_counts": {
+    "representation": 2067,
+    "record": 147,
+    "district": 1,
+    "district_target": 1,
+    "discovery_school": 21,
+    "candidate": 122,
+    "capture": 147,
+    "processed_doc": 147
+  },
+  "preserved": {
+    "batch_school": 21,
+    "state_event": 9,
+    "calibration_event": 8
+  },
+  "disk_dir": "/Users/ianmmc/Development/learning-connection-time/data/raw/lea-website-captures/3173740_millard_public_schools",
+  "restore_point": {
+    "dir": "/Users/ianmmc/Development/learning-connection-time/data/acquisition/remediation/3173740_20260712T065304Z",
+    "backed_up": [
+      "/Users/ianmmc/Development/learning-connection-time/data/acquisition/remediation/3173740_20260712T065304Z/labels.json",
+      "/Users/ianmmc/Development/learning-connection-time/data/acquisition/remediation/3173740_20260712T065304Z/district_status.json"
+    ],
+    "absent_sources": []
+  }
+}
