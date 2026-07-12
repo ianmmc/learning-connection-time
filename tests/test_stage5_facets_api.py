@@ -314,6 +314,13 @@ def test_reset_labels_button_present_in_console():
     assert "resetLabelBtn" in js, "per-record Reset label button missing"
     assert "async function resetLabels" in js and "/api/reset-labels" in js
     assert 'resetLabels("district"' in js and 'resetLabels("record"' in js
+    # PR #242 review fixes: readable confirm text (URL, not the opaque rec_key), the .active row
+    # highlight survives the post-reset tree rebuild, and a district reset refreshes the open panel
+    # when the open record belongs to that district (no stale pre-reset label state on screen).
+    assert "(DATA && DATA.url) || CURRENT" in js, "confirm() must show the URL, not the rec_key"
+    assert 'CURRENT.startsWith(target_id + ":")' in js, "district reset must refresh the open panel"
+    assert 'document.querySelector(`.rec-row[data-rec-key="${reselect}"]`)' in js, \
+        "post-reset reselect must re-apply the .active row highlight"
 
 
 # ----------------------------- progress counts (issue #51) -----------------------------

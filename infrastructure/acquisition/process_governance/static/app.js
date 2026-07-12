@@ -314,7 +314,15 @@ async function resetLabels(scope, target_id, label) {
   } catch (e) { alert("Couldn't reset labels: " + e.message); return; }
   if (!resp.ok) { alert(`Couldn't reset labels: HTTP ${resp.status}`); return; }   // destructive — don't fake success
   await loadTree();                                   // labels/topology/attention changed -> rebuild the tree
-  if (scope === "record") await selectRecord(target_id);   // re-render the panel in its cleared state
+  // Re-render the open panel in its cleared state. For a record reset, re-select it (with its
+  // rebuilt tree row, so the .active highlight survives loadTree — PR #242 review); for a district
+  // reset, the open record may BELONG to that district (rec_key = "<district_id>:<hash>") and would
+  // otherwise keep showing stale pre-reset label state.
+  const reselect = scope === "record" ? target_id
+    : (CURRENT && CURRENT.startsWith(target_id + ":") ? CURRENT : null);
+  if (reselect) {
+    await selectRecord(reselect, document.querySelector(`.rec-row[data-rec-key="${reselect}"]`));
+  }
 }
 
 async function populateViewSelect(sel) {
@@ -518,7 +526,8 @@ function renderPanel(d) {
   const fw = $("#facetWhere"); if (fw) fw.onchange = () => save(currentStatus());
   const fp = $("#facetPage"); if (fp) fp.onblur = () => save(currentStatus());
   $("#unsureBtn").onclick = () => save("unsure");
-  $("#resetLabelBtn").onclick = () => resetLabels("record", CURRENT, CURRENT);
+  // the confirm() shows `label` to the human — pass the URL, not the opaque rec_key (PR #242 review)
+  $("#resetLabelBtn").onclick = () => resetLabels("record", CURRENT, (DATA && DATA.url) || CURRENT);
   $("#panel").querySelectorAll("[data-go]").forEach((a) => a.onclick = (e) => { e.preventDefault(); selectRecord(a.dataset.go); });
   $("#panel").querySelectorAll("[data-split]").forEach((b) => b.onclick = (e) => { e.preventDefault(); splitRecord(b.dataset.split); });
   renderGuess(d, lab.status);
