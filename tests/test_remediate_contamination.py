@@ -1,9 +1,14 @@
-"""#227 Millard decontamination — guardrails for the one-off remediation script.
+"""#227 unscoped-discovery decontamination — guardrails for the remediation tooling.
 
 Exercises the reversible core (manifest → label reset + signal/cache purge + domain set + audit event)
-against a SYNTHETIC ZZ district (the script's constants are monkeypatched) so it never touches the real
-Millard rows. Confirms the manifest is read-only, the purge is scoped + complete, the precious batch row
-survives with the corrected domain, and prior audit history is preserved (not rewritten)."""
+against a SYNTHETIC ZZ district so it never touches the real Millard rows. Confirms the manifest is
+read-only, execute() is manifest-driven (the reviewed rec_keys are exactly what resets), the purge is
+scoped + complete, the precious batch row survives with the corrected domain, prior audit history is
+preserved, and the PR #242 review guards hold (no disk writes inside execute's transaction, verified
+restore point, validated --domain, dot-boundary host counting, double-execute refusal)."""
+import contextlib
+import sys
+
 import pytest
 from sqlalchemy import text
 
@@ -13,11 +18,12 @@ from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.stage1_queue.models import BatchDistrict   # noqa: F401 (register batch tables)
 from infrastructure.acquisition.stage5_filter import models  # noqa: F401 (register precious tables)
 from infrastructure.acquisition.stage5_filter import build_signals as BS
-from infrastructure.acquisition.process_governance import remediate_millard_227 as R
+from infrastructure.acquisition.process_governance import remediate_contamination as R
 
 pytestmark = [pytest.mark.integration, pytest.mark.govdb]
 
 DID, BID = "ZZ227DIST", "ZZ227BATCH"
+DOMAIN = "mpsomaha.org"
 
 
 def _cleanup(s):
@@ -43,9 +49,10 @@ def _seed(s):
                   {"rk": rk, "d": DID, "u": f"http://off{i}.example/bell"})
         s.execute(text("INSERT INTO label (rec_key, primary_label, status) VALUES (:rk,:pl,:st)"),
                   {"rk": rk, "pl": pl, "st": st})
-    # cache rows: 5 captures (2 on the real domain, 3 off) + a candidate
-    for i in range(5):
-        host = "mpsomaha.org" if i < 2 else f"off{i}.example"
+    # cache rows: 6 captures — 2 genuinely on-domain (bare + subdomain), 1 LOOKALIKE host
+    # (evil<domain>, the dot-boundary trap), 3 plainly off
+    hosts = [DOMAIN, f"es.{DOMAIN}", f"evil{DOMAIN}", "off3.example", "off4.example", "off5.example"]
+    for i, host in enumerate(hosts):
         s.execute(text("INSERT INTO capture (district_id, hash, url, final_host) VALUES (:d,:h,:u,:fh)"),
                   {"d": DID, "h": f"h{i}", "u": f"http://{host}/{i}", "fh": host})
     s.execute(text("INSERT INTO candidate (district_id, url) VALUES (:d,'http://x/c')"), {"d": DID})
@@ -61,17 +68,13 @@ def _seed(s):
 
 
 @pytest.fixture
-def con(monkeypatch):
+def con():
     try:
         gdb.get_engine().connect().close()
     except Exception as e:
         pytest.skip(f"governance Postgres unavailable: {type(e).__name__}: {e}")
     gdb.init_precious_schema()          # precious tables incl. label + calibration_event + batch_district
     DS.ensure_schema()                  # state_event + current_state view
-    monkeypatch.setattr(R, "DISTRICT_ID", DID)
-    monkeypatch.setattr(R, "BATCH_ID", BID)
-    monkeypatch.setattr(R, "REC_PREFIX", f"{DID}:")
-    monkeypatch.setattr(R.BSTORE, "write_receipt", lambda *a, **k: None)   # receipt regen tested elsewhere
     with gdb.session_scope() as s:
         BS.ensure_signal_schema(s)
         CI.ensure_cache_schema(s)
@@ -90,11 +93,13 @@ def _n(s, sql, **p):
 
 
 def test_build_manifest_reports_contamination_and_is_readonly(con):
-    m = R.build_manifest(con)
-    assert m["domain"]["current"] == ""                        # the blank-domain bug
+    m = R.build_manifest(con, BID, DID, DOMAIN)
+    assert m["domain"]["current"] == "" and m["domain"]["new"] == DOMAIN
+    assert m["district_name"] == "ZZ Millard" and m["district_state"] == "NE"
     assert {r["rec_key"] for r in m["labels_to_reset"]} == {f"{DID}:0", f"{DID}:1"}
-    assert m["captures"] == {"total": 5, "on_real_domain": 2, "off_domain": 3}
-    assert m["purge_counts"]["record"] == 3 and m["purge_counts"]["capture"] == 5
+    # dot-boundary counting (PR #242 review): es.mpsomaha.org IS on-domain, evilmpsomaha.org is NOT
+    assert m["captures"] == {"total": 6, "on_real_domain": 2, "off_domain": 4}
+    assert m["purge_counts"]["record"] == 3 and m["purge_counts"]["capture"] == 6
     assert m["purge_counts"]["candidate"] == 1 and m["purge_counts"]["district"] == 1
     assert m["preserved"]["state_event"] == 1                  # the prior 'ingested' event
     # READ-ONLY: building the manifest changed nothing
@@ -104,8 +109,8 @@ def test_build_manifest_reports_contamination_and_is_readonly(con):
 
 
 def test_execute_decontaminates_and_scopes_the_domain(con):
-    m = R.build_manifest(con)
-    done = R.execute(con, m, "mpsomaha.org")
+    m = R.build_manifest(con, BID, DID, DOMAIN)
+    done = R.execute(con, m)
     con.flush()
     # 1. labels reset to a truthful unlabeled (both wrong-district labels cleared)
     assert done["labels_reset"] == 2
@@ -113,17 +118,42 @@ def test_execute_decontaminates_and_scopes_the_domain(con):
     # 2. regenerable signal + cache rows purged (clean slate)
     for t in ("record", "district", "district_target", "capture", "candidate"):
         assert _n(con, f"SELECT COUNT(*) FROM {t} WHERE district_id=:d", d=DID) == 0, t
-    assert done["cache_purged"]["capture"] == 5
+    assert done["cache_purged"]["capture"] == 6
     # 3. the domain is corrected on the PRECIOUS batch row (which itself survives)
-    assert done["domain_set"] == "mpsomaha.org"
+    assert done["domain_set"] == DOMAIN
     assert _n(con, "SELECT COUNT(*) FROM batch_district WHERE batch_id=:b AND district_id=:d", b=BID, d=DID) == 1
     assert con.execute(text("SELECT domain FROM batch_district WHERE batch_id=:b AND district_id=:d"),
-                       {"b": BID, "d": DID}).scalar() == "mpsomaha.org"
+                       {"b": BID, "d": DID}).scalar() == DOMAIN
+
+
+def test_execute_is_manifest_driven_not_repredicated(con):
+    """PR #242 review: execute() must reset exactly the rec_keys the reviewed manifest enumerates.
+    A label applied AFTER the manifest was built (concurrent console use) must NOT be swept up."""
+    m = R.build_manifest(con, BID, DID, DOMAIN)
+    con.execute(text("UPDATE label SET primary_label='school_bell_table', status='labeled' "
+                     "WHERE rec_key=:rk"), {"rk": f"{DID}:2"})   # labeled after the review snapshot
+    done = R.execute(con, m)
+    con.flush()
+    assert done["labels_reset"] == 2                            # only the two reviewed rows
+    assert con.execute(text("SELECT status FROM label WHERE rec_key=:rk"),
+                       {"rk": f"{DID}:2"}).scalar() == "labeled"   # the post-review label survives
+
+
+def test_execute_makes_no_disk_writes(con, monkeypatch):
+    """PR #242 review (transaction safety): execute() runs entirely inside the caller's open
+    transaction — labels.json/receipt writes happen ONLY post-commit in main(). If execute ever
+    calls the exporters, a mid-transaction failure would leave disk ahead of a rolled-back DB."""
+    def _boom(*a, **k):
+        raise AssertionError("execute() must not write disk receipts mid-transaction")
+    monkeypatch.setattr(R.BS, "export_labels", _boom)
+    monkeypatch.setattr(R.BSTORE, "write_receipt", _boom)
+    m = R.build_manifest(con, BID, DID, DOMAIN)
+    R.execute(con, m)   # must not raise
 
 
 def test_execute_preserves_prior_audit_and_appends_a_remediation_event(con):
-    m = R.build_manifest(con)
-    R.execute(con, m, "mpsomaha.org")
+    m = R.build_manifest(con, BID, DID, DOMAIN)
+    R.execute(con, m)
     con.flush()
     events = con.execute(text("SELECT event_type, outcome FROM state_event WHERE district_id=:d "
                               "ORDER BY event_id"), {"d": DID}).fetchall()
@@ -133,27 +163,56 @@ def test_execute_preserves_prior_audit_and_appends_a_remediation_event(con):
     assert events[-1] == ("remediated", "decontaminated")
 
 
-import contextlib
-import sys
+# ----------------------------- restore point (no DB) -----------------------------
+def test_restore_point_is_verified_and_recorded(tmp_path, monkeypatch):
+    src_labels = tmp_path / "labels.json"; src_labels.write_text('[{"x": 1}]')
+    src_status = tmp_path / "district_status.json"; src_status.write_text("{}")
+    monkeypatch.setattr(R.paths, "LABELS_JSON", src_labels)
+    monkeypatch.setattr(R.paths, "STATUS_FILE", src_status)
+    monkeypatch.setattr(R.paths, "ACQUISITION", tmp_path / "acq")
+    m = {"district_id": DID, "generated_at": "2026-07-12T00:00:00Z"}
+    rdir = R._write_restore_point(m)
+    assert (rdir / "labels.json").read_text() == '[{"x": 1}]'
+    assert (rdir / "manifest.json").exists()
+    assert m["restore_point"]["backed_up"] == [str(rdir / "labels.json"), str(rdir / "district_status.json")]
+    assert m["restore_point"]["absent_sources"] == []
 
 
+def test_restore_point_records_absent_sources_instead_of_silently_skipping(tmp_path, monkeypatch):
+    monkeypatch.setattr(R.paths, "LABELS_JSON", tmp_path / "nope-labels.json")
+    monkeypatch.setattr(R.paths, "STATUS_FILE", tmp_path / "nope-status.json")
+    monkeypatch.setattr(R.paths, "ACQUISITION", tmp_path / "acq")
+    m = {"district_id": DID, "generated_at": "2026-07-12T00:00:00Z"}
+    R._write_restore_point(m)
+    assert len(m["restore_point"]["absent_sources"]) == 2 and m["restore_point"]["backed_up"] == []
+
+
+# ----------------------------- main() guards (no DB) -----------------------------
 @contextlib.contextmanager
 def _null_scope():
     yield None
 
 
-def test_second_execute_is_refused_when_already_remediated(monkeypatch, capsys):
-    """Review finding: a SECOND --execute after a scoped re-run would purge the re-acquired good data.
-    The enforcing guard must REFUSE (not just warn) when the domain is already non-blank, unless --force."""
-    called = {"execute": False, "restore": False}
+def _stub_main_env(monkeypatch, *, domain_current, called):
     monkeypatch.setattr(R.gdb, "init_precious_schema", lambda: None)
     monkeypatch.setattr(R.gdb, "session_scope", _null_scope)
-    monkeypatch.setattr(R, "build_manifest", lambda con, domain=R.DEFAULT_DOMAIN: {
-        "domain": {"current": "mpsomaha.org", "new": None}, "labels_to_reset": [],
+    monkeypatch.setattr(R, "build_manifest", lambda con, b, d, dom: {
+        "batch_id": b, "district_id": d, "generated_at": "2026-07-12T00:00:00Z",
+        "district_name": "X", "district_state": "NE",
+        "domain": {"current": domain_current, "new": dom}, "labels_to_reset": [],
         "captures": {}, "purge_counts": {}, "preserved": {}, "disk_dir": None})
-    monkeypatch.setattr(R, "_write_restore_point", lambda m: called.__setitem__("restore", True))
-    monkeypatch.setattr(R, "execute", lambda *a, **k: called.__setitem__("execute", True) or {})
-    monkeypatch.setattr(R, "_disk_dir", lambda: None)   # never touch the real filesystem
+    monkeypatch.setattr(R, "_write_restore_point", lambda m: called.__setitem__("restore", True) or "rdir")
+    monkeypatch.setattr(R, "execute", lambda con, m: called.__setitem__("execute", True) or {})
+    monkeypatch.setattr(R, "_disk_dir", lambda did: None)      # never touch the real filesystem
+    monkeypatch.setattr(R.BS, "export_labels", lambda con: 0)  # post-commit exporters stubbed
+    monkeypatch.setattr(R.BSTORE, "write_receipt", lambda con, b: None)
+
+
+def test_second_execute_is_refused_when_already_remediated(monkeypatch, capsys):
+    """A SECOND --execute after a scoped re-run would purge the re-acquired good data. The enforcing
+    guard must REFUSE (not just warn) when the domain is already non-blank, unless --force."""
+    called = {"execute": False, "restore": False}
+    _stub_main_env(monkeypatch, domain_current="mpsomaha.org", called=called)
     monkeypatch.setattr(sys, "argv", ["prog", "--execute"])
     R.main()
     assert called["execute"] is False and called["restore"] is False
@@ -163,14 +222,35 @@ def test_second_execute_is_refused_when_already_remediated(monkeypatch, capsys):
 def test_force_overrides_the_already_remediated_guard(monkeypatch):
     """--force is the explicit escape hatch: it proceeds even when the domain is already set."""
     called = {"execute": False}
-    monkeypatch.setattr(R.gdb, "init_precious_schema", lambda: None)
-    monkeypatch.setattr(R.gdb, "session_scope", _null_scope)
-    monkeypatch.setattr(R, "build_manifest", lambda con, domain=R.DEFAULT_DOMAIN: {
-        "domain": {"current": "mpsomaha.org", "new": None}, "labels_to_reset": [],
-        "captures": {}, "purge_counts": {}, "preserved": {}, "disk_dir": None})
-    monkeypatch.setattr(R, "_write_restore_point", lambda m: None)
-    monkeypatch.setattr(R, "execute", lambda *a, **k: called.__setitem__("execute", True) or {})
-    monkeypatch.setattr(R, "_disk_dir", lambda: None)
+    _stub_main_env(monkeypatch, domain_current="mpsomaha.org", called=called)
     monkeypatch.setattr(sys, "argv", ["prog", "--execute", "--force"])
     R.main()
     assert called["execute"] is True
+
+
+def test_junk_domain_argument_is_refused(monkeypatch):
+    """PR #242 review: the --domain side door gets the same #229 validation as Stage-1 admission —
+    a junk value must never be written into batch_district.domain."""
+    called = {"execute": False}
+    _stub_main_env(monkeypatch, domain_current="", called=called)
+    for bad in ("N/A", "http://", "none", "375 LEE ST"):
+        monkeypatch.setattr(sys, "argv", ["prog", "--execute", "--domain", bad])
+        with pytest.raises(SystemExit, match="#229"):
+            R.main()
+    assert called["execute"] is False
+
+
+def test_cli_targets_are_arguments_not_constants(monkeypatch, capsys):
+    """PR #242 review (altitude): the next contaminated district is a CLI invocation, not a
+    copy-pasted script — --batch-id/--district-id flow through to the manifest."""
+    seen = {}
+    called = {"execute": False}
+    _stub_main_env(monkeypatch, domain_current="", called=called)
+    monkeypatch.setattr(R, "build_manifest", lambda con, b, d, dom: seen.update(b=b, d=d) or {
+        "batch_id": b, "district_id": d, "generated_at": "x", "district_name": None,
+        "district_state": None, "domain": {"current": "", "new": dom}, "labels_to_reset": [],
+        "captures": {}, "purge_counts": {}, "preserved": {}, "disk_dir": None})
+    monkeypatch.setattr(sys, "argv", ["prog", "--batch-id", "batch_00099", "--district-id", "1234567",
+                                      "--domain", "other.k12.ne.us"])
+    R.main()
+    assert seen == {"b": "batch_00099", "d": "1234567"}
