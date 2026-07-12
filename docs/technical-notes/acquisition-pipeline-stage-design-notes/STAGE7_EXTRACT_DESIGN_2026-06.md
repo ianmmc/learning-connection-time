@@ -61,11 +61,10 @@ on this pass:
   record left the second, un-named rep re-offerable at EXECUTE time too (the legacy single `sent_file`
   field couldn't record it).
 
-Two more findings from the same pass are logged, not yet fixed: **#230** (Stage 6's initial rep pick
-doesn't apply the retry loop's yield-ranking, so a predictably-barren rep is sometimes sent round 1) and
-**#233** (whether/how to auto-withdraw a pending request once its target is no longer barren under the
-cumulative state — a design question, not yet resolved). Both fixes above are on branch
-`epic-200-shift-left-defect-prevention` (PR #221), not yet merged to `main`.
+**#231/#232 merged 2026-07-11** (PR #221, alongside epic #200). Tracing the shakedown's own follow-up
+batches then surfaced two MORE regressions (**#234**, **#235**) and resolved the **#230**/**#233** open
+findings above — all four fixed together in **PR #240** (merged 2026-07-12; REQ-123 codifies #233's
+auto-withdraw rule). See the decision-log entry below for the full mechanism.
 
 ---
 
@@ -177,10 +176,37 @@ cumulative state — a design question, not yet resolved). Both fixes above are 
   (`common/db.py`'s `_PRECIOUS_ALTERS`) adds the column NOT NULL / `server_default='production'` and
   backfills existing `-image` rows to `run_kind='probe'`, guarded and idempotent.
 - `detect_and_persist_requests()` — runs `requests.detect_requests()` against a just-persisted district
-  result and writes `ExtractionRequest` rows, natural-key deduped on `(handoff_hash, target, altitude,
-  route, band)`; re-detecting an already-reviewed request preserves its human review status rather than
-  resetting it to pending. `backfill_requests()` does the same from receipts already on disk, without
-  re-extracting (for retrofitting requests onto a run persisted before the detector existed).
+  result and writes `ExtractionRequest` rows. Dedup is two-layered (#234, PR #240): same-handoff ANY
+  status (idempotent re-detect/backfill — an already-reviewed request keeps its human status rather than
+  resetting to pending) OR any-handoff while still OPEN (`pending`/`approved`) — a still-open ask is the
+  SAME logical ask, so a fresh round triggered by executing a sibling request can't duplicate it (the
+  live symptom: 0602559's `high`-band `7→2` pending twice, 4220130's across four handoffs). An executed/
+  rejected/withdrawn prior round does NOT block re-emission — depth-guarding rounds is `budget.py`'s job,
+  never dedup's. The check-then-insert has no DB unique constraint behind it (impractical given the
+  conditional identity + NULL band, and the live table already held pre-fix duplicates); a
+  `pg_advisory_xact_lock` per district serializes concurrent writers instead, and a composite index
+  (`district_id, target, altitude, route`) keeps the natural-key lookup fast now that it can no longer be
+  served by a tight handoff-scoped scan. `backfill_requests()` does the same from receipts already on
+  disk, without re-extracting (for retrofitting requests onto a run persisted before the detector
+  existed) — and now also runs the withdraw pass below for every district it touches.
+- `withdraw_satisfied_requests()` — auto-retires OPEN directives whose premise the CUMULATIVE production
+  state has already satisfied (#233/REQ-123, PR #240): requests only ever grew per round in the live
+  shakedown (Redbank 5→6, Aspen 3→5, Union Hill 4→7 pending) with nothing retiring one a LATER round had
+  already fixed. A band-scoped directive withdraws once that band has a cumulative accepted fact; a
+  record-scoped one (band `NULL`: `7→6`/`7→3`) withdraws only when no FILLABLE band remains uncovered —
+  fillable = claimed ∩ real, the SAME predicate `detect_requests` uses (#175), so the two can never
+  disagree; vacuously true (withdraws) when NOTHING is fillable, mirroring detect's own permanent
+  suppression of an all-phantom district. A missing `district_target` row means unknown, never satisfied.
+  Called in the same transaction right after `detect_and_persist_requests` (production runs only) and
+  from `backfill_requests`; a human Reopen re-runs this exact check server-side, so a still-satisfied
+  directive re-withdraws immediately with a fresh note instead of silently resurrecting finished work.
+  **Deliberately unauthorized by a human** — the one exception to the ramp-up model's manual-until-proven
+  posture (governance §11b) — justified by risk asymmetry: not withdrawing risks unbounded, non-
+  self-correcting PAID spend (approving/executing an already-satisfied request), while a wrong withdrawal
+  only ever leaves a band gap that stays VISIBLE, re-emits next round, and is one Reopen away from
+  returning. *Auto-act in the spend-conservative direction when the failure mode is observable and
+  reversible* (Ian, 2026-07-11) — see the decision log for the review that found and closed the gap
+  between this stated rule and the first draft's actual fillable-band fallback.
 - `write_receipt()` / `write_district_receipt()` — per-run and per-district JSON under
   `data/acquisition/extractions/` (regenerable, auditable — never the transport; governance's
   DB-is-the-working-store rule).
@@ -808,10 +834,56 @@ image-vs-text comparison → the request-detection engine → gate@7 console. Ke
     consistency: the detector now emits `sent_files` (the complete send) alongside the legacy
     `sent_file`; both `_district_request_inputs` (detection) and `_sent_files_by_rec` (execution) union
     it into their exclusion sets. 2 pure + 4 govdb tests.
-  - Two further findings logged, not yet fixed: **#230** (Stage 6's initial rep pick doesn't apply the
-    retry loop's yield-ranking, so a predictably-barren rep can be sent round 1 — self-correcting via the
-    loop, but a wasted paid round each time) and **#233** (whether/how to auto-withdraw a pending request
+  - Two further findings logged at the time, not yet fixed: **#230** (Stage 6's initial rep pick doesn't
+    apply the retry loop's yield-ranking) and **#233** (whether/how to auto-withdraw a pending request
     once its target is no longer barren under the cumulative state — an open design question, not a bug).
-  - Both #231/#232 fixes are on branch `epic-200-shift-left-defect-prevention` (PR #221), not yet merged
-    to `main`. Also logged from this pass, upstream of Stage 7 (Stages 1/2/3/5/6): #222/#223/#224/#225/
-    #226/#227/#228/#229 — see the respective stage docs.
+    Both resolved below, alongside two MORE regressions the shakedown's own follow-up batches surfaced.
+  - #231/#232 merged 2026-07-11 (PR #221, alongside epic #200). Also logged from this pass, upstream of
+    Stage 7 (Stages 1/2/3/5/6): #222/#223/#224/#225/#226/#227/#228/#229 — see the respective stage docs.
+
+- **#230/#233/#234/#235 — request-loop integrity, PR #240, merged 2026-07-12.** Continuing to trace the
+  batch_00013 shakedown's OWN 7→2 follow-up batches (14–17) surfaced two more regressions beyond #231/
+  #232, alongside resolving the two open findings above:
+  - **#234 — executing one request duplicated its still-open siblings.** `detect_and_persist_requests`'s
+    dedup key was `(handoff_hash, target, altitude, route, band)` — scoped to ONE handoff. Executing a
+    single `7→6` (`_bundle_alternate`) spins a brand-new handoff for the whole district, so any OTHER
+    directive still open from an earlier round could never match its own prior row and got re-detected as
+    "new" (live: 0602559's `high`-band `7→2` pending twice; 4220130's across FOUR handoffs). Fixed with
+    the two-layered dedup described in §0 above.
+  - **#235 — a Stage 4→5 hand-off silently vanished for single-district follow-up batches.** Root cause
+    (definitively traced, not guessed): the follow-up autoflow (`server.py`) ran Stages 2→3→4 then
+    **stopped** — it never called the Stage-5 ingest at all, so batches 00014–00017's new
+    candidates/captures/processed docs never reached the `record`/`label` tables gate@5 reads. The console
+    showed zero new URLs; nothing was actually lost (recovered live via a manual `BS.ingest_batch`
+    backfill during triage). Fixed at the SOURCE, not the symptom: `run_stage4_with_ingest()` is now the
+    ONE operation both the autoflow and the manual `/api/process/{batch_id}/run` paths use — a CI-enforced
+    test asserts nothing in `server.py` calls `H4.run_batch` directly anymore, closing the recurrence
+    class (autoflow was simply a SECOND `run_batch` caller that forgot the ingest the first one
+    remembered) rather than just the one instance.
+  - **#230 — Stage 6's initial rep pick ignored yield.** `release.best_send`'s handbook-slice branch now
+    sends the slice only when its `n_times` matches or beats the district's best general text rep (ties to
+    the slice); a cross-layer test pins this to `rank_alternates`' own ordering (the two can't share code
+    — stage5_filter/stage7_extract are import-linter-separated siblings — so a live-drift guard substitutes
+    for direct reuse).
+  - **#233 — auto-withdraw, resolved.** See §0's `withdraw_satisfied_requests` entry above and REQ-123 for
+    the mechanism; the design call (auto, not human-gated) is Ian's, with the full risk-asymmetry rationale
+    captured there and in `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b.
+  - **The adversarial review of the first draft found real defects in the fixes themselves** — the kind a
+    green test suite doesn't catch: (1) `withdraw_satisfied_requests` and `detect_and_persist_requests`'s
+    covered-bands check could not see the SAME transaction's own just-persisted facts, because production
+    sessions run `autoflush=False` and `persist_run_session` never flushed before returning — #233's
+    stated primary case (a round's own facts satisfying an earlier round's directive) was silently inert
+    in production while every test passed on an `autoflush=True` fixture; (2) the fillable-band fallback
+    (`if real_bands else claimed`) collapsed "unknown" and "known-empty" into the same branch, silently
+    reproducing the exact un-withdrawable-forever bug #233 was fixing whenever a district's real-school
+    data came back genuinely empty. Both fixed, both now proven by dedicated tests that exercise the real
+    session config / the empty-set and all-phantom corners specifically — not just the happy path the
+    first draft's own tests covered. Also closed in the same pass: a UI Reopen button that could silently
+    resurrect a withdrawn directive with no re-check (now re-runs the premise check server-side); a false
+    audit-trail risk in withdraw's per-row UPDATE (now rowcount-checked, matching `extract_request_review`'s
+    existing pattern); `backfill_requests` missing the withdraw pass entirely (a third entry point that
+    would have accumulated stale directives forever); and an over-broad `except` in the Stage-5 ingest
+    failure handler that could mislabel a genuinely-committed ingest as failed.
+  - Full mechanism: §0 above (`detect_and_persist_requests`, `withdraw_satisfied_requests`). REQ-123
+    (auto-withdraw). 8 new/hardened tests across `test_stage7_persist.py`/`test_stage7_api.py`/
+    `test_release.py`, incl. a production-session-parity test with no test-side flush.

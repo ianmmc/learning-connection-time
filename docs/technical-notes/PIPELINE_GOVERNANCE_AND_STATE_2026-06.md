@@ -70,30 +70,50 @@ content-addressed config artifact + @champion/@fallback pointers + the shadow→
 (#213), shipped **DORMANT** (nothing reads the champion pointer live yet). Full detail: §11b below and
 each stage's own design note; activation of the dormant pieces tracked as one checklist (#219).
 
-**Epic #200 (shift-left defect-prevention infra) BUILT, on branch, not yet merged (2026-07-09/11):**
-the DB-free test-job guard (#201), a pre-push git hook running the DB-free suite + lint-imports (#202),
-property-based (hypothesis) state-machine tests for the batch lifecycle + request-loop directives (#203),
-and an AST mutation sweeper for the highest-stakes pure cores (#204) — all on `epic-200-
-shift-left-defect-prevention` (PR #221, open).
+**Epic #200 (shift-left defect-prevention infra) BUILT + MERGED (2026-07-11, PR #221):** the DB-free
+test-job guard (#201), a pre-push git hook running the DB-free suite + lint-imports (#202), property-based
+(hypothesis) state-machine tests for the batch lifecycle + request-loop directives (#203), and an AST
+mutation sweeper for the highest-stakes pure cores (#204). A max-effort adversarial review of the merge
+candidate found 15 real findings before it landed — most notably that `_sent_files_by_rec` (the
+execution-side `7→6` history check) only unioned `7→6` lineage, not `7→3`, asymmetric with the
+detection-side #231 fix in the very same PR, and that `_covered_bands_now`/`_district_request_inputs`
+lacked a `run_kind='production'` join, so a vision-council probe's accepted fact could auto-reject an
+already-approved directive at compose time. **#127 (an automated node:test harness for
+`capture_discovery.mjs`'s browser-driving logic, real Chromium via `page.route` fixtures — no fixture
+server, no faked page) merged 2026-07-12 (PR #239)**, closing epic #123 (tech-debt/hygiene cleanup); its
+own adversarial review caught a latent `segmentChrome` bug (header/footer/nav grabs ignored the
+`landmarks` argument) and hardened the harness to fail loud in CI rather than silently skip if Chromium
+is unavailable.
 
 **#122 (the first live non-benchmark end-to-end pass of the request loop) CLOSED 2026-07-06** — 23 fresh
 districts, both back-edges proven end-to-end; full report:
 `docs/technical-notes/stage-7-loop-reports/2026-07-06T0458Z-stage7-loop-report.md`. **A SECOND live
 shakedown ran 2026-07-11** (batch_00013) to re-validate the loop against the epic #200/#209-hardened
-pipeline — IN PROGRESS as of this writing. It found and fixed two request-loop regressions riding on PR
-#221 (**#231** — the `7→6` alternate list could re-offer an already-failed rep across rounds; **#232** —
-gate@7's view/rollup read latest-extraction-only, so a scoped retry could make an earlier run's solid
-facts disappear — fixed via a new cumulative merge, codified as **REQ-122**); logged, not yet fixed:
-**#230** (Stage 6's initial rep pick doesn't apply the retry loop's yield-ranking) and **#233** (whether
-to auto-withdraw a pending request once its target is no longer barren). Upstream findings from the same
-pass, each stage's own doc: #222/#225 (Stage 1/3), #227 (Stage 2), #223/#224/#226/#228 (Stage 5), #229
-(Stage 1). Full detail: `STAGE7_EXTRACT_DESIGN_2026-06.md` §6 (decision log).
+pipeline, finding **six** real request-loop/pipeline regressions across two merged PRs:
+- **PR #221 (2026-07-11):** **#231** — the `7→6` alternate list could re-offer an already-failed rep
+  across rounds; **#232** — gate@7's view/rollup read latest-extraction-only, so a scoped retry could make
+  an earlier run's solid facts disappear — fixed via a new cumulative merge, codified as **REQ-122**.
+- **PR #240 (2026-07-12), request-loop integrity:** **#234** — executing one request duplicated its
+  still-open siblings (dedup was scoped to one handoff; a `7→6` execution spins a new one); **#235** — the
+  follow-up autoflow never called the Stage 4→5 ingest at all (batches 00014–00017's evidence silently
+  never reached gate@5; fixed at the source — `run_stage4_with_ingest()` is now the ONE operation every
+  caller uses, CI-enforced); **#230** — Stage 6's initial rep pick ignored the retry loop's own
+  yield-ranking; **#233/REQ-123** — gate@7 now **auto-withdraws** an open request once its premise is
+  satisfied under the cumulative state (§11b below — the ONE deliberate exception to the manual-gate
+  posture, and the review of the first draft found the fillable-band logic silently reproduced the exact
+  bug it was fixing for an all-phantom/empty-real-bands district, plus a production-only staleness bug
+  where the withdraw check couldn't see its own round's just-persisted facts under `autoflush=False`).
+- Upstream findings from the same pass, each stage's own doc: #222/#225 (Stage 1/3), #227 (Stage 2),
+  #223/#224/#226/#228 (Stage 5), #229 (Stage 1); also #236/#237 (Stage 5/7 aggregation-quality — topology
+  precedence, school name-variant double-counting; open) and #238 (deferred efficiency follow-ups). Full
+  detail: `STAGE7_EXTRACT_DESIGN_2026-06.md` §6 (decision log).
 
-Next: merge PR #221 (closes #201–204, #231, #232 on merge); Stage 8 (aggregation, tracked: #89/#90) or the
-Council Lab's remaining backlog (`cost_benchmark`, prompt A/B, tracked: #80/#81); the live gate-mode
-(manual/auto) persistence + console toggle (tracked: #104) that #211's live wiring and #214's
-measured-pass both wait on; still open: REQ-100 (staleness, tracked: #100), the gate@7 inline PNG/PDF
-viewer (tracked: #151).
+Next: Stage 8 (aggregation, tracked: #89/#90) or the Council Lab's remaining backlog (`cost_benchmark`,
+prompt A/B, tracked: #80/#81); the empty-domain contamination chain (#229 prevention → #227 Millard
+purge/scoped re-run → #228 reset-labels console button); the aggregation-quality fixes (#236/#237); the
+live gate-mode (manual/auto) persistence + console toggle (tracked: #104) that #211's live wiring and
+#214's measured-pass both wait on; still open: REQ-100 (staleness, tracked: #100), the gate@7 inline
+PNG/PDF viewer (tracked: #151).
 
 ---
 
@@ -807,6 +827,31 @@ still executable — both under the **REQ-051 budget governor** (`common/budget.
 **rounds** depth guard (not rows — a hardening fix). Approval stays pure review; a **separate compose
 step** materializes the batch (so gate@7 isn't coupled to batch creation), and now **previews** it
 (dry-run, no persistence) before the operator commits. The toggle below is the ramp-up's control surface.
+
+**The one deliberate exception: gate@7's auto-withdraw (#233/REQ-123, 2026-07-11/12).** Every gate above
+is manual-until-earned — EXCEPT retiring a request-more-evidence directive once the cumulative production
+state has satisfied its premise (`stage7_run.withdraw_satisfied_requests`), which runs with **no human
+sign-off at all**, always, not confidence-gated. Ian's rule for admitting this exception: ***auto-act in
+the spend-conservative direction when the failure mode is observable and reversible.*** The test isn't
+"is a human in the loop" — it's the RISK ASYMMETRY between the two failure modes:
+- **Not auto-withdrawing** risks a human approving/executing an already-satisfied directive — real,
+  unbounded, non-self-correcting **paid** council spend, directly against the four commandments' tight-
+  cash-spend priority (§0 above).
+- **Auto-withdrawing wrongly** only ever leaves a band gap that stays **visible** (the action never
+  touches `school_fact` — the ground-truth facts are untouched), **re-emits** on the next production round
+  (`withdrawn` is not an OPEN status, so #234's dedup doesn't suppress a fresh detection), and is **one
+  Reopen-click** from returning — Reopen re-runs the exact same premise check server-side, so a
+  still-satisfied directive re-withdraws immediately with a fresh audit note rather than silently
+  resurrecting finished work.
+
+Apply this same test to future auto-mode decisions (the #104 gate-mode toggle, further runtime guardrails
+below): does automating bias toward the cheaper failure, and is that failure observable + reversible? If
+yes, auto is *consistent with* the ramp-up model here, not a violation of it — the model's actual claim is
+"don't automate a judgment you haven't earned confidence in," not "a human must always act first." A
+deterministic, reversible bookkeeping action retiring stale work is a different kind of decision than a
+judgment call on extraction quality — see REQ-123 and `STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§6 for the
+full mechanism and the review that found (and closed) two real defects in the first draft's actual
+implementation of this rule.
 
 Each gate toggles **manual** (human acts) / **auto** (self-advance), via a **global default + per-gate
 overrides**. **Auto is never blind: auto-with-confidence-escalation** — auto-accept the high-confidence,

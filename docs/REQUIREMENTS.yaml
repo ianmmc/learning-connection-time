@@ -2961,6 +2961,45 @@ requirements:
       retry (ext 806, 0 accepted) made its run-1 facts (ext 797, 7 accepted) vanish from the console and bands — the
       facts persisted; only the view regressed. Fix: pure merge core stage8_aggregate/aggregate.py::merge_fact_runs
       (accepted-beats-unresolved / earliest-accepted-wins / latest-diagnostic-wins) + cross-run queries in
-      process_governance/server.py (extract_district, extract_districts). Sibling issue #231 (auto-withdraw directives
-      whose target band is no longer barren per the CUMULATIVE state) builds on this same merge. Discovered because the
-      ramp-up model had a human eyeballing real gate@7 output (governance §11b) — the gate caught what review missed."
+      process_governance/server.py (extract_district, extract_districts). Sibling issue #233 (auto-withdraw directives
+      whose target band is no longer barren per the CUMULATIVE state, now REQ-123) builds on this same merge. Discovered
+      because the ramp-up model had a human eyeballing real gate@7 output (governance §11b) — the gate caught what
+      review missed."
+
+  - id: REQ-123
+    description: "gate@7 auto-withdraws OPEN request-more-evidence directives whose premise the CUMULATIVE production state has already satisfied — the queue reflects cumulative truth, not just what each round happened to detect"
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - "A BAND-scoped directive (7->2/7->1 naming a band) withdraws once that band has a cumulative production accepted fact (REQ-122 semantics) — its gap no longer exists"
+      - "A RECORD/DISTRICT-scoped directive (band NULL: 7->6/7->3) withdraws only when NO fillable band remains uncovered — fillable = claimed ∩ real (school_sampling.real_bands_for_district), the SAME predicate detect_requests uses, so the two can never disagree; vacuously true (withdraws) when nothing is fillable at all (an all-phantom district), since a record retry could never fill anything detect hasn't already given up on"
+      - "A MISSING district_target row means the target data is UNKNOWN, not satisfied — record-scoped directives never auto-withdraw for a district with no target data"
+      - "Probe runs (run_kind='probe') never count as coverage — only run_kind='production' accepted facts satisfy a premise"
+      - "Withdrawal is reversible by construction: 'withdrawn' is not an OPEN status, so a fresh re-detection re-emits if the gap re-opens; a human Reopen re-runs this exact premise check server-side — still-satisfied re-withdraws immediately with a fresh note, genuinely re-opened stays pending"
+      - "The request row is the durable audit (machine actor 'auto:premise-satisfied', timestamp, the satisfied premise in the note); a withdrawal is logged/returned ONLY when its guarded UPDATE actually changed a row (rowcount-checked) — no audit entry for a row a concurrent reviewer/executor already claimed"
+      - "Runs at every request-loop entry point: the live per-district persist transaction, AND the on-disk-receipts backfill sweep (backfill_requests) — no entry point may detect new requests without also retiring satisfied ones"
+      - "NO human sign-off gates this action (deliberate exception to the ramp-up model, governance §11b) — justified by risk asymmetry: NOT auto-withdrawing risks unbounded, non-self-correcting PAID spend (a human approving/executing an already-satisfied request); a wrong auto-withdrawal only ever leaves a band gap that stays VISIBLE, re-emits next round, and is one Reopen-click from returning. Auto-act in the spend-conservative direction when the failure mode is observable and reversible"
+    tests:
+      - tests/test_stage7_persist.py::test_withdraw_band_scoped_when_covered_record_scoped_only_when_no_gap_left
+      - tests/test_stage7_persist.py::test_withdraw_ignores_probe_facts_and_actioned_rows
+      - tests/test_stage7_persist.py::test_withdrawn_does_not_block_reemission
+      - tests/test_stage7_persist.py::test_withdraw_no_gap_left_uses_fillable_not_raw_claimed_bands
+      - tests/test_stage7_persist.py::test_withdraw_all_phantom_district_is_vacuously_satisfied
+      - tests/test_stage7_persist.py::test_withdraw_never_fires_when_district_target_row_is_missing
+      - tests/test_stage7_persist.py::test_withdraw_sees_this_rounds_facts_under_production_session_semantics
+      - tests/test_stage7_api.py::test_reopening_a_withdrawn_request_reruns_the_premise_check
+    created: "2026-07-11T00:00:00Z"
+    updated: "2026-07-12T00:00:00Z"
+    notes: "Root cause of the design question (#233, found live in the batch_00013 shakedown): requests only ever
+      grew round over round (Redbank 5->6, Aspen 3->5, Union Hill 4->7 pending) — nothing retired a directive whose
+      premise a LATER round had already satisfied, adding to the human's gate@7 review load indefinitely. Fixed +
+      merged in PR #240 (2026-07-12) alongside #230/#234/#235. A max-effort adversarial review of the first draft
+      found the fillable-band fallback silently reproduced the exact un-withdrawable-forever bug it was meant to
+      prevent (an empty real_bands set fell back to raw, unfiltered claimed bands) — fixed to match detect_requests'
+      own claimed-∩-real predicate exactly, with dedicated tests for the empty-set, all-phantom, and
+      row-missing corners. The SAME review found withdraw_satisfied_requests could not see its OWN round's
+      just-persisted facts in production (session autoflush=False, no flush before the check) — the fix's primary
+      case had been silently inert on the real code path while every test passed on an autoflush=True fixture;
+      persist_run_session now flushes before returning, proven by a dedicated production-parity test that runs the
+      real session config with no test-side flush."

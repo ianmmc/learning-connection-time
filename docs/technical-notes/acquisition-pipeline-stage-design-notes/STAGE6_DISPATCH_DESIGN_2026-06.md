@@ -495,11 +495,16 @@ selection could still freeze a 0-district handoff, and an unknown per-rep counci
 back to auto-routing instead of surfacing the stale reference. All six fixed; see §0's table for the
 present-state description of each fix.
 
-**2026-07-11 — initial rep-selection doesn't apply the request loop's yield-ranking (#230, logged, not
-yet fixed).** Found in the batch_00013 shakedown: Redbank Valley's round-1 dispatch sent a
+**2026-07-11 — initial rep-selection didn't apply the request loop's yield-ranking (#230, fixed
+2026-07-12, PR #240).** Found in the batch_00013 shakedown: Redbank Valley's round-1 dispatch sent a
 `harvest_slice.txt` rep (0 detected time-patterns) while the SAME record's `pdftotext.txt` (90 detected
 time-patterns) sat unsent as an alternate — Stage 7's request loop caught it and recovered via a `7→6`
-retry (§3F), but only after a wasted paid round. `rank_alternates` (STAGE7 §4, #155) already encodes the
-correct yield-first ladder for RETRIES; the initial Stage-6 dispatch pick doesn't reuse it. Fix direction:
-apply the same ranking to the FIRST send, not just the request-loop's retries — reusing `rank_alternates`
-rather than a second ranking implementation.
+retry (§3F), but only after a wasted paid round. `rank_alternates` (STAGE7 §4, #155) already encoded the
+correct yield-first ladder for RETRIES; the initial Stage-6 dispatch pick didn't reuse it. `rank_alternates`
+itself couldn't be imported directly (stage5_filter/stage7_extract are import-linter-separated siblings —
+neither may import the other), so `stage5_filter.release.best_send`'s handbook-slice branch now runs its
+OWN yield comparison (the slice sends only when its `n_times` matches or beats the district's best general
+text rep), with a dedicated cross-layer test (`test_handbook_yield_rule_matches_rank_alternates_ordering`,
+`tests/test_release.py`) pinning the two independent implementations to the same ordering — a live-drift
+guard standing in for the reuse the layering forbids. See `STAGE7_EXTRACT_DESIGN_2026-06.md` §6 for the
+full PR #240 decision-log entry (also #233/#234/#235, resolved in the same PR).
