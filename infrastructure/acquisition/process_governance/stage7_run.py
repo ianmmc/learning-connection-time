@@ -397,6 +397,9 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
                 # swept into a paid follow-up). A probe is a measurement, never a remedy driver.
                 if run_kind == "production":
                     detect_and_persist_requests(s, pd, hh)
+                    # #233, same txn: this round's facts may have satisfied EARLIER rounds' still-open
+                    # directives — retire them so the gate@7 queue reflects the cumulative truth.
+                    withdraw_satisfied_requests(s, did)
         _print_district_progress(did, pd, gt_data)
         if on_district:
             on_district(did, pd)
@@ -627,6 +630,11 @@ def persist_run_session(s, results: dict, *, created_by: str = "auto:stage7",
             {"district_id": did, "extraction_id": ex.extraction_id,
              "n_accepted": len(pd["accepted"]), "n_unresolved": len(pd["unresolved"])})
         summary["n_facts"] += len(pd["accepted"]) + len(pd["unresolved"])
+    # Flush the SchoolFact adds before returning (PR #240 review, HIGH): the session factory runs
+    # autoflush=False, so without this the caller's same-transaction raw-SQL reads — detect's
+    # covered-bands check and #233's withdraw pass, which exist precisely to react to THIS round's
+    # facts — silently cannot see them. (The tests masked this: gov_session defaults autoflush=True.)
+    s.flush()
     return summary
 
 
@@ -651,6 +659,19 @@ def persist_run(results: dict, *, created_by: str = "auto:stage7", receipt_path=
 # ---------------------------------------------------------------------------
 # The request-more-evidence loop: detect (pure) + persist (app-layer DB inputs)
 # ---------------------------------------------------------------------------
+def covered_bands_for_district(session, district_id: str) -> set:
+    """Bands with a cumulative accepted fact across ALL production runs — the ONE per-district
+    'covered' predicate (REQ-122 semantics; probes are measurements, never coverage). Shared by
+    _district_request_inputs (detect) and withdraw_satisfied_requests (#233) so the two can never
+    disagree within a transaction; stage7_execute._covered_bands_now is the BATCHED twin of this
+    query (different shape, same predicate — keep aligned)."""
+    return {b for (b,) in session.execute(
+        text("SELECT DISTINCT f.band FROM school_fact f "
+             "JOIN extraction e ON e.extraction_id = f.extraction_id "
+             "WHERE f.district_id = :d AND f.status = 'accepted' AND f.band IS NOT NULL "
+             "AND e.run_kind = 'production'"), {"d": district_id}).all()}
+
+
 def _district_request_inputs(session, result: dict):
     """The DB-derived inputs the pure detector (`requests.detect_requests`) needs for one district:
     claimed bands + the band's schools (`district_target`), the alternate reps per sent record
@@ -708,19 +729,18 @@ def _district_request_inputs(session, result: dict):
     # `band IS NOT NULL` keeps the covered set band-only — aligned with the batched twin
     # `stage7_execute._covered_bands_now` (the compose gate) so the two never disagree on membership.
     # run_kind='production' only, matching the twin: a probe's accepted fact must not mask a real gap.
-    covered = {b for (b,) in session.execute(
-        text("SELECT DISTINCT f.band FROM school_fact f "
-             "JOIN extraction e ON e.extraction_id = f.extraction_id "
-             "WHERE f.district_id = :d AND f.status = 'accepted' AND f.band IS NOT NULL "
-             "AND e.run_kind = 'production'"),
-        {"d": did}).all()}
+    covered = covered_bands_for_district(session, did)
     return claimed, band_schools, alts, covered, real_bands
 
 
 def detect_and_persist_requests(session, result: dict, handoff_hash: str) -> int:
-    """Detect the request-more-evidence directives for one district's result and persist the NEW ones
-    (natural-key dedup on (handoff_hash, target, altitude, route, band) so a re-detect/backfill never
-    duplicates and never clobbers a human's review status). Returns the count newly persisted."""
+    """Detect the request-more-evidence directives for one district's result and persist the NEW ones.
+    Dedup is two-layered (#234): (a) same handoff, ANY status — a re-detect/backfill is idempotent and
+    never resurrects a directive a human already actioned this round; (b) ANY handoff, OPEN status
+    (pending/approved) — a still-open ask is the same logical ask, so a fresh round triggered by
+    actioning a SIBLING request must not duplicate it. An executed/rejected/withdrawn prior round does
+    NOT block re-emission: a new round's identical gap is a genuinely new ask (the depth guard, not
+    dedup, bounds how many rounds may fire). Returns the count newly persisted."""
     claimed, band_schools, alts, covered, real_bands = _district_request_inputs(session, result)
     explain: dict = {}
     reqs = RQ.detect_requests(result, claimed_bands=claimed, alternates_by_rec=alts,
@@ -739,11 +759,21 @@ def detect_and_persist_requests(session, result: dict, handoff_hash: str) -> int
                         f"those grades, no 7->2 emitted")
         print(f"  [requests] {did}: " + "; ".join(bits), flush=True)
     n = 0
+    if reqs:
+        # Serialize concurrent detects for this district (PR #240 review): the check-then-insert
+        # below has no DB unique constraint behind it, so two overlapping writers (live streaming +
+        # a backfill sweep, or two autoflow threads) could both pass the SELECT before either
+        # INSERTs. The xact-scoped advisory lock releases at commit, and READ COMMITTED means the
+        # second writer's SELECT then sees the first's committed rows.
+        session.execute(text("SELECT pg_advisory_xact_lock(hashtext('extreq:' || :d))"),
+                        {"d": result.get("district_id", "")})
     for r in reqs:
         exists = session.execute(
-            text("SELECT 1 FROM extraction_request WHERE handoff_hash = :h AND target = :t "
-                 "AND altitude = :a AND route = :r AND band IS NOT DISTINCT FROM :b"),
-            {"h": handoff_hash, "t": r["target"], "a": r["altitude"], "r": r["route"], "b": r["band"]}
+            text("SELECT 1 FROM extraction_request WHERE district_id = :d AND target = :t "
+                 "AND altitude = :a AND route = :r AND band IS NOT DISTINCT FROM :b "
+                 f"AND (handoff_hash = :h OR status IN {RQ.OPEN_STATUSES_SQL})"),
+            {"d": r["district_id"], "h": handoff_hash, "t": r["target"], "a": r["altitude"],
+             "r": r["route"], "b": r["band"]}
         ).first()
         if exists:
             continue
@@ -755,6 +785,68 @@ def detect_and_persist_requests(session, result: dict, handoff_hash: str) -> int
     return n
 
 
+def withdraw_satisfied_requests(session, district_id: str) -> list:
+    """#233: retire OPEN directives whose premise the CUMULATIVE state has satisfied — requests must
+    not only grow per round (observed live: Redbank 5->6, Aspen 3->5, Union Hill 4->7 pending), each
+    stale one adding to the human's gate@7 load. The premise-check is deterministic code against the
+    cumulative production truth (merge_fact_runs semantics, REQ-122), never an LLM judgment:
+      - a BAND-scoped directive (7->2/7->1 with band) is withdrawn once that band has a cumulative
+        accepted fact — its gap no longer exists;
+      - a RECORD/DISTRICT-scoped directive (band NULL: 7->6/7->3 retries) is withdrawn only when NO
+        claimed band remains uncovered — the conservative mirror of detect-time's no-fillable-gap
+        suppression (a record retry might fill ANY remaining gap, so it stays while one exists).
+    Withdrawal is reversible by construction: 'withdrawn' is not an OPEN status, so if the gap ever
+    re-opens a fresh re-detection re-emits (#234's dedup only blocks on pending/approved); a human
+    Reopen re-runs this check server-side. The request row itself is the durable audit — machine
+    actor, timestamp, and the satisfied premise in the note (same pattern as compose's
+    _reject_suppressed). Returns [(request_id, note), ...] ACTUALLY withdrawn (rowcount-checked: a
+    concurrent review/execute that wins the row must not fabricate an audit entry).
+
+    Band-NULL semantics mirror detect_requests EXACTLY (PR #240 review): fillable = claimed ∩ real,
+    and 'no gap left' is VACUOUSLY true when nothing is fillable (an all-phantom district — detect
+    has permanently suppressed it, so a record retry can never fill anything). The one asymmetry: a
+    MISSING district_target row means the target data is unknown, and unknown is never satisfied."""
+    open_rows = session.execute(text(
+        f"SELECT request_id, band FROM extraction_request "
+        f"WHERE district_id = :d AND status IN {RQ.OPEN_STATUSES_SQL}"), {"d": district_id}).all()
+    if not open_rows:
+        return []                     # nothing open — skip the coverage/target queries entirely
+    covered = covered_bands_for_district(session, district_id)
+    row = session.execute(text("SELECT lea_claimed_bands_json, schools_by_band_json, nces_by_level_json "
+                               "FROM district_target WHERE district_id = :d"), {"d": district_id}).fetchone()
+    if row is None:
+        fillable, no_gap_left = [], False   # target data UNKNOWN — never assume satisfied
+    else:
+        claimed = json.loads(row[0]) if row[0] else []
+        sbb = json.loads(row[1]) if row[1] else {}
+        by_level = json.loads(row[2]) if row[2] else {}
+        real_bands = SS.real_bands_for_district(by_level, sbb)
+        fillable = [b for b in claimed if b in real_bands]
+        no_gap_left = all(b in covered for b in fillable)   # vacuously True when nothing fillable
+    withdrawn, now = [], M7.utcnow()
+    for req_id, band in open_rows:
+        if band is not None and band in covered:
+            note = f"auto-withdrawn: band '{band}' now has a cumulative accepted fact (#233)"
+        elif band is None and no_gap_left:
+            note = (f"auto-withdrawn: every fillable band ({', '.join(fillable)}) now covered — "
+                    f"no fillable gap remains (#233)") if fillable else \
+                ("auto-withdrawn: no fillable band exists (every claimed band is phantom) — "
+                 "nothing a record retry could fill (#233)")
+        else:
+            continue
+        res = session.execute(text(
+            f"UPDATE extraction_request SET status = 'withdrawn', reviewed_by = 'auto:premise-satisfied', "
+            f"reviewed_at = :t, review_note = :n "
+            f"WHERE request_id = :id AND status IN {RQ.OPEN_STATUSES_SQL}"),
+            {"t": now, "n": note, "id": req_id})
+        if res.rowcount == 1:
+            withdrawn.append((req_id, note))
+    if withdrawn:
+        print(f"  [requests] {district_id}: auto-withdrew {len(withdrawn)} satisfied directive(s) "
+              f"(#233)", flush=True)
+    return withdrawn
+
+
 def backfill_requests(handoff_hash: str, *, root=None) -> int:
     """Detect + persist requests for every persisted district of a handoff, from its receipts on disk
     — no re-extraction, no paid calls. Idempotent. Returns the count newly persisted."""
@@ -762,11 +854,17 @@ def backfill_requests(handoff_hash: str, *, root=None) -> int:
     d = Path(root) if root else (paths.ACQUISITION / "extractions")
     total = 0
     with gdb.session_scope() as s:
+        dids = set()
         for f in sorted(d.glob(f"extraction_{handoff_hash}_*.json")):
             doc = json.loads(f.read_text())
             pd = doc.get("district")
             if pd:
                 total += detect_and_persist_requests(s, pd, handoff_hash)
+                dids.add(pd.get("district_id"))
+        # #233 must hold on THIS entry point too (PR #240 review): a backfill sweep that persists
+        # new requests but never retires satisfied ones would re-accumulate the stale gate@7 load.
+        for did in sorted(x for x in dids if x):
+            withdraw_satisfied_requests(s, did)
     return total
 
 

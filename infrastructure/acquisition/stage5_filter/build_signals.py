@@ -1135,10 +1135,20 @@ def ingest_batch(district_ids: list, root: Path = RAW_DIR, *, regenerate_filtere
         n_rec = sess.execute(text("SELECT COUNT(*) FROM record WHERE district_id = ANY(:ids)"),
                              {"ids": ingested or [""]}).scalar()
     n_written = n_send = 0
+    regen_error = None
     if regenerate_filtered and ingested:
-        n_written, n_send = _regenerate_filtered(sorted(set(ingested)))
+        # Runs AFTER the DB transaction above committed. filtered.json is a REGENERABLE receipt
+        # (the DB is the working store), so a failure here must not raise and mislabel the
+        # committed ingest as failed (#240 review) — record it in the summary and move on.
+        try:
+            n_written, n_send = _regenerate_filtered(sorted(set(ingested)))
+        except Exception as e:  # noqa: BLE001
+            regen_error = f"{type(e).__name__}: {e}"
+            print(f"[warn] ingest committed but filtered.json regen failed ({regen_error}); "
+                  f"re-run release.write_filtered for these districts")
     summary = {"districts": sorted(set(ingested)), "n_districts": len(set(ingested)),
-               "n_records": n_rec, "n_filtered_written": n_written, "n_send": n_send}
+               "n_records": n_rec, "n_filtered_written": n_written, "n_send": n_send,
+               **({"filtered_regen_error": regen_error} if regen_error else {})}
     print(f"ingest_batch: {summary['n_districts']} districts, {n_rec} records re-ingested; "
           f"filtered.json regenerated for {n_written} ({n_send} records to send)")
     return summary

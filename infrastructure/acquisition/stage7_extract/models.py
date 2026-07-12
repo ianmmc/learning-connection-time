@@ -11,7 +11,7 @@ Registered on the governance `Base`; created via `init_precious_schema()` once t
 Stage-7 persist path) imports this module.
 """
 
-from sqlalchemy import String, Integer, Float, Text, ForeignKey
+from sqlalchemy import String, Integer, Float, Text, ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column
 
 from infrastructure.acquisition.common import db as gdb
@@ -81,9 +81,13 @@ class ExtractionRequest(gdb.Base):
     """A request-more-evidence directive emitted by the deterministic detector (`requests.py`) after a
     run — the 7→6/3/2/1 back-edge to route. The derived fields (altitude/route/target/band/reason) are
     regenerable from the extraction result; the REVIEW fields (status/reviewed_by/note) are the precious
-    gate@7 human decision. Natural key for idempotent re-detection: (handoff_hash, target, altitude,
-    route, band). Persisted on a re-detect only if absent — an existing row keeps its review status."""
+    gate@7 human decision. Dedup identity (#234, two-layered): same handoff any status, OR any handoff
+    while still OPEN (pending/approved). Persisted on a re-detect only if absent — an existing row keeps
+    its review status. No DB unique constraint backs the check-then-insert (the conditional identity +
+    NULL band make one impractical on the live table); the writer serializes per district via a pg
+    advisory xact lock instead, and ix_extraction_request_ask serves the natural-key lookup."""
     __tablename__ = "extraction_request"
+    __table_args__ = (Index("ix_extraction_request_ask", "district_id", "target", "altitude", "route"),)
 
     request_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     district_id: Mapped[str] = mapped_column(String, index=True)
@@ -94,7 +98,7 @@ class ExtractionRequest(gdb.Base):
     band: Mapped[str | None] = mapped_column(String, nullable=True)
     params_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     reason: Mapped[str] = mapped_column(Text)
-    status: Mapped[str] = mapped_column(String, default="pending")   # pending|approved|rejected|executed
+    status: Mapped[str] = mapped_column(String, default="pending")   # pending|approved|rejected|executed|withdrawn (#233)
     created_at: Mapped[str] = mapped_column(String, default=utcnow)
     reviewed_by: Mapped[str | None] = mapped_column(String, nullable=True)
     reviewed_at: Mapped[str | None] = mapped_column(String, nullable=True)

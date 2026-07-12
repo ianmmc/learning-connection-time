@@ -320,3 +320,210 @@ def test_list_view_sql_matches_merge_fact_runs(gov_session):
     assert (len(accepted), len(unresolved)) == (2, 1)
     assert (sql_rows[did]["n_accepted"], sql_rows[did]["n_unresolved"]) \
         == (len(accepted), len(unresolved))
+
+
+# --------------------------- #234: cross-handoff open-request dedup ---------------------------
+def test_detect_dedups_against_an_open_request_from_another_handoff(gov_session, monkeypatch):
+    """#234: actioning ONE request spins a new handoff for the district; the re-detection under that
+    handoff must not duplicate a sibling directive still OPEN from an earlier round (the live
+    batch_00013 symptom: 0602559's high-band 7->2 pending twice, 4220130's across FOUR handoffs)."""
+    gdb.init_precious_schema()
+    s = gov_session
+    monkeypatch.setattr(R7, "_district_request_inputs",
+                        lambda sess, res: (["elementary", "high"], {"high": ["A High"]}, {}, set(),
+                                           {"elementary", "high"}))
+    result = {"district_id": "ZZREQ2", "reps": [],
+              "accepted": [{"band": "elementary", "school": "e"}], "unresolved": []}
+    assert R7.detect_and_persist_requests(s, result, "hh-round1") == 1   # round 1 emits the 7->2 high
+    s.flush()
+    assert R7.detect_and_persist_requests(s, result, "hh-round2") == 0   # round 2: still open -> no dup
+    s.flush()
+    n = s.execute(text("SELECT COUNT(*) FROM extraction_request WHERE district_id='ZZREQ2'")).scalar()
+    assert n == 1
+
+
+def test_detect_reemits_after_a_prior_round_was_actioned(gov_session, monkeypatch):
+    """#234's counterweight: an EXECUTED (or otherwise closed) prior round does NOT block a new
+    round's identical ask -- bounding repeat rounds is the depth guard's job, never dedup's."""
+    gdb.init_precious_schema()
+    s = gov_session
+    monkeypatch.setattr(R7, "_district_request_inputs",
+                        lambda sess, res: (["elementary", "high"], {"high": ["A High"]}, {}, set(),
+                                           {"elementary", "high"}))
+    result = {"district_id": "ZZREQ3", "reps": [],
+              "accepted": [{"band": "elementary", "school": "e"}], "unresolved": []}
+    assert R7.detect_and_persist_requests(s, result, "hh-r1") == 1
+    s.flush()   # the ORM add must hit the DB before the raw UPDATE can see it
+    s.execute(text("UPDATE extraction_request SET status='executed', executed_ref='batch_x' "
+                   "WHERE district_id='ZZREQ3'"))
+    s.flush()
+    assert R7.detect_and_persist_requests(s, result, "hh-r2") == 1       # the gap persists -> new ask
+    s.flush()
+    n = s.execute(text("SELECT COUNT(*) FROM extraction_request WHERE district_id='ZZREQ3'")).scalar()
+    assert n == 2
+
+
+# --------------------------- #233: auto-withdraw satisfied directives ---------------------------
+def _seed_requests(s, did, claimed):
+    # every claimed band is backed by a real school — under #240's detect-consistent semantics an
+    # unbacked claimed band is PHANTOM (unfillable), which is its own test case below, not this one
+    sbb = {b: {"schools": [{"name": f"{b} school", "low": "KG", "high": "12"}]} for b in claimed}
+    s.execute(text("INSERT INTO district_target (district_id, lea_claimed_bands_json, "
+                   "schools_by_band_json) VALUES (:d, :c, :s)"),
+              {"d": did, "c": json.dumps(claimed), "s": json.dumps(sbb)})
+    s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, target, "
+                   "band, params_json, reason, status, created_at) VALUES "
+                   "(:d, 'h1', 'district', '7->2', :d, 'high', '{}', 'r', 'pending', 't1'), "
+                   "(:d, 'h1', 'representation', '7->6', :t, NULL, '{}', 'r', 'approved', 't1')"),
+              {"d": did, "t": f"{did}:rec1"})
+
+
+def test_withdraw_band_scoped_when_covered_record_scoped_only_when_no_gap_left(gov_session):
+    """#233: a 7->2 for band B withdraws once B has a cumulative accepted fact; a band-NULL 7->6
+    withdraws only when NO claimed band remains uncovered (it might fill any remaining gap)."""
+    gdb.init_precious_schema()
+    s = gov_session
+    did = "ZZWDR1"
+    _seed_requests(s, did, ["elementary", "high"])
+    R7.persist_run_session(s, _run_for(did, "hw1", accepted=[("high", "hs")]), created_by="zz")
+    s.flush()
+    wd = R7.withdraw_satisfied_requests(s, did)
+    assert len(wd) == 1                                            # only the band-scoped 7->2
+    rows = {r.route: r for r in s.execute(text(
+        "SELECT route, status, reviewed_by, review_note FROM extraction_request "
+        "WHERE district_id=:d"), {"d": did}).all()}
+    assert rows["7->2"].status == "withdrawn"
+    assert rows["7->2"].reviewed_by == "auto:premise-satisfied"
+    assert "band 'high'" in rows["7->2"].review_note
+    assert rows["7->6"].status == "approved"                       # elementary still uncovered
+    R7.persist_run_session(s, _run_for(did, "hw2", accepted=[("elementary", "es")]), created_by="zz")
+    s.flush()
+    wd2 = R7.withdraw_satisfied_requests(s, did)
+    assert len(wd2) == 1                                           # now the record-scoped 7->6 too
+    r76 = s.execute(text("SELECT status, review_note FROM extraction_request "
+                         "WHERE district_id=:d AND route='7->6'"), {"d": did}).one()
+    assert r76.status == "withdrawn" and "no fillable gap remains" in r76.review_note
+
+
+def test_withdraw_ignores_probe_facts_and_actioned_rows(gov_session):
+    """#233: a probe's accepted fact is a measurement, never a premise-satisfier; and rows a human
+    (or compose) already actioned are untouched -- only OPEN rows are eligible."""
+    gdb.init_precious_schema()
+    s = gov_session
+    did = "ZZWDR2"
+    _seed_requests(s, did, ["elementary", "high"])
+    s.execute(text("UPDATE extraction_request SET status='rejected' "
+                   "WHERE district_id=:d AND route='7->6'"), {"d": did})
+    R7.persist_run_session(s, _run_for(did, "hwp", accepted=[("high", "hs")], run_kind="probe"),
+                           created_by="zz")
+    s.flush()
+    assert R7.withdraw_satisfied_requests(s, did) == []            # probe coverage counts for nothing
+    R7.persist_run_session(s, _run_for(did, "hwq", accepted=[("high", "hs")]), created_by="zz")
+    s.flush()
+    wd = R7.withdraw_satisfied_requests(s, did)
+    assert len(wd) == 1 and "band 'high'" in wd[0][1]              # only the pending 7->2 withdraws
+    rej = s.execute(text("SELECT status FROM extraction_request WHERE district_id=:d AND route='7->6'"),
+                    {"d": did}).scalar()
+    assert rej == "rejected"                                       # the actioned row stays actioned
+
+
+def test_withdrawn_does_not_block_reemission(gov_session, monkeypatch):
+    """#233 x #234: 'withdrawn' is not an OPEN status -- if the gap ever re-opens, a fresh
+    re-detection re-emits a new pending directive instead of being deduped into silence."""
+    gdb.init_precious_schema()
+    s = gov_session
+    monkeypatch.setattr(R7, "_district_request_inputs",
+                        lambda sess, res: (["elementary", "high"], {"high": ["A High"]}, {}, set(),
+                                           {"elementary", "high"}))
+    result = {"district_id": "ZZWDR3", "reps": [],
+              "accepted": [{"band": "elementary", "school": "e"}], "unresolved": []}
+    assert R7.detect_and_persist_requests(s, result, "hh-w1") == 1
+    s.flush()   # the ORM add must hit the DB before the raw UPDATE can see it
+    s.execute(text("UPDATE extraction_request SET status='withdrawn' WHERE district_id='ZZWDR3'"))
+    s.flush()
+    assert R7.detect_and_persist_requests(s, result, "hh-w2") == 1   # re-emitted, not deduped
+
+
+def test_withdraw_no_gap_left_uses_fillable_not_raw_claimed_bands(gov_session):
+    """#233 review: a PHANTOM claimed band (no real school serves it) can never be covered, so the
+    no-gap-left check must run on claimed ∩ real (detect's #175 predicate) — raw `claimed` would
+    leave record-scoped directives un-withdrawable forever for exactly those districts."""
+    gdb.init_precious_schema()
+    s = gov_session
+    did = "ZZWDR4"
+    # claimed: elementary + middle, but the schools data serves ONLY elementary (middle = phantom)
+    sbb = {"elementary": {"schools": [{"name": "Real ES", "low": "KG", "high": "05"}]}}
+    s.execute(text("INSERT INTO district_target (district_id, lea_claimed_bands_json, "
+                   "schools_by_band_json, nces_by_level_json) VALUES (:d, :c, :s, :n)"),
+              {"d": did, "c": json.dumps(["elementary", "middle"]), "s": json.dumps(sbb),
+               "n": json.dumps({})})
+    s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                   "target, band, params_json, reason, status, created_at) VALUES "
+                   "(:d, 'h1', 'representation', '7->6', :t, NULL, '{}', 'r', 'pending', 't1')"),
+              {"d": did, "t": f"{did}:rec1"})
+    R7.persist_run_session(s, _run_for(did, "hw4", accepted=[("elementary", "real es")]),
+                           created_by="zz")
+    s.flush()
+    wd = R7.withdraw_satisfied_requests(s, did)
+    assert len(wd) == 1 and "no fillable gap remains" in wd[0][1]
+
+
+def test_withdraw_all_phantom_district_is_vacuously_satisfied(gov_session):
+    """#240 review: when NOTHING claimed is fillable (all claimed bands phantom — detect has
+    permanently suppressed the district), a record retry can never fill anything, so the
+    record-scoped directive withdraws VACUOUSLY — mirroring detect's own `target_bands <= have`."""
+    gdb.init_precious_schema()
+    s = gov_session
+    did = "ZZWDR6"
+    # row PRESENT, claimed populated, but no real-school data at all -> every claimed band phantom
+    s.execute(text("INSERT INTO district_target (district_id, lea_claimed_bands_json) VALUES (:d, :c)"),
+              {"d": did, "c": json.dumps(["elementary", "middle"])})
+    s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                   "target, band, params_json, reason, status, created_at) VALUES "
+                   "(:d, 'h1', 'representation', '7->6', :t, NULL, '{}', 'r', 'pending', 't1')"),
+              {"d": did, "t": f"{did}:rec1"})
+    wd = R7.withdraw_satisfied_requests(s, did)
+    assert len(wd) == 1 and "no fillable band exists" in wd[0][1]
+
+
+def test_withdraw_never_fires_when_district_target_row_is_missing(gov_session):
+    """#240 review: a MISSING district_target row means the target data is UNKNOWN — unknown is
+    never 'satisfied', so record-scoped directives stay open (the one asymmetry vs detect)."""
+    gdb.init_precious_schema()
+    s = gov_session
+    did = "ZZWDR7"
+    s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                   "target, band, params_json, reason, status, created_at) VALUES "
+                   "(:d, 'h1', 'representation', '7->6', :t, NULL, '{}', 'r', 'pending', 't1')"),
+              {"d": did, "t": f"{did}:rec1"})
+    R7.persist_run_session(s, _run_for(did, "hw7", accepted=[("high", "hs")]), created_by="zz")
+    assert R7.withdraw_satisfied_requests(s, did) == []
+    st = s.execute(text("SELECT status FROM extraction_request WHERE district_id=:d"), {"d": did}).scalar()
+    assert st == "pending"
+
+
+def test_withdraw_sees_this_rounds_facts_under_production_session_semantics():
+    """#240 review (the HIGH finding): production sessions run autoflush=False (db.py), and the old
+    code left this round's SchoolFact adds unflushed when detect/withdraw ran — so #233's primary
+    case ('this round's facts satisfied an earlier directive') silently never fired in production
+    while every test passed on an autoflush=True fixture. This test runs the REAL session config
+    with NO test-side flush: persist_run_session's own flush must make the facts visible."""
+    from sqlalchemy.orm import Session
+    gdb.init_precious_schema()
+    try:
+        conn = gdb.get_engine().connect()
+        conn.execute(text("SELECT 1"))
+    except Exception as e:  # pragma: no cover
+        pytest.skip(f"governance Postgres unavailable: {type(e).__name__}: {e}")
+    s = Session(bind=conn, autoflush=False)   # PRODUCTION parity — do not add flushes here
+    try:
+        did = "ZZWDR8"
+        _seed_requests(s, did, ["high"])
+        R7.persist_run_session(s, _run_for(did, "hw8", accepted=[("high", "hs")]), created_by="zz")
+        wd = R7.withdraw_satisfied_requests(s, did)   # same txn, no flush between — the real call shape
+        assert any("band 'high'" in note for _, note in wd), \
+            "withdraw must see the facts persist_run_session just added in this same transaction"
+    finally:
+        s.rollback()
+        s.close()
+        conn.close()

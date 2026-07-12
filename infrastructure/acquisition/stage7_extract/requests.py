@@ -28,6 +28,12 @@ ROUTE_RECAPTURE = "7->3"    # recapture the URL (no alternate rep)
 ROUTE_REDISCOVER = "7->2"   # targeted discovery for a missing band
 ROUTE_ADD_SCHOOLS = "7->1"  # follow-up batch adding specific schools
 
+# The statuses under which a directive is OPEN (a human can still action it) — the ONE definition
+# (PR #240 review: this pair was previously spelled inline six times across three files). The _SQL
+# form is for inlining into raw text() queries (module constant, never user input).
+OPEN_STATUSES = ("pending", "approved")
+OPEN_STATUSES_SQL = "(" + ", ".join(f"'{s}'" for s in OPEN_STATUSES) + ")"
+
 
 def _accepted_by_record(result: dict) -> dict:
     """rec_key → count of accepted facts across its reps."""

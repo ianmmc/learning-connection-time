@@ -66,8 +66,10 @@ def _mock_env(monkeypatch, already):
     monkeypatch.setattr(R7, "_spend_by_district", _spend_seed())
     monkeypatch.setattr(R7, "write_district_receipt", lambda pd, hh, **k: "/tmp/r.json")
     monkeypatch.setattr(R7.DS, "export_status", lambda s: None)
-    # the request-loop detect/persist runs in the same persist txn — no-op it here (its own tests cover it)
+    # the request-loop detect/persist + #233 withdraw run in the same persist txn — no-op them here
+    # (their own tests cover them)
     monkeypatch.setattr(R7, "detect_and_persist_requests", lambda s, pd, hh: 0)
+    monkeypatch.setattr(R7, "withdraw_satisfied_requests", lambda s, did: [])
     persisted = []
     monkeypatch.setattr(R7, "persist_run_session",
                         lambda s, results, **kw: persisted.append(next(iter(results["districts"]))))

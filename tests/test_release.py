@@ -68,6 +68,30 @@ def test_best_send_handbook_falls_back_to_pdf_when_no_slice():
     assert R.best_send(reps, sig, {}) == [{"file": "page.pdf", "kind": "pdf", "pages": [2, 3]}]
 
 
+def test_best_send_handbook_slice_loses_to_a_denser_general_text_rep():
+    # #230 (Redbank Valley): the slice used to be sent UNCONDITIONALLY — round 1 dispatched
+    # harvest_slice.txt (n_times=26) while pdftotext.txt (n_times=90) sat unsent as an alternate,
+    # wasting a paid round before the 7->6 retry self-corrected. Yield now decides. The rep set
+    # INCLUDES the pdf rep every real handbook record carries — the review of this fix caught the
+    # pdf+pages fallback intercepting the fall-through and sending the whole PDF instead.
+    reps = [_text_rep("harvest_slice.txt", n_times=26, source="harvest_slice"),
+            _text_rep("pdftotext.txt", n_times=90),
+            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
+    sig = {"is_handbook": True, "harvest_pages": [12]}
+    assert R.best_send(reps, sig, {}) == [{"file": "pdftotext.txt", "kind": "text"}]
+
+
+def test_best_send_handbook_slice_wins_ties_and_zero_yield_records():
+    # ties go to the slice (the purpose-built handbook rep) ...
+    reps = [_text_rep("harvest_slice.txt", n_times=8, source="harvest_slice"),
+            _text_rep("a.txt", n_times=8)]
+    sig = {"is_handbook": True, "harvest_pages": [3]}
+    assert R.best_send(reps, sig, {}) == [{"file": "harvest_slice.txt", "kind": "text", "pages": [3]}]
+    # ... and a slice-only record (no usable general text) still sends the slice, even at 0 yield
+    only_slice = [_text_rep("harvest_slice.txt", n_times=0, source="harvest_slice")]
+    assert R.best_send(only_slice, sig, {}) == [{"file": "harvest_slice.txt", "kind": "text", "pages": [3]}]
+
+
 def test_best_send_empty_when_no_reps():
     assert R.best_send([], {}, {}) == []
 
@@ -198,3 +222,19 @@ def test_generate_writes_traceable_filtered_json(gov_session, tmp_path):
     assert rec["decision"] == "send" and rec["send"] == [{"file": "page.txt", "kind": "text"}]
     assert rec["intended_schools"] == ["A Elem"]
     gov_session.rollback()
+
+
+def test_handbook_yield_rule_matches_rank_alternates_ordering():
+    """#240 review: best_send's slice-vs-text yield comparison and the retry loop's rank_alternates
+    are two encodings of ONE rule (yield-bearing text by n_times first). The two layers can't import
+    each other (import-linter siblings), so THIS cross-layer test is the drift guard: if the
+    ranking rule ever changes on one side, this fails and the other side gets re-aligned."""
+    from infrastructure.acquisition.stage7_extract.requests import rank_alternates
+    reps = [_text_rep("harvest_slice.txt", n_times=26, source="harvest_slice"),
+            _text_rep("pdftotext.txt", n_times=90),
+            _text_rep("page.txt", n_times=4)]
+    sig = {"is_handbook": True, "harvest_pages": [12]}
+    sent = R.best_send(reps, sig, {})[0]["file"]
+    alts = [{"kind": "text", "n_times": r["n_times"], "file": r["filename"]} for r in reps]
+    assert sent == rank_alternates(alts)[0]["file"], \
+        "Stage 5's initial pick disagrees with the retry loop's yield ranking"

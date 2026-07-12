@@ -90,6 +90,7 @@
     const badge = r.status === "approved" ? `<span class="badge badge-success">approved</span>`
                 : r.status === "rejected" ? `<span class="badge badge-neutral">rejected</span>`
                 : r.status === "executed" ? `<span class="badge badge-accent">executed</span>`
+                : r.status === "withdrawn" ? `<span class="badge badge-neutral">withdrawn</span>`
                 : `<span class="badge badge-warn">pending</span>`;
     const lin = r.lineage || null;                       // #154: where it went / why it can't
     const blocked = lin && lin.blocked;
