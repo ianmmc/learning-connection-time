@@ -114,6 +114,16 @@ _PRECIOUS_ALTERS = [
     # request. create_all builds it on FRESH tables (declared on the model); this covers existing DBs.
     "CREATE INDEX IF NOT EXISTS ix_extraction_request_ask "
     "ON extraction_request (district_id, target, altitude, route)",
+    # PR #248 review: gate_mode.configured_mode is NULLABLE (NULL = inherit the global default) so the
+    # #211 license writer never materializes a configured toggle the human didn't set. A table created
+    # under the earlier NOT-NULL + server-default model must shed both. DROP NOT NULL / DROP DEFAULT are
+    # idempotent in Postgres (no-ops when already absent); to_regclass guards a missing table.
+    """DO $$ BEGIN
+        IF to_regclass('gate_mode') IS NOT NULL THEN
+            ALTER TABLE gate_mode ALTER COLUMN configured_mode DROP NOT NULL;
+            ALTER TABLE gate_mode ALTER COLUMN configured_mode DROP DEFAULT;
+        END IF;
+    END $$""",
 ]
 
 

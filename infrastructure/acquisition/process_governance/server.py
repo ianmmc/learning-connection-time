@@ -287,9 +287,16 @@ async def save_label(rec_key: str, payload: dict):
             CAL.record_calibration(con, cal)
         # gate@5 exploration-audit demote-hook (#211/REQ-120): labeling a reject re-evaluates the revocable
         # autonomy license off the LIVE coverage — self-healing (manual review regenerates exactly the
-        # labels that restore coverage). DORMANT until gate@5 is set auto: configured manual → the control
-        # law is inert and nothing is written. Same transaction as the label + calibration writes.
-        EAL.resolve_gate5_mode(con)
+        # labels that restore coverage). DORMANT until gate@5 is set auto: configured manual → a cheap
+        # point-read and an immediate return (the reject-bucket scan is skipped — PR #248 review).
+        # SAVEPOINT + swallow (PR #248 review): the hook is advisory to a label save — a transient DB error
+        # or a corrupt gate_mode row inside it must never roll back the human's already-applied label
+        # (session_scope re-raises anything that escapes, discarding the whole transaction).
+        try:
+            with con.begin_nested():
+                EAL.resolve_gate5_mode(con)
+        except Exception as exc:   # noqa: BLE001 — best-effort hook, the label save is the priority
+            print(f"[gate5-hook] resolve_gate5_mode failed (label save unaffected): {exc}")
         con.commit()   # persist before exporting, so the JSON backup only reflects committed state
         # Export-on-save: the precious label is backed up to the tracked JSON before we return,
         # so it survives DB loss with zero action from the user (no reliance on remembering).
@@ -341,6 +348,15 @@ async def reset_labels(payload: dict):
         n_meaningful = BS.reset_labels_bulk(con, keys, ts)
         BS.recompute_labeled_topology(con, did)
         BS.recompute_attention(con, did)
+        # Same #211 demote-hook as save_label (PR #248 review): a reset REMOVES audited rejects from the
+        # coverage window (`_labeled` excludes 'unlabeled'), so it must re-evaluate the license too — else
+        # a stale 'auto' license outlives the coverage that earned it until some unrelated future label
+        # save happens to re-fire the hook. Same savepoint isolation: advisory, never fails the reset.
+        try:
+            with con.begin_nested():
+                EAL.resolve_gate5_mode(con)
+        except Exception as exc:   # noqa: BLE001
+            print(f"[gate5-hook] resolve_gate5_mode failed (reset unaffected): {exc}")
         con.commit()   # persist before exporting, so the JSON backup only reflects committed state
         BS.export_labels(con, LABELS_JSON)   # evicts the now-unlabeled rows from the tracked backup
         _refresh_filtered(con, did)
@@ -603,10 +619,14 @@ def exploration_audit_status():
     endpoint resolves the effective mode WITHOUT persisting so a status read never mutates precious state.
     Enforcement is DORMANT — `effective_mode` is 'manual' until a human sets gate@5 auto in Settings."""
     with gdb.session_scope() as con:
-        st = EAL.resolve_gate5_mode(con, persist=False)
-        pending = EAL.audit_sample(con)["pending"]
+        # ONE draw serves everything (PR #248 review: this endpoint used to run the reject-population
+        # query + sampler twice — once inside resolve, once for pending — which also let a mid-request
+        # commit make the meter and the queue reflect two different population snapshots).
+        sample = EAL.audit_sample(con)
+        cov = EAL.coverage(con, sample=sample)
+        st = EAL.resolve_gate5_mode(con, persist=False, cov=cov)
         st["pending"] = [{"rec_key": r["rec_key"], "district_id": r["district_id"],
-                          "url": r["url"], "sort_score": r["sort_score"]} for r in pending[:200]]
+                          "url": r["url"], "sort_score": r["sort_score"]} for r in sample["pending"][:200]]
         return st
 
 

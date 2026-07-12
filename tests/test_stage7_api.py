@@ -45,6 +45,11 @@ class _Con:
     def commit(self):
         pass
 
+    def begin_nested(self):
+        # the #211 demote-hook runs inside a SAVEPOINT (PR #248 review) — mock it as a no-op context
+        # so hook queries still consume from the queue instead of dying on a missing attribute.
+        return contextlib.nullcontext()
+
 
 def _use(monkeypatch, con):
     @contextlib.contextmanager
@@ -303,13 +308,13 @@ def test_gate_mode_set_persists_and_backs_up(monkeypatch):
 
 # ------------------------------- exploration audit (gate@5 reject audit, #211) -------------------------------
 def test_exploration_audit_status_is_dormant_and_well_shaped(monkeypatch):
-    # execute order for GET /api/exploration-audit with an EMPTY reject bucket:
-    #   1 reject_population SELECT (resolve→coverage→audit_sample) -> []
+    # execute order for GET /api/exploration-audit with an EMPTY reject bucket — ONE population draw
+    # serves the meter, the resolve, and the pending queue (PR #248 review: it used to run twice):
+    #   1 reject_population SELECT (the endpoint's single audit_sample draw) -> []
     #   2 get_configured_mode own -> None, 3 get_configured_mode default -> None (=> "manual")
     #   4 get_license_state -> None
-    #   5 audit_sample SELECT again (the endpoint's pending payload) -> []
     _use(monkeypatch, _Con([_Result(rows=[]), _Result(scalar=None), _Result(scalar=None),
-                            _Result(scalar=None), _Result(rows=[])]))
+                            _Result(scalar=None)]))
     body = client.get("/api/exploration-audit").json()
     # DORMANT: configured manual → effective manual, empty bucket → zero window, all-None quality
     assert body["configured_mode"] == "manual" and body["effective_mode"] == "manual"

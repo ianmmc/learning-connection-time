@@ -38,13 +38,16 @@ _VALID_KEYS = frozenset((GLOBAL,) + GATES)
 
 class GateMode(gdb.Base):
     """PRECIOUS per-gate mode row (upsert-only, never dropped). One row per key: 'default' (the global
-    default) + 'gate@1'..'gate@8' overrides. A missing gate row means 'inherit the global default'; a
-    missing default means DEFAULT_MODE — so an empty table reads as every-gate-manual, the safe posture."""
+    default) + 'gate@1'..'gate@8' overrides. A missing gate row — or a row with NULL configured_mode —
+    means 'inherit the global default'; a missing default means DEFAULT_MODE — so an empty table reads
+    as every-gate-manual, the safe posture. configured_mode is NULLABLE by design (PR #248 review): the
+    license writer creates a row WITHOUT materializing a configured toggle, so a gate inheriting the
+    global default keeps inheriting after its first license write. A hardcoded 'manual' seed there
+    silently pinned an inherited-auto gate to manual forever (get_configured_mode stops falling through
+    once the own-row value is non-null)."""
     __tablename__ = "gate_mode"
     gate: Mapped[str] = mapped_column(String, primary_key=True)        # 'default' | 'gate@1'..'gate@8'
-    # server_default (not an ORM default): the write paths are raw text() upserts that bypass ORM defaults,
-    # so the omit-and-get-manual contract must live in the DDL to hold (the calibration.py #217 lesson).
-    configured_mode: Mapped[str] = mapped_column(String, server_default=text("'manual'"))
+    configured_mode: Mapped[str | None] = mapped_column(String)        # NULL = inherit the global default
     license_state: Mapped[str | None] = mapped_column(String)          # deadband state (#211); NULL if no control law
     updated_at: Mapped[str] = mapped_column(String)
     actor: Mapped[str | None] = mapped_column(String)
@@ -99,15 +102,17 @@ def get_license_state(con, gate):
 
 def set_license_state(con, gate, state, actor=None):
     """Persist a gate's live deadband license state (auto|manual) — the #211 demote-hook writes this. On a
-    fresh row it seeds configured_mode=manual (the license is meaningful only once the human sets the gate
-    auto anyway); on an existing row it touches ONLY license_state, never the human's configured toggle."""
+    fresh row configured_mode stays NULL (= inherit): the license write must never materialize a configured
+    toggle the human didn't set — seeding 'manual' here silently pinned a globally-auto gate to manual on
+    its first license transition (PR #248 review). On an existing row it touches ONLY license_state, never
+    the human's configured toggle."""
     _validate_gate(gate)
     _validate_mode(state)
     con.execute(text(
         "INSERT INTO gate_mode (gate, configured_mode, license_state, updated_at, actor) "
-        "VALUES (:g, :cm, :s, :t, :a) "
+        "VALUES (:g, NULL, :s, :t, :a) "
         "ON CONFLICT (gate) DO UPDATE SET license_state=:s, updated_at=:t, actor=:a"),
-        {"g": gate, "cm": DEFAULT_MODE, "s": state, "t": _now(), "a": actor})
+        {"g": gate, "s": state, "t": _now(), "a": actor})
 
 
 def all_modes(con):
@@ -116,12 +121,14 @@ def all_modes(con):
     `is_override` distinguishes a stored per-gate value from an inherited default (so the UI can show it)."""
     rows = {r["gate"]: (r["configured_mode"], r["license_state"]) for r in con.execute(text(
         "SELECT gate, configured_mode, license_state FROM gate_mode")).mappings().all()}
-    default_mode = (rows.get(GLOBAL) or (DEFAULT_MODE, None))[0]
+    default_mode = (rows.get(GLOBAL) or (None, None))[0] or DEFAULT_MODE
     out = {GLOBAL: {"configured_mode": default_mode, "license_state": None,
                     "is_override": GLOBAL in rows}}
     for g in GATES:
         r = rows.get(g)
-        out[g] = {"configured_mode": r[0] if r else default_mode,
+        # a row with NULL configured_mode is a license-only row, NOT a human override (PR #248 review):
+        # it inherits the default and must not render as a per-gate toggle the human never set.
+        out[g] = {"configured_mode": (r[0] if r and r[0] else default_mode),
                   "license_state": r[1] if r else None,
-                  "is_override": r is not None}
+                  "is_override": bool(r and r[0])}
     return out
