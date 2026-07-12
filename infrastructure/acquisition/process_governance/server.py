@@ -218,20 +218,15 @@ UPSERT_LABEL = text(
          facets_json=excluded.facets_json, note=excluded.note, status=excluded.status,
          updated_at=excluded.updated_at""")
 
-# #228 "Reset labels": return a record to a truthful UNLABELED state (primary/facets/note nulled,
-# status='unlabeled'). Deliberately an UPSERT-to-unlabeled, NOT a DELETE — ingest models an unlabeled
-# record as a ROW with the DB-default status='unlabeled' (not an absent row), and export_labels() only
-# dumps status != 'unlabeled', so this correctly evicts the record from labels.json on the next export.
-# Leaves flags_json untouched (legacy/inert, same as UPSERT_LABEL). The motivating case: a page that IS
-# a valid schedule but for the WRONG district (Millard's unscoped contamination, #227) has no honest v2.1
-# label — target_absent and unusable both assert a false non-target ground truth — so unlabeled is the
-# only truthful state, and it was unreachable until now.
-RESET_LABEL = text(
-    """INSERT INTO label (rec_key, primary_label, facets_json, note, status, updated_at)
-       VALUES (:rec_key, NULL, NULL, NULL, 'unlabeled', :updated_at)
-       ON CONFLICT (rec_key) DO UPDATE SET
-         primary_label=NULL, facets_json=NULL, note=NULL, status='unlabeled',
-         updated_at=excluded.updated_at""")
+# #228 "Reset labels": return a record to a truthful UNLABELED state. The reset itself is
+# BS.reset_labels_bulk — the ONE definition of what a reset means (shared with the remediation
+# tooling; PR #242 review killed the second hand-rolled copy). Reset-to-unlabeled, NOT a DELETE —
+# ingest models an unlabeled record as a ROW with the DB-default status='unlabeled', and
+# export_labels() only dumps status != 'unlabeled', so a reset correctly evicts the record from
+# labels.json on the next export. The motivating case: a page that IS a valid schedule but for the
+# WRONG district (Millard's unscoped contamination, #227) has no honest v2.1 label — target_absent
+# and unusable both assert a false non-target ground truth — so unlabeled is the only truthful
+# state, and it was unreachable until now.
 
 
 # Facet keys that describe the REPRESENTATIVE's own file (the Axis-3 print-dialog handbook page
@@ -334,12 +329,9 @@ async def reset_labels(payload: dict):
                     text("SELECT rec_key FROM record WHERE cluster_id=:c"), {"c": rec["cluster_id"]}).fetchall()]
             else:
                 keys = [target_id]
-        # count the MEANINGFUL resets (rows that actually carried a label) before we clear them
-        n_meaningful = con.execute(
-            text("SELECT COUNT(*) FROM label WHERE rec_key = ANY(:ks) AND status != 'unlabeled'"),
-            {"ks": keys}).scalar() or 0
-        for k in keys:
-            con.execute(RESET_LABEL, {"rec_key": k, "updated_at": ts})
+        # ONE bulk statement (PR #242 review: was a per-key loop + a separate COUNT round-trip);
+        # rowcount = the meaningful resets (rows that actually carried a label).
+        n_meaningful = BS.reset_labels_bulk(con, keys, ts)
         BS.recompute_labeled_topology(con, did)
         BS.recompute_attention(con, did)
         con.commit()   # persist before exporting, so the JSON backup only reflects committed state
@@ -730,19 +722,17 @@ async def queue_create(payload: dict):
         batch_id = BSTORE.reserve_next_batch(con, actor=actor)
     try:
         registry = DS.load()
-        batch_doc, _gap, domain_excluded, _n_elig = Q1.build_batch(year, n, batch_id, registry)
+        batch_doc, _gap, _domain_excluded, _n_elig = Q1.build_batch(year, n, batch_id, registry)
         Q1.persist_batch(batch_doc, registry, batch_type=batch_type, actor=actor)
     except BaseException:
         with gdb.session_scope() as con:   # failed build — free the number (don't leave a dead placeholder)
             BSTORE.release_reservation(con, batch_id)
         raise
     with gdb.session_scope() as con:
-        view = BSTORE.to_view(con, batch_id)
-    # #229: districts refused for a blank/unusable NCES domain were hard-dropped from the batch of
-    # record (never persisted). Surface them at gate@1 so the draw isn't silently short -- the
-    # operator sees which same-named-school contamination risks were kept out.
-    view["domain_excluded"] = domain_excluded
-    return view
+        # #229: districts refused for a blank/unusable NCES domain travel IN batch_doc ->
+        # Batch.meta_json -> to_view, so the refusals stay visible at gate@1 across reloads and in
+        # the receipt — not only in this one create response (PR #242 review).
+        return BSTORE.to_view(con, batch_id)
 
 
 @app.get("/api/queue/{batch_id}")

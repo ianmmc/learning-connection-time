@@ -4,9 +4,14 @@ A district whose NCES CCD `WEBSITE` cell yields no usable scoping domain must NO
 record: an unusable domain flips Stage 2 into its UNSCOPED, national-scope branch, which for common
 school names pulls same-named schools nationwide into the candidate set (the Millard cross-district
 contamination traced in #227). These tests pin the normalizer + validator (`domain_of` /
-`is_scoping_domain`) and the `build_batch` first-run guard against a monkeypatched pool."""
+`is_scoping_domain`), the `build_batch` first-run guard against a monkeypatched pool, Stage 2's own
+fail-closed defense (`gate_urls`), and the gate@1 visibility of the refusals (PR #242 review)."""
+from pathlib import Path
+
 from infrastructure.acquisition.common import discover as D
 from infrastructure.acquisition.stage1_queue import queue_batch as Q
+from infrastructure.acquisition.stage1_queue import batch_store as BSTORE
+from infrastructure.acquisition.stage2_discover import discover_stage2 as D2
 
 
 class TestDomainHelpers:
@@ -93,3 +98,52 @@ class TestBuildBatchGuard:
         assert domain_excluded == []
         assert {d["district_id"] for d in doc["districts"]} == {"A", "B"}
         assert n_eligible == 2
+
+    def test_refusals_travel_in_the_batch_doc_for_persistence(self, monkeypatch):
+        """PR #242 review: domain_excluded must ride IN the batch_doc (-> Batch.meta_json ->
+        to_view/receipt) so the refusals survive reloads at gate@1 — not only the create response."""
+        pool = {"BLANK": {"name": "Blank SD", "state": "NE", "website": "",
+                          "claimed_bands": {"high"}, "enrollment_k12": 4000},
+                "GOOD": {"name": "Good SD", "state": "IA", "website": "good.org",
+                         "claimed_bands": {"high"}, "enrollment_k12": 5000}}
+        sch_idx = {k: {"high": [_sch(f"{k}-s1")]} for k in pool}
+        self._patch_pool(monkeypatch, pool, sch_idx)
+        doc, _gap, domain_excluded, _n = Q.build_batch(
+            "2024_25", n=6, batch_id="batch_test_guard3", registry={"districts": {}})
+        assert doc["domain_excluded"] == domain_excluded and len(doc["domain_excluded"]) == 1
+        assert "domain_excluded" in BSTORE._META_KEYS, \
+            "domain_excluded must persist via Batch.meta_json (create_batch/to_view/receipt)"
+
+
+class TestStage2FailsClosed:
+    """PR #242 review (defense-in-depth): Stage 2's own gating chokepoint must refuse to run
+    unscoped — a blank/junk domain reaching it through ANY path (manual DB edit, a future batch
+    builder, remediation tooling) must yield zero kept URLs, never a national-scope keep-all."""
+
+    URLS = ["http://reaganhs.example/bells", "http://mpsomaha.org/reagan/bells"]
+
+    def test_blank_domain_rejects_everything(self):
+        gated = D2.gate_urls(self.URLS, "")
+        assert all(not g["kept"] for g in gated)
+        assert all("#229" in g["reason"] for g in gated)
+
+    def test_junk_domain_rejects_everything(self):
+        for junk in ("n", "none", "375 lee st"):
+            gated = D2.gate_urls(self.URLS, junk)
+            assert all(not g["kept"] for g in gated), junk
+
+    def test_real_domain_still_scopes_normally(self):
+        gated = D2.gate_urls(self.URLS, "mpsomaha.org")
+        by_url = {g["url"]: g for g in gated}
+        assert by_url["http://mpsomaha.org/reagan/bells"]["kept"] is True
+        assert by_url["http://reaganhs.example/bells"]["kept"] is False
+
+
+def test_gate1_console_renders_the_domain_refusals():
+    """UI-visibility regression (the project's own convention): the gate@1 console must actually
+    READ + RENDER domain_excluded — PR #242's review found the server returned it but the client
+    silently dropped it, so the operator never saw which districts were kept out."""
+    repo = Path(__file__).resolve().parent.parent   # the test_arch_manifest.py cwd-proof convention
+    js = (repo / "infrastructure/acquisition/process_governance/static/gate1.js").read_text()
+    assert "domain_excluded" in js, "gate1.js must render the #229 refusals"
+    assert "v.domain_excluded" in js, "renderDetail must read the field off the to_view payload"

@@ -17,7 +17,7 @@ from infrastructure.acquisition.stage1_queue.models import Batch, BatchDistrict,
 
 BANDS = ("elementary", "middle", "high")
 _META_KEYS = ("nces_school_counts_criteria", "stratification", "school_cap_per_band",
-              "school_selection_when_over_cap", "benchmark")
+              "school_selection_when_over_cap", "benchmark", "domain_excluded")   # #229 refusals persist
 _SCHOOL_FIELDS = ("school_id", "name", "is_charter", "level", "gslo", "gshi")
 
 

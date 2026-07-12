@@ -234,6 +234,9 @@ def build_batch(year: str, n: int, batch_id: str, registry: dict) -> tuple[dict,
             "can't fill the cap. Seed = f'{batch_id}:{district_id}:{band}'. No approval field needed "
             "-- CP-A review is out-of-band."
         ),
+        # #229: carried in the doc (-> Batch.meta_json -> to_view/receipt) so the refusals stay
+        # visible at gate@1 across reloads and in the audit receipt, not only in the create response.
+        "domain_excluded": domain_excluded,
         "districts": districts_out,
     }
     return batch_doc, gap_excluded, domain_excluded, len(pool)
@@ -371,16 +374,18 @@ def main():
 
     print(f"Eligible pool: {n_eligible:,} districts (excluded {len(gap_excluded)} for grade-span gap, "
           f"{len(domain_excluded)} for blank/unusable NCES domain)")
-    if gap_excluded:
-        for g in gap_excluded[:10]:
-            print(f"  grade-span gap: [{g['state']}] {g['name']} ({g['district_id']}) -- missing {g['gap_bands']}")
-        if len(gap_excluded) > 10:
-            print(f"  ... and {len(gap_excluded) - 10} more")
-    if domain_excluded:
-        for e in domain_excluded[:10]:
-            print(f"  blank/unusable domain: [{e['state']}] {e['name']} ({e['district_id']}) -- website={e['website']!r}")
-        if len(domain_excluded) > 10:
-            print(f"  ... and {len(domain_excluded) - 10} more")
+
+    def _print_excluded(items, detail):
+        """First 10 + '... and N more' — shared by every exclusion report (one shape, N reasons)."""
+        for x in items[:10]:
+            print(f"  {detail(x)}")
+        if len(items) > 10:
+            print(f"  ... and {len(items) - 10} more")
+
+    _print_excluded(gap_excluded,
+                    lambda g: f"grade-span gap: [{g['state']}] {g['name']} ({g['district_id']}) -- missing {g['gap_bands']}")
+    _print_excluded(domain_excluded,
+                    lambda e: f"blank/unusable domain: [{e['state']}] {e['name']} ({e['district_id']}) -- website={e['website']!r}")
 
     print(f"{batch_id}: picked {len(batch_doc['districts'])} districts")
     for d in batch_doc["districts"]:
