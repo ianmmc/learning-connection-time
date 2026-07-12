@@ -417,7 +417,7 @@ def test_withdraw_ignores_probe_facts_and_actioned_rows(gov_session):
     R7.persist_run_session(s, _run_for(did, "hwq", accepted=[("high", "hs")]), created_by="zz")
     s.flush()
     wd = R7.withdraw_satisfied_requests(s, did)
-    assert [b for _, b in []] == [] and len(wd) == 1               # only the pending 7->2 withdraws
+    assert len(wd) == 1 and "band 'high'" in wd[0][1]              # only the pending 7->2 withdraws
     rej = s.execute(text("SELECT status FROM extraction_request WHERE district_id=:d AND route='7->6'"),
                     {"d": did}).scalar()
     assert rej == "rejected"                                       # the actioned row stays actioned
@@ -438,3 +438,27 @@ def test_withdrawn_does_not_block_reemission(gov_session, monkeypatch):
     s.execute(text("UPDATE extraction_request SET status='withdrawn' WHERE district_id='ZZWDR3'"))
     s.flush()
     assert R7.detect_and_persist_requests(s, result, "hh-w2") == 1   # re-emitted, not deduped
+
+
+def test_withdraw_no_gap_left_uses_fillable_not_raw_claimed_bands(gov_session):
+    """#233 review: a PHANTOM claimed band (no real school serves it) can never be covered, so the
+    no-gap-left check must run on claimed ∩ real (detect's #175 predicate) — raw `claimed` would
+    leave record-scoped directives un-withdrawable forever for exactly those districts."""
+    gdb.init_precious_schema()
+    s = gov_session
+    did = "ZZWDR4"
+    # claimed: elementary + middle, but the schools data serves ONLY elementary (middle = phantom)
+    sbb = {"elementary": {"schools": [{"name": "Real ES", "low": "KG", "high": "05"}]}}
+    s.execute(text("INSERT INTO district_target (district_id, lea_claimed_bands_json, "
+                   "schools_by_band_json, nces_by_level_json) VALUES (:d, :c, :s, :n)"),
+              {"d": did, "c": json.dumps(["elementary", "middle"]), "s": json.dumps(sbb),
+               "n": json.dumps({})})
+    s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                   "target, band, params_json, reason, status, created_at) VALUES "
+                   "(:d, 'h1', 'representation', '7->6', :t, NULL, '{}', 'r', 'pending', 't1')"),
+              {"d": did, "t": f"{did}:rec1"})
+    R7.persist_run_session(s, _run_for(did, "hw4", accepted=[("elementary", "real es")]),
+                           created_by="zz")
+    s.flush()
+    wd = R7.withdraw_satisfied_requests(s, did)
+    assert len(wd) == 1 and "no fillable gap remains" in wd[0][1]

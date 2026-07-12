@@ -210,3 +210,23 @@ def test_autoflow_calls_the_stage5_ingest():
     import inspect
     src = inspect.getsource(SRV._autoflow_followup)
     assert "_ingest_stage5_if_complete" in src
+
+
+def test_ingest_deferral_is_surfaced_not_silent(monkeypatch):
+    """#235 review: rollup-incomplete used to return with NO event — in autoflow (which terminates
+    at gate@5) that silence is the same 'nothing new surfaced' failure the fix targets."""
+    batch = {"batch_id": "batch_zz2", "districts": [{"district_id": "D1", "name": "A", "state": "IA"}]}
+    monkeypatch.setattr(SRV.H4, "status_for_batch",
+                        lambda b: {"rollup": {"resolved": 0, "total": 1}})
+    events = []
+    SRV._ingest_stage5_if_complete(batch, lambda name, payload: events.append((name, payload)))
+    assert [n for n, _ in events] == ["stage5_ingest_deferred"]
+    assert events[0][1]["resolved"] == 0 and events[0][1]["total"] == 1
+
+
+def test_gate7_console_knows_the_withdrawn_status():
+    """#233 review + the UI-visibility rule: an auto-withdrawn request must not render as a
+    'pending' badge (the card would claim pending while its footer says withdrawn-by-auto)."""
+    js = (SRV.STATIC_DIR / "stage7.js").read_text() if hasattr(SRV, "STATIC_DIR") else \
+        open("infrastructure/acquisition/process_governance/static/stage7.js").read()
+    assert 'r.status === "withdrawn"' in js, "requestCard must badge the withdrawn status explicitly"

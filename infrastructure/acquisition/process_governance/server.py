@@ -1056,7 +1056,14 @@ def _ingest_stage5_if_complete(batch: dict, on_event) -> None:
     event (and re-runnable via build_signals) but never fails the successful Stage-4 job."""
     rollup = H4.status_for_batch(batch)["rollup"]
     if rollup["resolved"] < rollup["total"]:
-        return   # not fully processed yet (failures awaiting retry) — defer the ingest to a later run
+        # Not fully processed (failures awaiting retry) — defer the ingest to a later run. NOT silent
+        # (#235 review): the autoflow chain has no later run, so the caller must be able to see that
+        # the batch landed at gate@5 WITHOUT its ingest, or the deferral reads as 'nothing new'.
+        on_event("stage5_ingest_deferred",
+                 {"batch_id": batch["batch_id"], "resolved": rollup["resolved"],
+                  "total": rollup["total"],
+                  "hint": "re-run Stage 4 for the unresolved district(s), then re-trigger the ingest"})
+        return
     try:
         ids = [d["district_id"] for d in batch["districts"]]
         summary = BS.ingest_batch(ids)

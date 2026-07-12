@@ -81,7 +81,10 @@ def best_send(reps: list, signals: dict, facets: dict) -> list:
         if (slice_rep.get("n_times") or 0) >= best_text_times:
             return [{"file": slice_rep["filename"], "kind": "text", "pages": harvest}]
         # a denser general text rep exists — fall through to the densest-text pick below
-    if signals.get("is_handbook") and harvest and pdfs:
+    # the PDF+pages fallback is ONLY for a handbook whose slice wasn't materialized (older ingests) —
+    # gated on `not slice_rep`, or it would intercept the yield fall-through above and re-waste the
+    # round on the whole PDF (adversarial review of the #230 fix caught exactly that).
+    if signals.get("is_handbook") and not slice_rep and harvest and pdfs:
         return [{"file": pdfs[0]["filename"], "kind": "pdf", "pages": harvest}]
     if (facets.get("needs_vision") == "yes" or signals.get("visual_text_gap")) and images:
         return [{"file": _best_image(images)["filename"], "kind": "image"}]

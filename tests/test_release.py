@@ -71,9 +71,12 @@ def test_best_send_handbook_falls_back_to_pdf_when_no_slice():
 def test_best_send_handbook_slice_loses_to_a_denser_general_text_rep():
     # #230 (Redbank Valley): the slice used to be sent UNCONDITIONALLY — round 1 dispatched
     # harvest_slice.txt (n_times=26) while pdftotext.txt (n_times=90) sat unsent as an alternate,
-    # wasting a paid round before the 7->6 retry self-corrected. Yield now decides.
+    # wasting a paid round before the 7->6 retry self-corrected. Yield now decides. The rep set
+    # INCLUDES the pdf rep every real handbook record carries — the review of this fix caught the
+    # pdf+pages fallback intercepting the fall-through and sending the whole PDF instead.
     reps = [_text_rep("harvest_slice.txt", n_times=26, source="harvest_slice"),
-            _text_rep("pdftotext.txt", n_times=90)]
+            _text_rep("pdftotext.txt", n_times=90),
+            {"source": "capture:pdf", "filename": "page.pdf", "file_kind": "pdf"}]
     sig = {"is_handbook": True, "harvest_pages": [12]}
     assert R.best_send(reps, sig, {}) == [{"file": "pdftotext.txt", "kind": "text"}]
 

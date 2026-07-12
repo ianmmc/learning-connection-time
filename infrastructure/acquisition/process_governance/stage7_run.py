@@ -785,10 +785,17 @@ def withdraw_satisfied_requests(session, district_id: str) -> list:
              "AND e.run_kind = 'production'"), {"d": district_id}).all()}
     if not covered:
         return []                                        # nothing satisfied anything — cheap exit
-    row = session.execute(text("SELECT lea_claimed_bands_json FROM district_target "
-                               "WHERE district_id = :d"), {"d": district_id}).fetchone()
+    row = session.execute(text("SELECT lea_claimed_bands_json, schools_by_band_json, nces_by_level_json "
+                               "FROM district_target WHERE district_id = :d"), {"d": district_id}).fetchone()
     claimed = json.loads(row[0]) if row and row[0] else []
-    no_gap_left = bool(claimed) and all(b in covered for b in claimed)
+    # FILLABLE bands only — the same claimed ∩ real predicate detect uses (#175). A phantom claimed
+    # band (no real school serves it) can never be covered, so raw `claimed` would make no_gap_left
+    # permanently False and the record-scoped rows un-withdrawable forever for exactly those districts.
+    sbb = json.loads(row[1]) if row and row[1] else {}
+    by_level = json.loads(row[2]) if row and row[2] else {}
+    real_bands = SS.real_bands_for_district(by_level, sbb)
+    fillable = [b for b in claimed if b in real_bands] if real_bands else claimed
+    no_gap_left = bool(fillable) and all(b in covered for b in fillable)
     withdrawn, now = [], M7.utcnow()
     for req_id, band in session.execute(text(
             "SELECT request_id, band FROM extraction_request "
@@ -796,7 +803,7 @@ def withdraw_satisfied_requests(session, district_id: str) -> list:
         if band is not None and band in covered:
             note = f"auto-withdrawn: band '{band}' now has a cumulative accepted fact (#233)"
         elif band is None and no_gap_left:
-            note = (f"auto-withdrawn: every claimed band ({', '.join(claimed)}) now covered — "
+            note = (f"auto-withdrawn: every fillable band ({', '.join(fillable)}) now covered — "
                     f"no fillable gap remains (#233)")
         else:
             continue
