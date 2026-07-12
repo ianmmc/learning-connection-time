@@ -69,6 +69,11 @@ def best_send(reps: list, signals: dict, facets: dict) -> list:
     harvest = signals.get("harvest_pages") or []
     slice_rep = next((r for r in reps if r.get("source") == "harvest_slice" and r.get("filename")), None)
 
+    # ONE densest-text computation (n_times, then n_chars) — shared by the handbook yield-compare
+    # and the plain densest-text pick below, so the two can't diverge (and no double scan).
+    best_text = max(usable_text, key=lambda r: ((r.get("n_times") or 0), (r.get("n_chars") or 0)),
+                    default=None)
+
     # handbook → the materialized harvest-pages SLICE (Q2.1: a ~1-4 page text doc, not the whole PDF);
     # fall back to the PDF + a pages hint only when the slice wasn't materialized (older ingests).
     # #230: the slice is preferred only while its YIELD is competitive — round 1 used to send a thin
@@ -77,7 +82,7 @@ def best_send(reps: list, signals: dict, facets: dict) -> list:
     # self-corrected. Same ordering rule as the retry loop's rank_alternates: yield-bearing text by
     # n_times, ties to the slice (it's the purpose-built handbook rep).
     if signals.get("is_handbook") and slice_rep:
-        best_text_times = max(((r.get("n_times") or 0) for r in usable_text), default=0)
+        best_text_times = (best_text.get("n_times") or 0) if best_text else 0
         if (slice_rep.get("n_times") or 0) >= best_text_times:
             return [{"file": slice_rep["filename"], "kind": "text", "pages": harvest}]
         # a denser general text rep exists — fall through to the densest-text pick below
@@ -88,9 +93,8 @@ def best_send(reps: list, signals: dict, facets: dict) -> list:
         return [{"file": pdfs[0]["filename"], "kind": "pdf", "pages": harvest}]
     if (facets.get("needs_vision") == "yes" or signals.get("visual_text_gap")) and images:
         return [{"file": _best_image(images)["filename"], "kind": "image"}]
-    if usable_text:
-        best = max(usable_text, key=lambda r: ((r.get("n_times") or 0), (r.get("n_chars") or 0)))
-        return [{"file": best["filename"], "kind": "text"}]
+    if best_text:
+        return [{"file": best_text["filename"], "kind": "text"}]
     # degenerate fallbacks (a target with no usable text rep): any image, else any pdf
     if images:
         return [{"file": _best_image(images)["filename"], "kind": "image"}]

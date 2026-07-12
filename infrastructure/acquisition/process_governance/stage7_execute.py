@@ -298,7 +298,7 @@ def _defer_76_districts(session, district_ids: list, max_rounds=None) -> set:
         return set()
     rows = session.execute(text(
         "SELECT DISTINCT district_id FROM extraction_request "
-        "WHERE route = :r AND status IN ('pending', 'approved') AND district_id = ANY(:d)"),
+        f"WHERE route = :r AND status IN {RQ.OPEN_STATUSES_SQL} AND district_id = ANY(:d)"),
         {"r": RQ.ROUTE_ALT_REP, "d": list(district_ids)})
     cands = {r[0] for r in rows}
     if max_rounds is None:

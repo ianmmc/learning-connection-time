@@ -203,13 +203,32 @@ def test_ingest_failure_is_recorded_durably_per_district(monkeypatch):
     assert saved, "the registry write must actually be flushed to disk"
 
 
-def test_autoflow_calls_the_stage5_ingest():
-    """#235 root cause: the follow-up autoflow ran Stages 2-4 then STOPPED — it never called
-    _ingest_stage5_if_complete at all, so a 7->2 rediscovery's new evidence silently never reached
-    the gate@5 tables (batch_00014-00017). Guard the wiring so the call can't be dropped again."""
+def test_stage4_and_ingest_are_one_operation_at_every_call_site():
+    """#235 root cause: autoflow was a second H4.run_batch call site that forgot the ingest the
+    first one remembered. The invariant now lives in ONE helper (run_stage4_with_ingest) — guard
+    that (a) the helper really chains run_batch -> ingest, and (b) NO call site anywhere in the
+    server invokes H4.run_batch directly anymore."""
     import inspect
-    src = inspect.getsource(SRV._autoflow_followup)
-    assert "_ingest_stage5_if_complete" in src
+    helper = inspect.getsource(SRV.run_stage4_with_ingest)
+    assert "H4.run_batch" in helper and "_ingest_stage5_if_complete" in helper
+    rest = inspect.getsource(SRV).replace(helper, "")
+    assert "H4.run_batch" not in rest, \
+        "a call site bypasses run_stage4_with_ingest — that's how #235 happened the first time"
+
+
+def test_bookkeeping_failure_is_not_mislabeled_as_ingest_failure(monkeypatch):
+    """#240 review: BS.ingest_batch succeeding but the registry bookkeeping throwing must NOT
+    durably mark districts ingest_failed — the Stage-5 data is genuinely committed."""
+    batch = {"batch_id": "batch_zz3", "districts": [{"district_id": "D1", "name": "A", "state": "IA"}]}
+    monkeypatch.setattr(SRV.H4, "status_for_batch",
+                        lambda b: {"rollup": {"resolved": 1, "total": 1}})
+    monkeypatch.setattr(SRV.BS, "ingest_batch",
+                        lambda ids: {"districts": ["D1"], "n_districts": 1, "n_records": 3, "n_send": 1})
+    monkeypatch.setattr(SRV.DS, "load",
+                        lambda: (_ for _ in ()).throw(RuntimeError("registry unreadable")))
+    events = []
+    SRV._ingest_stage5_if_complete(batch, lambda name, payload: events.append(name))
+    assert events == ["stage5_bookkeeping_failed"]   # NOT stage5_ingest_failed
 
 
 def test_ingest_deferral_is_surfaced_not_silent(monkeypatch):
@@ -227,6 +246,24 @@ def test_ingest_deferral_is_surfaced_not_silent(monkeypatch):
 def test_gate7_console_knows_the_withdrawn_status():
     """#233 review + the UI-visibility rule: an auto-withdrawn request must not render as a
     'pending' badge (the card would claim pending while its footer says withdrawn-by-auto)."""
-    js = (SRV.STATIC_DIR / "stage7.js").read_text() if hasattr(SRV, "STATIC_DIR") else \
-        open("infrastructure/acquisition/process_governance/static/stage7.js").read()
+    from pathlib import Path
+    repo = Path(__file__).resolve().parent.parent   # the test_arch_manifest.py convention (cwd-proof)
+    js = (repo / "infrastructure/acquisition/process_governance/static/stage7.js").read_text()
     assert 'r.status === "withdrawn"' in js, "requestCard must badge the withdrawn status explicitly"
+
+
+def test_reopening_a_withdrawn_request_reruns_the_premise_check(monkeypatch):
+    """#240 review: a Reopen (status->pending) must re-run the #233 premise check — if the gap is
+    still satisfied the row re-withdraws immediately with a fresh note (no silent resurrection of
+    already-done work); if the gap genuinely re-opened, it stays pending."""
+    _use(monkeypatch, _Con([_Result(rows=[{"district_id": "D1", "band": None, "handoff_hash": "h"}])]))
+    monkeypatch.setattr(SRV.R7, "withdraw_satisfied_requests",
+                        lambda con, did: [(9, "auto-withdrawn: band 'high' still covered (#233)")])
+    r = client.post("/api/extract/request/9", json={"status": "pending", "actor": "ian"})
+    body = r.json()
+    assert body["status"] == "withdrawn" and body["rewithdrawn"] is True
+    # ... and when the premise NO LONGER holds, the reopen sticks
+    _use(monkeypatch, _Con([_Result(rows=[{"district_id": "D1", "band": None, "handoff_hash": "h"}])]))
+    monkeypatch.setattr(SRV.R7, "withdraw_satisfied_requests", lambda con, did: [])
+    r2 = client.post("/api/extract/request/9", json={"status": "pending", "actor": "ian"})
+    assert r2.json() == {"request_id": 9, "status": "pending"}

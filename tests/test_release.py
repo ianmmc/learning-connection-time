@@ -222,3 +222,19 @@ def test_generate_writes_traceable_filtered_json(gov_session, tmp_path):
     assert rec["decision"] == "send" and rec["send"] == [{"file": "page.txt", "kind": "text"}]
     assert rec["intended_schools"] == ["A Elem"]
     gov_session.rollback()
+
+
+def test_handbook_yield_rule_matches_rank_alternates_ordering():
+    """#240 review: best_send's slice-vs-text yield comparison and the retry loop's rank_alternates
+    are two encodings of ONE rule (yield-bearing text by n_times first). The two layers can't import
+    each other (import-linter siblings), so THIS cross-layer test is the drift guard: if the
+    ranking rule ever changes on one side, this fails and the other side gets re-aligned."""
+    from infrastructure.acquisition.stage7_extract.requests import rank_alternates
+    reps = [_text_rep("harvest_slice.txt", n_times=26, source="harvest_slice"),
+            _text_rep("pdftotext.txt", n_times=90),
+            _text_rep("page.txt", n_times=4)]
+    sig = {"is_handbook": True, "harvest_pages": [12]}
+    sent = R.best_send(reps, sig, {})[0]["file"]
+    alts = [{"kind": "text", "n_times": r["n_times"], "file": r["filename"]} for r in reps]
+    assert sent == rank_alternates(alts)[0]["file"], \
+        "Stage 5's initial pick disagrees with the retry loop's yield ranking"

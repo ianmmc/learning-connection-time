@@ -365,8 +365,12 @@ def test_detect_reemits_after_a_prior_round_was_actioned(gov_session, monkeypatc
 
 # --------------------------- #233: auto-withdraw satisfied directives ---------------------------
 def _seed_requests(s, did, claimed):
-    s.execute(text("INSERT INTO district_target (district_id, lea_claimed_bands_json) VALUES (:d, :c)"),
-              {"d": did, "c": json.dumps(claimed)})
+    # every claimed band is backed by a real school — under #240's detect-consistent semantics an
+    # unbacked claimed band is PHANTOM (unfillable), which is its own test case below, not this one
+    sbb = {b: {"schools": [{"name": f"{b} school", "low": "KG", "high": "12"}]} for b in claimed}
+    s.execute(text("INSERT INTO district_target (district_id, lea_claimed_bands_json, "
+                   "schools_by_band_json) VALUES (:d, :c, :s)"),
+              {"d": did, "c": json.dumps(claimed), "s": json.dumps(sbb)})
     s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, target, "
                    "band, params_json, reason, status, created_at) VALUES "
                    "(:d, 'h1', 'district', '7->2', :d, 'high', '{}', 'r', 'pending', 't1'), "
@@ -462,3 +466,64 @@ def test_withdraw_no_gap_left_uses_fillable_not_raw_claimed_bands(gov_session):
     s.flush()
     wd = R7.withdraw_satisfied_requests(s, did)
     assert len(wd) == 1 and "no fillable gap remains" in wd[0][1]
+
+
+def test_withdraw_all_phantom_district_is_vacuously_satisfied(gov_session):
+    """#240 review: when NOTHING claimed is fillable (all claimed bands phantom — detect has
+    permanently suppressed the district), a record retry can never fill anything, so the
+    record-scoped directive withdraws VACUOUSLY — mirroring detect's own `target_bands <= have`."""
+    gdb.init_precious_schema()
+    s = gov_session
+    did = "ZZWDR6"
+    # row PRESENT, claimed populated, but no real-school data at all -> every claimed band phantom
+    s.execute(text("INSERT INTO district_target (district_id, lea_claimed_bands_json) VALUES (:d, :c)"),
+              {"d": did, "c": json.dumps(["elementary", "middle"])})
+    s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                   "target, band, params_json, reason, status, created_at) VALUES "
+                   "(:d, 'h1', 'representation', '7->6', :t, NULL, '{}', 'r', 'pending', 't1')"),
+              {"d": did, "t": f"{did}:rec1"})
+    wd = R7.withdraw_satisfied_requests(s, did)
+    assert len(wd) == 1 and "no fillable band exists" in wd[0][1]
+
+
+def test_withdraw_never_fires_when_district_target_row_is_missing(gov_session):
+    """#240 review: a MISSING district_target row means the target data is UNKNOWN — unknown is
+    never 'satisfied', so record-scoped directives stay open (the one asymmetry vs detect)."""
+    gdb.init_precious_schema()
+    s = gov_session
+    did = "ZZWDR7"
+    s.execute(text("INSERT INTO extraction_request (district_id, handoff_hash, altitude, route, "
+                   "target, band, params_json, reason, status, created_at) VALUES "
+                   "(:d, 'h1', 'representation', '7->6', :t, NULL, '{}', 'r', 'pending', 't1')"),
+              {"d": did, "t": f"{did}:rec1"})
+    R7.persist_run_session(s, _run_for(did, "hw7", accepted=[("high", "hs")]), created_by="zz")
+    assert R7.withdraw_satisfied_requests(s, did) == []
+    st = s.execute(text("SELECT status FROM extraction_request WHERE district_id=:d"), {"d": did}).scalar()
+    assert st == "pending"
+
+
+def test_withdraw_sees_this_rounds_facts_under_production_session_semantics():
+    """#240 review (the HIGH finding): production sessions run autoflush=False (db.py), and the old
+    code left this round's SchoolFact adds unflushed when detect/withdraw ran — so #233's primary
+    case ('this round's facts satisfied an earlier directive') silently never fired in production
+    while every test passed on an autoflush=True fixture. This test runs the REAL session config
+    with NO test-side flush: persist_run_session's own flush must make the facts visible."""
+    from sqlalchemy.orm import Session
+    gdb.init_precious_schema()
+    try:
+        conn = gdb.get_engine().connect()
+        conn.execute(text("SELECT 1"))
+    except Exception as e:  # pragma: no cover
+        pytest.skip(f"governance Postgres unavailable: {type(e).__name__}: {e}")
+    s = Session(bind=conn, autoflush=False)   # PRODUCTION parity — do not add flushes here
+    try:
+        did = "ZZWDR8"
+        _seed_requests(s, did, ["high"])
+        R7.persist_run_session(s, _run_for(did, "hw8", accepted=[("high", "hs")]), created_by="zz")
+        wd = R7.withdraw_satisfied_requests(s, did)   # same txn, no flush between — the real call shape
+        assert any("band 'high'" in note for _, note in wd), \
+            "withdraw must see the facts persist_run_session just added in this same transaction"
+    finally:
+        s.rollback()
+        s.close()
+        conn.close()

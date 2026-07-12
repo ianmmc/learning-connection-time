@@ -3496,20 +3496,60 @@
     "updated_at": "2026-06-25T01:14:13Z"
   },
   {
+    "rec_key": "2905790:096fd6ca90",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-12T00:56:47Z"
+  },
+  {
+    "rec_key": "2905790:16edfb8b63",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-12T00:56:47Z"
+  },
+  {
+    "rec_key": "2905790:1a5ccc41bd",
+    "primary_label": "district_hub_by_band",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"sports\": \"yes\", \"academic_calendar\": \"yes\", \"_pages\": \"4, 10-11\", \"_pages_list\": [4, 10, 11]}",
+    "note": "Captured in statement on page 4 and columnar bell-schedule table that spans pages 10-11. (Times are column headings.)\n\n\"School will begin at 7:55 a.m. and will dismiss at 3:38 p.m.\"\n\nSeems to cover whole district.",
+    "status": "labeled",
+    "updated_at": "2026-07-12T01:03:25Z"
+  },
+  {
     "rec_key": "2905790:211613df06",
     "primary_label": "unusable",
     "facets_json": "{}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:52:10Z"
+    "updated_at": "2026-07-12T00:56:47Z"
+  },
+  {
+    "rec_key": "2905790:3a6ca58dec",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\", \"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "Way too dated. From 2011.",
+    "status": "labeled",
+    "updated_at": "2026-07-12T01:07:22Z"
   },
   {
     "rec_key": "2905790:3bf6571c0d",
-    "primary_label": "school_bell_table",
-    "facets_json": "{\"buried_handbook\": \"yes\", \"sports\": \"yes\", \"academic_calendar\": \"yes\", \"community_calendar\": \"yes\", \"_where\": \"image/PDF\", \"_pages\": \"7-8\", \"_pages_list\": [7, 8]}",
+    "primary_label": "district_hub_by_band",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"sports\": \"yes\", \"academic_calendar\": \"yes\"}",
+    "note": "Captured in statement on page 4 and columnar bell-schedule table that spans pages 10-11. (Times are column headings.)\n\n\"School will begin at 7:55 a.m. and will dismiss at 3:38 p.m.\"\n\nSeems to cover whole district.",
+    "status": "labeled",
+    "updated_at": "2026-07-12T01:03:25Z"
+  },
+  {
+    "rec_key": "2905790:4e5be83edc",
+    "primary_label": "unusable",
+    "facets_json": "{}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-07-01T23:36:10Z"
+    "updated_at": "2026-07-12T00:56:47Z"
   },
   {
     "rec_key": "2905790:5045765901",
@@ -3528,6 +3568,14 @@
     "updated_at": "2026-07-01T23:34:46Z"
   },
   {
+    "rec_key": "2905790:5dd4b25427",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\", \"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "Way too dated. From 2000.",
+    "status": "labeled",
+    "updated_at": "2026-07-12T01:06:41Z"
+  },
+  {
     "rec_key": "2905790:71b7c68ade",
     "primary_label": "target_absent",
     "facets_json": "{\"board\": \"yes\", \"community_calendar\": \"yes\"}",
@@ -3536,12 +3584,52 @@
     "updated_at": "2026-07-01T23:26:18Z"
   },
   {
+    "rec_key": "2905790:a07c228be1",
+    "primary_label": "school_start_end_prose",
+    "facets_json": "{}",
+    "note": "Too dated. From 2001.",
+    "status": "labeled",
+    "updated_at": "2026-07-12T01:12:14Z"
+  },
+  {
+    "rec_key": "2905790:a26064eb00",
+    "primary_label": "target_absent",
+    "facets_json": "{\"board\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-12T00:57:34Z"
+  },
+  {
+    "rec_key": "2905790:a8371ad551",
+    "primary_label": "target_absent",
+    "facets_json": "{\"academic_calendar\": \"yes\", \"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "Too dated. From 1998.",
+    "status": "labeled",
+    "updated_at": "2026-07-12T01:12:02Z"
+  },
+  {
+    "rec_key": "2905790:bee6577364",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\", \"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-12T00:58:50Z"
+  },
+  {
     "rec_key": "2905790:c31d425ccb",
     "primary_label": "target_absent",
     "facets_json": "{\"sports\": \"yes\", \"academic_calendar\": \"yes\", \"community_calendar\": \"yes\"}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-01T23:32:04Z"
+  },
+  {
+    "rec_key": "2905790:ca9f58314b",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\", \"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "Too dated. From 2008.",
+    "status": "labeled",
+    "updated_at": "2026-07-12T01:08:04Z"
   },
   {
     "rec_key": "2905790:cec5700763",
@@ -3568,6 +3656,14 @@
     "updated_at": "2026-07-01T23:36:24Z"
   },
   {
+    "rec_key": "2905790:e7112764ea",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\"}",
+    "note": "WAY too dated. From 2001.",
+    "status": "labeled",
+    "updated_at": "2026-07-12T01:05:42Z"
+  },
+  {
     "rec_key": "2905790:e91e43df1a",
     "primary_label": "target_absent",
     "facets_json": "{\"board\": \"yes\", \"academic_calendar\": \"yes\", \"community_calendar\": \"yes\"}",
@@ -3581,7 +3677,23 @@
     "facets_json": "{}",
     "note": "",
     "status": "labeled",
-    "updated_at": "2026-07-01T05:52:10Z"
+    "updated_at": "2026-07-12T00:56:47Z"
+  },
+  {
+    "rec_key": "2905790:f1635e9b53",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "Way too dated. From 1999.",
+    "status": "labeled",
+    "updated_at": "2026-07-12T01:05:55Z"
+  },
+  {
+    "rec_key": "2905790:f5efad0327",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\", \"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-12T01:05:02Z"
   },
   {
     "rec_key": "3172840:2ebaa93907",

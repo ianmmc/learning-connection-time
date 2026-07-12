@@ -109,6 +109,11 @@ _PRECIOUS_ALTERS = [
     # Guarded (only flips still-default rows) → a no-op on every re-run. Real handoff hashes are 12 hex
     # chars and never contain '-', so this can't misclassify a production run.
     "UPDATE extraction SET run_kind = 'probe' WHERE handoff_hash LIKE '%-image' AND run_kind = 'production'",
+    # #240 review (#234's widened dedup + #233's withdraw scan): serve the natural-ask lookup with a
+    # composite index — the OR-on-status clause otherwise degrades to a district-wide scan per detected
+    # request. create_all builds it on FRESH tables (declared on the model); this covers existing DBs.
+    "CREATE INDEX IF NOT EXISTS ix_extraction_request_ask "
+    "ON extraction_request (district_id, target, altitude, route)",
 ]
 
 

@@ -1026,15 +1026,9 @@ async def process_run(batch_id: str, payload: dict):
 
     def _work():
         try:
-            summary = H4.run_batch(batch, actor=actor, on_event=_on_event)
+            summary = run_stage4_with_ingest(batch, actor=actor, on_event=_on_event)
             job["summary"] = summary
             job["state"] = "done"
-            # Stage 4 -> Stage 5 handoff: when THIS run actually processed districts (todo>0), check
-            # whether the batch is now fully resolved and, if so, incrementally ingest just this batch
-            # into the Stage 5 signal tables (+ regenerate filtered.json). Precomputing here means
-            # switching to the Stage 5 view is instant — no full-corpus rebuild, no perceived lag.
-            if summary.get("todo"):
-                _ingest_stage5_if_complete(batch, _on_event)
         except SystemExit as e:   # reconcile / file-existence CONTROL FAILURE — surface, don't hide
             job["state"], job["error"] = "halted", f"CONTROL FAILURE: {e}"
         except Exception as e:
@@ -1045,6 +1039,18 @@ async def process_run(batch_id: str, payload: dict):
 
     threading.Thread(target=_work, name=f"process-{batch_id}", daemon=True).start()
     return {"started": True, "batch_id": batch_id}
+
+
+def run_stage4_with_ingest(batch: dict, *, actor: str, on_event) -> dict:
+    """Stage 4 AND its Stage-5 hand-off, as ONE operation — the invariant 'Stage 4 complete implies
+    the Stage-5 ingest was attempted' lives HERE, not in each caller's memory (#240 review: #235
+    happened precisely because autoflow was a second run_batch call site that forgot the ingest the
+    first one remembered). Any future entry point calls THIS, never H4.run_batch directly. The
+    ingest is idempotent (per-district delete+rebuild) and self-guards on batch completeness, so no
+    todo-gating is needed at call sites. Returns Stage 4's summary."""
+    summary = H4.run_batch(batch, actor=actor, on_event=on_event)
+    _ingest_stage5_if_complete(batch, on_event)
+    return summary
 
 
 def _ingest_stage5_if_complete(batch: dict, on_event) -> None:
@@ -1064,18 +1070,12 @@ def _ingest_stage5_if_complete(batch: dict, on_event) -> None:
                   "total": rollup["total"],
                   "hint": "re-run Stage 4 for the unresolved district(s), then re-trigger the ingest"})
         return
+    # The INGEST gets its own try (#240 review): the DB writes are atomic inside ingest_batch, and
+    # only a failure of the ingest ITSELF may be recorded as ingest_failed. A throw in the
+    # bookkeeping below (registry write) must never mislabel genuinely-committed Stage-5 data.
     try:
         ids = [d["district_id"] for d in batch["districts"]]
         summary = BS.ingest_batch(ids)
-        registry = DS.load()
-        for did in summary["districts"]:
-            d = next((x for x in batch["districts"] if x["district_id"] == did), {})
-            DS.record_stage(registry, did, d.get("name", ""), d.get("state", ""), stage=5,
-                            stage_name="filter", outcome="ingested", actor="auto:stage5",
-                            batch_id=batch["batch_id"])
-        DS.save(registry)
-        on_event("stage5_ingested", {"batch_id": batch["batch_id"], "n_districts": summary["n_districts"],
-                                     "n_records": summary["n_records"], "n_send": summary["n_send"]})
     except Exception as e:
         on_event("stage5_ingest_failed", {"batch_id": batch["batch_id"], "error": str(e)[:200]})
         # #235: the failure must survive the process — the in-memory job event and stdout both vanish,
@@ -1092,6 +1092,22 @@ def _ingest_stage5_if_complete(batch: dict, on_event) -> None:
             print(f"[warn] could not durably record the ingest failure either: {e2}")
         print(f"[warn] Stage 5 ingest for {batch['batch_id']} failed ({type(e).__name__}: {e}); "
               f"re-run `python3 -m infrastructure.acquisition.stage5_filter.build_signals` manually")
+        return
+    try:
+        registry = DS.load()
+        for did in summary["districts"]:
+            d = next((x for x in batch["districts"] if x["district_id"] == did), {})
+            DS.record_stage(registry, did, d.get("name", ""), d.get("state", ""), stage=5,
+                            stage_name="filter", outcome="ingested", actor="auto:stage5",
+                            batch_id=batch["batch_id"])
+        DS.save(registry)
+        on_event("stage5_ingested", {"batch_id": batch["batch_id"], "n_districts": summary["n_districts"],
+                                     "n_records": summary["n_records"], "n_send": summary["n_send"]})
+    except Exception as e:
+        # The ingest SUCCEEDED — only the progression bookkeeping failed. Say exactly that.
+        on_event("stage5_bookkeeping_failed", {"batch_id": batch["batch_id"], "error": str(e)[:200]})
+        print(f"[warn] Stage 5 ingest for {batch['batch_id']} SUCCEEDED but recording the progression "
+              f"failed ({type(e).__name__}: {e}); the signal tables are correct, re-save the registry")
 
 
 # ----------------------------- Stage 6 — Dispatch routing/release (gate@6, REQ-101) -----------------------------
@@ -1391,7 +1407,7 @@ def _district_loop_ctx(con, district_id: str) -> dict:
     defer_set = EX._defer_76_districts(con, [district_id], maxr)
     n_unexec_76 = con.execute(text(
         "SELECT COUNT(*) FROM extraction_request WHERE district_id = :d AND route = :r "
-        "AND status IN ('pending', 'approved')"),
+        f"AND status IN {EX.RQ.OPEN_STATUSES_SQL}"),
         {"d": district_id, "r": EX.RQ.ROUTE_ALT_REP}).scalar()
     return {"maxr": maxr, "rounds_76": rounds, "defers": district_id in defer_set,
             "n_unexec_76": n_unexec_76}
@@ -1545,7 +1561,19 @@ async def extract_request_review(request_id: int, payload: dict):
                 band=req["band"], state=st, run_kind=ext.get("run_kind"), created_at=_u7())
             if cal:
                 CAL.record_calibration(con, cal)
-    return {"request_id": request_id, "status": status}
+        # A REOPEN re-runs the #233 premise check (#240 review): without this, reopening a withdrawn
+        # (or rejected) directive silently resurrects work whose gap may no longer exist. If the
+        # premise is STILL satisfied, the row re-withdraws immediately with a fresh note — the human
+        # sees exactly why; if the gap genuinely re-opened, it stays pending. Human stays the boss,
+        # the state stays honest.
+        rewithdrawn = None
+        if status == "pending":
+            hits = R7.withdraw_satisfied_requests(con, req["district_id"])
+            rewithdrawn = next((note for rid, note in hits if rid == request_id), None)
+    out = {"request_id": request_id, "status": status}
+    if rewithdrawn:
+        out.update(status="withdrawn", rewithdrawn=True, note=rewithdrawn)
+    return out
 
 
 # ---- #157: follow-up auto-flow — gate@1 auto-pass + auto-run Stages 2->3->4, stop at gate@5 ----
@@ -1618,18 +1646,15 @@ def _autoflow_followup(batch_id: str, actor: str) -> None:
         s3 = H3.run_batch(batch, actor=actor, _run=_tracked_run)
         job["stages"]["capture"] = (s3 or {}).get("summary", s3)
 
-        job["stage"] = "process"                  # Stage 4
-        s4 = H4.run_batch(batch, actor=actor)
+        # Stage 4 + the Stage-5 ingest as ONE operation (#235: autoflow used to stop after run_batch
+        # without ever ingesting — the batch_00014-00017 silent failure; the shared helper makes the
+        # hand-off impossible to forget at any call site). Events use the same {kind: ...} shape as
+        # every other job-event bucket in this file.
+        job["stage"] = "process"                  # Stage 4 (+ filter ingest)
+        def _ev(kind, p):
+            job["stages"].setdefault("events", []).append({"kind": kind, **p})
+        s4 = run_stage4_with_ingest(batch, actor=actor, on_event=_ev)
         job["stages"]["process"] = (s4 or {}).get("summary", s4)
-
-        # Stage 4->5 ingest (#235): autoflow used to STOP here without ever calling the ingest — the
-        # new round's candidates/captures/processed docs never reached the record/label tables the
-        # gate@5 console reads, so a 7->2 rediscovery looked like "nothing new surfaced" (the
-        # batch_00014-00017 silent failure; recovered by a manual BS.ingest_batch backfill).
-        job["stage"] = "filter"
-        def _ev(name, payload):
-            job["stages"].setdefault("filter_events", []).append({name: payload})
-        _ingest_stage5_if_complete(batch, _ev)
 
         job["stage"], job["state"] = "gate@5", "done"     # landed at the review gate — STOP
     except SystemExit as e:
