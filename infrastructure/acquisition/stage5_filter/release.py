@@ -71,8 +71,16 @@ def best_send(reps: list, signals: dict, facets: dict) -> list:
 
     # handbook → the materialized harvest-pages SLICE (Q2.1: a ~1-4 page text doc, not the whole PDF);
     # fall back to the PDF + a pages hint only when the slice wasn't materialized (older ingests).
+    # #230: the slice is preferred only while its YIELD is competitive — round 1 used to send a thin
+    # slice unconditionally while a far denser text rep sat unsent as an alternate (Redbank: slice
+    # n_times=26 sent, pdftotext n_times=90 waiting), wasting a paid round before the 7->6 retry
+    # self-corrected. Same ordering rule as the retry loop's rank_alternates: yield-bearing text by
+    # n_times, ties to the slice (it's the purpose-built handbook rep).
     if signals.get("is_handbook") and slice_rep:
-        return [{"file": slice_rep["filename"], "kind": "text", "pages": harvest}]
+        best_text_times = max(((r.get("n_times") or 0) for r in usable_text), default=0)
+        if (slice_rep.get("n_times") or 0) >= best_text_times:
+            return [{"file": slice_rep["filename"], "kind": "text", "pages": harvest}]
+        # a denser general text rep exists — fall through to the densest-text pick below
     if signals.get("is_handbook") and harvest and pdfs:
         return [{"file": pdfs[0]["filename"], "kind": "pdf", "pages": harvest}]
     if (facets.get("needs_vision") == "yes" or signals.get("visual_text_gap")) and images:

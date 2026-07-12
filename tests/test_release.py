@@ -68,6 +68,27 @@ def test_best_send_handbook_falls_back_to_pdf_when_no_slice():
     assert R.best_send(reps, sig, {}) == [{"file": "page.pdf", "kind": "pdf", "pages": [2, 3]}]
 
 
+def test_best_send_handbook_slice_loses_to_a_denser_general_text_rep():
+    # #230 (Redbank Valley): the slice used to be sent UNCONDITIONALLY — round 1 dispatched
+    # harvest_slice.txt (n_times=26) while pdftotext.txt (n_times=90) sat unsent as an alternate,
+    # wasting a paid round before the 7->6 retry self-corrected. Yield now decides.
+    reps = [_text_rep("harvest_slice.txt", n_times=26, source="harvest_slice"),
+            _text_rep("pdftotext.txt", n_times=90)]
+    sig = {"is_handbook": True, "harvest_pages": [12]}
+    assert R.best_send(reps, sig, {}) == [{"file": "pdftotext.txt", "kind": "text"}]
+
+
+def test_best_send_handbook_slice_wins_ties_and_zero_yield_records():
+    # ties go to the slice (the purpose-built handbook rep) ...
+    reps = [_text_rep("harvest_slice.txt", n_times=8, source="harvest_slice"),
+            _text_rep("a.txt", n_times=8)]
+    sig = {"is_handbook": True, "harvest_pages": [3]}
+    assert R.best_send(reps, sig, {}) == [{"file": "harvest_slice.txt", "kind": "text", "pages": [3]}]
+    # ... and a slice-only record (no usable general text) still sends the slice, even at 0 yield
+    only_slice = [_text_rep("harvest_slice.txt", n_times=0, source="harvest_slice")]
+    assert R.best_send(only_slice, sig, {}) == [{"file": "harvest_slice.txt", "kind": "text", "pages": [3]}]
+
+
 def test_best_send_empty_when_no_reps():
     assert R.best_send([], {}, {}) == []
 

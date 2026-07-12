@@ -175,3 +175,38 @@ def test_execute_endpoint_refused_is_409(monkeypatch):
                         lambda rid, **kw: {"ok": False, "blocked": True, "reason": "depth guard: max rounds"})
     r = client.post("/api/extract/execute/7", json={})
     assert r.status_code == 409 and "depth guard" in r.json()["detail"]
+
+
+# ------------------------------- #235: Stage 4->5 ingest hand-off -------------------------------
+def test_ingest_failure_is_recorded_durably_per_district(monkeypatch):
+    """#235: a failed Stage-5 ingest used to leave only an in-memory job event + stdout — district
+    history showed a clean stage-4 finish then silence, indistinguishable from 'nothing new
+    surfaced'. The failure must land in the durable district_status registry."""
+    batch = {"batch_id": "batch_zz", "districts": [
+        {"district_id": "D1", "name": "A", "state": "IA"},
+        {"district_id": "D2", "name": "B", "state": "IA"}]}
+    monkeypatch.setattr(SRV.H4, "status_for_batch",
+                        lambda b: {"rollup": {"resolved": 2, "total": 2}})
+    monkeypatch.setattr(SRV.BS, "ingest_batch",
+                        lambda ids: (_ for _ in ()).throw(RuntimeError("boom")))
+    recorded = []
+    monkeypatch.setattr(SRV.DS, "load", lambda: {"reg": True})
+    monkeypatch.setattr(SRV.DS, "record_stage",
+                        lambda reg, did, name, state, **kw: recorded.append((did, kw)))
+    saved = []
+    monkeypatch.setattr(SRV.DS, "save", lambda reg: saved.append(reg))
+    events = []
+    SRV._ingest_stage5_if_complete(batch, lambda name, payload: events.append(name))
+    assert events == ["stage5_ingest_failed"]
+    assert [d for d, _ in recorded] == ["D1", "D2"]
+    assert all(kw["outcome"] == "ingest_failed" and kw["stage"] == 5 for _, kw in recorded)
+    assert saved, "the registry write must actually be flushed to disk"
+
+
+def test_autoflow_calls_the_stage5_ingest():
+    """#235 root cause: the follow-up autoflow ran Stages 2-4 then STOPPED — it never called
+    _ingest_stage5_if_complete at all, so a 7->2 rediscovery's new evidence silently never reached
+    the gate@5 tables (batch_00014-00017). Guard the wiring so the call can't be dropped again."""
+    import inspect
+    src = inspect.getsource(SRV._autoflow_followup)
+    assert "_ingest_stage5_if_complete" in src

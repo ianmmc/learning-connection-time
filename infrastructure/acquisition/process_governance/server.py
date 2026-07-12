@@ -1071,6 +1071,18 @@ def _ingest_stage5_if_complete(batch: dict, on_event) -> None:
                                      "n_records": summary["n_records"], "n_send": summary["n_send"]})
     except Exception as e:
         on_event("stage5_ingest_failed", {"batch_id": batch["batch_id"], "error": str(e)[:200]})
+        # #235: the failure must survive the process — the in-memory job event and stdout both vanish,
+        # leaving district_status.json showing a clean stage-4 finish followed by silence,
+        # indistinguishable from "nothing new surfaced". Record it durably per district.
+        try:
+            registry = DS.load()
+            for d in batch["districts"]:
+                DS.record_stage(registry, d["district_id"], d.get("name", ""), d.get("state", ""),
+                                stage=5, stage_name="filter", outcome="ingest_failed",
+                                actor="auto:stage5", batch_id=batch["batch_id"])
+            DS.save(registry)
+        except Exception as e2:
+            print(f"[warn] could not durably record the ingest failure either: {e2}")
         print(f"[warn] Stage 5 ingest for {batch['batch_id']} failed ({type(e).__name__}: {e}); "
               f"re-run `python3 -m infrastructure.acquisition.stage5_filter.build_signals` manually")
 
@@ -1602,6 +1614,15 @@ def _autoflow_followup(batch_id: str, actor: str) -> None:
         job["stage"] = "process"                  # Stage 4
         s4 = H4.run_batch(batch, actor=actor)
         job["stages"]["process"] = (s4 or {}).get("summary", s4)
+
+        # Stage 4->5 ingest (#235): autoflow used to STOP here without ever calling the ingest — the
+        # new round's candidates/captures/processed docs never reached the record/label tables the
+        # gate@5 console reads, so a 7->2 rediscovery looked like "nothing new surfaced" (the
+        # batch_00014-00017 silent failure; recovered by a manual BS.ingest_batch backfill).
+        job["stage"] = "filter"
+        def _ev(name, payload):
+            job["stages"].setdefault("filter_events", []).append({name: payload})
+        _ingest_stage5_if_complete(batch, _ev)
 
         job["stage"], job["state"] = "gate@5", "done"     # landed at the review gate — STOP
     except SystemExit as e:

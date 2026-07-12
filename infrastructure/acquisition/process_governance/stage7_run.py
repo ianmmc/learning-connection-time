@@ -397,6 +397,9 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
                 # swept into a paid follow-up). A probe is a measurement, never a remedy driver.
                 if run_kind == "production":
                     detect_and_persist_requests(s, pd, hh)
+                    # #233, same txn: this round's facts may have satisfied EARLIER rounds' still-open
+                    # directives — retire them so the gate@7 queue reflects the cumulative truth.
+                    withdraw_satisfied_requests(s, did)
         _print_district_progress(did, pd, gt_data)
         if on_district:
             on_district(did, pd)
@@ -718,9 +721,13 @@ def _district_request_inputs(session, result: dict):
 
 
 def detect_and_persist_requests(session, result: dict, handoff_hash: str) -> int:
-    """Detect the request-more-evidence directives for one district's result and persist the NEW ones
-    (natural-key dedup on (handoff_hash, target, altitude, route, band) so a re-detect/backfill never
-    duplicates and never clobbers a human's review status). Returns the count newly persisted."""
+    """Detect the request-more-evidence directives for one district's result and persist the NEW ones.
+    Dedup is two-layered (#234): (a) same handoff, ANY status — a re-detect/backfill is idempotent and
+    never resurrects a directive a human already actioned this round; (b) ANY handoff, OPEN status
+    (pending/approved) — a still-open ask is the same logical ask, so a fresh round triggered by
+    actioning a SIBLING request must not duplicate it. An executed/rejected/withdrawn prior round does
+    NOT block re-emission: a new round's identical gap is a genuinely new ask (the depth guard, not
+    dedup, bounds how many rounds may fire). Returns the count newly persisted."""
     claimed, band_schools, alts, covered, real_bands = _district_request_inputs(session, result)
     explain: dict = {}
     reqs = RQ.detect_requests(result, claimed_bands=claimed, alternates_by_rec=alts,
@@ -741,9 +748,11 @@ def detect_and_persist_requests(session, result: dict, handoff_hash: str) -> int
     n = 0
     for r in reqs:
         exists = session.execute(
-            text("SELECT 1 FROM extraction_request WHERE handoff_hash = :h AND target = :t "
-                 "AND altitude = :a AND route = :r AND band IS NOT DISTINCT FROM :b"),
-            {"h": handoff_hash, "t": r["target"], "a": r["altitude"], "r": r["route"], "b": r["band"]}
+            text("SELECT 1 FROM extraction_request WHERE district_id = :d AND target = :t "
+                 "AND altitude = :a AND route = :r AND band IS NOT DISTINCT FROM :b "
+                 "AND (handoff_hash = :h OR status IN ('pending', 'approved'))"),
+            {"d": r["district_id"], "h": handoff_hash, "t": r["target"], "a": r["altitude"],
+             "r": r["route"], "b": r["band"]}
         ).first()
         if exists:
             continue
@@ -753,6 +762,54 @@ def detect_and_persist_requests(session, result: dict, handoff_hash: str) -> int
             params_json=json.dumps(r["params"]), reason=r["reason"]))
         n += 1
     return n
+
+
+def withdraw_satisfied_requests(session, district_id: str) -> list:
+    """#233: retire OPEN directives whose premise the CUMULATIVE state has satisfied — requests must
+    not only grow per round (observed live: Redbank 5->6, Aspen 3->5, Union Hill 4->7 pending), each
+    stale one adding to the human's gate@7 load. The premise-check is deterministic code against the
+    cumulative production truth (merge_fact_runs semantics, REQ-122), never an LLM judgment:
+      - a BAND-scoped directive (7->2/7->1 with band) is withdrawn once that band has a cumulative
+        accepted fact — its gap no longer exists;
+      - a RECORD/DISTRICT-scoped directive (band NULL: 7->6/7->3 retries) is withdrawn only when NO
+        claimed band remains uncovered — the conservative mirror of detect-time's no-fillable-gap
+        suppression (a record retry might fill ANY remaining gap, so it stays while one exists).
+    Withdrawal is reversible by construction: 'withdrawn' is not an OPEN status, so if the gap ever
+    re-opens a fresh re-detection re-emits (#234's dedup only blocks on pending/approved). The request
+    row itself is the durable audit — machine actor, timestamp, and the satisfied premise in the note
+    (same pattern as compose's _reject_suppressed). Returns [(request_id, note), ...] withdrawn."""
+    covered = {b for (b,) in session.execute(
+        text("SELECT DISTINCT f.band FROM school_fact f "
+             "JOIN extraction e ON e.extraction_id = f.extraction_id "
+             "WHERE f.district_id = :d AND f.status = 'accepted' AND f.band IS NOT NULL "
+             "AND e.run_kind = 'production'"), {"d": district_id}).all()}
+    if not covered:
+        return []                                        # nothing satisfied anything — cheap exit
+    row = session.execute(text("SELECT lea_claimed_bands_json FROM district_target "
+                               "WHERE district_id = :d"), {"d": district_id}).fetchone()
+    claimed = json.loads(row[0]) if row and row[0] else []
+    no_gap_left = bool(claimed) and all(b in covered for b in claimed)
+    withdrawn, now = [], M7.utcnow()
+    for req_id, band in session.execute(text(
+            "SELECT request_id, band FROM extraction_request "
+            "WHERE district_id = :d AND status IN ('pending', 'approved')"), {"d": district_id}).all():
+        if band is not None and band in covered:
+            note = f"auto-withdrawn: band '{band}' now has a cumulative accepted fact (#233)"
+        elif band is None and no_gap_left:
+            note = (f"auto-withdrawn: every claimed band ({', '.join(claimed)}) now covered — "
+                    f"no fillable gap remains (#233)")
+        else:
+            continue
+        session.execute(text(
+            "UPDATE extraction_request SET status = 'withdrawn', reviewed_by = 'auto:premise-satisfied', "
+            "reviewed_at = :t, review_note = :n "
+            "WHERE request_id = :id AND status IN ('pending', 'approved')"),
+            {"t": now, "n": note, "id": req_id})
+        withdrawn.append((req_id, note))
+    if withdrawn:
+        print(f"  [requests] {district_id}: auto-withdrew {len(withdrawn)} satisfied directive(s) "
+              f"(#233)", flush=True)
+    return withdrawn
 
 
 def backfill_requests(handoff_hash: str, *, root=None) -> int:
