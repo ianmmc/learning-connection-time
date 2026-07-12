@@ -653,6 +653,9 @@ _SIGNAL_CREATE_DDL = [
         district_id text PRIMARY KEY, batch_id text, nces_year text, nces_total integer,
         nces_by_level_json text, enrollment_k12 integer, lea_claimed_bands_json text,
         schools_by_band_json text)""",
+    # PR #248 review: the #211 reject-population query (exploration_live) filters record on tier='D'
+    # from save_label's transaction — index it, or that's a full-scan join on the hottest write path.
+    "CREATE INDEX IF NOT EXISTS ix_record_tier ON record (tier)",
 ]
 # Additive column migrations for the never-dropped incremental path: a table created before a column
 # existed won't pick it up from CREATE IF NOT EXISTS, so ensure_signal_schema applies these too. (The

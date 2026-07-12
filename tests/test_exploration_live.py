@@ -93,12 +93,32 @@ def test_resolve_is_dormant_while_gate5_is_configured_manual(gov_session):
     s = gov_session
     _temp_schema(s)
     _add(s, "d:r1", primary_label=NON, status="labeled")
-    # configured manual (the default) → the law is inert: even ample coverage cannot license auto, and
-    # NOTHING is written to license_state (census mode has nothing to demote). p=1.0 draws the whole bucket.
+    # configured manual (the default) → the law is inert: NOTHING is written to license_state (census
+    # mode has nothing to demote), and — PR #248 review — the FAST PATH skips the reject-bucket scan
+    # entirely (this hook runs on every save_label; dead work on the hottest write path). Coverage
+    # fields are None on the fast path: no numbers were computed, and None must not read as zero.
     out = EAL.resolve_gate5_mode(s, p=1.0, floor_n=1)
     assert out["configured_mode"] == "manual" and out["effective_mode"] == "manual"
-    assert out["window_count"] == 1                        # ample coverage, yet still inert
+    assert out["window_count"] is None                     # skipped, not computed-and-discarded
     assert GM.get_license_state(s, "gate@5") is None       # the hook wrote nothing
+    # a caller that DOES hold coverage (the status endpoint) still gets the full dormant readout
+    cov = EAL.coverage(s, p=1.0, floor_n=1)
+    full = EAL.resolve_gate5_mode(s, p=1.0, floor_n=1, cov=cov)
+    assert full["effective_mode"] == "manual" and full["window_count"] == 1
+    assert GM.get_license_state(s, "gate@5") is None       # still nothing written
+    s.rollback()
+
+
+@pytest.mark.govdb
+def test_coverage_reuses_a_precomputed_sample(gov_session):
+    # PR #248 review: the status endpoint draws ONCE and threads the sample through coverage +
+    # resolve — the same numbers must come out as a fresh internal draw (one snapshot, no re-query).
+    s = gov_session
+    _temp_schema(s)
+    _add(s, "d:r1", primary_label=NON, status="labeled")
+    _add(s, "d:r2")
+    sample = EAL.audit_sample(s, p=1.0)
+    assert EAL.coverage(s, p=1.0, sample=sample) == EAL.coverage(s, p=1.0)
     s.rollback()
 
 

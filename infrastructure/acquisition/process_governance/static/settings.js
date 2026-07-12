@@ -63,7 +63,11 @@
     el.className = "settings-row" + (isDefault ? " settings-row-default" : "");
     el.dataset.gate = gate;
     const inherited = !isDefault && !row.is_override;
-    const lic = row.license_state
+    // The license badge shows ONLY while the gate is configured auto (PR #248 review): demoting a gate
+    // back to manual doesn't clear the stored license_state (by design — it's the deadband memory), so
+    // an ungated badge kept advertising "live license: auto" beside an active Manual toggle. Inert
+    // state must not render as live (the ramp-up posture: never present more autonomy than is in force).
+    const lic = row.license_state && row.configured_mode === "auto"
       ? ` <span class="muted settings-lic">live license: ${esc(row.license_state)}</span>` : "";
     el.innerHTML = `
       <div class="settings-gate">${esc(label)}${inherited ? ' <span class="muted">(inherits default)</span>' : ""}${lic}</div>
@@ -85,6 +89,12 @@
       loadExplorationAudit();   // gate@5's license readout tracks its configured toggle
     } catch (_) { /* leave the UI unchanged on failure */ }
   }
+
+  // Scheme allow-list for DB-sourced URLs rendered into href (PR #248 review): esc() only HTML-escapes —
+  // a javascript: URI passes it untouched and executes on click. Everywhere else the console uses
+  // href="#" + data-go; this is the one raw-href render, so it gets an explicit http(s) gate, and a
+  // non-web URL degrades to visible plain text (the operator still sees what the record claims).
+  const safeUrl = (u) => typeof u === "string" && /^https?:\/\//i.test(u);
 
   // gate@5 reject-audit coverage meter (#211/REQ-120). Read-only status of the anti-survivorship license:
   // window coverage vs the rule-of-three floor, the reject-cohort quality, and the pending randomized draw.
@@ -120,7 +130,7 @@
           ${pend.length === 0
             ? '<div class="empty">No pending draws — the sampled rejects are all labeled.</div>'
             : `<ul class="audit-list">${pend.slice(0, 25).map((r) =>
-                `<li><code>${esc(r.rec_key)}</code>${r.url ? ` <a href="${esc(r.url)}" target="_blank" rel="noopener" class="muted">${esc(r.url)}</a>` : ""}</li>`).join("")}</ul>`}
+                `<li><code>${esc(r.rec_key)}</code>${safeUrl(r.url) ? ` <a href="${esc(r.url)}" target="_blank" rel="noopener" class="muted">${esc(r.url)}</a>` : (r.url ? ` <span class="muted">${esc(r.url)}</span>` : "")}</li>`).join("")}</ul>`}
         </div>`;
     } catch (_) {
       box.innerHTML = `<div class="empty">Failed to load reject-audit status.</div>`;

@@ -33,6 +33,9 @@ from sqlalchemy import text
 from infrastructure.acquisition.common import gate_mode as GM
 from infrastructure.acquisition.stage5_filter import build_signals as BS  # TARGET_LABELS
 from infrastructure.acquisition.stage5_filter import exploration_audit as EA
+# The canonical-record predicate has ONE home (release.py exports it precisely so populations can't
+# drift apart — PR #248 review caught this module re-inlining it by hand).
+from infrastructure.acquisition.stage5_filter.release import CANONICAL_RECORD_WHERE
 
 GATE = "gate@5"
 REJECT_TIER = EA.REJECT_TIER       # combiner tier D == decision "suppress" == the auto-reject bucket
@@ -57,11 +60,10 @@ def reject_population(con):
     near-dup cluster). Each row carries the fields the auditability log needs (rec_key, url, sort_score,
     tier) plus the human outcome joined from `label`. Ordered by rec_key (deterministic)."""
     rows = con.execute(text(
-        """SELECT r.rec_key, r.district_id, r.url, r.sort_score, r.tier,
+        f"""SELECT r.rec_key, r.district_id, r.url, r.sort_score, r.tier,
                   l.primary_label, l.status AS label_status
              FROM record r LEFT JOIN label l ON l.rec_key = r.rec_key
-            WHERE r.tier = :t AND r.duplicate_of IS NULL
-              AND (r.is_cluster_rep = 1 OR r.cluster_id IS NULL)
+            WHERE r.tier = :t AND {CANONICAL_RECORD_WHERE}
             ORDER BY r.rec_key"""), {"t": REJECT_TIER}).mappings().all()
     return [dict(r) for r in rows]
 
@@ -81,11 +83,13 @@ def audit_sample(con, p=EA.DEFAULT_SAMPLE_RATE, seed=DEFAULT_SEED):
             "audited": audited, "pending": pending}
 
 
-def coverage(con, p=EA.DEFAULT_SAMPLE_RATE, seed=DEFAULT_SEED, floor_n=EA.DEFAULT_FLOOR_N):
+def coverage(con, p=EA.DEFAULT_SAMPLE_RATE, seed=DEFAULT_SEED, floor_n=EA.DEFAULT_FLOOR_N, sample=None):
     """The coverage meter: `window_count` (audited sampled rejects, drawn from the live config generation)
     plus the honest reject-cohort signal — `rejection_quality` over their human labels (the fraction of the
-    reject pile the filter got right, with the rule-of-three ceiling when zero misses were seen)."""
-    s = audit_sample(con, p=p, seed=seed)
+    reject pile the filter got right, with the rule-of-three ceiling when zero misses were seen).
+    `sample`: a precomputed audit_sample() result (PR #248 review: the status endpoint needs BOTH the
+    coverage numbers and the pending queue — pass the one draw in, don't re-run the population query)."""
+    s = sample if sample is not None else audit_sample(con, p=p, seed=seed)
     labels = [_is_target(r["primary_label"]) for r in s["audited"]]
     return {"population_size": s["population_size"], "sample_size": s["sample_size"],
             "window_count": len(s["audited"]), "floor_n": floor_n,
@@ -94,22 +98,35 @@ def coverage(con, p=EA.DEFAULT_SAMPLE_RATE, seed=DEFAULT_SEED, floor_n=EA.DEFAUL
 
 
 def resolve_gate5_mode(con, *, persist=True, actor="auto:exploration-audit",
-                       p=EA.DEFAULT_SAMPLE_RATE, seed=DEFAULT_SEED, floor_n=EA.DEFAULT_FLOOR_N):
+                       p=EA.DEFAULT_SAMPLE_RATE, seed=DEFAULT_SEED, floor_n=EA.DEFAULT_FLOOR_N,
+                       cov=None):
     """THE gate@5 demote-hook (#211): the live effective mode. Reads the human's configured toggle + the
     stored deadband license from the `gate_mode` store (#104), computes the live `window_count`, and applies
     the pure control law (`exploration_audit.resolve_gate_mode`).
 
     - configured **manual** (today, always): the law is INERT (census mode) — returns "manual", writes
-      nothing. This is the dormant state.
+      nothing, and (PR #248 review) SKIPS the reject-population query entirely unless the caller supplied
+      `cov`: the hook runs inside save_label's transaction on every label click, and paying a full tier-D
+      scan to discover the feature is dormant was dead work on the console's hottest write path. The cheap
+      configured-mode point-read comes FIRST; coverage fields are None on this fast path.
     - configured **auto**: the law is LIVE — auto while the audit validates the filter, demoted to manual
       the instant coverage lapses; the deadband transition is PERSISTED back to `license_state` (the
       hysteresis memory) so a demoted gate re-promotes only above the deadband, never flaps.
 
-    A missing stored license defaults to "manual" — start demoted, earn auto (the safe direction). Returns
-    the full status dict (mode + coverage metrics) so the same call serves both the hook and the console."""
-    cov = coverage(con, p=p, seed=seed, floor_n=floor_n)
+    A missing stored license defaults to "manual" — start demoted, earn auto (the safe direction).
+    `cov`: a precomputed coverage() dict (the status endpoint passes one so its single draw serves both
+    this resolution and its displayed meter). Returns the full status dict (mode + coverage metrics) so
+    the same call serves both the hook and the console."""
     configured = GM.get_configured_mode(con, GATE)
     license_state = GM.get_license_state(con, GATE) or "manual"
+    if cov is None and configured != "auto":
+        # Dormant fast path: the control law is inert and nothing will be written — don't scan the
+        # reject bucket just to throw the numbers away.
+        return {"configured_mode": configured, "effective_mode": "manual",
+                "license_state": license_state, "window_count": None, "floor_n": floor_n,
+                "promote_n": EA.promote_threshold(floor_n), "quality": None, "population_size": None,
+                "sample_size": None, "n_pending": None, "seed": seed, "sample_rate": p}
+    cov = cov if cov is not None else coverage(con, p=p, seed=seed, floor_n=floor_n)
     effective = EA.resolve_gate_mode(configured, license_state, cov["window_count"], floor_n=floor_n)
     # Persist the deadband transition ONLY when the law is live (configured auto) AND it actually moved —
     # in census mode the license is inert, and writing it would churn precious state for nothing.

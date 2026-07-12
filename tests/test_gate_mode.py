@@ -69,11 +69,28 @@ def test_license_state_is_independent_of_configured_mode(gov_session):
 
 
 @pytest.mark.govdb
-def test_set_license_state_on_a_fresh_row_seeds_manual(gov_session):
+def test_set_license_state_on_a_fresh_row_does_not_materialize_a_toggle(gov_session):
     gdb.init_precious_schema()
     GM.set_license_state(gov_session, "gate@5", "auto", actor="auto:audit")
-    assert GM.get_configured_mode(gov_session, "gate@5") == "manual"   # seeded default, not accidentally auto
+    assert GM.get_configured_mode(gov_session, "gate@5") == "manual"   # still the inherited default
     assert GM.get_license_state(gov_session, "gate@5") == "auto"
+    # the license-only row is NOT a human override — the Settings UI must not render one (PR #248 review)
+    assert GM.all_modes(gov_session)["gate@5"]["is_override"] is False
+    gov_session.rollback()
+
+
+@pytest.mark.govdb
+def test_license_write_preserves_global_default_inheritance(gov_session):
+    # THE PR #248 review scenario: human sets ONLY the global default to auto; gate@5 has no own row.
+    # The demote-hook's first license write must not pin gate@5 to manual — configured_mode stays NULL
+    # (inherit), so the gate keeps tracking the global toggle in BOTH directions afterwards.
+    gdb.init_precious_schema()
+    GM.set_configured_mode(gov_session, "default", "auto", actor="ian")
+    assert GM.get_configured_mode(gov_session, "gate@5") == "auto"          # inherited
+    GM.set_license_state(gov_session, "gate@5", "auto", actor="auto:audit")  # fresh-row license write
+    assert GM.get_configured_mode(gov_session, "gate@5") == "auto"          # STILL inherited, not clobbered
+    GM.set_configured_mode(gov_session, "default", "manual", actor="ian")   # human demotes the global
+    assert GM.get_configured_mode(gov_session, "gate@5") == "manual"        # inheritance still live
     gov_session.rollback()
 
 
@@ -87,5 +104,7 @@ def test_all_modes_reports_defaults_overrides_and_license(gov_session):
     assert set(m) == {GM.GLOBAL, *GM.GATES}
     assert m["gate@7"] == {"configured_mode": "auto", "license_state": None, "is_override": True}
     assert m["gate@6"]["configured_mode"] == "manual" and m["gate@6"]["is_override"] is False  # inherited
-    assert m["gate@5"]["license_state"] == "manual" and m["gate@5"]["is_override"] is True
+    # a license-only row carries the license but is NOT an override (configured_mode NULL = inherit)
+    assert m["gate@5"]["license_state"] == "manual" and m["gate@5"]["is_override"] is False
+    assert m["gate@5"]["configured_mode"] == "manual"   # rendered as the inherited default
     gov_session.rollback()
