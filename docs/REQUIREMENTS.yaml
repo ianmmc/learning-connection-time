@@ -2148,7 +2148,7 @@ requirements:
     tests:
       - tests/test_harness.py
     created: "2026-06-25T00:00:00Z"
-    updated: "2026-06-25T00:00:00Z"
+    updated: "2026-07-12T00:00:00Z"
     notes: "BUILT 2026-06-25. infrastructure/acquisition/stage5_filter/harness.py - pure metric fns
       (tier_target_metrics / category_accuracy / topology_report) + a read-only DB scorer + a
       fingerprinted scorecard writer (config/label_set/data md5s) to data/acquisition/stage5_review/
@@ -2157,7 +2157,14 @@ requirements:
       targets; category-guess accuracy 0.43 (the 'guess does not work' finding); topology coarse hub/
       per-school agreement 0.6, Marion hub->per_school flagged. v1 scores the current ingest; compare
       configs by re-ingesting (Tier-0) and re-running - scorecards are comparable via their fingerprints.
-      Runs on demand / at batch completion (--no-write for CI), never per-label-write."
+      Runs on demand / at batch completion (--no-write for CI), never per-label-write.
+      #214 (2026-07-12): added the exploration_cohort scorecard section — harness.exploration_cohort computes
+      Rejection-Quality/TNR on the pruned (tier-D) tail over the same reproducible audit draw the live quota
+      (REQ-120/#211) uses, closing the 'illusion of improvement' hole (FINDINGS §0): a deterministic filter's
+      approved-set metrics rise exactly when true recall falls, so EVERY measured-pass now also reports the
+      pruned-tail signal (harness scorecard + frontier per-config reject_quality + tuning_ledger
+      reject_cohort_quality delta/regression flag). Retroactive #108 re-verify: reject-quality 1.0 under the
+      live config. Design: STAGE5_FILTER_DESIGN_2026-06.md §5d."
 
   - id: REQ-091
     description: Stage 3 DOM segmentation (de-chrome) - header/footer/nav vs main as separate representations
@@ -2904,7 +2911,7 @@ requirements:
       audit_sample/coverage (the pure sampler bound to the live population + rejection_quality window), resolve_gate5_mode
       (THE gate@5 demote-hook + the first live caller of resolve_gate_mode — reads configured_mode/license_state from the
       gate_mode store #104, persists the deadband transition when configured auto), and calibrate_against_census (feeds
-      REQ-... #214's measured-pass). Wired into save_label (self-healing: each gate@5 label re-evaluates the license on the
+      #214's measured-pass). Wired into save_label (self-healing: each gate@5 label re-evaluates the license on the
       same transaction) + GET /api/exploration-audit → a Settings-console coverage meter. Current-config scoping is STRUCTURAL
       (the window is recomputed over the live tier-D set — a rescued reject leaves the population; no reject-audit table, no
       persisted config generation). Enforcement DORMANT: gate@5 configured manual → returns manual, writes nothing. Verified

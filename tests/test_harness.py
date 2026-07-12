@@ -25,6 +25,34 @@ def test_tier_target_metrics_counts_and_thresholds():
     assert ab["precision"] == 0.5
 
 
+def test_exploration_cohort_reports_tnr_on_the_pruned_tier_d_tail():
+    # #214: rows are (rec_key, tier, is_target) over LABELED records. Only the tier-D (pruned) sub-cohort
+    # counts; a tier-D record the human labeled a target is a false negative. p=1.0 draws the whole cohort.
+    rows = [("d:a", "A", True), ("d:b", "B", True),        # not rejects — excluded from the cohort
+            ("d:r1", "D", True),                            # a wrongly-dropped target (false negative)
+            ("d:r2", "D", False), ("d:r3", "D", False), ("d:r4", "D", False)]  # correctly rejected
+    ec = harness.exploration_cohort(rows, p=1.0)
+    assert ec["cohort_size"] == 4 and ec["sampled_n"] == 4   # only the 4 tier-D records
+    assert ec["false_neg"] == 1 and ec["false_negative_rate"] == 0.25
+    assert ec["rejection_quality"] == 0.75                   # TNR on the pruned tail — the honest recall signal
+
+
+def test_exploration_cohort_uses_the_reproducible_growth_stable_audit_draw():
+    # the SAME randomized sampler the live quota uses (select_audit_sample) — reproducible + order-invariant,
+    # so a measured-pass over the same cohort computes the same number run after run.
+    rows = [(f"d:r{i}", "D", i % 7 == 0) for i in range(400)]
+    a = harness.exploration_cohort(rows, p=0.1, seed="s1")
+    b = harness.exploration_cohort(list(reversed(rows)), p=0.1, seed="s1")
+    assert a == b                                           # order-invariant + reproducible
+    assert 0 < a["sampled_n"] < a["cohort_size"]           # a real random subset of the tail
+
+
+def test_exploration_cohort_empty_tail_is_all_none_not_a_crash():
+    ec = harness.exploration_cohort([("d:a", "A", True), ("d:b", "B", False)], p=1.0)
+    assert ec["cohort_size"] == 0 and ec["sampled_n"] == 0
+    assert ec["rejection_quality"] is None and ec["false_negative_rate"] is None
+
+
 def test_category_accuracy_overall_and_per_label():
     rows = [("a", "a"), ("a", "b"), ("c", "c"), ("x", "y")]
     m = harness.category_accuracy(rows)

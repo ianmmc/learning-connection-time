@@ -36,6 +36,13 @@ is the fix for how we *already* measure everything, and it is the single highest
 epics. And a cross-cutting rule falls out: **every scoring measured-pass must evaluate against the
 exploration cohort**, or the discipline itself can bless the illusion (retroactively touches #108).
 
+> **SHIPPED (2026-07-12, #214).** The cross-cutting rule is now enforced in code: `harness.exploration_cohort`
+> (a new scorecard section + `print_summary` line), `frontier.reject_cohort_quality` (per grid config + a
+> champion→challenger reject-quality warning in `--gate`), and a `tuning_ledger` `reject_cohort_quality`
+> delta + advisory `reject_quality_regressed` flag — all over the SAME reproducible audit draw the live
+> quota (#211) uses. Retroactive #108 re-verify: reject-quality/TNR = 1.0 under the live config (the
+> approved-set win hid no pruned-tail collapse). Detail: `STAGE5_FILTER_DESIGN_2026-06.md` §5d.
+
 ---
 
 ## 1. Feedback-loop / survivorship bias — DECISIONS

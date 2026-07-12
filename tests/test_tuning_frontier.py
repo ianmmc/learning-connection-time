@@ -82,6 +82,30 @@ def test_evaluate_reuses_harness_metrics():
     assert m["thresholds"]["A"]["precision"] == 0.6667
 
 
+def test_exploration_cohort_catches_the_illusion_of_improvement():
+    """#214 — the whole point. Tightening table_min_times to 5 REMOVES the tier-A lookalike FP (d2:b), so
+    tier-A PRECISION rises 0.667→1.0 (a win, measured on the approved set) — while the SAME move suppresses
+    a real target (d2:a) into tier D. Only the exploration cohort sees that pruned-tail collapse: reject-
+    quality falls. The approved-set metric blesses the regression; the cohort metric catches it (FINDINGS §0)."""
+    recs = _records()
+    champ = DET.DEFAULT_DETECTOR_PARAMS
+    chall = {**champ, "table_min_times": 5}
+    assert FR.evaluate(recs, champ)["thresholds"]["A"]["precision"] == 0.6667   # approved-set: looks worse...
+    assert FR.evaluate(recs, chall)["thresholds"]["A"]["precision"] == 1.0      # ...challenger looks like a WIN
+    champ_rq = FR.reject_cohort_quality(recs, champ, p=1.0)
+    chall_rq = FR.reject_cohort_quality(recs, chall, p=1.0)
+    assert champ_rq["false_neg"] == 0 and champ_rq["rejection_quality"] == 1.0
+    assert chall_rq["false_neg"] == 1                                          # a real target now in the tail
+    assert chall_rq["rejection_quality"] < champ_rq["rejection_quality"]       # the illusion, caught
+
+
+def test_grid_results_carry_the_exploration_cohort_reject_quality():
+    # every grid config carries its OWN pruned-tail reject-quality beside precision/recall, so a measured-pass
+    # reading the grid can't be blind to a tail regression.
+    res = FR.grid_search(_records(), {"table_min_times": [4, 5]}, recall_floor=0.0)
+    assert res and all("reject_quality" in r and "rejection_quality" in r["reject_quality"] for r in res)
+
+
 def test_grid_search_filters_by_recall_floor_and_ranks_by_precision():
     recs = _records()
     grid = {"table_min_times": [4, 5]}

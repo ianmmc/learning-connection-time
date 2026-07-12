@@ -33,6 +33,11 @@ DEFAULT_SAMPLE_RATE = 0.05
 # Schmitt-trigger band), not statistically derived like FLOOR_N — recalibrate it from the observed
 # window-count variance during the #211 census-calibration step.
 PROMOTE_FACTOR = 1.2
+# The audit's shared identity constants (the live wiring `exploration_live.py` and the measured-pass
+# instrument `harness.exploration_cohort` #214 both consume these — one source, not three): the reject
+# tier the audit is scoped to, and the fixed sampler seed that makes every draw reproducible forever.
+REJECT_TIER = "D"                  # combiner tier D == decision "suppress" == the auto-reject bucket
+DEFAULT_SEED = "exploration-audit"
 _GATE_MODES = ("auto", "manual")
 
 
