@@ -1,29 +1,42 @@
 "use strict";
-// Stage 6 (Dispatch) console view — REQ-101, gate@6. Build a dispatch package from Stage-5 release
-// decisions, review the per-representation routing (which council) + the estimated cost, then
-// APPROVE & FREEZE (gate@6): writes the immutable handoff_<hash>.json + records the dispatch
-// (the precious index row + per-district `dispatched` state_events). Stops at the seam — NO paid
-// Stage-7 calls. Vanilla JS on the MMM tokens; reuses the q-*/badge/btn styles + a few s6-* rules.
+// Stage 6 (Dispatch) console view — REQ-101, gate@6. Redesigned (2026) to mirror gate@1's Batch pattern:
+// a persisted, reopenable DRAFT dispatch (add/remove districts, per-rep council overrides, verified-only
+// toggle) that a human builds up before freezing — replacing the old ephemeral checkbox-selection +
+// manual-Preview flow. One unified left-pane list (drafts + frozen dispatches together, drafts first);
+// the center pane is ALWAYS populated on click: an editable tree for a draft, a read-only package view
+// for a frozen dispatch. Each frozen dispatch carries a DERIVED `origin` ('stage7' | 'console' | 'draft')
+// — computed server-side from receipts (`extraction_request.executed_ref`/`route` + `dispatch_draft`),
+// never stored — so a true Stage 7->6 back-edge reads "from Stage 7" while genuine console/first-run
+// dispatches (incl. all pre-draft history) read "console". Vanilla JS on the MMM tokens; reuses q-*/badge/btn.
 (function () {
   const $g = (s, r = document) => r.querySelector(s);
-  const { esc, postJSON, api } = window.LCT;
-  const usd = (n) => "$" + (Number(n) || 0).toFixed(5);
+  const { esc, postJSON, api, statusBadge, usd } = window.LCT;
   const fmt = (iso) => (iso || "").replace("T", " ").replace("Z", " UTC");
-  let inited = false;
-  const SELECTED = new Set();
-  let CANDIDATES = [];                                   // all loaded candidates (client-side filtering)
-  const FILTER = { q: "", topology: "", sendOnly: false, heldOnly: false, hideDispatched: false };
-  let VERIFIED_ONLY = false;                             // gate@6 training-grade mode: labeled targets only
-  let COUNCILS = [];                                     // council registry (override <select> options)
-  const OVERRIDES = {};                                  // "<rec_key>::<file>" -> council_id (gate@6 manual override)
-  let PREVIEW_IDENTITY = null;                           // the previewed package's identity hash (issue #37)
-  const effSend = (c) => (VERIFIED_ONLY ? (c.n_verified || 0) : (c.n_send || 0));   // what THIS mode dispatches
 
+  // Origin badge/note for a frozen dispatch — driven by the server-derived `origin`. 'draft' (the normal
+  // new console flow) shows nothing; only the two "no editable draft behind this" origins are called out.
+  function originBadge(origin) {
+    if (origin === "stage7")
+      return `<span class="badge badge-accent" title="Produced by the Stage 7→6 back-edge — verified from an extraction_request receipt, not inferred.">from Stage 7</span>`;
+    if (origin === "console")
+      return `<span class="badge badge-neutral s6-origin-console" title="Console / first-run / follow-up-batch dispatch (no Stage-6 draft, no 7→6 back-edge link). Derived from receipts.">console</span>`;
+    return "";   // 'draft' — the normal drafted flow, no badge needed
+  }
+  function originNote(origin) {
+    if (origin === "stage7")
+      return `<div class="q-locked" data-feat="s6-origin-note">Produced by the Stage 7→6 back-edge — verified from an <code>extraction_request</code> receipt (route <code>7-&gt;6</code>). No Stage-6 draft exists for it.</div>`;
+    if (origin === "console")
+      return `<div class="q-locked" data-feat="s6-origin-note">Console / first-run / follow-up-batch dispatch — no Stage-6 draft and no 7→6 back-edge link. (Dispatches predating draft tracking read this way.)</div>`;
+    return "";   // 'draft' — frozen from a Stage-6 draft; nothing to flag
+  }
+  let inited = false;
+  let CURRENT = null;          // { kind: "draft"|"handoff", id }
+  let COUNCILS = [];           // council registry (override <select> options)
+  let DRAFT_VIEW = null;       // last loaded draft-detail payload (GET /api/dispatch/{id})
 
   window.initStage6 = function () {
     if (!inited) { inited = true; renderShell(); loadCouncils(); }
-    loadCandidates();
-    loadHandoffs();
+    loadList(CURRENT && CURRENT.kind === "draft" ? CURRENT.id : null);
   };
 
   async function loadCouncils() {
@@ -32,164 +45,336 @@
 
   function renderShell() {
     $g("#stage6view").innerHTML = `
-      <nav class="col col-tree q-left" aria-label="Dispatch candidates">
-        <div class="q-left-head"><h3>Dispatch</h3><button id="s6-preview" class="btn btn-secondary">Preview →</button></div>
-        <div id="s6-filters" class="s6-filters"></div>
+      <nav class="col col-tree q-left" aria-label="Dispatches" data-feat="s6-draft-list">
+        <div class="q-left-head"><h3>Dispatch</h3><button id="s6-new" class="btn btn-secondary">+ New dispatch</button></div>
         <div id="s6-list" class="q-list"><div class="empty">Loading…</div></div>
-        <div class="q-left-head"><h3>Recent dispatches</h3></div>
-        <div id="s6-handoffs" class="q-list"><div class="empty">—</div></div>
       </nav>
-      <section id="s6-detail" class="col col-center"><div class="empty">Select districts on the left, then <b>Preview</b> to build a dispatch package.</div></section>
+      <section id="s6-detail" class="col col-center"><div class="empty">Select a dispatch on the left, or create one.</div></section>
       <div id="s6-lightbox" class="s6-lightbox hidden">
         <div class="s6-lb-card"><div class="s6-lb-head"><span id="s6-lb-title" class="s6-lb-title"></span>
           <button id="s6-lb-close" class="btn btn-ghost">Close</button></div>
           <div id="s6-lb-body" class="s6-lb-body"></div></div>
       </div>`;
-    $g("#s6-preview").onclick = preview;
+    $g("#s6-new").onclick = createDraft;
     $g("#s6-lb-close").onclick = closeLightbox;
     $g("#s6-lightbox").onclick = (e) => { if (e.target.id === "s6-lightbox") closeLightbox(); };
   }
 
-  // ----------------------------- candidates + filters -----------------------------
-  async function loadCandidates() {
-    let cands;
-    try { cands = await api("/api/handoff/candidates"); }
-    catch (e) { $g("#s6-list").innerHTML = `<div class="empty err">Couldn't load candidates: ${esc(e.message)}<br/>Is Docker (governance DB) up?</div>`; return; }
-    CANDIDATES = cands;
-    renderFilters();
-    renderCandidates();
-  }
-
-  function renderFilters() {
-    const topos = [...new Set(CANDIDATES.map((c) => c.labeled_topology).filter(Boolean))].sort();
-    const bar = $g("#s6-filters");
-    bar.innerHTML = `
-      <input id="s6-q" class="s6-fi" type="search" placeholder="Filter name / id / state…" value="${esc(FILTER.q)}"/>
-      <select id="s6-topo" class="s6-fi"><option value="">All topologies</option>${
-        topos.map((t) => `<option value="${esc(t)}" ${FILTER.topology === t ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>
-      <label class="s6-fl"><input type="checkbox" id="s6-sendonly" ${FILTER.sendOnly ? "checked" : ""}/> has send</label>
-      <label class="s6-fl"><input type="checkbox" id="s6-heldonly" ${FILTER.heldOnly ? "checked" : ""}/> has held</label>
-      <label class="s6-fl" title="Hide districts already dispatched in a prior handoff — re-sending re-extracts (wasted spend). (#171)">
-        <input type="checkbox" id="s6-hidedispatched" ${FILTER.hideDispatched ? "checked" : ""}/> hide already-dispatched</label>
-      <label class="s6-fl s6-mode" title="Dispatch ONLY human-labeled target representations — drops the speculative unlabeled tier-A auto-sends. Builds training-grade, manually-verified data.">
-        <input type="checkbox" id="s6-verified" ${VERIFIED_ONLY ? "checked" : ""}/> verified only (labeled targets)</label>`;
-    bar.querySelector("#s6-q").oninput = (e) => { FILTER.q = e.target.value.toLowerCase(); renderCandidates(); };
-    bar.querySelector("#s6-topo").onchange = (e) => { FILTER.topology = e.target.value; renderCandidates(); };
-    bar.querySelector("#s6-sendonly").onchange = (e) => { FILTER.sendOnly = e.target.checked; renderCandidates(); };
-    bar.querySelector("#s6-heldonly").onchange = (e) => { FILTER.heldOnly = e.target.checked; renderCandidates(); };
-    bar.querySelector("#s6-hidedispatched").onchange = (e) => { FILTER.hideDispatched = e.target.checked; renderCandidates(); };
-    bar.querySelector("#s6-verified").onchange = (e) => {
-      VERIFIED_ONLY = e.target.checked; renderCandidates(); if (SELECTED.size) preview();   // re-price in the new mode
-    };
-  }
-
-  function passesFilter(c) {
-    if (FILTER.topology && c.labeled_topology !== FILTER.topology) return false;
-    if (FILTER.sendOnly && !(effSend(c) > 0)) return false;   // "has send" respects the active mode
-    if (FILTER.heldOnly && !(c.n_hold > 0)) return false;
-    if (FILTER.hideDispatched && c.n_dispatched > 0) return false;   // #171: drop already-sent districts
-    if (FILTER.q && !`${c.name || ""} ${c.district_id} ${c.state || ""}`.toLowerCase().includes(FILTER.q)) return false;
-    return true;
-  }
-
-  function renderCandidates() {
+  // ----------------------------- unified left-pane list -----------------------------
+  async function loadList(selectDraftId) {
     const list = $g("#s6-list");
-    if (!CANDIDATES.length) { list.innerHTML = `<div class="empty">No Stage-5 districts yet.</div>`; return; }
-    const shown = CANDIDATES.filter(passesFilter);
-    if (!shown.length) { list.innerHTML = `<div class="empty">No districts match the filter.</div>`; return; }
-    list.innerHTML = "";
-    shown.forEach((c) => {
-      const el = document.createElement("label");
-      el.className = "q-batch s6-cand";
-      const n = effSend(c);
-      const tone = n > 0 ? "badge-success" : "badge-neutral";
-      const badge = VERIFIED_ONLY
-        ? `<span class="badge ${tone}" title="human-labeled target records — what a verified-only dispatch sends (preview shows exact reps + cost)">${n} verified</span>`
-        : `<span class="badge ${tone}" title="canonical records that will be sent — labeled targets + unlabeled tier-A${c.n_verified ? `, of which ${c.n_verified} human-verified` : ""} (preview shows exact reps + cost)">${n} send</span>`;
-      const verifiedMeta = (!VERIFIED_ONLY && c.n_verified) ? ` · <span title="human-labeled targets — the verified-only subset">${c.n_verified} verified</span>` : "";
-      // #171: dispatch-history markers so fresh vs. already-sent districts are distinguishable at a glance.
-      // is_benchmark is server-computed by batch_type membership (matches the dispatch wall), #198 review.
-      const bench = c.is_benchmark
-        ? `<span class="badge badge-accent" title="benchmark district (batch_type=benchmark) — dispatch-walled; generally do not re-send">benchmark</span>` : "";
-      const disp = c.n_dispatched > 0
-        ? `<span class="badge badge-warn" title="already dispatched ${c.n_dispatched}×${c.last_dispatched_at ? ` — last ${esc(fmt(c.last_dispatched_at))}` : ""}; re-selecting re-dispatches + re-extracts (wasted spend)">dispatched</span>` : "";
-      const ext = c.n_extracted > 0
-        ? `<span class="badge badge-neutral" title="${c.n_extracted} production extraction${c.n_extracted === 1 ? "" : "s"} with accepted facts on record for this district">✓ extracted</span>` : "";
-      el.innerHTML = `<div class="s6-cand-top">
-          <input type="checkbox" data-id="${esc(c.district_id)}" ${SELECTED.has(c.district_id) ? "checked" : ""}/>
-          <span class="q-batch-id">${esc(c.name || c.district_id)}</span>
-          ${badge}${disp}${ext}${bench}</div>
-        <div class="q-batch-meta">${esc(c.state || "?")} · ${esc(c.district_id)} · ${esc(c.labeled_topology || "?")}${verifiedMeta}${c.n_hold ? ` · <span title="unlabeled tier-B/C — label them in Stage 5 to dispatch">${c.n_hold} held for label</span>` : ""}</div>`;
-      const cb = el.querySelector("input");
-      cb.onchange = () => { cb.checked ? SELECTED.add(c.district_id) : SELECTED.delete(c.district_id); };
-      list.appendChild(el);
-    });
+    let rows;
+    try { rows = await api("/api/dispatch"); }
+    catch (e) { list.innerHTML = `<div class="empty err">Couldn't load: ${esc(e.message)}<br/>Is Docker (governance DB) up?</div>`; return; }
+    if (!rows.length) { list.innerHTML = `<div class="empty">No dispatches yet — create one ↑</div>`; }
+    else { list.innerHTML = ""; rows.forEach((r) => list.appendChild(dispatchRow(r))); }
+    if (selectDraftId) openDispatch(selectDraftId, "draft");
   }
 
-  // ----------------------------- preview the package -----------------------------
-  async function preview() {
-    const ids = [...SELECTED];
+  function dispatchRow(r) {
+    const el = document.createElement("div");
+    const active = CURRENT && ((r.kind === "draft" && CURRENT.kind === "draft" && CURRENT.id === r.draft_id)
+      || (r.kind === "handoff" && CURRENT.kind === "handoff" && CURRENT.id === r.handoff_id));
+    el.className = "q-batch" + (active ? " active" : "");
+    if (r.kind === "draft") {
+      el.dataset.kind = "draft"; el.dataset.id = r.draft_id;
+      const badge = r.status === "abandoned" ? statusBadge("abandoned") : `<span class="badge badge-neutral">draft</span>`;
+      el.innerHTML = `<div class="q-batch-top"><span class="q-batch-id">${esc(r.draft_id)}</span>${badge}</div>
+        <div class="q-batch-meta">${r.n_districts} district${r.n_districts === 1 ? "" : "s"} · ${r.verified_only ? "verified-only" : "standard"} · ${esc(fmt(r.created_at))}</div>`;
+      el.onclick = () => openDispatch(r.draft_id, "draft");
+    } else {
+      el.dataset.kind = "handoff"; el.dataset.id = r.handoff_id;
+      el.innerHTML = `<div class="q-batch-top s6-handoff-top"><span class="q-batch-id">${esc(r.handoff_id.slice(0, 24))}…</span>
+          <span class="badge badge-success">${esc(r.status)}</span>${originBadge(r.origin)}</div>
+        <div class="q-batch-meta">${r.n_districts}d · ${r.n_reps}r · ${usd(r.total_usd)} ${esc(r.cost_provenance)} · ${esc(fmt(r.created_at))}${r.n_extracted ? ` · ${r.n_extracted}/${r.n_districts} extracted` : ""}</div>`;
+      el.onclick = () => openDispatch(r.handoff_id, "handoff");
+    }
+    return el;
+  }
+
+  async function createDraft() {
+    try {
+      const v = await api("/api/dispatch/create", postJSON({ actor: "ian" }));
+      await loadList(v.draft_id);
+    } catch (e) { alert("Create failed: " + e.message); }
+  }
+
+  // ----------------------------- always-populated center pane -----------------------------
+  async function openDispatch(id, kind) {
+    CURRENT = { kind, id };
+    document.querySelectorAll("#s6-list .q-batch").forEach((el) =>
+      el.classList.toggle("active", el.dataset.kind === kind && el.dataset.id === id));
+    if (kind === "draft") await openDraft(id); else await openHandoff(id);
+  }
+
+  // Staleness guard for every await-then-render path: if the user clicked a DIFFERENT row while a
+  // fetch was in flight, the late response must not overwrite the pane (or DRAFT_VIEW) — the visible
+  // detail would silently mismatch the highlighted selection.
+  const isCurrent = (kind, id) => CURRENT && CURRENT.kind === kind && CURRENT.id === id;
+
+  async function openDraft(id) {
     const det = $g("#s6-detail");
-    if (!ids.length) { det.innerHTML = `<div class="empty">Select at least one district on the left.</div>`; return; }
-    det.innerHTML = `<div class="empty">Building package…</div>`;
-    let pkg;
-    try { pkg = await api("/api/handoff/preview", postJSON({ district_ids: ids, overrides: OVERRIDES, verified_only: VERIFIED_ONLY })); }
-    catch (e) { det.innerHTML = `<div class="empty err">Preview failed: ${esc(e.message)}</div>`; return; }
-    PREVIEW_IDENTITY = pkg.preview_identity || null;   // echoed back on dispatch (issue #37 staleness gate)
-    renderPackage(pkg);
+    det.innerHTML = `<div class="empty">Loading ${esc(id)}…</div>`;
+    let v;
+    try { v = await api(`/api/dispatch/${id}`); }
+    catch (e) { if (isCurrent("draft", id)) det.innerHTML = `<div class="empty err">${esc(e.message)}</div>`; return; }
+    if (!isCurrent("draft", id)) return;   // user moved on while this was in flight
+    DRAFT_VIEW = v;
+    renderDraftDetail(v);
   }
 
-  function repRow(did, recKey, rep) {
+  async function openHandoff(id) {
+    const det = $g("#s6-detail");
+    det.innerHTML = `<div class="empty">Loading ${esc(id)}…</div>`;
+    let h;
+    try { h = await api(`/api/handoffs/${id}`); }
+    catch (e) { if (isCurrent("handoff", id)) det.innerHTML = `<div class="empty err">${esc(e.message)}</div>`; return; }
+    if (!isCurrent("handoff", id)) return;
+    renderHandoffDetail(h);
+  }
+
+  // ----------------------------- draft detail (editable) -----------------------------
+  function renderDraftDetail(v) {
+    const det = $g("#s6-detail");
+    const draft = v.status === "draft";
+    const abandoned = v.status === "abandoned";
+    const pkg = v.package || { districts: [], cost: { n_reps: 0, total_usd: 0, provenance: "unknown" } };
+    const actions = draft
+      ? `<button id="s6-freeze" class="btn btn-primary" data-feat="s6-freeze-btn"${pkg.cost.n_reps ? "" : " disabled"}>Freeze dispatch (gate@6)</button>
+         <button id="s6-abandon" class="btn btn-secondary">Abandon…</button>`
+      : "";
+    const byline = abandoned ? ` · abandoned by ${esc(v.abandoned_by)} ${esc(fmt(v.abandoned_at))}`
+      : v.dispatched_at ? ` · dispatched by ${esc(v.dispatched_by)} ${esc(fmt(v.dispatched_at))}`
+      : ` · created by ${esc(v.created_by)} ${esc(fmt(v.created_at))}`;
+    let html = `<div class="q-detail-head">
+        <div><h2>${esc(v.draft_id)} ${statusBadge(v.status)}</h2>
+          <div class="q-sub">${v.districts.filter((d) => d.included).length} district(s) · ${v.verified_only ? "verified-only" : "standard"}${byline}</div></div>
+        <div class="q-actions">${actions}</div></div>`;
+    if (abandoned) {
+      html += `<div class="q-locked">Abandoned${v.abandon_reason ? ` — ${esc(v.abandon_reason)}` : ""}. Terminal.</div>`;
+    } else if (draft) {
+      html += `<div class="s6-toggle-row">
+          <label class="s6-fl s6-mode" title="Dispatch ONLY human-labeled target representations — drops the speculative unlabeled tier-A auto-sends.">
+            <input type="checkbox" id="s6-verified" ${v.verified_only ? "checked" : ""}/> verified only (labeled targets)</label>
+          <button id="s6-add-district" class="btn btn-mini add">+ Add district</button>
+        </div>`;
+    }
+    // A district in the draft but silently absent from the priced package (its release input vanished
+    // after it was added) — warn, don't let two disagreeing counts sit on the same screen unexplained.
+    const gone = v.missing_from_release || [];
+    if (gone.length) {
+      // `.s6-remove[data-did]` rides wireDraftDetail's existing generic remove wiring — these
+      // districts have no package block (hence no normal ✕), so the warning carries its own.
+      const items = gone.map((g) => `${esc(g)}${draft ? ` <button class="s6-remove" data-did="${esc(g)}" title="remove from draft">✕</button>` : ""}`).join(", ");
+      html += `<div class="q-locked" data-feat="s6-missing-release">⚠ ${gone.length} district(s) in this draft no longer have Stage-5 release data and will NOT be dispatched: ${items}</div>`;
+    }
+    const blocks = pkg.districts.map((d) => renderDistrictBlock(d, draft));
+    html += `<div class="s6-summary">
+        <p><b>${pkg.cost.n_reps}</b> representation(s) across <b>${pkg.districts.length}</b> district(s) ·
+           estimated <b>${usd(pkg.cost.total_usd)}</b> <span class="badge badge-neutral">${esc(pkg.cost.provenance)}</span></p>
+      </div>${blocks.join("") || `<div class="empty">No districts in this draft yet — "+ Add district" above.</div>`}`;
+    det.innerHTML = html;
+    wireDraftDetail(v.draft_id, draft);
+  }
+
+  function renderDistrictBlock(d, editable) {
+    const sends = d.records.filter((r) => r.decision === "send");
+    const reps = sends.flatMap((r) => r.reps.map((rep) => repRow(d.district_id, r.rec_key, rep, editable)));
+    const remove = editable
+      ? `<button class="s6-remove" data-did="${esc(d.district_id)}" title="remove this district from the draft">✕</button>` : "";
+    const head = `${esc(d.name || d.district_id)}${d.state ? ` · ${esc(d.state)}` : ""}
+        <span class="muted">${esc(d.district_id)} · ${esc(d.topology || "?")} · ${d.n_send_reps} rep(s) · ${usd(d.est_usd)}</span>`;
+    return `<div class="s6-dist" data-did="${esc(d.district_id)}">
+        <h4>${head} ${remove}</h4>
+        ${reps.length ? reps.join("") : `<div class="s6-rep muted">no send-eligible records</div>`}
+      </div>`;
+  }
+
+  function repRow(did, recKey, rep, editable) {
     const key = `${recKey}::${rep.file}`;
     const current = rep.councils[0] || "";
-    const opts = COUNCILS.map((c) => `<option value="${esc(c.id)}" ${c.id === current ? "selected" : ""}>${esc(c.id)}</option>`).join("");
-    // the file text is the inspect click target; the <select> is the council override (stops propagation)
+    const councilCell = editable
+      ? `<select class="s6-council-sel" data-did="${esc(did)}" data-key="${esc(key)}" title="council override">${
+          COUNCILS.map((c) => `<option value="${esc(c.id)}" ${c.id === current ? "selected" : ""}>${esc(c.id)}</option>`).join("")}</select>`
+      : `<span class="s6-council-fixed">${esc(current)}</span>`;
     return `<div class="s6-rep" data-did="${esc(did)}">
         <span class="s6-kind">${esc(rep.kind)}</span>
         <code class="s6-rep-click" data-did="${esc(did)}" data-reckey="${esc(recKey)}" data-file="${esc(rep.file)}"
               data-kind="${esc(rep.kind)}" title="click to inspect this representation">${esc(rep.file)}</code> →
-        <select class="s6-council-sel" data-key="${esc(key)}" title="council override">${opts}</select>
+        ${councilCell}
         ${rep.fidelity_suspect ? `<span class="badge badge-warn">fidelity-suspect</span>` : ""}
         <span class="s6-usd">${usd(rep.est_usd)}</span></div>`;
   }
 
-  function renderPackage(pkg) {
+  function wireDraftDetail(draftId, editable) {
     const det = $g("#s6-detail");
-    const blocks = pkg.districts.map((d) => {
-      const sends = d.records.filter((r) => r.decision === "send");
-      const reps = sends.flatMap((r) => r.reps.map((rep) => repRow(d.district_id, r.rec_key, rep)));
-      const head = `${esc(d.name || d.district_id)}${d.state ? ` · ${esc(d.state)}` : ""}
-          <span class="muted">${esc(d.district_id)} · ${esc(d.topology || "?")} · ${d.n_send_reps} rep(s) · ${usd(d.est_usd)}</span>`;
-      return `<div class="s6-dist" data-did="${esc(d.district_id)}">
-          <h4>${head} <button class="s6-remove" data-did="${esc(d.district_id)}" title="remove this district from the dispatch">✕</button></h4>
-          ${reps.length ? reps.join("") : `<div class="s6-rep muted">no send-eligible records</div>`}
-        </div>`;
+    const freeze = $g("#s6-freeze"); if (freeze) freeze.onclick = () => doFreeze(draftId);
+    const abandon = $g("#s6-abandon"); if (abandon) abandon.onclick = () => doAbandon(draftId);
+    const verified = $g("#s6-verified");
+    if (verified) verified.onchange = (e) => draftEdit(draftId, { op: "set_verified_only", verified_only: e.target.checked });
+    const addBtn = $g("#s6-add-district"); if (addBtn) addBtn.onclick = () => openAddDistrictPicker(draftId);
+    det.querySelectorAll(".s6-remove").forEach((b) => {
+      b.onclick = () => draftEdit(draftId, { op: "remove_district", district_id: b.dataset.did });
     });
-    det.innerHTML = `
-      <div class="s6-summary">
-        <h3>Dispatch preview ${pkg.verified_only ? `<span class="badge badge-accent" title="only human-labeled target representations — training-grade">verified only</span>` : ""}</h3>
-        <p><b>${pkg.cost.n_reps}</b> representation(s) across <b>${pkg.districts.length}</b> district(s) ·
-           estimated <b>${usd(pkg.cost.total_usd)}</b> <span class="badge badge-neutral">${esc(pkg.cost.provenance)}</span></p>
-        <button id="s6-dispatch" class="btn btn-primary"${pkg.cost.n_reps ? "" : " disabled"}>Approve &amp; freeze dispatch (gate@6)</button>
-        <p class="muted s6-note">Freezes the immutable dispatch record + records it. <b>No paid extraction</b> — that's Stage&nbsp;7.</p>
-      </div>
-      ${blocks.join("")}`;
-    const btn = $g("#s6-dispatch");
-    if (btn) btn.onclick = () => dispatch(btn);
-    det.querySelectorAll(".s6-remove").forEach((b) => { b.onclick = () => removeDistrict(b.dataset.did); });
     det.querySelectorAll(".s6-rep-click").forEach((r) => {
       r.onclick = () => openInspect(r.dataset.did, r.dataset.reckey, r.dataset.file, r.dataset.kind);
     });
-    det.querySelectorAll(".s6-council-sel").forEach((sel) => {
-      sel.onchange = () => { OVERRIDES[sel.dataset.key] = sel.value; preview(); };   // re-price with the override
-    });
+    if (editable) {
+      det.querySelectorAll(".s6-council-sel").forEach((sel) => {
+        sel.onchange = () => {
+          const [recKey, file] = sel.dataset.key.split("::");
+          draftEdit(draftId, { op: "set_override", district_id: sel.dataset.did, rec_key: recKey, file, council_id: sel.value });
+        };
+      });
+    }
   }
 
-  function removeDistrict(did) {
-    SELECTED.delete(did);
-    const cb = $g(`#s6-list input[data-id="${did}"]`);
-    if (cb) cb.checked = false;
-    preview();   // re-preview with the remaining selection (shows "select…" if now empty)
+  async function draftEdit(draftId, payload) {
+    let v;
+    try { v = await api(`/api/dispatch/${draftId}/edit`, postJSON(payload)); }
+    catch (e) { alert("Edit failed: " + e.message); return; }
+    if (!isCurrent("draft", draftId)) return;   // same staleness rule as openDraft
+    DRAFT_VIEW = v;
+    renderDraftDetail(v);
+    loadList();   // counts on the left may have changed
+  }
+
+  async function doFreeze(draftId) {
+    if (!confirm("Freeze this draft into an immutable dispatch (gate@6)? No paid extraction happens here — that's Stage 7.")) return;
+    const btn = $g("#s6-freeze");
+    if (btn) { btn.disabled = true; btn.textContent = "Freezing…"; }
+    try {
+      const res = await api(`/api/dispatch/${draftId}/freeze`, postJSON({
+        actor: "ian", expected_identity: DRAFT_VIEW ? DRAFT_VIEW.preview_identity : null }));
+      await loadList();
+      openDispatch(res.handoff_id, "handoff");
+    } catch (e) {
+      if (btn) { btn.disabled = false; btn.textContent = "Freeze dispatch (gate@6)"; }
+      if (e.message.startsWith("409")) {
+        alert("Freeze blocked: " + e.message + "\n\nReloading the draft with the current release now — review it, then freeze again.");
+        openDraft(draftId);
+        return;
+      }
+      alert("Freeze failed: " + e.message);
+    }
+  }
+
+  async function doAbandon(draftId) {
+    const reason = prompt("Abandon this draft?\n\nIt becomes terminal — can't be edited or frozen.\n\nReason (optional):");
+    if (reason === null) return;
+    try { DRAFT_VIEW = await api(`/api/dispatch/${draftId}/abandon`, postJSON({ actor: "ian", reason })); }
+    catch (e) { alert("Abandon failed: " + e.message); return; }
+    renderDraftDetail(DRAFT_VIEW);
+    loadList();
+  }
+
+  // ----------------------------- add-district picker -----------------------------
+  async function openAddDistrictPicker(draftId) {
+    let cands;
+    try { cands = await api(`/api/dispatch/${draftId}/candidates`); }
+    catch (e) { alert("Couldn't load candidates: " + e.message); return; }
+    renderPickerModal(draftId, cands);
+  }
+
+  function renderPickerModal(draftId, cands, filter) {
+    filter = filter || { q: "", topology: "", sendOnly: false, heldOnly: false, hideDispatched: false };
+    let m = $g("#s6-picker");
+    if (!m) { m = document.createElement("div"); m.id = "s6-picker"; m.className = "modal"; document.body.appendChild(m); }
+    // Mode-aware count (the old preview flow's effSend): a verified-only draft SENDS only the
+    // human-labeled subset, so the picker must show/filter by n_verified — an unlabeled '5 send'
+    // district contributes 0 reps to a verified-only draft, and showing '5 send' would silently
+    // contradict the draft detail right after adding it.
+    const vOnly = !!(DRAFT_VIEW && DRAFT_VIEW.verified_only);
+    const effSend = (c) => (vOnly ? c.n_verified : c.n_send);
+    const topos = [...new Set(cands.map((c) => c.labeled_topology).filter(Boolean))].sort();
+    const shown = cands.filter((c) => {
+      if (filter.topology && c.labeled_topology !== filter.topology) return false;
+      if (filter.sendOnly && !(effSend(c) > 0)) return false;
+      if (filter.heldOnly && !(c.n_hold > 0)) return false;
+      if (filter.hideDispatched && c.n_dispatched > 0) return false;
+      if (filter.q && !`${c.name || ""} ${c.district_id} ${c.state || ""}`.toLowerCase().includes(filter.q)) return false;
+      return true;
+    });
+    const rows = shown.length
+      ? shown.map((c) => {
+          const bench = c.is_benchmark ? `<span class="badge badge-accent">benchmark</span>` : "";
+          const disp = c.n_dispatched > 0 ? `<span class="badge badge-warn">dispatched</span>` : "";
+          return `<label class="add-item">
+              <input type="checkbox" value="${esc(c.district_id)}"/>
+              <span class="q-sname">${esc(c.name || c.district_id)}</span>
+              <span class="q-smeta">${esc(c.state || "?")} · ${effSend(c)} ${vOnly ? "verified" : "send"} · ${esc(c.labeled_topology || "?")}</span>
+              ${disp}${bench}</label>`;
+        }).join("")
+      : `<div class="empty">No eligible districts match the filter.</div>`;
+    m.innerHTML = `<div class="modal-card">
+        <div class="modal-head"><h2>Add district(s) to ${esc(draftId)}</h2><button class="btn btn-secondary" data-x>Close</button></div>
+        <div class="modal-body add-body">
+          <div class="s6-filters">
+            <input id="s6-pick-q" class="s6-fi" type="search" placeholder="Filter name / id / state…" value="${esc(filter.q)}"/>
+            <select id="s6-pick-topo" class="s6-fi"><option value="">All topologies</option>${
+              topos.map((t) => `<option value="${esc(t)}" ${filter.topology === t ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>
+            <label class="s6-fl"><input type="checkbox" id="s6-pick-sendonly" ${filter.sendOnly ? "checked" : ""}/> has ${vOnly ? "verified" : "send"}</label>
+            <label class="s6-fl"><input type="checkbox" id="s6-pick-heldonly" ${filter.heldOnly ? "checked" : ""}/> has held</label>
+            <label class="s6-fl"><input type="checkbox" id="s6-pick-hidedispatched" ${filter.hideDispatched ? "checked" : ""}/> hide already-dispatched</label>
+          </div>
+          ${rows}
+        </div>
+        <div class="modal-foot"><button class="btn btn-primary" data-ok>Add selected</button></div>
+      </div>`;
+    m.classList.remove("hidden");
+    const close = () => m.classList.add("hidden");
+    m.querySelector("[data-x]").onclick = close;
+    m.onclick = (e) => { if (e.target === m) close(); };
+    const rerender = () => {
+      const next = {
+        q: m.querySelector("#s6-pick-q").value.toLowerCase(),
+        topology: m.querySelector("#s6-pick-topo").value,
+        sendOnly: m.querySelector("#s6-pick-sendonly").checked,
+        heldOnly: m.querySelector("#s6-pick-heldonly").checked,
+        hideDispatched: m.querySelector("#s6-pick-hidedispatched").checked,
+      };
+      renderPickerModal(draftId, cands, next);
+    };
+    m.querySelector("#s6-pick-q").oninput = rerender;
+    m.querySelector("#s6-pick-topo").onchange = rerender;
+    m.querySelector("#s6-pick-sendonly").onchange = rerender;
+    m.querySelector("#s6-pick-heldonly").onchange = rerender;
+    m.querySelector("#s6-pick-hidedispatched").onchange = rerender;
+    m.querySelector("[data-ok]").onclick = async () => {
+      // scoped to .add-item checkboxes only — the modal's own filter checkboxes (send/held/hide-
+      // dispatched) live in the same DOM and would otherwise get swept in by a bare :checked query,
+      // each contributing the browser's default checkbox value "on" as a bogus "district_id".
+      const picks = [...m.querySelectorAll(".add-item input[type=checkbox]:checked")].map((i) => i.value);
+      close();
+      for (const did of picks) {
+        try { await api(`/api/dispatch/${draftId}/edit`, postJSON({ op: "add_district", district_id: did })); }
+        catch (e) { alert(`Couldn't add ${did}: ` + e.message); }
+      }
+      openDraft(draftId);
+      loadList();
+    };
+  }
+
+  // ----------------------------- frozen/handoff detail (read-only) -----------------------------
+  function renderHandoffDetail(h) {
+    const det = $g("#s6-detail");
+    const pkg = h.package || { districts: [], cost: { n_reps: 0, total_usd: 0, provenance: "unknown" } };
+    const origin = originNote(h.origin);
+    const done = h.n_extracted >= h.n_districts && h.n_districts > 0;
+    const extractControl = done
+      ? `<span class="badge badge-neutral" data-feat="s6-run-extraction" title="all districts extracted for this handoff">✓ extracted</span>`
+      : `<button class="btn btn-secondary btn-mini s6-extract" data-feat="s6-run-extraction" data-hash="${esc(h.handoff_hash)}" ${h.running ? "disabled" : ""}>${h.running ? "running…" : (h.n_extracted > 0 ? "Resume extraction" : "Run extraction ▶")}</button>`;
+    const blocks = pkg.districts.map((d) => renderDistrictBlock(d, false));
+    det.innerHTML = `<div class="q-detail-head">
+        <div><h2>${esc(h.handoff_id)} <span class="badge badge-success">${esc(h.status)}</span>${h.verified_only ? ` <span class="badge badge-accent">verified only</span>` : ""}</h2>
+          <div class="q-sub">${pkg.cost.n_reps} rep(s) · ${pkg.districts.length} district(s) · ${usd(pkg.cost.total_usd)} <span class="badge badge-neutral">${esc(pkg.cost.provenance)}</span> · ${esc(fmt(h.created_at))}</div></div>
+        <div class="q-actions">${extractControl}</div></div>
+      ${origin}${blocks.join("")}`;
+    det.querySelectorAll(".s6-rep-click").forEach((r) => {
+      r.onclick = () => openInspect(r.dataset.did, r.dataset.reckey, r.dataset.file, r.dataset.kind);
+    });
+    const btn = det.querySelector(".s6-extract");
+    if (btn) btn.onclick = () => runExtraction(h.handoff_hash);
   }
 
   // ----------------------------- inspect a representation (lightbox) -----------------------------
@@ -210,73 +395,13 @@
     $g("#s6-lb-body").innerHTML = "";
   }
 
-  // ----------------------------- gate@6 approve -> freeze + record -----------------------------
-  async function dispatch(btn) {
-    const ids = [...SELECTED];
-    if (!ids.length) return;
-    btn.disabled = true; btn.textContent = "Freezing…";
-    let res;
-    try {
-      res = await api("/api/handoff/dispatch", postJSON({ district_ids: ids, actor: "ian", overrides: OVERRIDES,
-        verified_only: VERIFIED_ONLY, expected_identity: PREVIEW_IDENTITY }));
-    } catch (e) {
-      btn.disabled = false; btn.textContent = "Approve & freeze dispatch (gate@6)";
-      if (e.message.startsWith("409")) {   // stale preview (issue #37) — re-preview, don't freeze blind
-        alert("Dispatch blocked: " + e.message + "\n\nRebuilding the preview from the current release now — review it, then approve again.");
-        preview();
-        return;
-      }
-      alert("Dispatch failed: " + e.message); return;
-    }
-    $g("#s6-detail").innerHTML = `<div class="s6-summary">
-        <h3>✓ Dispatch frozen &amp; recorded ${res.verified_only ? `<span class="badge badge-accent">verified only</span>` : ""}</h3>
-        <p><code>${esc(res.handoff_id)}</code></p>
-        <p><b>${res.n_reps}</b> rep(s) · ${res.n_districts} district(s) · ${usd(res.total_usd)}
-           <span class="badge badge-neutral">${esc(res.provenance)}</span></p>
-        <p class="muted">${esc(res.path)}</p>
-        <p class="muted s6-note">Recorded as <b>dispatched</b>. The paid council extraction is Stage&nbsp;7 (out of scope here).</p>
-      </div>`;
-    SELECTED.clear();
-    PREVIEW_IDENTITY = null;
-    loadCandidates();
-    loadHandoffs();
-  }
-
-  // ----------------------------- dispatches index -----------------------------
-  async function loadHandoffs() {
-    const el = $g("#s6-handoffs");
-    let hs;
-    try { hs = await api("/api/handoffs"); }
-    catch (_) { el.innerHTML = `<div class="empty">—</div>`; return; }
-    if (!hs.length) { el.innerHTML = `<div class="empty">None dispatched yet.</div>`; return; }
-    el.innerHTML = "";
-    hs.forEach((h) => {
-      const row = document.createElement("div");
-      row.className = "q-batch s6-handoff";
-      // #152: run the PAID Stage-7 extraction for this dispatched handoff (gate@6 was the go-ahead).
-      // The run is resume-by-default (already-extracted districts skip), so a FULLY-extracted handoff
-      // gets an honest done marker, not a button — a "Re-run" would skip everything and do nothing.
-      const done = h.n_extracted >= h.n_districts && h.n_districts > 0;
-      const extractedNote = h.n_extracted > 0 ? ` · <span class="muted">${h.n_extracted}/${h.n_districts} extracted</span>` : "";
-      const control = done
-        ? `<span class="badge badge-neutral" title="all districts extracted for this handoff">✓ extracted</span>`
-        : `<button class="btn btn-secondary btn-mini s6-extract" data-hash="${esc(h.handoff_hash)}" ${h.running ? "disabled" : ""}>${h.running ? "running…" : (h.n_extracted > 0 ? "Resume extraction" : "Run extraction ▶")}</button>`;
-      row.innerHTML = `<div class="q-batch-top"><span class="q-batch-id">${esc(h.handoff_id.slice(0, 24))}…</span>
-          <span class="badge badge-success">${esc(h.status)}</span></div>
-        <div class="q-batch-meta">${h.n_districts}d · ${h.n_reps}r · ${usd(h.total_usd)} ${esc(h.cost_provenance)} · ${esc(fmt(h.created_at))}${extractedNote}</div>
-        <div class="btn-row">${control}</div>`;
-      const btn = row.querySelector(".s6-extract");
-      if (btn) btn.onclick = (e) => { e.stopPropagation(); runExtraction(h.handoff_hash); };
-      el.appendChild(row);
-    });
-  }
-
-  // #152: fire the extraction background job, then poll status into the handoff row until done.
+  // #152: fire the extraction background job, then poll status into the detail pane until done.
   async function runExtraction(hash) {
     if (!confirm("Run the paid Stage-7 council extraction for this dispatched handoff? It re-enters the pipeline at Stage 7 (budget-gated, resumable — already-extracted districts are skipped).")) return;
     try { await api(`/api/extract/${hash}/run`, postJSON({ actor: "ian" })); }
     catch (e) { alert("Couldn't start extraction: " + e.message); return; }
-    loadHandoffs();                      // reflect "running…" immediately
+    if (CURRENT && CURRENT.kind === "handoff") openHandoff(CURRENT.id);   // reflect "running…" immediately
+    loadList();
     pollExtraction(hash);
   }
 
@@ -285,9 +410,10 @@
     try { st = await api(`/api/extract/run/${hash}`); }
     catch (_) { return; }
     if (st.state === "running") { setTimeout(() => pollExtraction(hash), 2500); return; }
-    loadHandoffs();                      // refresh counts/labels on terminal state
+    loadList();
+    if (CURRENT && CURRENT.kind === "handoff") openHandoff(CURRENT.id);   // refresh counts/labels on terminal state
     if (st.state === "done") alert(`Extraction complete: ${st.summary ? st.summary.n_districts : "?"} district(s) this run. Review at gate@7.`);
-    else if (st.state === "partial") {                    // #173: some districts failed, batch continued
+    else if (st.state === "partial") {
       const s = st.summary || {}, failed = (s.failed || []).map(f => f.district_id).join(", ");
       alert(`Extraction finished PARTIAL: ${s.n_districts || 0} district(s) extracted, ${s.n_failed || 0} failed (${failed}). The good districts are durable; re-run to retry the failed ones. Review at gate@7.`);
     }

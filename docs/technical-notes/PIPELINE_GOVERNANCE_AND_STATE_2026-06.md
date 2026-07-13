@@ -1176,10 +1176,11 @@ The immutable Stage-6 dispatch freeze is what keeps "what we sent" recoverable a
   target-labeled record back to its discovery tool (`candidate_tools_json`) and its winning representation's
   source (`representation.source`). Same fingerprinted-scorecard discipline as Stage 5, applied to discovery
   and processing (tracked: #118).
-- **Stage 6** — routing / release; **BUILT to the seam (REQ-101, merged 2026-06-30)**: the gate@6 console
-  (preview the routed/priced package → Approve & freeze) → the immutable dispatch + a precious `handoff` index
-  row + a per-district `dispatched` state_event; manual approve today (auto mode deferred) (tracked: #104). See
-  `STAGE6_DISPATCH_DESIGN_2026-06.md` §0.
+- **Stage 6** — routing / release; **BUILT to the seam (REQ-101, merged 2026-06-30; console REDESIGNED
+  around a persisted draft dispatch 2026-07-13, PR #256)**: a reopenable `dispatch_draft` a human builds up
+  (add/remove districts, council overrides, verified-only) → **freeze** → the immutable dispatch + a
+  precious `handoff` index row + a per-district `dispatched` state_event; manual approve today (auto mode
+  deferred) (tracked: #104). See `STAGE6_DISPATCH_DESIGN_2026-06.md` §0/§0b.
 - **Stage 7** — council extraction; **BUILT (REQ-117, 2026-07-03)**: the gate@7 console (district-first —
   band rollup, accepted/unresolved facts, request-more-evidence cards with Approve/Reject/Reopen); read +
   review only, no fact/band editing (that's gate@8). See `STAGE7_EXTRACT_DESIGN_2026-06.md` §0.
@@ -1260,6 +1261,22 @@ reframe and the batch_00002-forcing-function plan (the batch-of-record advances 
   Approval records the index row + a per-district `dispatched` state_event **atomically**, freezes the
   immutable artifact, and **stops at the seam — no paid call** (Stage 7). Manual approve today; auto mode +
   the budget-governor cost-gate (REQ-051) deferred (tracked: #104). See `STAGE6_DISPATCH_DESIGN_2026-06.md` §0.
+- **gate@6 console REDESIGNED around a persisted draft dispatch (2026-07-13, PR #256)** — the original
+  build's ephemeral client-side district checklist + separate flat dispatch list is replaced by the
+  `stage1_queue`-`Batch`-shaped pattern: a persisted, reopenable `dispatch_draft`/`dispatch_draft_district`
+  entity a human builds up (add/remove districts, per-rep council overrides, verified-only toggle) before
+  freezing, on `POST /api/dispatch/{draft_id}/freeze` (a thin wrapper reusing the unchanged
+  `stage6_dispatch.dispatch_handoff`). One unified left-pane list (drafts + frozen dispatches); an
+  always-populated center pane (editable draft tree / read-only frozen view). Each frozen dispatch carries
+  a 3-value `origin` (`draft`/`stage7`/`console`) **derived live from receipts on every read, never
+  stored** — `extraction_request.executed_ref`/`route` proves a Stage-7→6 back-edge origin, a
+  `dispatch_draft` match proves a console-draft origin, neither proves a genuine first-run/batch console
+  dispatch (an earlier cut inferred origin from draft-*absence* alone, which wrongly badged ~12 genuine
+  console dispatches as "from Stage 7" — replaced with the receipt-derived form for auditability). All
+  draft mutators take a `FOR UPDATE` row lock (a concurrent double-freeze TOCTOU, found + fixed in review).
+  The `/api/handoff/{preview,dispatch,candidates,councils,inspect}` routes from the original build are
+  KEPT as a documented "dispatch without a draft" escape hatch, not retired. See
+  `STAGE6_DISPATCH_DESIGN_2026-06.md` §0b for the full architecture + the PR #256 review-fix log.
 - **Stage 7 + gate@7 BUILT + HARDENED (REQ-117/REQ-118, 2026-07-03 through epic #163, 2026-07-05)** — the
   council extraction (per-rep council → cross-family consensus → judge-on-disagreement, durable/resumable
   per-district streaming, GT-scored 95.2%/99.3% band/per-school on `batch_00000`) + the deterministic
