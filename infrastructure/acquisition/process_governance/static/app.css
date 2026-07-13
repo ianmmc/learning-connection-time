@@ -551,3 +551,4 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 .s8-negative { border: 1px dashed var(--border-strong); border-radius: 8px; padding: 12px; margin-top: 6px; background: var(--surface-page); }
 .s8-negative h3 { margin: 0 0 8px; }
 .s8-negative ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-sm); }
+.s8-override-error { color: var(--status-danger); margin-top: 3px; font-weight: 600; }

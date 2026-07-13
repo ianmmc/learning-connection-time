@@ -152,6 +152,85 @@ class TestCouncilEvidence:
         assert out["bands"]["middle"]["schools"][0]["evidence"]["source_file"] == "pdftotext.txt"
 
 
+class TestOverrideFeedsMode:
+    def _ov(self, start=None, end=None, reason="recency"):
+        return json.dumps({"start_time": start, "end_time": end, "reason": reason, "actor": "ian"})
+
+    def test_overrides_move_the_band_mode_to_clean_modal(self):
+        # The Santa Fe case: two schools already at 445, two stale at 440 corrected UP via overrides —
+        # the band must read a clean modal 445, not a mean_tiebreak 442 (revised 2026-07-13).
+        a = _fact("middle", "milagro", 445)                        # 08:00-15:25, current
+        b = _fact("middle", "ortiz", 445)
+        c = _fact("middle", "k8", 440)                             # 08:00-15:20, stale
+        c["human_determination"] = self._ov(end="15:25")          # -> 08:00-15:25 = 445
+        d = _fact("middle", "combined", 440)
+        d["human_determination"] = self._ov(start="08:00", end="15:25")   # -> 445
+        out = CA.build_closing_argument(
+            "D", merged_accepted=[a, b, c, d], merged_unresolved=[], nces_total=2,
+            nces_by_level={"Middle": 2}, schools_by_band={})
+        mid = out["bands"]["middle"]
+        assert mid["gross_minutes"] == 445 and mid["method"] == "modal"
+        assert mid["sampling"]["plurality_share"] == 1.0
+
+    def test_council_original_preserved_on_the_overridden_school(self):
+        c = _fact("middle", "k8", 440, rec_key="D:k8")
+        c["human_determination"] = self._ov(end="15:25")
+        out = CA.build_closing_argument(
+            "D", merged_accepted=[c], merged_unresolved=[], nces_total=1,
+            nces_by_level={"Middle": 1}, schools_by_band={})
+        sc = out["bands"]["middle"]["schools"][0]
+        assert sc["gross"] == 445 and sc["end_time"] == "15:25"    # effective
+        assert sc["council_gross"] == 440 and sc["council_end_time"] == "15:20"   # original kept
+
+    def test_note_only_override_does_not_move_the_mode(self):
+        # a reason with no times must annotate, not recompute (byte-identical gross)
+        c = _fact("middle", "k8", 440)
+        c["human_determination"] = json.dumps({"reason": "looks off", "actor": "ian"})
+        out = CA.build_closing_argument(
+            "D", merged_accepted=[c], merged_unresolved=[], nces_total=1,
+            nces_by_level={"Middle": 1}, schools_by_band={})
+        assert out["bands"]["middle"]["gross_minutes"] == 440
+        sc = out["bands"]["middle"]["schools"][0]
+        assert sc["override_applied"] is False and sc["override_error"] is None
+
+    def test_valid_override_marks_applied(self):
+        c = _fact("middle", "k8", 440)
+        c["human_determination"] = self._ov(end="15:25")   # 08:00-15:25 = 445, plausible
+        out = CA.build_closing_argument(
+            "D", merged_accepted=[c], merged_unresolved=[], nces_total=1,
+            nces_by_level={"Middle": 1}, schools_by_band={})
+        sc = out["bands"]["middle"]["schools"][0]
+        assert sc["override_applied"] is True and sc["override_error"] is None
+        assert sc["gross"] == 445
+
+    def test_unparseable_stored_override_surfaces_error_and_keeps_council(self):
+        # 15c67c4 review: a stored "3pm" used to display as applied while gross silently reverted —
+        # now the council values stand AND the error is a visible field, never a silent lie.
+        c = _fact("middle", "k8", 440)
+        c["human_determination"] = self._ov(end="3pm")
+        out = CA.build_closing_argument(
+            "D", merged_accepted=[c], merged_unresolved=[], nces_total=1,
+            nces_by_level={"Middle": 1}, schools_by_band={})
+        sc = out["bands"]["middle"]["schools"][0]
+        assert out["bands"]["middle"]["gross_minutes"] == 440       # mode unmoved
+        assert sc["start_time"] == "08:00" and sc["end_time"] == "15:20"   # council shown, not "3pm"
+        assert sc["override_applied"] is False
+        assert sc["override_error"] == "override_unparseable"
+
+    def test_implausible_stored_override_gated_not_applied(self):
+        # 15c67c4 review: an override yielding gross=125 must NOT become the modal determination —
+        # the same REQ-055 gate the council path enforces applies to the human path.
+        c = _fact("middle", "k8", 440)
+        c["human_determination"] = self._ov(end="10:05")   # 08:00-10:05 = 125 min
+        out = CA.build_closing_argument(
+            "D", merged_accepted=[c], merged_unresolved=[], nces_total=1,
+            nces_by_level={"Middle": 1}, schools_by_band={})
+        sc = out["bands"]["middle"]["schools"][0]
+        assert out["bands"]["middle"]["gross_minutes"] == 440       # council value stands
+        assert sc["override_applied"] is False
+        assert sc["override_error"] == "override_implausible"
+
+
 class TestFingerprint:
     def test_stable_for_same_determination(self):
         acc = [_fact("elementary", "oak", 435, rec_key="D:oak")]

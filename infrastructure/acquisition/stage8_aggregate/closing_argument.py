@@ -80,6 +80,38 @@ def _override(human_determination):
         return {"note": str(human_determination)}
 
 
+def _effective_times(f, ov):
+    """The OPERATIVE (start, end, gross) for a merged fact = the human override APPLIED over the council's
+    reading. A recorded times-override REPLACES the council value in the displayed determination AND in
+    the modal calculation (§2a.3, revised 2026-07-13): the reviewer is correcting the number they are
+    about to approve, so the mode must see it — otherwise the override is cosmetic and the human approves
+    a value they already corrected away from. The council's original stays on the fact for the receipt.
+
+    Only a times-override recomputes: a fact with no start/end override keeps its stored gross VERBATIM
+    (no re-derivation, so a non-overridden fact is byte-identical to before). An override supplying only
+    one endpoint keeps the council's other endpoint; the recombined pair goes through the CANONICAL
+    `AGG.gross_from_times` — the same parse + REQ-055 PLAUSIBLE gate the council path enforces (15c67c4
+    review: the first draft's inline arithmetic bypassed the gate AND silently reverted to the stale
+    council gross on an unparseable override while still claiming it applied). An invalid stored override
+    is NOT applied: council values stand and `error` names why, so the console shows a visible
+    "override invalid" state instead of lying in either direction. The endpoint validates before storing
+    (server.py), so this path is defense-in-depth for legacy/hand-written rows.
+
+    `ov` is the caller's already-parsed `_override(...)` result (or None). Returns
+    {start, end, gross, error} — error ∈ (None, "override_unparseable", "override_implausible")."""
+    ov = ov or {}
+    if not (ov.get("start_time") or ov.get("end_time")):
+        return {"start": f.get("start_time"), "end": f.get("end_time"),
+                "gross": f.get("gross_minutes"), "error": None}
+    start = ov.get("start_time") or f.get("start_time")
+    end = ov.get("end_time") or f.get("end_time")
+    gross, err = AGG.gross_from_times(start, end)
+    if err:
+        return {"start": f.get("start_time"), "end": f.get("end_time"),
+                "gross": f.get("gross_minutes"), "error": f"override_{err}"}
+    return {"start": start, "end": end, "gross": gross, "error": None}
+
+
 def _council_evidence(evidence_json):
     """Parse a school_fact.evidence_json ({model: {quote, locus, stated_minutes, ...}}, v2 only) into
     a render-ready summary + the full per-model detail. Returns None for pre-v2 rows (evidence absent),
@@ -134,24 +166,33 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
     """
     evidence_by_reckey = evidence_by_reckey or {}
 
-    # Reshape merged school_fact rows to district_bands_from_facts' input shape (the server.py:1624
-    # twin) — one source of truth for the per-band value, degenerate filter, and contamination flag.
+    # ONE enrichment pass over the merged facts (15c67c4 review: the earlier shape parsed the override
+    # twice and derived "was it overridden" three independent ways) — each fact is paired with its
+    # parsed override and its override-EFFECTIVE times, and everything downstream reads this one
+    # structure. The (start, end, gross) fed to the MODE are the effective values (§2a.3, revised
+    # 2026-07-13): a human correction to a school's times moves the band's mode, not just an annotation.
+    enriched = []
+    for f in merged_accepted:
+        ov = _override(f.get("human_determination"))
+        enriched.append((f, ov, _effective_times(f, ov)))
+
+    # Reshape to district_bands_from_facts' input shape (the server.py gate@7 twin) — one source of
+    # truth for the per-band value, degenerate filter, and contamination flag.
     agg = [{"band": f["band"], "school": f["school"],
-            "start": f.get("start_time"), "end": f.get("end_time"),
-            "gross": f.get("gross_minutes"), "models": _models(f),
-            "method": f.get("method")} for f in merged_accepted]
+            "start": eff["start"], "end": eff["end"], "gross": eff["gross"],
+            "models": _models(f), "method": f.get("method")} for f, ov, eff in enriched]
     bands = AGG.district_bands_from_facts(agg)
     degenerate = AGG.degenerate_school_facts(agg)
     contamination = AGG.detect_single_school_over_extraction(agg, nces_total, roster_names)
 
-    # ONE per-(band, normalized-school) lookup off the winning merged fact — the merge already deduped
-    # to one winner per (band, norm_school), so this is 1:1 with bands' school entries. The evidence
+    # per-(band, normalized-school) lookup off the winning merged fact — the merge already deduped to
+    # one winner per (band, norm_school), so this is 1:1 with bands' school entries. The evidence
     # attached here is resolved from the WINNING fact itself: its own handoff's record when the loader
     # supplied it (`handoff_evidence` — the run that actually produced the displayed times), else the
     # rec_key fallback map; `source_file` comes from the same winning fact, never from an unordered
     # sibling row (both were review-round fixes, PR #252: the old rec_key-only join could attach a
     # DIFFERENT run's URL/reader to the times being approved).
-    fact_of = {(f["band"], _norm(f["school"])): f for f in merged_accepted}
+    fact_of = {(f["band"], _norm(f["school"])): (f, ov, eff) for f, ov, eff in enriched}
 
     def _school_evidence(f):
         ev = f.get("handoff_evidence") or (evidence_by_reckey.get(f.get("rec_key")) if f.get("rec_key") else None)
@@ -166,11 +207,20 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
     for band, b in bands.items():
         schools = []
         for sc in b["schools"]:
-            f = fact_of.get((band, _norm(sc["school"])), {})
+            f, ov, eff = fact_of.get((band, _norm(sc["school"])), ({}, None, {}))
+            # sc.start_time/end_time/gross are the OVERRIDE-EFFECTIVE values (they came through `agg`);
+            # carry the COUNCIL original alongside so the row can show "council read X → override Y".
+            # `override_applied`/`override_error` are the SERVER-computed truth (one derivation, here),
+            # so the console never re-derives override state from raw fields (15c67c4 review).
             schools.append({**sc, "rec_key": f.get("rec_key"), "fact_id": f.get("fact_id"),
+                            "council_start_time": f.get("start_time"), "council_end_time": f.get("end_time"),
+                            "council_gross": f.get("gross_minutes"),
                             "evidence": _school_evidence(f),
                             "council_evidence": _council_evidence(f.get("evidence_json")),
-                            "human_override": _override(f.get("human_determination"))})
+                            "human_override": ov,
+                            "override_applied": bool(ov) and not eff.get("error")
+                                                and bool(ov.get("start_time") or ov.get("end_time")),
+                            "override_error": eff.get("error")})
         n_sampled, n_total = b["n_schools"], _band_denominator(band, nces_by_level)
         out_bands[band] = {
             "gross_minutes": b["gross_minutes"], "start_time": b["start_time"],

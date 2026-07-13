@@ -1758,22 +1758,42 @@ def aggregate_district_detail(district_id: str):
 async def aggregate_override(payload: dict):
     """Record a human override of one school's extracted times, with a REQUIRED reason (§2a.3). Stored on
     school_fact.human_determination as an auditable JSON record; the council's original times are NEVER
-    destroyed (Stage 9 applies the override at write). 400 on a missing fact_id/reason, 404 on no such
-    fact."""
+    destroyed (kept on the fact). The override is OPERATIVE the moment it's recorded: the closing
+    argument recomputes the band mode over the override-effective times (revised 2026-07-13), so the
+    displayed determination the reviewer approves reflects the correction.
+
+    A times-override is VALIDATED before it's stored (15c67c4 review): the effective pair (override
+    value where given, council's endpoint otherwise) must parse as HH:MM and pass the REQ-055 PLAUSIBLE
+    gate via the canonical AGG.gross_from_times — the same bar every council-extracted fact meets. A
+    typo'd '3pm' or a pair yielding gross=125 gets an immediate 400 with the reason, instead of being
+    stored and silently failing three layers downstream. 400 on missing fact_id/reason or an invalid
+    times pair, 404 on no such fact."""
     fact_id, reason = payload.get("fact_id"), (payload.get("reason") or "").strip()
     actor = payload.get("actor", "ian")
+    ov_start = (payload.get("start_time") or "").strip() or None
+    ov_end = (payload.get("end_time") or "").strip() or None
     # `is None`, not truthiness (review round, PR #252): a falsy-but-present id (0) must reach the
-    # UPDATE and 404 honestly, not be misreported as "missing" — SERIAL PKs start at 1 today, but the
+    # SELECT and 404 honestly, not be misreported as "missing" — SERIAL PKs start at 1 today, but the
     # validation shouldn't encode that assumption.
     if fact_id is None or not reason:
         raise HTTPException(400, "fact_id and a non-empty reason are required")
-    det = json.dumps({"start_time": payload.get("start_time"), "end_time": payload.get("end_time"),
-                      "reason": reason, "actor": actor, "at": _u7()})
     with gdb.session_scope() as con:
-        n = con.execute(text("UPDATE school_fact SET human_determination = :d WHERE fact_id = :f"),
-                        {"d": det, "f": fact_id}).rowcount
-        if not n:
+        row = con.execute(text("SELECT start_time, end_time FROM school_fact WHERE fact_id = :f"),
+                          {"f": fact_id}).mappings().first()
+        if row is None:
             raise HTTPException(404, f"no school_fact {fact_id}")
+        if ov_start or ov_end:
+            eff_start = ov_start or row["start_time"]
+            eff_end = ov_end or row["end_time"]
+            _, err = AGG.gross_from_times(eff_start, eff_end)
+            if err:
+                raise HTTPException(400, f"override rejected ({err}): effective times "
+                                         f"{eff_start!r}–{eff_end!r} must both parse as HH:MM and give "
+                                         f"a gross inside {AGG.PLAUSIBLE} min")
+        det = json.dumps({"start_time": ov_start, "end_time": ov_end,
+                          "reason": reason, "actor": actor, "at": _u7()})
+        con.execute(text("UPDATE school_fact SET human_determination = :d WHERE fact_id = :f"),
+                    {"d": det, "f": fact_id})
         con.commit()
     return {"ok": True, "fact_id": fact_id}
 

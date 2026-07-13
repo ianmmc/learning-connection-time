@@ -114,6 +114,28 @@ def _to_min(t):
     if not m: return None
     return int(m.group(1)) * 60 + int(m.group(2))
 
+def is_plausible(gross):
+    """THE plausibility gate (REQ-055): is a gross bell-to-bell minutes/day value inside PLAUSIBLE?
+    One predicate, shared by the council path (consensus_school_facts) and the human-override path
+    (closing_argument via gross_from_times) — commit 15c67c4's review found the override path had
+    re-implemented gross-from-times WITHOUT this gate, letting a typo'd override (gross=125) become a
+    district's modal determination when the same number from a model would have been rejected."""
+    return gross is not None and PLAUSIBLE[0] <= gross <= PLAUSIBLE[1]
+
+def gross_from_times(start, end):
+    """Parse two HH:MM strings and compute gross = end − start, gated to PLAUSIBLE. The PUBLIC,
+    canonical string-input path — anything outside this module that needs gross-from-times calls THIS
+    (not the private _to_min + inline arithmetic; the 15c67c4 review flagged that cross-module reach).
+    Returns (gross, None) on success, (None, "unparseable") if either time won't parse, or
+    (None, "implausible") when the pair parses but the gross fails the REQ-055 gate."""
+    s, e = _to_min(start), _to_min(end)
+    if s is None or e is None:
+        return None, "unparseable"
+    g = e - s
+    if not is_plausible(g):
+        return None, "implausible"
+    return g, None
+
 def _evidence_of(row):
     """Pull the v2 going-forward evidence fields off a raw model row (STAGE8 §2a.6): the verbatim
     quote the times were read from, an optional page/section locus, and any EXPLICITLY-stated daily
@@ -199,7 +221,7 @@ def consensus_school_facts(model_rows, judge_rows=None):
                                "ends": {m: v[0][3] for m, v in per_model.items()}})
             continue
         gross = end_m - start_m
-        if not (PLAUSIBLE[0] <= gross <= PLAUSIBLE[1]):
+        if not is_plausible(gross):
             unresolved.append({"band": band, "school": nschool, "gross": gross, "reason": "implausible"}); continue
         fact = {"band": band, "school": nschool,
                 "start": f"{start_m//60:02d}:{start_m%60:02d}",

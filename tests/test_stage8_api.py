@@ -55,11 +55,38 @@ def test_override_requires_fact_id_and_reason():
 
 
 def test_override_fact_id_zero_is_not_missing(monkeypatch):
-    # PR #252 review (falsy-zero): a present-but-falsy id must reach the UPDATE and 404 honestly,
+    # PR #252 review (falsy-zero): a present-but-falsy id must reach the lookup and 404 honestly,
     # never be misreported as a missing field.
-    _use(monkeypatch, _Con([_Result(rowcount=0)]))
+    _use(monkeypatch, _Con([_Result(rows=[])]))   # SELECT finds no such fact
     r = client.post("/api/aggregate/override", json={"fact_id": 0, "reason": "fix it"})
     assert r.status_code == 404
+
+
+def test_override_rejects_unparseable_time(monkeypatch):
+    # 15c67c4 review: a "3pm" typo used to be stored verbatim and silently fail downstream — now the
+    # endpoint validates the EFFECTIVE pair via the canonical gross_from_times and 400s immediately.
+    _use(monkeypatch, _Con([_Result(rows=[{"start_time": "08:00", "end_time": "15:20"}])]))
+    r = client.post("/api/aggregate/override",
+                    json={"fact_id": 7, "end_time": "3pm", "reason": "recency"})
+    assert r.status_code == 400 and "unparseable" in r.json()["detail"]
+
+
+def test_override_rejects_implausible_gross(monkeypatch):
+    # 15c67c4 review: the REQ-055 PLAUSIBLE gate applies to the human path too — a typo'd pair
+    # yielding gross=125 is rejected at the door, not published as a modal determination.
+    _use(monkeypatch, _Con([_Result(rows=[{"start_time": "08:00", "end_time": "15:20"}])]))
+    r = client.post("/api/aggregate/override",
+                    json={"fact_id": 7, "end_time": "10:05", "reason": "typo'd, meant 18:05"})
+    assert r.status_code == 400 and "implausible" in r.json()["detail"]
+
+
+def test_override_accepts_valid_single_endpoint(monkeypatch):
+    # one endpoint overridden, the council's other endpoint completes the pair: 08:00-15:25 = 445, ok
+    _use(monkeypatch, _Con([_Result(rows=[{"start_time": "08:00", "end_time": "15:20"}]),
+                            _Result(rowcount=1)]))
+    r = client.post("/api/aggregate/override",
+                    json={"fact_id": 7, "end_time": "15:25", "reason": "2025-26 schedule"})
+    assert r.status_code == 200 and r.json()["ok"] is True
 
 
 def test_override_404_when_fact_missing(monkeypatch):

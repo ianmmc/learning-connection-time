@@ -143,14 +143,25 @@
       : ce && ce.stated_minutes_agree == null ? " (single source)" : "";
     const stated = ce && ce.stated_minutes != null
       ? `<div class="s8-muted">page states ${ce.stated_minutes} min${statedCaveat} — corroboration</div>` : "";
+    // The Times/Gross columns show the OVERRIDE-EFFECTIVE value (what the band mode now uses).
+    // `override_applied`/`override_error` are SERVER-computed (one derivation, closing_argument.py) —
+    // the console never re-derives override state from raw fields (15c67c4 review). An applied override
+    // renders the WHOLE times/gross cell in the override treatment (not just a trailing glyph), so a
+    // reviewer scanning the column can't mistake a human correction for a council reading; an invalid
+    // stored override renders a loud warning and the council values stand.
+    const applied = !!sc.override_applied;
+    const ovErr = sc.override_error
+      ? `<div class="s8-override-error" data-feat="override-error">⚠ override invalid (${esc(sc.override_error.replace("override_", ""))}) — council reading shown; re-enter valid HH:MM times</div>` : "";
     const overrideMark = ov
-      ? `<div class="s8-override" data-feat="override-applied">✎ human override: ${esc(ov.start_time || "?")}–${esc(ov.end_time || "?")} — ${esc(ov.reason || ov.note || "")}</div>` : "";
+      ? `<div class="s8-override" data-feat="override-applied">✎ human override${applied
+          ? ` (council read ${esc(sc.council_start_time)}–${esc(sc.council_end_time)}, ${esc(sc.council_gross)} min)` : ""} — ${esc(ov.reason || ov.note || "")}</div>` : "";
+    const times = `${esc(sc.start_time)}–${esc(sc.end_time)}`;
     return `<tr>
       <td>${esc(sc.school)}</td>
-      <td>${esc(sc.start_time)}–${esc(sc.end_time)}</td>
-      <td>${sc.gross}</td>
+      <td>${applied ? `<span class="s8-override" title="human override — council read ${esc(sc.council_start_time)}–${esc(sc.council_end_time)}">✎ ${times}</span>` : times}</td>
+      <td>${applied ? `<span class="s8-override">${esc(sc.gross)}</span>` : esc(sc.gross)}</td>
       <td class="s8-muted">${(sc.models || []).map((m) => esc(m.split("/").pop())).join(", ")}</td>
-      <td data-feat="evidence">${url}${reader}${quote}${stated}${overrideMark}</td>
+      <td data-feat="evidence">${url}${reader}${quote}${stated}${overrideMark}${ovErr}</td>
       <td><button class="btn btn-small" data-feat="override" data-override="${esc(sc.fact_id)}" data-school="${esc(sc.school)}" ${sc.fact_id == null ? "disabled" : ""}>Override</button></td>
     </tr>`;
   }
@@ -221,15 +232,21 @@
     // fail loudly on a malformed data-override attribute rather than posting NaN (PR #252 review round)
     const fid = Number(factId);
     if (!Number.isInteger(fid)) { alert(`Can't override ${school}: no usable fact id (${factId}).`); return; }
+    // HH:MM format check at entry time (15c67c4 review: a typo like "3pm" used to be stored verbatim
+    // and silently fail three layers downstream). The server independently re-validates format AND the
+    // REQ-055 plausibility of the effective pair — this is just the fastest feedback.
+    const HHMM = /^\d{1,2}:\d{2}$/;
     const start = window.prompt(`Override START time for ${school} (HH:MM), or leave blank to keep:`);
     if (start == null) return;
+    if (start.trim() && !HHMM.test(start.trim())) { alert(`"${start}" isn't HH:MM (e.g. 15:00) — override not saved.`); return; }
     const end = window.prompt(`Override END time for ${school} (HH:MM), or leave blank to keep:`);
     if (end == null) return;
+    if (end.trim() && !HHMM.test(end.trim())) { alert(`"${end}" isn't HH:MM (e.g. 15:00) — override not saved.`); return; }
     const reason = window.prompt("Reason for the override (required):");
     if (reason == null || !reason.trim()) { alert("An override requires a reason."); return; }
     try {
       await api("/api/aggregate/override", postJSON({
-        fact_id: fid, start_time: start || null, end_time: end || null,
+        fact_id: fid, start_time: start.trim() || null, end_time: end.trim() || null,
         reason: reason.trim(), actor: "ian" }));
     } catch (e) { alert("Override failed: " + e.message); return; }
     openDistrict(did);   // re-render: the override mark + the new fingerprint both come from the fresh GET
