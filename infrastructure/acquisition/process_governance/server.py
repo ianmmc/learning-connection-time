@@ -1626,6 +1626,9 @@ def extract_district(district_id: str):
                 "models": json.loads(a["models_json"] or "[]"), "method": a["method"]}
                for a in accepted if a["gross_minutes"] is not None]
         bands = AGG.district_bands_from_facts(agg)
+        # #245: degenerate-named facts (empty, or purely-generic like "Schools") are excluded from the
+        # rollup above — surface them here so a human sees WHY a school vanished, never a silent drop.
+        degenerate = AGG.degenerate_school_facts(agg)
         # #237: flag single-school-LEA over-extraction (charter-network sibling contamination on a
         # shared CMO domain, or a blank-domain unscoped capture — the Millard #227 class) for the
         # reviewing human. DETECT-AND-FLAG ONLY, never auto-reject: picking the real school is
@@ -1675,7 +1678,8 @@ def extract_district(district_id: str):
         ext_out = dict(ext)
         ext_out["n_accepted"], ext_out["n_unresolved"] = len(accepted), len(unresolved)
         return {"extraction": ext_out, "bands": bands, "accepted": accepted,
-                "unresolved": unresolved, "requests": req_dicts, "contamination": contamination}
+                "unresolved": unresolved, "requests": req_dicts, "contamination": contamination,
+                "degenerate_school_facts": degenerate}
 
 
 @app.post("/api/extract/request/{request_id}")

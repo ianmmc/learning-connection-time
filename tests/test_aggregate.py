@@ -80,6 +80,19 @@ class TestConsensus:
         # durations all equal 390, but no two share a (start,end) pair -> NO consensus
         assert acc == [] and len(unres) == 1
 
+    def test_degenerate_school_name_routes_to_unresolved_not_accepted(self):
+        # #245: a school_name of "" or a bare generic word normalizes (via norm_school's #236 empty-key
+        # fallback) to a non-empty-but-junk key — even with full cross-family consensus on the TIMES,
+        # this must never reach `accepted` (it isn't a real, distinct school).
+        for junk_name in ("", "Schools", "The School District"):
+            rows = {m: [{"grade_level": "elementary", "start_time": s, "end_time": e,
+                        "school_name": junk_name}]
+                   for m, (s, e) in {"google/gemini-2.5-flash-lite": ("08:00", "14:30"),
+                                     "mistralai/mistral-small-24b-instruct-2501": ("08:00", "14:30")}.items()}
+            acc, unres = A.consensus_school_facts(rows)
+            assert acc == [], f"{junk_name!r} must not reach accepted"
+            assert len(unres) == 1 and unres[0]["reason"] == "degenerate_school_name"
+
 
 # ---------------------------------------------------------------- REQ-056 exact mode
 class TestMode:
@@ -249,7 +262,9 @@ class TestDetectSingleSchoolOverExtraction:
         # PR #247 review: a scraped 'School District' header captured as a roster entry is junk, not
         # a school — it must be FILTERED (norm_school_strict), not smuggled through the empty-key
         # fallback where a junk-named fact could spuriously read as a trustworthy roster_matched hint.
-        facts = [_s("the school district"), _s("brooklyn ascend charter")]
+        # Both FACTS here are real, distinct schools (not #245's degenerate-fact case, tested
+        # separately) — only the ROSTER entries are junk.
+        facts = [_s("millard south"), _s("brooklyn ascend charter")]
         got = A.detect_single_school_over_extraction(
             facts, nces_school_count=1, roster_names=["School District", "The School District"])
         assert got["roster_matched"] == []
@@ -260,3 +275,44 @@ class TestDetectSingleSchoolOverExtraction:
         # re-normalizes through the current function.
         facts = [_s("lincoln unified district"), _s("lincoln")]      # old + current vintage, same school
         assert A.detect_single_school_over_extraction(facts, nces_school_count=1) is None
+
+    def test_degenerate_named_fact_does_not_trigger_a_false_contamination_flag(self):
+        # #245: a real single-school LEA that also carries one degenerate-named fact (extraction noise,
+        # e.g. an already-persisted 'schools' entry from before the consensus_school_facts fix) must
+        # read as "2 distinct schools" ONLY if both are real — the junk name is excluded from the count.
+        facts = [_s("brownsville ascend charter"), _s("schools")]
+        assert A.detect_single_school_over_extraction(facts, nces_school_count=1) is None
+        # but a genuine second REAL school alongside the same junk still gets flagged
+        facts = [_s("brownsville ascend charter"), _s("brooklyn ascend charter"), _s("schools")]
+        got = A.detect_single_school_over_extraction(facts, nces_school_count=1)
+        assert got is not None and got["n_distinct_schools"] == 2   # the junk entry isn't counted
+
+
+class TestDegenerateSchoolFacts:
+    """#245: an accepted fact whose school name is empty or purely generic (e.g. 'schools') is
+    extraction noise, not a real distinct school — found validating #236 against real Stage-7 data
+    (Elmbrook, district 5501770, middle band). Excluded from district_bands_from_facts' rollup and
+    surfaced (never silently dropped) via degenerate_school_facts()."""
+
+    def test_identifies_empty_and_generic_only_names(self):
+        facts = [_s("lincoln elementary"), _s(""), _s("schools"), _s("the school district")]
+        degenerate = A.degenerate_school_facts(facts)
+        assert {f["school"] for f in degenerate} == {"", "schools", "the school district"}
+
+    def test_real_names_are_never_flagged_degenerate(self):
+        facts = [_s("lincoln elementary"), _s("union hill isd")]
+        assert A.degenerate_school_facts(facts) == []
+
+    def test_district_bands_from_facts_excludes_degenerate_facts_from_the_rollup(self):
+        # a junk-named fact must not inflate n_schools or appear in schools[], and must not skew the
+        # modal gross-minutes value either.
+        facts = [_s("lincoln elementary", "high"), _s("union hill", "high"), _s("schools", "high")]
+        bands = A.district_bands_from_facts(facts)
+        assert bands["high"]["n_schools"] == 2
+        assert {s["school"] for s in bands["high"]["schools"]} == {"lincoln elementary", "union hill"}
+
+    def test_district_bands_from_facts_handles_an_all_degenerate_band(self):
+        # if EVERY fact in a band is junk, the band must not appear at all (not a phantom zero-school entry)
+        facts = [_s("", "high"), _s("schools", "high")]
+        bands = A.district_bands_from_facts(facts)
+        assert "high" not in bands

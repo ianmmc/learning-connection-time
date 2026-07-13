@@ -142,6 +142,17 @@ def consensus_school_facts(model_rows, judge_rows=None):
 
     accepted, unresolved = [], []
     for (band, nschool), per_model in groups.items():
+        # #245: a group whose normalized name is empty or purely generic (e.g. an extracted
+        # school_name of "" or "Schools") is not a real, distinct school — the #236 empty-key guard
+        # deliberately keeps nschool non-empty for these (so two pathological all-stopword names don't
+        # collide), which would otherwise let this junk reach `accepted` and inflate a band's school
+        # list/count. Route it to unresolved instead — auditable, not a silent drop — matching the
+        # manual-gate posture. norm_school_strict is the falsy-on-junk form (no empty-key fallback).
+        if not _norm_school_strict(nschool):
+            unresolved.append({"band": band, "school": nschool, "reason": "degenerate_school_name",
+                               "starts": {m: v[0][2] for m, v in per_model.items()},
+                               "ends": {m: v[0][3] for m, v in per_model.items()}})
+            continue
         # one (start,end) per model for this school (first/representative)
         starts = [(m, v[0][0]) for m, v in per_model.items()]
         ends   = [(m, v[0][1]) for m, v in per_model.items()]
@@ -208,9 +219,33 @@ def merge_fact_runs(facts):
             sorted((f for f in best.values() if f["status"] != "accepted"), key=key_fn))
 
 
+def degenerate_school_facts(accepted):
+    """#245: the accepted facts whose school name is degenerate — empty, or normalizes to nothing
+    distinguishing under norm_school_strict (purely generic/stopword tokens, e.g. 'schools'). These are
+    extraction noise, not a real distinct school; left in a band's rollup they inflate `n_schools` and
+    pollute `schools[]` (found validating #236 against real Stage-7 data: Elmbrook, district 5501770,
+    middle band, carried an accepted fact named bare 'schools'). `consensus_school_facts` now routes new
+    facts like this to `unresolved` instead of `accepted` at extraction time — but a fact persisted
+    BEFORE that fix already sits in the DB as accepted, so `district_bands_from_facts`/
+    `detect_single_school_over_extraction` both filter through this same predicate at read time
+    (self-healing, the same pattern `merge_fact_runs` uses for stale-vintage norm_school keys — no
+    backfill needed). Returns the excluded facts themselves so a caller can surface them for human
+    review (detect-and-flag, never a silent drop — the #237 detector's posture)."""
+    return [f for f in accepted if not _norm_school_strict(f.get("school", ""))]
+
+
+def _clean_school_facts(accepted):
+    """The complement of degenerate_school_facts (#245) — what district_bands_from_facts and
+    detect_single_school_over_extraction actually aggregate/count distinct schools over."""
+    return [f for f in accepted if _norm_school_strict(f.get("school", ""))]
+
+
 def district_bands_from_facts(accepted):
     """Mode (deterministic) over accepted per-school gross values, per band. Returns
-    {band: {gross_minutes, start, end, n_schools, method, schools:[...]}}."""
+    {band: {gross_minutes, start, end, n_schools, method, schools:[...]}}. Facts with a degenerate
+    school name (#245) are excluded from both the count and the value — see degenerate_school_facts()
+    to get the excluded facts for review."""
+    accepted = _clean_school_facts(accepted)
     out = {}
     for band in BANDS:
         facts = [f for f in accepted if f["band"] == band]
@@ -243,13 +278,17 @@ def detect_single_school_over_extraction(accepted, nces_school_count, roster_nam
     `accepted`: per-school fact dicts whose 'school' was norm_school-normalized at WRITE time — the
     distinct-count re-normalizes through the CURRENT function so a stopword-list change can't split
     one school into two stale-vintage keys (a false contamination flag; norm_school is idempotent so
-    current keys pass through unchanged). The roster is filtered through norm_school_strict: an
-    all-stopword roster entry (a scraped 'School District' header) is junk, not a matchable school —
-    the plain form's empty-key fallback would smuggle it through as a roster_matched keeper hint.
-    `roster_names`: the LEA's Stage-1 schools_by_band school names, if available (the allow-list)."""
+    current keys pass through unchanged). Degenerate-named facts (#245 — empty or purely-generic, e.g.
+    'schools') are excluded before counting: an empty/junk name is not itself a real distinct school,
+    and counting it would produce a FALSE contamination flag on an otherwise-clean single-school LEA
+    (one real school + one piece of extraction noise reading as "2 distinct schools"). The roster is
+    filtered through norm_school_strict: an all-stopword roster entry (a scraped 'School District'
+    header) is junk, not a matchable school — the plain form's empty-key fallback would smuggle it
+    through as a roster_matched keeper hint. `roster_names`: the LEA's Stage-1 schools_by_band school
+    names, if available (the allow-list)."""
     if nces_school_count != 1:
         return None
-    distinct = sorted({_norm_school(f["school"]) for f in accepted if f.get("school")})
+    distinct = sorted({_norm_school(f["school"]) for f in _clean_school_facts(accepted) if f.get("school")})
     if len(distinct) <= 1:
         return None
     roster = {k for r in (roster_names or []) if (k := _norm_school_strict(r))}
