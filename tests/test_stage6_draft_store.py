@@ -196,16 +196,34 @@ class TestFreeze:
 
 
 class TestListDispatchRows:
-    def test_synthetic_direct_freeze_handoff_reads_as_non_draft_origin(self, sess):
-        """A Handoff row with no matching dispatch_draft (e.g. the Stage 7->6 back-edge, which freezes
-        directly) must come back tagged as non-draft-origin — the join-absence discriminator."""
+    def test_plain_handoff_with_no_receipts_reads_as_console_origin(self, sess):
+        """A Handoff row with no dispatched dispatch_draft AND no 7->6 extraction_request pointing at it
+        is a genuine console/first-run/batch dispatch — origin='console' (derived, not inferred-from-
+        absence-of-a-draft alone). All pre-draft history reads this way."""
         sess.add(Handoff(handoff_id="handoff_synth_20260713T000000Z", handoff_hash="synth1",
                         path="/x.json", n_districts=1, n_reps=1, total_usd=0.001,
                         cost_provenance="bootstrap", district_ids=["0100810"], council_ids=["image"]))
         sess.flush()
         rows = DS6.list_dispatch_rows(sess)
         synth = [r for r in rows if r.get("handoff_hash") == "synth1"][0]
-        assert synth["from_draft"] is False
+        assert synth["origin"] == "console"
+
+    def test_handoff_produced_by_76_backedge_reads_as_stage7_origin(self, sess):
+        """A Handoff whose hash is the `executed_ref` of a route='7->6' extraction_request was produced
+        by the back-edge — a receipt, so origin='stage7' (deterministic, works for history too)."""
+        from sqlalchemy import text
+        sess.add(Handoff(handoff_id="handoff_be_20260713T000000Z", handoff_hash="be76hash",
+                        path="/be.json", n_districts=1, n_reps=1, total_usd=0.001,
+                        cost_provenance="bootstrap", district_ids=["0100810"], council_ids=["image"]))
+        sess.flush()
+        sess.execute(text(
+            "INSERT INTO extraction_request (request_id, district_id, handoff_hash, altitude, route, "
+            "target, reason, status, executed_ref, created_at) VALUES "
+            "(990001, '0100810', 'originhash', 'rep', '7->6', '0100810:abc', 'gap', 'executed', 'be76hash', '2026-07-13T00:00:00Z')"))
+        sess.flush()
+        rows = DS6.list_dispatch_rows(sess)
+        be = [r for r in rows if r.get("handoff_hash") == "be76hash"][0]
+        assert be["origin"] == "stage7"
 
     def test_draft_authored_handoff_reads_as_draft_origin(self, sess, monkeypatch, tmp_path):
         _fake_release(monkeypatch, district_id="0100810")
@@ -215,7 +233,7 @@ class TestListDispatchRows:
         doc = DS6.freeze_draft(sess, draft_id, "ian")
         rows = DS6.list_dispatch_rows(sess)
         authored = [r for r in rows if r.get("handoff_hash") == doc["handoff_hash"]][0]
-        assert authored["from_draft"] is True
+        assert authored["origin"] == "draft"
 
     def test_abandoned_and_draft_rows_both_appear(self, sess):
         d1 = DS6.create_draft(sess, actor="ian")

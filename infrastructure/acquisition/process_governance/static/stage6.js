@@ -4,13 +4,32 @@
 // toggle) that a human builds up before freezing — replacing the old ephemeral checkbox-selection +
 // manual-Preview flow. One unified left-pane list (drafts + frozen dispatches together, drafts first);
 // the center pane is ALWAYS populated on click: an editable tree for a draft, a read-only package view
-// for a frozen dispatch. A dispatch with no matching draft (e.g. the Stage 7->6 back-edge, which freezes
-// directly) is badged "from Stage 7". Vanilla JS on the MMM tokens; reuses q-*/badge/btn styles + s6-*.
+// for a frozen dispatch. Each frozen dispatch carries a DERIVED `origin` ('stage7' | 'console' | 'draft')
+// — computed server-side from receipts (`extraction_request.executed_ref`/`route` + `dispatch_draft`),
+// never stored — so a true Stage 7->6 back-edge reads "from Stage 7" while genuine console/first-run
+// dispatches (incl. all pre-draft history) read "console". Vanilla JS on the MMM tokens; reuses q-*/badge/btn.
 (function () {
   const $g = (s, r = document) => r.querySelector(s);
   const { esc, postJSON, api, statusBadge } = window.LCT;
   const usd = (n) => "$" + (Number(n) || 0).toFixed(5);
   const fmt = (iso) => (iso || "").replace("T", " ").replace("Z", " UTC");
+
+  // Origin badge/note for a frozen dispatch — driven by the server-derived `origin`. 'draft' (the normal
+  // new console flow) shows nothing; only the two "no editable draft behind this" origins are called out.
+  function originBadge(origin) {
+    if (origin === "stage7")
+      return `<span class="badge badge-accent" title="Produced by the Stage 7→6 back-edge — verified from an extraction_request receipt, not inferred.">from Stage 7</span>`;
+    if (origin === "console")
+      return `<span class="badge badge-neutral s6-origin-console" title="Console / first-run / follow-up-batch dispatch (no Stage-6 draft, no 7→6 back-edge link). Derived from receipts.">console</span>`;
+    return "";   // 'draft' — the normal drafted flow, no badge needed
+  }
+  function originNote(origin) {
+    if (origin === "stage7")
+      return `<div class="q-locked" data-feat="s6-origin-note">Produced by the Stage 7→6 back-edge — verified from an <code>extraction_request</code> receipt (route <code>7-&gt;6</code>). No Stage-6 draft exists for it.</div>`;
+    if (origin === "console")
+      return `<div class="q-locked" data-feat="s6-origin-note">Console / first-run / follow-up-batch dispatch — no Stage-6 draft and no 7→6 back-edge link. (Dispatches predating draft tracking read this way.)</div>`;
+    return "";   // 'draft' — frozen from a Stage-6 draft; nothing to flag
+  }
   let inited = false;
   let CURRENT = null;          // { kind: "draft"|"handoff", id }
   let COUNCILS = [];           // council registry (override <select> options)
@@ -66,10 +85,8 @@
       el.onclick = () => openDispatch(r.draft_id, "draft");
     } else {
       el.dataset.kind = "handoff"; el.dataset.id = r.handoff_id;
-      const origin = r.from_draft ? "" :
-        `<span class="badge badge-accent" title="Created directly by the Stage 7→6 back-edge — no Stage-6 draft exists for it.">from Stage 7</span>`;
       el.innerHTML = `<div class="q-batch-top s6-handoff-top"><span class="q-batch-id">${esc(r.handoff_id.slice(0, 24))}…</span>
-          <span class="badge badge-success">${esc(r.status)}</span>${origin}</div>
+          <span class="badge badge-success">${esc(r.status)}</span>${originBadge(r.origin)}</div>
         <div class="q-batch-meta">${r.n_districts}d · ${r.n_reps}r · ${usd(r.total_usd)} ${esc(r.cost_provenance)} · ${esc(fmt(r.created_at))}${r.n_extracted ? ` · ${r.n_extracted}/${r.n_districts} extracted` : ""}</div>`;
       el.onclick = () => openDispatch(r.handoff_id, "handoff");
     }
@@ -316,8 +333,7 @@
   function renderHandoffDetail(h) {
     const det = $g("#s6-detail");
     const pkg = h.package || { districts: [], cost: { n_reps: 0, total_usd: 0, provenance: "unknown" } };
-    const origin = h.from_draft ? "" :
-      `<div class="q-locked" data-feat="s6-origin-note">This dispatch was created directly by the Stage 7→6 back-edge — no Stage-6 draft exists for it.</div>`;
+    const origin = originNote(h.origin);
     const done = h.n_extracted >= h.n_districts && h.n_districts > 0;
     const extractControl = done
       ? `<span class="badge badge-neutral" data-feat="s6-run-extraction" title="all districts extracted for this handoff">✓ extracted</span>`

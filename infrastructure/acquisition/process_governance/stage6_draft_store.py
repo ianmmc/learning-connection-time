@@ -189,12 +189,37 @@ def to_view(sess, draft_id: str) -> dict:
     }
 
 
+# A dispatch's origin is DERIVED from receipts on every read, never stored — the most auditable form
+# (commandment #1: origin is a re-derivable function of the record an outsider can recompute, not a
+# stored assertion that can drift). Three deterministic cases, in precedence order:
+#   'draft'   — a dispatched `dispatch_draft` row points at this handoff (the console draft flow).
+#   'stage7'  — some `route='7->6'` `extraction_request`'s `executed_ref` IS this handoff's hash: the
+#               back-edge recorded that it produced this handoff (a receipt, not an inference-from-absence).
+#   'console' — neither: a first-run / follow-up-batch console dispatch, including all pre-draft history.
+# These are mutually exclusive in practice (a 7->6 handoff never gets a draft, and vice-versa); the
+# precedence only guards a theoretical overlap. `col` is always a trusted literal (a column ref or a
+# bound-param name), never user input — safe to interpolate.
+def _origin_case(col: str) -> str:
+    return (
+        f"CASE "
+        f"WHEN EXISTS (SELECT 1 FROM dispatch_draft dd "
+        f"            WHERE dd.handoff_hash = {col} AND dd.status = 'dispatched') THEN 'draft' "
+        f"WHEN EXISTS (SELECT 1 FROM extraction_request er "
+        f"            WHERE er.executed_ref = {col} AND er.route = '7->6') THEN 'stage7' "
+        f"ELSE 'console' END")
+
+
+def classify_origin(sess, handoff_hash: str) -> str:
+    """The single-handoff form of `_origin_case`, for the detail endpoint — same rule, one row."""
+    from sqlalchemy import text as _text
+    return sess.execute(_text(f"SELECT {_origin_case(':hh')}"), {"hh": handoff_hash}).scalar()
+
+
 def list_dispatch_rows(sess) -> list[dict]:
     """Combined left-pane rows: every draft (draft/abandoned) + every dispatched handoff, the latter
-    tagged with an origin flag computed by LEFT JOIN against dispatch_draft.handoff_hash — a handoff with
-    NO matching row was frozen directly (today: only the Stage 7->6 back-edge does this), so it reads as
-    `from_draft=False` with no new column on the immutable `handoff` table. Origin-agnostic: any future
-    direct-freeze caller besides 7->6 is correctly badged too, with no code change needed."""
+    tagged with a DERIVED `origin` ('draft' | 'stage7' | 'console'), computed live from receipts via
+    `_origin_case` — no stored column on the immutable `handoff` table, no backfill. See `_origin_case`
+    for the rule and why deriving (vs stamping) is the more auditable choice."""
     from sqlalchemy import text as _text
 
     draft_rows = []
@@ -210,12 +235,11 @@ def list_dispatch_rows(sess) -> list[dict]:
         })
 
     handoff_rows = []
-    for r in sess.execute(_text("""
+    for r in sess.execute(_text(f"""
         SELECT h.handoff_id, h.handoff_hash, h.created_at, h.created_by, h.status,
                h.n_districts, h.n_reps, h.total_usd, h.cost_provenance,
-               (dd.draft_id IS NOT NULL) AS from_draft
+               {_origin_case('h.handoff_hash')} AS origin
         FROM handoff h
-        LEFT JOIN dispatch_draft dd ON dd.handoff_hash = h.handoff_hash AND dd.status = 'dispatched'
         ORDER BY h.created_at DESC""")).mappings():
         d = dict(r)
         d["kind"] = "handoff"

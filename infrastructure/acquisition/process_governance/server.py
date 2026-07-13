@@ -1407,8 +1407,8 @@ def handoff_detail(handoff_id: str):
     """A frozen dispatch's FULL district/rep package by id — today's `/api/handoffs` only returns
     list-level summary fields (the full package only ever existed transiently in `preview()`'s
     response). Reads the `handoff` row for lifecycle/cost fields + the frozen JSON file off disk for
-    the package, + the origin flag (a Stage-6-authored dispatch has a matching `dispatch_draft` row;
-    one with none — e.g. the Stage 7->6 back-edge — reads as `from_draft=False`, no new column needed)."""
+    the package, + the DERIVED `origin` ('draft' | 'stage7' | 'console'), computed live from receipts by
+    `DSTORE6.classify_origin` — never stored (see `stage6_draft_store._origin_case` for the rule)."""
     with gdb.session_scope() as con:
         row = con.execute(text(
             "SELECT handoff_id, handoff_hash, created_at, created_by, status, path, n_districts, "
@@ -1416,9 +1416,7 @@ def handoff_detail(handoff_id: str):
             {"h": handoff_id}).mappings().first()
         if not row:
             raise HTTPException(404, f"no such handoff {handoff_id}")
-        from_draft = bool(con.execute(text(
-            "SELECT 1 FROM dispatch_draft WHERE handoff_hash = :hh AND status = 'dispatched'"),
-            {"hh": row["handoff_hash"]}).scalar())
+        origin = DSTORE6.classify_origin(con, row["handoff_hash"])
         n_extracted = con.execute(text(
             "SELECT COUNT(*) FROM extraction WHERE handoff_hash = :h"), {"h": row["handoff_hash"]}).scalar()
         job = _EXTRACT_JOBS.get(row["handoff_hash"])
@@ -1426,7 +1424,7 @@ def handoff_detail(handoff_id: str):
         doc = R7.load_handoff(row["path"])
     except (OSError, ValueError) as e:
         raise HTTPException(404, f"handoff file unreadable: {e}")
-    return {**dict(row), "from_draft": from_draft, "n_extracted": n_extracted,
+    return {**dict(row), "origin": origin, "n_extracted": n_extracted,
            "running": bool(job and job["state"] == "running"), "package": doc}
 
 

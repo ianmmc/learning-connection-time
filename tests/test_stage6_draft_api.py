@@ -22,12 +22,12 @@ def _fake_scope():
 def test_dispatch_list_returns_drafts_and_handoffs(monkeypatch):
     monkeypatch.setattr(SRV.gdb, "session_scope", _fake_scope)
     rows = [{"kind": "draft", "draft_id": "draft_00001", "status": "draft"},
-            {"kind": "handoff", "handoff_id": "handoff_x_20260713T000000Z", "from_draft": False}]
+            {"kind": "handoff", "handoff_id": "handoff_x_20260713T000000Z", "origin": "stage7"}]
     monkeypatch.setattr(SRV.DSTORE6, "list_dispatch_rows", lambda con: rows)
     r = client.get("/api/dispatch")
     assert r.status_code == 200
     body = r.json()
-    assert body[0]["kind"] == "draft" and body[1]["from_draft"] is False
+    assert body[0]["kind"] == "draft" and body[1]["origin"] == "stage7"
 
 
 def test_dispatch_create_returns_the_new_draft_view(monkeypatch):
@@ -190,7 +190,7 @@ def test_handoff_detail_returns_full_package(monkeypatch, tmp_path):
         if calls["n"] == 1:
             return _Result(row)          # the handoff row lookup
         if calls["n"] == 2:
-            return _Result(True)         # from_draft join
+            return _Result("stage7")     # classify_origin's derived-origin CASE query
         return _Result(1)                # n_extracted count
 
     class _Con:
@@ -207,7 +207,7 @@ def test_handoff_detail_returns_full_package(monkeypatch, tmp_path):
     r = client.get("/api/handoffs/handoff_x_20260713T000000Z")
     assert r.status_code == 200
     body = r.json()
-    assert body["from_draft"] is True and body["package"]["districts"][0]["district_id"] == "0100810"
+    assert body["origin"] == "stage7" and body["package"]["districts"][0]["district_id"] == "0100810"
 
 
 def test_handoff_detail_404_on_unknown(monkeypatch):

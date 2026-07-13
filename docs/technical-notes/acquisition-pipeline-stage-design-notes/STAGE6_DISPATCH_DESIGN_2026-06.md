@@ -96,17 +96,31 @@ mechanism, just relocated: `to_view` still returns `package_identity()`, the fre
 rebuilds and 409s on mismatch.
 
 **Left pane**: one unified list (`GET /api/dispatch`) — drafts (in-progress, sorted newest-first) then
-dispatched handoffs (read-only history). A dispatched handoff is tagged `from_draft: bool`, computed by a
-`LEFT JOIN dispatch_draft ON handoff_hash` **join-absence check** — no new column on the immutable
-`handoff` table. A handoff with no matching draft (today: only the Stage 7→6 back-edge,
-`process_governance/stage7_execute.py`, which continues to freeze directly and is explicitly OUT of scope
-for this redesign) badges **"from Stage 7"** in the console. This is origin-agnostic: any future
-direct-freeze caller besides 7→6 is correctly badged with no code change.
+dispatched handoffs (read-only history). Each dispatched handoff carries a **`origin`** field —
+`'draft' | 'stage7' | 'console'` — **DERIVED from receipts on every read, never stored** (`_origin_case`
+in `stage6_draft_store.py`; single-row form `classify_origin`). Deriving rather than stamping is a
+deliberate commandment-#1 (auditability) choice: origin is a re-derivable function of the record an
+outsider can recompute, not a stored assertion that can drift, and it needs no backfill (commandment #4).
+The three cases, in precedence order:
+- **`draft`** — a `status='dispatched'` `dispatch_draft` row points at this `handoff_hash` (the console
+  draft flow). Console badge: none.
+- **`stage7`** — some **`route='7->6'` `extraction_request`** has this handoff's hash as its
+  `executed_ref`: the Stage 7→6 back-edge (`process_governance/stage7_execute.py`, which continues to
+  freeze directly and is explicitly OUT of scope for this redesign) **recorded that it produced this
+  handoff** — a receipt, not an inference. Badge: **"from Stage 7"**.
+- **`console`** — neither of the above: a genuine first-run / follow-up-batch console dispatch. Badge:
+  **"console"** (neutral).
 
-**Known migration quirk, not a bug:** every handoff dispatched *before* this feature shipped has no
-matching `dispatch_draft` row, so historical dispatches — including ones that were genuinely
-console-dispatched pre-redesign — all show the "from Stage 7" badge. No retroactive backfill was done;
-the badge's practical value (distinguishing origin of *new* dispatches going forward) still holds.
+**This replaces the earlier draft-absence heuristic.** An initial version tagged a boolean `from_draft`
+by a `LEFT JOIN dispatch_draft` join-absence check and badged every no-draft handoff "from Stage 7". That
+made a *positive origin claim from the absence of evidence* — wrong for the ~12 genuine console/first-run
+dispatches in history AND for any future use of the retained legacy `/api/handoff/dispatch` route (a
+no-draft freeze that isn't 7→6). Widening the view past Stage 6 showed true origin **is** deterministically
+recoverable — `extraction_request` records both the origin handoff (`handoff_hash`) and what a dispatch
+produced (`executed_ref`) with a `route` label — so history is classified from receipts, not guessed
+(verified: 20 stage7 / 12 console across the 32 pre-redesign handoffs, 0 orphans; correctly handles
+single-district first-runs a naive "1 district ⇒ 7→6" heuristic would misclassify). No backfill, no
+migration quirk.
 
 **Center pane**: always populated on click — an editable district/rep tree for a draft (reusing the exact
 rep-row widget: clickable filename → inspect lightbox, council `<select>` override, fidelity-suspect
