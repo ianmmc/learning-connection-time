@@ -1,4 +1,4 @@
-# Stage 8 — Aggregate: design (algorithm LIVE in gate@7; standalone stage EARLY)
+# Stage 8 — Aggregate: design (algorithm LIVE in gate@7; standalone stage DESIGNED 2026-07-13, unbuilt)
 
 > **Authority:** `stage8_aggregate/aggregate.py`'s fact-based aggregation API is **live production
 > code**, not a prototype awaiting a future consumer — it runs directly inside `gate@7`'s read path
@@ -36,7 +36,8 @@ verified by `tests/test_aggregate.py::TestGross`/`TestMode`/`TestConsensus`). Th
 `stage8_aggregate/aggregate.py` and is load-bearing for `gate@7` today (§0 above) — it is not waiting
 on Stage 8 to matter.
 
-The **standalone Stage 8** is the still-unbuilt gate downstream of gate@7: its job is to let a human
+The **standalone Stage 8** is the still-unbuilt gate downstream of gate@7 (its design is now settled —
+§2 below, decided 2026-07-13): its job is to let a human
 review/approve the council's extracted TIMES (`school_fact.human_determination`) before the
 mechanical Stage-9 DB write — the effective old "CP-C." This scope was narrowed by a 2026-07-10
 decision (REQUIREMENTS.yaml REQ-120/REQ-121 notes): approving extracted times is explicitly a
@@ -156,23 +157,169 @@ for already-captured school documents. Don't confuse its `aggregate_district` wi
 different functions in two different modules with overlapping names and similar-but-not-identical
 purposes.
 
-## 2. Console view — user stories (seed, for the standalone Stage 8)
-- As a user, I want to **re-queue a district where there are coverage gaps for a given band** — which
-  creates a new Stage-1 batch focused on the missing bands (the 8→1 back-edge; the follow-up `batch_*.json`
-  is reviewable at `gate@1`).
-- As a user, I want to **add a URL to a new handoff** that shows up in Stage 6 (the 8→6 back-edge — re-route
-  an existing representation, bypassing Stage 1).
-- As a user, I want to see the **start and end times extracted for each representation**, OR the explicitly
-  stated instructional minutes; for representations with start/end times, I want to see the **calculated
-  daily instructional minutes**.
-- As a user, I want to **manually edit/overwrite** the start and end times from each representation, and I
-  want to be **required to provide an explanation** of why I'm overwriting the extracted values — this is
-  the `human_determination` field `district_bands_from_facts` already seeds per-school (§1a).
+## 2. The standalone Stage 8 — design (DECIDED 2026-07-13)
 
-## 3. Open (to design when we reach this stage)
-- The per-band satisfaction signal (what makes a band "confident" / "satisfied") — needed for follow-up
-  batch creation (Stage 1 §5) and the drift detector (REQ-097). (tracked: #90) REQ-118's follow-up
-  compose machinery is a partial existing answer — #90's own body cites it as adjacent groundwork,
-  though it doesn't resolve what "satisfied" means for a band.
-- The aggregation record schema + how a manual override (with required reason) is stored and audited.
-- `gate@8` manual/auto (auto = confidence-escalating; never writes minutes without confidence, governance §11b).
+Design settled with Ian in a 2026-07-13 session. The guiding metaphor: **gate@8 is an attorney's closing
+argument.** A closing argument states the claim, marshals the evidence, confronts the gaps honestly, and
+asks for a verdict — and Stage 8's job is to make all four legible for one district so a reviewer (later, an
+auto-gate) can reconstruct the chain **from a published LCT minute number all the way back to the pixels on
+a district webpage, without re-running anything.** That offline-reconstructability is the auditability
+north-star (the four commandments, governance §0) made concrete at the last structural gate before the
+mechanical Stage-9 write.
+
+**Boundary vs. gate@7 (the entry condition).** The aggregation ALGORITHM already runs inside gate@7's read
+path (§0/§1a); the two gates ask different questions. gate@7: *"are these extractions good / do we need more
+evidence?"* gate@8: *"is the whole district's per-band picture complete and defensible enough to PUBLISH?"*
+So a district is **eligible for gate@8 only once gate@7's request loop has quiesced** — no open
+request-more-evidence directives (all satisfied or auto-withdrawn, #233/REQ-123). You don't deliver a
+closing argument while evidence is still being gathered.
+
+### 2a. What the stage accomplishes
+1. **Dereference the band rollup into an evidence chain — via the IMMUTABLE handoff, not a fragile live
+   join.** `district_bands_from_facts` gives the claim + per-school `{band,school,start,end,gross,models,
+   method}` + `human_determination:""`. The supporting URL + rep files come from the **immutable Stage-6
+   handoff**: `school_fact → extraction.handoff_hash → handoff_<hash>_<ts>.json`, whose per-record shape is
+   `{rec_key, url, decision, reason, reps:[{file,kind,councils,route_reason}]}` — the actual discovered URL
+   and exact files sent to the council, frozen with a `created_at`. That URL traces back to Stage 2
+   (`discovery.json` / `discovery_school`: the `query` used, `wave1_raw_urls`, gate reason). **Capture time**
+   comes from the gov_db working store `state_event` (`stage=3` `captured_all`, `created_at`, district-grain;
+   multi-valued across recaptures) — with the capture-binary file **birth-time** (`page.pdf`/`page.png`, NOT
+   the later-regenerated reader outputs like `camelot_*.txt`) as the per-URL-precise, best-effort refinement.
+   NONE of this needs the regenerable `record→capture` join that can dangle after a Stage-5 re-ingest; the
+   handoff and `state_event` are precious/immutable, satisfying §2c's offline-reconstructable requirement
+   directly. *(An earlier draft of this note wrongly called a live `school_fact→representation→capture` join
+   the stage's "load-bearing new data work" — the immutable receipts already carry it; corrected 2026-07-13
+   after tracing real handoff/state_event data.)*
+2. **Make sampling-sufficiency a first-class shown fact** per band: the NCES denominator (Y — captured at
+   Stage 1 by raw LEVEL), the sampled count (X), the mode's **plurality share**, and whether early-exit
+   fired. NOTE `mode_stable` currently has **no live caller** (§1a) — Stage 8 is where the sampling story
+   stops being a latent heuristic and becomes a displayed, auditable statistic.
+3. **The one write the stage adds: human override of extracted times, with a REQUIRED reason** — the
+   `human_determination` field, already seeded. Precious (JSON-backed, re-importable, never dropped on
+   re-ingest — same class as `label.facets_json`); it is exactly the "correcting a solid prior fact is a
+   gate@8 human determination, not an automatic later-run override" carve-out that `merge_fact_runs` already
+   defers to (§1a).
+4. **Adjudicate the negative space explicitly** — unresolved `(band,school)` pairs, implausible-gated facts,
+   and the #237 contamination flag (`detect_single_school_over_extraction`, already surfaced in gate@7's
+   read path). The human's disposition ("keep school X, drop the CMO siblings") is **recorded**; never
+   auto-reject (the detect-and-flag posture, §1a).
+5. **The verdict + back-edges.** Approve → Stage 9 writes mechanically. Or route **8→1** (re-queue an
+   unsatisfied band via a follow-up batch reviewable at gate@1) or **8→6** (add a URL to a new dispatch,
+   bypassing Stage 1). Both back-edges are **NOT built** (governance §11e) and are designed as stubs first;
+   they parallel the existing 7→1 / 7→6 edges, which are the template.
+6. **Strengthen what the council OUTPUTS, going forward — SHIPPED 2026-07-13 (`stage6.extract.v2`).** The
+   inputs to Stage 7 (the handoff chain in item 1) are sufficient evidence of *what we asked*; what's thin is
+   the council's evidence of *what it read*. Bounded by the REQ-054 invariant (models READ times, never
+   compute/judge), the v2 extraction prompt adds per schedule: a verbatim **`evidence_quote`** (the exact
+   source text the start+end were read from — one span, not split start/end), an optional **`source_locus`**
+   (page/section), and a formal **path-2 `stated_minutes` + `stated_minutes_quote`** for the explicit-minutes
+   "golden nugget" (Dunseith; the v1 start/end-only schema dropped it — the second acquisition path). Path-2
+   is **corroboration only**: computed `gross = end − start` stays canonical (REQ-055); the stated number is
+   shown as a cross-check, never a competing value. Deliberately **NOT** a per-model confidence score —
+   cross-family agreement (REQ-056) already IS the confidence mechanism, so a self-report double-counts it.
+   Pure reading outputs, cheap (still streams per REQ-119), **not backfillable** (a re-read is paid) — hence
+   instrument-now. **As built:** `stage6.extract.v2` + `.vision.v2` (`stage6_handoff/prompts.py`), switched
+   on via `council_configs.json` (v1 retained for old-handoff reproducibility); `consensus_school_facts`
+   carries the consensus models' evidence onto each accepted fact (v1 facts stay byte-identical — attached
+   only when non-empty); persisted to the new `school_fact.evidence_json`; `closing_argument` renders it as
+   `council_evidence` per school (a representative quote + the full per-model map + path-2 agreement flag).
+   **Live-validated** (2 reps, both voter models, $0.0003): models returned verbatim quotes, consensus
+   unchanged, `stated_minutes` correctly null when unstated — and the quotes made a real start-time
+   disagreement (homeroom-bell vs tardy-bell) legible, which is the whole point.
+
+**Console shape** mirrors Stage 5: a **district-driven, attention-first** left pane (districts awaiting
+approval sorted contamination-flagged / unsatisfied-bands / low-plurality first — not alphabetical), a
+**band-first** detail pane (the claim), drilling into the per-school evidence chain. The seed user-stories
+(retained from the original §2):
+- re-queue a district with a band coverage gap (the 8→1 back-edge; follow-up `batch_*.json` reviewable at gate@1);
+- add a URL to a new handoff visible in Stage 6 (the 8→6 back-edge, bypassing Stage 1);
+- see per-representation start/end times OR the explicitly-stated minutes, and the computed daily minutes;
+- manually edit/overwrite times, **required to supply a reason** (the `human_determination` write, item 3).
+
+### 2b. Guardrails
+gate@8 is structural AND the last gate before a published number, so its guardrails are load-bearing for the
+whole automation program (governance §11b: gate@8's calibrated confidence gate must exist **before** the
+supervision gates 6/7 relax).
+- **No minutes reach the LCT DB without confidence** (§11b, explicit). Auto is auto-with-confidence-
+  escalation: high-confidence bands auto-write, low-confidence escalate to manual.
+- **A completeness guard, not only a correctness guard.** Stage 5's recall floor guards "did we lose real
+  schedules"; Stage 8's band-level analogue: don't publish a district whose *claimed* bands are unsatisfied.
+  A band resting on 1 of 30 schools is a different animal than 25 of 30 — the denominator statistic (2a.2)
+  IS the guardrail input, not just display.
+- **A statutory sniff test.** Cross-check each band's minutes against its state's statutory minimum
+  (`state_requirements`, already held) — a band below the floor is either a real finding or an extraction
+  error; **flag, don't block**. A district-level plausibility layer above the per-fact 240–510 gate (REQ-055).
+- **Override auditability + the re-write boundary.** Every override is a precious `state_event` with actor +
+  reason. The approval is **frozen and fingerprinted** at `(facts,config)` — the immutable-handoff pattern
+  (governance §5) — so a re-approval after a back-edge round is a NEW record that never silently rewrites a
+  published picture. Stage 9's write is a deterministic **upsert** (re-approval-safe, no duplicate rows).
+- **The survivorship analogue.** A band accepted on a thin sample that reached "modal stability" early is a
+  MODELED assumption about the unsampled schools. When the district recurs with more sampled schools, check
+  the realized mode against the earlier lock so a **false early lock** becomes observable — the Stage-8
+  sibling of Stage-5's exploration quota (governance §11b). `mode_stable`'s plurality check is the in-sample
+  version; this cross-round check is new.
+
+### 2c. The approval receipt (what the low-supervision future needs)
+When the human leaves gate@8, the receipt is the **frozen closing argument** — it must let a later auditor
+challenge any published number OFFLINE, without a live DB. Per district × band it carries:
+1. **the claim** — gross minutes, start/end, band, method;
+2. **the evidence chain, fully dereferenced** — per contributing school: the supporting URL + rep files
+   (frozen from the immutable Stage-6 handoff via `extraction.handoff_hash`), the capture time (`state_event`
+   stage-3 `created_at`, refined by capture-binary birth-time), the Stage-2 discovery lineage (query + wave),
+   the extracting models + consensus method (families agreed, ±tol, judge), and — going forward — the
+   council's verbatim `evidence_quote` / `stated_minutes` (§2a.6). Self-contained values **snapshotted into
+   the receipt** at approval, not live-DB IDs (the immutable-handoff discipline, governance §5);
+3. **the sufficiency statistics** — N_sampled / N_total, plurality share, early-exit window if it fired;
+4. **the negative space** — the honest half: unresolved pairs + why, implausible-gated facts, contamination
+   flags AND their disposition, bands claimed-but-unsatisfied, denominator schools never captured. A receipt
+   showing only what we found reads as "we covered everything"; **log what was dropped** (the no-silent-caps rule);
+5. **the decision record** — actor, timestamp, the confidence value auto WOULD have acted on, any override +
+   reason, and the frozen `(facts,config)` fingerprint;
+6. **the auto-vs-human agreement datum** — the **gate@8 calibration hook, deferred today** (governance §11b
+   explicitly excludes gate@8 from the calibration wiring until Stage 8 lands). Per the #108 lesson ("you
+   cannot measure a threshold you never instrumented"), it should start logging the moment the MANUAL gate
+   ships — long before auto — into the existing `calibration_event` table (`common/calibration.py`, ITEM
+   grain), the same substrate gate@5/6/7 already feed.
+
+The through-line: the receipt must also carry **the provenance of the denominator itself** (the NCES
+per-band count + any contamination disposition) — if the denominator is wrong (the #237 single-school-LEA
+class), every downstream sufficiency statistic lies.
+
+### 2d. Sequencing — manual-first; #90 ("satisfied") deferred and LEARNED through the manual gate (DECIDED)
+The per-band **"satisfied" signal (#90) is the keystone**: simultaneously the confidence threshold that
+gates the write, the target for the 8→1 re-queue, and the input to the survivorship check (2b). It is
+**undesigned, and deliberately stays so** — the decision (Ian, 2026-07-13) is to **build the MANUAL gate
+first and learn the shape of "satisfied" from watching real districts pass through it**, rather than guess
+the threshold up front (the ramp-up model, governance §11b; the #108 accrual lesson). The manual gate does
+NOT need #90 — a human eyeballs sufficiency — so Stage 8 ships manual-first with "satisfied" as a human
+judgment, the calibration hook (2c.6) logging from day one, and the auto path (confidence-escalating,
+governance §11b) blocked on #90 + gate-mode part b (#104). This is the same high-supervision-first posture
+every other gate shipped under.
+
+### 2e. Approval commit grain — PER-DISTRICT, all-or-nothing (DECIDED 2026-07-13)
+The completion grain is district × band (governance §11d), but the **approval/write commit grain is the
+whole district** (Ian, 2026-07-13). Rationale: LCT is a **district-level** metric — daily instructional
+minutes over the district's enrollment/staffing. Publishing some bands while others are still thin would
+force a partial-numerator-against-whole-denominator reconciliation the LCT model can't support; all-or-
+nothing keeps every written number coherent. This does **not** discard the per-band view: bands are still
+tracked/satisfied individually (the negative space §2a.4, the sampling sufficiency §2a.2), and an
+**unsatisfied band BLOCKS district approval** and routes an 8→1 re-queue (§2a.5) — the district simply isn't
+approvable until whole. Consequences: **(1)** the approval record is one row per district (a frozen receipt
+of the whole closing argument), not per band; **(2)** the gate@8 calibration datum (§2c.6) is district-grain
+(the confidence proxy is a district roll-up — e.g. min band coverage / council agreement); **(3)** the
+per-school `human_determination` override (§2a.3) is still per-fact — a reviewer corrects individual school
+times (with a reason) and then approves the district as a coherent whole. Stage 9 (#93) writes all of an
+approved district's bands together, mechanically.
+
+## 3. Still open (post-2026-07-13 design)
+- **#90 — the per-band "satisfied" signal** (confidence/coverage threshold): deferred by decision (§2d),
+  to be characterized from manual-gate experience. REQ-118's follow-up compose machinery is partial adjacent
+  groundwork (it does not define "satisfied").
+- **The aggregation-record / approval-receipt schema + migration** (§2c) — the precious approval table +
+  its JSON backup, and how a required-reason override is stored and audited (§2a.3). *(First build step.)*
+- **The 8→1 / 8→6 back-edges** (§2a.5, governance §11e) — designed as stubs first, built after the
+  read/approve path.
+- **`gate@8` manual/auto** — auto = confidence-escalating, never writes minutes without confidence
+  (governance §11b); blocked on #90 and #104 part b.
+- **Stage 9 write** (#93) — the mechanical upsert into the LCT DB downstream of an approval (its own stage;
+  `STAGE9_INCORPORATE_DESIGN_2026-06.md`).
