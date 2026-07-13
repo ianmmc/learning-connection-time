@@ -182,3 +182,81 @@ class TestMergeFactRuns:
                for f in accepted]
         bands = A.district_bands_from_facts(agg)
         assert bands["elementary"]["gross_minutes"] == 360 and bands["elementary"]["n_schools"] == 2
+
+    def test_stale_vintage_persisted_keys_merge_with_current_keys(self):
+        # PR #247 review: school_fact.school is PERSISTED at write time, so a stopword-list change
+        # leaves old rows keyed under the old normalization ('lincoln unified district') while a new
+        # run writes the current key ('lincoln'). The merge re-normalizes through the CURRENT
+        # norm_school at read time — the same physical school must dedupe, not fragment.
+        old = _f(1, "high", "lincoln unified district", "accepted", 400)   # pre-#236 vintage key
+        new = _f(2, "high", "lincoln", "accepted", 410)                    # current-vintage key
+        accepted, unresolved = A.merge_fact_runs([old, new])
+        assert len(accepted) == 1 and unresolved == []
+        assert accepted[0]["extraction_id"] == 1                            # earliest accepted stands
+
+
+# ------------------------------------------------- #237 single-school-LEA over-extraction contamination
+def _s(school, band="high"):
+    """A minimal accepted fact — the detector only reads 'school' (already norm_school-normalized)."""
+    return {"band": band, "school": school, "start": "08:00", "end": "15:00", "gross": 420, "models": []}
+
+
+class TestDetectSingleSchoolOverExtraction:
+    """#237: a nces_count==1 LEA yielding >1 distinct school is cross-LEA contamination (charter-network
+    siblings on a shared CMO domain, or a blank-domain unscoped capture). Detect + flag, never auto-reject."""
+
+    def test_not_flagged_when_not_single_school_lea(self):
+        # a genuine multi-school LEA legitimately has many schools
+        assert A.detect_single_school_over_extraction([_s("a"), _s("b")], nces_school_count=8) is None
+
+    def test_not_flagged_when_nces_count_unknown(self):
+        assert A.detect_single_school_over_extraction([_s("a"), _s("b")], nces_school_count=None) is None
+
+    def test_single_school_lea_with_one_school_is_clean(self):
+        # the correct outcome for a real single-school LEA: one school, no flag. School names here are
+        # already norm_school-normalized (as they arrive from the extraction facts) — 'charter' is NOT
+        # stripped, so the real Brownsville Ascend school normalizes to 'brownsville ascend charter'.
+        one = [_s("brownsville ascend charter")]
+        assert A.detect_single_school_over_extraction(one, nces_school_count=1) is None
+        # multiple facts for the SAME normalized school (e.g. two bands) is still one distinct school
+        two_bands = [_s("brownsville ascend charter", "elementary"), _s("brownsville ascend charter", "high")]
+        assert A.detect_single_school_over_extraction(two_bands, nces_school_count=1) is None
+
+    def test_single_school_lea_with_sibling_campuses_is_flagged(self):
+        # Brownsville Ascend: 1-school LEA, but extraction pulled sibling campuses off the shared domain
+        facts = [_s("brownsville ascend charter"), _s("brooklyn ascend charter"), _s("bushwick ascend charter")]
+        got = A.detect_single_school_over_extraction(facts, nces_school_count=1)
+        assert got is not None
+        assert got["suspected"] is True
+        assert got["reason"] == "single_school_lea_over_extraction"
+        assert got["n_distinct_schools"] == 3
+        assert got["distinct_schools"] == [
+            "brooklyn ascend charter", "brownsville ascend charter", "bushwick ascend charter"]
+
+    def test_roster_match_surfaces_the_reliable_keeper_when_available(self):
+        facts = [_s("brownsville ascend charter"), _s("brooklyn ascend charter")]
+        got = A.detect_single_school_over_extraction(
+            facts, nces_school_count=1, roster_names=["Brownsville Ascend Charter School"])
+        assert got["roster_matched"] == ["brownsville ascend charter"]   # only the LEA's own roster school
+
+    def test_no_roster_means_no_keeper_hint_not_a_wrong_guess(self):
+        # honest: without a roster we do NOT guess a keeper (shared 'ascend' name would mislead)
+        facts = [_s("brownsville ascend charter"), _s("brooklyn ascend charter")]
+        got = A.detect_single_school_over_extraction(facts, nces_school_count=1)
+        assert got["roster_matched"] == []
+
+    def test_junk_all_stopword_roster_entries_never_match(self):
+        # PR #247 review: a scraped 'School District' header captured as a roster entry is junk, not
+        # a school — it must be FILTERED (norm_school_strict), not smuggled through the empty-key
+        # fallback where a junk-named fact could spuriously read as a trustworthy roster_matched hint.
+        facts = [_s("the school district"), _s("brooklyn ascend charter")]
+        got = A.detect_single_school_over_extraction(
+            facts, nces_school_count=1, roster_names=["School District", "The School District"])
+        assert got["roster_matched"] == []
+
+    def test_stale_vintage_fact_keys_count_as_one_school(self):
+        # PR #247 review: two facts for the SAME school persisted under different norm_school
+        # vintages must not read as 2 distinct schools (a false contamination flag) — the detector
+        # re-normalizes through the current function.
+        facts = [_s("lincoln unified district"), _s("lincoln")]      # old + current vintage, same school
+        assert A.detect_single_school_over_extraction(facts, nces_school_count=1) is None

@@ -1,0 +1,3596 @@
+{
+  "handoff_hash": "f33790e63820",
+  "district": {
+    "district_id": "2901000",
+    "name": "COLUMBIA 93",
+    "reps": [
+      {
+        "rec_key": "2901000:0bab907062",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 462,
+            "completion_tokens": 44,
+            "cost_usd": 6.38e-05,
+            "latency_ms": 638,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840707-i9NfxifIgT1t5Zdc7ChJ",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 477,
+            "completion_tokens": 50,
+            "cost_usd": 2.785e-05,
+            "latency_ms": 1068,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840707-pBvv1CSNekxkMbeIkxDX",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2901000:34ff8c4820",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Beulah Ralph Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 891,
+            "completion_tokens": 44,
+            "cost_usd": 0.0001067,
+            "latency_ms": 963,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840709-zcRRJGlMa2L4JTYGfaQH",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Beulah Ralph Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 911,
+            "completion_tokens": 73,
+            "cost_usd": 5.139e-05,
+            "latency_ms": 2066,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840710-3C9tfU9wEY8jiqpwC9c3",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "beulah ralph",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2901000:34ff8c4820",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2901000:99074deb5b",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "all",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Columbia Public School District",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 850,
+            "completion_tokens": 44,
+            "cost_usd": 0.0001026,
+            "latency_ms": 1088,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840712-7JnppQyYne3LaEAMFqEv",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Columbia Public School District",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 876,
+            "completion_tokens": 50,
+            "cost_usd": 4.78e-05,
+            "latency_ms": 1120,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840712-4cUsM842mq76ou3ZSo4j",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Columbia Public School District",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 848,
+            "completion_tokens": 42,
+            "cost_usd": 0.00020656,
+            "latency_ms": 1985,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840714-ZiqjSD8C0Jv1CiWZFzof",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "columbia public district",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:99074deb5b",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2901000:29f492018e",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 34,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "16:05",
+                "school_name": "Battle High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "16:05",
+                "school_name": "Hickman High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "16:05",
+                "school_name": "Rock Bridge High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:05",
+                "end_time": "15:46",
+                "school_name": "Douglass High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "16:05",
+                "school_name": "Columbia Area Career Center",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "Gentry Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "Jefferson Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "John Warner Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "Lange Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "Oakland Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "Smithton Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "West Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Eliot Battle Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Benton Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Locust Street Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "New Haven Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Midway Heights Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Ridgeway Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Rock Bridge Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Two Mile Prairie Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Alpha Hart Lewis Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Beulah Ralph Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Blue Ridge Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Cedar Ridge Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Derby Ridge Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Eagle Bluffs Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Fairview Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Grant Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Mill Creek Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Parkade Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Paxton Keeley Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Russell Boulevard Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Shepard Boulevard Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "West Boulevard Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 821,
+            "completion_tokens": 1448,
+            "cost_usd": 0.0006613,
+            "latency_ms": 3943,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840716-sef6zl3x1bumS4O0xXnX",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 6,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "16:05",
+                "school_name": "Battle, Hickman, and Rock Bridge High Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:05",
+                "end_time": "15:46",
+                "school_name": "Douglass High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "16:05",
+                "school_name": "Columbia Area Career Center",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "Gentry, Jefferson, John Warner, Lange, Oakland, Smithton, and West Middle Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Eliot Battle, Benton, Locust Street, New Haven, Midway Heights, Ridgeway, Rock Bridge, and Two Mile Prairie Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Alpha Hart Lewis, Beulah Ralph, Blue Ridge, Cedar Ridge, Derby Ridge, Eagle Bluffs, Fairview, Grant, Mill Creek, Parkade, Paxton Keeley, Russell Boulevard, Shepard Boulevard, and West Boulevard Elementary Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 847,
+            "completion_tokens": 440,
+            "cost_usd": 7.755e-05,
+            "latency_ms": 6234,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840720-uwm6pUaBjrbmARejv6kh",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 33,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "16:05",
+                "school_name": "Battle High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "16:05",
+                "school_name": "Hickman High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "16:05",
+                "school_name": "Rock Bridge High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:05",
+                "end_time": "15:46",
+                "school_name": "Douglass High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "16:05",
+                "school_name": "Columbia Area Career Center",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "Gentry Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "Jefferson Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "John Warner Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "Lange Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "Oakland Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "Smithton Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "West Middle School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Eliot Battle Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Benton Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Locust Street Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "New Haven Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Midway Heights Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Rock Bridge Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Two Mile Prairie Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Alpha Hart Lewis Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Beulah Ralph Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Blue Ridge Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Cedar Ridge Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Derby Ridge Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Eagle Bluffs Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Fairview Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Grant Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Mill Creek Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Parkade Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Paxton Keeley Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Russell Boulevard Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Shepard Boulevard Elementary School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "West Boulevard Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 836,
+            "completion_tokens": 1198,
+            "cost_usd": 0.00123816,
+            "latency_ms": 21347,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840726-XTlZ7GePgwNN0Z1umvox",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "battle",
+            "start": "08:55",
+            "end": "16:05",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "hickman",
+            "start": "08:55",
+            "end": "16:05",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "rock bridge",
+            "start": "08:55",
+            "end": "16:05",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "douglass",
+            "start": "09:05",
+            "end": "15:46",
+            "gross": 401,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "columbia area career center",
+            "start": "08:55",
+            "end": "16:05",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "gentry",
+            "start": "07:25",
+            "end": "14:35",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "jefferson",
+            "start": "07:25",
+            "end": "14:35",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "john warner",
+            "start": "07:25",
+            "end": "14:35",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "lange",
+            "start": "07:25",
+            "end": "14:35",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "oakland",
+            "start": "07:25",
+            "end": "14:35",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "smithton",
+            "start": "07:25",
+            "end": "14:35",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "west",
+            "start": "07:25",
+            "end": "14:35",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "eliot battle",
+            "start": "07:40",
+            "end": "14:40",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "benton",
+            "start": "07:40",
+            "end": "14:40",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "locust street",
+            "start": "07:40",
+            "end": "14:40",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "new haven",
+            "start": "07:40",
+            "end": "14:40",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "midway heights",
+            "start": "07:40",
+            "end": "14:40",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "rock bridge",
+            "start": "07:40",
+            "end": "14:40",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "two mile prairie",
+            "start": "07:40",
+            "end": "14:40",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "alpha hart lewis",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "beulah ralph",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "blue ridge",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "cedar ridge",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "derby ridge",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "eagle bluffs",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "fairview",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "grant",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "mill creek",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "parkade",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "paxton keeley",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "russell boulevard",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "shepard boulevard",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "west boulevard",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "ridgeway",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:40"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:40"
+            },
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "battle hickman and rock bridge schools",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:55"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "16:05"
+            },
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "gentry jefferson john warner lange oakland smithton and west schools",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:25"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:35"
+            },
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "eliot battle benton locust street new haven midway heights ridgeway rock bridge and two mile prairie schools",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:40"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:40"
+            },
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "alpha hart lewis beulah ralph blue ridge cedar ridge derby ridge eagle bluffs fairview grant mill creek parkade paxton keeley russell boulevard shepard boulevard and west boulevard schools",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:20"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "15:20"
+            },
+            "rec_key": "2901000:29f492018e",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "2901000:3bcff8a609",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "John Warner Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 986,
+            "completion_tokens": 44,
+            "cost_usd": 0.0001162,
+            "latency_ms": 696,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840747-jcu4vGfXAyvFWlQerYXU",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "John Warner Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1010,
+            "completion_tokens": 49,
+            "cost_usd": 5.442e-05,
+            "latency_ms": 735,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840748-Z2iK4MNunOXQfZZkMypF",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "john warner",
+            "start": "07:25",
+            "end": "14:35",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2901000:3bcff8a609",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2901000:b099a486e7",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "John Warner Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3548,
+            "completion_tokens": 49,
+            "cost_usd": 0.0003744,
+            "latency_ms": 887,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840749-yb8hfo1amMXgrLXokZqG",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "John Warner Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3612,
+            "completion_tokens": 49,
+            "cost_usd": 0.00018452,
+            "latency_ms": 994,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840749-hLw8cZin8CDfElY5KLY3",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "john warner",
+            "start": "07:25",
+            "end": "14:35",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2901000:b099a486e7",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2901000:c9bbb86a25",
+        "file": "tesseract_screenshot.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "14:05",
+                "school_name": "ROCK BRIDGE HIGH SCHOOL",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "14:05",
+                "school_name": "RBHS",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "14:05",
+                "school_name": "ROCK BRIDGE",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1166,
+            "completion_tokens": 161,
+            "cost_usd": 0.000181,
+            "latency_ms": 978,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840750-lZDfV9q4VHftIY3jBjxB",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "16:05",
+                "school_name": "Rock Bridge High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1207,
+            "completion_tokens": 71,
+            "cost_usd": 6.603e-05,
+            "latency_ms": 1240,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840752-ErA1rQSXVDQyGgS59cAk",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "14:30",
+                "school_name": "Rock Bridge High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1175,
+            "completion_tokens": 41,
+            "cost_usd": 0.0002596,
+            "latency_ms": 1583,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840753-sDsOfVZ5z2ZpQr4d4vMM",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "rock bridge",
+            "start": "08:55",
+            "end": "14:30",
+            "gross": 335,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:c9bbb86a25",
+            "source_file": "tesseract_screenshot.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "rbhs",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:55"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:05"
+            },
+            "rec_key": "2901000:c9bbb86a25",
+            "source_file": "tesseract_screenshot.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "2901000:ee2805a78c",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1529,
+            "completion_tokens": 5,
+            "cost_usd": 0.0001549,
+            "latency_ms": 842,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840754-P5ydxA9Yj4xT3b3q5wHn",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1603,
+            "completion_tokens": 51,
+            "cost_usd": 8.423e-05,
+            "latency_ms": 1157,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840755-QfEDRBtgaBztCt3yM5Ir",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2901000:043d3e75be",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "16:05",
+                "school_name": "Hickman High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3510,
+            "completion_tokens": 50,
+            "cost_usd": 0.000371,
+            "latency_ms": 671,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840756-YKpyPL0NwEPMtMBO1anR",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "16:05",
+                "school_name": "Hickman High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 3535,
+            "completion_tokens": 45,
+            "cost_usd": 0.00018035,
+            "latency_ms": 883,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840757-Xvf7Cljw9nk55zoxZ8aQ",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "hickman",
+            "start": "08:55",
+            "end": "16:05",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2901000:043d3e75be",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2901000:c686ad85a9",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "6th Grade",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "7th Grade",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "8th Grade",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1307,
+            "completion_tokens": 162,
+            "cost_usd": 0.0001955,
+            "latency_ms": 1519,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840758-j6ALb8n9B2PwacAv1bv5",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1360,
+            "completion_tokens": 72,
+            "cost_usd": 7.376e-05,
+            "latency_ms": 1003,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840759-QTPgJRPw50ghSD0Y6MQi",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "6th Grade",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "7th Grade",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "8th Grade",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1343,
+            "completion_tokens": 107,
+            "cost_usd": 0.0002647645,
+            "latency_ms": 1766,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840761-PpiqATRdbPBorhio1qYC",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "6th grade",
+            "start": "07:25",
+            "end": "14:35",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:c686ad85a9",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "7th grade",
+            "start": "07:25",
+            "end": "14:35",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:c686ad85a9",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "8th grade",
+            "start": "07:25",
+            "end": "14:35",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:c686ad85a9",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2901000:970aff0c86",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Columbia Public School District",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1118,
+            "completion_tokens": 44,
+            "cost_usd": 0.0001294,
+            "latency_ms": 568,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840762-Wou1uw0wjauYytpMpUCx",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1124,
+            "completion_tokens": 12,
+            "cost_usd": 5.716e-05,
+            "latency_ms": 432,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840763-Wq7i24PVCHAOFvRVUOPB",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:20",
+                "end_time": "15:20",
+                "school_name": "Columbia Public School District",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1092,
+            "completion_tokens": 43,
+            "cost_usd": 0.00010258,
+            "latency_ms": 1942,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840763-7YnEjwBaVFRjjzBSUQ1w",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "columbia public district",
+            "start": "08:20",
+            "end": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:970aff0c86",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2901000:b792f0787b",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "16:05",
+                "school_name": "Columbia Public School District",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1252,
+            "completion_tokens": 44,
+            "cost_usd": 0.0001428,
+            "latency_ms": 596,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840765-FIQqntWcx63jMmj6AhpT",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1262,
+            "completion_tokens": 12,
+            "cost_usd": 6.406e-05,
+            "latency_ms": 346,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840766-wDe7hU2Vkg3iRjrDUQzF",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "16:05",
+                "school_name": "Columbia Public School District",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1167,
+            "completion_tokens": 42,
+            "cost_usd": 0.00010923,
+            "latency_ms": 1953,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840766-09MziojM8kDmYkihjZFX",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "columbia public district",
+            "start": "08:55",
+            "end": "16:05",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:b792f0787b",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2901000:dac6546847",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "GMS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1240,
+            "completion_tokens": 42,
+            "cost_usd": 0.0001408,
+            "latency_ms": 581,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840768-TS4OSvusM2rjdrXT2ce3",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:15",
+                "end_time": "14:35",
+                "school_name": "GMS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1245,
+            "completion_tokens": 69,
+            "cost_usd": 6.777e-05,
+            "latency_ms": 1046,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840769-9Hf7HqlhlfL1Bn2OEgmi",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "12:05",
+                "school_name": "GMS",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1234,
+            "completion_tokens": 38,
+            "cost_usd": 0.000207207,
+            "latency_ms": 1099,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840770-G0JZFMtZRkTRXX7Y0YwN",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "gms",
+            "start": "07:25",
+            "end": "12:05",
+            "gross": 280,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "2901000:dac6546847",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2901000:e3f0be759f",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "Smithton",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 725,
+            "completion_tokens": 52,
+            "cost_usd": 9.33e-05,
+            "latency_ms": 699,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840771-RSWv2csWSmnYnPAjDbt6",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "Smithton",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 734,
+            "completion_tokens": 47,
+            "cost_usd": 4.046e-05,
+            "latency_ms": 804,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840771-3qh9ZAqfilDYaS86e3sh",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "smithton",
+            "start": "07:25",
+            "end": "14:35",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2901000:e3f0be759f",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "2901000:5e3025e6fb",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "6th Grade Schedule",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "11:31",
+                "school_name": "7th Grade Schedule",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "8th Grade Schedule",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1061,
+            "completion_tokens": 122,
+            "cost_usd": 0.0001549,
+            "latency_ms": 876,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840772-44gtQ0GV0T4UHDdoMnwR",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 993,
+            "completion_tokens": 51,
+            "cost_usd": 5.373e-05,
+            "latency_ms": 891,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840773-RIQVHJODozxu7zEJpNMd",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "6th Grade",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "11:31",
+                "school_name": "7th Grade",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:25",
+                "end_time": "14:35",
+                "school_name": "8th Grade",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 974,
+            "completion_tokens": 108,
+            "cost_usd": 0.00022276,
+            "latency_ms": 2397,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840774-HDSDaRUY9yH6QNNmu8f5",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "6th grade schedule",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:25"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:35"
+            },
+            "rec_key": "2901000:5e3025e6fb",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "7th grade schedule",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:25"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "11:31"
+            },
+            "rec_key": "2901000:5e3025e6fb",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "8th grade schedule",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:25"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:35"
+            },
+            "rec_key": "2901000:5e3025e6fb",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "2901000:91698ea0c4",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Columbia Public School District",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1045,
+            "completion_tokens": 49,
+            "cost_usd": 0.0001241,
+            "latency_ms": 1509,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840777-AatB9DWbUwYXNtWlfe0G",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:40",
+                "school_name": "Columbia Public School District",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1067,
+            "completion_tokens": 72,
+            "cost_usd": 5.911e-05,
+            "latency_ms": 1343,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840778-wUd3Yl3ua9xFsoPxzu5j",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "columbia public district",
+            "start": "07:40",
+            "end": "14:40",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "2901000:91698ea0c4",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "beulah ralph",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2901000:34ff8c4820",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "columbia public district",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:99074deb5b",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "battle",
+        "start": "08:55",
+        "end": "16:05",
+        "gross": 430,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "hickman",
+        "start": "08:55",
+        "end": "16:05",
+        "gross": 430,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "rock bridge",
+        "start": "08:55",
+        "end": "16:05",
+        "gross": 430,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "douglass",
+        "start": "09:05",
+        "end": "15:46",
+        "gross": 401,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "columbia area career center",
+        "start": "08:55",
+        "end": "16:05",
+        "gross": 430,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "gentry",
+        "start": "07:25",
+        "end": "14:35",
+        "gross": 430,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "jefferson",
+        "start": "07:25",
+        "end": "14:35",
+        "gross": 430,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "john warner",
+        "start": "07:25",
+        "end": "14:35",
+        "gross": 430,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "lange",
+        "start": "07:25",
+        "end": "14:35",
+        "gross": 430,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "oakland",
+        "start": "07:25",
+        "end": "14:35",
+        "gross": 430,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "smithton",
+        "start": "07:25",
+        "end": "14:35",
+        "gross": 430,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "west",
+        "start": "07:25",
+        "end": "14:35",
+        "gross": 430,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "eliot battle",
+        "start": "07:40",
+        "end": "14:40",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "benton",
+        "start": "07:40",
+        "end": "14:40",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "locust street",
+        "start": "07:40",
+        "end": "14:40",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "new haven",
+        "start": "07:40",
+        "end": "14:40",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "midway heights",
+        "start": "07:40",
+        "end": "14:40",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "rock bridge",
+        "start": "07:40",
+        "end": "14:40",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "two mile prairie",
+        "start": "07:40",
+        "end": "14:40",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "alpha hart lewis",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "beulah ralph",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "blue ridge",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "cedar ridge",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "derby ridge",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "eagle bluffs",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "fairview",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "grant",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "mill creek",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "parkade",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "paxton keeley",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "russell boulevard",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "shepard boulevard",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "west boulevard",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "john warner",
+        "start": "07:25",
+        "end": "14:35",
+        "gross": 430,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2901000:3bcff8a609",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "john warner",
+        "start": "07:25",
+        "end": "14:35",
+        "gross": 430,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2901000:b099a486e7",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "rock bridge",
+        "start": "08:55",
+        "end": "14:30",
+        "gross": 335,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:c9bbb86a25",
+        "source_file": "tesseract_screenshot.txt"
+      },
+      {
+        "band": "high",
+        "school": "hickman",
+        "start": "08:55",
+        "end": "16:05",
+        "gross": 430,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2901000:043d3e75be",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "6th grade",
+        "start": "07:25",
+        "end": "14:35",
+        "gross": 430,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:c686ad85a9",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "7th grade",
+        "start": "07:25",
+        "end": "14:35",
+        "gross": 430,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:c686ad85a9",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "8th grade",
+        "start": "07:25",
+        "end": "14:35",
+        "gross": 430,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:c686ad85a9",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "columbia public district",
+        "start": "08:20",
+        "end": "15:20",
+        "gross": 420,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:970aff0c86",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "high",
+        "school": "columbia public district",
+        "start": "08:55",
+        "end": "16:05",
+        "gross": 430,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:b792f0787b",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "gms",
+        "start": "07:25",
+        "end": "12:05",
+        "gross": 280,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "2901000:dac6546847",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "smithton",
+        "start": "07:25",
+        "end": "14:35",
+        "gross": 430,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2901000:e3f0be759f",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "columbia public district",
+        "start": "07:40",
+        "end": "14:40",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "2901000:91698ea0c4",
+        "source_file": "page.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "ridgeway",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:40"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:40"
+        },
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "battle hickman and rock bridge schools",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:55"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "16:05"
+        },
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "gentry jefferson john warner lange oakland smithton and west schools",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:25"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:35"
+        },
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "eliot battle benton locust street new haven midway heights ridgeway rock bridge and two mile prairie schools",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:40"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:40"
+        },
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "alpha hart lewis beulah ralph blue ridge cedar ridge derby ridge eagle bluffs fairview grant mill creek parkade paxton keeley russell boulevard shepard boulevard and west boulevard schools",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:20"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "15:20"
+        },
+        "rec_key": "2901000:29f492018e",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "rbhs",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:55"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:05"
+        },
+        "rec_key": "2901000:c9bbb86a25",
+        "source_file": "tesseract_screenshot.txt"
+      },
+      {
+        "band": "middle",
+        "school": "6th grade schedule",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:25"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:35"
+        },
+        "rec_key": "2901000:5e3025e6fb",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "7th grade schedule",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:25"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "11:31"
+        },
+        "rec_key": "2901000:5e3025e6fb",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "8th grade schedule",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:25"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:35"
+        },
+        "rec_key": "2901000:5e3025e6fb",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "n_reps": 16,
+    "n_judged": 8,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 420,
+        "start_time": "08:20",
+        "end_time": "15:20",
+        "n_schools": 25,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "beulah ralph",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "columbia public district",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "eliot battle",
+            "start_time": "07:40",
+            "end_time": "14:40",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "benton",
+            "start_time": "07:40",
+            "end_time": "14:40",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "locust street",
+            "start_time": "07:40",
+            "end_time": "14:40",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "new haven",
+            "start_time": "07:40",
+            "end_time": "14:40",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "midway heights",
+            "start_time": "07:40",
+            "end_time": "14:40",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "rock bridge",
+            "start_time": "07:40",
+            "end_time": "14:40",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "two mile prairie",
+            "start_time": "07:40",
+            "end_time": "14:40",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "alpha hart lewis",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "beulah ralph",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "blue ridge",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "cedar ridge",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "derby ridge",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "eagle bluffs",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "fairview",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "grant",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mill creek",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "parkade",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "paxton keeley",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "russell boulevard",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "shepard boulevard",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "west boulevard",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "columbia public district",
+            "start_time": "08:20",
+            "end_time": "15:20",
+            "gross": 420,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "columbia public district",
+            "start_time": "07:40",
+            "end_time": "14:40",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 430,
+        "start_time": "07:25",
+        "end_time": "14:35",
+        "n_schools": 14,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "gentry",
+            "start_time": "07:25",
+            "end_time": "14:35",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "jefferson",
+            "start_time": "07:25",
+            "end_time": "14:35",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "john warner",
+            "start_time": "07:25",
+            "end_time": "14:35",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lange",
+            "start_time": "07:25",
+            "end_time": "14:35",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "oakland",
+            "start_time": "07:25",
+            "end_time": "14:35",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "smithton",
+            "start_time": "07:25",
+            "end_time": "14:35",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "west",
+            "start_time": "07:25",
+            "end_time": "14:35",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "john warner",
+            "start_time": "07:25",
+            "end_time": "14:35",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "john warner",
+            "start_time": "07:25",
+            "end_time": "14:35",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "6th grade",
+            "start_time": "07:25",
+            "end_time": "14:35",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "7th grade",
+            "start_time": "07:25",
+            "end_time": "14:35",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "8th grade",
+            "start_time": "07:25",
+            "end_time": "14:35",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "gms",
+            "start_time": "07:25",
+            "end_time": "12:05",
+            "gross": 280,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "smithton",
+            "start_time": "07:25",
+            "end_time": "14:35",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 430,
+        "start_time": "08:55",
+        "end_time": "16:05",
+        "n_schools": 8,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "battle",
+            "start_time": "08:55",
+            "end_time": "16:05",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hickman",
+            "start_time": "08:55",
+            "end_time": "16:05",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "rock bridge",
+            "start_time": "08:55",
+            "end_time": "16:05",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "douglass",
+            "start_time": "09:05",
+            "end_time": "15:46",
+            "gross": 401,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "columbia area career center",
+            "start_time": "08:55",
+            "end_time": "16:05",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "rock bridge",
+            "start_time": "08:55",
+            "end_time": "14:30",
+            "gross": 335,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "hickman",
+            "start_time": "08:55",
+            "end_time": "16:05",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "columbia public district",
+            "start_time": "08:55",
+            "end_time": "16:05",
+            "gross": 430,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 40,
+      "judge_calls": 8,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 52043,
+      "completion_tokens": 5236,
+      "cost_usd": 0.0069137515000000024
+    },
+    "state": "MO"
+  }
+}

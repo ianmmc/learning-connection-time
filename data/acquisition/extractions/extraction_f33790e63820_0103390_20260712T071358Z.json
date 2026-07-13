@@ -1,0 +1,1480 @@
+{
+  "handoff_hash": "f33790e63820",
+  "district": {
+    "district_id": "0103390",
+    "name": "Tuscaloosa County",
+    "reps": [
+      {
+        "rec_key": "0103390:c94f028c22",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Brookwood Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1188,
+            "completion_tokens": 43,
+            "cost_usd": 0.000136,
+            "latency_ms": 4204,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840403-tEubWCfW0NkmaPlGT8Nm",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Brookwood Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1184,
+            "completion_tokens": 72,
+            "cost_usd": 6.496e-05,
+            "latency_ms": 1080,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840404-vIUHlZhcn170SN9J4EDI",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "brookwood",
+            "start": "08:00",
+            "end": "14:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0103390:c94f028c22",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0103390:eda3bcef69",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:45",
+                "school_name": "Crestmont Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 953,
+            "completion_tokens": 44,
+            "cost_usd": 0.0001129,
+            "latency_ms": 628,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840405-qzETShY1eh0sQOl0FCp5",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:45",
+                "school_name": "Crestmont Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 957,
+            "completion_tokens": 72,
+            "cost_usd": 5.361e-05,
+            "latency_ms": 1260,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840406-cyXP5zvevoYlThIZzkfw",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "crestmont",
+            "start": "08:00",
+            "end": "14:45",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0103390:eda3bcef69",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0103390:d939d3bec3",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:39",
+                "school_name": "Big Sandy Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1069,
+            "completion_tokens": 43,
+            "cost_usd": 0.0001241,
+            "latency_ms": 560,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840407-rwg7NAxZ2hTTcXo6X08J",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:37",
+                "school_name": "Big Sandy Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1072,
+            "completion_tokens": 71,
+            "cost_usd": 5.928e-05,
+            "latency_ms": 1145,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840408-Z7odb1dOnDge1fL5g6W2",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "big sandy",
+            "start": "07:52",
+            "end": "14:38",
+            "gross": 406,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0103390:d939d3bec3",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0103390:1246d08706",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "14:45",
+                "school_name": "Matthews Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1020,
+            "completion_tokens": 44,
+            "cost_usd": 0.0001196,
+            "latency_ms": 610,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840409-trOHm5oX6Rpz4PUAImBj",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "14:45",
+                "school_name": "Matthews Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1020,
+            "completion_tokens": 71,
+            "cost_usd": 5.668e-05,
+            "latency_ms": 1218,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840409-cNTWmcUlPBaHRgR4YIa2",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "matthews",
+            "start": "07:52",
+            "end": "14:45",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0103390:1246d08706",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0103390:25ff47f68f",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:45",
+                "school_name": "Northport Intermediate",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "14:45",
+                "school_name": "Northport Intermediate",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1157,
+            "completion_tokens": 81,
+            "cost_usd": 0.0001481,
+            "latency_ms": 985,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840411-tjdFkrp5nEW6dzAo7VTn",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:45",
+                "school_name": "Northport Intermediate",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1155,
+            "completion_tokens": 70,
+            "cost_usd": 6.335e-05,
+            "latency_ms": 1100,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840412-ejsYfzshPUJ92SMBDFn7",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:45",
+                "school_name": "Northport Intermediate School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1097,
+            "completion_tokens": 41,
+            "cost_usd": 0.00044023,
+            "latency_ms": 2474,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840413-TvRETSfqgOvQg7xQxnCN",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "northport intermediate",
+            "start": "07:50",
+            "end": "14:45",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0103390:25ff47f68f",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "northport intermediate",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:50"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:45"
+            },
+            "rec_key": "0103390:25ff47f68f",
+            "source_file": "page.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "0103390:471dcf71dc",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:08",
+                "school_name": "Davis-Emerson Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1244,
+            "completion_tokens": 46,
+            "cost_usd": 0.0001428,
+            "latency_ms": 1350,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840415-3lE5SjFRbntWY1eTUXq4",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:18",
+                "end_time": "15:08",
+                "school_name": "Davis-Emerson Middle",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1264,
+            "completion_tokens": 73,
+            "cost_usd": 6.904e-05,
+            "latency_ms": 3647,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840416-rnbz04eG64Rv0nDpqmg1",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:08",
+                "school_name": "Davis-Emerson Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1179,
+            "completion_tokens": 42,
+            "cost_usd": 0.0002013765,
+            "latency_ms": 1040,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840420-H6PUploHgzGZfg5rQN32",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "davisemerson",
+            "start": "07:55",
+            "end": "15:08",
+            "gross": 433,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0103390:471dcf71dc",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0103390:c0e1a6e388",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "15:10",
+                "school_name": "Sipsey Valley Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1650,
+            "completion_tokens": 51,
+            "cost_usd": 0.0001854,
+            "latency_ms": 518,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840421-wcr3FflBWkw4QHlbK8Tb",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:04",
+                "end_time": "15:10",
+                "school_name": "Sipsey Valley Middle",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1658,
+            "completion_tokens": 72,
+            "cost_usd": 8.866e-05,
+            "latency_ms": 1659,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840422-YVbElCFDXu2Gu4LGX4vW",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "sipsey valley",
+            "start": "07:57",
+            "end": "15:10",
+            "gross": 433,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0103390:c0e1a6e388",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0103390:c30e52d609",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:00",
+                "school_name": "Echols Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1106,
+            "completion_tokens": 45,
+            "cost_usd": 0.0001286,
+            "latency_ms": 1288,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840423-409KaXFFv2kb3xrMSvwa",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "07:55",
+                "end_time": "15:10",
+                "school_name": "Echols Middle",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1112,
+            "completion_tokens": 49,
+            "cost_usd": 5.952e-05,
+            "latency_ms": 890,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840425-n2BzGNcEMnUk5Zzh7ZVc",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "echols",
+            "start": "07:55",
+            "end": "15:05",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0103390:c30e52d609",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0103390:dd1749f4c1",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Faucett-Vestavia Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1079,
+            "completion_tokens": 47,
+            "cost_usd": 0.0001267,
+            "latency_ms": 951,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840426-V9iLG1RHDgWjCTXw48Lo",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "15:00",
+                "school_name": "Faucett-Vestavia Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1085,
+            "completion_tokens": 53,
+            "cost_usd": 5.849e-05,
+            "latency_ms": 855,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840426-zSWgZTZIqF3NqG2SvbAx",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "faucettvestavia",
+            "start": "08:00",
+            "end": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0103390:dd1749f4c1",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0103390:403e54651e",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:30",
+                "school_name": "Englewood Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1132,
+            "completion_tokens": 45,
+            "cost_usd": 0.0001312,
+            "latency_ms": 717,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840427-SR9rCKdRyxRYvZUUMtyK",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:30",
+                "school_name": "Englewood Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1141,
+            "completion_tokens": 72,
+            "cost_usd": 6.281e-05,
+            "latency_ms": 2231,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840428-9sBQnJ58Ru3oUr422vPT",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "englewood",
+            "start": "07:45",
+            "end": "14:30",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0103390:403e54651e",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0103390:e809685d08",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:42",
+                "school_name": "Buhl Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1406,
+            "completion_tokens": 48,
+            "cost_usd": 0.0001598,
+            "latency_ms": 1344,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840430-vM4BVX6DUopXlNSiwf8g",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:42",
+                "school_name": "Buhl Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1414,
+            "completion_tokens": 71,
+            "cost_usd": 7.638e-05,
+            "latency_ms": 1121,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840432-TaxCNoHbETBRfoi2hhAQ",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "buhl",
+            "start": "08:00",
+            "end": "14:42",
+            "gross": 402,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0103390:e809685d08",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0103390:405133cd4f",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Brookwood Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1095,
+            "completion_tokens": 44,
+            "cost_usd": 0.0001271,
+            "latency_ms": 664,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840433-SrL4HJPCY65sHLbs4MKv",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:15",
+                "school_name": "Brookwood Middle",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1113,
+            "completion_tokens": 71,
+            "cost_usd": 6.133e-05,
+            "latency_ms": 1163,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840433-LMqTMW58hxV2Yv08tyWL",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "brookwood",
+            "start": "08:00",
+            "end": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0103390:405133cd4f",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0103390:97e7f222a1",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:45",
+                "school_name": "Myrtlewood Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1231,
+            "completion_tokens": 49,
+            "cost_usd": 0.0001427,
+            "latency_ms": 580,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840435-2AdeUsuG4ifp6wLdfJ6O",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:45",
+                "school_name": "Myrtlewood Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1248,
+            "completion_tokens": 73,
+            "cost_usd": 6.824e-05,
+            "latency_ms": 1360,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840435-w5I2plDJ0d7xK2pgTObR",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "myrtlewood",
+            "start": "08:00",
+            "end": "14:45",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0103390:97e7f222a1",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0103390:f275cd9ed5",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:45",
+                "end_time": "14:50",
+                "school_name": "Walker Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1595,
+            "completion_tokens": 47,
+            "cost_usd": 0.0001783,
+            "latency_ms": 568,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840437-r0s6cuBCk87OTQB7sAiT",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "14:50",
+                "school_name": "Walker Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1562,
+            "completion_tokens": 70,
+            "cost_usd": 8.37e-05,
+            "latency_ms": 1144,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840437-5b3fWx8hsVjqyH09KyWZ",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "walker",
+            "start": "07:50",
+            "end": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0103390:f275cd9ed5",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "brookwood",
+        "start": "08:00",
+        "end": "14:40",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0103390:c94f028c22",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "crestmont",
+        "start": "08:00",
+        "end": "14:45",
+        "gross": 405,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0103390:eda3bcef69",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "big sandy",
+        "start": "07:52",
+        "end": "14:38",
+        "gross": 406,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0103390:d939d3bec3",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "matthews",
+        "start": "07:52",
+        "end": "14:45",
+        "gross": 413,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0103390:1246d08706",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "northport intermediate",
+        "start": "07:50",
+        "end": "14:45",
+        "gross": 415,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0103390:25ff47f68f",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "davisemerson",
+        "start": "07:55",
+        "end": "15:08",
+        "gross": 433,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0103390:471dcf71dc",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "sipsey valley",
+        "start": "07:57",
+        "end": "15:10",
+        "gross": 433,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0103390:c0e1a6e388",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "echols",
+        "start": "07:55",
+        "end": "15:05",
+        "gross": 430,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0103390:c30e52d609",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "faucettvestavia",
+        "start": "08:00",
+        "end": "15:00",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0103390:dd1749f4c1",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "englewood",
+        "start": "07:45",
+        "end": "14:30",
+        "gross": 405,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0103390:403e54651e",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "buhl",
+        "start": "08:00",
+        "end": "14:42",
+        "gross": 402,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0103390:e809685d08",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "middle",
+        "school": "brookwood",
+        "start": "08:00",
+        "end": "15:15",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0103390:405133cd4f",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "myrtlewood",
+        "start": "08:00",
+        "end": "14:45",
+        "gross": 405,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0103390:97e7f222a1",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "walker",
+        "start": "07:50",
+        "end": "14:50",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0103390:f275cd9ed5",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "northport intermediate",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:50"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:45"
+        },
+        "rec_key": "0103390:25ff47f68f",
+        "source_file": "page.txt"
+      }
+    ],
+    "n_reps": 14,
+    "n_judged": 2,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 405,
+        "start_time": "08:00",
+        "end_time": "14:45",
+        "n_schools": 9,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "brookwood",
+            "start_time": "08:00",
+            "end_time": "14:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "crestmont",
+            "start_time": "08:00",
+            "end_time": "14:45",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "big sandy",
+            "start_time": "07:52",
+            "end_time": "14:38",
+            "gross": 406,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "matthews",
+            "start_time": "07:52",
+            "end_time": "14:45",
+            "gross": 413,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "faucettvestavia",
+            "start_time": "08:00",
+            "end_time": "15:00",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "englewood",
+            "start_time": "07:45",
+            "end_time": "14:30",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "buhl",
+            "start_time": "08:00",
+            "end_time": "14:42",
+            "gross": 402,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "myrtlewood",
+            "start_time": "08:00",
+            "end_time": "14:45",
+            "gross": 405,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "walker",
+            "start_time": "07:50",
+            "end_time": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 433,
+        "start_time": "07:55",
+        "end_time": "15:08",
+        "n_schools": 5,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "northport intermediate",
+            "start_time": "07:50",
+            "end_time": "14:45",
+            "gross": 415,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "davisemerson",
+            "start_time": "07:55",
+            "end_time": "15:08",
+            "gross": 433,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "sipsey valley",
+            "start_time": "07:57",
+            "end_time": "15:10",
+            "gross": 433,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "echols",
+            "start_time": "07:55",
+            "end_time": "15:05",
+            "gross": 430,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "brookwood",
+            "start_time": "08:00",
+            "end_time": "15:15",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 30,
+      "judge_calls": 2,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 36186,
+      "completion_tokens": 1720,
+      "cost_usd": 0.0035309564999999998
+    },
+    "state": "AL"
+  }
+}

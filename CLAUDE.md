@@ -130,9 +130,17 @@ defense-in-depth, #228's gate@5 "Reset labels" remedy, #227's `remediate_contami
 tooling). Every PR in this arc went through a max-effort adversarial review that found real defects even
 in already-passing code, including in its own first-draft fixes (PR #240's auto-withdraw logic, PR #242's
 guard depth and a remediation-script transaction-safety bug) — see `docs/PROJECT_HISTORY.md`'s newest
-entries for the full lesson set. **Still open from the shakedown:** #236/#237 (Stage 5/7
-aggregation-quality — school name-variant double-counting, topology-column precedence) and #238 (deferred
-efficiency follow-ups).
+entries for the full lesson set. **The aggregation-quality pair #236/#237 is now closed out** (branch
+`fix/aggregation-quality-236-237`, commits `3353632`/`214ce56`): **#236** shipped (`norm_school` now strips
+US district-type suffixes so "Union Hill" == "Union Hill ISD" — same physical school stops
+double-counting in a band); **#237 was mis-diagnosed** — the inflated charter school counts are cross-LEA
+contamination (charter-network siblings on a *shared CMO domain* like `ascendlearning.org`, or blank-domain
+captures — the Millard #227 class), NOT a topology undercount, so the topology change was **reverted** and
+replaced with a `detect_single_school_over_extraction` detector (nces_count==1 LEA yielding >1 distinct
+school → flagged for human review at gate@7, **detect-and-flag, never auto-reject**). This spun off a
+**structure-aware charter track** (PROJECT_HISTORY 2026-07-12 entry): #243 charter segmentation, #244
+structure-C dependent-charter carve-out (20.6% of enrollment), #245 junk-name facts, #246 gate@7 banner
+render. Also still open: #238 (deferred efficiency follow-ups).
 
 **The full stage-design-notes tower + `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` + `ACQUISITION_PIPELINE.md`
 (incl. the Mermaid diagram) were resynced against current code 2026-07-12** (a multi-agent audit-then-rewrite
@@ -140,16 +148,20 @@ pass, verified by spot-checking rewrite claims against real file:line evidence) 
 `docs/technical-notes/acquisition-pipeline-stage-design-notes/` plus those two as current as of this commit,
 not as carrying drift from the PR #240/#242 arc.
 
-**Next (RESUME HERE — 2026-07-12):** the aggregation-quality fixes (#236/#237); then the live gate-mode
-(manual/auto) persistence + console toggle (#104) that both Phase-1 guardrails' demote-hooks are waiting on
-(currently unbuilt — every gate except #233's auto-withdraw is de-facto always-manual); then #211 live
-wiring + #214 measured-pass. Separately still open: Stage 8 (aggregate — the fact-based aggregation
-*algorithm* is live production code inside gate@7 today; the standalone stage/gate@8/console is not built,
-#89/#90); the Council Lab backlog (#80/#81). Resume-essentials: `pip install -e .` → Docker up
-(`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh clone only) → `lint-imports`
-(expect 4 kept/0 broken) + `pytest -q -m "not integration"`. Full detail:
-`PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (current-status banner + §11a/§11b),
-`STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§6, `docs/PROJECT_HISTORY.md` (newest entries).
+**Next (RESUME HERE — 2026-07-12):** resume the **pipeline sequence** — **#104** first: live gate-mode
+(manual/auto) persistence + console toggle, the dependency both Phase-1 guardrails' demote-hooks wait on
+(currently unbuilt — every gate except #233's auto-withdraw is de-facto always-manual). Then **#211** live
+wiring (exploration-quota control law, REQ-120) → **#214** measured-pass → close **epic #209**. Then **Stage
+8** (the fact-based aggregation *algorithm* is live inside gate@7 today; the standalone stage/gate@8/console
+is not built — #89/#90). Backlog: the charter track (#243/#244/#245/#246), Council Lab (#80/#81), #238.
+Branch `fix/aggregation-quality-236-237` is committed but **not pushed / no PR yet** — merge or continue on
+it as you prefer. Untracked and left for Ian's call: earlier-run extraction/handoff receipts under
+`data/acquisition/{extractions,handoffs}/` + the Millard remediation restore-point under
+`data/acquisition/remediation/`. Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`)
+→ `git config core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect 4 kept/0 broken) +
+`pytest -q -m "not integration"` (expect ~1187 pass) + `pytest -q -m govdb` (Postgres up). Full detail:
+`PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (§11a/§11b), `STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§6,
+`docs/PROJECT_HISTORY.md` (newest entries, incl. the 2026-07-12 charter reframe).
 
 ---
 

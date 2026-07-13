@@ -1,0 +1,1207 @@
+{
+  "handoff_hash": "f33790e63820",
+  "district": {
+    "district_id": "0600022",
+    "name": "Mendota Unified",
+    "reps": [
+      {
+        "rec_key": "0600022:2d1d25cbf5",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "14:45",
+                "school_name": "MENDOTA CONTINUATION HIGH SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 636,
+            "completion_tokens": 52,
+            "cost_usd": 8.44e-05,
+            "latency_ms": 639,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840469-Sjgw5Y2nUyhK4ofHZmm3",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "14:45",
+                "school_name": "Mendota Continuation High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 674,
+            "completion_tokens": 47,
+            "cost_usd": 3.746e-05,
+            "latency_ms": 761,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840469-FzUwNaI9ykIlCAUnVmY8",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "mendota continuation",
+            "start": "08:40",
+            "end": "14:45",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0600022:2d1d25cbf5",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0600022:5884f69991",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "14:40",
+                "school_name": "McCabe Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 852,
+            "completion_tokens": 44,
+            "cost_usd": 0.0001028,
+            "latency_ms": 511,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840470-JfH4c68FQCPLFNJwXZhX",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "14:40",
+                "school_name": "McCabe Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 896,
+            "completion_tokens": 45,
+            "cost_usd": 4.84e-05,
+            "latency_ms": 788,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840471-TfZATViSCv8k31dtecmW",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "mccabe",
+            "start": "08:05",
+            "end": "14:40",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0600022:5884f69991",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0600022:b61d00c003",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "14:45",
+                "school_name": "COMMUNITY DAY SCHOOL",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "14:45",
+                "school_name": "CONTINUATION HIGH SCHOOL",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "14:45",
+                "school_name": "MENDOTA CONTINUATION",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1364,
+            "completion_tokens": 128,
+            "cost_usd": 0.0001876,
+            "latency_ms": 832,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840471-ThTCK7XeEbLupOtlgBc0",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "14:45",
+                "school_name": "Mendota Continuation High School",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:45",
+                "school_name": "Community Day School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1481,
+            "completion_tokens": 128,
+            "cost_usd": 8.429e-05,
+            "latency_ms": 1641,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840472-Gi736PeUZ5VzdwCJ2Hg1",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "14:45",
+                "school_name": "CONTINUATION HIGH SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1447,
+            "completion_tokens": 42,
+            "cost_usd": 0.00024855,
+            "latency_ms": 1714,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840474-FDZH7spEXfySBH1M3Zdu",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "continuation",
+            "start": "08:40",
+            "end": "14:45",
+            "gross": 365,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0600022:b61d00c003",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "community day",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:40",
+              "mistralai/mistral-small-24b-instruct-2501": "08:00"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:45",
+              "mistralai/mistral-small-24b-instruct-2501": "14:45"
+            },
+            "rec_key": "0600022:b61d00c003",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "mendota continuation",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "09:00",
+              "mistralai/mistral-small-24b-instruct-2501": "08:40"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:45",
+              "mistralai/mistral-small-24b-instruct-2501": "14:45"
+            },
+            "rec_key": "0600022:b61d00c003",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "0600022:105f1197e1",
+        "file": "camelot_hybrid.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:45",
+                "school_name": "COMMUNITY DAY SCHOOL",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "14:45",
+                "school_name": "CONTINUATION HIGH SCHOOL",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "13:40",
+                "school_name": "CONTINUATION HIGH SCHOOL",
+                "confidence": "medium"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "09:00",
+                "end_time": "14:45",
+                "school_name": "COMMUNITY DAY SCHOOL",
+                "confidence": "medium"
+              }
+            ],
+            "prompt_tokens": 1759,
+            "completion_tokens": 272,
+            "cost_usd": 0.0002847,
+            "latency_ms": 1321,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840476-gyyqLkEioLdgs4a3VyHY",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "14:45",
+                "school_name": "COMMUNITY DAY SCHOOL",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "14:45",
+                "school_name": "CONTINUATION HIGH SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1720,
+            "completion_tokens": 134,
+            "cost_usd": 9.672e-05,
+            "latency_ms": 3038,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840477-9ksmb2uMUwu1CpaiyMqk",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "14:45",
+                "school_name": "COMMUNITY DAY SCHOOL",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "14:45",
+                "school_name": "CONTINUATION HIGH SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1696,
+            "completion_tokens": 77,
+            "cost_usd": 0.00016034,
+            "latency_ms": 2885,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840480-EWm9GTdPSYUspabyaaH1",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "community day",
+            "start": "08:40",
+            "end": "14:45",
+            "gross": 365,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0600022:105f1197e1",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "high",
+            "school": "continuation",
+            "start": "08:40",
+            "end": "14:45",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0600022:105f1197e1",
+            "source_file": "camelot_hybrid.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0600022:567dd28d85",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:45",
+                "school_name": "MENDOTA CONTINUATION HIGH SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 647,
+            "completion_tokens": 52,
+            "cost_usd": 8.55e-05,
+            "latency_ms": 638,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840483-NBBcVd7Cuw0a4qiSuBCy",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:40",
+                "end_time": "14:45",
+                "school_name": "COMMUNITY DAY SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 687,
+            "completion_tokens": 48,
+            "cost_usd": 3.819e-05,
+            "latency_ms": 829,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840484-EQT9lnvUY0v4hjGAXHi1",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:00",
+                "end_time": "14:45",
+                "school_name": "Mendota Continuation High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 662,
+            "completion_tokens": 44,
+            "cost_usd": 0.00018436,
+            "latency_ms": 1235,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840484-51V2La8JQx7M9IPrdy6B",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "mendota continuation",
+            "start": "08:00",
+            "end": "14:45",
+            "gross": 405,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "0600022:567dd28d85",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "high",
+            "school": "community day",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:40"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:45"
+            },
+            "rec_key": "0600022:567dd28d85",
+            "source_file": "pdftotext.txt"
+          }
+        ]
+      },
+      {
+        "rec_key": "0600022:a5f5eaba94",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "14:40",
+                "school_name": "MCCABE ELEMENTARY SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 913,
+            "completion_tokens": 50,
+            "cost_usd": 0.0001113,
+            "latency_ms": 628,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840486-WdRkzAf0pT9yGsqGBjxB",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "14:40",
+                "school_name": "McCabe Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 960,
+            "completion_tokens": 45,
+            "cost_usd": 5.16e-05,
+            "latency_ms": 696,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840486-x9y1RG6bXdaiZNkcSxVJ",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "mccabe",
+            "start": "08:05",
+            "end": "14:40",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0600022:a5f5eaba94",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0600022:0a1b174cc8",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1620,
+            "completion_tokens": 5,
+            "cost_usd": 0.000164,
+            "latency_ms": 665,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840487-1Q8H1RLwGbT8u2DI0das",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 1626,
+            "completion_tokens": 12,
+            "cost_usd": 8.226e-05,
+            "latency_ms": 458,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840488-fgrChroKBN2Yy9aMnPbS",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0600022:5c1713b523",
+        "file": "camelot_hybrid.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Mendota Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1094,
+            "completion_tokens": 49,
+            "cost_usd": 0.000129,
+            "latency_ms": 686,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840488-6GKOb8U1l7j5ScJrFYg4",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:05",
+                "end_time": "14:40",
+                "school_name": "Mendota Elementary",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1053,
+            "completion_tokens": 72,
+            "cost_usd": 5.841e-05,
+            "latency_ms": 1053,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840489-zLlFssM8WhutqQNJ6TPX",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "mendota",
+            "start": "08:02",
+            "end": "14:40",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0600022:5c1713b523",
+            "source_file": "camelot_hybrid.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0600022:001f60eac2",
+        "file": "page.png",
+        "kind": "image",
+        "council_id": "image",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:05",
+                "end_time": "14:58",
+                "school_name": "MENDOTA JUNIOR HIGH SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1651,
+            "completion_tokens": 53,
+            "cost_usd": 0.0006278,
+            "latency_ms": 2664,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840490-5KAotIQgLNKSAJlaqQWG",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-large-2512",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:05",
+                "end_time": "15:05",
+                "school_name": "Mendota Junior High School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 2712,
+            "completion_tokens": 46,
+            "cost_usd": 0.001425,
+            "latency_ms": 3829,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840493-JBM2qRgzNpnFsxIPMy9p",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "mendota",
+            "start": "08:05",
+            "end": "15:02",
+            "gross": 417,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "method": "council_agree",
+            "rec_key": "0600022:001f60eac2",
+            "source_file": "page.png"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "0600022:2806017ea0",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Mendota Elementary School",
+                "confidence": "low"
+              }
+            ],
+            "prompt_tokens": 829,
+            "completion_tokens": 45,
+            "cost_usd": 0.0001009,
+            "latency_ms": 608,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840496-XKL1SNmzKCv63RIQ6d70",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:00",
+                "end_time": "14:40",
+                "school_name": "Mendota Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 820,
+            "completion_tokens": 73,
+            "cost_usd": 4.684e-05,
+            "latency_ms": 1048,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840497-kWDpy8FiILvT5v6fM4PB",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "mendota",
+            "start": "08:00",
+            "end": "14:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0600022:2806017ea0",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "mendota continuation",
+        "start": "08:40",
+        "end": "14:45",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0600022:2d1d25cbf5",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "mccabe",
+        "start": "08:05",
+        "end": "14:40",
+        "gross": 395,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0600022:5884f69991",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "continuation",
+        "start": "08:40",
+        "end": "14:45",
+        "gross": 365,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0600022:b61d00c003",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "community day",
+        "start": "08:40",
+        "end": "14:45",
+        "gross": 365,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0600022:105f1197e1",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "high",
+        "school": "continuation",
+        "start": "08:40",
+        "end": "14:45",
+        "gross": 365,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0600022:105f1197e1",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "high",
+        "school": "mendota continuation",
+        "start": "08:00",
+        "end": "14:45",
+        "gross": 405,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "0600022:567dd28d85",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "mccabe",
+        "start": "08:05",
+        "end": "14:40",
+        "gross": 395,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0600022:a5f5eaba94",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "mendota",
+        "start": "08:02",
+        "end": "14:40",
+        "gross": 398,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0600022:5c1713b523",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "middle",
+        "school": "mendota",
+        "start": "08:05",
+        "end": "15:02",
+        "gross": 417,
+        "models": [
+          "google/gemini-2.5-flash",
+          "mistralai/mistral-large-2512"
+        ],
+        "method": "council_agree",
+        "rec_key": "0600022:001f60eac2",
+        "source_file": "page.png"
+      },
+      {
+        "band": "elementary",
+        "school": "mendota",
+        "start": "08:00",
+        "end": "14:40",
+        "gross": 400,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0600022:2806017ea0",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "high",
+        "school": "community day",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:40",
+          "mistralai/mistral-small-24b-instruct-2501": "08:00"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:45",
+          "mistralai/mistral-small-24b-instruct-2501": "14:45"
+        },
+        "rec_key": "0600022:b61d00c003",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "mendota continuation",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "09:00",
+          "mistralai/mistral-small-24b-instruct-2501": "08:40"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:45",
+          "mistralai/mistral-small-24b-instruct-2501": "14:45"
+        },
+        "rec_key": "0600022:b61d00c003",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "community day",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:40"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:45"
+        },
+        "rec_key": "0600022:567dd28d85",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "n_reps": 10,
+    "n_judged": 3,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 395,
+        "start_time": "08:05",
+        "end_time": "14:40",
+        "n_schools": 4,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "mccabe",
+            "start_time": "08:05",
+            "end_time": "14:40",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mccabe",
+            "start_time": "08:05",
+            "end_time": "14:40",
+            "gross": 395,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mendota",
+            "start_time": "08:02",
+            "end_time": "14:40",
+            "gross": 398,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mendota",
+            "start_time": "08:00",
+            "end_time": "14:40",
+            "gross": 400,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 417,
+        "start_time": "08:05",
+        "end_time": "15:02",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "mendota",
+            "start_time": "08:05",
+            "end_time": "15:02",
+            "gross": 417,
+            "models": [
+              "google/gemini-2.5-flash",
+              "mistralai/mistral-large-2512"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 365,
+        "start_time": "08:40",
+        "end_time": "14:45",
+        "n_schools": 5,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "mendota continuation",
+            "start_time": "08:40",
+            "end_time": "14:45",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "continuation",
+            "start_time": "08:40",
+            "end_time": "14:45",
+            "gross": 365,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "community day",
+            "start_time": "08:40",
+            "end_time": "14:45",
+            "gross": 365,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "continuation",
+            "start_time": "08:40",
+            "end_time": "14:45",
+            "gross": 365,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "mendota continuation",
+            "start_time": "08:00",
+            "end_time": "14:45",
+            "gross": 405,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 23,
+      "judge_calls": 3,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 27799,
+      "completion_tokens": 1563,
+      "cost_usd": 0.0044404200000000005
+    },
+    "state": "CA"
+  }
+}

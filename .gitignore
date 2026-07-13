@@ -177,6 +177,13 @@ data/acquisition/stage5_review/*
 # Derived harvest slices (regenerable from captures at ingest; issue #58 relocation)
 data/acquisition/harvest_slices/
 
+# Contamination-remediation restore-points (remediate_contamination.py --archive-capture-dir):
+# TRACK the small non-regenerable audit record (manifest.json), NEVER the archived raw capture dir
+# (hundreds of MB of regenerable PNG/PDF/per-tool output moved out of data/raw).
+data/acquisition/remediation/**/archived_capture_dir/
+data/acquisition/remediation/**/labels.json
+data/acquisition/remediation/**/district_status.json
+
 # hypothesis example DB (#203) + mutation-sweep scratch (#204)
 .hypothesis/
 mutants/

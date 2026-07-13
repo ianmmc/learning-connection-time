@@ -1,0 +1,359 @@
+{
+  "handoff_hash": "f33790e63820",
+  "district": {
+    "district_id": "0509000",
+    "name": "LITTLE ROCK SCHOOL DISTRICT",
+    "reps": [
+      {
+        "rec_key": "0509000:09ebf46708",
+        "file": "camelot_hybrid.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 5,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:55",
+                "school_name": "Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:45",
+                "end_time": "16:00",
+                "school_name": "Secondary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:45",
+                "end_time": "16:00",
+                "school_name": "Secondary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:55",
+                "school_name": "K-8 Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:40",
+                "end_time": "14:55",
+                "school_name": "K-8 Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1485,
+            "completion_tokens": 261,
+            "cost_usd": 0.0002529,
+            "latency_ms": 1723,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840459-040GdIxsxQLElBYsKLoO",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:55",
+                "school_name": "Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:45",
+                "end_time": "16:00",
+                "school_name": "Secondary Schools (Middle School and High School)",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:45",
+                "end_time": "16:00",
+                "school_name": "Secondary Schools (Middle School and High School)",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1460,
+            "completion_tokens": 189,
+            "cost_usd": 8.812e-05,
+            "latency_ms": 3752,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840461-MwB1Ndee2LGLpQtDHfYz",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:40",
+                "end_time": "14:55",
+                "school_name": "LRSD Elementary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:45",
+                "end_time": "16:00",
+                "school_name": "LRSD Secondary Schools",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:45",
+                "end_time": "16:00",
+                "school_name": "LRSD Secondary Schools",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 1415,
+            "completion_tokens": 112,
+            "cost_usd": 0.00065093,
+            "latency_ms": 4193,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840464-spEfRACeuAjq6MqOypLz",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "schools",
+            "start": "07:40",
+            "end": "14:55",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0509000:09ebf46708",
+            "source_file": "camelot_hybrid.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "middle",
+            "school": "secondary schools",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:45"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "16:00"
+            },
+            "rec_key": "0509000:09ebf46708",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "high",
+            "school": "secondary schools",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:45"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "16:00"
+            },
+            "rec_key": "0509000:09ebf46708",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "k8 schools",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:40"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:55"
+            },
+            "rec_key": "0509000:09ebf46708",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "middle",
+            "school": "k8 schools",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "07:40"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "14:55"
+            },
+            "rec_key": "0509000:09ebf46708",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "middle",
+            "school": "secondary schools and",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "16:00"
+            },
+            "rec_key": "0509000:09ebf46708",
+            "source_file": "camelot_hybrid.txt"
+          },
+          {
+            "band": "high",
+            "school": "secondary schools and",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "08:45"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "16:00"
+            },
+            "rec_key": "0509000:09ebf46708",
+            "source_file": "camelot_hybrid.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "schools",
+        "start": "07:40",
+        "end": "14:55",
+        "gross": 435,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0509000:09ebf46708",
+        "source_file": "camelot_hybrid.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "middle",
+        "school": "secondary schools",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:45"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "16:00"
+        },
+        "rec_key": "0509000:09ebf46708",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "high",
+        "school": "secondary schools",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:45"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "16:00"
+        },
+        "rec_key": "0509000:09ebf46708",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "k8 schools",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:40"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:55"
+        },
+        "rec_key": "0509000:09ebf46708",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "middle",
+        "school": "k8 schools",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "07:40"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "14:55"
+        },
+        "rec_key": "0509000:09ebf46708",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "middle",
+        "school": "secondary schools and",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "16:00"
+        },
+        "rec_key": "0509000:09ebf46708",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "high",
+        "school": "secondary schools and",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "08:45"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "16:00"
+        },
+        "rec_key": "0509000:09ebf46708",
+        "source_file": "camelot_hybrid.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 435,
+        "start_time": "07:40",
+        "end_time": "14:55",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "schools",
+            "start_time": "07:40",
+            "end_time": "14:55",
+            "gross": 435,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 4360,
+      "completion_tokens": 562,
+      "cost_usd": 0.0009919500000000001
+    },
+    "state": "AR"
+  }
+}

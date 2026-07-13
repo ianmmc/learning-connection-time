@@ -254,12 +254,11 @@ def pdf_page_text(pdf: Path, page: int) -> str:
         return ""
 
 
-def norm_school(name: str) -> str:
-    n = name.lower()
-    for suf in ["elementary school", "middle school", "high school", "intermediate school",
-                "elementary", "middle", "high", "school", "academy", "isd", "district"]:
-        n = n.replace(suf, " ")
-    return re.sub(r"[^a-z0-9 ]", " ", n).strip()
+# One home for the school-identity key (REQ-117; PR #247 review): this module carried its own
+# weaker copy (substring .replace(), no word boundaries, missing the #236 district suffixes), so
+# Stage 5's topology denominator silently disagreed with Stage 7/8's school-identity key — the exact
+# drift class the shared function exists to prevent.
+from infrastructure.acquisition.common.school_match import norm_school  # noqa: E402,F401
 
 
 # ----------------------------- NCES school counts (topology denominator) -----------------------------

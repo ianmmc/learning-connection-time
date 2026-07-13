@@ -1,0 +1,508 @@
+{
+  "handoff_hash": "f33790e63820",
+  "district": {
+    "district_id": "5507770",
+    "name": "Lancaster Community School District",
+    "reps": [
+      {
+        "rec_key": "5507770:7314b54bbc",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:03",
+                "end_time": "15:29",
+                "school_name": "LANCASTER HIGH SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 18062,
+            "completion_tokens": 50,
+            "cost_usd": 0.0018262,
+            "latency_ms": 1080,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840896-wRb66si4jKkue61vQHNc",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": false,
+            "error": "Error code: 400 - {'error': {'message': \"This endpoint's maximum context length is 32768 tokens. However, you requested about 39415 tokens (23415 of text input, 16000 in the output). Please reduce the length of either one, or use the context-compression plugin to compress your prompt automatically.\", 'code': 400, 'metadata': {'provider_name': None}}, 'user_id': 'user_3F6G2u57EqCPewKcTHYL5cGYfne'}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 220,
+            "finish_reason": null,
+            "generation_id": null,
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "08:03",
+                "end_time": "15:29",
+                "school_name": "LANCASTER HIGH SCHOOL",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 17944,
+            "completion_tokens": 42,
+            "cost_usd": 0.00161916,
+            "latency_ms": 2471,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840898-Gutrbk3A4DLQamVW76kP",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "lancaster",
+            "start": "08:03",
+            "end": "15:29",
+            "gross": 446,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "5507770:7314b54bbc",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "5507770:56502ba0ba",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:00",
+                "end_time": "15:29",
+                "school_name": "Lancaster Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 20490,
+            "completion_tokens": 49,
+            "cost_usd": 0.0020686,
+            "latency_ms": 1318,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840900-cM1CykgXIcgOmYNf8x7E",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": false,
+            "error": "Error code: 400 - {'error': {'message': \"This endpoint's maximum context length is 32768 tokens. However, you requested about 41601 tokens (25601 of text input, 16000 in the output). Please reduce the length of either one, or use the context-compression plugin to compress your prompt automatically.\", 'code': 400, 'metadata': {'provider_name': None}}, 'user_id': 'user_3F6G2u57EqCPewKcTHYL5cGYfne'}",
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cost_usd": null,
+            "latency_ms": 205,
+            "finish_reason": null,
+            "generation_id": null,
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "middle",
+                "start_time": "08:03",
+                "end_time": "15:29",
+                "school_name": "Lancaster Middle School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 20273,
+            "completion_tokens": 42,
+            "cost_usd": 0.00307245,
+            "latency_ms": 3505,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840902-xskypzIVgr4La1GWNVE1",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "middle",
+            "school": "lancaster",
+            "start": "08:03",
+            "end": "15:29",
+            "gross": 446,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "rec_key": "5507770:56502ba0ba",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "5507770:c8d7ef8dc0",
+        "file": "camelot_stream.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 586,
+            "completion_tokens": 49,
+            "cost_usd": 7.82e-05,
+            "latency_ms": 600,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840905-ApcPX11wkNCcBzonOGyK",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 0,
+            "facts": [],
+            "prompt_tokens": 579,
+            "completion_tokens": 50,
+            "cost_usd": 3.295e-05,
+            "latency_ms": 854,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840906-xzZqppZHb7vxfZFsN1vb",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [],
+        "unresolved": []
+      },
+      {
+        "rec_key": "5507770:3287930a5d",
+        "file": "camelot_stream.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "15:15",
+                "school_name": "Winskill Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 6671,
+            "completion_tokens": 77,
+            "cost_usd": 0.0006979,
+            "latency_ms": 951,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840907-NHPz3Rqj979kDFr25nKn",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "15:15",
+                "school_name": "Winskill Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 6488,
+            "completion_tokens": 73,
+            "cost_usd": 0.00033024,
+            "latency_ms": 1430,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840908-1x2YaXeSeTUNzoGW96JA",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "winskill",
+            "start": "07:55",
+            "end": "15:15",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "5507770:3287930a5d",
+            "source_file": "camelot_stream.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "5507770:3d7436aac4",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "15:15",
+                "school_name": "Winskill Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 7635,
+            "completion_tokens": 49,
+            "cost_usd": 0.0007831,
+            "latency_ms": 1080,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840909-F9jkqzySpSwr2GVvkU2H",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:55",
+                "end_time": "15:15",
+                "school_name": "Winskill Elementary School",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 7848,
+            "completion_tokens": 73,
+            "cost_usd": 0.00039824,
+            "latency_ms": 1691,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840910-hJav54S4xBLV7ER4ySNI",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "winskill",
+            "start": "07:55",
+            "end": "15:15",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "5507770:3d7436aac4",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "high",
+        "school": "lancaster",
+        "start": "08:03",
+        "end": "15:29",
+        "gross": 446,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "5507770:7314b54bbc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "lancaster",
+        "start": "08:03",
+        "end": "15:29",
+        "gross": 446,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "rec_key": "5507770:56502ba0ba",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "winskill",
+        "start": "07:55",
+        "end": "15:15",
+        "gross": 440,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "5507770:3287930a5d",
+        "source_file": "camelot_stream.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "winskill",
+        "start": "07:55",
+        "end": "15:15",
+        "gross": 440,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "5507770:3d7436aac4",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 5,
+    "n_judged": 2,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 440,
+        "start_time": "07:55",
+        "end_time": "15:15",
+        "n_schools": 2,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "winskill",
+            "start_time": "07:55",
+            "end_time": "15:15",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "winskill",
+            "start_time": "07:55",
+            "end_time": "15:15",
+            "gross": 440,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 446,
+        "start_time": "08:03",
+        "end_time": "15:29",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "lancaster",
+            "start_time": "08:03",
+            "end_time": "15:29",
+            "gross": 446,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 446,
+        "start_time": "08:03",
+        "end_time": "15:29",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "lancaster",
+            "start_time": "08:03",
+            "end_time": "15:29",
+            "gross": 446,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 12,
+      "judge_calls": 2,
+      "errors": 2,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 106576,
+      "completion_tokens": 554,
+      "cost_usd": 0.01090704
+    },
+    "state": "WI"
+  }
+}

@@ -1,0 +1,1424 @@
+{
+  "handoff_hash": "f33790e63820",
+  "district": {
+    "district_id": "0503060",
+    "name": "BENTONVILLE SCHOOL DISTRICT",
+    "reps": [
+      {
+        "rec_key": "0503060:e6086818dc",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 25,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "Apple Glen Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "Centerton Gamble Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "Central Park Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "Cooper Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "Evening Star Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "Sugar Creek Arts Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "The International School at Mary Mae Jones",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "Thomas Jefferson Leadership Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "Vaughn Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Ardis Ann Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Bright Field Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Creekside Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Elm Tree Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Old High Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Osage Creek Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "R.E. Baker Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Ruth Barker Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Willowbrook Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Fulbright Junior High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Grimsley Junior High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Lincoln Junior High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Washington Junior High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Bentonville High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Bentonville West High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Gateway",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 756,
+            "completion_tokens": 1053,
+            "cost_usd": 0.0004968,
+            "latency_ms": 3190,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840438-pjwVUBQd76epHjJWWqfW",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 25,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "Apple Glen Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "Centerton Gamble Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "Central Park Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "Cooper Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "Evening Star Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "Sugar Creek Arts Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "The International School at Mary Mae Jones",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "Thomas Jefferson Leadership Academy",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:30",
+                "end_time": "14:30",
+                "school_name": "Vaughn Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Elm Tree Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Osage Creek Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "R.E. Baker Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Willowbrook Elementary",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Ardis Ann Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Bright Field Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Creekside Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Old High Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:50",
+                "end_time": "14:50",
+                "school_name": "Ruth Barker Middle",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Fulbright Junior High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Grimsley Junior High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Lincoln Junior High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "08:35",
+                "end_time": "15:35",
+                "school_name": "Washington Junior High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Bentonville High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Bentonville West High",
+                "confidence": "high"
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:55",
+                "end_time": "15:55",
+                "school_name": "Gateway",
+                "confidence": "high"
+              }
+            ],
+            "prompt_tokens": 737,
+            "completion_tokens": 1405,
+            "cost_usd": 0.00014925,
+            "latency_ms": 17302,
+            "finish_reason": "stop",
+            "generation_id": "gen-1783840442-7uK7UaGjh3qrp3ICzBte",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "apple glen",
+            "start": "07:30",
+            "end": "14:30",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "centerton gamble",
+            "start": "07:30",
+            "end": "14:30",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "central park",
+            "start": "07:30",
+            "end": "14:30",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "cooper",
+            "start": "07:30",
+            "end": "14:30",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "evening star",
+            "start": "07:30",
+            "end": "14:30",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "sugar creek arts",
+            "start": "07:30",
+            "end": "14:30",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "international mary mae jones",
+            "start": "07:30",
+            "end": "14:30",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "thomas jefferson leadership",
+            "start": "07:30",
+            "end": "14:30",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "vaughn",
+            "start": "07:30",
+            "end": "14:30",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "ardis ann",
+            "start": "07:50",
+            "end": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "bright field",
+            "start": "07:50",
+            "end": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "creekside",
+            "start": "07:50",
+            "end": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "elm tree",
+            "start": "07:50",
+            "end": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "old",
+            "start": "07:50",
+            "end": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "osage creek",
+            "start": "07:50",
+            "end": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "re baker",
+            "start": "07:50",
+            "end": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "ruth barker",
+            "start": "07:50",
+            "end": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "willowbrook",
+            "start": "07:50",
+            "end": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "fulbright",
+            "start": "08:35",
+            "end": "15:35",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "grimsley",
+            "start": "08:35",
+            "end": "15:35",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "lincoln",
+            "start": "08:35",
+            "end": "15:35",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "middle",
+            "school": "washington",
+            "start": "08:35",
+            "end": "15:35",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "bentonville",
+            "start": "08:55",
+            "end": "15:55",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "bentonville west",
+            "start": "08:55",
+            "end": "15:55",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          },
+          {
+            "band": "high",
+            "school": "gateway",
+            "start": "08:55",
+            "end": "15:55",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "rec_key": "0503060:e6086818dc",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "apple glen",
+        "start": "07:30",
+        "end": "14:30",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "centerton gamble",
+        "start": "07:30",
+        "end": "14:30",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "central park",
+        "start": "07:30",
+        "end": "14:30",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "cooper",
+        "start": "07:30",
+        "end": "14:30",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "evening star",
+        "start": "07:30",
+        "end": "14:30",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "sugar creek arts",
+        "start": "07:30",
+        "end": "14:30",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "international mary mae jones",
+        "start": "07:30",
+        "end": "14:30",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "thomas jefferson leadership",
+        "start": "07:30",
+        "end": "14:30",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "vaughn",
+        "start": "07:30",
+        "end": "14:30",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "ardis ann",
+        "start": "07:50",
+        "end": "14:50",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "bright field",
+        "start": "07:50",
+        "end": "14:50",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "creekside",
+        "start": "07:50",
+        "end": "14:50",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "elm tree",
+        "start": "07:50",
+        "end": "14:50",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "old",
+        "start": "07:50",
+        "end": "14:50",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "osage creek",
+        "start": "07:50",
+        "end": "14:50",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "re baker",
+        "start": "07:50",
+        "end": "14:50",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "ruth barker",
+        "start": "07:50",
+        "end": "14:50",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "willowbrook",
+        "start": "07:50",
+        "end": "14:50",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "fulbright",
+        "start": "08:35",
+        "end": "15:35",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "grimsley",
+        "start": "08:35",
+        "end": "15:35",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "lincoln",
+        "start": "08:35",
+        "end": "15:35",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "middle",
+        "school": "washington",
+        "start": "08:35",
+        "end": "15:35",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "bentonville",
+        "start": "08:55",
+        "end": "15:55",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "bentonville west",
+        "start": "08:55",
+        "end": "15:55",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "gateway",
+        "start": "08:55",
+        "end": "15:55",
+        "gross": 420,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "rec_key": "0503060:e6086818dc",
+        "source_file": "pdftotext.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 1,
+    "n_judged": 0,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 420,
+        "start_time": "07:30",
+        "end_time": "14:30",
+        "n_schools": 13,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "apple glen",
+            "start_time": "07:30",
+            "end_time": "14:30",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "centerton gamble",
+            "start_time": "07:30",
+            "end_time": "14:30",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "central park",
+            "start_time": "07:30",
+            "end_time": "14:30",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "cooper",
+            "start_time": "07:30",
+            "end_time": "14:30",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "evening star",
+            "start_time": "07:30",
+            "end_time": "14:30",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "sugar creek arts",
+            "start_time": "07:30",
+            "end_time": "14:30",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "international mary mae jones",
+            "start_time": "07:30",
+            "end_time": "14:30",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "thomas jefferson leadership",
+            "start_time": "07:30",
+            "end_time": "14:30",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "vaughn",
+            "start_time": "07:30",
+            "end_time": "14:30",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "elm tree",
+            "start_time": "07:50",
+            "end_time": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "osage creek",
+            "start_time": "07:50",
+            "end_time": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "re baker",
+            "start_time": "07:50",
+            "end_time": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "willowbrook",
+            "start_time": "07:50",
+            "end_time": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 420,
+        "start_time": "07:50",
+        "end_time": "14:50",
+        "n_schools": 9,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "ardis ann",
+            "start_time": "07:50",
+            "end_time": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "bright field",
+            "start_time": "07:50",
+            "end_time": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "creekside",
+            "start_time": "07:50",
+            "end_time": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "old",
+            "start_time": "07:50",
+            "end_time": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "ruth barker",
+            "start_time": "07:50",
+            "end_time": "14:50",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "fulbright",
+            "start_time": "08:35",
+            "end_time": "15:35",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "grimsley",
+            "start_time": "08:35",
+            "end_time": "15:35",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "lincoln",
+            "start_time": "08:35",
+            "end_time": "15:35",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "washington",
+            "start_time": "08:35",
+            "end_time": "15:35",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 420,
+        "start_time": "08:55",
+        "end_time": "15:55",
+        "n_schools": 3,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "bentonville",
+            "start_time": "08:55",
+            "end_time": "15:55",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "bentonville west",
+            "start_time": "08:55",
+            "end_time": "15:55",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "gateway",
+            "start_time": "08:55",
+            "end_time": "15:55",
+            "gross": 420,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 2,
+      "judge_calls": 0,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 1493,
+      "completion_tokens": 2458,
+      "cost_usd": 0.00064605
+    },
+    "state": "AR"
+  }
+}
