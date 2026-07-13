@@ -68,6 +68,10 @@ class SchoolFact(gdb.Base):
     gross_minutes: Mapped[int | None] = mapped_column(Integer, nullable=True)  # deterministic end-start
     method: Mapped[str | None] = mapped_column(String, nullable=True)          # council_agree | judge | <reason>
     models_json: Mapped[str | None] = mapped_column(Text, nullable=True)       # consensus models (accepted)
+    # v2 council evidence (STAGE8 §2a.6): {model: {quote, locus, stated_minutes, stated_minutes_quote}} —
+    # the verbatim source span(s) the consensus times were read from + any explicitly-stated minutes
+    # (path 2). NULL for pre-v2 rows (going-forward only; no backfill — a re-read is a paid re-extraction).
+    evidence_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     # unresolved: the per-model disagreement (starts/ends by model) or an implausible-gross note
     detail_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     # provenance + review

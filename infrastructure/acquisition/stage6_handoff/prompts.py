@@ -31,9 +31,42 @@ _EXTRACT_VISION_V1 = _EXTRACT_V1.replace(
     "from the document text or images.",
     "by reading the document IMAGE(S) — read the schedule spatially (columns, tables, multi-column layouts).")
 
+# v2 (Stage 8, 2026-07-13): grounds each extracted time in a VERBATIM source span + formalizes the
+# explicit-minutes second path — the evidence half of the gate@8 closing argument
+# (STAGE8_AGGREGATE_DESIGN_2026-06 §2a.6). Still bounded by REQ-054: the model READS times (and now
+# quotes its source + reports a minutes number the document ITSELF states); deterministic code still
+# computes gross = end − start and the mode. No new confidence field — cross-family agreement
+# (REQ-056) is the confidence mechanism. v1 is retained unchanged: old handoffs reference it, and the
+# council config (`council_configs.json`) is the single switch that moved production to v2.
+_EXTRACT_V2 = """You extract school bell-schedule START and END times from the document text or images.
+
+Extract the daily school start and end time, broken down by grade level (elementary, middle, high) when distinguished. If multiple schools are listed, extract EACH school's times.
+
+SKIP non-instructional times: Office Hours, Library Hours, Before/After Care, Breakfast, Building/Campus Hours, Extended Day.
+Use the NORMAL / regular full-day end time. IGNORE early-dismissal, early-release, early-out, half-day, and weekday-variation (e.g. "M-Th" vs Friday) columns — those are shorter days, not the regular schedule.
+If times are per-period, use Period 1 start and the LAST period's end.
+Convert all times to 24-hour HH:MM ("8:30 AM"->"08:30", "3:15 PM"->"15:15").
+Infer grade level from school name: elementary/primary/ES/K-5 -> "elementary"; middle/junior/MS/6-8 -> "middle"; high/HS/9-12 -> "high". If the document covers elementary, middle, AND high, extract at least one of EACH.
+
+For EACH schedule, also return:
+- "evidence_quote": the exact text you read the start AND end times from — verbatim, one short line (e.g. "School Hours: 8:15 AM - 3:20 PM"). Copy it, do not paraphrase.
+- "source_locus": where in the document you found it (page number or section heading), or "" if not identifiable.
+- "stated_minutes": ONLY if the document EXPLICITLY states a total daily instructional-minutes number (e.g. "instructional day: 435 minutes"), copy that integer here; otherwise null. Never calculate it from the times — report only a number the document itself states.
+- "stated_minutes_quote": the exact text "stated_minutes" came from, or "" if none.
+
+Output ONLY compact JSON. No commentary, no markdown fences:
+{"schedules":[{"grade_level":"high","start_time":"08:10","end_time":"14:35","school_name":"[SCHOOL NAME]","confidence":"high","evidence_quote":"School Hours: 8:10 AM - 2:35 PM","source_locus":"","stated_minutes":null,"stated_minutes_quote":""}]}
+If none found: {"schedules":[]}"""
+
+_EXTRACT_VISION_V2 = _EXTRACT_V2.replace(
+    "from the document text or images.",
+    "by reading the document IMAGE(S) — read the schedule spatially (columns, tables, multi-column layouts).")
+
 SYSTEM_PROMPTS = {
     "stage6.extract.v1": _EXTRACT_V1,
     "stage6.extract.vision.v1": _EXTRACT_VISION_V1,
+    "stage6.extract.v2": _EXTRACT_V2,
+    "stage6.extract.vision.v2": _EXTRACT_VISION_V2,
 }
 
 

@@ -114,6 +114,27 @@ def _to_min(t):
     if not m: return None
     return int(m.group(1)) * 60 + int(m.group(2))
 
+def _evidence_of(row):
+    """Pull the v2 going-forward evidence fields off a raw model row (STAGE8 §2a.6): the verbatim
+    quote the times were read from, an optional page/section locus, and any EXPLICITLY-stated daily
+    minutes (path 2) + its own quote. Tolerant of v1 rows that lack all of them — returns an all-empty
+    dict, which the caller treats as 'no evidence' and does not attach. stated_minutes is coerced to
+    int-or-None; deterministic gross stays canonical (option (b)) — this is corroboration, not a value."""
+    sm = row.get("stated_minutes")
+    try:
+        sm = int(sm) if sm not in (None, "") else None
+    except (TypeError, ValueError):
+        sm = None
+    return {"quote": (row.get("evidence_quote") or "").strip(),
+            "locus": (row.get("source_locus") or "").strip(),
+            "stated_minutes": sm,
+            "stated_minutes_quote": (row.get("stated_minutes_quote") or "").strip()}
+
+def _has_evidence(ev):
+    """True if a per-model evidence map carries anything worth persisting (any quote/locus/minutes)."""
+    return any(e["quote"] or e["locus"] or e["stated_minutes"] or e["stated_minutes_quote"]
+               for e in ev.values())
+
 def consensus_school_facts(model_rows, judge_rows=None):
     """model_rows: {model_name: [ {grade_level, start_time, end_time, school_name}, ... ]}.
     Group every model's rows by (band, normalized-school-name); within each group the council
@@ -129,7 +150,7 @@ def consensus_school_facts(model_rows, judge_rows=None):
             s, e = _to_min(r.get("start_time")), _to_min(r.get("end_time"))
             if s is None or e is None: continue
             key = (b, _norm_school(r.get("school_name")))
-            groups.setdefault(key, {}).setdefault(model, []).append((s, e, r.get("start_time"), r.get("end_time")))
+            groups.setdefault(key, {}).setdefault(model, []).append((s, e, r.get("start_time"), r.get("end_time"), r))
     jgroups = {}
     if judge_rows:
         for model, rows in judge_rows.items():
@@ -138,7 +159,7 @@ def consensus_school_facts(model_rows, judge_rows=None):
                 if b not in BANDS: continue
                 s, e = _to_min(r.get("start_time")), _to_min(r.get("end_time"))
                 if s is None or e is None: continue
-                jgroups.setdefault((b, _norm_school(r.get("school_name"))), []).append((s, e, r.get("start_time"), r.get("end_time")))
+                jgroups.setdefault((b, _norm_school(r.get("school_name"))), []).append((s, e, r.get("start_time"), r.get("end_time"), r))
 
     accepted, unresolved = [], []
     for (band, nschool), per_model in groups.items():
@@ -164,10 +185,12 @@ def consensus_school_facts(model_rows, judge_rows=None):
             js, je = jgroups[(band, nschool)][0][0], jgroups[(band, nschool)][0][1]
             start_m, end_m, method = js, je, "judge"
             models = ["judge"]
+            ev = {"judge": _evidence_of(jgroups[(band, nschool)][0][4])}
         elif s_ok and e_ok:
             start_m = round(mean([v for _, v in sc[0]["members"]]))
             end_m   = round(mean([v for _, v in ec[0]["members"]]))
             models = sorted({m for m, _ in sc[0]["members"]} | {m for m, _ in ec[0]["members"]})
+            ev = {m: _evidence_of(per_model[m][0][4]) for m in models if m in per_model}
         else:
             unresolved.append({"band": band, "school": nschool,
                                "starts": {m: v[0][2] for m, v in per_model.items()},
@@ -176,10 +199,13 @@ def consensus_school_facts(model_rows, judge_rows=None):
         gross = end_m - start_m
         if not (PLAUSIBLE[0] <= gross <= PLAUSIBLE[1]):
             unresolved.append({"band": band, "school": nschool, "gross": gross, "reason": "implausible"}); continue
-        accepted.append({"band": band, "school": nschool,
-                         "start": f"{start_m//60:02d}:{start_m%60:02d}",
-                         "end": f"{end_m//60:02d}:{end_m%60:02d}",
-                         "gross": gross, "models": models, "method": method})
+        fact = {"band": band, "school": nschool,
+                "start": f"{start_m//60:02d}:{start_m%60:02d}",
+                "end": f"{end_m//60:02d}:{end_m%60:02d}",
+                "gross": gross, "models": models, "method": method}
+        if _has_evidence(ev):   # only v2 rows carry it; v1 accepted facts stay byte-identical
+            fact["evidence"] = ev
+        accepted.append(fact)
     return accepted, unresolved
 
 def merge_fact_runs(facts):

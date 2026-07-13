@@ -93,6 +93,27 @@ class TestConsensus:
             assert acc == [], f"{junk_name!r} must not reach accepted"
             assert len(unres) == 1 and unres[0]["reason"] == "degenerate_school_name"
 
+    def test_v2_evidence_carried_onto_accepted_fact(self):
+        # v2 rows carry evidence_quote / stated_minutes; consensus attaches them per consensus model.
+        rows = {"google/gemini-2.5-flash-lite": [{"grade_level": "elementary", "start_time": "08:00",
+                    "end_time": "14:30", "school_name": "Lincoln Elementary",
+                    "evidence_quote": "Hours: 8:00-2:30", "stated_minutes": 390}],
+                "mistralai/mistral-small-24b-instruct-2501": [{"grade_level": "elementary",
+                    "start_time": "08:00", "end_time": "14:30", "school_name": "Lincoln Elementary",
+                    "evidence_quote": "8:00 AM to 2:30 PM"}]}
+        acc, _ = A.consensus_school_facts(rows)
+        assert len(acc) == 1
+        ev = acc[0]["evidence"]
+        assert ev["google/gemini-2.5-flash-lite"]["quote"] == "Hours: 8:00-2:30"
+        assert ev["google/gemini-2.5-flash-lite"]["stated_minutes"] == 390
+
+    def test_v1_rows_produce_no_evidence_key(self):
+        # a fact built from v1-shaped rows (no evidence fields) stays byte-identical — no `evidence` key.
+        rows = self._rows({"google/gemini-2.5-flash-lite": ("08:00", "14:30"),
+                           "mistralai/mistral-small-24b-instruct-2501": ("08:00", "14:30")})
+        acc, _ = A.consensus_school_facts(rows)
+        assert len(acc) == 1 and "evidence" not in acc[0]
+
 
 # ---------------------------------------------------------------- REQ-056 exact mode
 class TestMode:
