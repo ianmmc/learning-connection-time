@@ -16,11 +16,12 @@
 each representation to a council, prices it, freezes an immutable dispatch, records the dispatch, and
 assembles the OpenRouter requests — the `stage6_handoff` package itself **stops before the paid call**
 (routing/pricing/freeze only; that boundary is real and important — §1). But the **gate@6 console** is
-also where a human fires the paid Stage-7 run directly: a "Run extraction ▶" control on each dispatched
-handoff (#152, built pre-2026-07-11) starts Stage 7's council extraction as a background job from the
-console itself — see the gate@6 console row in §0. So "Stage 6 never makes the paid call" is true of the
+also where a human fires the paid Stage-7 run directly: a "Run extraction ▶" control on the frozen-handoff
+detail pane (#152, built pre-2026-07-11) starts Stage 7's council extraction as a background job from the
+console itself — see §0's run-extraction row + §0b for the current console architecture (rebuilt
+2026-07-13 around a persisted draft dispatch). So "Stage 6 never makes the paid call" is true of the
 package, not of the operator experience end-to-end. `gate@6` is live in the console (manual approve; a
-preview→freeze identity check closes the staleness gap — §0).
+preview→freeze identity check closes the staleness gap — §0/§0b).
 
 ---
 
@@ -58,10 +59,8 @@ dispatch.
 | immutable artifact | `stage6_handoff/handoff.py` | `handoff_<hash>_<ts>.json` under `data/acquisition/handoffs/`; a **price-independent** content-identity hash (which also folds in the `verified_only` mode, below), now **order-insensitive** — districts/records/reps are sorted before hashing, so the same selection made in a different order hashes identically (issue #52). `write()` refuses to overwrite. `package_identity()` exposes the hash publicly for the preview→freeze check below |
 | dispatch record | `stage6_handoff/models.py` (precious `handoff` table) + `stage6_dispatch.record_dispatch` | the index row + a per-district `dispatched` gate@6 `state_event`, recorded **atomically on one session** (current_state is a view); the file is written **last** so a DB failure rolls back cleanly. An empty effective selection now **refuses** rather than freezing a 0-district handoff (issue #53). **Calibration hook (REQ-121/#210, built 2026-07-10):** the same session also writes a `calibration_event` row per district — the proxy is `n_send` (records that actually dispatched a rep, not merely decision-labeled `send` with none — a #218 review fix), the human decision is accept-only by construction (a district not selected leaves no row). Weak by design (auto is near-tautological here — see `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b) but logged for a forward-accruing corpus |
 | request assembly (the seam) | `stage6_handoff/prompts.py` + `requests.py` | the ported extraction prompt (reads TIMES only, REQ-054) + a vision variant; `plan_requests` (the first-pass voter calls; judge deferred to Stage 7) + `build_request` (materialize) — the **package** stops here; it never issues the POST. `pages` now flows through to the plan (issue #38) |
-| gate@6 console | `process_governance/server.py` (`/api/handoff/{candidates,councils,preview,dispatch,inspect}`, `/api/handoffs`) + `static/stage6.js` | pick send-eligible districts (each showing **n_send / n_verified / n_hold**) → preview the routed/priced package → **Approve & freeze (gate@6)**. Controls: left-pane filters (name/state/topology · has-send · has-held), the **verified-only** mode (§3E), per-rep **council override** (`/councils`), click-to-**inspect** a representation (`/inspect`), remove-a-district (client-side preview editing only —
-`stage6.js:164,179,188`, no server endpoint; it narrows what gets previewed/dispatched, it doesn't persist
-anything by itself), + a recent-dispatches list. **Preview→freeze staleness closed (issue #37):** preview returns the package's identity hash; dispatch verifies it against a freshly-rebuilt package and returns HTTP 409 ("release changed since preview — re-preview") on mismatch, before anything freezes — what Ian approves is now verifiably what freezes. `serve_file`/`inspect` resolve `source=="harvest_slice"` reps via `resolve_harvest_slice()` (new-location-first, legacy fallback — the STAGE5 harvest-slice relocation). **Already-dispatched indicator (#171, built 2026-07-09):** each candidate row also carries `n_dispatched`/`last_dispatched_at` (from the gate@6 `dispatched` state_events), rendered as a warning badge + an optional "hide already-dispatched" filter — re-selecting a dispatched district re-sends and re-extracts at cost, so the console makes that wasted-spend risk visible before Approve, not after. **Run-extraction control (#152):** the recent-dispatches list's row for each handoff also carries a "Run extraction ▶" / "Resume extraction" button (`stage6.js:246-296`) wired to `POST /api/extract/{handoff_hash}/run` + `GET /api/extract/run/{handoff_hash}` (`server.py:1310-1380`) — see the dedicated row below; `/api/handoffs` (`server.py:1288-1304`) carries the `n_extracted`/`running` fields that drive that button's state |
-| **run-extraction background job (#152)** | `process_governance/server.py:1310-1380` (`_EXTRACT_JOBS`, `POST /api/extract/{handoff_hash}/run`, `GET /api/extract/run/{handoff_hash}`) | fires the actual **paid Stage-7 call** (`R7.run_council_streaming`) directly from a dispatched handoff, in a background thread keyed by `handoff_hash` in an in-process dict — "**the gate@6 dispatch approval IS the go-ahead — no separate approval**" (server.py:1331). Resumable: districts already extracted for the handoff are skipped, so re-clicking after a partial run only retries what's left. States mirror #173's partial-failure semantics: `running` → `done` (clean) / `partial` (some districts failed, good ones durable) / `halted` (billing/auth or a control failure — e.g. no API key) / `error` (unexpected exception). Streams per-district progress events (accepted/unresolved counts, per-band gross minutes, cost) that the console polls into the handoff row. This is the one place gate@6 crosses the seam it otherwise respects — see §1 for why the routing/pricing/freeze boundary is unaffected |
+| gate@6 console | `process_governance/server.py` (`/api/dispatch*`, `/api/handoffs/{handoff_id}`, plus the retained `/api/handoff/{candidates,councils,preview,dispatch,inspect}` escape hatch) + `process_governance/stage6_draft_store.py` + `static/stage6.js` | **Superseded by the 2026-07-13 redesign — see §0b for the current architecture** (a persisted, reopenable **draft dispatch**: unified left-pane list of drafts + frozen dispatches, an always-populated editable/read-only center pane, server-persisted district selection + council overrides + verified-only mode, a receipt-derived `origin` badge). This row is kept only as history: the original build (2026-06-30 merge) shipped an ephemeral client-side selection — pick send-eligible districts (`n_send`/`n_verified`/`n_hold`) → **Preview** → **Approve & freeze**, with district removal as *client-side-only* preview editing (no server endpoint) and a flat recent-dispatches list. The **preview→freeze staleness check (issue #37)** and the **already-dispatched indicator (#171)** both survive unchanged in the new architecture (§0b) — just relocated onto the persisted draft. `serve_file`/`inspect` still resolve `source=="harvest_slice"` reps via `resolve_harvest_slice()` (new-location-first, legacy fallback). **Run-extraction control (#152):** now lives on the frozen-handoff detail pane (§0b) — see the dedicated row below |
+| **run-extraction background job (#152)** | `process_governance/server.py` (`_EXTRACT_JOBS`, `POST /api/extract/{handoff_hash}/run` at `extract_run`, `GET /api/extract/run/{handoff_hash}` at `extract_run_status`) | fires the actual **paid Stage-7 call** (`R7.run_council_streaming`) directly from a dispatched handoff, in a background thread keyed by `handoff_hash` in an in-process dict — "**the gate@6 dispatch approval IS the go-ahead — no separate approval**" (`extract_run`'s docstring). Resumable: districts already extracted for the handoff are skipped, so re-clicking after a partial run only retries what's left. States mirror #173's partial-failure semantics: `running` → `done` (clean) / `partial` (some districts failed, good ones durable) / `halted` (billing/auth or a control failure — e.g. no API key) / `error` (unexpected exception). Streams per-district progress events (accepted/unresolved counts, per-band gross minutes, cost) that the console polls into the handoff row. This is the one place gate@6 crosses the seam it otherwise respects — see §1 for why the routing/pricing/freeze boundary is unaffected |
 
 ## 0b. Console redesign — a persisted DRAFT dispatch (2026-07-13)
 
@@ -90,10 +89,32 @@ read, replacing the old separate manual-Preview step), `list_dispatch_rows` (the
 `abandon_draft`, and `freeze_draft` — a **thin wrapper** over the existing, UNCHANGED
 `stage6_dispatch.dispatch_handoff()`: it merges the included districts' overrides, calls
 `dispatch_handoff` exactly as the old direct-selection flow did, then sets the draft's `status`/
-`dispatched_at`/`dispatched_by`/`handoff_hash` in the SAME transaction — a crash between freeze and the
-draft-status flip is impossible. The preview→freeze staleness gate (issue #37, §0 above) is unchanged in
-mechanism, just relocated: `to_view` still returns `package_identity()`, the freeze endpoint still
-rebuilds and 409s on mismatch.
+`dispatched_at`/`dispatched_by`/`handoff_hash` in the SAME transaction — the DB side commits atomically
+(the draft can never read `dispatched` without the handoff row + state events, or vice versa). The disk
+side inherits `dispatch_handoff`'s own #143 commit-ordering (DB statements first, file write last); the
+residual crash window — a file write that succeeds just before the outer commit then fails — leaves an
+orphaned handoff file that 409s an identical re-freeze via `HND.write`'s `FileExistsError` guard until
+deleted by hand. Narrow, detectable (a 409 with no matching `handoff` row), accepted rather than
+re-ordered (reordering would just trade this failure mode for the one #143 already fixed). The
+preview→freeze staleness gate (issue #37, §0 above) is unchanged in mechanism, just relocated: `to_view`
+still returns `package_identity()`, the freeze endpoint still rebuilds and 409s on mismatch.
+
+**Every mutator takes a row lock (`_locked_draft`, PR #256 review, 2026-07-13).** `add_district` /
+`remove_district` / `restore_district` / `set_override` / `clear_override` / `set_verified_only` /
+`abandon_draft` / `freeze_draft` all load the `dispatch_draft` row via `sess.get(..., with_for_update=True)`
+before checking its status — without the lock, two concurrent requests on the same draft (a double-click
+before the button disables, two open tabs) could both pass the `status == 'draft'` check before either
+commits; worst case, two freezes built two different handoffs from one draft. With the lock, the second
+request blocks, then sees the first's committed status flip and fails cleanly as `DraftLocked` (409).
+`create_draft`'s own number-allocate-then-insert race (`next_draft_number` then `INSERT`) is serialized by
+a `pg_advisory_xact_lock`, auto-released at commit/rollback.
+
+**A district can silently drop out of the priced package (`missing_from_release`, PR #256 review).**
+`build_handoff_package` skips any `district_id` whose `district_release_input` returns `None` (e.g. its
+Stage-5 release data was removed after it was added to the draft) with no signal — unlike `dispatch_handoff`
+at freeze time, which tracks `skipped` explicitly. `to_view` now diffs the draft's own included-district
+list against `package.districts` and returns the gap as `missing_from_release`; the console renders a ⚠
+warning naming each one, with its own remove control (the district has no package block, so no normal ✕).
 
 **Left pane**: one unified list (`GET /api/dispatch`) — drafts (in-progress, sorted newest-first) then
 dispatched handoffs (read-only history). Each dispatched handoff carries a **`origin`** field —
@@ -104,10 +125,14 @@ outsider can recompute, not a stored assertion that can drift, and it needs no b
 The three cases, in precedence order:
 - **`draft`** — a `status='dispatched'` `dispatch_draft` row points at this `handoff_hash` (the console
   draft flow). Console badge: none.
-- **`stage7`** — some **`route='7->6'` `extraction_request`** has this handoff's hash as its
-  `executed_ref`: the Stage 7→6 back-edge (`process_governance/stage7_execute.py`, which continues to
-  freeze directly and is explicitly OUT of scope for this redesign) **recorded that it produced this
-  handoff** — a receipt, not an inference. Badge: **"from Stage 7"**.
+- **`stage7`** — some `extraction_request` whose `route` is `stage7_extract.requests.ROUTE_ALT_REP`
+  (`'7->6'`) has this handoff's hash as its `executed_ref`: the Stage 7→6 back-edge
+  (`process_governance/stage7_execute.py`, which continues to freeze directly and is explicitly OUT of
+  scope for this redesign) **recorded that it produced this handoff** — a receipt, not an inference.
+  Badge: **"from Stage 7"**. The route comparison reads `RQ7.ROUTE_ALT_REP`, never a re-spelled `'7->6'`
+  literal (PR #256 review — the first cut hardcoded the string, exactly the anti-pattern
+  `server.py`'s `is_alt_rep` classifier already carries an explicit comment against; fixed so a renamed
+  or additional back-edge route classifies correctly with no code change here).
 - **`console`** — neither of the above: a genuine first-run / follow-up-batch console dispatch. Badge:
   **"console"** (neutral).
 
@@ -128,6 +153,28 @@ badge, cost), or a read-only package view for a frozen dispatch (same rendering 
 button and council `<select>`, plus the origin badge when applicable and the existing run-extraction
 control, #152, relocated here from the old flat list-row).
 
+**Fetch-staleness guard (`isCurrent`, PR #256 review, 2026-07-13).** `openDraft`/`openHandoff`/`draftEdit`
+each await a fetch, then render straight into `#s6-detail` with no check that the user hadn't already
+clicked a different row while the fetch was in flight — a slower first response could overwrite the pane
+after `CURRENT` had moved on. `isCurrent(kind, id)` gates every render (and `DRAFT_VIEW` write) on
+`CURRENT` still matching what was requested; a late/stale response is silently dropped instead of
+clobbering whatever the user is now looking at.
+
+**The add-district picker is verified-only aware (`effSend`, PR #256 review, 2026-07-13).** The picker's
+"has send" filter, its per-row count, and its label always read `n_send` — even when building a
+verified-only draft, where an unlabeled "5 send" district contributes **zero** reps (verified-only sends
+only the labeled-target subset). The first cut lost this mode-awareness from the old preview flow's
+`effSend()`; restored: when the open draft's `verified_only` is true, the picker's filter/count/label all
+switch to `n_verified`, so what the picker shows matches what adding the district will actually contribute.
+
+**`usd()` promoted to `window.LCT` (`common.js`, PR #256 review, 2026-07-13).** `stage6.js` carried its
+own local 5-decimal cost formatter while `stage7.js` independently carried a 4-decimal one — the same
+`est_usd`/`cost_usd` fields rendering at different precision depending on which console view showed them
+(4dp truncates a real trailing digit at Stage 6's per-rep cost scale, ~$0.001xx). Moved to
+`window.LCT.usd` (5dp) alongside `esc`/`postJSON`/`api`/`statusBadge`/`safeUrl` — both stage views now
+share one formatter, closing the exact per-stage-copy drift `common.js`'s own header comment (the `esc()`
+double-quote-escape incident) exists to prevent.
+
 **New endpoints** (`server.py`, alongside the existing `/api/handoff/*` set below): `GET /api/dispatch`,
 `POST /api/dispatch/create`, `GET /api/dispatch/{draft_id}`, `GET /api/dispatch/{draft_id}/candidates`,
 `POST /api/dispatch/{draft_id}/edit`, `POST /api/dispatch/{draft_id}/freeze`,
@@ -138,9 +185,26 @@ district/rep package by id; the old `/api/handoffs` only ever returned list-leve
 exercises both directly, and they remain a documented "dispatch without a draft" escape hatch, consistent
 with the 7→6 bridge's own precedent of freezing directly.
 
-Tests: `tests/test_stage6_draft_store.py` (govdb, the store CRUD/lifecycle/freeze), `tests/
-test_stage6_draft_api.py` (DB-free HTTP wiring + one govdb round-trip for the district-scoped audit-event
-path). `test_stage6_handoff_api.py` verified untouched.
+**Draft-edit audit events fan out to real districts, never to the draft id (`_record_gate6_draft`,
+fixed PR #256 review, 2026-07-13).** Every edit op writes a `gate@6` `state_event` alongside the row
+mutation, mirroring gate@1's `_record_gate1(district_rows, ...)` shape: the helper takes an iterable of
+`(district_id, name, state)` and fans out one event per row. District-scoped ops (`add_district`/
+`remove_district`/`restore_district`/`set_override`/`clear_override`) record against that one district,
+with its real name/state looked up from the `district` table (never the bare id — `district_status.
+record_stage` has no blank-guard and unconditionally overwrites `name`, so passing an id twice would
+silently clobber a district's real name in the shared, precious status registry; a lookup miss leaves a
+visible `[district not found in signals store]` marker in the audit note rather than a silent bare-id
+fallback). **`set_verified_only` is draft-scoped, not district-scoped**, and the first cut got this wrong:
+it called `_record_gate6_draft(draft_id, draft_id, "", ...)`, inserting the DRAFT id as a fake "district"
+into `state_event` and the git-tracked `district_status.json` backup on every toggle — the exact clobber
+bug fixed for the district ops one paragraph up, missed on this sibling branch. Fixed to fan out against
+the draft's own *included* districts (mirrors gate@1's batch-level abandon, which also fans out
+per-district) — an empty draft records nothing.
+
+Tests: `tests/test_stage6_draft_store.py` (govdb, the store CRUD/lifecycle/freeze/missing-release/origin
+classification), `tests/test_stage6_draft_api.py` (DB-free HTTP wiring, govdb round-trips for the
+district-scoped audit-event path and the `set_verified_only` fake-district regression, 400-on-malformed
+validation). `test_stage6_handoff_api.py` verified untouched.
 
 **The send set (the 5/6 seam — tier-gated, `stage5_filter/release.decide`).** A canonical record is **send** if it
 carries a human **TARGET label**, or is unlabeled **tier-A** (`auto:tier-A` — the confident auto-dispatch);
@@ -613,3 +677,28 @@ text rep), with a dedicated cross-layer test (`test_handbook_yield_rule_matches_
 `tests/test_release.py`) pinning the two independent implementations to the same ordering — a live-drift
 guard standing in for the reuse the layering forbids. See `STAGE7_EXTRACT_DESIGN_2026-06.md` §6 for the
 full PR #240 decision-log entry (also #233/#234/#235, resolved in the same PR).
+
+**2026-07-13 — gate@6 console redesigned around a persisted draft dispatch (PR #256), then a 10-angle
+review found + fixed 12 more defects (PR #256 follow-up commit).** The console's UX had two problems
+flagged from direct use: the left pane mixed a district-candidate checklist with a separate flat
+dispatch list, and the center pane sat idle until districts were checked and Preview clicked. Rebuilt on
+Stage 1's `Batch`/`BatchDistrict` pattern (§0b: `dispatch_draft`/`dispatch_draft_district`, one unified
+list, an always-editable/read-only center pane). A first pass badged dispatch origin by `dispatch_draft`
+join-absence (`from_draft: bool`), which turned out to make a positive claim from an absence — every
+pre-redesign handoff, including ~12 genuine console/first-run dispatches, badged "from Stage 7." Fixed by
+deriving a 3-value `origin` from `extraction_request.executed_ref`/`route` receipts instead of an
+absence check (§0b) — no backfill, verified against all 32 pre-redesign handoffs (20 stage7 / 12 console,
+0 orphans). A subsequent 10-finder-angle max-effort review of the full PR then found **7 confirmed +
+5 plausible** issues, all fixed same-session: `set_verified_only` was clobbering the precious
+`district_status` registry with the draft id recorded as a fake district (the exact bug class the
+origin-derivation fix's sibling district-scoped ops had already avoided, missed on this one op);
+`_origin_case` hardcoded the route literal `'7->6'` instead of the existing `RQ.ROUTE_ALT_REP` constant;
+a missing `district_id` on an edit reached an unhandled `IntegrityError` (500) instead of a clean 400; a
+malformed `set_override` raised `KeyError`, miscaught as 404 instead of 400; the detail pane had no
+fetch-staleness guard (a slow response from a stale click could overwrite a newer selection); the
+add-district picker showed unlabeled `n_send` counts even in verified-only mode; and `usd()` had drifted
+to two different decimal precisions between `stage6.js` and `stage7.js`. The five plausibles (a silent
+`to_view`/priced-package district-count mismatch, an unlocked TOCTOU on every draft mutator, the same
+TOCTOU shape on draft creation, a docstring overclaiming crash-atomicity, and a silent name-lookup-miss
+fallback) were all investigated and confirmed real, then fixed. See §0b for the present-state description
+of every fix (the `_locked_draft`/`isCurrent`/`effSend`/`missing_from_release` mechanisms).
