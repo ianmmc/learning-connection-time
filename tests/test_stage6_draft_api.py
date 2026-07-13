@@ -78,6 +78,25 @@ def test_dispatch_edit_unknown_district_is_404(monkeypatch):
     assert r.status_code == 404
 
 
+def test_dispatch_edit_missing_district_id_is_400(monkeypatch):
+    """PR #256 review: a district-scoped op with no district_id must 400 up front — not reach the
+    store and blow up as an IntegrityError 500 on the NOT-NULL PK insert."""
+    monkeypatch.setattr(SRV.gdb, "session_scope", _fake_scope)
+    r = client.post("/api/dispatch/draft_00001/edit", json={"op": "add_district"})
+    assert r.status_code == 400
+    assert "district_id" in r.json()["detail"]
+
+
+def test_dispatch_edit_override_missing_fields_is_400(monkeypatch):
+    """PR #256 review: a malformed set_override (missing file/council_id) must 400 — the old raw
+    payload[...] indexing raised KeyError, which the unknown-district handler miscast as a 404."""
+    monkeypatch.setattr(SRV.gdb, "session_scope", _fake_scope)
+    r = client.post("/api/dispatch/draft_00001/edit",
+                    json={"op": "set_override", "district_id": "X", "rec_key": "k"})
+    assert r.status_code == 400
+    assert "file" in r.json()["detail"] and "council_id" in r.json()["detail"]
+
+
 @pytest.mark.govdb
 @pytest.mark.integration
 def test_dispatch_edit_add_district_round_trips_to_view():
@@ -97,6 +116,39 @@ def test_dispatch_edit_add_district_round_trips_to_view():
         r = client.post(f"/api/dispatch/{draft_id}/edit", json={"op": "add_district", "district_id": "0100810"})
         assert r.status_code == 200
         assert any(d["district_id"] == "0100810" and d["included"] for d in r.json()["districts"])
+    finally:
+        with gdb.session_scope() as con:
+            con.execute(text("DELETE FROM dispatch_draft_district WHERE draft_id=:d"), {"d": draft_id})
+            con.execute(text("DELETE FROM dispatch_draft WHERE draft_id=:d"), {"d": draft_id})
+            # add_district's _record_gate6_draft call writes a real state_event for 0100810 — clean it
+            # up too (test_gate1_api.py's mirrored teardown does the same for its own synthetic districts).
+            con.execute(text("DELETE FROM state_event WHERE district_id = '0100810' AND note = :n"),
+                       {"n": "add district 0100810"})
+
+
+@pytest.mark.govdb
+@pytest.mark.integration
+def test_set_verified_only_never_records_the_draft_id_as_a_district():
+    """PR #256 review, top finding: the draft-scoped set_verified_only op used to pass the draft_id as
+    both district_id AND name into the district-KEYED status registry — every toggle inserted a fake
+    'district' row (id/name = 'draft_NNNNN') into the precious state_event table and the git-tracked
+    district_status.json. Now it records against the draft's included districts (none, for an empty
+    draft) and must leave ZERO state_events keyed by the draft id."""
+    from infrastructure.acquisition.common import db as gdb
+    from sqlalchemy import text
+
+    r = client.post("/api/dispatch/create", json={"actor": "ian"})
+    assert r.status_code == 200
+    draft_id = r.json()["draft_id"]
+    try:
+        r = client.post(f"/api/dispatch/{draft_id}/edit",
+                        json={"op": "set_verified_only", "verified_only": True})
+        assert r.status_code == 200
+        assert r.json()["verified_only"] is True
+        with gdb.session_scope() as con:
+            n = con.execute(text("SELECT COUNT(*) FROM state_event WHERE district_id = :d"),
+                            {"d": draft_id}).scalar()
+            assert n == 0, f"{n} state_event row(s) keyed by the draft id — the fake-district bug is back"
     finally:
         with gdb.session_scope() as con:
             con.execute(text("DELETE FROM dispatch_draft_district WHERE draft_id=:d"), {"d": draft_id})

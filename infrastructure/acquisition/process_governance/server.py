@@ -1433,17 +1433,22 @@ def handoff_detail(handoff_id: str):
 # Districts + per-rep council overrides are the only persisted state; representations are re-derived
 # live from the Stage-5 release decision on every read (never shadowed/duplicated here).
 
-def _record_gate6_draft(district_id: str, name: str, state: str, *, event_type: str, actor: str,
-                        note: str = "") -> None:
-    """Record a per-district gate@6 draft-edit event — the auditable timeline alongside the draft row's
-    own lifecycle. A pure checkpoint event (no `stage`), so it never moves furthest_stage. Granular
-    event_type (draft_district_added / draft_district_removed / draft_override_set / ...) rather than
-    one coarse 'draft_edited', so a later 'why did this draft's package look different than expected'
-    has a real trail — cheap to record, since Stage 6 previously only ever logged the terminal
-    `dispatched` event."""
+def _record_gate6_draft(district_rows, *, event_type: str, actor: str, note: str = "") -> None:
+    """Record per-district gate@6 draft-edit events — the auditable timeline alongside the draft row's
+    own lifecycle. `district_rows`: iterable of (district_id, name, state), mirroring `_record_gate1`:
+    the registry is district-KEYED, so a draft-scoped op (set_verified_only) records against the draft's
+    included districts — never against the draft id itself, which `record_stage`'s unconditional
+    setdefault would insert as a fake "district" row into the precious status registry. A pure
+    checkpoint event (no `stage`), so it never moves furthest_stage. Granular event_type
+    (draft_add_district / draft_set_override / ...) rather than one coarse 'draft_edited', so a later
+    'why did this draft's package look different than expected' has a real trail."""
+    rows = list(district_rows)
+    if not rows:
+        return
     registry = DS.load()
-    DS.record_stage(registry, district_id, name, state, stage_name="dispatch",
-                    checkpoint="gate@6", event_type=event_type, actor=actor, notes=note)
+    for did, name, state in rows:
+        DS.record_stage(registry, did, name, state, stage_name="dispatch",
+                        checkpoint="gate@6", event_type=event_type, actor=actor, notes=note)
     DS.save(registry)
 
 
@@ -1501,7 +1506,17 @@ async def dispatch_edit(draft_id: str, payload: dict):
     did = payload.get("district_id")
     district_scoped_ops = {"add_district", "remove_district", "restore_district",
                           "set_override", "clear_override"}
-    dname, dstate = did, ""
+    # Validate the payload SHAPE up front, so a malformed request is a clean 400 — not an unhandled
+    # IntegrityError 500 (a None district_id reaching the NOT-NULL PK insert) and not a KeyError
+    # miscaught below as a 404 (that handler means "unknown district/draft", a different failure).
+    if op in district_scoped_ops and not did:
+        raise HTTPException(400, f"{op} requires a district_id")
+    if op in ("set_override", "clear_override"):
+        required = ("rec_key", "file") + (("council_id",) if op == "set_override" else ())
+        missing = [k for k in required if not payload.get(k)]
+        if missing:
+            raise HTTPException(400, f"{op} requires {', '.join(missing)}")
+    affected = []          # [(district_id, name, state)] the audit events record against
     try:
         with gdb.session_scope() as con:
             if op == "add_district":
@@ -1525,18 +1540,29 @@ async def dispatch_edit(draft_id: str, payload: dict):
                 note = f"set verified_only={bool(payload.get('verified_only'))}"
             else:
                 raise HTTPException(400, f"unknown edit op {op!r}")
-            if op in district_scoped_ops and did:
+            if op in district_scoped_ops:
                 # the district's REAL name/state, never the bare id — district_status.record_stage
                 # unconditionally overwrites `name` (no blank-guard), so passing `did` twice would
                 # silently clobber a district's real name in the shared, precious status registry.
                 drow = con.execute(text("SELECT name, state FROM district WHERE district_id = :d"),
                                    {"d": did}).mappings().first()
                 if drow:
-                    dname, dstate = drow["name"] or did, drow["state"] or ""
-        if op in district_scoped_ops and did:
-            _record_gate6_draft(did, dname, dstate, event_type=f"draft_{op}", actor=actor, note=note)
-        elif op == "set_verified_only":
-            _record_gate6_draft(draft_id, draft_id, "", event_type=f"draft_{op}", actor=actor, note=note)
+                    affected = [(did, drow["name"] or did, drow["state"] or "")]
+                else:
+                    # Unknown to the signals store: don't fail the edit, but leave a VISIBLE marker
+                    # in the audit note instead of silently recording the bare id as a name.
+                    affected = [(did, did, "")]
+                    note += " [district not found in signals store]"
+            elif op == "set_verified_only":
+                # Draft-scoped op: record against the draft's included districts (the rows whose
+                # send-set the mode flip actually changes) — mirrors gate@1's batch-level abandon,
+                # which also fans out to per-district events. Empty draft -> nothing to record.
+                affected = [tuple(r) for r in con.execute(text(
+                    "SELECT dd.district_id, COALESCE(d.name, dd.district_id), COALESCE(d.state, '') "
+                    "FROM dispatch_draft_district dd "
+                    "LEFT JOIN district d ON d.district_id = dd.district_id "
+                    "WHERE dd.draft_id = :dr AND dd.included ORDER BY dd.ord"), {"dr": draft_id})]
+        _record_gate6_draft(affected, event_type=f"draft_{op}", actor=actor, note=note)
     except DSTORE6.DraftLocked as e:
         raise HTTPException(409, str(e))
     except KeyError as e:

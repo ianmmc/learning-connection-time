@@ -10,8 +10,7 @@
 // dispatches (incl. all pre-draft history) read "console". Vanilla JS on the MMM tokens; reuses q-*/badge/btn.
 (function () {
   const $g = (s, r = document) => r.querySelector(s);
-  const { esc, postJSON, api, statusBadge } = window.LCT;
-  const usd = (n) => "$" + (Number(n) || 0).toFixed(5);
+  const { esc, postJSON, api, statusBadge, usd } = window.LCT;
   const fmt = (iso) => (iso || "").replace("T", " ").replace("Z", " UTC");
 
   // Origin badge/note for a frozen dispatch — driven by the server-derived `origin`. 'draft' (the normal
@@ -108,12 +107,20 @@
     if (kind === "draft") await openDraft(id); else await openHandoff(id);
   }
 
+  // Staleness guard for every await-then-render path: if the user clicked a DIFFERENT row while a
+  // fetch was in flight, the late response must not overwrite the pane (or DRAFT_VIEW) — the visible
+  // detail would silently mismatch the highlighted selection.
+  const isCurrent = (kind, id) => CURRENT && CURRENT.kind === kind && CURRENT.id === id;
+
   async function openDraft(id) {
     const det = $g("#s6-detail");
     det.innerHTML = `<div class="empty">Loading ${esc(id)}…</div>`;
-    try { DRAFT_VIEW = await api(`/api/dispatch/${id}`); }
-    catch (e) { det.innerHTML = `<div class="empty err">${esc(e.message)}</div>`; return; }
-    renderDraftDetail(DRAFT_VIEW);
+    let v;
+    try { v = await api(`/api/dispatch/${id}`); }
+    catch (e) { if (isCurrent("draft", id)) det.innerHTML = `<div class="empty err">${esc(e.message)}</div>`; return; }
+    if (!isCurrent("draft", id)) return;   // user moved on while this was in flight
+    DRAFT_VIEW = v;
+    renderDraftDetail(v);
   }
 
   async function openHandoff(id) {
@@ -121,7 +128,8 @@
     det.innerHTML = `<div class="empty">Loading ${esc(id)}…</div>`;
     let h;
     try { h = await api(`/api/handoffs/${id}`); }
-    catch (e) { det.innerHTML = `<div class="empty err">${esc(e.message)}</div>`; return; }
+    catch (e) { if (isCurrent("handoff", id)) det.innerHTML = `<div class="empty err">${esc(e.message)}</div>`; return; }
+    if (!isCurrent("handoff", id)) return;
     renderHandoffDetail(h);
   }
 
@@ -150,6 +158,15 @@
             <input type="checkbox" id="s6-verified" ${v.verified_only ? "checked" : ""}/> verified only (labeled targets)</label>
           <button id="s6-add-district" class="btn btn-mini add">+ Add district</button>
         </div>`;
+    }
+    // A district in the draft but silently absent from the priced package (its release input vanished
+    // after it was added) — warn, don't let two disagreeing counts sit on the same screen unexplained.
+    const gone = v.missing_from_release || [];
+    if (gone.length) {
+      // `.s6-remove[data-did]` rides wireDraftDetail's existing generic remove wiring — these
+      // districts have no package block (hence no normal ✕), so the warning carries its own.
+      const items = gone.map((g) => `${esc(g)}${draft ? ` <button class="s6-remove" data-did="${esc(g)}" title="remove from draft">✕</button>` : ""}`).join(", ");
+      html += `<div class="q-locked" data-feat="s6-missing-release">⚠ ${gone.length} district(s) in this draft no longer have Stage-5 release data and will NOT be dispatched: ${items}</div>`;
     }
     const blocks = pkg.districts.map((d) => renderDistrictBlock(d, draft));
     html += `<div class="s6-summary">
@@ -213,9 +230,12 @@
   }
 
   async function draftEdit(draftId, payload) {
-    try { DRAFT_VIEW = await api(`/api/dispatch/${draftId}/edit`, postJSON(payload)); }
+    let v;
+    try { v = await api(`/api/dispatch/${draftId}/edit`, postJSON(payload)); }
     catch (e) { alert("Edit failed: " + e.message); return; }
-    renderDraftDetail(DRAFT_VIEW);
+    if (!isCurrent("draft", draftId)) return;   // same staleness rule as openDraft
+    DRAFT_VIEW = v;
+    renderDraftDetail(v);
     loadList();   // counts on the left may have changed
   }
 
@@ -260,10 +280,16 @@
     filter = filter || { q: "", topology: "", sendOnly: false, heldOnly: false, hideDispatched: false };
     let m = $g("#s6-picker");
     if (!m) { m = document.createElement("div"); m.id = "s6-picker"; m.className = "modal"; document.body.appendChild(m); }
+    // Mode-aware count (the old preview flow's effSend): a verified-only draft SENDS only the
+    // human-labeled subset, so the picker must show/filter by n_verified — an unlabeled '5 send'
+    // district contributes 0 reps to a verified-only draft, and showing '5 send' would silently
+    // contradict the draft detail right after adding it.
+    const vOnly = !!(DRAFT_VIEW && DRAFT_VIEW.verified_only);
+    const effSend = (c) => (vOnly ? c.n_verified : c.n_send);
     const topos = [...new Set(cands.map((c) => c.labeled_topology).filter(Boolean))].sort();
     const shown = cands.filter((c) => {
       if (filter.topology && c.labeled_topology !== filter.topology) return false;
-      if (filter.sendOnly && !(c.n_send > 0)) return false;
+      if (filter.sendOnly && !(effSend(c) > 0)) return false;
       if (filter.heldOnly && !(c.n_hold > 0)) return false;
       if (filter.hideDispatched && c.n_dispatched > 0) return false;
       if (filter.q && !`${c.name || ""} ${c.district_id} ${c.state || ""}`.toLowerCase().includes(filter.q)) return false;
@@ -276,7 +302,7 @@
           return `<label class="add-item">
               <input type="checkbox" value="${esc(c.district_id)}"/>
               <span class="q-sname">${esc(c.name || c.district_id)}</span>
-              <span class="q-smeta">${esc(c.state || "?")} · ${c.n_send} send · ${esc(c.labeled_topology || "?")}</span>
+              <span class="q-smeta">${esc(c.state || "?")} · ${effSend(c)} ${vOnly ? "verified" : "send"} · ${esc(c.labeled_topology || "?")}</span>
               ${disp}${bench}</label>`;
         }).join("")
       : `<div class="empty">No eligible districts match the filter.</div>`;
@@ -287,7 +313,7 @@
             <input id="s6-pick-q" class="s6-fi" type="search" placeholder="Filter name / id / state…" value="${esc(filter.q)}"/>
             <select id="s6-pick-topo" class="s6-fi"><option value="">All topologies</option>${
               topos.map((t) => `<option value="${esc(t)}" ${filter.topology === t ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>
-            <label class="s6-fl"><input type="checkbox" id="s6-pick-sendonly" ${filter.sendOnly ? "checked" : ""}/> has send</label>
+            <label class="s6-fl"><input type="checkbox" id="s6-pick-sendonly" ${filter.sendOnly ? "checked" : ""}/> has ${vOnly ? "verified" : "send"}</label>
             <label class="s6-fl"><input type="checkbox" id="s6-pick-heldonly" ${filter.heldOnly ? "checked" : ""}/> has held</label>
             <label class="s6-fl"><input type="checkbox" id="s6-pick-hidedispatched" ${filter.hideDispatched ? "checked" : ""}/> hide already-dispatched</label>
           </div>

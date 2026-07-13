@@ -142,6 +142,19 @@ class TestToView:
         with pytest.raises(KeyError):
             DS6.to_view(sess, "draft_nonexistent")
 
+    def test_to_view_surfaces_included_districts_missing_from_release(self, sess, monkeypatch):
+        """PR #256 review: build_handoff_package silently DROPS a district whose release input is gone,
+        so an included district can vanish from the priced package while still counting in the draft's
+        own district list — to_view must surface that gap (`missing_from_release`), not let two
+        quietly-disagreeing counts ship to the console."""
+        _fake_release(monkeypatch, district_id="0100810")
+        draft_id = DS6.create_draft(sess, actor="ian")
+        DS6.add_district(sess, draft_id, "0100810")
+        DS6.add_district(sess, draft_id, "9999999")   # included, but no Stage-5 release data
+        v = DS6.to_view(sess, draft_id)
+        assert [d["district_id"] for d in v["package"]["districts"]] == ["0100810"]
+        assert v["missing_from_release"] == ["9999999"]
+
 
 class TestFreeze:
     def test_freeze_happy_path_produces_handoff_and_updates_draft(self, sess, monkeypatch, tmp_path):

@@ -6,8 +6,7 @@
 // (gate@8). Vanilla JS on the MMM tokens; reuses q-*/badge/btn styles + a few s7-* rules.
 (function () {
   const $g = (s, r = document) => r.querySelector(s);
-  const { esc, postJSON, api } = window.LCT;
-  const usd = (n) => "$" + (Number(n) || 0).toFixed(4);
+  const { esc, postJSON, api, usd } = window.LCT;   // usd: shared 5-dp formatter (PR #256 review)
   let inited = false, CURRENT = null;
 
 

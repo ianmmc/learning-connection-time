@@ -36,5 +36,10 @@ window.LCT = (function () {
   // ONE home, like esc() itself.
   const safeUrl = (u) => typeof u === "string" && /^https?:\/\//i.test(u);
 
-  return { esc, postJSON, api, statusBadge, safeUrl };
+  // Cost formatter (PR #256 review) — stage6 and stage7 each carried a local copy at DIFFERENT
+  // precisions (5 vs 4 dp), so the same est_usd/cost_usd rendered differently per view. ONE home,
+  // like esc(). 5 dp: per-rep costs run ~$0.001xx — 4 dp truncates the real trailing digit.
+  const usd = (n) => "$" + (Number(n) || 0).toFixed(5);
+
+  return { esc, postJSON, api, statusBadge, safeUrl, usd };
 })();
