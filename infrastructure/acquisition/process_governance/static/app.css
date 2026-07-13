@@ -500,3 +500,32 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 .s7-unres { display: flex; flex-wrap: wrap; gap: 4px; }
 .s7-chip { font-size: var(--fs-xs); padding: 1px 7px; border-radius: var(--radius-pill);
   background: transparent; color: var(--text-secondary); border: var(--border-hair) solid var(--border-subtle); }
+
+/* Settings — per-gate manual/auto toggle (#104) */
+.settings-panel { max-width: 720px; padding: 20px 24px; }
+.settings-panel h2 { margin: 0 0 4px; }
+.settings-rows { margin-top: 16px; display: flex; flex-direction: column; gap: 6px; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); }
+.settings-row-default { background: var(--mmm-purple-50); border-color: var(--action-primary); font-weight: 600; }
+.settings-gate { font-size: var(--fs-sm); }
+.settings-lic { margin-left: 6px; }
+.settings-toggle { display: inline-flex; gap: 4px; flex: none; }
+.settings-toggle .btn-mini.active { background: var(--action-primary); color: #fff; border-color: var(--action-primary); }
+.settings-toggle .toggle-auto.active { background: var(--accent-red); border-color: var(--accent-red); }
+
+/* gate@5 reject-audit coverage meter (#211) */
+.settings-audit-h { margin-top: 28px; }
+.settings-audit { margin-top: 12px; display: flex; flex-direction: column; gap: 14px; }
+.audit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+.audit-stat { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); }
+.audit-k { font-size: var(--fs-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+.audit-v { font-size: var(--fs-sm); font-weight: 600; }
+.audit-cov-label { font-size: var(--fs-sm); margin-bottom: 6px; }
+.audit-ok { color: var(--accent-green, #2e7d32); margin-left: 8px; font-weight: 600; }
+.audit-bar { height: 8px; border-radius: 4px; background: var(--border); overflow: hidden; }
+.audit-bar-fill { height: 100%; background: var(--action-primary); transition: width .3s ease; }
+.audit-bar-fill.met { background: var(--accent-green, #2e7d32); }
+.audit-list { margin: 6px 0 0; padding-left: 18px; font-size: var(--fs-xs); display: flex; flex-direction: column; gap: 3px; }
+.audit-list code { font-size: var(--fs-xs); }

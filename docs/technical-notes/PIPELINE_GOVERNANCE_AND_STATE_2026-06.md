@@ -61,7 +61,9 @@ FINDINGS-AND-DECISIONS.md`'s synthesis. Phase 0/1: **(1)** the canonical recall 
 (`harness.RECALL_FLOOR=0.98`/`FLOOR_TIER="A+B"`) now **enforced inside** `build_signals.ingest()`'s
 transaction via `--assert-floor` (#208, PR #215 — a violation rolls back the *whole* re-ingest, not a
 post-hoc report); **(2)** the anti-survivorship exploration quota's pure control-law core, tested and
-review-hardened (REQ-120/#211, PR #216 — live console wiring still deferred); **(3)** the gate-decision
+review-hardened (REQ-120/#211, PR #216), with its **live wiring shipped** (`exploration_live.py`,
+2026-07-12 — reject-population query, coverage meter, gate@5 demote-hook in `save_label` +
+`GET /api/exploration-audit`; enforcement DORMANT while gate@5 is manual); **(3)** the gate-decision
 calibration log — schema built (REQ-121/#210, PR #217) and **wired live** at gate@5/6/7 (PR #218), so the
 corpus is now accruing forward from every gate action. Phase 2 (merged PR #220): **(4)** the group-aware
 non-inferiority promotion gate — LOGO-CV + cluster bootstrap + TOST + ICC/DEFF, proven stats libraries not
@@ -137,8 +139,9 @@ rather than silently skip if Chromium is unavailable.
 
 Next: Stage 8 (aggregation, tracked: #89/#90) or the Council Lab's remaining backlog (`cost_benchmark`,
 prompt A/B, tracked: #80/#81); the remaining Stage-5 aggregation-quality fixes (#223/#224/#226, #236/#237);
-the live gate-mode (manual/auto) persistence + console toggle (tracked: #104) that #211's live wiring and
-#214's measured-pass both wait on; still open: REQ-100 (staleness, tracked: #100), the gate@7 inline
+the live gate-mode (manual/auto) persistence + console toggle (#104, SHIPPED) — on which **#211's live
+wiring now also shipped** (`exploration_live.py`, 2026-07-12), leaving **#214's measured-pass** (calibrate
+the sampler against census truth → close epic #209) as the next step; still open: REQ-100 (staleness, tracked: #100), the gate@7 inline
 PNG/PDF viewer (tracked: #151).
 
 ---
@@ -969,8 +972,25 @@ the demote-hook is a no-op until gate@5 is actually set to auto. Full spec: `STA
 an explicit `promote_n <= floor_n`), an unrecognized mode string now **raises** rather than silently
 demoting (a typo'd stored state must surface, not masquerade as a conservative decision), and the sampler
 uses the codebase's own `random.Random(seed)` string-seeding pattern (matching `stage1_queue.queue_batch`),
-not a hand-rolled hash. **Still deferred:** the live wiring — the reject-population query, the randomized
-console audit queue, and the gate@5 demote-hook itself; `resolve_gate_mode` has zero live callers today.
+not a hand-rolled hash.
+
+**As BUILT — the live wiring (`exploration_live.py`, #211/REQ-120, 2026-07-12).** `resolve_gate_mode` now
+has a live caller. The DB half binds the pure core to the governance store: `reject_population` (the live
+tier-D SUPPRESS bucket), `audit_sample`/`coverage` (the pure sampler bound to that population +
+`rejection_quality` window), and **`resolve_gate5_mode`** — THE gate@5 demote-hook. It reads
+`configured_mode`/`license_state` from the `gate_mode` store (#104), computes the live `window_count`,
+applies the deadband law, and — only when configured auto — **persists the transition back to
+`license_state`** (the deadband's hysteresis memory). Wired into `save_label` (self-healing: each gate@5
+label re-evaluates the license on the same transaction as the calibration write) + read-only at
+`GET /api/exploration-audit` → a Settings-console coverage meter. **Enforcement stays DORMANT** — gate@5 is
+configured manual, so the hook returns "manual" and writes nothing; it goes live the moment a human sets
+gate@5 auto in Settings (the §11b ramp-up surface #104 shipped). **Current-config scoping is STRUCTURAL,
+not a stored fingerprint:** the window is recomputed over the live tier-D set every call, so a rescued
+reject simply leaves the population — no reject-audit table, no persisted config generation, and the draw
+still replays from `(seed, the DB's current reject set)` for the auditability north star. Verified live
+(566 rejects, 24 sampled @5%, all census-labeled zero-miss → quality 1.0, window 24/300 — informational
+while census-labeling is still on). **Still deferred:** a dedicated `run_kind=exploration_audit` queue MODE
+in the Stage-5 tree (the Settings pending list suffices today), Tier B, and the retrainer fast-follow.
 Detail: `STAGE5_FILTER_DESIGN_2026-06.md` §5a.
 
 **The recall floor's enforcement mechanism, precisely (#208, built 2026-07-10).** `harness.assert_floor(con)`
@@ -1030,12 +1050,19 @@ versioning; `promotion_pointers.py` @champion/@fallback atomic pointer swaps wit
 (`CONFIG_DIR/promotion/artifacts/`), **pointers in the DB** (`config_pointer` singleton, atomic swap). Full
 detail: `STAGE5_FILTER_DESIGN_2026-06.md` §5c.
 
-**Gate-mode persistence remains UNBUILT.** The "global default + per-gate overrides" toggle described in
-§11b's opening (manual/auto per gate) has no backing settings table anywhere in the codebase today — every
-gate is de-facto always-manual. `exploration_audit.resolve_gate_mode()` is the one function designed to
-consume a stored `configured_mode`, and it has zero live callers. Building that persistence (and the
-console surface to set it) is a prerequisite for any gate actually going auto, including the moment the
-exploration-quota and calibration-log guardrails above go from dormant to live.
+**Gate-mode persistence — the store + console toggle shipped (#104/REQ-108, 2026-07-12); per-gate AUTO
+behavior still deferred.** The "global default + per-gate overrides" toggle described in §11b's opening now
+has a backing store: a precious `gate_mode` table (`common/gate_mode.py`) holding `configured_mode`
+(manual|auto, the human toggle) + `license_state` (the #211 demote-hook's deadband state) per key
+('default' + 'gate@1'..'gate@8'), read via `effective_gate_mode(con, gate)` (own override → global default
+→ manual), set via `GET`/`POST /api/gate-mode` and a console **Settings** panel, git-backed as the precious
+`gate_modes.json`. **What is NOT built and what this deliberately does NOT change:** every gate still
+behaves manually — `effective_gate_mode` returns the configured mode with a manual default, but no live
+gate handler branches on it yet, so setting a gate 'auto' persists the intent without altering behavior.
+`exploration_audit.resolve_gate_mode()` (the gate@5 license layering over `license_state` + a live
+`window_count`) still has **zero live callers** — its wiring, and each gate's actual confidence-escalating
+auto path, are the follow-on per-gate work (#211 first, for gate@5). The store is the prerequisite the
+exploration-quota and calibration-log guardrails were waiting on to go from dormant to live; it now exists.
 
 **Dormant-guardrail inventory (remember to activate — #219).** Every #209 guardrail ships *built but inert*
 (the `--assert-floor` pattern: ship the guard with the capability it guards, never before). That is correct

@@ -80,6 +80,15 @@ def evaluate(records, params):
     return harness.tier_target_metrics([(t, g) for _d, _rk, t, g in retiered])
 
 
+def reject_cohort_quality(records, params, p=harness.EA.DEFAULT_SAMPLE_RATE, seed=harness.EA.DEFAULT_SEED):
+    """#214: the exploration-cohort Rejection-Quality/TNR for a CANDIDATE config — the honest recall signal
+    on the config's OWN pruned (tier-D) tail, over the same randomized audit draw the live quota uses. A
+    measured-pass reads this BESIDE the approved-set precision/recall: a challenger that lifts tier-A
+    precision by suppressing MORE real targets shows a LOWER reject-quality here — the illusion of
+    improvement, caught (FINDINGS §0). In-memory re-tier, no re-ingest, no cash."""
+    return harness.exploration_cohort([(rk, t, g) for _d, rk, t, g in _retier(records, params)], p=p, seed=seed)
+
+
 def _moves(records, baseline, params):
     """Records whose tier changes from baseline -> params (the 'why' surfaced for the human)."""
     base = {rk: t for _d, rk, t, _g in _retier(records, baseline)}
@@ -108,12 +117,17 @@ def grid_search(records, grid=None, recall_floor=None, positive_tier="A", floor_
     results = []
     for combo in itertools.product(*(grid[k] for k in keys)):
         params = {**baseline, **dict(zip(keys, combo))}
-        m = evaluate(records, params)
+        retiered = _retier(records, params)                    # one re-tier → both the tier metrics AND...
+        m = harness.tier_target_metrics([(t, g) for _d, _rk, t, g in retiered])
+        # ...#214: the exploration-cohort reject-quality on THIS config's pruned tail — carried beside the
+        # approved-set metrics so a measured-pass can't bless a recall collapse (the illusion of improvement).
+        rq = harness.exploration_cohort([(rk, t, g) for _d, rk, t, g in retiered])
         rec = m["thresholds"][floor_tier]["recall"]            # the FLOORED recall (A+B, reaches-review)
         prec = m["thresholds"][positive_tier]["precision"]     # the RANKED precision (A, auto-send)
         feasible = rec is not None and rec >= recall_floor
         results.append({"params": {k: params[k] for k in keys}, "metrics": m,
                         "feasible": feasible, "recall": rec, "precision": prec,
+                        "reject_quality": rq,
                         "moves": _moves(records, baseline, params)})
     # feasible first, then precision desc (None precision sinks to the bottom)
     results.sort(key=lambda r: (r["feasible"], r["precision"] if r["precision"] is not None else -1),
@@ -220,17 +234,24 @@ def main():
     with gdb.session_scope() as con:
         records = load_labeled(con)
     base_m = evaluate(records, DET.DEFAULT_DETECTOR_PARAMS)["thresholds"][a.tier]
+    base_rq = reject_cohort_quality(records, DET.DEFAULT_DETECTOR_PARAMS)      # #214 illusion guard
     print(f"loaded {len(records)} labeled records "
           f"({sum(1 for *_ , lab in records if lab in TARGET)} targets)")
     print(f"baseline tier-{a.tier}: precision={_fmt(base_m['precision'])} recall={_fmt(base_m['recall'])} "
           f"(tp={base_m['tp']} fp={base_m['fp']} fn={base_m['fn']})")
+    print(f"baseline exploration cohort (tier-{harness.EA.REJECT_TIER} pruned tail): "
+          f"reject-quality/TNR={_fmt(base_rq['rejection_quality'])} "
+          f"over {base_rq['sampled_n']}/{base_rq['cohort_size']} audited rejects "
+          f"(#214: the recall signal the approved-set metrics can't give)")
     print(f"\nfrontier (floor: tier-{a.floor_tier} recall >= {a.recall_floor}; ranked by tier-{a.tier} precision):")
     res = grid_search(records, recall_floor=a.recall_floor, positive_tier=a.tier, floor_tier=a.floor_tier)
     for r in res[:10]:
         flag = "" if r["feasible"] else "  (INFEASIBLE — best available)"
         mv = "; ".join(f"{m['rec_key']} {m['from']}->{m['to']}{'*' if m['is_target'] else ''}"
                        for m in r["moves"]) or "no moves vs baseline"
-        print(f"  {r['params']}  precision={_fmt(r['precision'])} recall={_fmt(r['recall'])}{flag}")
+        rq = (r.get("reject_quality") or {}).get("rejection_quality")
+        print(f"  {r['params']}  precision={_fmt(r['precision'])} recall={_fmt(r['recall'])} "
+              f"reject-Q={_fmt(rq)}{flag}")
         print(f"      moves: {mv}")
     if a.cv and res:
         cv = logo_cv(records, {**DET.DEFAULT_DETECTOR_PARAMS, **res[0]["params"]}, positive_tier=a.tier)
@@ -253,6 +274,15 @@ def main():
         v = gate(records, champion, challenger, margin=a.margin, alpha=a.alpha, seed=a.seed)
         s = PG.verdict_summary(v)
         verdict = "PROMOTE" if s["promote"] else "HOLD"
+        # #214 measured-pass illusion guard: the exploration-cohort reject-quality champion vs challenger.
+        # The promotion gate defends A+B recall on the APPROVED set; this is the honest recall signal on the
+        # PRUNED tail — a challenger that drops it while lifting tier-A precision is the illusion, not a win.
+        champ_rq = reject_cohort_quality(records, champion)["rejection_quality"]
+        chall_rq = reject_cohort_quality(records, challenger)["rejection_quality"]
+        rq_note = "" if (champ_rq is None or chall_rq is None or chall_rq >= champ_rq) \
+            else "  ⚠ reject-quality REGRESSED (approved-set win may be an illusion — inspect the pruned tail)"
+        print(f"\nexploration-cohort reject-quality (#214): champion={_fmt(champ_rq)} → "
+              f"challenger={_fmt(chall_rq)}{rq_note}")
         print(f"\npromotion gate (#212) champion vs challenger {challenger}:")
         print(f"  VERDICT: {verdict}  (Δ={s['margin']}, {s['n_districts']} districts)")
         print(f"  non-inferiority: bootstrap lower bound {_fmt(s['ni_lower_bound'])} vs −Δ "

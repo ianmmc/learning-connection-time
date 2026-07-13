@@ -42,6 +42,14 @@ class _Con:
         self._i += 1
         return r
 
+    def commit(self):
+        pass
+
+    def begin_nested(self):
+        # the #211 demote-hook runs inside a SAVEPOINT (PR #248 review) — mock it as a no-op context
+        # so hook queries still consume from the queue instead of dying on a missing attribute.
+        return contextlib.nullcontext()
+
 
 def _use(monkeypatch, con):
     @contextlib.contextmanager
@@ -269,3 +277,47 @@ def test_reopening_a_withdrawn_request_reruns_the_premise_check(monkeypatch):
     monkeypatch.setattr(SRV.R7, "withdraw_satisfied_requests", lambda con, did: [])
     r2 = client.post("/api/extract/request/9", json={"status": "pending", "actor": "ian"})
     assert r2.json() == {"request_id": 9, "status": "pending"}
+
+
+# ------------------------------- gate-mode settings (#104) -------------------------------
+def test_gate_mode_list_fills_defaults_and_inherits(monkeypatch):
+    # one stored row (global default = auto); unset gates inherit it, none are overridden
+    _use(monkeypatch, _Con([_Result(rows=[
+        {"gate": "default", "configured_mode": "auto", "license_state": None}])]))
+    body = client.get("/api/gate-mode").json()
+    assert body["settings"]["default"]["configured_mode"] == "auto"
+    assert body["settings"]["gate@6"]["configured_mode"] == "auto"        # inherited
+    assert body["settings"]["gate@6"]["is_override"] is False
+    assert set(body["settings"]) == {"default", *SRV.GM.GATES}
+
+
+def test_gate_mode_set_rejects_bad_gate_or_mode(monkeypatch):
+    # validation precedes any DB access -> 400, no session needed
+    assert client.post("/api/gate-mode", json={"gate": "gate@9", "mode": "auto"}).status_code == 400
+    assert client.post("/api/gate-mode", json={"gate": "gate@5", "mode": "on"}).status_code == 400
+
+
+def test_gate_mode_set_persists_and_backs_up(monkeypatch):
+    # set_configured_mode (INSERT) -> commit -> _backup_gate_mode (SELECT, quarantined under pytest)
+    _use(monkeypatch, _Con([_Result(), _Result(rows=[
+        {"gate": "gate@7", "configured_mode": "auto", "license_state": None,
+         "updated_at": "t", "actor": "ian"}])]))
+    r = client.post("/api/gate-mode", json={"gate": "gate@7", "mode": "auto", "actor": "ian"})
+    assert r.status_code == 200 and r.json() == {"ok": True, "gate": "gate@7", "mode": "auto"}
+
+
+# ------------------------------- exploration audit (gate@5 reject audit, #211) -------------------------------
+def test_exploration_audit_status_is_dormant_and_well_shaped(monkeypatch):
+    # execute order for GET /api/exploration-audit with an EMPTY reject bucket — ONE population draw
+    # serves the meter, the resolve, and the pending queue (PR #248 review: it used to run twice):
+    #   1 reject_population SELECT (the endpoint's single audit_sample draw) -> []
+    #   2 get_configured_mode own -> None, 3 get_configured_mode default -> None (=> "manual")
+    #   4 get_license_state -> None
+    _use(monkeypatch, _Con([_Result(rows=[]), _Result(scalar=None), _Result(scalar=None),
+                            _Result(scalar=None)]))
+    body = client.get("/api/exploration-audit").json()
+    # DORMANT: configured manual → effective manual, empty bucket → zero window, all-None quality
+    assert body["configured_mode"] == "manual" and body["effective_mode"] == "manual"
+    assert body["population_size"] == 0 and body["window_count"] == 0 and body["pending"] == []
+    assert body["quality"]["rejection_quality"] is None
+    assert body["floor_n"] == 300 and body["promote_n"] == 360

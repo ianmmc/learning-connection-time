@@ -114,6 +114,16 @@ _PRECIOUS_ALTERS = [
     # request. create_all builds it on FRESH tables (declared on the model); this covers existing DBs.
     "CREATE INDEX IF NOT EXISTS ix_extraction_request_ask "
     "ON extraction_request (district_id, target, altitude, route)",
+    # PR #248 review: gate_mode.configured_mode is NULLABLE (NULL = inherit the global default) so the
+    # #211 license writer never materializes a configured toggle the human didn't set. A table created
+    # under the earlier NOT-NULL + server-default model must shed both. DROP NOT NULL / DROP DEFAULT are
+    # idempotent in Postgres (no-ops when already absent); to_regclass guards a missing table.
+    """DO $$ BEGIN
+        IF to_regclass('gate_mode') IS NOT NULL THEN
+            ALTER TABLE gate_mode ALTER COLUMN configured_mode DROP NOT NULL;
+            ALTER TABLE gate_mode ALTER COLUMN configured_mode DROP DEFAULT;
+        END IF;
+    END $$""",
 ]
 
 
@@ -128,6 +138,7 @@ def init_precious_schema() -> None:
     (#217 review — calibration_event was registered nowhere in the live app)."""
     from sqlalchemy import text as _text
     from infrastructure.acquisition.common import calibration  # noqa: F401  (registers calibration_event; local: calibration imports this module)
+    from infrastructure.acquisition.common import gate_mode  # noqa: F401  (registers gate_mode, #104; local: gate_mode imports this module)
     eng = get_engine()
     Base.metadata.create_all(eng)
     with eng.begin() as con:

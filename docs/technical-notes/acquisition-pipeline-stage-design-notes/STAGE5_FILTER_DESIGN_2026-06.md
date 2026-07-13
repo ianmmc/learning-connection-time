@@ -405,9 +405,36 @@ get the exact auto↔manual flapping it exists to prevent); `next_license_state`
 on an unrecognized mode string instead of silently routing it into the manual branch (a typo'd stored state
 must surface, not masquerade as a conservative decision); `rejection_quality`'s two published fields
 (`false_negative_rate`/`rejection_quality`) are now complements of the *rounded* rate so they always sum to
-exactly 1.0 (independent rounding had let them drift to 0.999999 at some counts). **Still deferred:** the
-live wiring named above — the reject-population query, the randomized console audit queue, and the gate@5
-demote-hook — none of which exist yet; `resolve_gate_mode` has zero live callers today.
+exactly 1.0 (independent rounding had let them drift to 0.999999 at some counts).
+
+**As BUILT — the live wiring (`exploration_live.py`, #211/REQ-120, 2026-07-12).** The DB half named above
+now exists, binding the pure core to the governance store; enforcement still ships DORMANT (gate@5 is
+configured manual, so the hook returns "manual" and writes nothing). Three pieces + a calibration probe:
+- **`reject_population(con)`** — the audit universe: the current **tier-D (SUPPRESS)** bucket, representative
+  + non-duplicate rows only (one audit unit per physical page, matching the label cascade). The reject
+  decision is read live from `record.tier`, so the population IS the current-config reject set.
+- **`audit_sample` / `coverage`** — the pure `select_audit_sample` bound to that live population, partitioned
+  into the audited **window** and the **pending** queue, plus `rejection_quality` over the audited labels.
+- **`resolve_gate5_mode(con, *, persist)`** — THE gate@5 demote-hook and the (finally) live caller of
+  `exploration_audit.resolve_gate_mode`. Reads `configured_mode`/`license_state` from the `gate_mode` store
+  (#104), computes the live `window_count`, applies the deadband law, and — only when configured auto —
+  **persists the transition back to `license_state`** (the hysteresis memory). Wired into `save_label`
+  (self-healing: each gate@5 label re-evaluates the license on the same transaction) and surfaced read-only
+  at **`GET /api/exploration-audit`** → a Settings-console coverage meter (window vs floor, reject-cohort
+  quality with the rule-of-three ceiling, the pending draw).
+- **`calibrate_against_census(con)`** — the retrospective validator feeding #214's measured-pass: does a p%
+  draw over the fully-labeled reject bucket reproduce the census reject-quality?
+
+**Current-config scoping is STRUCTURAL, not a stored fingerprint** (the key design call): the window is
+recomputed over the live tier-D set every call, so a reject *rescued* to tier B by a config change simply
+leaves the population — no reject-audit table, no persisted config generation. The sampler is pure +
+growth-stable, so the draw replays from `(seed, the DB's current reject set)` and the outcome is the human's
+label already in `label` (precious, git-backed) — the auditability replay needs nothing more persisted.
+Verified live: 566 tier-D rejects, 24 sampled @5%, all 24 census-labeled with zero misses → quality 1.0,
+window 24/300 (informational, as expected while census-labeling is still on). 7 govdb tests + an endpoint
+smoke. **Still deferred:** a *dedicated* `run_kind=exploration_audit` queue MODE in the Stage-5 tree (the
+pending list in Settings is the working surface today, sufficient while census-labeling means every reject
+is already labeled); Tier B (paid reject→Stage-7 extraction); the doubly-robust retrainer fast-follow.
 
 ---
 
@@ -528,6 +555,45 @@ gained an explicit up-front GT guard returning `shadow="gt_mismatch"`); `active_
 
 ---
 
+## 5d. Every measured-pass evaluates against the exploration cohort (#214, built 2026-07-12)
+
+**The hole this closes (FINDINGS §0 — the single highest-value finding).** Our measured-pass discipline and
+the #108 facet-scoring measured-pass evaluate before/after **only on the approved/labeled set** — which is
+*structurally blind to recall collapse*. Under a **deterministic** filter (Swaminathan & Joachims:
+counterfactual correction is provably impossible even with infinite data), the wrongly-rejected docs never
+enter the measurement, so a tuning pass can certify a **regression as a win** — approved-set precision rises
+at the exact moment true-population recall falls (the "illusion of improvement"). More labels can't fix it;
+only the injected stochasticity of the reject audit (§5a) can. So a cross-cutting rule falls out: **every
+scoring measured-pass must ALSO report Rejection-Quality/TNR on the exploration cohort** (the pruned tail),
+or the discipline itself blesses the illusion.
+
+**As built.** One pure instrument, threaded through all three measured-pass surfaces:
+- **`harness.exploration_cohort(rows)`** — pure over `(rec_key, tier, is_target)`: takes the tier-D
+  sub-cohort, draws the SAME reproducible+growth-stable audit sample the live quota uses
+  (`exploration_audit.select_audit_sample`), and reports `rejection_quality` (TNR + the rule-of-three
+  ceiling). Config-relative: pass the live tiers for the scorecard, or a candidate's re-tiered rows for a
+  measured-pass — the cohort is always that config's OWN pruned tail. Added as a **new scorecard section**
+  (`build_scorecard`→`exploration_cohort`) + a `print_summary` line.
+- **`frontier.reject_cohort_quality(records, params)`** — the candidate-config twin (in-memory `_retier`,
+  no re-ingest/cash); every grid result carries `reject_quality`, and `frontier --gate` prints the
+  champion→challenger reject-quality with a **⚠ REGRESSED** warning (a challenger that lifts tier-A
+  precision by suppressing more real targets shows a lower reject-quality here — caught).
+- **`tuning_ledger`** — a `reject_cohort_quality` metric getter (diffed like every other metric) + an
+  advisory `constraint.reject_quality_regressed` flag, so a tail regression is **self-incriminating in the
+  episode** even when the approved-set deltas look like a win. A missing section (legacy scorecard) reads
+  as `None`, never as a pass.
+
+**Retroactive #108 re-verification (the issue's explicit ask).** #108's facet-scoring measured pass
+(tier-A precision 0.8382→0.8444) was measured on the approved set only. Re-checked against the exploration
+cohort under the live config: **reject-quality/TNR = 1.0** (zero false negatives in the audited reject
+sample, rule-of-three ceiling FN-rate <~11% @95%) — the approved-set win does **not** hide a pruned-tail
+recall collapse. Confirmed clean. (Note two internally-consistent denominators: the harness scorecard
+counts all labeled tier-D records incl. cluster members; frontier counts canonical reps only — each
+before/after comparison is like-with-like.) Enforcement is advisory here (the hard gate is the live quota's
+demote-hook, §5a); this is the *measurement* fix — the discipline can no longer bless a regression.
+
+---
+
 ## 6. Upstream capture — iframe/embed detection (REQ-115)
 
 Two V2 findings are structural, not heuristic, and best fixed at **Stage 3** (`capture_discovery.mjs`):
@@ -594,7 +660,7 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 | **`lf_footer_hours` footer/header evaluated independently** (an office footer no longer downgrades a school header) | **BUILT (#61, 2026-07-09)** — a bug guard; 0 current-corpus triggers, no metric change |
 | **`lf_nonstandard_day` soft-gate** (an incidental prose-pair + a weather/remote/delay soft negative → review, not auto-send; structural targets still send) | **BUILT (#60, 2026-07-09)** — measured pass: tier-A precision 0.8382→0.8444, tier-A + A+B recall held (0.8906 / 0.9961); 6 pages routed to review, 72 structural preserved |
 | **Canonical recall floor** (`harness.RECALL_FLOOR=0.98`/`FLOOR_TIER="A+B"`, `floor_recall`/`floor_satisfied`/`assert_floor`) — one source of truth replacing frontier's/the ledger's prior inconsistent 0.97/0.98-on-tier-A floors | **BUILT (#208, 2026-07-10)** — **enforced INSIDE `build_signals.ingest()`'s transaction** via `--assert-floor`: a violation raises and rolls back the *whole* re-ingest (not a post-hoc report) — see §5b |
-| **Anti-survivorship exploration quota** (`exploration_audit.py` — rule-of-three sufficiency count, deadband, demote-not-halt) | **PURE CORE BUILT + tested (REQ-120/#211, 2026-07-10)**; live wiring (the randomized console audit queue, the gate@5 demote-hook) still DEFERRED — see §5a |
+| **Anti-survivorship exploration quota** (`exploration_audit.py` pure core + `exploration_live.py` live wiring — rule-of-three sufficiency count, deadband, demote-not-halt) | **BUILT + tested (REQ-120/#211): pure core 2026-07-10, live wiring 2026-07-12** — reject-population query, randomized draw/coverage meter, gate@5 demote-hook wired into `save_label` + `GET /api/exploration-audit` Settings meter. Enforcement DORMANT (gate@5 configured manual). See §5a |
 | **Group-aware non-inferiority promotion gate** (`promotion_gate.py` — LOGO guard + cluster bootstrap + TOST + ICC/DEFF; proven libs, no hand-rolled stats) wired advisory into `frontier gate()`/`--gate` + the `tuning_ledger` episode | **BUILT + tested (#212, epic #209 Phase 2, 2026-07-10)** — advisory; `margin` (Δ) required; see §5c |
 | **Safe-promotion machinery** (`config_artifact.py` immutable fingerprinted artifact — closes the unhashed-detector-params gap; `promotion_pointers.py` @champion/@fallback swap + N-cycle retention; `promotion_flow.py` shadow→gate→swap→record) | **BUILT + tested (#213, epic #209 Phase 2, 2026-07-10)** — DORMANT (nothing reads the champion pointer live; minor/major re-ingest shadow deferred); activation tracked #219 — see §5c |
 | **Reset labels** (`POST /api/reset-labels` + `build_signals.reset_labels_bulk`, record/district scope, reverses the cluster cascade, no calibration row) | **BUILT (#228, 2026-07-11)** — see §4 |

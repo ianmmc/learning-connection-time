@@ -8,11 +8,12 @@ from infrastructure.acquisition.stage5_filter import tuning_ledger as TL  # noqa
 
 
 def _scorecard(cfg, labels, data, a_prec, a_rec, ab_prec=0.5, ab_rec=None, cat=0.43, topo=0.8,
-               records=150, labeled=150, targets=41, districts=12):
+               records=150, labeled=150, targets=41, districts=12, reject_q=None):
     """A minimal scorecard in the harness's output shape (only the fields the ledger reads). `ab_rec`
-    (the A+B recall the floor defends, #208) defaults to a_rec for the legacy fixtures."""
+    (the A+B recall the floor defends, #208) defaults to a_rec for the legacy fixtures. `reject_q` adds the
+    #214 exploration_cohort section (None => omit it, exercising the legacy/missing-section path)."""
     ab_rec = a_rec if ab_rec is None else ab_rec
-    return {
+    card = {
         "generated_at": "2026-06-25T00:00:00Z",
         "fingerprints": {"config": cfg, "label_set": labels, "data": data},
         "counts": {"records": records, "labeled": labeled, "targets": targets, "districts": districts},
@@ -23,6 +24,40 @@ def _scorecard(cfg, labels, data, a_prec, a_rec, ab_prec=0.5, ab_rec=None, cat=0
         "category_accuracy": {"overall": cat, "n": labeled, "correct": int(cat * labeled)},
         "topology": {"coarse_agreement": topo, "coarse_agree": 8, "coarse_den": 10, "pairs": {}},
     }
+    if reject_q is not None:
+        card["exploration_cohort"] = {"cohort_size": 300, "sampled_n": 15, "rejection_quality": reject_q,
+                                      "false_negative_rate": round(1.0 - reject_q, 6), "fnr_upper_bound_95": None}
+    return card
+
+
+# ----------------------------- #214: exploration-cohort delta + illusion guard -----------------------------
+def test_episode_records_reject_cohort_quality_delta_and_flags_regression():
+    # a move that lifts tier-A precision (0.85->0.92) while the pruned-tail reject-quality FALLS (0.95->0.80)
+    # is the illusion of improvement — the episode must carry the negative delta AND flag the regression.
+    before = _scorecard("cfgA", "lab1", "dat1", a_prec=0.85, a_rec=0.98, reject_q=0.95)
+    after = _scorecard("cfgB", "lab1", "dat1", a_prec=0.92, a_rec=0.98, reject_q=0.80)
+    ep = TL.build_episode(before, after, knobs_touched=["table_min_times"], rationale="tighten", decided_by="chat")
+    assert ep["deltas"]["tier_A_precision"] > 0                      # approved-set: looks like a win
+    assert round(ep["deltas"]["reject_cohort_quality"], 4) == -0.15  # pruned tail: it regressed
+    assert ep["constraint"]["reject_quality_regressed"] is True      # the episode self-incriminates
+
+
+def test_episode_reject_quality_regression_is_false_when_the_tail_holds_or_improves():
+    before = _scorecard("cfgA", "lab1", "dat1", a_prec=0.85, a_rec=0.98, reject_q=0.90)
+    after = _scorecard("cfgB", "lab1", "dat1", a_prec=0.90, a_rec=0.98, reject_q=0.93)  # tail improved
+    ep = TL.build_episode(before, after, knobs_touched=["x"], rationale="r", decided_by="chat")
+    assert ep["constraint"]["reject_quality_regressed"] is False
+
+
+def test_episode_missing_exploration_cohort_is_not_a_pass():
+    # legacy scorecards predate the section -> delta None, and a MISSING signal must not read as "no
+    # regression is a pass": regressed stays False (nothing observed) but the delta is explicitly None.
+    before = _scorecard("cfgA", "lab1", "dat1", a_prec=0.85, a_rec=0.98)   # no reject_q
+    after = _scorecard("cfgB", "lab1", "dat1", a_prec=0.90, a_rec=0.98)
+    ep = TL.build_episode(before, after, knobs_touched=["x"], rationale="r", decided_by="chat")
+    assert ep["deltas"]["reject_cohort_quality"] is None
+    assert ep["constraint"]["reject_quality_regressed"] is False
+    assert ep["constraint"]["reject_cohort_quality_delta"] is None
 
 
 # ----------------------------- pure: build_episode -----------------------------

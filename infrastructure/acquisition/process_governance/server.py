@@ -28,6 +28,8 @@ from infrastructure.acquisition.stage5_filter import release as REL         # no
 from infrastructure.acquisition.common import db as gdb                     # noqa: E402  (isolated governance Postgres — REQ-103)
 from infrastructure.acquisition.common import district_status as DS         # noqa: E402  (state_event log — gate@1 audit events)
 from infrastructure.acquisition.common import calibration as CAL            # noqa: E402  (gate-decision calibration log — REQ-121)
+from infrastructure.acquisition.common import gate_mode as GM               # noqa: E402  (per-gate manual/auto store — REQ-108, #104)
+from infrastructure.acquisition.stage5_filter import exploration_live as EAL  # noqa: E402  (gate@5 reject-audit demote-hook — REQ-120, #211)
 from infrastructure.acquisition.process_governance import gate_calibration as GCAL  # noqa: E402  (console→calibration vocab)
 from infrastructure.acquisition.common import school_sampling as SS         # noqa: E402  (add-school candidate lookup)
 from infrastructure.acquisition.stage1_queue import queue_batch as Q1       # noqa: E402  (build/persist a batch — REQ-102)
@@ -283,6 +285,18 @@ async def save_label(rec_key: str, payload: dict):
             primary_label=vals["primary_label"], status=vals["status"], state=rec["state"], created_at=ts)
         if cal:
             CAL.record_calibration(con, cal)
+        # gate@5 exploration-audit demote-hook (#211/REQ-120): labeling a reject re-evaluates the revocable
+        # autonomy license off the LIVE coverage — self-healing (manual review regenerates exactly the
+        # labels that restore coverage). DORMANT until gate@5 is set auto: configured manual → a cheap
+        # point-read and an immediate return (the reject-bucket scan is skipped — PR #248 review).
+        # SAVEPOINT + swallow (PR #248 review): the hook is advisory to a label save — a transient DB error
+        # or a corrupt gate_mode row inside it must never roll back the human's already-applied label
+        # (session_scope re-raises anything that escapes, discarding the whole transaction).
+        try:
+            with con.begin_nested():
+                EAL.resolve_gate5_mode(con)
+        except Exception as exc:   # noqa: BLE001 — best-effort hook, the label save is the priority
+            print(f"[gate5-hook] resolve_gate5_mode failed (label save unaffected): {exc}")
         con.commit()   # persist before exporting, so the JSON backup only reflects committed state
         # Export-on-save: the precious label is backed up to the tracked JSON before we return,
         # so it survives DB loss with zero action from the user (no reliance on remembering).
@@ -334,6 +348,15 @@ async def reset_labels(payload: dict):
         n_meaningful = BS.reset_labels_bulk(con, keys, ts)
         BS.recompute_labeled_topology(con, did)
         BS.recompute_attention(con, did)
+        # Same #211 demote-hook as save_label (PR #248 review): a reset REMOVES audited rejects from the
+        # coverage window (`_labeled` excludes 'unlabeled'), so it must re-evaluate the license too — else
+        # a stale 'auto' license outlives the coverage that earned it until some unrelated future label
+        # save happens to re-fire the hook. Same savepoint isolation: advisory, never fails the reset.
+        try:
+            with con.begin_nested():
+                EAL.resolve_gate5_mode(con)
+        except Exception as exc:   # noqa: BLE001
+            print(f"[gate5-hook] resolve_gate5_mode failed (reset unaffected): {exc}")
         con.commit()   # persist before exporting, so the JSON backup only reflects committed state
         BS.export_labels(con, LABELS_JSON)   # evicts the now-unlabeled rows from the tracked backup
         _refresh_filtered(con, did)
@@ -547,6 +570,64 @@ def _backup_followups(con) -> int:
     tmp.write_text(json.dumps(data, indent=2))
     tmp.replace(out)
     return len(data)
+
+
+# ---- per-gate manual/auto mode (the ramp-up control surface — REQ-108, #104) ----
+def _backup_gate_mode(con) -> int:
+    """Back the precious per-gate mode rows to a tracked JSON (the labels.json pattern) — setting a gate
+    auto is an auditable governance decision that must survive a DB wipe and carry a git history. Atomic
+    write; under pytest the tracked file is quarantine-redirected (issue #178)."""
+    rows = con.execute(text("SELECT gate, configured_mode, license_state, updated_at, actor "
+                            "FROM gate_mode ORDER BY gate")).mappings().all()
+    out = paths.guard_tracked_backup(paths.GATE_MODE_JSON)
+    tmp = out.with_name(out.name + ".tmp")
+    tmp.write_text(json.dumps([dict(r) for r in rows], indent=2))
+    tmp.replace(out)
+    return len(rows)
+
+
+@app.get("/api/gate-mode")
+def gate_mode_list():
+    """Every gate's resolved mode for the Settings panel: the global 'default' + gate@1..gate@8, with
+    defaults filled for unset gates (an empty table reads as every-gate-manual)."""
+    with gdb.session_scope() as con:
+        return {"gates": list(GM.GATES), "modes": list(GM.MODES), "settings": GM.all_modes(con)}
+
+
+@app.post("/api/gate-mode")
+async def gate_mode_set(payload: dict):
+    """Set a gate's (or the global 'default') configured manual/auto mode. Pure ramp-up control — this
+    persists the human's toggle; it does NOT itself flip any gate's runtime behavior (each gate stays
+    manual until its own auto path is built — #211 for gate@5). Records a state-free audit via the row's
+    actor/updated_at + the git-tracked backup. Invalid gate/mode → 400 (never a silent no-op)."""
+    gate, mode = payload.get("gate"), payload.get("mode")
+    actor = payload.get("actor", "ian")
+    if gate not in GM._VALID_KEYS or mode not in GM.MODES:
+        raise HTTPException(400, f"gate must be one of {sorted(GM._VALID_KEYS)} and mode one of {GM.MODES}")
+    with gdb.session_scope() as con:
+        GM.set_configured_mode(con, gate, mode, actor=actor)
+        con.commit()
+        _backup_gate_mode(con)
+    return {"ok": True, "gate": gate, "mode": mode}
+
+
+@app.get("/api/exploration-audit")
+def exploration_audit_status():
+    """gate@5's anti-survivorship reject-audit coverage meter + the pending randomized audit queue (#211,
+    REQ-120). Read-only: reflects the live tier-D reject bucket, the sampler draw, and the current gate@5
+    mode/license. The demote-hook itself fires on each gate@5 label (self-healing, `save_label`); this
+    endpoint resolves the effective mode WITHOUT persisting so a status read never mutates precious state.
+    Enforcement is DORMANT — `effective_mode` is 'manual' until a human sets gate@5 auto in Settings."""
+    with gdb.session_scope() as con:
+        # ONE draw serves everything (PR #248 review: this endpoint used to run the reject-population
+        # query + sampler twice — once inside resolve, once for pending — which also let a mid-request
+        # commit make the meter and the queue reflect two different population snapshots).
+        sample = EAL.audit_sample(con)
+        cov = EAL.coverage(con, sample=sample)
+        st = EAL.resolve_gate5_mode(con, persist=False, cov=cov)
+        st["pending"] = [{"rec_key": r["rec_key"], "district_id": r["district_id"],
+                          "url": r["url"], "sort_score": r["sort_score"]} for r in sample["pending"][:200]]
+        return st
 
 
 @app.get("/api/followup")

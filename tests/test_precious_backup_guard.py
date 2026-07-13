@@ -12,10 +12,11 @@ import pytest
 from infrastructure.acquisition.common import paths
 
 
-def test_tracked_backups_cover_all_four_precious_files():
+def test_tracked_backups_cover_all_precious_files():
     """The guarded set is exactly the pre-commit hook's PRECIOUS_BACKUPS sweep list."""
     assert paths.TRACKED_BACKUPS == {
-        paths.STATUS_FILE, paths.LABELS_JSON, paths.CLUSTER_SPLITS_JSON, paths.FOLLOWUP_FLAGS_JSON}
+        paths.STATUS_FILE, paths.LABELS_JSON, paths.CLUSTER_SPLITS_JSON, paths.FOLLOWUP_FLAGS_JSON,
+        paths.GATE_MODE_JSON}
 
 
 def test_guard_redirects_tracked_files_under_pytest():
@@ -38,7 +39,7 @@ def test_guard_is_inert_outside_pytest(monkeypatch):
     assert paths.guard_tracked_backup(paths.STATUS_FILE) == paths.STATUS_FILE
 
 
-def test_all_four_exporters_route_through_the_guard():
+def test_all_exporters_route_through_the_guard():
     """Wiring check: every precious-backup exporter resolves its write target via the guard, so a
     future exporter edit can't silently drop the #178 protection."""
     import inspect
@@ -47,7 +48,8 @@ def test_all_four_exporters_route_through_the_guard():
     from infrastructure.acquisition.stage5_filter import build_signals as BS
     from infrastructure.acquisition.process_governance import server
 
-    for fn in (DS.export_status, BS.export_labels, BS.export_splits, server._backup_followups):
+    for fn in (DS.export_status, BS.export_labels, BS.export_splits,
+               server._backup_followups, server._backup_gate_mode):
         assert "guard_tracked_backup" in inspect.getsource(fn), (
             f"{fn.__module__}.{fn.__name__} writes a tracked precious backup without the #178 guard")
 

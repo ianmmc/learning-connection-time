@@ -45,6 +45,10 @@ _METRIC_GETTERS = {
     "topology_agreement": lambda c: c["topology"]["coarse_agreement"],
     "labeled": lambda c: c["counts"]["labeled"],
     "targets": lambda c: c["counts"]["targets"],
+    # #214: the exploration-cohort Rejection-Quality/TNR on the pruned tail — the honest recall signal the
+    # approved-set precision/recall deltas above are structurally blind to. A tuning move that lifts tier_A
+    # precision while this FALLS is the illusion of improvement (FINDINGS §0), now visible in the episode.
+    "reject_cohort_quality": lambda c: c["exploration_cohort"]["rejection_quality"],
 }
 
 
@@ -81,6 +85,13 @@ def build_episode(before, after, *, knobs_touched, rationale, decided_by,
     # The floor defends A+B recall (harness.FLOOR_TIER) — reaches-review, not the tier-A auto-send bucket (#208).
     after_recall = harness.floor_recall(after)
     satisfied = (after_recall is not None and after_recall >= recall_floor)
+    # #214: the illusion-of-improvement guard — flag when the exploration-cohort reject-quality FELL across
+    # the move (the honest recall signal on the pruned tail dropping while approved-set metrics may have
+    # risen). ADVISORY only: the hard gate is the live quota's demote-hook (#211); here it makes the episode
+    # self-incriminating so a reviewer sees a tail regression that the approved-set deltas would hide. None
+    # when either scorecard predates the section (legacy) — a missing signal is not a pass.
+    rq_delta = deltas.get("reject_cohort_quality")
+    reject_quality_regressed = rq_delta is not None and rq_delta < 0
     return {
         "recorded_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "before": {"config": fb["config"], "label_set": fb["label_set"], "data": fb["data"]},
@@ -88,7 +99,9 @@ def build_episode(before, after, *, knobs_touched, rationale, decided_by,
         "pure_config_move": (fb["label_set"] == fa["label_set"] and fb["data"] == fa["data"]),
         "deltas": deltas,
         "constraint": {"recall_floor": recall_floor, "floor_tier": harness.FLOOR_TIER,
-                       "after_recall": after_recall, "satisfied": satisfied},
+                       "after_recall": after_recall, "satisfied": satisfied,
+                       "reject_cohort_quality_delta": rq_delta,
+                       "reject_quality_regressed": reject_quality_regressed},
         "promotion_gate": promotion_gate,
         "knobs_touched": list(knobs_touched),
         "rationale": rationale,
