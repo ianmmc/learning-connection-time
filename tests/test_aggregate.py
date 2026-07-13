@@ -115,6 +115,23 @@ class TestConsensus:
         assert len(acc) == 1 and "evidence" not in acc[0]
 
 
+# ------------------------------------------------- REQ-055 gate, shared string-input path (15c67c4 review)
+class TestGrossFromTimes:
+    def test_valid_pair(self):
+        assert A.gross_from_times("08:00", "15:25") == (445, None)
+
+    def test_unparseable(self):
+        # the "3pm" typo class — must be a named error, never a silent fallback
+        assert A.gross_from_times("08:00", "3pm") == (None, "unparseable")
+        assert A.gross_from_times(None, "15:00") == (None, "unparseable")
+
+    def test_implausible_gated(self):
+        # same REQ-055 gate the council path enforces — a typo'd pair can't slip through as a gross
+        assert A.gross_from_times("08:00", "10:05") == (None, "implausible")   # 125 min
+        assert A.gross_from_times("08:00", "18:00") == (None, "implausible")   # 600 min
+        assert A.is_plausible(240) and A.is_plausible(510) and not A.is_plausible(None)
+
+
 # ---------------------------------------------------------------- REQ-056 exact mode
 class TestMode:
     def test_exact_mode_not_cluster_mean_380_not_381(self):

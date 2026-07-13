@@ -212,7 +212,18 @@ benchmark batches. (Live: 62 production-fact districts → 36 after the quiesced
    on the fact (`council_start_time`/`council_end_time`/`council_gross` in the receipt) for audit; Stage 9
    writes the effective value. Only a times-override recomputes; a note-only override annotates without
    moving the mode. (This was the v1 "Stage-9 applies it" deferral, reversed: a human tried it and
-   reasonably expected the band to move.)
+   reasonably expected the band to move.) **Hardened by its own review round (commit 15c67c4's review,
+   2026-07-13):** the override path now goes through the CANONICAL `AGG.gross_from_times` — the shared
+   REQ-055 PLAUSIBLE gate + HH:MM parser (`aggregate.is_plausible` is the one predicate both the council
+   and human paths use) — after the first draft's inline arithmetic was found to (a) bypass the 240–510
+   gate (a typo'd override yielding gross=125 became a district's modal determination) and (b) silently
+   revert to the stale council gross on an unparseable time ("3pm") while still displaying as applied.
+   Now: the endpoint VALIDATES the effective pair before storing (400 with the reason — immediate
+   feedback), and `_effective_times` is defense-in-depth for legacy rows (an invalid stored override is
+   NOT applied — council values stand, `override_error` renders a loud console warning). The console also
+   renders an applied override's whole times/gross cell in the override treatment (not a trailing glyph),
+   so a reviewer scanning the column can't mistake a human correction for a council reading, and
+   `override_applied` is server-computed once rather than re-derived client-side.
 4. **Adjudicate the negative space explicitly** — unresolved `(band,school)` pairs, implausible-gated facts,
    and the #237 contamination flag (`detect_single_school_over_extraction`, already surfaced in gate@7's
    read path). The human's disposition ("keep school X, drop the CMO siblings") is **recorded**; never
