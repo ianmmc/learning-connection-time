@@ -47,6 +47,9 @@ from infrastructure.acquisition.stage6_handoff import councils as C6        # no
 from infrastructure.acquisition.stage6_handoff.models import Handoff        # noqa: E402  (precious handoff index row)
 from infrastructure.acquisition.stage7_extract.models import Extraction, SchoolFact, ExtractionRequest, utcnow as _u7  # noqa: E402,F401  (precious Stage-7 results + request loop — register for init_precious_schema)
 from infrastructure.acquisition.stage8_aggregate import aggregate as AGG        # noqa: E402  (gate@7 band rollup from school_fact)
+from infrastructure.acquisition.stage8_aggregate import closing_argument as CA8  # noqa: E402  (gate@8 closing-argument assembler)
+from infrastructure.acquisition.stage8_aggregate import approval as APV8         # noqa: E402  (gate@8 approval record)
+from infrastructure.acquisition.stage8_aggregate.models import Stage8Approval    # noqa: E402,F401  (precious gate@8 decision — register for init_precious_schema)
 
 
 def _refresh_filtered(con, district_id: str) -> None:
@@ -570,6 +573,20 @@ def _backup_followups(con) -> int:
     tmp.write_text(json.dumps(data, indent=2))
     tmp.replace(out)
     return len(data)
+
+
+def _backup_stage8_approvals(con) -> int:
+    """Back the precious gate@8 approval decisions to a tracked JSON (the labels.json pattern) — a
+    published-LCT authorization is an auditable governance decision that must survive a DB wipe and carry
+    a git history. Append-only rows; atomic write; pytest quarantine-redirected (issue #178)."""
+    rows = con.execute(text(
+        "SELECT approval_id, district_id, disposition, actor, reason, facts_fingerprint, receipt_json, "
+        "created_at FROM stage8_approval ORDER BY approval_id")).mappings().all()
+    out = paths.guard_tracked_backup(paths.STAGE8_APPROVALS_JSON)
+    tmp = out.with_name(out.name + ".tmp")
+    tmp.write_text(json.dumps([dict(r) for r in rows], indent=2))
+    tmp.replace(out)
+    return len(rows)
 
 
 # ---- per-gate manual/auto mode (the ramp-up control surface — REQ-108, #104) ----
