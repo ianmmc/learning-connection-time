@@ -1699,6 +1699,105 @@ def extract_district(district_id: str):
                 "degenerate_school_facts": degenerate}
 
 
+# ==================== Stage 8 / gate@8 — Aggregate (the closing argument) ====================
+@app.get("/api/aggregate/districts")
+def aggregate_districts():
+    """gate@8 left pane: the closing-argument review queue — districts with production facts whose gate@7
+    request loop is QUIESCED (no open request; the §2 entry condition), each badged with its latest gate@8
+    decision. Undecided first, then most unresolved (attention-first). Cheap counts only; the full closing
+    argument loads on click.
+
+    EXCLUDES benchmark (`batch_type='benchmark'`) districts — the SAME wall Stage 9 / the dispatch preview
+    use (server.py:1307). gate@8 authorizes the Stage-9 LCT write, and benchmark stays walled off; it is
+    ALSO how the growing GT yardstick works (a non-benchmark district promoted here becomes verified GT —
+    benchmark districts are already the yardstick, so they don't re-flow through this gate). The rule keys
+    on batch_type, not the batch_00000 id literal, because the GT corpus grows into new benchmark batches."""
+    with gdb.session_scope() as con:
+        rows = con.execute(text(
+            f"""SELECT p.district_id, d.name, d.state,
+                      COALESCE(cf.n_accepted, 0) AS n_accepted,
+                      COALESCE(cf.n_unresolved, 0) AS n_unresolved, s8.disposition
+               FROM (SELECT DISTINCT district_id FROM extraction WHERE run_kind='production') p
+               LEFT JOIN district d ON d.district_id = p.district_id
+               LEFT JOIN ({CUMULATIVE_FACT_COUNTS_SQL}) cf ON cf.district_id = p.district_id
+               LEFT JOIN LATERAL (SELECT disposition FROM stage8_approval a
+                                  WHERE a.district_id = p.district_id
+                                  ORDER BY approval_id DESC LIMIT 1) s8 ON true
+               WHERE COALESCE(cf.n_accepted, 0) > 0
+                 AND NOT EXISTS (SELECT 1 FROM extraction_request r
+                                 WHERE r.district_id = p.district_id
+                                   AND r.status IN {EX.RQ.OPEN_STATUSES_SQL})
+                 AND NOT EXISTS (SELECT 1 FROM batch_district bd JOIN batch b ON b.batch_id = bd.batch_id
+                                 WHERE bd.district_id = p.district_id AND b.batch_type = 'benchmark')
+               ORDER BY (s8.disposition IS NOT NULL), n_unresolved DESC, p.district_id""")).mappings().all()
+        return [dict(r) for r in rows]
+
+
+@app.get("/api/aggregate/district/{district_id}")
+def aggregate_district_detail(district_id: str):
+    """The closing argument for one district (band claim + dereferenced evidence + sampling + negative
+    space) + its gate@8 decision status (approved / sent_back / pending, and whether an approval has gone
+    STALE against the live facts)."""
+    with gdb.session_scope() as con:
+        ca = CA8.load_closing_argument(con, district_id)
+        status = APV8.decision_status(con, district_id, current_fingerprint=CA8.fingerprint(ca))
+        return {"closing_argument": ca, "decision": status}
+
+
+@app.post("/api/aggregate/override")
+async def aggregate_override(payload: dict):
+    """Record a human override of one school's extracted times, with a REQUIRED reason (§2a.3). Stored on
+    school_fact.human_determination as an auditable JSON record; the council's original times are NEVER
+    destroyed (Stage 9 applies the override at write). 400 on a missing fact_id/reason, 404 on no such
+    fact."""
+    fact_id, reason = payload.get("fact_id"), (payload.get("reason") or "").strip()
+    actor = payload.get("actor", "ian")
+    if not fact_id or not reason:
+        raise HTTPException(400, "fact_id and a non-empty reason are required")
+    det = json.dumps({"start_time": payload.get("start_time"), "end_time": payload.get("end_time"),
+                      "reason": reason, "actor": actor, "at": _u7()})
+    with gdb.session_scope() as con:
+        n = con.execute(text("UPDATE school_fact SET human_determination = :d WHERE fact_id = :f"),
+                        {"d": det, "f": fact_id}).rowcount
+        if not n:
+            raise HTTPException(404, f"no school_fact {fact_id}")
+        con.commit()
+    return {"ok": True, "fact_id": fact_id}
+
+
+@app.post("/api/aggregate/decision/{district_id}")
+async def aggregate_decision(district_id: str, payload: dict):
+    """Record the gate@8 verdict on the WHOLE district (§2e, all-or-nothing): 'approved' (Stage 9 may
+    write every band) or 'sent_back' (a reason is REQUIRED → an 8→1/8→6 back-edge). Re-loads the closing
+    argument SERVER-side (never trusts the client's copy), freezes it as the receipt + fingerprint, fires
+    the gate@8 calibration hook (accruing from day one), commits, and backs up the tracked JSON."""
+    disposition, reason = payload.get("disposition"), payload.get("reason")
+    actor = payload.get("actor", "ian")
+    if disposition not in APV8.DISPOSITIONS:
+        raise HTTPException(400, f"disposition must be one of {APV8.DISPOSITIONS}")
+    with gdb.session_scope() as con:
+        ca = CA8.load_closing_argument(con, district_id)
+        if not ca.get("bands"):
+            raise HTTPException(400, f"district {district_id} has no accepted facts to decide on")
+        meta = con.execute(text("SELECT name, state FROM district WHERE district_id = :d"),
+                           {"d": district_id}).mappings().first() or {}
+        try:
+            approval_id = APV8.record_decision(con, ca, disposition=disposition, actor=actor,
+                                               reason=reason, name=meta.get("name", ""),
+                                               state=meta.get("state"))
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        cal = GCAL.gate8_decision_record(
+            district_id=district_id, disposition=disposition,
+            min_coverage=CA8.min_band_coverage(ca), state=meta.get("state"),
+            run_kind="production", created_at=_u7())
+        if cal:
+            CAL.record_calibration(con, cal)
+        con.commit()
+        _backup_stage8_approvals(con)
+    return {"ok": True, "approval_id": approval_id, "disposition": disposition}
+
+
 @app.post("/api/extract/request/{request_id}")
 async def extract_request_review(request_id: int, payload: dict):
     """gate@7 action: approve / reject / reopen a request-more-evidence directive (records

@@ -529,3 +529,25 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 .audit-bar-fill.met { background: var(--accent-green, #2e7d32); }
 .audit-list { margin: 6px 0 0; padding-left: 18px; font-size: var(--fs-xs); display: flex; flex-direction: column; gap: 3px; }
 .audit-list code { font-size: var(--fs-xs); }
+
+/* ---- Stage 8 (Aggregate / gate@8) — the closing argument ---- */
+.btn-small { padding: 2px 8px; font-size: var(--fs-xs); }
+.s8-head { display: flex; align-items: center; gap: 10px; margin: 4px 0 12px; }
+.s8-verdict { border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; margin-bottom: 16px;
+  background: var(--surface-alt); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.s8-note { color: var(--text-secondary); font-size: var(--fs-xs); margin: 0; flex-basis: 100%; }
+.s8-band { border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px; margin-bottom: 14px; background: var(--surface-card); }
+.s8-band-head { display: flex; align-items: baseline; gap: 12px; }
+.s8-band-head h3 { margin: 0; text-transform: capitalize; }
+.s8-claim { font-size: var(--fs-sm); }
+.s8-method { color: var(--text-secondary); font-size: var(--fs-xs); }
+.s8-sampling { color: var(--text-secondary); font-size: var(--fs-xs); margin: 6px 0 10px; }
+.s8-schools { width: 100%; border-collapse: collapse; font-size: var(--fs-xs); }
+.s8-schools th { text-align: left; color: var(--text-secondary); font-weight: 600; border-bottom: 1px solid var(--border-subtle); padding: 4px 8px; }
+.s8-schools td { padding: 5px 8px; border-bottom: 1px solid var(--border-subtle); vertical-align: top; }
+.s8-quote { font-style: italic; color: var(--text-primary); margin-top: 3px; }
+.s8-muted { color: var(--text-secondary); }
+.s8-override { color: var(--text-brand); margin-top: 3px; }
+.s8-negative { border: 1px dashed var(--border-strong); border-radius: 8px; padding: 12px; margin-top: 6px; background: var(--surface-page); }
+.s8-negative h3 { margin: 0 0 8px; }
+.s8-negative ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-sm); }

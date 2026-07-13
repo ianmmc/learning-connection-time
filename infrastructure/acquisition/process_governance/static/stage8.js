@@ -1,0 +1,212 @@
+"use strict";
+// Stage 8 (Aggregate) console view — gate@8, the "closing argument" (STAGE8_AGGREGATE_DESIGN §2).
+// Review one district's WHOLE per-band determination and render, for each band: the claim, the sampling
+// sufficiency, the dereferenced evidence (URL / reader / capture / models / verbatim council quote), and
+// the negative space — then approve (Stage 9 may write every band) or send it back (all-or-nothing, §2e).
+//
+// MUST-BE-VISIBLE features (regression-guarded in the Playwright/DOM check — do not silently drop):
+//   F1 per-band determination: gross minutes + start–end + method            [data-feat="claim"]
+//   F2 per-band sampling: n_sampled/n_total + coverage% + plurality%         [data-feat="sampling"]
+//   F3 per-school evidence: source URL, reader, models, verbatim quote       [data-feat="evidence"]
+//   F4 capture time(s)                                                       [data-feat="capture"]
+//   F5 negative space: unresolved / contamination / unsatisfied / gaps       [data-feat="negative-space"]
+//   F6 decision status + Approve / Send-back verdict controls                [data-feat="verdict"]
+//   F7 per-school override control (required reason)                         [data-feat="override"]
+// Vanilla JS on the shared window.LCT helpers; reuses q-*/badge/btn classes for visual consistency.
+(function () {
+  const $g = (s, r = document) => r.querySelector(s);
+  const { esc, postJSON, api } = window.LCT;
+  const pct = (x) => (x == null ? "—" : Math.round(x * 100) + "%");
+  let inited = false, CURRENT = null;
+
+  window.initStage8 = function () {
+    if (!inited) { inited = true; renderShell(); }
+    loadDistricts();                                     // re-fetch on every show (badges reflect decisions)
+  };
+
+  function renderShell() {
+    $g("#stage8view").innerHTML = `
+      <nav class="col col-tree q-left" aria-label="Districts awaiting gate@8">
+        <div class="q-left-head"><h3>Closing arguments · gate@8</h3></div>
+        <div id="s8-list" class="q-list"><div class="empty">Loading…</div></div>
+      </nav>
+      <section id="s8-detail" class="col col-center"><div class="empty">Select a district to review its closing argument.</div></section>`;
+  }
+
+  // ----------------------------- left pane -----------------------------
+  async function loadDistricts() {
+    const list = $g("#s8-list");
+    let ds;
+    try { ds = await api("/api/aggregate/districts"); }
+    catch (e) { list.innerHTML = `<div class="empty err">Couldn't load: ${esc(e.message)}<br/>Is Docker (governance DB) up?</div>`; return; }
+    if (!ds.length) { list.innerHTML = `<div class="empty">No districts are ready for gate@8 yet — a district appears once it has extracted facts and its gate@7 request loop is quiet.</div>`; return; }
+    list.innerHTML = "";
+    ds.forEach((d) => list.appendChild(districtRow(d)));
+  }
+
+  function dispositionBadge(disp) {
+    if (disp === "approved") return `<span class="badge badge-success">approved</span>`;
+    if (disp === "sent_back") return `<span class="badge badge-red">sent back</span>`;
+    return `<span class="badge badge-neutral">pending</span>`;
+  }
+
+  function districtRow(d) {
+    const el = document.createElement("div");
+    el.className = "q-batch" + (d.district_id === CURRENT ? " active" : "");
+    el.dataset.id = d.district_id;
+    el.innerHTML = `<div class="q-batch-top"><span class="q-batch-id">${esc(d.name || d.district_id)}</span>${dispositionBadge(d.disposition)}</div>
+      <div class="q-batch-meta">${esc(d.district_id)}${d.state ? " · " + esc(d.state) : ""} · ${d.n_accepted} school${d.n_accepted === 1 ? "" : "s"} · ${d.n_unresolved} unresolved</div>`;
+    el.onclick = () => openDistrict(d.district_id);
+    return el;
+  }
+
+  // ----------------------------- detail -----------------------------
+  async function openDistrict(did) {
+    CURRENT = did;
+    document.querySelectorAll("#s8-list .q-batch").forEach((e) => e.classList.toggle("active", e.dataset.id === did));
+    const det = $g("#s8-detail");
+    det.innerHTML = `<div class="empty">Loading ${esc(did)}…</div>`;
+    let x;
+    try { x = await api(`/api/aggregate/district/${did}`); }
+    catch (e) { det.innerHTML = `<div class="empty err">${esc(e.message)}</div>`; return; }
+    det.innerHTML = renderDetail(x);
+    wire(det, did);
+  }
+
+  function renderDetail(x) {
+    const ca = x.closing_argument, dec = x.decision || {};
+    const bands = ca.bands || {};
+    const order = ["elementary", "middle", "high"].filter((b) => bands[b]);
+    return `
+      ${renderHeader(ca, dec)}
+      ${renderVerdict(dec)}
+      <div class="s8-bands">${order.map((b) => renderBand(b, bands[b])).join("") || `<div class="empty">No accepted band facts.</div>`}</div>
+      ${renderNegativeSpace(ca.negative_space || {}, ca.capture_events || [])}`;
+  }
+
+  function renderHeader(ca, dec) {
+    let status = `<span class="badge badge-neutral">not yet decided</span>`;
+    if (dec.decided) {
+      status = dispositionBadge(dec.disposition);
+      if (dec.is_stale) status += ` <span class="badge badge-warn" title="A re-extraction changed the facts since this decision — re-review before it can authorize a write.">stale — re-review</span>`;
+    }
+    return `<div class="s8-head"><h2 style="margin:0">${esc(ca.district_id)}</h2> ${status}</div>`;
+  }
+
+  // F6 — the verdict controls
+  function renderVerdict(dec) {
+    const approvedNote = dec.is_approved
+      ? `<span class="s8-note">Approved — Stage 9 may write all bands.</span>` : "";
+    return `<div class="s8-verdict" data-feat="verdict">
+      <button class="btn btn-primary" data-decide="approved">Approve district → Stage 9</button>
+      <button class="btn" data-decide="sent_back">Send back (needs a reason)</button>
+      ${approvedNote}
+      <p class="s8-note">All-or-nothing at the district (§2e): approval publishes every band together; an unsatisfied band means send it back.</p>
+    </div>`;
+  }
+
+  function renderBand(band, b) {
+    const s = b.sampling || {};
+    return `<section class="s8-band">
+      <div class="s8-band-head" data-feat="claim">
+        <h3>${esc(band)}</h3>
+        <span class="s8-claim"><strong>${b.gross_minutes} min/day</strong> · ${esc(b.start_time)}–${esc(b.end_time)} · <span class="s8-method">${esc(b.method)}</span></span>
+      </div>
+      <div class="s8-sampling" data-feat="sampling">
+        Sampled <strong>${s.n_sampled}</strong> of <strong>${s.n_total == null ? "?" : s.n_total}</strong> schools ·
+        coverage ${pct(s.coverage)} · school agreement (plurality) ${pct(s.plurality_share)}
+      </div>
+      <table class="s8-schools"><thead><tr><th>School</th><th>Times</th><th>Gross</th><th>Models</th><th>Evidence</th><th></th></tr></thead>
+        <tbody>${(b.schools || []).map(renderSchool).join("")}</tbody></table>
+    </section>`;
+  }
+
+  function renderSchool(sc) {
+    const ev = sc.evidence, ce = sc.council_evidence, ov = sc.human_override;
+    const url = ev && ev.url
+      ? `<a href="${esc(ev.url)}" target="_blank" rel="noopener">${esc(shortUrl(ev.url))}</a>` : `<span class="s8-muted">no source link</span>`;
+    const reader = ev && ev.source_file ? ` · read via ${esc(ev.source_file)}` : "";
+    const quote = ce && ce.quote ? `<div class="s8-quote" data-feat="evidence">“${esc(ce.quote)}”${ce.locus ? ` <span class="s8-muted">(${esc(ce.locus)})</span>` : ""}</div>` : "";
+    const stated = ce && ce.stated_minutes != null
+      ? `<div class="s8-muted">page states ${ce.stated_minutes} min${ce.stated_minutes_agree === false ? " (models disagree)" : ""}${ce ? "" : ""} — corroboration</div>` : "";
+    const overrideMark = ov
+      ? `<div class="s8-override" data-feat="override-applied">✎ human override: ${esc(ov.start_time || "?")}–${esc(ov.end_time || "?")} — ${esc(ov.reason || ov.note || "")}</div>` : "";
+    return `<tr>
+      <td>${esc(sc.school)}</td>
+      <td>${esc(sc.start_time)}–${esc(sc.end_time)}</td>
+      <td>${sc.gross}</td>
+      <td class="s8-muted">${(sc.models || []).map((m) => esc(m.split("/").pop())).join(", ")}</td>
+      <td data-feat="evidence">${url}${reader}${quote}${stated}${overrideMark}</td>
+      <td><button class="btn btn-small" data-feat="override" data-override="${esc(sc.fact_id)}" data-school="${esc(sc.school)}" ${sc.fact_id == null ? "disabled" : ""}>Override</button></td>
+    </tr>`;
+  }
+
+  // F5 — the honest negative space
+  function renderNegativeSpace(ns, captures) {
+    const rows = [];
+    if ((ns.unsatisfied_bands || []).length)
+      rows.push(`<li><strong>Unsatisfied bands:</strong> ${ns.unsatisfied_bands.map(esc).join(", ")} — a district can't be approved until every claimed band has confident minutes (send back → 8→1).</li>`);
+    if (ns.contamination)
+      rows.push(`<li><strong>Contamination flag (#237):</strong> a single-school LEA with ${ns.contamination.n_distinct_schools} distinct schools — ${ns.contamination.distinct_schools.map(esc).join(", ")}.</li>`);
+    if ((ns.unresolved || []).length)
+      rows.push(`<li><strong>${ns.unresolved.length} unresolved</strong> (band, school) pair(s) — the council couldn't reach cross-family consensus.</li>`);
+    if ((ns.degenerate_school_facts || []).length)
+      rows.push(`<li><strong>${ns.degenerate_school_facts.length} degenerate school name(s)</strong> dropped (#245).</li>`);
+    const gaps = Object.entries(ns.coverage_gaps || {});
+    if (gaps.length)
+      rows.push(`<li><strong>Coverage gaps:</strong> ${gaps.map(([b, g]) => `${esc(b)} ${g.n_sampled}/${g.n_total}`).join(", ")} — bands resting on a thin sample.</li>`);
+    const unattr = Object.entries(ns.unattributed_level_schools || {});
+    if (unattr.length)
+      rows.push(`<li class="s8-muted">${unattr.map(([lvl, n]) => `${n} ${esc(lvl)}`).join(", ")} school(s) not attributed to any band (ambiguous NCES level).</li>`);
+    const capLine = captures.length
+      ? captures.map((c) => esc((c.created_at || "").replace("T", " ").replace("Z", ""))).join(", ")
+      : "unknown";
+    return `<section class="s8-negative" data-feat="negative-space">
+      <h3>What we know — and what we don't</h3>
+      ${rows.length ? `<ul>${rows.join("")}</ul>` : `<p class="s8-note">No open gaps flagged — every claimed band has confident minutes.</p>`}
+      <p class="s8-note" data-feat="capture">Pages captured: ${capLine}.</p>
+    </section>`;
+  }
+
+  function shortUrl(u) {
+    try { const p = new URL(u); return p.hostname.replace(/^www\./, "") + (p.pathname.length > 1 ? p.pathname : ""); }
+    catch (_) { return u.length > 60 ? u.slice(0, 57) + "…" : u; }
+  }
+
+  // ----------------------------- actions -----------------------------
+  function wire(det, did) {
+    det.querySelectorAll("[data-decide]").forEach((btn) =>
+      (btn.onclick = () => decide(did, btn.dataset.decide)));
+    det.querySelectorAll("[data-override]").forEach((btn) =>
+      (btn.onclick = () => override(did, btn.dataset.override, btn.dataset.school)));
+  }
+
+  async function decide(did, disposition) {
+    let reason = null;
+    if (disposition === "sent_back") {
+      reason = window.prompt("Why is this district not publishable? (which band is unsatisfied / what's wrong)");
+      if (reason == null || !reason.trim()) return;   // cancelled or empty — no-op (server also enforces)
+    } else if (!window.confirm("Approve this district's whole picture? Stage 9 may then write every band's minutes to the LCT DB.")) {
+      return;
+    }
+    try { await api(`/api/aggregate/decision/${did}`, postJSON({ disposition, reason, actor: "ian" })); }
+    catch (e) { alert("Decision failed: " + e.message); return; }
+    await loadDistricts();
+    openDistrict(did);
+  }
+
+  async function override(did, factId, school) {
+    const start = window.prompt(`Override START time for ${school} (HH:MM), or leave blank to keep:`);
+    if (start == null) return;
+    const end = window.prompt(`Override END time for ${school} (HH:MM), or leave blank to keep:`);
+    if (end == null) return;
+    const reason = window.prompt("Reason for the override (required):");
+    if (reason == null || !reason.trim()) { alert("An override requires a reason."); return; }
+    try {
+      await api("/api/aggregate/override", postJSON({
+        fact_id: Number(factId), start_time: start || null, end_time: end || null,
+        reason: reason.trim(), actor: "ian" }));
+    } catch (e) { alert("Override failed: " + e.message); return; }
+    openDistrict(did);
+  }
+})();

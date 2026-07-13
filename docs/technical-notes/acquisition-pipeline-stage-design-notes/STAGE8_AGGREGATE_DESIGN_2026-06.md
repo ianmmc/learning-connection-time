@@ -172,7 +172,13 @@ path (§0/§1a); the two gates ask different questions. gate@7: *"are these extr
 evidence?"* gate@8: *"is the whole district's per-band picture complete and defensible enough to PUBLISH?"*
 So a district is **eligible for gate@8 only once gate@7's request loop has quiesced** — no open
 request-more-evidence directives (all satisfied or auto-withdrawn, #233/REQ-123). You don't deliver a
-closing argument while evidence is still being gathered.
+closing argument while evidence is still being gathered. The queue also **excludes benchmark
+(`batch_type='benchmark'`) districts** — the same wall Stage 9 / the dispatch preview use (server.py's
+`is_benchmark` rule): gate@8 authorizes the Stage-9 LCT write, and benchmark stays walled off. This is
+also consistent with how the GT yardstick grows — a *non-benchmark* district approved here becomes verified
+ground truth, whereas benchmark districts are *already* the yardstick, so they don't re-flow through this
+gate. Keyed on `batch_type`, not the `batch_00000` id literal, because the GT corpus grows into new
+benchmark batches. (Live: 62 production-fact districts → 36 after the quiesced + benchmark filters.)
 
 ### 2a. What the stage accomplishes
 1. **Dereference the band rollup into an evidence chain — via the IMMUTABLE handoff, not a fragile live

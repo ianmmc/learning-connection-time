@@ -67,6 +67,20 @@ def _band_denominator(band, nces_by_level):
     return (nces_by_level or {}).get(level)
 
 
+def _override(human_determination):
+    """Parse a school_fact.human_determination into the recorded human override (§2a.3), or None. Stored
+    as a JSON record {start_time, end_time, reason, actor, at} by the gate@8 override endpoint; the
+    council's original times are preserved on the fact (never destroyed). Tolerant of the empty-string
+    default + any legacy plain-string value (returned under `note`)."""
+    if not human_determination:
+        return None
+    try:
+        d = json.loads(human_determination)
+        return d if isinstance(d, dict) else {"note": str(human_determination)}
+    except (TypeError, ValueError):
+        return {"note": str(human_determination)}
+
+
 def _council_evidence(evidence_json):
     """Parse a school_fact.evidence_json ({model: {quote, locus, stated_minutes, ...}}, v2 only) into
     a render-ready summary + the full per-model detail. Returns None for pre-v2 rows (evidence absent),
@@ -127,8 +141,11 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
     # per (band, normalized-school) lookups off the winning merged fact — the merge already deduped to
     # one winner per (band, norm_school), so these are 1:1 with bands' school entries.
     reckey_of = {(f["band"], _norm(f["school"])): f.get("rec_key") for f in merged_accepted}
+    factid_of = {(f["band"], _norm(f["school"])): f.get("fact_id") for f in merged_accepted}
     council_ev_of = {(f["band"], _norm(f["school"])): _council_evidence(f.get("evidence_json"))
                      for f in merged_accepted}
+    override_of = {(f["band"], _norm(f["school"])): _override(f.get("human_determination"))
+                   for f in merged_accepted}
 
     claimed = SS.real_bands_for_district(nces_by_level, schools_by_band)
     satisfied = set(bands.keys())
@@ -139,9 +156,10 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
         for sc in b["schools"]:
             key = (band, _norm(sc["school"]))
             rk = reckey_of.get(key)
-            schools.append({**sc, "rec_key": rk,
+            schools.append({**sc, "rec_key": rk, "fact_id": factid_of.get(key),
                             "evidence": evidence_by_reckey.get(rk) if rk else None,
-                            "council_evidence": council_ev_of.get(key)})
+                            "council_evidence": council_ev_of.get(key),
+                            "human_override": override_of.get(key)})
         n_sampled, n_total = b["n_schools"], _band_denominator(band, nces_by_level)
         out_bands[band] = {
             "gross_minutes": b["gross_minutes"], "start_time": b["start_time"],
@@ -177,6 +195,15 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
         "capture_events": capture_events or [],
         "provenance": {"nces_total": nces_total, "nces_by_level": nces_by_level or {}},
     }
+
+
+def min_band_coverage(ca):
+    """The district's WEAKEST band coverage (schools sampled / NCES total) — the gate@8 confidence proxy
+    for the calibration log (§2c.6). None if no band has a denominator. This is the single number that
+    most cheaply says 'how thin is the thinnest part of this district's evidence.'"""
+    covs = [b["sampling"]["coverage"] for b in ca.get("bands", {}).values()
+            if b["sampling"]["coverage"] is not None]
+    return min(covs) if covs else None
 
 
 def fingerprint(ca):
