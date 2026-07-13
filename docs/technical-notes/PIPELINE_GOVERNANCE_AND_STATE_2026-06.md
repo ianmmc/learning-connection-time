@@ -73,8 +73,9 @@ cluster bootstrap + TOST + ICC/DEFF, proven stats libraries not hand-rolled (#21
 `frontier gate()`; **(5)** safe-promotion machinery — an immutable content-addressed config artifact +
 @champion/@fallback pointers + the shadow→gate→swap→record flow (#213), shipped **DORMANT** (nothing reads
 the champion pointer live yet). Full detail: §11b below and each stage's own design note; activation of the
-dormant pieces tracked as one checklist (#219, stays open by design). **Epic #209 itself remains OPEN**
-pending its own issue-closing pass — the build is done, this is bookkeeping only.
+dormant pieces tracked as one checklist (#219, stays open by design). **Epic #209 is CLOSED (2026-07-13)** —
+all three phases shipped and merged; #219 (dormant→live activation) stays open by design as the
+forward-looking follow-on.
 
 > **A real incident, worth recording here since it's exactly the kind of cross-stage state-integrity lesson
 > this doc exists to capture.** The PR meant to land #104/#211/#214 was stacked on the PR landing #236/#237
