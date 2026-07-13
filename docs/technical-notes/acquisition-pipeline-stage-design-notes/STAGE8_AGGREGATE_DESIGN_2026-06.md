@@ -67,13 +67,20 @@ place (with tests) rather than deleted; treat them as legacy unless/until they'r
   genuinely scattered band where later schools keep disagreeing. No caller outside its own tests today
   (i.e. the early-exit is not wired into the live sampling loop).
 
-**Current (fact-based) — live inside gate@7 today:**
+**Current (fact-based) — live inside gate@7 today** (five functions: `consensus_school_facts`,
+`district_bands_from_facts`, `aggregate_band`, `merge_fact_runs`, `detect_single_school_over_extraction`):
 - **`consensus_school_facts(model_rows, judge_rows=None)`** — the production per-school consensus
   function (`stage7_run.py:172,179`, `council_lab.py:99,108`). Input is `{model: [{grade_level,
   start_time, end_time, school_name}, ...]}` per council voter (and optionally a judge's rows).
   Rows are grouped by `(band, normalized-school-name)` — school-name normalization uses
   `common.school_match.norm_school`, the SAME normalizer the Stage-7 GT validator uses, so the two
-  must agree identically (REQ-117). Within each group, the council reaches consensus on **START and
+  must agree identically (REQ-117; and, since PR #247 deleted Stage 5's own separate duplicate, all
+  three stages now share the one function — see `STAGE7_EXTRACT_DESIGN_2026-06.md`). `norm_school`'s
+  stripping rules were tightened in that same PR (suffix-anchored district-qualifier stripping,
+  hyphen word-splitting, NFKD, ES/MS/HS): this grouping step is directly affected — e.g. "Meridian
+  Consolidated School" and "Meridian School" now group as DIFFERENT schools here, where the old
+  anywhere-strip wrongly merged their council facts into one consensus group. Within each group, the
+  council reaches consensus on **START and
   END separately** (cross-family, `>=2` families within `TOL=15` min each) — same-family agreement is
   not consensus (REQ-056). On disagreement, an optional judge's `(start,end)` pair breaks the tie.
   `gross = end - start` is computed only after times are agreed, then gated to `PLAUSIBLE = (240,
@@ -106,6 +113,37 @@ place (with tests) rather than deleted; treat them as legacy unless/until they'r
 
   Output is `(accepted, unresolved)`, each deterministically sorted by `(band, school)`. Pure, no I/O;
   the caller is responsible for filtering to `run_kind='production'` rows.
+
+  **The dedup key RE-NORMALIZES `school` through the CURRENT `norm_school` at read time** (PR #247
+  review), not the raw persisted string: `school_fact.school` is written at extraction time, so a run
+  predating a `norm_school` stopword-list change carries a stale-vintage key (e.g. the pre-#236
+  `'lincoln unified district'` vs. today's `'lincoln'`). Exact-string matching on the raw column would
+  silently fragment the merge — the SAME physical school reading as two — with no backfill path since
+  `school_fact` rows are never rewritten. `norm_school` is idempotent (a fixed-point strip loop), so
+  re-normalizing an already-current key is a no-op; this makes the merge self-healing across any future
+  stopword-list change, for free.
+
+- **`detect_single_school_over_extraction(accepted, nces_school_count, roster_names=None)`** — the #237
+  cross-LEA contamination detector, live at `server.py:1649` (called immediately after
+  `district_bands_from_facts`, in the same gate@7 read path, surfaced in the response as
+  `"contamination"`). A **single-school NCES LEA** (`nces_school_count == 1`) whose accepted facts
+  span MORE THAN ONE distinct school is contaminated — a charter-network campus whose siblings'
+  schedules were pulled from a shared CMO domain (e.g. `ascendlearning.org` serving all 12 Ascend
+  campuses), or a blank-domain unscoped capture (the Millard #227 class). Detection is reliable (a
+  1-school LEA cannot legitimately have >1 school); picking WHICH school is the real one is not
+  (shared network names like "ascend" recur across every sibling, acronyms like "DECA" =
+  "Dayton Early College Academy" fail a name match) — so this **flags for human review at gate@7 and
+  never auto-rejects**, matching the manual-gate ramp-up posture. `roster_matched` is the one
+  trustworthy keeper hint (the LEA's own Stage-1 roster, when available), filtered through
+  `norm_school_strict` (not the plain `norm_school`) so an all-stopword junk roster entry (a scraped
+  "School District" header) can't pass as a legitimate keeper. Like `merge_fact_runs`, `accepted`'s
+  school keys are re-normalized through the CURRENT `norm_school` before counting distinct schools —
+  the same stale-vintage-key self-healing, here preventing a false contamination flag when two facts
+  for the SAME school were persisted under different `norm_school` vintages. #237 spun off a
+  structure-aware charter track (#243/#244/#245/#246) as the current forward-looking backlog in this
+  area — see `docs/PROJECT_HISTORY.md`'s 2026-07-12 entry for the full investigation (the original
+  hypothesis — NCES undercounting a real multi-campus network — was wrong; this detector is the
+  correct fix that replaced a reverted topology-reclassification attempt).
 
 ## 1b. Related but distinct: `infrastructure/database/schedule_aggregation.py`
 

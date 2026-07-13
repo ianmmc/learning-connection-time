@@ -132,6 +132,20 @@ exercise against the #200/#209-hardened pipeline, not a distinct issue awaiting 
   surfaced in the #154 compose modal.
 - `validate.py` — the GT-scoring harness: `load_gt()`, `score_district()` (per-band hit/miss/gap/extra +
   per-school hit/miss via the shared `common.school_match.norm_school`), `score_run()` (aggregate).
+  **`norm_school` itself was rewritten (PR #247, 2026-07-12)**: district-type qualifiers
+  (unified/consolidated/independent/community/county) now strip only in a trailing run ending in a hard
+  marker (district/ISD/USD/…/SD) — never bare or mid-name — so "Meridian Consolidated School" and
+  "Meridian School" score as DIFFERENT schools where the old anywhere-strip wrongly merged them, while
+  "Union Hill ISD" still merges with "Union Hill" as intended. Also fixed: hyphenated suffixes word-split
+  before stripping, ES/MS/HS join the level-word stopwords, and unicode NFKD transliteration — all closing
+  false-positive/false-negative GT-matching gaps. The function is now idempotent (a fixed-point strip loop),
+  which matters beyond Stage 7: Stage 8's `merge_fact_runs` and `detect_single_school_over_extraction`
+  re-normalize PERSISTED `school_fact.school` keys through the current function at read time to self-heal
+  against exactly this kind of stopword-list version drift (`STAGE8_AGGREGATE_DESIGN_2026-06.md`).
+  `stage5_filter/build_signals.py`'s own separate, weaker duplicate of `norm_school` was deleted in the same
+  PR — Stage 5's topology denominator now shares the identical function with Stage 7/8, closing a
+  three-stage drift risk the module's own docstring had warned about ("They MUST use the SAME function or
+  matching silently drifts — hence one home in `common`").
 - `models.py` — SQLAlchemy models on the governance DB (`gdb.Base`), all **precious** (append-only,
   human-reviewed, never touched by Stage-5's drop+rebuild ingest): `Extraction` (rollup + telemetry per
   run — incl. `run_kind` ∈ {production, probe}, first-class since #148/4D; see below), `SchoolFact`
