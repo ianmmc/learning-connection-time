@@ -41,6 +41,7 @@ LABELS_JSON = STAGE5_DIR / "labels.json"                # precious, version-cont
 CLUSTER_SPLITS_JSON = STAGE5_DIR / "cluster_splits.json"  # precious, version-controlled
 FOLLOWUP_FLAGS_JSON = STAGE5_DIR / "followup_flags.json"  # precious, version-controlled (issue #57)
 GATE_MODE_JSON = STATUS_DIR / "gate_modes.json"         # precious, version-controlled (per-gate manual/auto, #104)
+STAGE8_APPROVALS_JSON = STATUS_DIR / "stage8_approvals.json"  # precious, version-controlled (gate@8 decisions, #89)
 SCORECARDS_DIR = STAGE5_DIR / "scorecards"              # harness output (config-vs-labels metrics)
 
 # --- config-as-data (versioned tunables; near code, intentionally NOT under DATA_ROOT) ---
@@ -63,7 +64,8 @@ def data_root_is_default() -> bool:
 # CONTRADICTING the DB after the fixture's cleanup. The invariant is global ("no test run ever writes a
 # tracked backup"), so it is enforced HERE, once, at the exporters' shared path-resolution moment —
 # not re-implemented per test via monkeypatching (the epic-#133 lesson).
-TRACKED_BACKUPS = frozenset({STATUS_FILE, LABELS_JSON, CLUSTER_SPLITS_JSON, FOLLOWUP_FLAGS_JSON, GATE_MODE_JSON})
+TRACKED_BACKUPS = frozenset({STATUS_FILE, LABELS_JSON, CLUSTER_SPLITS_JSON, FOLLOWUP_FLAGS_JSON, GATE_MODE_JSON,
+                             STAGE8_APPROVALS_JSON})
 _quarantine_noted: set = set()
 
 

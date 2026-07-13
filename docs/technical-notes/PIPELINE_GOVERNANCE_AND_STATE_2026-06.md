@@ -55,22 +55,38 @@ first-class "abandoned" batch status + #171 gate@6 already-dispatched indicator,
 measured pass), and #124 (the cross-boundary `arch-manifest.json` + fitness-function suite, PR #206) — all
 merged. Full detail: each stage's own design note change log; `PROJECT_HISTORY.md`.
 
-**Runtime guardrails for the manual→auto transition, epic #209 — Phase 0/1 groundwork BUILT (2026-07-10),
-Phase 2 BUILT + MERGED (2026-07-10):** all born from `production-quality-control-research/
-FINDINGS-AND-DECISIONS.md`'s synthesis. Phase 0/1: **(1)** the canonical recall floor
-(`harness.RECALL_FLOOR=0.98`/`FLOOR_TIER="A+B"`) now **enforced inside** `build_signals.ingest()`'s
-transaction via `--assert-floor` (#208, PR #215 — a violation rolls back the *whole* re-ingest, not a
-post-hoc report); **(2)** the anti-survivorship exploration quota's pure control-law core, tested and
-review-hardened (REQ-120/#211, PR #216), with its **live wiring shipped** (`exploration_live.py`,
-2026-07-12 — reject-population query, coverage meter, gate@5 demote-hook in `save_label` +
-`GET /api/exploration-audit`; enforcement DORMANT while gate@5 is manual); **(3)** the gate-decision
+**Runtime guardrails for the manual→auto transition, epic #209 — Phase 0/1/2 all BUILT + MERGED
+(2026-07-13, PR #250):** all born from `production-quality-control-research/FINDINGS-AND-DECISIONS.md`'s
+synthesis. Phase 0/1: **(1)** the canonical recall floor (`harness.RECALL_FLOOR=0.98`/`FLOOR_TIER="A+B"`)
+now **enforced inside** `build_signals.ingest()`'s transaction via `--assert-floor` (#208, PR #215 — a
+violation rolls back the *whole* re-ingest, not a post-hoc report); **(2)** the anti-survivorship
+exploration quota, pure control-law core (REQ-120/#211, PR #216) through **live wiring** (`exploration_live.py`
+— reject-population query, coverage meter, gate@5 demote-hook wired into BOTH `save_label` and
+`reset_labels` inside a SAVEPOINT for isolation, plus `GET /api/exploration-audit`; enforcement DORMANT
+while gate@5 stays configured manual) — issues #211 **CLOSED** 2026-07-13; **(3)** the gate-decision
 calibration log — schema built (REQ-121/#210, PR #217) and **wired live** at gate@5/6/7 (PR #218), so the
-corpus is now accruing forward from every gate action. Phase 2 (merged PR #220): **(4)** the group-aware
-non-inferiority promotion gate — LOGO-CV + cluster bootstrap + TOST + ICC/DEFF, proven stats libraries not
-hand-rolled (#212), wired advisory into `frontier gate()`; **(5)** safe-promotion machinery — an immutable
-content-addressed config artifact + @champion/@fallback pointers + the shadow→gate→swap→record flow
-(#213), shipped **DORMANT** (nothing reads the champion pointer live yet). Full detail: §11b below and
-each stage's own design note; activation of the dormant pieces tracked as one checklist (#219).
+corpus is now accruing forward from every gate action; **(3a)** #214's measured-pass fix — every scoring
+measured-pass now ALSO reports Rejection-Quality/TNR on the exploration cohort (the pruned tier-D tail),
+closing the "illusion of improvement" hole (`STAGE5_FILTER_DESIGN_2026-06.md` §5d) — issue #214 **CLOSED**
+2026-07-13. Phase 2 (merged PR #220): **(4)** the group-aware non-inferiority promotion gate — LOGO-CV +
+cluster bootstrap + TOST + ICC/DEFF, proven stats libraries not hand-rolled (#212), wired advisory into
+`frontier gate()`; **(5)** safe-promotion machinery — an immutable content-addressed config artifact +
+@champion/@fallback pointers + the shadow→gate→swap→record flow (#213), shipped **DORMANT** (nothing reads
+the champion pointer live yet). Full detail: §11b below and each stage's own design note; activation of the
+dormant pieces tracked as one checklist (#219, stays open by design). **Epic #209 is CLOSED (2026-07-13)** —
+all three phases shipped and merged; #219 (dormant→live activation) stays open by design as the
+forward-looking follow-on.
+
+> **A real incident, worth recording here since it's exactly the kind of cross-stage state-integrity lesson
+> this doc exists to capture.** The PR meant to land #104/#211/#214 was stacked on the PR landing #236/#237
+> (to avoid a rebase conflict from overlapping files) and its base was never retargeted to `main` before
+> merge — so it merged its 12 commits into the now-orphaned FEATURE BRANCH, not `main`. `main` briefly had
+> none of this epic's code (`gate_mode.py`/`exploration_live.py` didn't exist there) despite the PR showing
+> as "merged." Caught before any doc work proceeded against the stale state; corrected by cherry-picking the
+> identical, already-reviewed commits onto a fresh branch off the real `main` (content verified byte-
+> identical via `git diff` before merge) and landing that as PR #250. **Lesson: after a stacked PR's base
+> merges, verify the dependent PR's base was actually retargeted — "shows as merged" is not the same as
+> "landed on `main`."**
 
 **Epic #200 (shift-left defect-prevention infra) BUILT + MERGED (2026-07-11, PR #221):** the DB-free
 test-job guard (#201), a pre-push git hook running the DB-free suite + lint-imports (#202), property-based
@@ -133,16 +149,24 @@ rather than silently skip if Chromium is unavailable.
   rolled-back DB). It does not re-spend on discovery; the scoped re-run still goes through the normal
   gated console flow.
 - Upstream findings from the same shakedown, each stage's own doc: #222/#225 (Stage 1/3), #223/#224/#226
-  (Stage 5, still open); also #236/#237 (Stage 5/7 aggregation-quality — topology precedence, school
-  name-variant double-counting; open) and #238 (deferred efficiency follow-ups). Full detail:
-  `STAGE7_EXTRACT_DESIGN_2026-06.md` §6 (decision log).
+  (Stage 5, still open); also #236/#237 — **CLOSED 2026-07-12** (Stage 5/7/8 aggregation-quality: #236
+  shipped as designed, a school-name-suffix dedup fix; #237 was mis-diagnosed as a topology/NCES-undercount
+  bug and resolved instead via `detect_single_school_over_extraction`, a detect-and-flag cross-LEA
+  contamination detector at gate@7 — see `STAGE8_AGGREGATE_DESIGN_2026-06.md` §1a and
+  `docs/PROJECT_HISTORY.md`'s 2026-07-12 entry for the full investigation) — and #238 (deferred efficiency
+  follow-ups, still open). #237 spun off a structure-aware charter track: #243/#244/#245/#246, the current
+  backlog in this area. Full detail: `STAGE7_EXTRACT_DESIGN_2026-06.md` §6 (decision log).
 
-Next: Stage 8 (aggregation, tracked: #89/#90) or the Council Lab's remaining backlog (`cost_benchmark`,
-prompt A/B, tracked: #80/#81); the remaining Stage-5 aggregation-quality fixes (#223/#224/#226, #236/#237);
-the live gate-mode (manual/auto) persistence + console toggle (#104, SHIPPED) — on which **#211's live
-wiring now also shipped** (`exploration_live.py`, 2026-07-12), leaving **#214's measured-pass** (calibrate
-the sampler against census truth → close epic #209) as the next step; still open: REQ-100 (staleness, tracked: #100), the gate@7 inline
-PNG/PDF viewer (tracked: #151).
+Next: **Stage 8** (the standalone stage/gate@8/console — tracked: #89/#90; the aggregation ALGORITHM
+already runs live inline inside gate@7 via `stage8_aggregate/aggregate.py`, per `STAGE8_AGGREGATE_DESIGN_
+2026-06.md` §1a — what's missing is the standalone surface, and epic #209's own ordering constraint
+requires gate@8's calibrated-confidence gate to exist before gates 6/7 can relax supervision) or the
+Council Lab's remaining backlog (`cost_benchmark`, prompt A/B, tracked: #80/#81); the remaining Stage-5
+aggregation-quality fixes (#223/#224/#226); the charter-segmentation track (#243/#244/#245/#246); #238
+(deferred efficiency follow-ups). The live gate-mode (manual/auto) persistence + console toggle (#104 part
+a) and **#211/#214 are now all SHIPPED** (epic #209's Phase 0/1/2 build-complete, merged 2026-07-13 via PR
+#250 — see above); #104 part b (per-gate confidence-escalating auto beyond gate@5) remains open, future
+work. Still open: REQ-100 (staleness, tracked: #100), the gate@7 inline PNG/PDF viewer (tracked: #151).
 
 ---
 
@@ -974,17 +998,33 @@ demoting (a typo'd stored state must surface, not masquerade as a conservative d
 uses the codebase's own `random.Random(seed)` string-seeding pattern (matching `stage1_queue.queue_batch`),
 not a hand-rolled hash.
 
-**As BUILT — the live wiring (`exploration_live.py`, #211/REQ-120, 2026-07-12).** `resolve_gate_mode` now
-has a live caller. The DB half binds the pure core to the governance store: `reject_population` (the live
-tier-D SUPPRESS bucket), `audit_sample`/`coverage` (the pure sampler bound to that population +
-`rejection_quality` window), and **`resolve_gate5_mode`** — THE gate@5 demote-hook. It reads
-`configured_mode`/`license_state` from the `gate_mode` store (#104), computes the live `window_count`,
-applies the deadband law, and — only when configured auto — **persists the transition back to
-`license_state`** (the deadband's hysteresis memory). Wired into `save_label` (self-healing: each gate@5
-label re-evaluates the license on the same transaction as the calibration write) + read-only at
-`GET /api/exploration-audit` → a Settings-console coverage meter. **Enforcement stays DORMANT** — gate@5 is
+**As BUILT — the live wiring (`exploration_live.py`, #211/REQ-120, 2026-07-12; corrected/hardened via a PR
+#248 review round, landed on `main` 2026-07-13 via PR #250).** `resolve_gate_mode` now has live callers —
+**not zero** (see the #219 checklist note below, which this replaces a stale claim in). The DB half binds
+the pure core to the governance store: `reject_population` (the live tier-D SUPPRESS bucket — imports its
+canonical-record predicate from `release.py`'s `CANONICAL_RECORD_WHERE` rather than re-inlining it, a PR
+#248 fix), `audit_sample`/`coverage` (the pure sampler bound to that population + `rejection_quality`
+window), and **`resolve_gate5_mode`** — THE gate@5 demote-hook. It reads `configured_mode` FIRST via a cheap
+point-read; on a **dormant fast path** (configured manual, today always, and no coverage precomputed) it
+returns immediately WITHOUT running `reject_population`'s query — the hook fires on every gate@5 label save
+(below), and the full tier-D scan was dead work while dormant (`build_signals.py` also gained
+`ix_record_tier`, since the query was previously unindexed, for when a gate actually is auto). When
+configured auto, it computes the live `window_count`, applies the deadband law, and **persists the
+transition back to `license_state`** (the deadband's hysteresis memory). Wired into BOTH `save_label`
+(self-healing: each gate@5 label re-evaluates the license) AND `reset_labels` (#228 — removing audited
+labels also re-evaluates it, so a stale license can't outlive the coverage that earned it) — **both inside
+a `con.begin_nested()` SAVEPOINT + swallow**, a PR #248 fix: the demote-hook is advisory to the human's
+write, and an earlier un-isolated version could roll back a valid label save on a transient hook failure.
+Read-only status at `GET /api/exploration-audit` → a Settings-console coverage meter, now backed by a
+SINGLE `audit_sample` draw (a PR #248 fix — it used to query the population twice per request, which also
+let a mid-request commit desync the meter from the pending list). **Enforcement stays DORMANT** — gate@5 is
 configured manual, so the hook returns "manual" and writes nothing; it goes live the moment a human sets
-gate@5 auto in Settings (the §11b ramp-up surface #104 shipped). **Current-config scoping is STRUCTURAL,
+gate@5 auto in Settings (the §11b ramp-up surface #104 shipped). One more load-bearing correctness fix from
+the same review round: `gate_mode.configured_mode` is **NULLABLE — NULL means "inherit the global
+default,"** not "manual." An earlier version hardcoded `configured_mode='manual'` on `set_license_state`'s
+fresh-row INSERT, which silently and permanently pinned a globally-auto-configured gate to manual the
+moment its FIRST license transition wrote — since `get_configured_mode` stops falling through to the global
+default once a gate's own row has any non-null value. **Current-config scoping is STRUCTURAL,
 not a stored fingerprint:** the window is recomputed over the live tier-D set every call, so a rescued
 reject simply leaves the population — no reject-audit table, no persisted config generation, and the draw
 still replays from `(seed, the DB's current reject set)` for the auditability north star. Verified live
@@ -1056,19 +1096,24 @@ has a backing store: a precious `gate_mode` table (`common/gate_mode.py`) holdin
 (manual|auto, the human toggle) + `license_state` (the #211 demote-hook's deadband state) per key
 ('default' + 'gate@1'..'gate@8'), read via `effective_gate_mode(con, gate)` (own override → global default
 → manual), set via `GET`/`POST /api/gate-mode` and a console **Settings** panel, git-backed as the precious
-`gate_modes.json`. **What is NOT built and what this deliberately does NOT change:** every gate still
-behaves manually — `effective_gate_mode` returns the configured mode with a manual default, but no live
-gate handler branches on it yet, so setting a gate 'auto' persists the intent without altering behavior.
-`exploration_audit.resolve_gate_mode()` (the gate@5 license layering over `license_state` + a live
-`window_count`) still has **zero live callers** — its wiring, and each gate's actual confidence-escalating
-auto path, are the follow-on per-gate work (#211 first, for gate@5). The store is the prerequisite the
-exploration-quota and calibration-log guardrails were waiting on to go from dormant to live; it now exists.
+`gate_modes.json`. **What remains NOT built:** every gate EXCEPT gate@5 still behaves manually regardless of
+its stored toggle — `effective_gate_mode` returns the configured mode with a manual default, but only
+gate@5 has a live handler (`exploration_live.resolve_gate5_mode`) branching on it; setting gate@1/6/7/8
+'auto' persists the intent without altering behavior yet, pending each gate's own confidence-escalating
+auto path (#104 part b). `exploration_audit.resolve_gate_mode()` (the gate@5 license layering over
+`license_state` + a live `window_count`) **now has live callers** — `save_label`, `reset_labels`, and the
+`GET /api/exploration-audit` status endpoint (all shipped 2026-07-13, PR #250; detail above). The store was
+the prerequisite the exploration-quota and calibration-log guardrails were waiting on to go from dormant to
+live; it now exists, and gate@5's guardrail is the first to actually use it.
 
 **Dormant-guardrail inventory (remember to activate — #219).** Every #209 guardrail ships *built but inert*
 (the `--assert-floor` pattern: ship the guard with the capability it guards, never before). That is correct
 discipline but it accumulates dormant safety code, all blocked on the same prerequisite. The running
 **guardrail-activation checklist is issue #219**: #208 `--assert-floor` (opt-in), #211's exploration-quota
-demote-hook (zero live callers), #210's gate@8 calibration hook (deferred to Stage 8), and #213's
+demote-hook (**live wiring shipped, WITH live callers** — `save_label`/`reset_labels`/the status endpoint —
+but its enforcement stays dormant while gate@5 is configured manual: this replaces an earlier draft of this
+sentence that said "zero live callers," which was already wrong by the time it was written — see §11b
+above for the actual wiring), #210's gate@8 calibration hook (deferred to Stage 8), and #213's
 pointer-drives-live-config actuation + the minor/major re-ingest shadow — all gated on gate-mode persistence,
 with the load-bearing ordering (persistence first; gate@8's calibrated gate before 6/7 relax). When the
 manual→auto transition begins, #219 is the checklist we run so nothing is silently left inert.

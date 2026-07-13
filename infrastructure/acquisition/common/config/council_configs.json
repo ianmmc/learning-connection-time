@@ -10,7 +10,7 @@
         "voters": ["google/gemini-2.5-flash-lite", "mistralai/mistral-small-24b-instruct-2501"],
         "judge": "qwen/qwen3-235b-a22b-2507",
         "consensus_rule": {"cross_family": true, "tolerance_min": 15, "unit": "per_school_start_end_pair"},
-        "prompts": {"default": "stage6.extract.v1"}
+        "prompts": {"default": "stage6.extract.v2"}
       },
       "added": "2026-06-29", "rationale": "Default text council: two cross-family voters (Google Flash-Lite + Mistral Small 24B) -> Qwen judge. The cheap path for clean digital text.", "evidence": "candidate-6 non-reasoning roster; pair+judge template (Ian, council research)", "approved_by": "ian", "loop_tier": 0},
     {"value": {
@@ -20,7 +20,7 @@
         "voters": ["google/gemini-2.5-flash", "mistralai/mistral-large-2512"],
         "judge": "qwen/qwen3-vl-235b-a22b-instruct",
         "consensus_rule": {"cross_family": true, "tolerance_min": 15, "unit": "per_school_start_end_pair"},
-        "prompts": {"default": "stage6.extract.vision.v1"}
+        "prompts": {"default": "stage6.extract.vision.v2"}
       },
       "added": "2026-06-29", "rationale": "Vision council for PNG/scan reps + low-fidelity captures routed off the text path (the New Haven false-consensus fix): two cross-family voters (Google Flash + Mistral Large) -> Qwen-VL judge.", "evidence": "vision spike read multi-column scans spatially-correct; candidate-6 roster", "approved_by": "ian", "loop_tier": 0, "amended": "2026-07-04", "amend_rationale": "#82 fix: the original judge deepseek-v3.2 is TEXT-ONLY and 404'd on every image judge call in the batch_00000 run (0/33 resolved). Swapped to qwen/qwen3-vl-235b-a22b-instruct — a vision-capable THIRD family (Qwen, distinct from the Google+Mistral voters), best-in-class doc VLM in the council research shortlist (models-and-council-composition/, compass artifact composition C1). Enforced by the new councils.validate() vision guard. Coverage recovery to be measured by a Council Lab re-run of handoff a2bc80c004ca-image."}
   ]

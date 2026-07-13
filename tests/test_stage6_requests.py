@@ -76,9 +76,17 @@ def test_select_prompt_id_prefers_per_model_override():
     assert P.select_prompt_id(council, "m/other") == "stage6.extract.v1"
 
 
-def test_prompt_registry_has_both_variants_and_reads_times_only():
-    assert set(P.SYSTEM_PROMPTS) >= {"stage6.extract.v1", "stage6.extract.vision.v1"}
-    # REQ-054 invariant: the council reads TIMES and returns start/end facts — never computes minutes
-    for body in P.SYSTEM_PROMPTS.values():
+def test_prompt_registry_has_variants_and_never_computes_minutes():
+    assert set(P.SYSTEM_PROMPTS) >= {"stage6.extract.v1", "stage6.extract.vision.v1",
+                                     "stage6.extract.v2", "stage6.extract.vision.v2"}
+    # REQ-054 invariant: deterministic code computes gross = end - start; the council reads TIMES and
+    # returns start/end facts, and is NEVER told to compute minutes. v2 (STAGE8 §2a.6) may READ an
+    # explicitly-STATED minutes number (path 2 — reading, not computing), but must guard it so the model
+    # never calculates one from the times.
+    for pid, body in P.SYSTEM_PROMPTS.items():
+        b = body.lower()
         assert "start_time" in body and "end_time" in body
-        assert "minutes" not in body.lower()
+        assert "calculate" not in b or "never calculate" in b, f"{pid} instructs calculating"
+        if "minutes" in b:   # only v2 mentions minutes, and only for the STATED-number path
+            assert "never calculate it from the times" in b, \
+                f"{pid} mentions minutes without the REQ-054 no-compute guard"

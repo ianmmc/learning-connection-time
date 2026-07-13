@@ -47,6 +47,9 @@ from infrastructure.acquisition.stage6_handoff import councils as C6        # no
 from infrastructure.acquisition.stage6_handoff.models import Handoff        # noqa: E402  (precious handoff index row)
 from infrastructure.acquisition.stage7_extract.models import Extraction, SchoolFact, ExtractionRequest, utcnow as _u7  # noqa: E402,F401  (precious Stage-7 results + request loop — register for init_precious_schema)
 from infrastructure.acquisition.stage8_aggregate import aggregate as AGG        # noqa: E402  (gate@7 band rollup from school_fact)
+from infrastructure.acquisition.stage8_aggregate import closing_argument as CA8  # noqa: E402  (gate@8 closing-argument assembler)
+from infrastructure.acquisition.stage8_aggregate import approval as APV8         # noqa: E402  (gate@8 approval record)
+from infrastructure.acquisition.stage8_aggregate.models import Stage8Approval    # noqa: E402,F401  (precious gate@8 decision — register for init_precious_schema)
 
 
 def _refresh_filtered(con, district_id: str) -> None:
@@ -570,6 +573,20 @@ def _backup_followups(con) -> int:
     tmp.write_text(json.dumps(data, indent=2))
     tmp.replace(out)
     return len(data)
+
+
+def _backup_stage8_approvals(con) -> int:
+    """Back the precious gate@8 approval decisions to a tracked JSON (the labels.json pattern) — a
+    published-LCT authorization is an auditable governance decision that must survive a DB wipe and carry
+    a git history. Append-only rows; atomic write; pytest quarantine-redirected (issue #178)."""
+    rows = con.execute(text(
+        "SELECT approval_id, district_id, disposition, actor, reason, facts_fingerprint, receipt_json, "
+        "created_at FROM stage8_approval ORDER BY approval_id")).mappings().all()
+    out = paths.guard_tracked_backup(paths.STAGE8_APPROVALS_JSON)
+    tmp = out.with_name(out.name + ".tmp")
+    tmp.write_text(json.dumps([dict(r) for r in rows], indent=2))
+    tmp.replace(out)
+    return len(rows)
 
 
 # ---- per-gate manual/auto mode (the ramp-up control surface — REQ-108, #104) ----
@@ -1285,9 +1302,7 @@ def handoff_candidates():
                        COALESCE(t.n_hold, 0) AS n_hold,
                        COALESCE(disp.n_dispatched, 0) AS n_dispatched, disp.last_dispatched_at,
                        COALESCE(ext.n_extracted, 0) AS n_extracted,
-                       EXISTS (SELECT 1 FROM batch_district bd JOIN batch b ON b.batch_id = bd.batch_id
-                               WHERE bd.district_id = d.district_id
-                                 AND b.batch_type = 'benchmark') AS is_benchmark
+                       {IS_BENCHMARK_SQL.format(alias='d')} AS is_benchmark
                 FROM district d
                 LEFT JOIN (
                     SELECT r.district_id,
@@ -1494,6 +1509,16 @@ def handoff_inspect(district_id: str, rec_key: str, file: str):
     return FileResponse(fp)
 
 
+# THE benchmark wall, as one SQL fragment (review round, PR #252 — it was inlined verbatim at two call
+# sites, and Stage 9's write boundary will need it a third time; a rule this load-bearing gets ONE
+# definition so a future change can't silently leave the gates disagreeing about what's benchmark).
+# Keys on batch_type='benchmark' membership, never the batch_00000 id literal — the GT corpus grows
+# into new benchmark batches. `{alias}` = the outer query's district-bearing table alias.
+IS_BENCHMARK_SQL = """EXISTS (SELECT 1 FROM batch_district bd JOIN batch b ON b.batch_id = bd.batch_id
+                              WHERE bd.district_id = {alias}.district_id
+                                AND b.batch_type = 'benchmark')"""
+
+
 # REQ-122 cumulative counts — the SQL twin of AGG.merge_fact_runs's accepted/unresolved rule ("a pair
 # counts unresolved only if NO run ever accepted it"). Module-level so tests can execute THIS text and
 # cross-check it against merge_fact_runs on shared fixture rows — the two must never drift.
@@ -1626,6 +1651,9 @@ def extract_district(district_id: str):
                 "models": json.loads(a["models_json"] or "[]"), "method": a["method"]}
                for a in accepted if a["gross_minutes"] is not None]
         bands = AGG.district_bands_from_facts(agg)
+        # #245: degenerate-named facts (empty, or purely-generic like "Schools") are excluded from the
+        # rollup above — surface them here so a human sees WHY a school vanished, never a silent drop.
+        degenerate = AGG.degenerate_school_facts(agg)
         # #237: flag single-school-LEA over-extraction (charter-network sibling contamination on a
         # shared CMO domain, or a blank-domain unscoped capture — the Millard #227 class) for the
         # reviewing human. DETECT-AND-FLAG ONLY, never auto-reject: picking the real school is
@@ -1675,7 +1703,128 @@ def extract_district(district_id: str):
         ext_out = dict(ext)
         ext_out["n_accepted"], ext_out["n_unresolved"] = len(accepted), len(unresolved)
         return {"extraction": ext_out, "bands": bands, "accepted": accepted,
-                "unresolved": unresolved, "requests": req_dicts, "contamination": contamination}
+                "unresolved": unresolved, "requests": req_dicts, "contamination": contamination,
+                "degenerate_school_facts": degenerate}
+
+
+# ==================== Stage 8 / gate@8 — Aggregate (the closing argument) ====================
+@app.get("/api/aggregate/districts")
+def aggregate_districts():
+    """gate@8 left pane: the closing-argument review queue — districts with production facts whose gate@7
+    request loop is QUIESCED (no open request; the §2 entry condition), each badged with its latest gate@8
+    decision. Undecided first, then most unresolved (attention-first). Cheap counts only; the full closing
+    argument loads on click.
+
+    EXCLUDES benchmark districts via the shared IS_BENCHMARK_SQL wall — the SAME fragment the dispatch
+    preview uses (one definition, review round PR #252). gate@8 authorizes the Stage-9 LCT write, and
+    benchmark stays walled off; it is ALSO how the growing GT yardstick works (a non-benchmark district
+    promoted here becomes verified GT — benchmark districts are already the yardstick, so they don't
+    re-flow through this gate)."""
+    with gdb.session_scope() as con:
+        rows = con.execute(text(
+            f"""SELECT p.district_id, d.name, d.state,
+                      COALESCE(cf.n_accepted, 0) AS n_accepted,
+                      COALESCE(cf.n_unresolved, 0) AS n_unresolved, s8.disposition
+               FROM (SELECT DISTINCT district_id FROM extraction WHERE run_kind='production') p
+               LEFT JOIN district d ON d.district_id = p.district_id
+               LEFT JOIN ({CUMULATIVE_FACT_COUNTS_SQL}) cf ON cf.district_id = p.district_id
+               LEFT JOIN LATERAL (SELECT disposition FROM stage8_approval a
+                                  WHERE a.district_id = p.district_id
+                                  ORDER BY approval_id DESC LIMIT 1) s8 ON true
+               WHERE COALESCE(cf.n_accepted, 0) > 0
+                 AND NOT EXISTS (SELECT 1 FROM extraction_request r
+                                 WHERE r.district_id = p.district_id
+                                   AND r.status IN {EX.RQ.OPEN_STATUSES_SQL})
+                 AND NOT {IS_BENCHMARK_SQL.format(alias='p')}
+               ORDER BY (s8.disposition IS NOT NULL), n_unresolved DESC, p.district_id""")).mappings().all()
+        return [dict(r) for r in rows]
+
+
+@app.get("/api/aggregate/district/{district_id}")
+def aggregate_district_detail(district_id: str):
+    """The closing argument for one district (band claim + dereferenced evidence + sampling + negative
+    space) + its gate@8 decision status (approved / sent_back / pending, and whether an approval has gone
+    STALE against the live facts). The top-level `fingerprint` is the review token: the client MUST echo
+    it back to POST /api/aggregate/decision, which refuses (409) if the live facts no longer match —
+    closing the review→click window (see aggregate_decision)."""
+    with gdb.session_scope() as con:
+        ca = CA8.load_closing_argument(con, district_id)
+        fp = CA8.fingerprint(ca)
+        status = APV8.decision_status(con, district_id, current_fingerprint=fp)
+        return {"closing_argument": ca, "decision": status, "fingerprint": fp}
+
+
+@app.post("/api/aggregate/override")
+async def aggregate_override(payload: dict):
+    """Record a human override of one school's extracted times, with a REQUIRED reason (§2a.3). Stored on
+    school_fact.human_determination as an auditable JSON record; the council's original times are NEVER
+    destroyed (Stage 9 applies the override at write). 400 on a missing fact_id/reason, 404 on no such
+    fact."""
+    fact_id, reason = payload.get("fact_id"), (payload.get("reason") or "").strip()
+    actor = payload.get("actor", "ian")
+    # `is None`, not truthiness (review round, PR #252): a falsy-but-present id (0) must reach the
+    # UPDATE and 404 honestly, not be misreported as "missing" — SERIAL PKs start at 1 today, but the
+    # validation shouldn't encode that assumption.
+    if fact_id is None or not reason:
+        raise HTTPException(400, "fact_id and a non-empty reason are required")
+    det = json.dumps({"start_time": payload.get("start_time"), "end_time": payload.get("end_time"),
+                      "reason": reason, "actor": actor, "at": _u7()})
+    with gdb.session_scope() as con:
+        n = con.execute(text("UPDATE school_fact SET human_determination = :d WHERE fact_id = :f"),
+                        {"d": det, "f": fact_id}).rowcount
+        if not n:
+            raise HTTPException(404, f"no school_fact {fact_id}")
+        con.commit()
+    return {"ok": True, "fact_id": fact_id}
+
+
+@app.post("/api/aggregate/decision/{district_id}")
+async def aggregate_decision(district_id: str, payload: dict):
+    """Record the gate@8 verdict on the WHOLE district (§2e, all-or-nothing): 'approved' (Stage 9 may
+    write every band) or 'sent_back' (a reason is REQUIRED → an 8→1/8→6 back-edge). Re-loads the closing
+    argument SERVER-side (never trusts the client's copy), freezes it as the receipt + fingerprint, fires
+    the gate@8 calibration hook (accruing from day one), commits, and backs up the tracked JSON.
+
+    `expected_fingerprint` is REQUIRED (review round, PR #252): the fingerprint the GET handed the
+    reviewer with the page they actually read. The server-side re-load alone guarded against a tampered
+    client payload but NOT against a legitimate DB write landing between the reviewer's GET and their
+    click (a Stage-7 follow-up completing, another session's override) — with no prior approval to
+    compare against, `is_stale` had nothing to flag, so the verdict silently froze facts the human never
+    saw. A mismatch now returns 409: reload, re-review, decide again."""
+    disposition, reason = payload.get("disposition"), payload.get("reason")
+    expected_fp = payload.get("expected_fingerprint")
+    actor = payload.get("actor", "ian")
+    if disposition not in APV8.DISPOSITIONS:
+        raise HTTPException(400, f"disposition must be one of {APV8.DISPOSITIONS}")
+    if not expected_fp:
+        raise HTTPException(400, "expected_fingerprint is required — send the fingerprint from the "
+                                 "district detail view you reviewed")
+    with gdb.session_scope() as con:
+        ca = CA8.load_closing_argument(con, district_id)
+        if not ca.get("bands"):
+            raise HTTPException(400, f"district {district_id} has no accepted facts to decide on")
+        live_fp = CA8.fingerprint(ca)
+        if live_fp != expected_fp:
+            raise HTTPException(409, "the district's facts changed after you loaded the page "
+                                     f"(reviewed {expected_fp}, live {live_fp}) — reload and re-review "
+                                     "before deciding")
+        meta = con.execute(text("SELECT name, state FROM district WHERE district_id = :d"),
+                           {"d": district_id}).mappings().first() or {}
+        try:
+            approval_id = APV8.record_decision(con, ca, disposition=disposition, actor=actor,
+                                               reason=reason, name=meta.get("name", ""),
+                                               state=meta.get("state"))
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        cal = GCAL.gate8_decision_record(
+            district_id=district_id, disposition=disposition,
+            min_coverage=CA8.min_band_coverage(ca), state=meta.get("state"),
+            run_kind="production", created_at=_u7())
+        if cal:
+            CAL.record_calibration(con, cal)
+        con.commit()
+        _backup_stage8_approvals(con)
+    return {"ok": True, "approval_id": approval_id, "disposition": disposition}
 
 
 @app.post("/api/extract/request/{request_id}")

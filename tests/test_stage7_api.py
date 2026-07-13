@@ -93,6 +93,7 @@ def test_district_detail_shape(monkeypatch):
     assert len(body["accepted"]) == 1 and len(body["unresolved"]) == 1
     assert body["requests"][0]["route"] == "7->2"
     assert body["contamination"] is None                       # not a single-school LEA -> no flag
+    assert body["degenerate_school_facts"] == []                # #245: no junk-named facts here
 
 
 def test_district_detail_is_cumulative_a_barren_retry_does_not_regress_the_view(monkeypatch):

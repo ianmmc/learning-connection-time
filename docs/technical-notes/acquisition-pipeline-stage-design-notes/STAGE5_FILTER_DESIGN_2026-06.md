@@ -306,10 +306,14 @@ episodes), config-as-data with `provenance`.
    having chats to adjust weights" a data-grounded conversation instead of guesswork.
 2. **WHEN STAGE 8 LANDS: outcome feedback.** Stage 7's council extraction is now built and scored against
    curated GT (`STAGE7_EXTRACT_DESIGN_2026-06.md` §0), so the *did the representation we sent actually
-   extract correctly* signal exists in principle — but it isn't wired into this harness yet, and Stage 8
-   (the per-band aggregation that would be the natural feedback point) isn't built. It flows into the
-   **same** ledger/harness (not a separate system) once wired: the deterministic decision becomes a
-   *proxy* whose calibration against the paid outcome is measured (the SUPG recall-floor discipline). (tracked: #91)
+   extract correctly* signal exists in principle — but it isn't wired into this harness yet. Note the
+   aggregation ALGORITHM itself already exists and runs live inline inside gate@7 today
+   (`stage8_aggregate/aggregate.py`'s `district_bands_from_facts`/`merge_fact_runs`/
+   `detect_single_school_over_extraction` — see `STAGE8_AGGREGATE_DESIGN_2026-06.md`); what's missing is
+   the STANDALONE Stage 8 stage/gate@8/console this harness's outcome-feedback wiring is waiting on. It
+   flows into the **same** ledger/harness (not a separate system) once wired: the deterministic decision
+   becomes a *proxy* whose calibration against the paid outcome is measured (the SUPG recall-floor
+   discipline). (tracked: #91)
 3. **LATER (documented, deferred — the scale endgame, `STAGE5_TUNING_NOTES`):** a learned combiner
    (Snorkel `LabelModel`, inferring per-detector accuracy from agreement without gold labels for every
    point) replaces the hand-weighted vote **once diagnostics justify it**; hierarchical partial-pooling
@@ -415,13 +419,20 @@ configured manual, so the hook returns "manual" and writes nothing). Three piece
   decision is read live from `record.tier`, so the population IS the current-config reject set.
 - **`audit_sample` / `coverage`** — the pure `select_audit_sample` bound to that live population, partitioned
   into the audited **window** and the **pending** queue, plus `rejection_quality` over the audited labels.
-- **`resolve_gate5_mode(con, *, persist)`** — THE gate@5 demote-hook and the (finally) live caller of
-  `exploration_audit.resolve_gate_mode`. Reads `configured_mode`/`license_state` from the `gate_mode` store
-  (#104), computes the live `window_count`, applies the deadband law, and — only when configured auto —
-  **persists the transition back to `license_state`** (the hysteresis memory). Wired into `save_label`
-  (self-healing: each gate@5 label re-evaluates the license on the same transaction) and surfaced read-only
-  at **`GET /api/exploration-audit`** → a Settings-console coverage meter (window vs floor, reject-cohort
-  quality with the rule-of-three ceiling, the pending draw).
+- **`resolve_gate5_mode(con, *, persist, cov=None)`** — THE gate@5 demote-hook and the (finally) live caller
+  of `exploration_audit.resolve_gate_mode`. Reads `configured_mode` FIRST via a cheap point-read; a PR #248
+  review fix added a **dormant fast path**: when configured manual (today, always) and no `cov` was
+  precomputed, it returns immediately WITHOUT running `reject_population`'s query at all — `window_count`
+  etc. come back `None` (skipped, not computed-and-discarded), since the hook fires on every gate@5 label
+  save (below) and the full tier-D scan was dead work while dormant (`build_signals.py` also gained
+  `ix_record_tier` for when a gate actually is auto). When configured auto, it computes the live
+  `window_count`, applies the deadband law, and **persists the transition back to `license_state`** (the
+  hysteresis memory). Wired into `save_label` AND `reset_labels` (self-healing in both directions: labeling
+  or un-labeling a reject re-evaluates the license), both inside a `con.begin_nested()` SAVEPOINT + swallow
+  (another PR #248 fix — the hook is advisory and must never roll back the human's write on a transient
+  failure). Surfaced read-only at **`GET /api/exploration-audit`** → a Settings-console coverage meter
+  (window vs floor, reject-cohort quality with the rule-of-three ceiling, the pending draw) — one
+  `audit_sample` draw now serves the whole response (a third PR #248 fix; it used to query twice).
 - **`calibrate_against_census(con)`** — the retrospective validator feeding #214's measured-pass: does a p%
   draw over the fully-labeled reject bucket reproduce the census reject-quality?
 

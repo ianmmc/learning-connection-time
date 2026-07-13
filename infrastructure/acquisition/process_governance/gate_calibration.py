@@ -84,3 +84,21 @@ def gate7_request_record(*, request_id, district_id, status, n_accepted, n_unres
         proxy_value=agreement_ratio, human_decision=human, auto_recommendation="accept",
         slices={"state": state, "run_kind": run_kind, "batch_type": batch_type, "school_level": band},
         created_at=created_at)
+
+
+def gate8_decision_record(*, district_id, disposition, min_coverage, state=None,
+                          run_kind=None, batch_type=None, created_at):
+    """A calibration record for a gate@8 per-district approval decision (STAGE8 §2c.6, §2e). The human
+    approves / sends back the WHOLE closing argument; the continuous proxy is a district roll-up of
+    confidence — the weakest band's coverage (schools sampled / NCES total) — the calibration question
+    being whether thin coverage predicts a send-back. `auto_recommendation=None` on purpose: gate@8 has
+    no auto policy yet (#90/#104 part b), so there is nothing to agree/disagree with — but the record
+    ACCRUES NOW (the #108 'instrument before you can measure' lesson), from the manual gate's day one, so
+    the threshold can be swept post-hoc once a policy exists. Returns None on a non-terminal disposition."""
+    human = {"approved": "accept", "sent_back": "reject"}.get(disposition)
+    if human is None:
+        return None
+    return CAL.build_record(
+        "gate@8", f"district:{district_id}", district_id=district_id, proxy_name="min_band_coverage",
+        proxy_value=min_coverage, human_decision=human, auto_recommendation=None,
+        slices={"state": state, "run_kind": run_kind, "batch_type": batch_type}, created_at=created_at)
