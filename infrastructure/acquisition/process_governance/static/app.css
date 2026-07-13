@@ -385,28 +385,35 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 .rsn-chip.r-low, .rsn-chip.r-done { border-color: var(--border-subtle); }
 
 /* ----------------------------- Stage 6 (Dispatch / gate@6) ----------------------------- */
+/* Draft/frozen-dispatch redesign: one unified left-pane list (drafts + handoffs), an always-populated
+   center pane (editable draft tree vs. read-only frozen-package view). Mirrors gate@1's Batch pattern
+   (q-detail-head/q-sub/q-actions/q-locked, reused verbatim from app.css's Stage-1 section above). */
 .badge-warn { background: var(--color-amber-100, #fef3c7); color: var(--color-amber-800, #92400e); }
-.s6-cand { display: block; cursor: pointer; }
-.s6-cand-top { display: flex; align-items: center; gap: 8px; }
-.s6-cand-top input { margin: 0; }
+/* A dispatched-handoff row can carry TWO badges (status + the "from Stage 7" origin tag) — the shared
+   .q-batch-top is a non-wrapping space-between flex row (fine with one badge everywhere else), so a
+   second badge here overflowed the 340px left column instead of wrapping. Scoped to Stage 6 only. */
+.s6-handoff-top { flex-wrap: wrap; row-gap: 4px; }
 .s6-summary { padding: 4px 0 12px; border-bottom: 1px solid var(--color-border, #e5e7eb); margin-bottom: 12px; }
 .s6-summary h3 { margin: 0 0 6px; }
 .s6-note { font-size: 12px; }
 .s6-dist { margin: 12px 0; }
-.s6-dist h4 { margin: 0 0 6px; font-size: 14px; }
+.s6-dist h4 { margin: 0 0 6px; font-size: 14px; display: flex; align-items: center; gap: 8px; }
 .s6-rep { font-size: 13px; padding: 4px 0 4px 12px; border-left: 2px solid var(--color-border, #e5e7eb); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .s6-rep code { font-size: 12px; }
 .s6-kind { text-transform: uppercase; font-size: 10px; letter-spacing: .04em; color: var(--color-text-muted, #6b7280); }
 .s6-usd { margin-left: auto; color: var(--color-text-muted, #6b7280); }
-.s6-handoff .q-batch-meta { font-size: 11px; }
 
-/* Stage 6 — filters, remove, clickable reps, inspect lightbox */
+/* the draft-detail header row: verified-only toggle + add-district button, above the district blocks */
+.s6-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 8px 0 12px; margin-bottom: 4px; border-bottom: 1px solid var(--border-subtle); }
+
+/* Stage 6 — filters (reused inside the add-district picker modal), remove, clickable reps, lightbox */
 .s6-filters { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 0 10px; align-items: center; }
 .s6-fi { font-size: 12px; padding: 3px 6px; border: 1px solid var(--color-border, #e5e7eb); border-radius: 6px; }
 .s6-fi[type="search"] { flex: 1 1 120px; min-width: 100px; }
 .s6-fl { font-size: 12px; display: inline-flex; align-items: center; gap: 4px; color: var(--color-text-muted, #6b7280); }
-/* the verified-only MODE toggle is a dispatch choice, not a list filter — full-width row, accent-tinted */
-.s6-mode { flex-basis: 100%; margin-top: 2px; padding: 4px 6px; border-radius: 6px; font-weight: var(--fw-semibold);
+/* the verified-only MODE toggle is a dispatch-level choice, not a list filter — accent-tinted */
+.s6-mode { padding: 4px 8px; border-radius: 6px; font-weight: var(--fw-semibold);
   color: var(--text-brand); background: var(--mmm-purple-100); }
 .s6-remove { border: none; background: none; cursor: pointer; color: var(--color-text-muted, #9ca3af); font-size: 13px; padding: 0 4px; line-height: 1; }
 .s6-remove:hover { color: var(--color-red-600, #dc2626); }
@@ -422,6 +429,7 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 .s6-lb-img { max-width: 100%; height: auto; display: block; margin: 0 auto; }
 .s6-lb-frame { width: 100%; height: 100%; border: 0; }
 .s6-council-sel { font-size: 11px; padding: 1px 4px; border: 1px solid var(--color-border, #e5e7eb); border-radius: 5px; }
+.s6-council-fixed { font-size: 11px; color: var(--text-secondary); font-family: var(--font-mono); }
 .s6-rep code.s6-rep-click { text-decoration: underline dotted; text-underline-offset: 2px; }
 
 /* ---- V2 facet questionnaire (REQ-114) ---- */

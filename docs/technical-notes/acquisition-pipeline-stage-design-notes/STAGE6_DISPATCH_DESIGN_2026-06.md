@@ -63,6 +63,71 @@ dispatch.
 anything by itself), + a recent-dispatches list. **Preview→freeze staleness closed (issue #37):** preview returns the package's identity hash; dispatch verifies it against a freshly-rebuilt package and returns HTTP 409 ("release changed since preview — re-preview") on mismatch, before anything freezes — what Ian approves is now verifiably what freezes. `serve_file`/`inspect` resolve `source=="harvest_slice"` reps via `resolve_harvest_slice()` (new-location-first, legacy fallback — the STAGE5 harvest-slice relocation). **Already-dispatched indicator (#171, built 2026-07-09):** each candidate row also carries `n_dispatched`/`last_dispatched_at` (from the gate@6 `dispatched` state_events), rendered as a warning badge + an optional "hide already-dispatched" filter — re-selecting a dispatched district re-sends and re-extracts at cost, so the console makes that wasted-spend risk visible before Approve, not after. **Run-extraction control (#152):** the recent-dispatches list's row for each handoff also carries a "Run extraction ▶" / "Resume extraction" button (`stage6.js:246-296`) wired to `POST /api/extract/{handoff_hash}/run` + `GET /api/extract/run/{handoff_hash}` (`server.py:1310-1380`) — see the dedicated row below; `/api/handoffs` (`server.py:1288-1304`) carries the `n_extracted`/`running` fields that drive that button's state |
 | **run-extraction background job (#152)** | `process_governance/server.py:1310-1380` (`_EXTRACT_JOBS`, `POST /api/extract/{handoff_hash}/run`, `GET /api/extract/run/{handoff_hash}`) | fires the actual **paid Stage-7 call** (`R7.run_council_streaming`) directly from a dispatched handoff, in a background thread keyed by `handoff_hash` in an in-process dict — "**the gate@6 dispatch approval IS the go-ahead — no separate approval**" (server.py:1331). Resumable: districts already extracted for the handoff are skipped, so re-clicking after a partial run only retries what's left. States mirror #173's partial-failure semantics: `running` → `done` (clean) / `partial` (some districts failed, good ones durable) / `halted` (billing/auth or a control failure — e.g. no API key) / `error` (unexpected exception). Streams per-district progress events (accepted/unresolved counts, per-band gross minutes, cost) that the console polls into the handoff row. This is the one place gate@6 crosses the seam it otherwise respects — see §1 for why the routing/pricing/freeze boundary is unaffected |
 
+## 0b. Console redesign — a persisted DRAFT dispatch (2026-07-13)
+
+The gate@6 console UI was rebuilt to fix two UX problems (Ian, direct use): the left pane mixed a
+district-candidate checklist with a separate "recent dispatches" list, with no structural separation; and
+the center pane played no role until districts were checked and Preview clicked. The fix mirrors gate@1's
+`Batch`/`BatchDistrict` pattern: a persisted, reopenable **draft dispatch** you build up (add/remove
+districts, per-rep council overrides, verified-only toggle) before freezing, instead of an ephemeral
+client-side selection.
+
+**New tables** (`stage6_handoff/draft_models.py`): `dispatch_draft` (lifecycle: `draft` → `dispatched`
+[terminal, via freeze — a frozen handoff is immutable, so nothing to reopen] or `draft` → `abandoned`
+[terminal, always safe pre-freeze]) + `dispatch_draft_district` (one row per district in the draft,
+`included` the soft-remove flag, `overrides_json` the per-representation council overrides scoped to that
+district — `{"<rec_key>::<file>": council_id}`, the same shape `package.py`'s `overrides` param already
+expects). Representations themselves are NOT persisted — they're re-derived live from the Stage-5 release
+decision on every read (`build_handoff_package`), so a draft never shadows that derivation; a stale
+override whose rep has since disappeared is simply inert at read time, never an error.
+
+**New store module** (`process_governance/stage6_draft_store.py`, mirrors `stage1_queue/batch_store.py`'s
+"Session in, no commit, caller wraps in `session_scope`" contract): `create_draft`, `add_district` /
+`remove_district` / `restore_district` (soft), `set_override` / `clear_override`, `set_verified_only`,
+`to_view` (the draft-detail payload — lifecycle + all districts with flags + a FRESH
+`build_handoff_package`-priced package + a `preview_identity` staleness token, computed live on every
+read, replacing the old separate manual-Preview step), `list_dispatch_rows` (the unified left-pane list),
+`abandon_draft`, and `freeze_draft` — a **thin wrapper** over the existing, UNCHANGED
+`stage6_dispatch.dispatch_handoff()`: it merges the included districts' overrides, calls
+`dispatch_handoff` exactly as the old direct-selection flow did, then sets the draft's `status`/
+`dispatched_at`/`dispatched_by`/`handoff_hash` in the SAME transaction — a crash between freeze and the
+draft-status flip is impossible. The preview→freeze staleness gate (issue #37, §0 above) is unchanged in
+mechanism, just relocated: `to_view` still returns `package_identity()`, the freeze endpoint still
+rebuilds and 409s on mismatch.
+
+**Left pane**: one unified list (`GET /api/dispatch`) — drafts (in-progress, sorted newest-first) then
+dispatched handoffs (read-only history). A dispatched handoff is tagged `from_draft: bool`, computed by a
+`LEFT JOIN dispatch_draft ON handoff_hash` **join-absence check** — no new column on the immutable
+`handoff` table. A handoff with no matching draft (today: only the Stage 7→6 back-edge,
+`process_governance/stage7_execute.py`, which continues to freeze directly and is explicitly OUT of scope
+for this redesign) badges **"from Stage 7"** in the console. This is origin-agnostic: any future
+direct-freeze caller besides 7→6 is correctly badged with no code change.
+
+**Known migration quirk, not a bug:** every handoff dispatched *before* this feature shipped has no
+matching `dispatch_draft` row, so historical dispatches — including ones that were genuinely
+console-dispatched pre-redesign — all show the "from Stage 7" badge. No retroactive backfill was done;
+the badge's practical value (distinguishing origin of *new* dispatches going forward) still holds.
+
+**Center pane**: always populated on click — an editable district/rep tree for a draft (reusing the exact
+rep-row widget: clickable filename → inspect lightbox, council `<select>` override, fidelity-suspect
+badge, cost), or a read-only package view for a frozen dispatch (same rendering minus the remove-district
+button and council `<select>`, plus the origin badge when applicable and the existing run-extraction
+control, #152, relocated here from the old flat list-row).
+
+**New endpoints** (`server.py`, alongside the existing `/api/handoff/*` set below): `GET /api/dispatch`,
+`POST /api/dispatch/create`, `GET /api/dispatch/{draft_id}`, `GET /api/dispatch/{draft_id}/candidates`,
+`POST /api/dispatch/{draft_id}/edit`, `POST /api/dispatch/{draft_id}/freeze`,
+`POST /api/dispatch/{draft_id}/abandon`, `GET /api/handoffs/{handoff_id}` (new — a frozen dispatch's FULL
+district/rep package by id; the old `/api/handoffs` only ever returned list-level summary fields).
+
+**`/api/handoff/preview` and `/api/handoff/dispatch` are KEPT, not retired** — `test_stage6_handoff_api.py`
+exercises both directly, and they remain a documented "dispatch without a draft" escape hatch, consistent
+with the 7→6 bridge's own precedent of freezing directly.
+
+Tests: `tests/test_stage6_draft_store.py` (govdb, the store CRUD/lifecycle/freeze), `tests/
+test_stage6_draft_api.py` (DB-free HTTP wiring + one govdb round-trip for the district-scoped audit-event
+path). `test_stage6_handoff_api.py` verified untouched.
+
 **The send set (the 5/6 seam — tier-gated, `stage5_filter/release.decide`).** A canonical record is **send** if it
 carries a human **TARGET label**, or is unlabeled **tier-A** (`auto:tier-A` — the confident auto-dispatch);
 unlabeled **tier-B/C** are **`hold`** (a *third* decision — a maybe-target awaiting a gate@5 label, surfaced as
@@ -395,6 +460,9 @@ over the same reps). The freeze is what keeps "what we sent on date X" recoverab
 request-more loops, even after the DB's release decision later regenerates.
 - **OPEN:** how to represent the rep→council fan-out compactly when several reps share a config (a config
   table + per-rep references vs. inlined configs).
+- **Pre-freeze draft schema now exists (§0b, 2026-07-13):** `dispatch_draft`/`dispatch_draft_district`
+  persist the human's in-progress selection + per-rep council overrides BEFORE freezing — this is
+  upstream scaffolding, not a change to the frozen artifact schema above, which is unaffected.
 
 ### E. `gate@6` manual/auto + re-dispatch semantics
 - **manual:** review the package, assigned configs, cost; override config + representation; approve dispatch.
@@ -410,6 +478,9 @@ request-more loops, even after the DB's release decision later regenerates.
   district, what a verified-only dispatch would send.
 - **re-dispatch (story 58):** a district/URL already extracted, re-sent to a *different* config → a new
   immutable dispatch file; the prior one is untouched (history preserved).
+- **Auto-mode's natural home (§0b, 2026-07-13):** `dispatch_draft.meta_json` is where a future auto-mode
+  flag / budget-governor setting would live once auto is built — this does NOT resolve this section's
+  manual-vs-auto question, which stays open.
 
 ### F. The council "request more evidence" loop (plan for it now — Ian)
 A council or judge in Stage 7 may decide it needs more than the one rep it was sent, and should be able to

@@ -39,12 +39,14 @@ from infrastructure.acquisition.stage2_discover import headless as H2       # no
 from infrastructure.acquisition.stage3_capture import headless as H3       # noqa: E402  (Stage 3 capture runner + DB-cache status)
 from infrastructure.acquisition.stage4_process import headless as H4       # noqa: E402  (Stage 4 process runner + DB-cache status)
 from infrastructure.acquisition.process_governance import stage6_dispatch as H6  # noqa: E402  (Stage 6 routing/release bridge — REQ-101)
+from infrastructure.acquisition.process_governance import stage6_draft_store as DSTORE6  # noqa: E402  (Stage 6 draft-dispatch working store)
 from infrastructure.acquisition.process_governance import stage7_execute as EX  # noqa: E402  (Stage 7 request-more-evidence execution — REQ-118)
 from infrastructure.acquisition.process_governance import stage7_run as R7      # noqa: E402  (Stage 7 council extraction runner — #152)
 from infrastructure.acquisition.stage6_handoff import handoff as HND6       # noqa: E402  (immutable handoff filename helper)
 from infrastructure.acquisition.common import paths                         # noqa: E402  (RAW_CAPTURES — rep inspect)
 from infrastructure.acquisition.stage6_handoff import councils as C6        # noqa: E402  (council registry — gate@6 override options)
 from infrastructure.acquisition.stage6_handoff.models import Handoff        # noqa: E402  (precious handoff index row)
+from infrastructure.acquisition.stage6_handoff.draft_models import DispatchDraft, DispatchDraftDistrict  # noqa: E402  (precious pre-freeze draft dispatch — register for init_precious_schema)
 from infrastructure.acquisition.stage7_extract.models import Extraction, SchoolFact, ExtractionRequest, utcnow as _u7  # noqa: E402,F401  (precious Stage-7 results + request loop — register for init_precious_schema)
 from infrastructure.acquisition.stage8_aggregate import aggregate as AGG        # noqa: E402  (gate@7 band rollup from school_fact)
 from infrastructure.acquisition.stage8_aggregate import closing_argument as CA8  # noqa: E402  (gate@8 closing-argument assembler)
@@ -1398,6 +1400,194 @@ def handoff_list():
             d["running"] = bool(job and job["state"] == "running")
             out.append(d)
         return out
+
+
+@app.get("/api/handoffs/{handoff_id}")
+def handoff_detail(handoff_id: str):
+    """A frozen dispatch's FULL district/rep package by id — today's `/api/handoffs` only returns
+    list-level summary fields (the full package only ever existed transiently in `preview()`'s
+    response). Reads the `handoff` row for lifecycle/cost fields + the frozen JSON file off disk for
+    the package, + the origin flag (a Stage-6-authored dispatch has a matching `dispatch_draft` row;
+    one with none — e.g. the Stage 7->6 back-edge — reads as `from_draft=False`, no new column needed)."""
+    with gdb.session_scope() as con:
+        row = con.execute(text(
+            "SELECT handoff_id, handoff_hash, created_at, created_by, status, path, n_districts, "
+            "n_reps, total_usd, cost_provenance FROM handoff WHERE handoff_id = :h"),
+            {"h": handoff_id}).mappings().first()
+        if not row:
+            raise HTTPException(404, f"no such handoff {handoff_id}")
+        from_draft = bool(con.execute(text(
+            "SELECT 1 FROM dispatch_draft WHERE handoff_hash = :hh AND status = 'dispatched'"),
+            {"hh": row["handoff_hash"]}).scalar())
+        n_extracted = con.execute(text(
+            "SELECT COUNT(*) FROM extraction WHERE handoff_hash = :h"), {"h": row["handoff_hash"]}).scalar()
+        job = _EXTRACT_JOBS.get(row["handoff_hash"])
+    try:
+        doc = R7.load_handoff(row["path"])
+    except (OSError, ValueError) as e:
+        raise HTTPException(404, f"handoff file unreadable: {e}")
+    return {**dict(row), "from_draft": from_draft, "n_extracted": n_extracted,
+           "running": bool(job and job["state"] == "running"), "package": doc}
+
+
+# ---------------------------------------------------------------- gate@6 draft dispatch (pre-freeze)
+# The mutable, reopenable container a human builds up before freezing — mirrors gate@1's Batch pattern.
+# Districts + per-rep council overrides are the only persisted state; representations are re-derived
+# live from the Stage-5 release decision on every read (never shadowed/duplicated here).
+
+def _record_gate6_draft(district_id: str, name: str, state: str, *, event_type: str, actor: str,
+                        note: str = "") -> None:
+    """Record a per-district gate@6 draft-edit event — the auditable timeline alongside the draft row's
+    own lifecycle. A pure checkpoint event (no `stage`), so it never moves furthest_stage. Granular
+    event_type (draft_district_added / draft_district_removed / draft_override_set / ...) rather than
+    one coarse 'draft_edited', so a later 'why did this draft's package look different than expected'
+    has a real trail — cheap to record, since Stage 6 previously only ever logged the terminal
+    `dispatched` event."""
+    registry = DS.load()
+    DS.record_stage(registry, district_id, name, state, stage_name="dispatch",
+                    checkpoint="gate@6", event_type=event_type, actor=actor, notes=note)
+    DS.save(registry)
+
+
+@app.get("/api/dispatch")
+def dispatch_list():
+    """Combined left-pane rows: drafts (in-progress, actionable) + dispatched handoffs (read-only
+    history), the latter tagged with an origin flag. Drafts sort first (most-recently-created first,
+    surfacing in-progress work); handoffs sort newest-first."""
+    with gdb.session_scope() as con:
+        return DSTORE6.list_dispatch_rows(con)
+
+
+@app.post("/api/dispatch/create")
+async def dispatch_create(payload: dict):
+    """Create an empty draft (instant — no upfront district-selection prompt; districts are added
+    inside the draft detail view)."""
+    actor = (payload or {}).get("actor", "ian")
+    with gdb.session_scope() as con:
+        draft_id = DSTORE6.create_draft(con, actor=actor)
+        return DSTORE6.to_view(con, draft_id)
+
+
+@app.get("/api/dispatch/{draft_id}")
+def dispatch_get(draft_id: str):
+    with gdb.session_scope() as con:
+        try:
+            return DSTORE6.to_view(con, draft_id)
+        except KeyError:
+            raise HTTPException(404, f"no such draft {draft_id}")
+
+
+@app.get("/api/dispatch/{draft_id}/candidates")
+def dispatch_candidates(draft_id: str):
+    """Eligible-to-add districts for this draft — reuses handoff_candidates()'s query, filtered to
+    exclude districts already `included=True` in the draft."""
+    with gdb.session_scope() as con:
+        d = con.get(DispatchDraft, draft_id)
+        if d is None:
+            raise HTTPException(404, f"no such draft {draft_id}")
+        already = {r.district_id for r in con.scalars(select(DispatchDraftDistrict).where(
+            DispatchDraftDistrict.draft_id == draft_id, DispatchDraftDistrict.included.is_(True)))}
+    all_candidates = handoff_candidates()
+    return [c for c in all_candidates if c["district_id"] not in already]
+
+
+@app.post("/api/dispatch/{draft_id}/edit")
+async def dispatch_edit(draft_id: str, payload: dict):
+    """gate@6 draft edit: add_district | remove_district | restore_district | set_override |
+    clear_override | set_verified_only. One delegated mutation endpoint, mirrors gate@1's
+    `/api/queue/{batch_id}/edit`. Mutates the working store and records a gate@6 draft-edit audit
+    event (district-scoped for district/override ops, draft-scoped for set_verified_only); returns
+    the fresh draft-detail view (always-current pricing)."""
+    op = payload.get("op")
+    actor = payload.get("actor", "ian")
+    did = payload.get("district_id")
+    district_scoped_ops = {"add_district", "remove_district", "restore_district",
+                          "set_override", "clear_override"}
+    dname, dstate = did, ""
+    try:
+        with gdb.session_scope() as con:
+            if op == "add_district":
+                DSTORE6.add_district(con, draft_id, did)
+                note = f"add district {did}"
+            elif op == "remove_district":
+                DSTORE6.remove_district(con, draft_id, did)
+                note = f"remove district {did}"
+            elif op == "restore_district":
+                DSTORE6.restore_district(con, draft_id, did)
+                note = f"restore district {did}"
+            elif op == "set_override":
+                DSTORE6.set_override(con, draft_id, did, payload["rec_key"], payload["file"],
+                                     payload["council_id"])
+                note = f"override {payload['rec_key']}::{payload['file']} -> {payload['council_id']}"
+            elif op == "clear_override":
+                DSTORE6.clear_override(con, draft_id, did, payload["rec_key"], payload["file"])
+                note = f"clear override {payload['rec_key']}::{payload['file']}"
+            elif op == "set_verified_only":
+                DSTORE6.set_verified_only(con, draft_id, bool(payload.get("verified_only")))
+                note = f"set verified_only={bool(payload.get('verified_only'))}"
+            else:
+                raise HTTPException(400, f"unknown edit op {op!r}")
+            if op in district_scoped_ops and did:
+                # the district's REAL name/state, never the bare id — district_status.record_stage
+                # unconditionally overwrites `name` (no blank-guard), so passing `did` twice would
+                # silently clobber a district's real name in the shared, precious status registry.
+                drow = con.execute(text("SELECT name, state FROM district WHERE district_id = :d"),
+                                   {"d": did}).mappings().first()
+                if drow:
+                    dname, dstate = drow["name"] or did, drow["state"] or ""
+        if op in district_scoped_ops and did:
+            _record_gate6_draft(did, dname, dstate, event_type=f"draft_{op}", actor=actor, note=note)
+        elif op == "set_verified_only":
+            _record_gate6_draft(draft_id, draft_id, "", event_type=f"draft_{op}", actor=actor, note=note)
+    except DSTORE6.DraftLocked as e:
+        raise HTTPException(409, str(e))
+    except KeyError as e:
+        raise HTTPException(404, str(e))
+    with gdb.session_scope() as con:
+        return DSTORE6.to_view(con, draft_id)
+
+
+@app.post("/api/dispatch/{draft_id}/freeze")
+async def dispatch_freeze(draft_id: str, payload: dict):
+    """gate@6 approve: freeze a draft into the immutable handoff, via the UNCHANGED
+    `stage6_dispatch.dispatch_handoff` (this endpoint only supplies a persisted draft_id as the
+    trigger). The draft's lifecycle fields are set in the SAME transaction as the freeze."""
+    actor = (payload or {}).get("actor", "ian")
+    expected_identity = (payload or {}).get("expected_identity")
+    try:
+        with gdb.session_scope() as con:
+            doc = DSTORE6.freeze_draft(con, draft_id, actor, expected_identity=expected_identity)
+    except DSTORE6.DraftLocked as e:
+        raise HTTPException(409, str(e))
+    except KeyError as e:
+        raise HTTPException(404, str(e))
+    except ValueError as e:
+        msg = str(e)
+        raise HTTPException(409 if "changed since" in msg else 400, msg)
+    except FileExistsError:
+        raise HTTPException(409, "an identical handoff was just dispatched (same content within the "
+                                 "same second) — the prior one stands; retry in a moment if intended")
+    cost = doc.get("cost") or {}
+    return {"draft_id": draft_id, "handoff_id": HND6.handoff_filename(doc)[:-5],
+           "handoff_hash": doc["handoff_hash"], "verified_only": bool(doc.get("verified_only")),
+           "n_districts": len(doc.get("districts", [])), "n_reps": cost.get("n_reps", 0),
+           "total_usd": cost.get("total_usd", 0.0), "provenance": cost.get("provenance", "unknown")}
+
+
+@app.post("/api/dispatch/{draft_id}/abandon")
+async def dispatch_abandon(draft_id: str, payload: dict):
+    """Terminal abandon (reason optional), mirrors gate@1's `queue_abandon`."""
+    actor = (payload or {}).get("actor", "ian")
+    reason = (payload or {}).get("reason", "")
+    try:
+        with gdb.session_scope() as con:
+            DSTORE6.abandon_draft(con, draft_id, actor, reason)
+            view = DSTORE6.to_view(con, draft_id)
+    except DSTORE6.DraftLocked as e:
+        raise HTTPException(409, str(e))
+    except KeyError as e:
+        raise HTTPException(404, str(e))
+    return view
 
 
 # In-process extraction job board (single-user localhost), keyed by handoff_hash. Ephemeral by
