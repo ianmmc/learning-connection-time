@@ -204,7 +204,15 @@ benchmark batches. (Live: 62 production-fact districts → 36 after the quiesced
    `human_determination` field, already seeded. Precious (JSON-backed, re-importable, never dropped on
    re-ingest — same class as `label.facets_json`); it is exactly the "correcting a solid prior fact is a
    gate@8 human determination, not an automatic later-run override" carve-out that `merge_fact_runs` already
-   defers to (§1a).
+   defers to (§1a). **The override is OPERATIVE at display time, not deferred to Stage 9 (revised
+   2026-07-13, from a live Santa Fe review):** `closing_argument._effective_times` applies the override
+   over the council's reading and the band **mode is computed over the override-effective gross** — the
+   reviewer is correcting the number they are about to approve, so the displayed determination (and the
+   fingerprint they sign) must reflect it, else the override is cosmetic. The council's original times stay
+   on the fact (`council_start_time`/`council_end_time`/`council_gross` in the receipt) for audit; Stage 9
+   writes the effective value. Only a times-override recomputes; a note-only override annotates without
+   moving the mode. (This was the v1 "Stage-9 applies it" deferral, reversed: a human tried it and
+   reasonably expected the band to move.)
 4. **Adjudicate the negative space explicitly** — unresolved `(band,school)` pairs, implausible-gated facts,
    and the #237 contamination flag (`detect_single_school_over_extraction`, already surfaced in gate@7's
    read path). The human's disposition ("keep school X, drop the CMO siblings") is **recorded**; never
@@ -359,3 +367,10 @@ A max-effort multi-angle review of the manual-gate build confirmed and fixed, be
   (governance §11b); blocked on #90 and #104 part b.
 - **Stage 9 write** (#93) — the mechanical upsert into the LCT DB downstream of an approval (its own stage;
   `STAGE9_INCORPORATE_DESIGN_2026-06.md`).
+- **Modal-aggregation quality (from the live Santa Fe review, 2026-07-13)** — two distortions that made a
+  human override necessary where automation should have handled it: **#253** combined-scope facts
+  (`k8 schools`, `milagro and ortiz schools`) counting as distinct schools + the K-8-topology-blind
+  coverage denominator (Santa Fe middle read "4 of 2 · 200%"); **#254** school-year precedence in
+  `merge_fact_runs` (a current-year fact should supersede a stale one, blocked on extracting the school
+  year — the aggregation-side cousin of #241). Override-feeds-mode (§2a.3) is the manual backstop for both
+  until they land.

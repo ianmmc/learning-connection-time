@@ -1758,8 +1758,10 @@ def aggregate_district_detail(district_id: str):
 async def aggregate_override(payload: dict):
     """Record a human override of one school's extracted times, with a REQUIRED reason (§2a.3). Stored on
     school_fact.human_determination as an auditable JSON record; the council's original times are NEVER
-    destroyed (Stage 9 applies the override at write). 400 on a missing fact_id/reason, 404 on no such
-    fact."""
+    destroyed (kept on the fact). The override is OPERATIVE the moment it's recorded: the closing
+    argument recomputes the band mode over the override-effective times (revised 2026-07-13), so the
+    displayed determination the reviewer approves reflects the correction. 400 on a missing fact_id/
+    reason, 404 on no such fact."""
     fact_id, reason = payload.get("fact_id"), (payload.get("reason") or "").strip()
     actor = payload.get("actor", "ian")
     # `is None`, not truthiness (review round, PR #252): a falsy-but-present id (0) must reach the

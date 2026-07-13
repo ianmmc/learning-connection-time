@@ -143,11 +143,15 @@
       : ce && ce.stated_minutes_agree == null ? " (single source)" : "";
     const stated = ce && ce.stated_minutes != null
       ? `<div class="s8-muted">page states ${ce.stated_minutes} min${statedCaveat} — corroboration</div>` : "";
+    // The Times/Gross columns show the OVERRIDE-EFFECTIVE value (what the band mode now uses); when a
+    // human corrected it, the annotation shows the council's original for contrast + the reason.
+    const overridden = ov && (ov.start_time || ov.end_time);
     const overrideMark = ov
-      ? `<div class="s8-override" data-feat="override-applied">✎ human override: ${esc(ov.start_time || "?")}–${esc(ov.end_time || "?")} — ${esc(ov.reason || ov.note || "")}</div>` : "";
+      ? `<div class="s8-override" data-feat="override-applied">✎ human override${overridden
+          ? ` (council read ${esc(sc.council_start_time)}–${esc(sc.council_end_time)}, ${sc.council_gross} min)` : ""} — ${esc(ov.reason || ov.note || "")}</div>` : "";
     return `<tr>
       <td>${esc(sc.school)}</td>
-      <td>${esc(sc.start_time)}–${esc(sc.end_time)}</td>
+      <td>${esc(sc.start_time)}–${esc(sc.end_time)}${overridden ? ` <span class="s8-override">✎</span>` : ""}</td>
       <td>${sc.gross}</td>
       <td class="s8-muted">${(sc.models || []).map((m) => esc(m.split("/").pop())).join(", ")}</td>
       <td data-feat="evidence">${url}${reader}${quote}${stated}${overrideMark}</td>

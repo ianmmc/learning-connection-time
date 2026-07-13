@@ -80,6 +80,29 @@ def _override(human_determination):
         return {"note": str(human_determination)}
 
 
+def _effective_times(f):
+    """The OPERATIVE (start, end, gross) for a merged fact = the human override APPLIED over the council's
+    reading. A recorded times-override REPLACES the council value in the displayed determination AND in
+    the modal calculation (§2a.3, revised 2026-07-13): the reviewer is correcting the number they are
+    about to approve, so the mode must see it — otherwise the override is cosmetic and the human approves
+    a value they already corrected away from. The council's original stays on the fact for the receipt.
+
+    Only a times-override recomputes: a fact with no start/end override keeps its stored gross VERBATIM
+    (no re-derivation, so a non-overridden fact is byte-identical to before). An override supplying only
+    one endpoint keeps the council's other endpoint; gross is recomputed with aggregate's own time parser
+    so it matches consensus_school_facts exactly (falling back to the stored gross if a time won't parse).
+    Returns {start, end, gross, overridden}."""
+    ov = _override(f.get("human_determination")) or {}
+    if not (ov.get("start_time") or ov.get("end_time")):
+        return {"start": f.get("start_time"), "end": f.get("end_time"),
+                "gross": f.get("gross_minutes"), "overridden": False}
+    start = ov.get("start_time") or f.get("start_time")
+    end = ov.get("end_time") or f.get("end_time")
+    s, e = AGG._to_min(start), AGG._to_min(end)
+    gross = (e - s) if (s is not None and e is not None) else f.get("gross_minutes")
+    return {"start": start, "end": end, "gross": gross, "overridden": True}
+
+
 def _council_evidence(evidence_json):
     """Parse a school_fact.evidence_json ({model: {quote, locus, stated_minutes, ...}}, v2 only) into
     a render-ready summary + the full per-model detail. Returns None for pre-v2 rows (evidence absent),
@@ -136,10 +159,11 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
 
     # Reshape merged school_fact rows to district_bands_from_facts' input shape (the server.py:1624
     # twin) — one source of truth for the per-band value, degenerate filter, and contamination flag.
-    agg = [{"band": f["band"], "school": f["school"],
-            "start": f.get("start_time"), "end": f.get("end_time"),
-            "gross": f.get("gross_minutes"), "models": _models(f),
-            "method": f.get("method")} for f in merged_accepted]
+    # The (start, end, gross) fed to the MODE are the OVERRIDE-EFFECTIVE values (§2a.3, revised
+    # 2026-07-13): a human correction to a school's times moves the band's mode, not just an annotation.
+    agg = [{"band": f["band"], "school": f["school"], **{k: v for k, v in _effective_times(f).items()
+                                                         if k in ("start", "end", "gross")},
+            "models": _models(f), "method": f.get("method")} for f in merged_accepted]
     bands = AGG.district_bands_from_facts(agg)
     degenerate = AGG.degenerate_school_facts(agg)
     contamination = AGG.detect_single_school_over_extraction(agg, nces_total, roster_names)
@@ -167,7 +191,11 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
         schools = []
         for sc in b["schools"]:
             f = fact_of.get((band, _norm(sc["school"])), {})
+            # sc.start_time/end_time/gross are the OVERRIDE-EFFECTIVE values (they came through `agg`);
+            # carry the COUNCIL original alongside so the row can show "council read X → override Y".
             schools.append({**sc, "rec_key": f.get("rec_key"), "fact_id": f.get("fact_id"),
+                            "council_start_time": f.get("start_time"), "council_end_time": f.get("end_time"),
+                            "council_gross": f.get("gross_minutes"),
                             "evidence": _school_evidence(f),
                             "council_evidence": _council_evidence(f.get("evidence_json")),
                             "human_override": _override(f.get("human_determination"))})
