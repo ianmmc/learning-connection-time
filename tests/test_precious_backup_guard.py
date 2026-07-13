@@ -49,7 +49,7 @@ def test_all_exporters_route_through_the_guard():
     from infrastructure.acquisition.process_governance import server
 
     for fn in (DS.export_status, BS.export_labels, BS.export_splits,
-               server._backup_followups, server._backup_gate_mode):
+               server._backup_followups, server._backup_gate_mode, server._backup_stage8_approvals):
         assert "guard_tracked_backup" in inspect.getsource(fn), (
             f"{fn.__module__}.{fn.__name__} writes a tracked precious backup without the #178 guard")
 

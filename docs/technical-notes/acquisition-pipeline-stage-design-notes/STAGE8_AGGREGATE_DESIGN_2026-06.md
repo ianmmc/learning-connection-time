@@ -317,6 +317,36 @@ per-school `human_determination` override (§2a.3) is still per-fact — a revie
 times (with a reason) and then approves the district as a coherent whole. Stage 9 (#93) writes all of an
 approved district's bands together, mechanically.
 
+### 2f. PR #252 review round (2026-07-13) — 8 findings, all fixed pre-merge
+A max-effort multi-angle review of the manual-gate build confirmed and fixed, before merge:
+- **The staleness fingerprint ignored human overrides** — `fingerprint()`'s basis now includes each
+  school's `human_determination` (an override recorded after approval is a new determination the
+  approval never covered; excluding it left `is_stale` False after exactly the change the check exists
+  to catch).
+- **Review→decision TOCTOU** — the detail GET now returns the closing argument's `fingerprint` as a
+  review token; the decision POST REQUIRES `expected_fingerprint` and 409s if the live facts moved
+  after page-load (server-side re-load alone guarded a tampered payload, not a legitimate DB write —
+  a Stage-7 follow-up completing — landing in the reviewer's think-time window).
+- **Evidence attached on the wrong axis** — the handoff-evidence dedup sorted content-hash strings
+  lexicographically ("earliest wins" — false), while `merge_fact_runs` picks winners by `extraction_id`.
+  Evidence now resolves from the **winning fact's own run's handoff** (fallback: run-chronological
+  order), and `source_file` rides the winning fact, not an unordered sibling row; the facts query also
+  gained a deterministic ORDER BY.
+- **Model-registration gap (the #217 `calibration_event` bug class recurring)** — `approval.py` now
+  imports `stage8_aggregate.models` itself, so ANY entry point creating/using approvals registers the
+  table; reproduced pre-fix via an isolated `pytest tests/test_stage8_approval.py` on a fresh table
+  (`UndefinedTable`), passing post-fix.
+- **`javascript:` URI XSS reintroduced** — the evidence-URL href had no scheme gate (the exact PR #248
+  Settings bug, which had been fixed as a settings.js-LOCAL helper); `safeUrl` is now a SHARED
+  `window.LCT` helper used by both views — one home, like `esc()` itself.
+- **The benchmark wall inlined a third time** — now ONE `IS_BENCHMARK_SQL` fragment (server.py) used by
+  the dispatch preview and the gate@8 queue; Stage 9's write boundary reuses it when built.
+- **Single-source stated-minutes read as agreement** — `stated_minutes_agree` is three-state: True only
+  with ≥2 models stating the same number, None (rendered "single source") when only one read it.
+- **Falsy-zero `fact_id`** — the override endpoint validates `is None`, and the console guards
+  `Number.isInteger` before posting. (Plus small adjacents: `_has_evidence` zero-safe, the exporter
+  guard-wiring test extended to `_backup_stage8_approvals`, a dead ternary removed.)
+
 ## 3. Still open (post-2026-07-13 design)
 - **#90 — the per-band "satisfied" signal** (confidence/coverage threshold): deferred by decision (§2d),
   to be characterized from manual-gate experience. REQ-118's follow-up compose machinery is partial adjacent

@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import glob
 import json
-import os
 from collections import Counter
 
 from infrastructure.acquisition.common import paths
@@ -99,9 +98,13 @@ def _council_evidence(evidence_json):
     return {
         "quote": quote, "locus": locus,
         # path 2 (option b): corroboration only — gross stays canonical. Reported when ANY model read
-        # an explicit minutes statement; `agree` flags cross-model consistency of that stated number.
+        # an explicit minutes statement. `agree` is a THREE-state flag (review round, PR #252): True =
+        # >=2 models stated the same number (real cross-model corroboration), False = >=2 stated and
+        # they differ, None = only one model stated it — single-source, NOT agreement; rendering a lone
+        # reading as "models agree" would overstate corroboration, the exact dishonesty §2c.4 forbids.
         "stated_minutes": stated[0] if stated else None,
-        "stated_minutes_agree": len(set(stated)) == 1 if stated else None,
+        "stated_minutes_agree": (len(set(stated)) == 1) if len(stated) >= 2 else None,
+        "n_models_stated": len(stated),
         "by_model": by_model,
     }
 
@@ -118,8 +121,11 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
       nces_total       : district.nces_school_count (scalar) — for the #237 contamination detector.
       nces_by_level    : {NCES level: count} — the per-band denominator source.
       schools_by_band  : {band: {"schools": [...]}} — the Stage-1 roster (claimed-band + name source).
-      evidence_by_reckey : {rec_key: {url, reps, decision, reason, source_file, capture_time?}} from
-          the immutable handoff; attached per school. Missing key -> evidence: None (surfaced honestly).
+      evidence_by_reckey : {rec_key: {url, reps, decision, reason, ...}} from the immutable handoff;
+          the FALLBACK evidence source. When a merged fact carries `handoff_evidence` (attached by
+          load_closing_argument from the fact's OWN handoff — the run that actually produced the
+          winning times, review round PR #252), that wins; this map covers facts whose own handoff
+          receipt is missing. Missing everywhere -> evidence: None (surfaced honestly).
       capture_events   : district-grain state_event stage-3 capture rows (list of {created_at, outcome}).
       roster_names     : flattened roster names for the contamination detector's keeper hint.
 
@@ -138,14 +144,20 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
     degenerate = AGG.degenerate_school_facts(agg)
     contamination = AGG.detect_single_school_over_extraction(agg, nces_total, roster_names)
 
-    # per (band, normalized-school) lookups off the winning merged fact — the merge already deduped to
-    # one winner per (band, norm_school), so these are 1:1 with bands' school entries.
-    reckey_of = {(f["band"], _norm(f["school"])): f.get("rec_key") for f in merged_accepted}
-    factid_of = {(f["band"], _norm(f["school"])): f.get("fact_id") for f in merged_accepted}
-    council_ev_of = {(f["band"], _norm(f["school"])): _council_evidence(f.get("evidence_json"))
-                     for f in merged_accepted}
-    override_of = {(f["band"], _norm(f["school"])): _override(f.get("human_determination"))
-                   for f in merged_accepted}
+    # ONE per-(band, normalized-school) lookup off the winning merged fact — the merge already deduped
+    # to one winner per (band, norm_school), so this is 1:1 with bands' school entries. The evidence
+    # attached here is resolved from the WINNING fact itself: its own handoff's record when the loader
+    # supplied it (`handoff_evidence` — the run that actually produced the displayed times), else the
+    # rec_key fallback map; `source_file` comes from the same winning fact, never from an unordered
+    # sibling row (both were review-round fixes, PR #252: the old rec_key-only join could attach a
+    # DIFFERENT run's URL/reader to the times being approved).
+    fact_of = {(f["band"], _norm(f["school"])): f for f in merged_accepted}
+
+    def _school_evidence(f):
+        ev = f.get("handoff_evidence") or (evidence_by_reckey.get(f.get("rec_key")) if f.get("rec_key") else None)
+        if ev and f.get("source_file"):
+            ev = {**ev, "source_file": f["source_file"]}
+        return ev
 
     claimed = SS.real_bands_for_district(nces_by_level, schools_by_band)
     satisfied = set(bands.keys())
@@ -154,12 +166,11 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
     for band, b in bands.items():
         schools = []
         for sc in b["schools"]:
-            key = (band, _norm(sc["school"]))
-            rk = reckey_of.get(key)
-            schools.append({**sc, "rec_key": rk, "fact_id": factid_of.get(key),
-                            "evidence": evidence_by_reckey.get(rk) if rk else None,
-                            "council_evidence": council_ev_of.get(key),
-                            "human_override": override_of.get(key)})
+            f = fact_of.get((band, _norm(sc["school"])), {})
+            schools.append({**sc, "rec_key": f.get("rec_key"), "fact_id": f.get("fact_id"),
+                            "evidence": _school_evidence(f),
+                            "council_evidence": _council_evidence(f.get("evidence_json")),
+                            "human_override": _override(f.get("human_determination"))})
         n_sampled, n_total = b["n_schools"], _band_denominator(band, nces_by_level)
         out_bands[band] = {
             "gross_minutes": b["gross_minutes"], "start_time": b["start_time"],
@@ -207,17 +218,28 @@ def min_band_coverage(ca):
 
 
 def fingerprint(ca):
-    """A stable content hash of a closing argument's DETERMINATION — the per-band value + the exact set
-    of accepted schools it rests on. Frozen into a gate@8 approval (STAGE8 §2b) so a later re-extraction
-    that changes the picture makes the approval detectably STALE (the approved receipt no longer matches
-    the live facts). Deliberately covers only what a reviewer signed off on (band → gross → schools),
-    not volatile provenance (capture timestamps, evidence prose)."""
+    """A stable content hash of a closing argument's DETERMINATION — the per-band value, the exact set
+    of accepted schools it rests on, AND each school's human override. Frozen into a gate@8 approval
+    (STAGE8 §2b) so any later change to the picture makes the approval detectably STALE. Overrides are
+    IN the basis by design (review round, PR #252): an override recorded AFTER a district was approved
+    is a new human determination the approval never covered — excluding it left `is_stale` False after
+    exactly the kind of change the staleness check exists to catch. Deliberately still excludes volatile
+    provenance (capture timestamps, evidence prose) — those don't change what was signed off on."""
     import hashlib
+
+    def _ov(s):
+        ov = s.get("human_override")
+        if not ov:
+            return None
+        return (ov.get("start_time"), ov.get("end_time"), ov.get("reason") or ov.get("note"))
 
     basis = []
     for band in sorted(ca.get("bands", {})):
         b = ca["bands"][band]
-        schools = sorted((s.get("school"), s.get("gross")) for s in b.get("schools", []))
+        # key=str-of-tuple: determinism is all the sort needs, and it can't raise on a None-vs-tuple
+        # comparison if two entries ever tie on (school, gross)
+        schools = sorted(((s.get("school"), s.get("gross"), _ov(s)) for s in b.get("schools", [])),
+                         key=str)
         basis.append((band, b.get("gross_minutes"), schools))
     return hashlib.sha256(json.dumps(basis, sort_keys=True, default=str).encode()).hexdigest()[:16]
 
@@ -244,9 +266,17 @@ def _load_handoff_by_hash(handoff_hash):
 
 
 def _evidence_from_handoffs(district_id, handoff_hashes):
-    """{rec_key: {url, reps, decision, reason}} for a district, read from its production handoffs —
-    the frozen 'what we fed the council' record, self-contained (URL + rep files inline)."""
-    ev = {}
+    """Evidence for a district read from its production handoffs — the frozen 'what we fed the council'
+    record, self-contained (URL + rep files inline). Returns TWO maps:
+      by_hash_rk : {(handoff_hash, rec_key): ev} — the precise lookup, so a fact's evidence can come
+                   from the fact's OWN run's handoff (review round, PR #252: an earlier draft deduped
+                   per rec_key over `sorted(handoff_hashes)` — a LEXICOGRAPHIC sort of content hashes,
+                   uncorrelated with run order, while merge_fact_runs picks winners by extraction_id —
+                   so the displayed URL could belong to a different run than the displayed times);
+      by_rk      : {rec_key: ev} — the fallback for a fact whose own handoff receipt is missing,
+                   first-seen in the CALLER's hash order (the caller passes run-chronological order).
+    """
+    by_hash_rk, by_rk = {}, {}
     for h in handoff_hashes:
         doc = _load_handoff_by_hash(h)
         if not doc:
@@ -256,11 +286,14 @@ def _evidence_from_handoffs(district_id, handoff_hashes):
                 continue
             for rec in d.get("records", []):
                 rk = rec.get("rec_key")
-                if rk and rk not in ev:   # earliest handoff seen wins, matching merge's earliest-run rule
-                    ev[rk] = {"url": rec.get("url"), "reps": rec.get("reps", []),
-                              "decision": rec.get("decision"), "reason": rec.get("reason"),
-                              "handoff_hash": h, "handoff_created_at": doc.get("created_at")}
-    return ev
+                if not rk:
+                    continue
+                ev = {"url": rec.get("url"), "reps": rec.get("reps", []),
+                      "decision": rec.get("decision"), "reason": rec.get("reason"),
+                      "handoff_hash": h, "handoff_created_at": doc.get("created_at")}
+                by_hash_rk.setdefault((h, rk), ev)
+                by_rk.setdefault(rk, ev)
+    return by_hash_rk, by_rk
 
 
 def load_closing_argument(session, district_id):
@@ -272,17 +305,25 @@ def load_closing_argument(session, district_id):
         SELECT f.*, e.handoff_hash, e.run_kind
         FROM school_fact f JOIN extraction e ON e.extraction_id = f.extraction_id
         WHERE f.district_id = :d AND e.run_kind = 'production'
+        ORDER BY f.extraction_id, f.fact_id
     """), {"d": district_id}).all()]
     accepted, unresolved = AGG.merge_fact_runs(facts)
 
-    handoff_hashes = sorted({f["handoff_hash"] for f in facts if f.get("handoff_hash")})
-    evidence = _evidence_from_handoffs(district_id, handoff_hashes)
-    # source_file (the reader that produced the extracted text) is a per-fact detail on school_fact —
-    # fold it into each rec_key's evidence for the "read via <reader>" line.
+    # Handoffs in RUN-chronological order (earliest extraction_id that referenced each hash) — the same
+    # axis merge_fact_runs picks winners on, never lexicographic hash order (review round, PR #252).
+    first_run = {}
     for f in facts:
-        rk = f.get("rec_key")
-        if rk in evidence and f.get("source_file"):
-            evidence[rk].setdefault("source_file", f["source_file"])
+        h = f.get("handoff_hash")
+        if h and h not in first_run:
+            first_run[h] = f["extraction_id"]
+    handoff_hashes = sorted(first_run, key=first_run.get)
+    by_hash_rk, by_rk = _evidence_from_handoffs(district_id, handoff_hashes)
+    # Attach each WINNING fact's evidence from its own run's handoff (falling back to the earliest-run
+    # record for its rec_key when that receipt file is missing). source_file rides on the fact itself,
+    # so the builder folds the winning fact's reader in — no cross-row setdefault race.
+    for f in accepted:
+        f["handoff_evidence"] = (by_hash_rk.get((f.get("handoff_hash"), f.get("rec_key")))
+                                 or by_rk.get(f.get("rec_key")))
 
     capture_events = [dict(r._mapping) for r in session.execute(text("""
         SELECT created_at, outcome FROM state_event
@@ -303,5 +344,5 @@ def load_closing_argument(session, district_id):
     return build_closing_argument(
         district_id, merged_accepted=accepted, merged_unresolved=unresolved,
         nces_total=meta.get("nces_total"), nces_by_level=nces_by_level,
-        schools_by_band=schools_by_band, evidence_by_reckey=evidence,
+        schools_by_band=schools_by_band, evidence_by_reckey=by_rk,
         capture_events=capture_events, roster_names=roster_names)

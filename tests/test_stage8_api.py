@@ -27,10 +27,39 @@ def test_decision_rejects_bad_disposition():
     assert r.status_code == 400
 
 
+def test_decision_requires_expected_fingerprint():
+    # PR #252 review: the verdict must reference the picture the reviewer actually read
+    r = client.post("/api/aggregate/decision/D1", json={"disposition": "approved"})
+    assert r.status_code == 400
+    assert "expected_fingerprint" in r.json()["detail"]
+
+
+def test_decision_409_when_facts_moved_after_review(monkeypatch):
+    # PR #252 review (TOCTOU): a Stage-7 run landing between the reviewer's GET and their click must
+    # refuse the verdict — the decision may only freeze the picture the human actually saw.
+    _use(monkeypatch, _Con([]))
+    ca = {"district_id": "D1", "bands": {"elementary": {"gross_minutes": 400, "sampling": {"coverage": 1.0},
+                                                        "schools": [{"school": "a", "gross": 400}]}}}
+    monkeypatch.setattr(SRV.CA8, "load_closing_argument", lambda con, did: ca)
+    live_fp = SRV.CA8.fingerprint(ca)
+    r = client.post("/api/aggregate/decision/D1",
+                    json={"disposition": "approved", "expected_fingerprint": "stale" + live_fp})
+    assert r.status_code == 409
+    assert "changed after you loaded" in r.json()["detail"]
+
+
 def test_override_requires_fact_id_and_reason():
     r1 = client.post("/api/aggregate/override", json={"fact_id": 7})          # no reason
     r2 = client.post("/api/aggregate/override", json={"reason": "fix it"})    # no fact_id
     assert r1.status_code == 400 and r2.status_code == 400
+
+
+def test_override_fact_id_zero_is_not_missing(monkeypatch):
+    # PR #252 review (falsy-zero): a present-but-falsy id must reach the UPDATE and 404 honestly,
+    # never be misreported as a missing field.
+    _use(monkeypatch, _Con([_Result(rowcount=0)]))
+    r = client.post("/api/aggregate/override", json={"fact_id": 0, "reason": "fix it"})
+    assert r.status_code == 404
 
 
 def test_override_404_when_fact_missing(monkeypatch):

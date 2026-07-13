@@ -18,6 +18,12 @@ from sqlalchemy import text
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common.timeutil import utcnow
 from infrastructure.acquisition.stage8_aggregate import closing_argument as CA
+# Register the precious Stage8Approval model on gdb.Base as a side effect of importing THIS module —
+# every writer/reader of stage8_approval goes through here, so init_precious_schema() sees the table
+# no matter which entry point (server, test file, script) imports first. Without this, a process that
+# never imported server.py hit `relation "stage8_approval" does not exist` on the first INSERT — the
+# same #217 bug class calibration_event hit (review round, PR #252; reproduced via an isolated pytest).
+from infrastructure.acquisition.stage8_aggregate import models as _M8  # noqa: F401
 
 DISPOSITIONS = ("approved", "sent_back")
 

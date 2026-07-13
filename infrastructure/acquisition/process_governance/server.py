@@ -1302,9 +1302,7 @@ def handoff_candidates():
                        COALESCE(t.n_hold, 0) AS n_hold,
                        COALESCE(disp.n_dispatched, 0) AS n_dispatched, disp.last_dispatched_at,
                        COALESCE(ext.n_extracted, 0) AS n_extracted,
-                       EXISTS (SELECT 1 FROM batch_district bd JOIN batch b ON b.batch_id = bd.batch_id
-                               WHERE bd.district_id = d.district_id
-                                 AND b.batch_type = 'benchmark') AS is_benchmark
+                       {IS_BENCHMARK_SQL.format(alias='d')} AS is_benchmark
                 FROM district d
                 LEFT JOIN (
                     SELECT r.district_id,
@@ -1511,6 +1509,16 @@ def handoff_inspect(district_id: str, rec_key: str, file: str):
     return FileResponse(fp)
 
 
+# THE benchmark wall, as one SQL fragment (review round, PR #252 — it was inlined verbatim at two call
+# sites, and Stage 9's write boundary will need it a third time; a rule this load-bearing gets ONE
+# definition so a future change can't silently leave the gates disagreeing about what's benchmark).
+# Keys on batch_type='benchmark' membership, never the batch_00000 id literal — the GT corpus grows
+# into new benchmark batches. `{alias}` = the outer query's district-bearing table alias.
+IS_BENCHMARK_SQL = """EXISTS (SELECT 1 FROM batch_district bd JOIN batch b ON b.batch_id = bd.batch_id
+                              WHERE bd.district_id = {alias}.district_id
+                                AND b.batch_type = 'benchmark')"""
+
+
 # REQ-122 cumulative counts — the SQL twin of AGG.merge_fact_runs's accepted/unresolved rule ("a pair
 # counts unresolved only if NO run ever accepted it"). Module-level so tests can execute THIS text and
 # cross-check it against merge_fact_runs on shared fixture rows — the two must never drift.
@@ -1707,11 +1715,11 @@ def aggregate_districts():
     decision. Undecided first, then most unresolved (attention-first). Cheap counts only; the full closing
     argument loads on click.
 
-    EXCLUDES benchmark (`batch_type='benchmark'`) districts — the SAME wall Stage 9 / the dispatch preview
-    use (server.py:1307). gate@8 authorizes the Stage-9 LCT write, and benchmark stays walled off; it is
-    ALSO how the growing GT yardstick works (a non-benchmark district promoted here becomes verified GT —
-    benchmark districts are already the yardstick, so they don't re-flow through this gate). The rule keys
-    on batch_type, not the batch_00000 id literal, because the GT corpus grows into new benchmark batches."""
+    EXCLUDES benchmark districts via the shared IS_BENCHMARK_SQL wall — the SAME fragment the dispatch
+    preview uses (one definition, review round PR #252). gate@8 authorizes the Stage-9 LCT write, and
+    benchmark stays walled off; it is ALSO how the growing GT yardstick works (a non-benchmark district
+    promoted here becomes verified GT — benchmark districts are already the yardstick, so they don't
+    re-flow through this gate)."""
     with gdb.session_scope() as con:
         rows = con.execute(text(
             f"""SELECT p.district_id, d.name, d.state,
@@ -1727,8 +1735,7 @@ def aggregate_districts():
                  AND NOT EXISTS (SELECT 1 FROM extraction_request r
                                  WHERE r.district_id = p.district_id
                                    AND r.status IN {EX.RQ.OPEN_STATUSES_SQL})
-                 AND NOT EXISTS (SELECT 1 FROM batch_district bd JOIN batch b ON b.batch_id = bd.batch_id
-                                 WHERE bd.district_id = p.district_id AND b.batch_type = 'benchmark')
+                 AND NOT {IS_BENCHMARK_SQL.format(alias='p')}
                ORDER BY (s8.disposition IS NOT NULL), n_unresolved DESC, p.district_id""")).mappings().all()
         return [dict(r) for r in rows]
 
@@ -1737,11 +1744,14 @@ def aggregate_districts():
 def aggregate_district_detail(district_id: str):
     """The closing argument for one district (band claim + dereferenced evidence + sampling + negative
     space) + its gate@8 decision status (approved / sent_back / pending, and whether an approval has gone
-    STALE against the live facts)."""
+    STALE against the live facts). The top-level `fingerprint` is the review token: the client MUST echo
+    it back to POST /api/aggregate/decision, which refuses (409) if the live facts no longer match —
+    closing the review→click window (see aggregate_decision)."""
     with gdb.session_scope() as con:
         ca = CA8.load_closing_argument(con, district_id)
-        status = APV8.decision_status(con, district_id, current_fingerprint=CA8.fingerprint(ca))
-        return {"closing_argument": ca, "decision": status}
+        fp = CA8.fingerprint(ca)
+        status = APV8.decision_status(con, district_id, current_fingerprint=fp)
+        return {"closing_argument": ca, "decision": status, "fingerprint": fp}
 
 
 @app.post("/api/aggregate/override")
@@ -1752,7 +1762,10 @@ async def aggregate_override(payload: dict):
     fact."""
     fact_id, reason = payload.get("fact_id"), (payload.get("reason") or "").strip()
     actor = payload.get("actor", "ian")
-    if not fact_id or not reason:
+    # `is None`, not truthiness (review round, PR #252): a falsy-but-present id (0) must reach the
+    # UPDATE and 404 honestly, not be misreported as "missing" — SERIAL PKs start at 1 today, but the
+    # validation shouldn't encode that assumption.
+    if fact_id is None or not reason:
         raise HTTPException(400, "fact_id and a non-empty reason are required")
     det = json.dumps({"start_time": payload.get("start_time"), "end_time": payload.get("end_time"),
                       "reason": reason, "actor": actor, "at": _u7()})
@@ -1770,15 +1783,31 @@ async def aggregate_decision(district_id: str, payload: dict):
     """Record the gate@8 verdict on the WHOLE district (§2e, all-or-nothing): 'approved' (Stage 9 may
     write every band) or 'sent_back' (a reason is REQUIRED → an 8→1/8→6 back-edge). Re-loads the closing
     argument SERVER-side (never trusts the client's copy), freezes it as the receipt + fingerprint, fires
-    the gate@8 calibration hook (accruing from day one), commits, and backs up the tracked JSON."""
+    the gate@8 calibration hook (accruing from day one), commits, and backs up the tracked JSON.
+
+    `expected_fingerprint` is REQUIRED (review round, PR #252): the fingerprint the GET handed the
+    reviewer with the page they actually read. The server-side re-load alone guarded against a tampered
+    client payload but NOT against a legitimate DB write landing between the reviewer's GET and their
+    click (a Stage-7 follow-up completing, another session's override) — with no prior approval to
+    compare against, `is_stale` had nothing to flag, so the verdict silently froze facts the human never
+    saw. A mismatch now returns 409: reload, re-review, decide again."""
     disposition, reason = payload.get("disposition"), payload.get("reason")
+    expected_fp = payload.get("expected_fingerprint")
     actor = payload.get("actor", "ian")
     if disposition not in APV8.DISPOSITIONS:
         raise HTTPException(400, f"disposition must be one of {APV8.DISPOSITIONS}")
+    if not expected_fp:
+        raise HTTPException(400, "expected_fingerprint is required — send the fingerprint from the "
+                                 "district detail view you reviewed")
     with gdb.session_scope() as con:
         ca = CA8.load_closing_argument(con, district_id)
         if not ca.get("bands"):
             raise HTTPException(400, f"district {district_id} has no accepted facts to decide on")
+        live_fp = CA8.fingerprint(ca)
+        if live_fp != expected_fp:
+            raise HTTPException(409, "the district's facts changed after you loaded the page "
+                                     f"(reviewed {expected_fp}, live {live_fp}) — reload and re-review "
+                                     "before deciding")
         meta = con.execute(text("SELECT name, state FROM district WHERE district_id = :d"),
                            {"d": district_id}).mappings().first() or {}
         try:

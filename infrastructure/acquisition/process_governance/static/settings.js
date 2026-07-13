@@ -90,11 +90,10 @@
     } catch (_) { /* leave the UI unchanged on failure */ }
   }
 
-  // Scheme allow-list for DB-sourced URLs rendered into href (PR #248 review): esc() only HTML-escapes —
-  // a javascript: URI passes it untouched and executes on click. Everywhere else the console uses
-  // href="#" + data-go; this is the one raw-href render, so it gets an explicit http(s) gate, and a
-  // non-web URL degrades to visible plain text (the operator still sees what the record claims).
-  const safeUrl = (u) => typeof u === "string" && /^https?:\/\//i.test(u);
+  // Scheme allow-list for DB-sourced URLs rendered into href (PR #248 review) — now the SHARED
+  // window.LCT.safeUrl (promoted in the PR #252 review round, after stage8.js reintroduced the exact
+  // javascript:-URI bug this used to fix locally). One home, like esc() itself.
+  const safeUrl = window.LCT.safeUrl;
 
   // gate@5 reject-audit coverage meter (#211/REQ-120). Read-only status of the anti-survivorship license:
   // window coverage vs the rule-of-three floor, the reject-cohort quality, and the pending randomized draw.

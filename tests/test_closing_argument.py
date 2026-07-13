@@ -112,3 +112,62 @@ class TestCouncilEvidence:
             "D", merged_accepted=[f], merged_unresolved=[], nces_total=3,
             nces_by_level={"Elementary": 3}, schools_by_band={})
         assert out["bands"]["elementary"]["schools"][0]["council_evidence"] is None
+
+    def test_single_model_stated_minutes_is_not_agreement(self):
+        # PR #252 review: one model reading a stated number is single-source evidence, not cross-model
+        # agreement — agree must be None (unknown), never True.
+        f = _fact("elementary", "oak", 435, rec_key="D:oak")
+        f["evidence_json"] = json.dumps({
+            "m1": {"quote": "q", "locus": "", "stated_minutes": 435, "stated_minutes_quote": "sq"},
+            "m2": {"quote": "", "locus": "", "stated_minutes": None, "stated_minutes_quote": ""}})
+        out = CA.build_closing_argument(
+            "D", merged_accepted=[f], merged_unresolved=[], nces_total=3,
+            nces_by_level={"Elementary": 3}, schools_by_band={})
+        ce = out["bands"]["elementary"]["schools"][0]["council_evidence"]
+        assert ce["stated_minutes"] == 435
+        assert ce["stated_minutes_agree"] is None and ce["n_models_stated"] == 1
+
+    def test_winning_facts_own_handoff_evidence_beats_reckey_fallback(self):
+        # PR #252 review: the evidence shown must be the WINNING fact's own run's handoff record — the
+        # rec_key fallback (which an earlier draft resolved in lexicographic hash order) is only for a
+        # fact whose own receipt file is missing.
+        f = _fact("middle", "north", 410, rec_key="D:north")
+        f["handoff_evidence"] = {"url": "https://own-run.org/bell", "handoff_hash": "h-own"}
+        fallback = {"D:north": {"url": "https://other-run.org/bell", "handoff_hash": "h-other"}}
+        out = CA.build_closing_argument(
+            "D", merged_accepted=[f], merged_unresolved=[], nces_total=2,
+            nces_by_level={"Middle": 2}, schools_by_band={}, evidence_by_reckey=fallback)
+        ev = out["bands"]["middle"]["schools"][0]["evidence"]
+        assert ev["url"] == "https://own-run.org/bell"
+
+    def test_source_file_folds_from_the_winning_fact(self):
+        # PR #252 review: the "read via <reader>" line comes from the winning fact itself, never an
+        # unordered sibling row sharing the rec_key.
+        f = _fact("middle", "north", 410, rec_key="D:north")
+        f["source_file"] = "pdftotext.txt"
+        f["handoff_evidence"] = {"url": "https://ex.org/bell"}
+        out = CA.build_closing_argument(
+            "D", merged_accepted=[f], merged_unresolved=[], nces_total=2,
+            nces_by_level={"Middle": 2}, schools_by_band={})
+        assert out["bands"]["middle"]["schools"][0]["evidence"]["source_file"] == "pdftotext.txt"
+
+
+class TestFingerprint:
+    def test_stable_for_same_determination(self):
+        acc = [_fact("elementary", "oak", 435, rec_key="D:oak")]
+        kw = dict(merged_unresolved=[], nces_total=3, nces_by_level={"Elementary": 3}, schools_by_band={})
+        fp1 = CA.fingerprint(CA.build_closing_argument("D", merged_accepted=acc, **kw))
+        fp2 = CA.fingerprint(CA.build_closing_argument("D", merged_accepted=list(acc), **kw))
+        assert fp1 == fp2
+
+    def test_override_changes_fingerprint(self):
+        # PR #252 review: an override recorded AFTER approval is a new human determination — it must
+        # flip the approval stale. The old basis (band/gross/schools only) left the hash unchanged.
+        base = _fact("elementary", "oak", 435, rec_key="D:oak")
+        kw = dict(merged_unresolved=[], nces_total=3, nces_by_level={"Elementary": 3}, schools_by_band={})
+        fp_before = CA.fingerprint(CA.build_closing_argument("D", merged_accepted=[base], **kw))
+        overridden = dict(base)
+        overridden["human_determination"] = json.dumps(
+            {"start_time": "08:05", "end_time": "15:10", "reason": "wrong bell read", "actor": "ian"})
+        fp_after = CA.fingerprint(CA.build_closing_argument("D", merged_accepted=[overridden], **kw))
+        assert fp_before != fp_after

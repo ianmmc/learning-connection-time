@@ -28,5 +28,13 @@ window.LCT = (function () {
     return `<span class="badge ${tone}">${esc(s)}</span>`;
   };
 
-  return { esc, postJSON, api, statusBadge };
+  // Scheme allow-list for DB-sourced URLs rendered into a raw href (PR #248 review; promoted here in
+  // the PR #252 review round): esc() only HTML-escapes — a `javascript:` URI passes it untouched and
+  // executes on click. Any view rendering a stored URL as a clickable link MUST gate it through this;
+  // a non-http(s) value degrades to visible plain text (the operator still sees what the record
+  // claims). Was a settings.js-local helper, which is exactly why stage8.js reintroduced the same bug —
+  // ONE home, like esc() itself.
+  const safeUrl = (u) => typeof u === "string" && /^https?:\/\//i.test(u);
+
+  return { esc, postJSON, api, statusBadge, safeUrl };
 })();

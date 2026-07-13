@@ -131,8 +131,10 @@ def _evidence_of(row):
             "stated_minutes_quote": (row.get("stated_minutes_quote") or "").strip()}
 
 def _has_evidence(ev):
-    """True if a per-model evidence map carries anything worth persisting (any quote/locus/minutes)."""
-    return any(e["quote"] or e["locus"] or e["stated_minutes"] or e["stated_minutes_quote"]
+    """True if a per-model evidence map carries anything worth persisting (any quote/locus/minutes).
+    stated_minutes checks `is not None`, not truthiness (PR #252 review) — a parsed 0 is garbage worth
+    SURFACING for review, not silently dropping, matching _council_evidence's own zero-safe filter."""
+    return any(e["quote"] or e["locus"] or e["stated_minutes"] is not None or e["stated_minutes_quote"]
                for e in ev.values())
 
 def consensus_school_facts(model_rows, judge_rows=None):

@@ -15,9 +15,12 @@
 // Vanilla JS on the shared window.LCT helpers; reuses q-*/badge/btn classes for visual consistency.
 (function () {
   const $g = (s, r = document) => r.querySelector(s);
-  const { esc, postJSON, api } = window.LCT;
+  const { esc, postJSON, api, safeUrl } = window.LCT;
   const pct = (x) => (x == null ? "—" : Math.round(x * 100) + "%");
-  let inited = false, CURRENT = null;
+  // REVIEWED_FP: the fingerprint of the closing argument the reviewer is LOOKING at (from the GET).
+  // Echoed to the decision POST, which 409s if the live facts moved after page-load — the verdict can
+  // only ever attach to the picture the human actually read (PR #252 review round).
+  let inited = false, CURRENT = null, REVIEWED_FP = null;
 
   window.initStage8 = function () {
     if (!inited) { inited = true; renderShell(); }
@@ -69,6 +72,7 @@
     let x;
     try { x = await api(`/api/aggregate/district/${did}`); }
     catch (e) { det.innerHTML = `<div class="empty err">${esc(e.message)}</div>`; return; }
+    REVIEWED_FP = x.fingerprint || null;   // the picture the reviewer is now looking at
     det.innerHTML = renderDetail(x);
     wire(det, did);
   }
@@ -123,12 +127,22 @@
 
   function renderSchool(sc) {
     const ev = sc.evidence, ce = sc.council_evidence, ov = sc.human_override;
+    // safeUrl gates the raw href (PR #252 review round — the settings.js javascript:-URI fix, reused):
+    // a stored non-http(s) URL renders as visible plain text, never a clickable link.
     const url = ev && ev.url
-      ? `<a href="${esc(ev.url)}" target="_blank" rel="noopener">${esc(shortUrl(ev.url))}</a>` : `<span class="s8-muted">no source link</span>`;
+      ? (safeUrl(ev.url)
+          ? `<a href="${esc(ev.url)}" target="_blank" rel="noopener">${esc(shortUrl(ev.url))}</a>`
+          : `<span class="s8-muted">${esc(shortUrl(ev.url))}</span>`)
+      : `<span class="s8-muted">no source link</span>`;
     const reader = ev && ev.source_file ? ` · read via ${esc(ev.source_file)}` : "";
     const quote = ce && ce.quote ? `<div class="s8-quote" data-feat="evidence">“${esc(ce.quote)}”${ce.locus ? ` <span class="s8-muted">(${esc(ce.locus)})</span>` : ""}</div>` : "";
+    // Three-state agreement (PR #252 review round): true = >=2 models read the same stated number;
+    // false = they read different ones; null = a single model read it — honest "single source", never
+    // implied agreement.
+    const statedCaveat = ce && ce.stated_minutes_agree === false ? " (models disagree)"
+      : ce && ce.stated_minutes_agree == null ? " (single source)" : "";
     const stated = ce && ce.stated_minutes != null
-      ? `<div class="s8-muted">page states ${ce.stated_minutes} min${ce.stated_minutes_agree === false ? " (models disagree)" : ""}${ce ? "" : ""} — corroboration</div>` : "";
+      ? `<div class="s8-muted">page states ${ce.stated_minutes} min${statedCaveat} — corroboration</div>` : "";
     const overrideMark = ov
       ? `<div class="s8-override" data-feat="override-applied">✎ human override: ${esc(ov.start_time || "?")}–${esc(ov.end_time || "?")} — ${esc(ov.reason || ov.note || "")}</div>` : "";
     return `<tr>
@@ -189,13 +203,24 @@
     } else if (!window.confirm("Approve this district's whole picture? Stage 9 may then write every band's minutes to the LCT DB.")) {
       return;
     }
-    try { await api(`/api/aggregate/decision/${did}`, postJSON({ disposition, reason, actor: "ian" })); }
-    catch (e) { alert("Decision failed: " + e.message); return; }
+    // expected_fingerprint = the picture the reviewer actually read (PR #252 review round). The server
+    // 409s if the live facts moved after page-load — reload, re-review, decide again.
+    try {
+      await api(`/api/aggregate/decision/${did}`,
+                postJSON({ disposition, reason, actor: "ian", expected_fingerprint: REVIEWED_FP }));
+    } catch (e) {
+      alert("Decision failed: " + e.message);
+      if (String(e.message).startsWith("409")) openDistrict(did);   // facts moved — reload the picture
+      return;
+    }
     await loadDistricts();
     openDistrict(did);
   }
 
   async function override(did, factId, school) {
+    // fail loudly on a malformed data-override attribute rather than posting NaN (PR #252 review round)
+    const fid = Number(factId);
+    if (!Number.isInteger(fid)) { alert(`Can't override ${school}: no usable fact id (${factId}).`); return; }
     const start = window.prompt(`Override START time for ${school} (HH:MM), or leave blank to keep:`);
     if (start == null) return;
     const end = window.prompt(`Override END time for ${school} (HH:MM), or leave blank to keep:`);
@@ -204,9 +229,9 @@
     if (reason == null || !reason.trim()) { alert("An override requires a reason."); return; }
     try {
       await api("/api/aggregate/override", postJSON({
-        fact_id: Number(factId), start_time: start || null, end_time: end || null,
+        fact_id: fid, start_time: start || null, end_time: end || null,
         reason: reason.trim(), actor: "ian" }));
     } catch (e) { alert("Override failed: " + e.message); return; }
-    openDistrict(did);
+    openDistrict(did);   // re-render: the override mark + the new fingerprint both come from the fresh GET
   }
 })();
