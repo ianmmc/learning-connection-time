@@ -1,0 +1,32 @@
+name: PR base guard
+
+# #251: a stacked PR whose base was never retargeted to main merged its commits into the
+# now-orphaned parent feature branch — every UI signal said "merged" while main received
+# nothing (recovered manually as PR #250). This check makes that state visible BEFORE merge:
+# any PR whose base is not main shows a red X until it is retargeted. A stacked PR is a
+# legitimate temporary state while its parent is open — the red X is the protocol reminder,
+# not a defect. Retarget the base to main (PR "Edit" next to the branch names) after the
+# parent merges, then this re-runs (the `edited` trigger fires on base change) and goes green.
+#
+# Companion setting: delete_branch_on_merge is enabled on the repo, so GitHub auto-retargets
+# child PRs to main when a parent's branch is deleted at merge — this check is the backstop
+# for parents merged without branch deletion.
+
+on:
+  pull_request:
+    types: [opened, reopened, edited, synchronize]
+
+jobs:
+  base-must-be-main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail unless the PR targets main
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          if [ "$BASE" = "main" ]; then
+            echo "Base is main — OK."
+          else
+            echo "::error::This PR targets '$BASE', not 'main'. If this is a stacked PR, that is fine while the parent is open — but the base MUST be retargeted to main before merge (see issue #251: merging into a stale parent branch silently lands nothing on main). Retarget via Edit next to the branch names on the PR page."
+            exit 1
+          fi
