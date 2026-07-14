@@ -143,7 +143,7 @@ Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fr
 ## Current Data Years
 
 **Current School Year:** derived automatically (July-1 rollover) by
-`infrastructure/database/school_year.py:current_school_year()` — the single source of truth,
+`infrastructure/utilities/school_year.py:current_school_year()` — the single source of truth,
 never hand-bumped (2026-27 as of this writing). `NCES_PRIMARY_YEAR` in the same module IS
 hand-bumped, on ingest of a new CCD (a data event), verified against `lct_calculations` rows.
 

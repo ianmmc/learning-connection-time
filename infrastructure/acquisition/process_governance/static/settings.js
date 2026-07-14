@@ -21,14 +21,23 @@
 
   window.initSettings = function () {
     if (!inited) { inited = true; renderShell(); }
+    loadDataYears();
     loadModes();
     loadExplorationAudit();
   };
 
   function renderShell() {
+    // Two-pane shape (Ian, 2026-07-14): the left pane is a settings-GROUP nav — one "General
+    // Settings" group today, kept (rather than collapsing to a single pane) so future groups can
+    // split out without another layout rework.
     $g("#settingsview").innerHTML = `
+      <nav class="col settings-nav" aria-label="Settings groups">
+        <div class="settings-nav-item active">General Settings</div>
+      </nav>
       <section class="col col-center settings-panel">
-        <h2>Gate automation <span class="muted">(ramp-up control surface)</span></h2>
+        <h2>Data years <span class="muted">(derived — nothing here is hand-bumped except the NCES vintage)</span></h2>
+        <div id="settings-years" class="settings-years"><div class="empty">Loading…</div></div>
+        <h2 class="settings-audit-h">Gate automation <span class="muted">(ramp-up control surface)</span></h2>
         <p class="muted">Every gate starts <strong>manual</strong> (high supervision); set one
           <strong>auto</strong> only once its confidence has been earned. A gate with no override inherits
           the global default. Setting a gate here persists the decision — it does not change a gate's
@@ -41,6 +50,28 @@
           <strong>informational</strong>: gate@5 is manual (census-labeling), so the control law is inert.</p>
         <div id="settings-audit" class="settings-audit"><div class="empty">Loading…</div></div>
       </section>`;
+  }
+
+  // Data-year facts (/api/data-years): the derived current school year + the NCES CCD vintage.
+  // Read-only display — the current year rolls itself over each July 1 (utilities/school_year.py);
+  // seeing it here is the check that it did.
+  async function loadDataYears() {
+    const box = $g("#settings-years");
+    if (!box) return;
+    try {
+      const d = await api("/api/data-years");
+      box.innerHTML = `
+        <div class="audit-grid">
+          <div class="audit-stat"><span class="audit-k">Current school year</span>
+            <span class="audit-v">${esc(d.current_school_year)} <span class="muted">(derived, July-1 rollover)</span></span></div>
+          <div class="audit-stat"><span class="audit-k">NCES primary dataset</span>
+            <span class="audit-v">${esc(d.nces_primary_year)} <span class="muted">(CCD enrollment/staffing — bumped on ingest)</span></span></div>
+          <div class="audit-stat"><span class="audit-k">Acceptable bell years</span>
+            <span class="audit-v">${(d.acceptable_bell_years || []).map(esc).join(" · ")}</span></div>
+        </div>`;
+    } catch (_) {
+      box.innerHTML = `<div class="empty">Failed to load data-year facts.</div>`;
+    }
   }
 
   async function loadModes() {
