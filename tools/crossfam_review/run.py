@@ -29,6 +29,7 @@ from tools.crossfam_review import dedup as D
 from tools.crossfam_review import finder as F
 from tools.crossfam_review import github_sink as GH
 from tools.crossfam_review import shards as S
+from tools.crossfam_review.findings import Finding
 from tools.crossfam_review.roster import FINDERS, JUDGES
 from tools.crossfam_review.spend import BudgetExceeded, SpendGuard
 
@@ -150,12 +151,72 @@ def _file_only(outdir, stamp: str, live: bool) -> int:
     return 0
 
 
+def _adjudicated_keys(outdir) -> set:
+    """(file, line-bucket) already adjudicated by a prior pass — the same coarse key dedup uses, so a
+    resume never re-judges (and re-pays for) a candidate the first pass already covered."""
+    f = outdir / "adjudications.json"
+    if not f.exists():
+        return set()
+    return {(a["file"], a["line"] // 10) for a in json.loads(f.read_text())}
+
+
+def _resume_council(outdir, shard_area, args, guard: SpendGuard) -> int:
+    """Judge the corroborated candidates a prior run left un-adjudicated (it hit its cap), reusing that
+    run's saved raw_findings.json. Pays ONLY for the new judging; appends to the run's receipts +
+    issue_payloads so a subsequent --file-only files the whole set."""
+    raw_f = outdir / "raw_findings.json"
+    if not raw_f.exists():
+        print(f"✗ no {raw_f} — resume needs a prior run's finder output.")
+        return 1
+    raw = [Finding(**d) for d in json.loads(raw_f.read_text())]
+    all_cands = D.cluster(raw, shard_area)
+    corroborated = [c for c in all_cands if c.agree_count >= args.min_agree]
+    done = _adjudicated_keys(outdir)
+    remaining = [c for c in corroborated if (c.file, c.line // 10) not in done]
+    print(f"resume: {len(corroborated)} corroborated (≥{args.min_agree}); "
+          f"{len(corroborated) - len(remaining)} already judged; adjudicating {len(remaining)} "
+          f"under cap ${args.cap:.2f}")
+    if not remaining:
+        print("nothing left to adjudicate.")
+        return 0
+
+    new_adjs = run_council(remaining, guard, args.workers)
+    new_conf = [a for a in new_adjs if a.confirmed]
+
+    # Append adjudications (keep the prior pass's records intact — the receipt is cumulative).
+    prior = json.loads((outdir / "adjudications.json").read_text()) if (outdir / "adjudications.json").exists() else []
+    prior.extend({"file": a.candidate.file, "line": a.candidate.line, "confirmed": a.confirmed,
+                  "escalated": a.escalated, "summary": a.candidate.summary,
+                  "verdicts": [{"judge": v.judge, "role": v.role, "verdict": v.verdict, "reason": v.reason}
+                               for v in a.verdicts]} for a in new_adjs)
+    (outdir / "adjudications.json").write_text(json.dumps(prior, indent=2))
+
+    # Append newly-confirmed issue payloads to the saved set (dedup by fingerprint).
+    payloads = json.loads((outdir / "issue_payloads.json").read_text()) if (outdir / "issue_payloads.json").exists() else []
+    seen = {p["fingerprint"] for p in payloads}
+    for a in sorted(new_conf, key=lambda a: (a.candidate.severity, a.candidate.file)):
+        p = GH.build_payload(a, args.stamp)
+        if p.fingerprint in seen:
+            continue
+        payloads.append({"title": p.title, "body": p.body, "labels": p.labels, "fingerprint": p.fingerprint})
+        seen.add(p.fingerprint)
+    (outdir / "issue_payloads.json").write_text(json.dumps(payloads, indent=2))
+
+    print(f"\nresume added {len(new_conf)} confirmed (of {len(new_adjs)} judged) · "
+          f"spend this pass ${guard.settled():.3f} · {len(payloads)} total payloads saved")
+    print(f"file them with:  python -m tools.crossfam_review.run --file-only --live --stamp {args.stamp}")
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Cross-family external code review")
     ap.add_argument("--run", action="store_true", help="make paid calls (default: preflight only)")
     ap.add_argument("--live", action="store_true", help="file GitHub issues (default: print them)")
     ap.add_argument("--file-only", action="store_true",
                     help="skip the paid review; (re)file from a prior run's saved issue_payloads.json")
+    ap.add_argument("--resume-council", action="store_true",
+                    help="adjudicate the corroborated candidates a prior run left un-judged (e.g. it hit "
+                         "its cap), reusing that run's saved raw_findings.json — pays ONLY for new judging")
     ap.add_argument("--cap", type=float, default=10.0, help="hard USD spend cap (default 10)")
     ap.add_argument("--workers", type=int, default=8, help="concurrent API calls")
     ap.add_argument("--max-shards", type=int, default=0, help="review only the first N shards (smoke test)")
@@ -188,6 +249,9 @@ def main(argv=None) -> int:
     # replay a filing that failed partway. Idempotent via fingerprints.
     if args.file_only:
         return _file_only(outdir, args.stamp, args.live)
+
+    if args.resume_council:
+        return _resume_council(outdir, shard_area, args, guard)
 
     # 1. Finders
     finder_results = run_finders(shard_list, only, guard, args.workers)
