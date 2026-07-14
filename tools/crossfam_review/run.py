@@ -151,13 +151,19 @@ def _file_only(outdir, stamp: str, live: bool) -> int:
     return 0
 
 
-def _adjudicated_keys(outdir) -> set:
-    """(file, line-bucket) already adjudicated by a prior pass — the same coarse key dedup uses, so a
-    resume never re-judges (and re-pays for) a candidate the first pass already covered."""
+def _real_votes(adj: dict) -> int:
+    return sum(1 for v in adj.get("verdicts", []) if v["verdict"] in ("confirmed", "refuted"))
+
+
+def _completed_keys(outdir) -> set:
+    """(file, line-bucket) that were GENUINELY judged by a prior pass — i.e. got >=2 real (non-error)
+    votes. A candidate whose judge calls were REFUSED at the spend cap (force-refuted on errors) is NOT
+    complete and must be re-judged by a resume, not skipped. This is the difference between "459
+    adjudicated" and "296 actually evaluated" (the rest were budget-starved)."""
     f = outdir / "adjudications.json"
     if not f.exists():
         return set()
-    return {(a["file"], a["line"] // 10) for a in json.loads(f.read_text())}
+    return {(a["file"], a["line"] // 10) for a in json.loads(f.read_text()) if _real_votes(a) >= 2}
 
 
 def _resume_council(outdir, shard_area, args, guard: SpendGuard) -> int:
@@ -171,11 +177,11 @@ def _resume_council(outdir, shard_area, args, guard: SpendGuard) -> int:
     raw = [Finding(**d) for d in json.loads(raw_f.read_text())]
     all_cands = D.cluster(raw, shard_area)
     corroborated = [c for c in all_cands if c.agree_count >= args.min_agree]
-    done = _adjudicated_keys(outdir)
+    done = _completed_keys(outdir)
     remaining = [c for c in corroborated if (c.file, c.line // 10) not in done]
     print(f"resume: {len(corroborated)} corroborated (≥{args.min_agree}); "
-          f"{len(corroborated) - len(remaining)} already judged; adjudicating {len(remaining)} "
-          f"under cap ${args.cap:.2f}")
+          f"{len(done)} genuinely judged already; re-/newly judging {len(remaining)} "
+          f"(incl. budget-starved) under cap ${args.cap:.2f}")
     if not remaining:
         print("nothing left to adjudicate.")
         return 0
@@ -183,13 +189,18 @@ def _resume_council(outdir, shard_area, args, guard: SpendGuard) -> int:
     new_adjs = run_council(remaining, guard, args.workers)
     new_conf = [a for a in new_adjs if a.confirmed]
 
-    # Append adjudications (keep the prior pass's records intact — the receipt is cumulative).
+    # Merge adjudications by (file, line-bucket): a re-judged candidate OVERWRITES its prior
+    # budget-starved record rather than duplicating it (the receipt stays one row per candidate).
+    def _rec(a):
+        return {"file": a.candidate.file, "line": a.candidate.line, "confirmed": a.confirmed,
+                "escalated": a.escalated, "summary": a.candidate.summary,
+                "verdicts": [{"judge": v.judge, "role": v.role, "verdict": v.verdict, "reason": v.reason}
+                             for v in a.verdicts]}
     prior = json.loads((outdir / "adjudications.json").read_text()) if (outdir / "adjudications.json").exists() else []
-    prior.extend({"file": a.candidate.file, "line": a.candidate.line, "confirmed": a.confirmed,
-                  "escalated": a.escalated, "summary": a.candidate.summary,
-                  "verdicts": [{"judge": v.judge, "role": v.role, "verdict": v.verdict, "reason": v.reason}
-                               for v in a.verdicts]} for a in new_adjs)
-    (outdir / "adjudications.json").write_text(json.dumps(prior, indent=2))
+    by_key = {(a["file"], a["line"] // 10): a for a in prior}
+    for a in new_adjs:
+        by_key[(a.candidate.file, a.candidate.line // 10)] = _rec(a)
+    (outdir / "adjudications.json").write_text(json.dumps(list(by_key.values()), indent=2))
 
     # Append newly-confirmed issue payloads to the saved set (dedup by fingerprint).
     payloads = json.loads((outdir / "issue_payloads.json").read_text()) if (outdir / "issue_payloads.json").exists() else []
