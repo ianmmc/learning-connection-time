@@ -274,6 +274,26 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
             "schools": schools,
         }
 
+    # #258: name-vs-level mismatch flags, both surfaces. The ROSTER side catches the Coffee County
+    # signature at its source ('Zion Chapel High School', NCES-tagged Other, placed in elementary by
+    # Stage 1); the FACTS side catches a level-token extracted name landing in a contradicting band
+    # (extracted names often differ from roster names — Coffee County's came through as 'zion chapel
+    # k12', which correctly does NOT flag: a K-12 name serves any band). Detect-and-flag only (#237
+    # posture): surfaced for the human, never dropped.
+    mismatches, seen_mm = [], set()
+    for band, meta in (schools_by_band or {}).items():
+        for sc in (meta or {}).get("schools") or []:
+            name = sc.get("school") or sc.get("name")
+            m = SS.name_level_mismatch(name, sc.get("level"), [band])
+            if m and (m["school"], band) not in seen_mm:
+                seen_mm.add((m["school"], band))
+                mismatches.append({**m, "surface": "roster", "band": band})
+    for r in agg:
+        m = SS.name_level_mismatch(r["school"], None, [r["band"]])
+        if m and (m["school"], r["band"]) not in seen_mm:
+            seen_mm.add((m["school"], r["band"]))
+            mismatches.append({**m, "surface": "fact", "band": r["band"]})
+
     # The negative space — the honest half of the closing argument (design note §2c.4): what we did
     # NOT resolve, so the picture never reads as "we covered everything."
     negative_space = {
@@ -283,6 +303,8 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
         # #257: every APPLIED human band-exclusion — the audit surface that survives even when the
         # excluded school's whole band vanished from `bands` (nothing left to render it under).
         "band_exclusions": applied_exclusions,
+        # #258: name-vs-NCES-level/band mismatch flags (detect-and-flag, never auto-reject)
+        "name_level_mismatches": mismatches,
         "claimed_bands": sorted(claimed),
         "unsatisfied_bands": sorted(claimed - satisfied),
         "coverage_gaps": {b: out_bands[b]["sampling"] for b in out_bands

@@ -148,7 +148,8 @@ def test_stage8_console_carries_the_exclusion_ui_markers():
     js = (Path(SRV.__file__).parent / "static" / "stage8.js").read_text()
     for marker in ('data-feat="exclude"', 'data-feat="restore-exclusion"',
                    'data-feat="excluded-reason"', 'data-feat="excluded-row"',
-                   'data-feat="band-exclusions"', "/api/aggregate/exclude"):
+                   'data-feat="band-exclusions"', "/api/aggregate/exclude",
+                   'data-feat="name-level-mismatch"'):
         assert marker in js, f"stage8.js lost the #257 marker {marker!r}"
     css = (Path(SRV.__file__).parent / "static" / "app.css").read_text()
     assert "line-through" in css and ".s8-excluded" in css

@@ -187,6 +187,8 @@
       rows.push(`<li><strong>${ns.degenerate_school_facts.length} degenerate school name(s)</strong> dropped (#245).</li>`);
     if ((ns.band_exclusions || []).length)
       rows.push(`<li data-feat="band-exclusions"><strong>Human band-exclusions (#257):</strong> ${ns.band_exclusions.map((e) => `${esc(e.school)} ⊘ ${esc(e.band)} — ${esc(e.reason)}`).join("; ")}.</li>`);
+    if ((ns.name_level_mismatches || []).length)
+      rows.push(`<li data-feat="name-level-mismatch"><strong>Name/level mismatch flags (#258):</strong> ${ns.name_level_mismatches.map((m) => `${esc(m.school)} reads as ${m.implied_bands.map(esc).join("/")} but sits in ${esc(m.band)}${m.nces_level ? ` (NCES: ${esc(m.nces_level)})` : ""}`).join("; ")} — a name token is a hint, not ground truth; consider #257 exclude if confirmed.</li>`);
     const gaps = Object.entries(ns.coverage_gaps || {});
     if (gaps.length)
       rows.push(`<li><strong>Coverage gaps:</strong> ${gaps.map(([b, g]) => `${esc(b)} ${g.n_sampled}/${g.n_total}`).join(", ")} — bands resting on a thin sample.</li>`);

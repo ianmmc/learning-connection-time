@@ -78,6 +78,51 @@ def bands_for_rescue(gslo, gshi):
 # genuinely ambiguous/combined and falls back to grade-range overlap.
 LEVEL_BAND = {"Elementary": "elementary", "Middle": "middle", "High": "high"}
 
+# #258: name-token -> implied band(s). ORDER MATTERS: "junior high" must claim its words before the
+# bare "high" pattern sees them. Tokens are whole-word phrases (padded match) so "Highland"/"Middleton"
+# never trigger. K-8/K-12 imply multi-band service — a K-12-named school legitimately sits in ANY band,
+# so it can never mismatch (the flag is for a SINGLE-level name in the wrong place).
+_NAME_BAND_TOKENS = (
+    (("junior high", "jr high"), {"middle"}),
+    (("middle", "intermediate"), {"middle"}),
+    (("high",), {"high"}),
+    (("elementary", "primary", "grade school"), {"elementary"}),
+    (("k 8", "k8"), {"elementary", "middle"}),
+    (("k 12", "k12"), {"elementary", "middle", "high"}),
+)
+
+
+def name_level_mismatch(school_name, nces_level, bands):
+    """#258 detect-and-flag (never auto-reject): does this school's NAME carry a level token that
+    contradicts its NCES LEVEL tag or an assigned band? The Coffee County signature: 'Zion Chapel
+    High School' tagged Other PK-12, contaminating the elementary band — the name contradicted the
+    placement, and nothing looked. A name token is a hint, not ground truth (legitimate exceptions
+    exist), so the return is a flag for human review at a gate, never a drop. Handles the recurring
+    temporal-reconfiguration class where the NCES tag lags reality (#257 is the correction half).
+
+    Pure predicate: (school_name, nces_level, bands) -> None | {school, implied_bands, nces_level,
+    conflicts: [{kind: 'nces_level'|'band', ...}]}."""
+    padded = " " + " ".join((school_name or "").lower().replace("-", " ").replace(".", " ").split()) + " "
+    implied = None
+    for tokens, bset in _NAME_BAND_TOKENS:
+        if any(f" {t} " in padded for t in tokens):
+            implied = bset
+            break
+    if not implied:
+        return None
+    conflicts = []
+    level_band = LEVEL_BAND.get((nces_level or "").strip())
+    if level_band and level_band not in implied:
+        conflicts.append({"kind": "nces_level", "level": nces_level, "level_band": level_band})
+    for b in sorted(set(bands or [])):
+        if b in BANDS and b not in implied:
+            conflicts.append({"kind": "band", "band": b})
+    if not conflicts:
+        return None
+    return {"school": school_name, "implied_bands": sorted(implied),
+            "nces_level": nces_level, "conflicts": conflicts}
+
+
 def primary_bands_for(level, gslo, gshi):
     """A school's PRIMARY band(s): LEVEL-mapped (single band) when clean, else grade-range
     overlap (bands_for(), possibly multiple bands) for combined/ambiguous LEVEL values."""

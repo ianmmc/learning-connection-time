@@ -321,3 +321,50 @@ class TestBandExclusion:
         fp_after = CA.fingerprint(CA.build_closing_argument(
             "D", merged_accepted=acc, exclusions=[self._excl("elementary", "kinston")], **self.KW))
         assert fp_before != fp_after
+
+
+class TestNameLevelMismatch:
+    """#258: detect-and-flag when a school NAME's level token contradicts its NCES level or its
+    assigned band — the detector half of the Coffee County class (#257 is the correction half).
+    Never auto-rejects; a name token is a hint, not ground truth."""
+
+    def test_zion_chapel_signature_flags(self):
+        # the acceptance case: "High School" name + ambiguous PK-12 NCES tag + elementary band
+        from infrastructure.acquisition.common import school_sampling as SS
+        m = SS.name_level_mismatch("Zion Chapel High School", "Other", ["elementary"])
+        assert m and m["implied_bands"] == ["high"]
+        assert any(c["kind"] == "band" and c["band"] == "elementary" for c in m["conflicts"])
+
+    def test_name_vs_nces_level_contradiction_flags(self):
+        from infrastructure.acquisition.common import school_sampling as SS
+        m = SS.name_level_mismatch("Lincoln High School", "Elementary", [])
+        assert m and any(c["kind"] == "nces_level" for c in m["conflicts"])
+
+    def test_legitimate_names_do_not_flag(self):
+        from infrastructure.acquisition.common import school_sampling as SS
+        # no false alarms on normal names (acceptance requirement)
+        assert SS.name_level_mismatch("Highland Elementary", "Elementary", ["elementary"]) is None
+        assert SS.name_level_mismatch("Oak Park Junior High", "Middle", ["middle"]) is None
+        assert SS.name_level_mismatch("zion chapel k12", "Other", ["elementary", "high"]) is None
+        assert SS.name_level_mismatch("Washington School", "Other", ["middle"]) is None  # no token
+        assert SS.name_level_mismatch("", None, ["high"]) is None
+
+    def test_junior_high_is_middle_not_high(self):
+        from infrastructure.acquisition.common import school_sampling as SS
+        assert SS.name_level_mismatch("Roosevelt Junior High School", "Middle", ["middle"]) is None
+        m = SS.name_level_mismatch("Roosevelt Junior High School", "High", [])
+        assert m and any(c["kind"] == "nces_level" for c in m["conflicts"])
+
+    def test_wired_into_negative_space_from_roster_and_facts(self):
+        # roster side: Stage 1 placed a "High School"-named school in elementary;
+        # facts side: an accepted fact named "X High School" landed in the elementary band.
+        acc = [_fact("elementary", "Sunrise High School", 434),
+               _fact("elementary", "oak", 435)]
+        sbb = {"elementary": {"schools": [
+            {"school": "Zion Chapel High School", "level": "Other"},
+            {"school": "Oak Elementary", "level": "Elementary"}]}}
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=4,
+            nces_by_level={"Elementary": 3}, schools_by_band=sbb)
+        flagged = {m["school"] for m in out["negative_space"]["name_level_mismatches"]}
+        assert flagged == {"Zion Chapel High School", "Sunrise High School"}
