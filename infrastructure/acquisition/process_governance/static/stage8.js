@@ -122,6 +122,7 @@
       </div>
       <table class="s8-schools"><thead><tr><th>School</th><th>Times</th><th>Gross</th><th>Models</th><th>Evidence</th><th></th></tr></thead>
         <tbody>${(b.schools || []).map((sc) => renderSchool(sc, band)).join("")}</tbody></table>
+      <button class="btn btn-small" data-feat="human-add" data-ha-add data-band="${esc(band)}">Add school by hand (cited — last resort, #474)</button>
     </section>`;
   }
 
@@ -160,8 +161,14 @@
     // decision (out of the mode/count, never out of sight). The action flips to Restore.
     const excl = sc.excluded
       ? `<div class="s8-excluded-note" data-feat="excluded-reason">⊘ excluded from ${esc(band)} — ${esc(sc.excluded.reason)} (${esc(sc.excluded.actor)})</div>` : "";
+    // #474: a hand-entered school is visibly tagged with its REQUIRED citation — single-source, no
+    // council behind it, so the tag + source must be impossible to miss in the record and receipt.
+    const humanAdd = sc.human_added
+      ? `<div class="s8-human-added" data-feat="human-added">✚ human-added (${esc(sc.human_added.actor)}) — source: ${safeUrl(sc.human_added.source_url) ? `<a href="${esc(sc.human_added.source_url)}" target="_blank" rel="noopener">${esc(shortUrl(sc.human_added.source_url))}</a>` : esc(sc.human_added.source_url)} — ${esc(sc.human_added.reason)}</div>` : "";
     const action = sc.excluded
       ? `<button class="btn btn-small" data-feat="restore-exclusion" data-restore-excl data-band="${esc(band)}" data-school="${esc(sc.school)}">Restore</button>`
+      : sc.human_added
+      ? `<button class="btn btn-small" data-feat="human-add-remove" data-ha-remove data-band="${esc(band)}" data-school="${esc(sc.school)}">Remove</button>`
       : `<button class="btn btn-small" data-feat="override" ${sc.fact_id == null ? "disabled" : `data-override="${esc(sc.fact_id)}"`} data-school="${esc(sc.school)}">Override</button>
          <button class="btn btn-small" data-feat="exclude" data-exclude data-band="${esc(band)}" data-school="${esc(sc.school)}">Exclude</button>`;
     return `<tr${sc.excluded ? ' class="s8-excluded" data-feat="excluded-row"' : ""}>
@@ -169,7 +176,7 @@
       <td>${applied ? `<span class="s8-override" title="human override — council read ${esc(sc.council_start_time)}–${esc(sc.council_end_time)}">✎ ${times}</span>` : times}</td>
       <td>${applied ? `<span class="s8-override">${esc(sc.gross)}</span>` : esc(sc.gross)}</td>
       <td class="s8-muted">${(sc.models || []).map((m) => esc(m.split("/").pop())).join(", ")}</td>
-      <td data-feat="evidence">${url}${reader}${quote}${stated}${overrideMark}${ovErr}${excl}</td>
+      <td data-feat="evidence">${url}${reader}${quote}${stated}${overrideMark}${ovErr}${excl}${humanAdd}</td>
       <td>${action}</td>
     </tr>`;
   }
@@ -187,6 +194,13 @@
       rows.push(`<li><strong>${ns.degenerate_school_facts.length} degenerate school name(s)</strong> dropped (#245).</li>`);
     if ((ns.band_exclusions || []).length)
       rows.push(`<li data-feat="band-exclusions"><strong>Human band-exclusions (#257):</strong> ${ns.band_exclusions.map((e) => `${esc(e.school)} ⊘ ${esc(e.band)} — ${esc(e.reason)}`).join("; ")}.</li>`);
+    if ((ns.recoverable_bands || []).length)
+      rows.push(`<li data-feat="recoverable-band"><strong>Recoverable band(s) (#473):</strong> ${ns.recoverable_bands.map((r) => {
+        const rep = (r.from_reps || [])[0] || {};
+        return `<em>${esc(r.band)}</em> is empty but sibling bands were extracted from ${esc(shortUrl(rep.url || rep.rec_key || "a captured rep"))} — the data may be in that doc.
+          <button class="btn btn-small" data-feat="recover-band" data-recover data-band="${esc(r.band)}" data-reckey="${esc(rep.rec_key)}" data-file="${esc(rep.source_file || "")}">Re-extract for ${esc(r.band)}</button>
+          <button class="btn btn-small" data-feat="human-add" data-ha-add data-band="${esc(r.band)}">Add by hand (fallback, #474)</button>`;
+      }).join("<br>")}</li>`);
     if ((ns.name_level_mismatches || []).length)
       rows.push(`<li data-feat="name-level-mismatch"><strong>Name/level mismatch flags (#258):</strong> ${ns.name_level_mismatches.map((m) => `${esc(m.school)} reads as ${m.implied_bands.map(esc).join("/")} but sits in ${esc(m.band)}${m.nces_level ? ` (NCES: ${esc(m.nces_level)})` : ""}`).join("; ")} — a name token is a hint, not ground truth; consider #257 exclude if confirmed.</li>`);
     const gaps = Object.entries(ns.coverage_gaps || {});
@@ -220,6 +234,53 @@
       (btn.onclick = () => excludeSchool(did, btn.dataset.band, btn.dataset.school)));
     det.querySelectorAll("[data-restore-excl]").forEach((btn) =>
       (btn.onclick = () => restoreExclusion(did, btn.dataset.band, btn.dataset.school)));
+    det.querySelectorAll("[data-ha-add]").forEach((btn) =>
+      (btn.onclick = () => humanAdd(did, btn.dataset.band)));
+    det.querySelectorAll("[data-ha-remove]").forEach((btn) =>
+      (btn.onclick = () => humanAddRemove(did, btn.dataset.band, btn.dataset.school)));
+    det.querySelectorAll("[data-recover]").forEach((btn) =>
+      (btn.onclick = () => recoverBand(did, btn.dataset.band, btn.dataset.reckey, btn.dataset.file)));
+  }
+
+  // #474: hand-enter a school (LAST RESORT — #473 re-extraction first). Citation is REQUIRED; the
+  // server enforces HH:MM + the REQ-055 plausibility gate on the pair, same as extracted values.
+  async function humanAdd(did, band) {
+    const school = window.prompt(`Hand-add a school to the ${band} band — school name (as the source states it):`);
+    if (school == null || !school.trim()) return;
+    const start = window.prompt(`START time for ${school} (HH:MM, required):`);
+    if (start == null || !start.trim()) return;
+    const end = window.prompt(`END time for ${school} (HH:MM, required):`);
+    if (end == null || !end.trim()) return;
+    const source = window.prompt("CITED SOURCE (required — the URL/artifact where you read these times):");
+    if (source == null || !source.trim()) { alert("A hand-entered value requires a cited source (#474)."); return; }
+    const reason = window.prompt("Why is hand-entry needed (required — e.g. \"table unreadable by council; re-extraction failed\"):");
+    if (reason == null || !reason.trim()) { alert("A hand-entry requires a reason."); return; }
+    try {
+      await api("/api/aggregate/human-add", postJSON({
+        district_id: did, band, school: school.trim(), start_time: start.trim(), end_time: end.trim(),
+        source_url: source.trim(), reason: reason.trim(), actor: "ian" }));
+    } catch (e) { alert("Hand-add failed: " + e.message); return; }
+    await openDistrict(did);
+  }
+
+  async function humanAddRemove(did, band, school) {
+    try {
+      await api("/api/aggregate/human-add/remove", postJSON({ district_id: did, band, school }));
+    } catch (e) { alert("Remove failed: " + e.message); return; }
+    await openDistrict(did);
+  }
+
+  // #473: stage a re-extraction of the already-captured rep for an empty band. Spends nothing here —
+  // the paid council run happens at gate@7 (budget-gated), where the new dispatch appears.
+  async function recoverBand(did, band, recKey, file) {
+    if (!recKey || !file) { alert("No usable rep reference on this flag — use the hand-add fallback."); return; }
+    if (!window.confirm(`Stage a re-extraction of ${file} targeting the ${band} band? (Creates a new dispatch; run it at gate@7.)`)) return;
+    let out;
+    try {
+      out = await api("/api/aggregate/recover-band", postJSON({ district_id: did, band, rec_key: recKey, file, actor: "ian" }));
+    } catch (e) { alert("Recover-band failed: " + e.message); return; }
+    alert(`Dispatch staged (handoff ${out.handoff_hash}). Next: ${out.next}`);
+    await openDistrict(did);
   }
 
   // #257: record / lift a standing band-exclusion. Reason is REQUIRED on exclude (the resolving

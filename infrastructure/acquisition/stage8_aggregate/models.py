@@ -65,3 +65,33 @@ class BandExclusion(gdb.Base):
 # one standing exclusion per (district, band, school) — re-excluding replaces, restoring deletes
 Index("ux_band_exclusion_key", BandExclusion.district_id, BandExclusion.band,
       BandExclusion.norm_school, unique=True)
+
+
+class HumanAddedFact(gdb.Base):
+    """#474: a hand-entered (school, band, start, end) — the LAST-RESORT fallback when targeted
+    re-extraction (#473) cannot recover a band the reviewer can see in a captured artifact. Single-
+    source and unvalidated by the council, so every row REQUIRES a cited source artifact/URL (the
+    audit trail, commandment #1) and passes the same gross/plausibility gate as extracted values.
+    Votes in the band mode like any human determination (§2a.3); rendered visibly tagged
+    'human-added + source', mirroring #257's never-out-of-sight treatment. DISTRICT-grain like
+    BandExclusion (survives re-extraction); removing = DELETE (history lives in the frozen receipts).
+
+    PRECIOUS (git-backed to human_added_facts.json, swept by pre-commit)."""
+    __tablename__ = "human_added_fact"
+
+    added_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    district_id: Mapped[str] = mapped_column(String, index=True)
+    band: Mapped[str] = mapped_column(String)                        # elementary | middle | high
+    norm_school: Mapped[str] = mapped_column(String)
+    school: Mapped[str] = mapped_column(String)
+    start_time: Mapped[str] = mapped_column(String)
+    end_time: Mapped[str] = mapped_column(String)
+    source_url: Mapped[str] = mapped_column(Text)                    # REQUIRED — the cited artifact
+    reason: Mapped[str] = mapped_column(Text)
+    actor: Mapped[str] = mapped_column(String)
+    created_at: Mapped[str] = mapped_column(String, default=utcnow)
+
+
+# one hand-entry per (district, band, school) — re-adding replaces, removing deletes
+Index("ux_human_added_fact_key", HumanAddedFact.district_id, HumanAddedFact.band,
+      HumanAddedFact.norm_school, unique=True)
