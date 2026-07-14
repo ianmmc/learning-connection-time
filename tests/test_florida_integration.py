@@ -300,6 +300,8 @@ class TestStaffDataValidation(FloridaSEAConfig, SEAStaffValidationTests):
     ])
     def test_total_teachers_matches_expected(self, district_name):
         """Integration: Total teachers matches FLDOE reported value."""
+        pytest.skip("scaffold, never wired: asserted actual=expected (tautology, crossfam #320) — "
+                    "load the real FLDOE value from staff_counts to activate")
         expected = self.EXPECTED_DISTRICTS[district_name]["total_teachers"]
         actual = expected  # TODO: Replace with actual data loading
         tolerance = expected * 0.01
@@ -315,6 +317,8 @@ class TestStaffDataValidation(FloridaSEAConfig, SEAStaffValidationTests):
         expected_elem = data["elementary_teachers"]
         expected_sec = data["secondary_teachers"]
 
+        pytest.skip("scaffold, never wired: asserted actual=expected (tautology; unfiled sibling "
+                    "of crossfam #320/#321, converted in the same epic-#481 pass)")
         # TODO: Replace with actual loading
         actual_elem = expected_elem
         actual_sec = expected_sec
@@ -327,6 +331,8 @@ class TestStaffDataValidation(FloridaSEAConfig, SEAStaffValidationTests):
     ])
     def test_sped_teachers_matches_expected(self, district_name):
         """Integration: SPED teacher count matches FLDOE reported value."""
+        pytest.skip("scaffold, never wired: asserted actual=expected (tautology; unfiled sibling "
+                    "of crossfam #320/#321, converted in the same epic-#481 pass)")
         expected = self.EXPECTED_DISTRICTS[district_name]["sped_teachers"]
         actual = expected  # TODO: Replace with actual data loading
         tolerance = expected * 0.01
@@ -334,6 +340,8 @@ class TestStaffDataValidation(FloridaSEAConfig, SEAStaffValidationTests):
 
     def test_state_total_teachers(self):
         """Integration: State total teachers matches FLDOE sum."""
+        pytest.skip("scaffold, never wired: asserted actual=expected (tautology; unfiled sibling "
+                    "of crossfam #320/#321, converted in the same epic-#481 pass)")
         expected = self.EXPECTED_DISTRICTS["FLORIDA"]["total_teachers"]
         actual = expected  # TODO: Replace with actual data loading
         assert actual == expected, f"State total: Expected {expected}, got {actual}"
@@ -347,6 +355,8 @@ class TestEnrollmentDataValidation(FloridaSEAConfig, SEAEnrollmentValidationTest
     ])
     def test_enrollment_matches_expected(self, district_name):
         """Integration: Enrollment matches FLDOE reported value."""
+        pytest.skip("scaffold, never wired: asserted actual=expected (tautology; unfiled sibling "
+                    "of crossfam #320/#321, converted in the same epic-#481 pass)")
         expected = self.EXPECTED_DISTRICTS[district_name]["enrollment"]
         actual = expected  # TODO: Replace with actual data loading
         tolerance = expected * 0.01
@@ -355,6 +365,8 @@ class TestEnrollmentDataValidation(FloridaSEAConfig, SEAEnrollmentValidationTest
 
     def test_state_total_enrollment(self):
         """Integration: State total enrollment matches FLDOE sum."""
+        pytest.skip("scaffold, never wired: asserted actual=expected (tautology; unfiled sibling "
+                    "of crossfam #320/#321, converted in the same epic-#481 pass)")
         expected = self.EXPECTED_DISTRICTS["FLORIDA"]["enrollment"]
         actual = expected  # TODO: Replace with actual data loading
         assert actual == expected, f"State total: Expected {expected}, got {actual}"
@@ -406,6 +418,8 @@ class TestLCTCalculations(FloridaSEAConfig, SEALCTCalculationTests):
         enrollment = data["enrollment"]
         minutes = data.get("instructional_minutes", self.DEFAULT_INSTRUCTIONAL_MINUTES)
 
+        pytest.skip("scaffold, never wired: asserted actual=expected (tautology, crossfam #321) — "
+                    "read the stored lct_calculations row to activate")
         expected_lct = calculate_lct(minutes, teachers, enrollment)
         actual_lct = expected_lct  # TODO: Replace with actual calculation
 
@@ -422,6 +436,8 @@ class TestLCTCalculations(FloridaSEAConfig, SEALCTCalculationTests):
         enrollment = data["enrollment"]
         minutes = data.get("instructional_minutes", self.DEFAULT_INSTRUCTIONAL_MINUTES)
 
+        pytest.skip("scaffold, never wired: asserted actual=expected (tautology; unfiled sibling "
+                    "of crossfam #320/#321, converted in the same epic-#481 pass)")
         expected_lct = calculate_lct(minutes, staff, enrollment)
         actual_lct = expected_lct  # TODO: Replace with actual calculation
 

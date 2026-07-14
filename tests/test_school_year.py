@@ -48,7 +48,7 @@ class TestBlendWindow:
 
     def test_gap_beyond_window_rejected(self):
         # Ian's unacceptable case (COVID aside, the span alone is 3)
-        assert not SY.within_blend_window(["2023-24", "2025-26", "2026-27", "2023-24"]) or True
+        assert not SY.within_blend_window(["2023-24", "2025-26", "2026-27", "2023-24"])
         assert not SY.within_blend_window(["2023-24", "2026-27", "2025-26"])
 
     def test_covid_year_fails_the_window_outright(self):

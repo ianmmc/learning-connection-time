@@ -117,24 +117,22 @@ class TestEnrichmentCountVerification:
         )
 
     def test_pre_commit_hook_validates_claims(self):
-        """Pre-commit hook should validate enrichment claims in CLAUDE.md."""
-        # This test validates the hook exists and has correct logic
-        # The actual hook runs in git pre-commit
-        import os
+        """Pre-commit hook should validate enrichment claims in CLAUDE.md.
 
-        hook_path = '.git/hooks/pre-commit'
-        if os.path.exists(hook_path):
-            with open(hook_path, 'r') as f:
-                content = f.read()
+        Checks the TRACKED hook (.githooks/pre-commit — the single source of truth once
+        core.hooksPath is set, GETTING_STARTED §1b), not the legacy untracked .git/hooks/ copy
+        the original version of this test read (which also silenced itself with a trailing
+        `or True` — crossfam #319)."""
+        from pathlib import Path
 
-            # Hook should check for enrichment count claims
-            # (or call a validation script)
-            assert 'enrichment' in content.lower() or 'verify' in content.lower() or True, (
-                "Pre-commit hook should validate enrichment claims"
-            )
-        else:
-            # Hook not installed - mark as needing setup
-            pytest.skip("Pre-commit hook not installed - run setup_hooks.sh")
+        hook_path = Path(__file__).resolve().parent.parent / '.githooks' / 'pre-commit'
+        assert hook_path.exists(), ".githooks/pre-commit is tracked and must exist"
+        content = hook_path.read_text()
+
+        # Hook must check enrichment count claims (Rule #6 — no hallucinated counts)
+        assert 'enrichment' in content.lower() and 'verif' in content.lower(), (
+            "Pre-commit hook should validate enrichment claims against the DB"
+        )
 
 
 # =============================================================================

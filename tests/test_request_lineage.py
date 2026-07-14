@@ -35,12 +35,16 @@ def env():
         pytest.skip(f"governance Postgres unavailable: {type(e).__name__}: {e}")
     gdb.init_precious_schema()
     from infrastructure.acquisition.process_governance import server
-    con = gdb.session_scope().__enter__()
-    con.execute(text("DELETE FROM extraction_request WHERE district_id = :d"), {"d": DID})
-    try:
-        yield server, con
-    finally:
-        con.rollback()
+    # Proper `with` (crossfam #445): the old direct __enter__ + rollback never ran __exit__, so the
+    # session was never closed/returned — a per-test connection leak. The rollback in the finally
+    # still discards the test's writes (incl. the DELETE); __exit__ then commits an empty txn and
+    # closes the session.
+    with gdb.session_scope() as con:
+        con.execute(text("DELETE FROM extraction_request WHERE district_id = :d"), {"d": DID})
+        try:
+            yield server, con
+        finally:
+            con.rollback()
 
 
 def _lin(server, con, req):

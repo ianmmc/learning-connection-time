@@ -21,9 +21,18 @@ CACHE_TABLES = ("discovery_school", "candidate", "capture", "processed_doc")
 
 def _create_cache_temp(sess):
     """Stand up the 4 cross-stage tables as TEMP, lifted verbatim from CI.CACHE_DDL (CREATE TABLE IF
-    NOT EXISTS -> CREATE TEMP TABLE) so the columns always match what the UPSERTs write."""
+    NOT EXISTS -> CREATE TEMP TABLE) so the columns always match what the UPSERTs write.
+
+    The prefix is ASSERTED before replacing (crossfam #447): if the production DDL's casing/whitespace
+    ever drifts, the old silent no-op replacement would have run the ORIGINAL DDL — creating PERMANENT
+    tables in the shared governance DB from a test. Fail loudly instead."""
+    prefix = "CREATE TABLE IF NOT EXISTS "
     for ddl in CI.CACHE_DDL:
-        sess.execute(text(ddl.strip().replace("CREATE TABLE IF NOT EXISTS ", "CREATE TEMP TABLE ", 1)))
+        d = ddl.strip()
+        assert d.startswith(prefix), (
+            f"CACHE_DDL drifted from {prefix!r} — update this test's TEMP rewrite: {d[:60]!r}"
+        )
+        sess.execute(text(d.replace(prefix, "CREATE TEMP TABLE ", 1)))
 
 
 def _fixtures():

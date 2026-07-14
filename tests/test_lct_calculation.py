@@ -118,13 +118,31 @@ class TestLCTWriteIdempotency:
     """
 
     def test_main_clears_before_writing(self):
-        """main() must call clear_lct_calculations BEFORE write_calculations_to_db."""
-        src = inspect.getsource(calculate_lct_variants.main)
-        clear_pos = src.find("clear_lct_calculations(")
-        write_pos = src.find("write_calculations_to_db(")
-        assert clear_pos != -1, "main() no longer calls clear_lct_calculations"
-        assert write_pos != -1, "main() no longer calls write_calculations_to_db"
-        assert clear_pos < write_pos, "clear must run before write (idempotent re-run)"
+        """main() must call clear_lct_calculations BEFORE write_calculations_to_db.
+
+        Walks the AST for actual Call nodes (crossfam #472: the old raw-source .find() could be
+        fooled by the call name appearing first in a comment/string, or miss a second real call)."""
+        import ast
+        import textwrap
+
+        src = textwrap.dedent(inspect.getsource(calculate_lct_variants.main))
+        calls = []  # (lineno, func_name) of every call in source order
+
+        def _name(node):
+            f = node.func
+            return f.id if isinstance(f, ast.Name) else getattr(f, "attr", None)
+
+        for node in ast.walk(ast.parse(src)):
+            if isinstance(node, ast.Call):
+                calls.append((node.lineno, _name(node)))
+
+        clear_lines = [ln for ln, n in calls if n == "clear_lct_calculations"]
+        write_lines = [ln for ln, n in calls if n == "write_calculations_to_db"]
+        assert clear_lines, "main() no longer calls clear_lct_calculations"
+        assert write_lines, "main() no longer calls write_calculations_to_db"
+        assert max(clear_lines) < min(write_lines), (
+            "EVERY clear must precede EVERY write (idempotent re-run)"
+        )
 
     def test_clear_all_deletes_every_calculation(self):
         """clear_lct_calculations(session) with no run_id deletes ALL rows."""

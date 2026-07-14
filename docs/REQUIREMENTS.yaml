@@ -65,21 +65,16 @@ requirements:
       - Tracks confidence level of extracted data
       - Leaves NCES data intact and available for reference and fallback
       - Leaves state education authority (SEA) data intact and available for reference and fallback
-    tests:
-      - tests/test_bell_schedule_enrichment.py::TestBellScheduleFetch::test_fetches_schedule_from_district_website
-      - tests/test_bell_schedule_enrichment.py::TestBellScheduleFetch::test_handles_blocked_website
-      - tests/test_bell_schedule_enrichment.py::TestBellScheduleFetch::test_extracts_pdf_schedule
-      - tests/test_bell_schedule_enrichment.py::TestTimeCalculation::test_calculates_instructional_minutes_basic
-      - tests/test_bell_schedule_enrichment.py::TestTimeCalculation::test_handles_different_time_formats
-      - tests/test_bell_schedule_enrichment.py::TestTimeCalculation::test_calculates_minutes_for_different_grade_levels
-      - tests/test_bell_schedule_enrichment.py::TestSourceAttribution::test_stores_source_url
-      - tests/test_bell_schedule_enrichment.py::TestSourceAttribution::test_stores_extraction_method
-      - tests/test_bell_schedule_enrichment.py::TestConfidenceLevels::test_high_confidence_for_official_sources
-      - tests/test_bell_schedule_enrichment.py::TestDataPreservation::test_nces_data_unchanged_after_enrichment
-      - tests/test_bell_schedule_enrichment.py::TestDataPreservation::test_sea_data_unchanged_after_enrichment
+    tests: []
     created: "2025-01-10T22:00:00Z"
-    updated: "2026-01-23T21:00:00Z"
-    notes: "Enhanced with multi-grade level support via REQ-032"
+    updated: "2026-07-14T00:00:00Z"
+    notes: "Enhanced with multi-grade level support via REQ-032. TEST CITATIONS REMOVED 2026-07-14
+      (epic #481 sweep): tests/test_bell_schedule_enrichment.py was deleted as self-testing theater —
+      it imported ZERO production code; every test exercised a helper defined in the test class itself
+      (crossfam #440), so the 'tested' status was never evidenced by it. The FUNCTIONALITY is real and
+      superseded: bell-schedule acquisition is now the 9-stage pipeline (REQ-055/054/056 et al., with
+      its own test suite). Status left at 'tested' pending Ian's call on whether this REQ should be
+      marked superseded outright."
 
   - id: REQ-004
     description: Calculate SPED-segmented LCT variants
@@ -392,21 +387,15 @@ requirements:
       - Schools sampled list stored for verification
       - get_instructional_minutes() prioritizes - bell schedule (enriched) > state requirement > default 360
     tests:
-      - tests/test_bell_schedule_enrichment.py::TestTimeCalculation::test_calculates_minutes_for_different_grade_levels
-      - tests/test_bell_schedule_enrichment.py::TestConfidenceLevels::test_high_confidence_for_official_sources
-      - tests/test_bell_schedule_enrichment.py::TestConfidenceLevels::test_medium_confidence_for_pdf_extraction
-      - tests/test_bell_schedule_enrichment.py::TestConfidenceLevels::test_low_confidence_for_news_articles
-      - tests/test_bell_schedule_enrichment.py::TestConfidenceLevels::test_assumed_confidence_for_state_requirement
-      - tests/test_bell_schedule_enrichment.py::TestConfidenceLevels::test_confidence_levels_are_valid_enum
-      - tests/test_bell_schedule_enrichment.py::TestSourceAttribution::test_stores_source_url
-      - tests/test_bell_schedule_enrichment.py::TestSourceAttribution::test_stores_multiple_source_urls
-      - tests/test_bell_schedule_enrichment.py::TestSourceAttribution::test_stores_extraction_method
-      - tests/test_bell_schedule_enrichment.py::TestSourceAttribution::test_stores_schools_sampled
       - tests/test_data_precedence.py::TestInstructionalTimePrecedence::test_bell_schedule_preferred_over_state_requirement
       - tests/test_data_precedence.py::TestInstructionalTimePrecedence::test_state_requirement_preferred_over_default
     created: "2026-01-12T03:30:00Z"
-    updated: "2026-01-23T21:00:00Z"
-    notes: "From BELL_SCHEDULE_SAMPLING_METHODOLOGY.md. Enhanced with multi-grade support via REQ-032."
+    updated: "2026-07-14T00:00:00Z"
+    notes: "From BELL_SCHEDULE_SAMPLING_METHODOLOGY.md. Enhanced with multi-grade support via REQ-032.
+      test_bell_schedule_enrichment.py citations removed 2026-07-14 (epic #481 sweep) — the file was
+      deleted as self-testing theater (imported zero production code; crossfam #440); see REQ-003's
+      note. The two surviving test_data_precedence citations DO exercise real code
+      (get_instructional_minutes precedence)."
 
   - id: REQ-018
     description: SPED segmentation uses 2017-18 baseline ratios
