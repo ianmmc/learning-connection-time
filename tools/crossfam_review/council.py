@@ -14,7 +14,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from infrastructure.acquisition.stage7_extract import openrouter as OR
+from tools.crossfam_review import client as OR
 from tools.crossfam_review import prompts as P
 from tools.crossfam_review.dedup import Candidate
 from tools.crossfam_review.roster import Model, rotation_for

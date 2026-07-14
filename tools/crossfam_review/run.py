@@ -23,7 +23,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
 from pathlib import Path
 
-from infrastructure.acquisition.stage7_extract import openrouter as OR
+from tools.crossfam_review import client as OR
 from tools.crossfam_review import council as C
 from tools.crossfam_review import dedup as D
 from tools.crossfam_review import finder as F

@@ -1,14 +1,14 @@
 """The finder pass: run one model over one shard → parsed, stamped findings + telemetry.
 
-Reuses the pipeline's paid client (`stage7_extract.openrouter.call`) verbatim — same streaming,
-truncation-retry, and `usage.cost` telemetry the extraction stage trusts. This module only builds the
-review request, guards spend, and parses the reply into `Finding`s.
+Reaches the paid client through the `client` seam (which re-exports the pipeline's streaming
+OpenRouter client) — same streaming, truncation-retry, and `usage.cost` telemetry the extraction stage
+trusts. This module only builds the review request, guards spend, and parses the reply into `Finding`s.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
 
-from infrastructure.acquisition.stage7_extract import openrouter as OR
+from tools.crossfam_review import client as OR
 from tools.crossfam_review import prompts as P
 from tools.crossfam_review.schemas import FINDER_RESPONSE_FORMAT
 from tools.crossfam_review.findings import Finding, parse_findings

@@ -118,21 +118,27 @@ Using each finder's real billed cost (`usage.cost` summed over its 36 shard call
   low-volume at high cost.
 - **Highest absolute yield: kimi (106) and qwen (96)** — but at ~$1.2 each, only middling efficiency.
 
-## 5. Roster recommendation for the next sweep (Q: exclude anyone?)
+## 5. Roster observations for the next sweep (Q: exclude anyone?) — a snapshot, NOT a verdict
 
-Marginal-value check — how many confirmed candidates would fall below ≥2 families if a model were
-removed — combined with reliability (empties/errors):
+**Do not write off any finder on this run alone.** These numbers were measured against the *current*
+codebase; once the confirmed issues are *fixed*, what's findable changes, and a model that looks
+low-marginal now could be high-marginal next round (or vice-versa). The right time to act on
+exclusion is after a fix-cycle re-measurement, not before. What follows are *candidates to watch*,
+combining marginal value (how many confirmed would fall below ≥2 families without the model) with
+reliability (empties/errors):
 
-- **`mimo-v2.5-pro` is the clearest exclusion candidate**: worst value/$, lowest marginal value (sole
-  corroborator on just **14** confirmed), and the worst reliability (**10 errors + 4 empties**). Its
-  only virtues are highest precision (0.86) and the unique data-integrity lens.
-- **`minimax-m2.7`** is the runner-up concern (9 errors, mid-everything).
-- **Keep `grok`** despite its cost — sole corroborator on **31** confirmed (high marginal coverage),
-  unlike mimo.
+- **`mimo-v2.5-pro` — the model to scrutinize**: worst value/$, lowest marginal value (sole
+  corroborator on just **14** confirmed), worst reliability (**10 errors + 4 empties**). But it also
+  has the highest precision (0.86) and the unique data-integrity lens — so exclusion is a real
+  trade-off, not a free win. Re-measure before deciding.
+- **`minimax-m2.7`** — runner-up reliability concern (9 errors), mid-everything otherwise.
+- **`grok`** — expensive, but earns its slot on coverage: sole corroborator on **31** confirmed
+  (unlike mimo). Cost is the only mark against it.
 
-**Recommendation:** for a cost-conscious sweep, drop `mimo` (lose a niche lens, save the
-most-expensive-per-signal, least-reliable slot) and keep the other nine. If breadth outweighs cost,
-keep all ten — none is dead weight; they differ in efficiency, not usefulness.
+**Framing:** none of the ten is dead weight — they differ in efficiency and reliability, not
+usefulness. A cost-conscious *future* sweep might trial dropping `mimo`; a breadth-first one keeps all
+ten. Either way, decide after re-measuring against a fixed codebase, and remember the roster is
+config — the operator picks per-sweep.
 
 ## 6. No family collusion in the judge cascade (Q: judge ↔ family-finder patterns) — **and a
 methodology lesson**
