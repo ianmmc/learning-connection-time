@@ -126,10 +126,36 @@ def run_council(candidates, guard: SpendGuard, workers: int) -> list:
     return adjs
 
 
+def _file_only(outdir, stamp: str, live: bool) -> int:
+    """File issues from a prior run's persisted issue_payloads.json (no paid calls)."""
+    src = outdir / "issue_payloads.json"
+    if not src.exists():
+        print(f"✗ no {src} — run the review first (dry) to produce it.")
+        return 1
+    saved = json.loads(src.read_text())
+    print(f"filing {len(saved)} saved payloads (live={live}) under '{GH.campaign_label(stamp)}'")
+    GH.ensure_label(stamp, live)
+    already = GH.existing_fingerprints(stamp, live)
+    filed = []
+    for p in saved:
+        if p["fingerprint"] in already:
+            continue
+        payload = GH.IssuePayload(title=p["title"], body=p["body"], labels=p["labels"],
+                                  fingerprint=p["fingerprint"])
+        out = GH.create_issue(payload, live=live)
+        filed.append(out)
+        print(f"  {'✓ ' + out.get('url','') if live else '(dry) ' + out['title'][:80]}", flush=True)
+    (outdir / "issues.json").write_text(json.dumps(filed, indent=2))
+    print(f"\n{'filed' if live else 'would file'} {len(filed)} issues.")
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Cross-family external code review")
     ap.add_argument("--run", action="store_true", help="make paid calls (default: preflight only)")
     ap.add_argument("--live", action="store_true", help="file GitHub issues (default: print them)")
+    ap.add_argument("--file-only", action="store_true",
+                    help="skip the paid review; (re)file from a prior run's saved issue_payloads.json")
     ap.add_argument("--cap", type=float, default=10.0, help="hard USD spend cap (default 10)")
     ap.add_argument("--workers", type=int, default=8, help="concurrent API calls")
     ap.add_argument("--max-shards", type=int, default=0, help="review only the first N shards (smoke test)")
@@ -156,6 +182,12 @@ def main(argv=None) -> int:
     only = {x.strip() for x in args.only.split(",") if x.strip()} or None
     outdir = RECEIPTS / f"crossfam-{args.stamp}"
     outdir.mkdir(parents=True, exist_ok=True)
+
+    # File-only: skip the paid finder+council pass entirely and (re)file from a prior run's saved
+    # issue_payloads.json — used to review a dry run's output, then file it without re-paying, or to
+    # replay a filing that failed partway. Idempotent via fingerprints.
+    if args.file_only:
+        return _file_only(outdir, args.stamp, args.live)
 
     # 1. Finders
     finder_results = run_finders(shard_list, only, guard, args.workers)
@@ -208,12 +240,17 @@ def main(argv=None) -> int:
                        for v in a.verdicts]} for a in adjs], indent=2))
     print(f"\nconfirmed: {len(confirmed)}/{len(adjs)} · total spend ${guard.settled():.3f}")
 
-    # 4. File issues
+    # 4. File issues — build every payload FIRST and persist it, so a filing failure (rate limit,
+    # network, a gh hiccup) after a ~$10+ paid review can be replayed from disk without re-paying.
+    payloads = [GH.build_payload(a, args.stamp)
+                for a in sorted(confirmed, key=lambda a: (a.candidate.severity, a.candidate.file))]
+    (outdir / "issue_payloads.json").write_text(json.dumps(
+        [{"title": p.title, "body": p.body, "labels": p.labels, "fingerprint": p.fingerprint}
+         for p in payloads], indent=2))
     GH.ensure_label(args.stamp, args.live)
     already = GH.existing_fingerprints(args.stamp, args.live)
     filed = []
-    for a in sorted(confirmed, key=lambda a: (a.candidate.severity, a.candidate.file)):
-        payload = GH.build_payload(a, args.stamp)
+    for payload in payloads:
         if payload.fingerprint in already:
             continue
         filed.append(GH.create_issue(payload, live=args.live))
