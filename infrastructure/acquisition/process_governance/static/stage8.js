@@ -162,7 +162,7 @@
       <td>${applied ? `<span class="s8-override">${esc(sc.gross)}</span>` : esc(sc.gross)}</td>
       <td class="s8-muted">${(sc.models || []).map((m) => esc(m.split("/").pop())).join(", ")}</td>
       <td data-feat="evidence">${url}${reader}${quote}${stated}${overrideMark}${ovErr}</td>
-      <td><button class="btn btn-small" data-feat="override" data-override="${esc(sc.fact_id)}" data-school="${esc(sc.school)}" ${sc.fact_id == null ? "disabled" : ""}>Override</button></td>
+      <td><button class="btn btn-small" data-feat="override" ${sc.fact_id == null ? "disabled" : `data-override="${esc(sc.fact_id)}"`} data-school="${esc(sc.school)}">Override</button></td>
     </tr>`;
   }
 
@@ -221,7 +221,8 @@
                 postJSON({ disposition, reason, actor: "ian", expected_fingerprint: REVIEWED_FP }));
     } catch (e) {
       alert("Decision failed: " + e.message);
-      if (String(e.message).startsWith("409")) openDistrict(did);   // facts moved — reload the picture
+      // await (#337): fire-and-forget left an unhandled rejection if the reload itself failed
+      if (String(e.message).startsWith("409")) await openDistrict(did);   // facts moved — reload the picture
       return;
     }
     await loadDistricts();
