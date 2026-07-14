@@ -121,11 +121,11 @@
         coverage ${pct(s.coverage)} · school agreement (plurality) ${pct(s.plurality_share)}
       </div>
       <table class="s8-schools"><thead><tr><th>School</th><th>Times</th><th>Gross</th><th>Models</th><th>Evidence</th><th></th></tr></thead>
-        <tbody>${(b.schools || []).map(renderSchool).join("")}</tbody></table>
+        <tbody>${(b.schools || []).map((sc) => renderSchool(sc, band)).join("")}</tbody></table>
     </section>`;
   }
 
-  function renderSchool(sc) {
+  function renderSchool(sc, band) {
     const ev = sc.evidence, ce = sc.council_evidence, ov = sc.human_override;
     // safeUrl gates the raw href (PR #252 review round — the settings.js javascript:-URI fix, reused):
     // a stored non-http(s) URL renders as visible plain text, never a clickable link.
@@ -156,13 +156,21 @@
       ? `<div class="s8-override" data-feat="override-applied">✎ human override${applied
           ? ` (council read ${esc(sc.council_start_time)}–${esc(sc.council_end_time)}, ${esc(sc.council_gross)} min)` : ""} — ${esc(ov.reason || ov.note || "")}</div>` : "";
     const times = `${esc(sc.start_time)}–${esc(sc.end_time)}`;
-    return `<tr>
+    // #257: an excluded school renders struck-through WITH its reason — a recorded, auditable human
+    // decision (out of the mode/count, never out of sight). The action flips to Restore.
+    const excl = sc.excluded
+      ? `<div class="s8-excluded-note" data-feat="excluded-reason">⊘ excluded from ${esc(band)} — ${esc(sc.excluded.reason)} (${esc(sc.excluded.actor)})</div>` : "";
+    const action = sc.excluded
+      ? `<button class="btn btn-small" data-feat="restore-exclusion" data-restore-excl data-band="${esc(band)}" data-school="${esc(sc.school)}">Restore</button>`
+      : `<button class="btn btn-small" data-feat="override" ${sc.fact_id == null ? "disabled" : `data-override="${esc(sc.fact_id)}"`} data-school="${esc(sc.school)}">Override</button>
+         <button class="btn btn-small" data-feat="exclude" data-exclude data-band="${esc(band)}" data-school="${esc(sc.school)}">Exclude</button>`;
+    return `<tr${sc.excluded ? ' class="s8-excluded" data-feat="excluded-row"' : ""}>
       <td>${esc(sc.school)}</td>
       <td>${applied ? `<span class="s8-override" title="human override — council read ${esc(sc.council_start_time)}–${esc(sc.council_end_time)}">✎ ${times}</span>` : times}</td>
       <td>${applied ? `<span class="s8-override">${esc(sc.gross)}</span>` : esc(sc.gross)}</td>
       <td class="s8-muted">${(sc.models || []).map((m) => esc(m.split("/").pop())).join(", ")}</td>
-      <td data-feat="evidence">${url}${reader}${quote}${stated}${overrideMark}${ovErr}</td>
-      <td><button class="btn btn-small" data-feat="override" ${sc.fact_id == null ? "disabled" : `data-override="${esc(sc.fact_id)}"`} data-school="${esc(sc.school)}">Override</button></td>
+      <td data-feat="evidence">${url}${reader}${quote}${stated}${overrideMark}${ovErr}${excl}</td>
+      <td>${action}</td>
     </tr>`;
   }
 
@@ -177,6 +185,8 @@
       rows.push(`<li><strong>${ns.unresolved.length} unresolved</strong> (band, school) pair(s) — the council couldn't reach cross-family consensus.</li>`);
     if ((ns.degenerate_school_facts || []).length)
       rows.push(`<li><strong>${ns.degenerate_school_facts.length} degenerate school name(s)</strong> dropped (#245).</li>`);
+    if ((ns.band_exclusions || []).length)
+      rows.push(`<li data-feat="band-exclusions"><strong>Human band-exclusions (#257):</strong> ${ns.band_exclusions.map((e) => `${esc(e.school)} ⊘ ${esc(e.band)} — ${esc(e.reason)}`).join("; ")}.</li>`);
     const gaps = Object.entries(ns.coverage_gaps || {});
     if (gaps.length)
       rows.push(`<li><strong>Coverage gaps:</strong> ${gaps.map(([b, g]) => `${esc(b)} ${g.n_sampled}/${g.n_total}`).join(", ")} — bands resting on a thin sample.</li>`);
@@ -204,6 +214,29 @@
       (btn.onclick = () => decide(did, btn.dataset.decide)));
     det.querySelectorAll("[data-override]").forEach((btn) =>
       (btn.onclick = () => override(did, btn.dataset.override, btn.dataset.school)));
+    det.querySelectorAll("[data-exclude]").forEach((btn) =>
+      (btn.onclick = () => excludeSchool(did, btn.dataset.band, btn.dataset.school)));
+    det.querySelectorAll("[data-restore-excl]").forEach((btn) =>
+      (btn.onclick = () => restoreExclusion(did, btn.dataset.band, btn.dataset.school)));
+  }
+
+  // #257: record / lift a standing band-exclusion. Reason is REQUIRED on exclude (the resolving
+  // knowledge — e.g. "presents as a high school on the district site, 2025-26"); the server
+  // recomputes the band mode immediately and the exclusion enters the receipt + fingerprint.
+  async function excludeSchool(did, band, school) {
+    const reason = window.prompt(`Exclude ${school} from the ${band} band — why? (required; e.g. “reconfigured to high school per district site 2025-26”)`);
+    if (reason == null || !reason.trim()) { if (reason != null) alert("An exclusion requires a reason."); return; }
+    try {
+      await api("/api/aggregate/exclude", postJSON({ district_id: did, band, school, reason: reason.trim(), actor: "ian" }));
+    } catch (e) { alert("Exclude failed: " + e.message); return; }
+    await openDistrict(did);
+  }
+
+  async function restoreExclusion(did, band, school) {
+    try {
+      await api("/api/aggregate/exclude/restore", postJSON({ district_id: did, band, school }));
+    } catch (e) { alert("Restore failed: " + e.message); return; }
+    await openDistrict(did);
   }
 
   async function decide(did, disposition) {

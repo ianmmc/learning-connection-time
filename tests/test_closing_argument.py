@@ -250,3 +250,74 @@ class TestFingerprint:
             {"start_time": "08:05", "end_time": "15:10", "reason": "wrong bell read", "actor": "ian"})
         fp_after = CA.fingerprint(CA.build_closing_argument("D", merged_accepted=[overridden], **kw))
         assert fp_before != fp_after
+
+
+class TestBandExclusion:
+    """#257: human 'exclude school from band' — a fact whose observation is CORRECT but whose band
+    membership is stale (Coffee County: Kinston/Zion Chapel tagged PK-12 in 2023-24 NCES, presenting
+    as high schools in 2025-26, contaminating the elementary band with high-school hours)."""
+
+    KW = dict(merged_unresolved=[], nces_total=4, nces_by_level={"Elementary": 3}, schools_by_band={})
+
+    def _excl(self, band, school, reason="reconfigured to high school (district site, 2025-26)"):
+        return {"band": band, "school": school, "reason": reason, "actor": "ian",
+                "created_at": "2026-07-14T00:00:00Z"}
+
+    def test_excluded_school_leaves_the_mode_but_stays_visible(self):
+        # Coffee County shape: NBES et al. at 435; Kinston + Zion Chapel at 465 (high-school hours)
+        # drag the elementary mode. Excluding them recomputes the mode over the remaining schools.
+        acc = ([_fact("elementary", s, 435) for s in ("nbes", "cces")]
+               + [_fact("elementary", s, 465) for s in ("kinston", "zion chapel")])
+        polluted = CA.build_closing_argument("D", merged_accepted=acc, **self.KW)
+        assert polluted["bands"]["elementary"]["method"] == "mean_tiebreak"  # 2-2 tie: the distortion
+
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc,
+            exclusions=[self._excl("elementary", "kinston"), self._excl("elementary", "Zion Chapel")],
+            **self.KW)
+        el = out["bands"]["elementary"]
+        assert el["gross_minutes"] == 435 and el["method"] == "modal"
+        assert el["sampling"]["n_sampled"] == 2                    # excluded don't count
+        # excluded schools stay VISIBLE in the band (struck-through at render), never silently dropped
+        excluded_rows = [s for s in el["schools"] if s.get("excluded")]
+        assert {s["school"] for s in excluded_rows} == {"kinston", "zion chapel"}
+        assert all(s["excluded"]["reason"] for s in excluded_rows)
+        included_rows = [s for s in el["schools"] if not s.get("excluded")]
+        assert {s["school"] for s in included_rows} == {"nbes", "cces"}
+
+    def test_exclusion_is_scoped_per_band(self):
+        # a genuine K-12 can be excluded from elementary but kept in high (#257 scoping requirement)
+        acc = [_fact("elementary", "k12 school", 465), _fact("elementary", "oak", 435),
+               _fact("high", "k12 school", 465)]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, exclusions=[self._excl("elementary", "k12 school")],
+            merged_unresolved=[], nces_total=3, nces_by_level={"Elementary": 2, "High": 1},
+            schools_by_band={})
+        assert out["bands"]["elementary"]["gross_minutes"] == 435
+        assert out["bands"]["high"]["gross_minutes"] == 465        # untouched in its real band
+
+    def test_fully_excluded_band_vanishes_and_surfaces_in_negative_space(self):
+        acc = [_fact("elementary", "kinston", 465)]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, exclusions=[self._excl("elementary", "kinston")], **self.KW)
+        assert "elementary" not in out["bands"]
+        assert "elementary" in out["negative_space"]["unsatisfied_bands"] or \
+               "elementary" not in out["negative_space"]["claimed_bands"]
+        # the audit surface: every applied exclusion is in the negative space regardless of band fate
+        ns = out["negative_space"]["band_exclusions"]
+        assert [(e["band"], e["school"]) for e in ns] == [("elementary", "kinston")]
+
+    def test_exclusion_matches_on_normalized_school_name(self):
+        # the stored exclusion normalizes like the merge does — 'Kinston School' vs 'kinston'
+        acc = [_fact("elementary", "Kinston School", 465), _fact("elementary", "oak", 435)]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, exclusions=[self._excl("elementary", "kinston school")], **self.KW)
+        assert out["bands"]["elementary"]["gross_minutes"] == 435
+
+    def test_exclusion_changes_fingerprint(self):
+        # same PR #252 posture as overrides: an exclusion recorded after approval must flip it stale
+        acc = [_fact("elementary", "kinston", 465), _fact("elementary", "oak", 435)]
+        fp_before = CA.fingerprint(CA.build_closing_argument("D", merged_accepted=acc, **self.KW))
+        fp_after = CA.fingerprint(CA.build_closing_argument(
+            "D", merged_accepted=acc, exclusions=[self._excl("elementary", "kinston")], **self.KW))
+        assert fp_before != fp_after

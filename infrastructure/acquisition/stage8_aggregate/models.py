@@ -36,3 +36,32 @@ class Stage8Approval(gdb.Base):
 
 # newest-decision-per-district lookup (the console badge + Stage-9 eligibility both hit this)
 Index("ix_stage8_approval_latest", Stage8Approval.district_id, Stage8Approval.approval_id.desc())
+
+
+class BandExclusion(gdb.Base):
+    """#257: a standing human 'exclude school from band' decision — the fact's OBSERVATION is correct
+    but its band membership is stale (the temporal grade-reconfiguration class: enrollment is 2023-24,
+    bell schedules are 2025-26, and a school can re-span in between — Coffee County's Kinston/Zion
+    Chapel). DISTRICT-grain, keyed (district_id, band, norm_school), deliberately NOT fact-grain: the
+    knowledge 'it's a high school now, I checked the site' is about the school, so it must survive a
+    follow-up re-extraction minting new fact rows — a fact-attached exclusion would silently vanish and
+    re-pollute the band. Applied at closing-argument build time (excluded facts leave the band's
+    mode/count, stay visible struck-through); frozen into every gate@8 receipt; reversible before freeze
+    by deleting the row (the receipts preserve what was operative at each decision).
+
+    PRECIOUS (a human governance decision — git-backed to band_exclusions.json, swept by pre-commit)."""
+    __tablename__ = "band_exclusion"
+
+    exclusion_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    district_id: Mapped[str] = mapped_column(String, index=True)
+    band: Mapped[str] = mapped_column(String)                        # elementary | middle | high
+    norm_school: Mapped[str] = mapped_column(String)                 # school_match.norm_school key (the merge axis)
+    school: Mapped[str] = mapped_column(String)                      # display name as the reviewer saw it
+    reason: Mapped[str] = mapped_column(Text)                        # REQUIRED — the resolving knowledge
+    actor: Mapped[str] = mapped_column(String)
+    created_at: Mapped[str] = mapped_column(String, default=utcnow)
+
+
+# one standing exclusion per (district, band, school) — re-excluding replaces, restoring deletes
+Index("ux_band_exclusion_key", BandExclusion.district_id, BandExclusion.band,
+      BandExclusion.norm_school, unique=True)

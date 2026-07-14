@@ -143,7 +143,8 @@ def _council_evidence(evidence_json):
 
 def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
                            nces_total, nces_by_level, schools_by_band,
-                           evidence_by_reckey=None, capture_events=None, roster_names=None):
+                           evidence_by_reckey=None, capture_events=None, roster_names=None,
+                           exclusions=None):
     """Compose the closing argument for one district from already-gathered ingredients. PURE.
 
     Inputs:
@@ -160,6 +161,13 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
           receipt is missing. Missing everywhere -> evidence: None (surfaced honestly).
       capture_events   : district-grain state_event stage-3 capture rows (list of {created_at, outcome}).
       roster_names     : flattened roster names for the contamination detector's keeper hint.
+      exclusions       : #257 — the district's standing human band-exclusions, list of
+          {band, school, reason, actor, created_at}. An excluded (band, school) is a fact whose
+          OBSERVATION is correct but whose band membership is stale (the temporal grade-reconfiguration
+          class — Coffee County's Kinston/Zion Chapel). Excluded facts leave the band's mode/count but
+          stay VISIBLE (struck-through at render, in the frozen receipt) — a recorded, auditable human
+          decision, never a deletion. Matching is on the normalized school name (same axis as the merge),
+          scoped per (band, school): a K-12 can be excluded from `elementary` and kept in `high`.
 
     Returns the closing-argument dict (see the module/design note); self-contained, JSON-serialisable,
     ready to render at gate@8 and to FREEZE into the immutable approval receipt.
@@ -181,7 +189,20 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
     agg = [{"band": f["band"], "school": f["school"],
             "start": eff["start"], "end": eff["end"], "gross": eff["gross"],
             "models": _models(f), "method": f.get("method")} for f, ov, eff in enriched]
-    bands = AGG.district_bands_from_facts(agg)
+
+    # #257: apply the standing human band-exclusions BEFORE the mode — an excluded (band, norm_school)
+    # leaves the band's value/count entirely (the human sibling of the automatic exclude-but-surface
+    # detectors: degenerate_school_facts #245, contamination #237). Applied exclusions are carried for
+    # the receipt/render; a stored exclusion matching no current fact is dormant (kept in the DB, not
+    # reported here — it re-applies automatically if a follow-up re-extracts that school).
+    excl_of = {(e["band"], _norm(e["school"])): e for e in (exclusions or [])}
+    included_agg = [r for r in agg if (r["band"], _norm(r["school"])) not in excl_of]
+    applied_exclusions = sorted(
+        ({**excl_of[(r["band"], _norm(r["school"]))], "school": r["school"]}
+         for r in agg if (r["band"], _norm(r["school"])) in excl_of),
+        key=lambda e: (e["band"], _norm(e["school"])))
+
+    bands = AGG.district_bands_from_facts(included_agg)
     degenerate = AGG.degenerate_school_facts(agg)
     contamination = AGG.detect_single_school_over_extraction(agg, nces_total, roster_names)
 
@@ -221,6 +242,26 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
                             "override_applied": bool(ov) and not eff.get("error")
                                                 and bool(ov.get("start_time") or ov.get("end_time")),
                             "override_error": eff.get("error")})
+        # #257: the band's excluded schools ride along AFTER the included rows — struck-through at
+        # render, in the frozen receipt, NOT in the mode/count above (bands was built exclusion-first).
+        for (xband, xnorm), e in sorted(excl_of.items()):
+            if xband != band:
+                continue
+            f, ov, eff = fact_of.get((band, xnorm), (None, None, None))
+            if f is None:
+                continue
+            schools.append({"school": f["school"], "start_time": eff["start"], "end_time": eff["end"],
+                            "gross": eff["gross"], "models": _models(f), "human_determination": "",
+                            "rec_key": f.get("rec_key"), "fact_id": f.get("fact_id"),
+                            "council_start_time": f.get("start_time"), "council_end_time": f.get("end_time"),
+                            "council_gross": f.get("gross_minutes"),
+                            "evidence": _school_evidence(f),
+                            "council_evidence": _council_evidence(f.get("evidence_json")),
+                            "human_override": ov,
+                            "override_applied": bool(ov) and not eff.get("error")
+                                                and bool(ov.get("start_time") or ov.get("end_time")),
+                            "override_error": eff.get("error"),
+                            "excluded": e})
         n_sampled, n_total = b["n_schools"], _band_denominator(band, nces_by_level)
         out_bands[band] = {
             "gross_minutes": b["gross_minutes"], "start_time": b["start_time"],
@@ -239,6 +280,9 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
         "unresolved": merged_unresolved,
         "contamination": contamination,
         "degenerate_school_facts": degenerate,
+        # #257: every APPLIED human band-exclusion — the audit surface that survives even when the
+        # excluded school's whole band vanished from `bands` (nothing left to render it under).
+        "band_exclusions": applied_exclusions,
         "claimed_bands": sorted(claimed),
         "unsatisfied_bands": sorted(claimed - satisfied),
         "coverage_gaps": {b: out_bands[b]["sampling"] for b in out_bands
@@ -269,12 +313,16 @@ def min_band_coverage(ca):
 
 def fingerprint(ca):
     """A stable content hash of a closing argument's DETERMINATION — the per-band value, the exact set
-    of accepted schools it rests on, AND each school's human override. Frozen into a gate@8 approval
-    (STAGE8 §2b) so any later change to the picture makes the approval detectably STALE. Overrides are
-    IN the basis by design (review round, PR #252): an override recorded AFTER a district was approved
-    is a new human determination the approval never covered — excluding it left `is_stale` False after
-    exactly the kind of change the staleness check exists to catch. Deliberately still excludes volatile
-    provenance (capture timestamps, evidence prose) — those don't change what was signed off on."""
+    of accepted schools it rests on, each school's human override, AND the applied band-exclusions
+    (#257). Frozen into a gate@8 approval (STAGE8 §2b) so any later change to the picture makes the
+    approval detectably STALE. Overrides are IN the basis by design (review round, PR #252): an override
+    recorded AFTER a district was approved is a new human determination the approval never covered —
+    excluding it left `is_stale` False after exactly the kind of change the staleness check exists to
+    catch. Exclusions follow the same rule (they move the mode AND are themselves human determinations);
+    they enter both per-school (the `excluded` marker) and via negative_space.band_exclusions, which
+    covers the fully-excluded-band case where no school row remains to carry the marker. Deliberately
+    still excludes volatile provenance (capture timestamps, evidence prose) — those don't change what
+    was signed off on."""
     import hashlib
 
     def _ov(s):
@@ -283,14 +331,21 @@ def fingerprint(ca):
             return None
         return (ov.get("start_time"), ov.get("end_time"), ov.get("reason") or ov.get("note"))
 
+    def _ex(s):
+        e = s.get("excluded")
+        return (e.get("reason"), e.get("actor")) if e else None
+
     basis = []
     for band in sorted(ca.get("bands", {})):
         b = ca["bands"][band]
         # key=str-of-tuple: determinism is all the sort needs, and it can't raise on a None-vs-tuple
         # comparison if two entries ever tie on (school, gross)
-        schools = sorted(((s.get("school"), s.get("gross"), _ov(s)) for s in b.get("schools", [])),
+        schools = sorted(((s.get("school"), s.get("gross"), _ov(s), _ex(s)) for s in b.get("schools", [])),
                          key=str)
         basis.append((band, b.get("gross_minutes"), schools))
+    exclusions = sorted(((e.get("band"), e.get("school"), e.get("reason"))
+                         for e in ca.get("negative_space", {}).get("band_exclusions", [])), key=str)
+    basis.append(("__band_exclusions__", exclusions))
     return hashlib.sha256(json.dumps(basis, sort_keys=True, default=str).encode()).hexdigest()[:16]
 
 
@@ -391,8 +446,16 @@ def load_closing_argument(session, district_id):
     roster_names = [sc.get("school") for m in (schools_by_band or {}).values()
                     for sc in (m or {}).get("schools", []) if sc.get("school")]
 
+    # #257: the district's standing human band-exclusions (precious band_exclusion table) — matched
+    # in the builder on the same norm_school axis the merge dedupes on.
+    exclusions = [dict(r._mapping) for r in session.execute(text("""
+        SELECT band, school, norm_school, reason, actor, created_at
+        FROM band_exclusion WHERE district_id = :d ORDER BY band, norm_school
+    """), {"d": district_id}).all()]
+
     return build_closing_argument(
         district_id, merged_accepted=accepted, merged_unresolved=unresolved,
         nces_total=meta.get("nces_total"), nces_by_level=nces_by_level,
         schools_by_band=schools_by_band, evidence_by_reckey=by_rk,
-        capture_events=capture_events, roster_names=roster_names)
+        capture_events=capture_events, roster_names=roster_names,
+        exclusions=exclusions)
