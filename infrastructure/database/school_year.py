@@ -14,7 +14,7 @@ import re
 
 # --- The years -------------------------------------------------------------------------------
 
-CURRENT_SCHOOL_YEAR = "2025-26"     # bump once per year; the only place it is written
+CURRENT_SCHOOL_YEAR = "2026-27"     # bump once per year; the only place it is written
 NCES_PRIMARY_YEAR = "2023-24"       # primary NCES CCD enrollment/staffing dataset (CLAUDE.md)
 SPED_BASELINE_YEAR = "2017-18"      # IDEA 618 / CRDC baseline — EXEMPT from the blend window
 PRE_COVID_FALLBACK_YEAR = "2018-19" # preferred over any COVID year when nothing recent exists
@@ -22,8 +22,11 @@ PRE_COVID_FALLBACK_YEAR = "2018-19" # preferred over any COVID year when nothing
 # Rule #2: never use COVID-era data (abnormal schedules).
 COVID_EXCLUDED_YEARS = frozenset({"2019-20", "2020-21", "2021-22", "2022-23"})
 
-# Bell-schedule search order: current first, all post-COVID years interchangeable.
-ACCEPTABLE_BELL_YEARS = ("2025-26", "2024-25", "2023-24")
+# Bell-schedule search order: current first, all post-COVID years interchangeable. 2023-24 stays
+# acceptable while it is still the NCES primary year, but note the blend window arbitrates the
+# actual combination per calculation: a 2026-27 bell schedule + the 2023-24 CCD is span 3 (> 2),
+# so it cannot blend until a newer CCD import bumps NCES_PRIMARY_YEAR.
+ACCEPTABLE_BELL_YEARS = ("2026-27", "2025-26", "2024-25", "2023-24")
 
 # --- The blend window (REQ-026, semantics decided by Ian 2026-07-01) --------------------------
 # Data blended for one calculation may span at most THREE CONSECUTIVE school years:

@@ -142,17 +142,18 @@ Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fr
 
 ## Current Data Years
 
-**Current School Year:** 2025-26
+**Current School Year:** 2026-27 (code home: `infrastructure/database/school_year.py` — the single
+source of truth; bump `CURRENT_SCHOOL_YEAR` there once per year, this table just mirrors it)
 
 ### Data Year Strategy
 
 | Data Type | Year | Notes |
 |-----------|------|-------|
 | Primary dataset | 2023-24 | NCES CCD enrollment/staffing |
-| Bell schedules | 2025-26, 2024-25, 2023-24 | Any acceptable, search current first |
+| Bell schedules | 2026-27, 2025-26, 2024-25, 2023-24 | Post-COVID acceptable, search current first; the REQ-026 blend window (span ≤ 2 start-years) arbitrates per calculation — a 2026-27 bell schedule can't blend with the 2023-24 CCD until a newer CCD lands |
 | COVID exclusion | 2019-20 through 2022-23 | Never use - abnormal schedules |
 
-**Search Order:** 2025-26 → 2024-25 → 2023-24 (all post-COVID, interchangeable)
+**Search Order:** 2026-27 → 2025-26 → 2024-25 → 2023-24 (all post-COVID)
 
 ---
 
