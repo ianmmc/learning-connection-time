@@ -144,7 +144,8 @@ def _council_evidence(evidence_json):
 def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
                            nces_total, nces_by_level, schools_by_band,
                            evidence_by_reckey=None, capture_events=None, roster_names=None,
-                           exclusions=None, human_added=None, band_rosters=None):
+                           exclusions=None, human_added=None, band_rosters=None,
+                           merged_superseded=None, year_conflicts=None):
     """Compose the closing argument for one district from already-gathered ingredients. PURE.
 
     Inputs:
@@ -173,6 +174,13 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
           stay VISIBLE (struck-through at render, in the frozen receipt) — a recorded, auditable human
           decision, never a deletion. Matching is on the normalized school name (same axis as the merge),
           scoped per (band, school): a K-12 can be excluded from `elementary` and kept in `high`.
+      merged_superseded : #254 — the year-superseded accepted facts merge_fact_runs set aside
+          (with_superseded=True): a known, NEWER school_year beat a known older one for the same
+          (band, school). Surfaced in negative_space so the reviewer SEES why the stale rows left
+          the mode (no-silent-caps); each entry pairs the loser with its superseding winner.
+      year_conflicts   : #254 — AGG.detect_year_conflicts over the raw cross-run rows: the
+          (band, school) groups mixing known years or known/unknown, each side carrying its
+          source_file as a format HINT for the reviewer (never an automatic rule).
 
     Returns the closing-argument dict (see the module/design note); self-contained, JSON-serialisable,
     ready to render at gate@8 and to FREEZE into the immutable approval receipt.
@@ -193,7 +201,8 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
     # truth for the per-band value, degenerate filter, and contamination flag.
     agg = [{"band": f["band"], "school": f["school"],
             "start": eff["start"], "end": eff["end"], "gross": eff["gross"],
-            "models": _models(f), "method": f.get("method")} for f, ov, eff in enriched]
+            "models": _models(f), "method": f.get("method"),
+            "applies_to": f.get("applies_to")} for f, ov, eff in enriched]
 
     # #257: apply the standing human band-exclusions BEFORE the mode — an excluded (band, norm_school)
     # leaves the band's value/count entirely (the human sibling of the automatic exclude-but-surface
@@ -243,8 +252,15 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
         key = (r["band"], _norm(r["school"]))
         if key in cs_of:
             continue
+        # #254: a council applies_to == "multiple" reading merges into this flag surface — the UNION
+        # of the deterministic name detector and the page's own stated scope (same render; `source`
+        # says which said so). A scope warning is a warning, whichever side raised it.
         m = SS.combined_scope_name(r["school"], cs_roster)
-        if m:
+        council_scope = r.get("applies_to") == "multiple"
+        if m or council_scope:
+            m = {**(m or {"school": r["school"], "kind": "council_scope", "campuses": []}),
+                 "source": "name+council" if (m and council_scope) else
+                           "council" if council_scope else "name"}
             cs_of[key] = m
             combined_scope.append({**m, "band": r["band"],
                                    "excluded": key in excl_of})
@@ -280,6 +296,7 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
                                 "council_gross": None, "evidence": None, "council_evidence": None,
                                 "human_override": None, "override_applied": False,
                                 "override_error": None,
+                                "school_year": None,
                                 "human_added": {"source_url": ha.get("source_url"),
                                                 "reason": ha.get("reason"), "actor": ha.get("actor"),
                                                 "created_at": ha.get("created_at")}})
@@ -298,6 +315,9 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
                             "override_applied": bool(ov) and not eff.get("error")
                                                 and bool(ov.get("start_time") or ov.get("end_time")),
                             "override_error": eff.get("error"),
+                            # #254: the year the page itself stated (council consensus), or None —
+                            # rendered as a muted chip beside the times
+                            "school_year": f.get("school_year"),
                             "combined_scope": cs_of.get((band, _norm(sc["school"])))})
         # #257: the band's excluded schools ride along AFTER the included rows — struck-through at
         # render, in the frozen receipt, NOT in the mode/count above (bands was built exclusion-first).
@@ -318,6 +338,7 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
                             "override_applied": bool(ov) and not eff.get("error")
                                                 and bool(ov.get("start_time") or ov.get("end_time")),
                             "override_error": eff.get("error"),
+                            "school_year": f.get("school_year"),
                             "combined_scope": cs_of.get((band, xnorm)),
                             "excluded": e})
         # #253: the denominator is the LIVE band-SERVING roster when available (a KG-08 'Elementary'
@@ -384,6 +405,22 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
     recoverable = ([{"band": band, "from_reps": sibling_reps}
                     for band in sorted(claimed - satisfied)] if sibling_reps else [])
 
+    # #254: pair each year-superseded fact with the winner that displaced it — the reviewer must SEE
+    # why the stale rows left the mode (no-silent-caps), with both years and both grosses side by side.
+    superseded_out = []
+    for f in (merged_superseded or []):
+        w = fact_of.get((f["band"], _norm(f["school"])))
+        win = w[0] if w else {}
+        superseded_out.append({
+            "band": f["band"], "school": f["school"],
+            "school_year": f.get("school_year"), "gross": f.get("gross_minutes"),
+            "start_time": f.get("start_time"), "end_time": f.get("end_time"),
+            "source_file": f.get("source_file"),
+            "superseded_by": {"school": win.get("school"),
+                              "school_year": win.get("school_year"),
+                              "gross": win.get("gross_minutes"),
+                              "source_file": win.get("source_file")}})
+
     # The negative space — the honest half of the closing argument (design note §2c.4): what we did
     # NOT resolve, so the picture never reads as "we covered everything."
     negative_space = {
@@ -401,6 +438,11 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
         # #473: unsatisfied bands with sibling-band facts from an already-captured rep — recover
         # candidates (re-extract the rep at gate@8; #474 hand-add is the fallback)
         "recoverable_bands": recoverable,
+        # #254: year-superseded facts (a known NEWER year beat a known older one) — why the stale
+        # rows left the mode, with both sides visible; and every (band, school) group mixing year
+        # knowledge, each side's source_file riding along as a format HINT for the reviewer
+        "superseded_facts": superseded_out,
+        "year_conflicts": year_conflicts or [],
         "claimed_bands": sorted(claimed),
         "unsatisfied_bands": sorted(claimed - satisfied),
         "coverage_gaps": {b: out_bands[b]["sampling"] for b in out_bands
@@ -552,7 +594,10 @@ def load_closing_argument(session, district_id):
         WHERE f.district_id = :d AND e.run_kind = 'production'
         ORDER BY f.extraction_id, f.fact_id
     """), {"d": district_id}).all()]
-    accepted, unresolved = AGG.merge_fact_runs(facts)
+    # #254: with_superseded surfaces the year-superseded facts; the conflict detector runs on the
+    # same raw cross-run rows (it needs group-level visibility the merged winners no longer carry).
+    accepted, unresolved, superseded = AGG.merge_fact_runs(facts, with_superseded=True)
+    year_conflicts = AGG.detect_year_conflicts(facts)
 
     # Handoffs in RUN-chronological order (earliest extraction_id that referenced each hash) — the same
     # axis merge_fact_runs picks winners on, never lexicographic hash order (review round, PR #252).
@@ -612,4 +657,5 @@ def load_closing_argument(session, district_id):
         nces_total=meta.get("nces_total"), nces_by_level=nces_by_level,
         schools_by_band=schools_by_band, evidence_by_reckey=by_rk,
         capture_events=capture_events, roster_names=roster_names,
-        exclusions=exclusions, human_added=human_added, band_rosters=band_rosters)
+        exclusions=exclusions, human_added=human_added, band_rosters=band_rosters,
+        merged_superseded=superseded, year_conflicts=year_conflicts)

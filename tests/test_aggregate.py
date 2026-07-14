@@ -113,6 +113,91 @@ class TestConsensus:
                            "mistralai/mistral-small-24b-instruct-2501": ("08:00", "14:30")})
         acc, _ = A.consensus_school_facts(rows)
         assert len(acc) == 1 and "evidence" not in acc[0]
+        assert "school_year" not in acc[0] and "applies_to" not in acc[0]   # #254: pre-v3 unchanged
+
+
+# ---------------------------------------------------------------- #254 v3 readings (year + scope)
+def _v3_rows(per_model):
+    """{model: (start, end, school_year, applies_to)} -> consensus_school_facts input (v3-shaped)."""
+    return {m: [{"grade_level": "elementary", "start_time": s, "end_time": e,
+                 "school_name": "Lincoln Elementary", "school_year": sy, "applies_to": at}]
+            for m, (s, e, sy, at) in per_model.items()}
+
+
+class TestConsensusYearAndScope:
+    """#254: school_year/applies_to are categorical corroboration — never in the grouping key,
+    never a vote on times. Year = all-parseable-readers-agree; scope = OR."""
+
+    def test_agreeing_years_in_different_formats_normalize_onto_the_fact(self):
+        rows = _v3_rows({"google/gemini-2.5-flash-lite": ("08:00", "14:30", "2025-26", None),
+                         "mistralai/mistral-small-24b-instruct-2501": ("08:00", "14:30", "SY25-26", None)})
+        acc, _ = A.consensus_school_facts(rows)
+        assert len(acc) == 1 and acc[0]["school_year"] == "2025-26"   # deterministic normalization
+
+    def test_disagreeing_years_store_null_but_keep_per_model_readings_in_evidence(self):
+        rows = _v3_rows({"google/gemini-2.5-flash-lite": ("08:00", "14:30", "2025-26", None),
+                         "mistralai/mistral-small-24b-instruct-2501": ("08:00", "14:30", "2024-25", None)})
+        acc, _ = A.consensus_school_facts(rows)
+        assert len(acc) == 1 and "school_year" not in acc[0]          # disagreement -> no consensus year
+        ev = acc[0]["evidence"]
+        assert ev["google/gemini-2.5-flash-lite"]["school_year"] == "2025-26"
+        assert ev["mistralai/mistral-small-24b-instruct-2501"]["school_year"] == "2024-25"
+
+    def test_single_source_year_is_accepted(self):
+        # like stated_minutes: one reader is corroboration-grade metadata, not agreement to fake
+        rows = _v3_rows({"google/gemini-2.5-flash-lite": ("08:00", "14:30", "2025-26", None),
+                         "mistralai/mistral-small-24b-instruct-2501": ("08:00", "14:30", None, None)})
+        acc, _ = A.consensus_school_facts(rows)
+        assert acc[0]["school_year"] == "2025-26"
+
+    def test_garbage_and_covid_readings_do_not_count_as_readings(self):
+        # a COVID year and an unparseable string are rejected by the deterministic parse — the one
+        # remaining valid reading stands alone (no false disagreement with garbage)
+        rows = _v3_rows({"google/gemini-2.5-flash-lite": ("08:00", "14:30", "2025-26", None),
+                         "mistralai/mistral-small-24b-instruct-2501": ("08:00", "14:30", "2021-22", None)})
+        acc, _ = A.consensus_school_facts(rows)
+        assert acc[0]["school_year"] == "2025-26"
+
+    def test_applies_to_is_or_semantics(self):
+        # ANY model reading a group scope flags the fact — a scope warning is a warning
+        rows = _v3_rows({"google/gemini-2.5-flash-lite": ("08:00", "14:30", None, "multiple"),
+                         "mistralai/mistral-small-24b-instruct-2501": ("08:00", "14:30", None, None)})
+        acc, _ = A.consensus_school_facts(rows)
+        assert acc[0]["applies_to"] == "multiple"
+        # and a non-"multiple" string is not a scope flag
+        rows2 = _v3_rows({"google/gemini-2.5-flash-lite": ("08:00", "14:30", None, "single"),
+                          "mistralai/mistral-small-24b-instruct-2501": ("08:00", "14:30", None, None)})
+        acc2, _ = A.consensus_school_facts(rows2)
+        assert "applies_to" not in acc2[0]
+
+
+class TestParseSchoolYear:
+    """#254: defensive, deterministic — the model's formatting is never trusted."""
+
+    def test_accepted_formats_all_yield_the_start_year(self):
+        for s in ("2025-26", "2025-2026", "SY25-26", "25-26", "2025/26",
+                  "2025-2026 School Year", "Bell Schedule 2025–26"):
+            assert A.parse_school_year(s) == 2025, s
+
+    def test_covid_years_rejected(self):
+        for s in ("2019-20", "2020-21", "2021-22", "2022-23"):
+            assert A.parse_school_year(s) is None, s
+
+    def test_window_2023_through_current_plus_one(self):
+        from infrastructure.utilities.school_year import current_school_year
+        cur = int(current_school_year()[:4])
+        assert A.parse_school_year("2023-24") == 2023                       # the floor
+        assert A.parse_school_year(A.format_school_year(cur + 1)) == cur + 1  # one year forward slack
+        assert A.parse_school_year(A.format_school_year(cur + 2)) is None
+        assert A.parse_school_year("2010-11") is None
+
+    def test_garbage_is_none_never_a_raise(self):
+        for s in (None, "", "bell schedule", "2025", "2025-27", "8:15-3:20", 2025, "grades 6-8"):
+            assert A.parse_school_year(s) is None, repr(s)
+
+    def test_format_school_year_round_trips(self):
+        assert A.format_school_year(2025) == "2025-26"
+        assert A.parse_school_year(A.format_school_year(2023)) == 2023
 
 
 # ------------------------------------------------- REQ-055 gate, shared string-input path (15c67c4 review)
@@ -266,6 +351,98 @@ class TestMergeFactRuns:
         accepted, unresolved = A.merge_fact_runs([old, new])
         assert len(accepted) == 1 and unresolved == []
         assert accepted[0]["extraction_id"] == 1                            # earliest accepted stands
+
+
+# ------------------------------------------------- #254 school-year precedence in the merge
+def _fy(ext, school, status, gross, year, band="elementary"):
+    return {**_f(ext, band, school, status, gross), "school_year": year, "source_file": f"src{ext}.pdf"}
+
+
+class TestMergeYearPrecedence:
+    """#254: between ACCEPTED facts only, a known NEWER parseable school_year supersedes a known
+    older one regardless of extraction order; unknown-year facts COEXIST (Ian's decision — never
+    auto-oldest); ties and unknown cases fall through to the existing rules unchanged."""
+
+    def test_newer_known_year_beats_older_known_regardless_of_run_order(self):
+        stale = _fy(1, "s", "accepted", 440, "2023-24")     # earlier run, dated older
+        fresh = _fy(2, "s", "accepted", 445, "2025-26")     # later run, dated newer
+        for order in ([stale, fresh], [fresh, stale]):
+            accepted, _ = A.merge_fact_runs(order)
+            assert len(accepted) == 1 and accepted[0]["gross_minutes"] == 445
+
+    def test_superseded_fact_is_kept_and_returned_not_dropped(self):
+        stale, fresh = _fy(1, "s", "accepted", 440, "2023-24"), _fy(2, "s", "accepted", 445, "2025-26")
+        accepted, unresolved, superseded = A.merge_fact_runs([stale, fresh], with_superseded=True)
+        assert accepted[0]["gross_minutes"] == 445 and unresolved == []
+        assert superseded == [stale]                        # no-silent-caps: the loser stays visible
+
+    def test_unknown_year_coexists_precedence_never_touches_it(self):
+        # a dated fact must NOT supersede an undated one (every pre-v3 fact is undated) — the
+        # existing earliest-accepted-wins rule decides, in both directions
+        undated = _fy(1, "s", "accepted", 400, None)
+        dated = _fy(2, "s", "accepted", 410, "2025-26")
+        accepted, _, superseded = A.merge_fact_runs([undated, dated], with_superseded=True)
+        assert accepted[0]["gross_minutes"] == 400          # earliest accepted stands
+        assert superseded == []
+        # and an undated LATER fact doesn't supersede a dated earlier one either
+        accepted2, _, sup2 = A.merge_fact_runs(
+            [_fy(1, "s", "accepted", 410, "2023-24"), _fy(2, "s", "accepted", 400, None)],
+            with_superseded=True)
+        assert accepted2[0]["gross_minutes"] == 410 and sup2 == []
+
+    def test_same_year_tie_falls_through_to_earliest_accepted(self):
+        a, b = _fy(2, "s", "accepted", 445, "2025-26"), _fy(1, "s", "accepted", 440, "2025-26")
+        accepted, _, superseded = A.merge_fact_runs([a, b], with_superseded=True)
+        assert accepted[0]["extraction_id"] == 1 and superseded == []
+
+    def test_never_regress_untouched_by_year_precedence(self):
+        # an unresolved later diagnostic still can't evict an accepted fact, dated or not
+        acc = _fy(1, "s", "accepted", 440, "2023-24")
+        diag = _fy(2, "s", "unresolved", None, "2025-26")
+        accepted, unresolved, superseded = A.merge_fact_runs([acc, diag], with_superseded=True)
+        assert accepted == [acc] and unresolved == [] and superseded == []
+
+    def test_unparseable_year_string_is_unknown_not_a_precedence_claim(self):
+        garbage = _fy(1, "s", "accepted", 400, "see calendar")
+        dated = _fy(2, "s", "accepted", 410, "2025-26")
+        accepted, _, superseded = A.merge_fact_runs([garbage, dated], with_superseded=True)
+        assert accepted[0]["gross_minutes"] == 400 and superseded == []
+
+    def test_selection_is_set_wise_order_independent_on_the_known_unknown_triangle(self):
+        # the pairwise-fold trap: A(2025, eid 3) / B(undated, eid 2) / C(2024, eid 1) is a
+        # preference cycle under pairwise rules — the set-wise selection must be order-free
+        import itertools
+        A_, B_, C_ = (_fy(3, "s", "accepted", 445, "2025-26"),
+                      _fy(2, "s", "accepted", 400, None),
+                      _fy(1, "s", "accepted", 430, "2024-25"))
+        outs = {tuple(f["extraction_id"] for f in A.merge_fact_runs(list(p), with_superseded=True)[0])
+                for p in itertools.permutations([A_, B_, C_])}
+        assert len(outs) == 1                               # one winner, every order
+        # C (older known) is superseded by A; A and B coexist -> earliest of the survivors wins (B)
+        accepted, _, superseded = A.merge_fact_runs([A_, B_, C_], with_superseded=True)
+        assert accepted[0]["extraction_id"] == 2 and superseded == [C_]
+
+
+class TestDetectYearConflicts:
+    def test_known_vs_known_flags_as_resolved(self):
+        rows = [_fy(1, "s", "accepted", 440, "2023-24"), _fy(2, "s", "accepted", 445, "2025-26")]
+        (c,) = A.detect_year_conflicts(rows)
+        assert c["years"] == ["2023-24", "2025-26"] and c["resolved"] is True
+        assert {s["source_file"] for s in c["sides"]} == {"src1.pdf", "src2.pdf"}   # the format hint
+
+    def test_known_vs_unknown_flags_as_unresolved(self):
+        rows = [_fy(1, "s", "accepted", 400, None), _fy(2, "s", "accepted", 410, "2025-26")]
+        (c,) = A.detect_year_conflicts(rows)
+        assert c["mixes_unknown"] is True and c["resolved"] is False
+
+    def test_no_flag_when_years_are_uniform_or_all_unknown(self):
+        assert A.detect_year_conflicts(
+            [_fy(1, "s", "accepted", 440, "2025-26"), _fy(2, "s", "accepted", 445, "2025-26")]) == []
+        assert A.detect_year_conflicts(
+            [_fy(1, "s", "accepted", 440, None), _fy(2, "s", "accepted", 445, None)]) == []
+        # unresolved rows never enter the conflict scan
+        assert A.detect_year_conflicts(
+            [_fy(1, "s", "unresolved", None, "2023-24"), _fy(2, "s", "accepted", 445, "2025-26")]) == []
 
 
 # ------------------------------------------------- #237 single-school-LEA over-extraction contamination

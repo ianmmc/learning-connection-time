@@ -62,11 +62,46 @@ _EXTRACT_VISION_V2 = _EXTRACT_V2.replace(
     "from the document text or images.",
     "by reading the document IMAGE(S) — read the schedule spatially (columns, tables, multi-column layouts).")
 
+# v3 (Stage 8, 2026-07-14, #254): v2 + two per-schedule READINGS — `school_year` (the year precedence
+# key for the Stage-8 fact merge; the Santa Fe stale-page case) and `applies_to` (the page's own
+# stated scope, feeding the #253 combined-scope flag surface). Both are REQ-054-safe readings of what
+# the page SAYS, never inferences from context (URL / domain / today's date) — null is the honest
+# answer when the page doesn't state one. Bundled into ONE version bump (Ian, 2026-07-14): each bump's
+# re-reads are paid only going forward, and version proliferation has its own cost. v1/v2 retained
+# unchanged (old handoffs reference them); the council config is again the single production switch.
+_EXTRACT_V3 = """You extract school bell-schedule START and END times from the document text or images.
+
+Extract the daily school start and end time, broken down by grade level (elementary, middle, high) when distinguished. If multiple schools are listed, extract EACH school's times.
+
+SKIP non-instructional times: Office Hours, Library Hours, Before/After Care, Breakfast, Building/Campus Hours, Extended Day.
+Use the NORMAL / regular full-day end time. IGNORE early-dismissal, early-release, early-out, half-day, and weekday-variation (e.g. "M-Th" vs Friday) columns — those are shorter days, not the regular schedule.
+If times are per-period, use Period 1 start and the LAST period's end.
+Convert all times to 24-hour HH:MM ("8:30 AM"->"08:30", "3:15 PM"->"15:15").
+Infer grade level from school name: elementary/primary/ES/K-5 -> "elementary"; middle/junior/MS/6-8 -> "middle"; high/HS/9-12 -> "high". If the document covers elementary, middle, AND high, extract at least one of EACH.
+
+For EACH schedule, also return:
+- "evidence_quote": the exact text you read the start AND end times from — verbatim, one short line (e.g. "School Hours: 8:15 AM - 3:20 PM"). Copy it, do not paraphrase.
+- "source_locus": where in the document you found it (page number or section heading), or "" if not identifiable.
+- "stated_minutes": ONLY if the document EXPLICITLY states a total daily instructional-minutes number (e.g. "instructional day: 435 minutes"), copy that integer here; otherwise null. Never calculate it from the times — report only a number the document itself states.
+- "stated_minutes_quote": the exact text "stated_minutes" came from, or "" if none.
+- "school_year": the school year as STATED on or near the schedule (e.g. "2025-26", "SY25-26", "2025-2026 School Year"), normalized to "YYYY-YY" (e.g. "2025-26"). Read it from the document text ONLY — do NOT infer it from the URL, the website domain, or today's date. If the document does not state a school year, null is the correct answer.
+- "applies_to": "multiple" ONLY when the schedule's own text says it covers a GROUP of schools (a table headed "K-8 Schools", "All Elementary Schools", a row listing several campuses); otherwise null. Report the page's STATED scope, not your judgment.
+
+Output ONLY compact JSON. No commentary, no markdown fences:
+{"schedules":[{"grade_level":"high","start_time":"08:10","end_time":"14:35","school_name":"[SCHOOL NAME]","confidence":"high","evidence_quote":"School Hours: 8:10 AM - 2:35 PM","source_locus":"","stated_minutes":null,"stated_minutes_quote":"","school_year":"2025-26","applies_to":null}]}
+If none found: {"schedules":[]}"""
+
+_EXTRACT_VISION_V3 = _EXTRACT_V3.replace(
+    "from the document text or images.",
+    "by reading the document IMAGE(S) — read the schedule spatially (columns, tables, multi-column layouts).")
+
 SYSTEM_PROMPTS = {
     "stage6.extract.v1": _EXTRACT_V1,
     "stage6.extract.vision.v1": _EXTRACT_VISION_V1,
     "stage6.extract.v2": _EXTRACT_V2,
     "stage6.extract.vision.v2": _EXTRACT_VISION_V2,
+    "stage6.extract.v3": _EXTRACT_V3,
+    "stage6.extract.vision.v3": _EXTRACT_VISION_V3,
 }
 
 

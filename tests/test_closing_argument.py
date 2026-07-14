@@ -552,3 +552,101 @@ class TestCombinedScopeFlags:
             for s in b["schools"]:
                 s.pop("combined_scope", None)
         assert CA.fingerprint(with_flag) == CA.fingerprint(no_ns)
+
+
+class TestSchoolYearSurfaces:
+    """#254: the year chip, the superseded-facts surface, the year-conflict flags, and the
+    council applies_to union into the #253 combined-scope surface."""
+
+    def test_school_year_rides_the_school_row(self):
+        f = _fact("elementary", "oak", 435)
+        f["school_year"] = "2025-26"
+        out = CA.build_closing_argument(
+            "D", merged_accepted=[f], merged_unresolved=[], nces_total=3,
+            nces_by_level={"Elementary": 3}, schools_by_band={})
+        (row,) = out["bands"]["elementary"]["schools"]
+        assert row["school_year"] == "2025-26"
+
+    def test_pre_v3_fact_renders_no_year(self):
+        out = CA.build_closing_argument(
+            "D", merged_accepted=[_fact("elementary", "oak", 435)], merged_unresolved=[],
+            nces_total=3, nces_by_level={"Elementary": 3}, schools_by_band={})
+        assert out["bands"]["elementary"]["schools"][0]["school_year"] is None
+
+    def test_superseded_facts_surface_with_both_years_and_grosses(self):
+        win = _fact("elementary", "oak", 445)
+        win["school_year"] = "2025-26"
+        lose = _fact("elementary", "oak", 440, ext=1)
+        lose["school_year"] = "2023-24"
+        lose["source_file"] = "capture.html"
+        out = CA.build_closing_argument(
+            "D", merged_accepted=[win], merged_unresolved=[], nces_total=3,
+            nces_by_level={"Elementary": 3}, schools_by_band={}, merged_superseded=[lose])
+        (s,) = out["negative_space"]["superseded_facts"]
+        assert s["school_year"] == "2023-24" and s["gross"] == 440
+        assert s["superseded_by"]["school_year"] == "2025-26" and s["superseded_by"]["gross"] == 445
+        assert s["source_file"] == "capture.html"           # the format hint rides both sides
+
+    def test_year_conflicts_pass_through_negative_space(self):
+        conflicts = [{"band": "elementary", "school": "oak", "years": ["2023-24", "2025-26"],
+                      "mixes_unknown": False, "resolved": True,
+                      "sides": [{"extraction_id": 1, "school_year": "2023-24", "gross": 440,
+                                 "source_file": "page.html"}]}]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=[_fact("elementary", "oak", 445)], merged_unresolved=[],
+            nces_total=3, nces_by_level={"Elementary": 3}, schools_by_band={},
+            year_conflicts=conflicts)
+        assert out["negative_space"]["year_conflicts"] == conflicts
+        # absent ingredients stay honest empties, not missing keys
+        out2 = CA.build_closing_argument(
+            "D", merged_accepted=[_fact("elementary", "oak", 445)], merged_unresolved=[],
+            nces_total=3, nces_by_level={"Elementary": 3}, schools_by_band={})
+        assert out2["negative_space"]["superseded_facts"] == []
+        assert out2["negative_space"]["year_conflicts"] == []
+
+    def test_council_applies_to_merges_into_the_combined_scope_surface(self):
+        # a council "multiple" reading on a name the deterministic detector can't flag
+        f = _fact("middle", "milagro", 445)
+        f["applies_to"] = "multiple"
+        out = CA.build_closing_argument(
+            "D", merged_accepted=[f], merged_unresolved=[], nces_total=2,
+            nces_by_level={"Middle": 2}, schools_by_band={})
+        (cs,) = out["negative_space"]["combined_scope_facts"]
+        assert cs["kind"] == "council_scope" and cs["source"] == "council"
+        assert out["bands"]["middle"]["schools"][0]["combined_scope"]["source"] == "council"
+        # union: the name detector AND the council both flagging -> one entry, source names both
+        g = _fact("middle", "k8 schools", 445)
+        g["applies_to"] = "multiple"
+        out2 = CA.build_closing_argument(
+            "D", merged_accepted=[g], merged_unresolved=[], nces_total=2,
+            nces_by_level={"Middle": 2}, schools_by_band={})
+        (cs2,) = out2["negative_space"]["combined_scope_facts"]
+        assert cs2["kind"] == "group_descriptor" and cs2["source"] == "name+council"
+
+    def test_santa_fe_end_to_end_newer_year_wins_the_mode_cleanly(self):
+        # the motivating case, synthetically: the same two schools extracted twice — a stale
+        # 2023-24 page read 440, a current 2025-26 page read 445. Year precedence must hand the
+        # mode 445 OUTRIGHT (modal, never a 2-2 mean_tiebreak) and surface the 440s as superseded.
+        from infrastructure.acquisition.stage8_aggregate import aggregate as AGG
+        raw = []
+        for ext, gross, year, src in ((1, 440, "2023-24", "stale.html"),
+                                      (2, 445, "2025-26", "current.pdf")):
+            for school in ("milagro", "ortiz"):
+                f = _fact("middle", school, gross, ext=ext)
+                f["school_year"] = year
+                f["source_file"] = src
+                raw.append(f)
+        accepted, unresolved, superseded = AGG.merge_fact_runs(raw, with_superseded=True)
+        conflicts = AGG.detect_year_conflicts(raw)
+        out = CA.build_closing_argument(
+            "D", merged_accepted=accepted, merged_unresolved=unresolved, nces_total=9,
+            nces_by_level={"Middle": 2}, schools_by_band={},
+            merged_superseded=superseded, year_conflicts=conflicts)
+        mid = out["bands"]["middle"]
+        assert mid["gross_minutes"] == 445 and mid["method"] == "modal"     # no mean_tiebreak
+        assert mid["sampling"]["n_sampled"] == 2
+        sup = out["negative_space"]["superseded_facts"]
+        assert {(s["school"], s["gross"]) for s in sup} == {("milagro", 440), ("ortiz", 440)}
+        assert all(s["superseded_by"]["gross"] == 445 for s in sup)
+        assert len(out["negative_space"]["year_conflicts"]) == 2            # both schools flagged
+        assert all(c["resolved"] for c in out["negative_space"]["year_conflicts"])

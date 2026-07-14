@@ -72,6 +72,13 @@ class SchoolFact(gdb.Base):
     # the verbatim source span(s) the consensus times were read from + any explicitly-stated minutes
     # (path 2). NULL for pre-v2 rows (going-forward only; no backfill — a re-read is a paid re-extraction).
     evidence_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # v3 council readings (#254): the school year as STATED on the page ("YYYY-YY", the consensus of
+    # the models that read one — null on disagreement or when unstated) and the page's own stated
+    # scope ("multiple" when ANY model read a group-of-schools scope, else NULL). NULL for pre-v3
+    # rows (going-forward only; no backfill — a re-read is a paid re-extraction; the evidence_json
+    # precedent). Deliberately UNindexed like every _PRECIOUS_ALTERS column (see run_kind above).
+    school_year: Mapped[str | None] = mapped_column(String, nullable=True)
+    applies_to: Mapped[str | None] = mapped_column(String, nullable=True)
     # unresolved: the per-model disagreement (starts/ends by model) or an implausible-gross note
     detail_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     # provenance + review
