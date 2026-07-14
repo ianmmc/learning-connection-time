@@ -146,6 +146,9 @@ infrastructure/database/docker/backup/*.sql
 # Archived/suspect data
 data/archive/
 
+# Cross-family review harness receipts (regenerable — raw findings, verdicts, spend per run)
+data/review/
+
 # Test data files (not fixtures)
 data/test_cohort*.csv
 
