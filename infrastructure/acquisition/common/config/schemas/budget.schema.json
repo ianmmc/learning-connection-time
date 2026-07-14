@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Knob: budget governor caps (REQ-051)",
+  "description": "Read by common/budget.py; enforced pre-district in the Stage-7 executor and the request-execution back-edges. A null cap disables that dimension (per the knob's own governance note). Renaming a cap key here without updating budget.py is exactly the runtime failure this schema converts into a suite failure.",
+  "type": "object",
+  "required": ["knob", "caps"],
+  "properties": {
+    "knob": {"const": "budget"},
+    "description": {"type": "string"},
+    "governance": {"type": "string"},
+    "provenance": {"type": "string"},
+    "caps": {
+      "type": "object",
+      "required": ["per_district_usd", "per_district_total_usd", "per_run_usd", "max_request_rounds"],
+      "properties": {
+        "per_district_usd": {"type": ["number", "null"], "exclusiveMinimum": 0},
+        "per_district_total_usd": {"type": ["number", "null"], "exclusiveMinimum": 0},
+        "per_run_usd": {"type": ["number", "null"], "exclusiveMinimum": 0},
+        "max_request_rounds": {"type": ["integer", "null"], "minimum": 0}
+      },
+      "additionalProperties": false
+    }
+  }
+}

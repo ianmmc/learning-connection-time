@@ -96,3 +96,4 @@ mypy>=1.7.0
 import-linter>=2.0      # architecture contracts (layers / forbidden) over the import graph
 grimp>=3.0              # the import-graph builder import-linter sits on (queryable directly)
 vulture>=2.10           # dead-code / unused-import detection
+jsonschema>=4.0         # shared-config knob validation (#205 part 1) — tests/test_config_schemas.py

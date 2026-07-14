@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Knob: bootstrap council cost model",
+  "description": "Per-model flat call costs + scaling assumptions feeding the gate@6 cost estimate (stage6_handoff/cost.py). Model keys are OpenRouter slugs; each carries its own source provenance so a stale price is traceable to where it came from.",
+  "type": "object",
+  "required": ["knob", "models", "assumptions"],
+  "properties": {
+    "knob": {"const": "council_cost_model"},
+    "description": {"type": "string"},
+    "governance": {"type": "string"},
+    "provenance": {"type": "string"},
+    "models": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["per_call_usd", "source"],
+        "properties": {
+          "per_call_usd": {"type": "number", "minimum": 0},
+          "source": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "assumptions": {
+      "type": "object",
+      "required": ["escalation_rate", "default_n_schools"],
+      "properties": {
+        "escalation_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "default_n_schools": {"type": "integer", "minimum": 1}
+      }
+    }
+  }
+}

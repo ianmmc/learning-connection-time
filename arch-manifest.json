@@ -112,5 +112,25 @@
       {"artifact": "processed.json", "producer": "infrastructure/acquisition/stage4_process", "role": "per-record local-tool text extraction outcomes"},
       {"artifact": "filtered.json", "producer": "infrastructure/acquisition/stage5_filter", "role": "event-driven release projection (winner + alternates)"}
     ]
+  },
+
+  "shared_config": {
+    "_comment": "#205 part 1 (governance §10): the config-as-data knobs are a CROSS-LANGUAGE edge — Python reads them via common/config_loader.py, Node reads the same JSON natively (capture_discovery.mjs), so a malformed/renamed key fails a stage at runtime, invisible to every import tool. Each knob file is declared here with its JSON Schema (under schemas_dir); tests/test_config_schemas.py validates every file against its schema AND enforces coverage both ways (an undeclared knob file fails; a declared-but-missing file fails). Adding a knob = add the file, its schema (or reuse a shape schema), and this declaration — the declaration is the review surface. Part 2 of #205 (datacontract-cli on the stage receipt artifacts above) is deferred until #478 stabilizes the Stage 8 artifacts.",
+    "dir": "infrastructure/acquisition/common/config",
+    "schemas_dir": "infrastructure/acquisition/common/config/schemas",
+    "files": [
+      {"file": "budget.json", "schema": "budget.schema.json"},
+      {"file": "cms_hosts.json", "schema": "knob_entries.schema.json"},
+      {"file": "council_configs.json", "schema": "knob_entries.schema.json"},
+      {"file": "council_cost_model.json", "schema": "council_cost_model.schema.json"},
+      {"file": "de_chrome_landmarks.json", "schema": "knob_baseline_list.schema.json"},
+      {"file": "stage2_query_templates.json", "schema": "knob_entries.schema.json"},
+      {"file": "stage5_attention.json", "schema": "stage5_attention.schema.json"},
+      {"file": "stage5_neg_board.json", "schema": "knob_baseline_list.schema.json"},
+      {"file": "stage5_neg_calendar.json", "schema": "knob_baseline_list.schema.json"},
+      {"file": "stage5_neg_sports.json", "schema": "knob_baseline_list.schema.json"},
+      {"file": "stage5_neg_transport.json", "schema": "knob_baseline_list.schema.json"},
+      {"file": "stage5_positive_kw.json", "schema": "knob_baseline_list.schema.json"}
+    ]
   }
 }

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Knob: Stage-5 attention-queue scoring",
+  "description": "Thresholds + per-signal weights driving the Stage-5 console's Needs-Attention ordering. Weight keys are the attention signal names the scorer emits; a renamed signal must update both the scorer and this knob, and the schema keeps the knob's side honest (numeric weights, known threshold keys).",
+  "type": "object",
+  "required": ["knob", "thresholds", "weights"],
+  "properties": {
+    "knob": {"const": "stage5_attention"},
+    "description": {"type": "string"},
+    "governance": {"type": "string"},
+    "provenance": {
+      "type": "object",
+      "required": ["added", "rationale", "approved_by", "loop_tier"],
+      "properties": {
+        "added": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+        "rationale": {"type": "string", "minLength": 1},
+        "approved_by": {"type": "string", "minLength": 1},
+        "loop_tier": {"type": "integer"}
+      }
+    },
+    "thresholds": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"type": "number"}
+    },
+    "weights": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"type": "number"}
+    }
+  }
+}
