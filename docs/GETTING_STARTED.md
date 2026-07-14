@@ -94,6 +94,12 @@ CI-equivalent DB-free gates locally — `lint-imports` (the CI `lint` job) + `py
 red CI is caught at the desk instead of a round-trip. It does **not** run the govdb suite (that needs
 Postgres; CI's `governance-db` job covers it). Bypass for a WIP/docs-only push with `SKIP_PREPUSH=1 git push`.
 
+**Stacked PRs (#251):** a PR based on another PR's branch is fine *while the parent is open*, but its base
+MUST be retargeted to `main` before merge — merging into the stale parent branch shows "merged" in every UI
+while `main` receives nothing (the #250 incident). Two guardrails enforce this: the `pr-base-guard` CI check
+stays red on any PR whose base isn't `main`, and the repo's *auto-delete head branches* setting makes GitHub
+retarget child PRs to `main` automatically when the parent's branch is deleted at merge.
+
 ### 2. Database Connection
 
 The project uses PostgreSQL running in Docker. Start the database container **before any database operation**:
