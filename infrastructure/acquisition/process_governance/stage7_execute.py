@@ -759,7 +759,7 @@ def _dispatch_recover_band(s, district_id: str, band: str, rec_key: str, file: s
     HND.write(doc, root=root)
     return {"ok": True, "handoff_hash": doc["handoff_hash"], "path": str(path),
             "request_id": req.request_id, "file": file,
-            "next": "run the extraction at gate@7 (paid, budget-gated)"}
+            "next": "trigger the extraction from the Stage 6 (Dispatch) console — the new dispatch is listed there; results then land at gate@7 (paid, budget-gated)"}
 
 
 def recover_band_dispatch(district_id: str, band: str, rec_key: str, file: str, *,

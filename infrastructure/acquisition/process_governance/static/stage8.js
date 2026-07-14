@@ -274,7 +274,7 @@
   // the paid council run happens at gate@7 (budget-gated), where the new dispatch appears.
   async function recoverBand(did, band, recKey, file) {
     if (!recKey || !file) { alert("No usable rep reference on this flag — use the hand-add fallback."); return; }
-    if (!window.confirm(`Stage a re-extraction of ${file} targeting the ${band} band? (Creates a new dispatch; run it at gate@7.)`)) return;
+    if (!window.confirm(`Stage a re-extraction of ${file} targeting the ${band} band? (Creates a new dispatch — trigger the run from the Stage 6 console; results land at gate@7.)`)) return;
     let out;
     try {
       out = await api("/api/aggregate/recover-band", postJSON({ district_id: did, band, rec_key: recKey, file, actor: "ian" }));
