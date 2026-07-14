@@ -65,7 +65,11 @@ ignore_imports = [
 where = ["."]
 # `infrastructure` is a PEP 420 namespace package (no top-level __init__.py); its source subpackages
 # (acquisition.*, database, scripts, utilities) carry their own markers or resolve as namespaces.
-include = ["infrastructure*"]
+# `tools` holds repo-level dev tools that operate ON the codebase (e.g. tools.crossfam_review, the
+# cross-family external review harness) — deliberately OUTSIDE `infrastructure` so the import-linter
+# root (`infrastructure`) doesn't graph them: the harness reuses the acquisition paid client, which
+# the "scripts must not import acquisition" contract would (correctly) forbid inside infrastructure.
+include = ["infrastructure*", "tools*"]
 # The Node capture layer (infrastructure/scraper, incl. node_modules) is invoked via subprocess, never
 # imported by Python — exclude it so find doesn't try to package thousands of node_modules dirs.
 exclude = ["infrastructure.scraper*", "*node_modules*", "*__pycache__*"]
