@@ -127,27 +127,41 @@ def run_council(candidates, guard: SpendGuard, workers: int) -> list:
     return adjs
 
 
-def _file_only(outdir, stamp: str, live: bool) -> int:
-    """File issues from a prior run's persisted issue_payloads.json (no paid calls)."""
+def _file_only(outdir, stamp: str, live: bool, pace: float = 2.0) -> int:
+    """File issues from a prior run's persisted issue_payloads.json (no paid calls). Paced + rate-limit
+    aware: GitHub throttles rapid issue creation (secondary limit ~20-30/min), so live creates are
+    spaced `pace` seconds apart and a secondary-rate-limit error backs off 60s and retries once.
+    Idempotent via fingerprints — a partial run is safe to re-invoke; already-filed issues are skipped."""
+    import time
     src = outdir / "issue_payloads.json"
     if not src.exists():
         print(f"✗ no {src} — run the review first (dry) to produce it.")
         return 1
     saved = json.loads(src.read_text())
-    print(f"filing {len(saved)} saved payloads (live={live}) under '{GH.campaign_label(stamp)}'")
     GH.ensure_label(stamp, live)
     already = GH.existing_fingerprints(stamp, live)
+    todo = [p for p in saved if p["fingerprint"] not in already]
+    print(f"filing {len(todo)} of {len(saved)} payloads (live={live}, {len(already)} already on tracker) "
+          f"under '{GH.campaign_label(stamp)}'")
     filed = []
-    for p in saved:
-        if p["fingerprint"] in already:
-            continue
+    for i, p in enumerate(todo, 1):
         payload = GH.IssuePayload(title=p["title"], body=p["body"], labels=p["labels"],
                                   fingerprint=p["fingerprint"])
         out = GH.create_issue(payload, live=live)
+        # Back off once on a GitHub secondary-rate-limit rejection, then retry the same payload.
+        if live and "error" in out and "rate limit" in (out.get("error", "").lower()):
+            print("  ⏳ secondary rate limit — backing off 60s…", flush=True)
+            time.sleep(60)
+            out = GH.create_issue(payload, live=live)
         filed.append(out)
-        print(f"  {'✓ ' + out.get('url','') if live else '(dry) ' + out['title'][:80]}", flush=True)
-    (outdir / "issues.json").write_text(json.dumps(filed, indent=2))
-    print(f"\n{'filed' if live else 'would file'} {len(filed)} issues.")
+        tag = out.get("url") or out.get("error") or out.get("title", "")
+        print(f"  [{i}/{len(todo)}] {'✓' if 'url' in out or not live else '✗'} {tag[:88]}", flush=True)
+        (outdir / "issues.json").write_text(json.dumps(filed, indent=2))   # checkpoint each write
+        if live and i < len(todo):
+            time.sleep(pace)
+    ok = sum(1 for o in filed if "url" in o or o.get("dry_run"))
+    print(f"\n{'filed' if live else 'would file'} {ok}/{len(todo)} issues"
+          + (f" ({len(filed) - ok} errored — re-run --file-only to retry)" if ok < len(filed) else ""))
     return 0
 
 
