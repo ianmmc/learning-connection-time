@@ -151,19 +151,45 @@ def _file_only(outdir, stamp: str, live: bool) -> int:
     return 0
 
 
+def _cand_key(file: str, line, category: str) -> tuple:
+    """The dedup identity, matching Finding.key(): (file, line-bucket, category). Keying on this full
+    tuple — NOT just (file, line-bucket) — is what lets a resume tell apart two findings in the same
+    10-line window but different categories (a correctness bug at :100 vs a security bug at :105)."""
+    try:
+        lb = int(line) // 10
+    except (TypeError, ValueError):
+        lb = 0
+    return (file, lb, (category or "").strip().lower())
+
+
+def _adj_record(a) -> dict:
+    """One adjudication -> receipt dict. Carries `category` so `_completed_keys` can key on the full
+    dedup identity (older receipts without it are backfilled by summary-match in `_resume_council`)."""
+    return {"file": a.candidate.file, "line": a.candidate.line, "category": a.candidate.category,
+            "confirmed": a.confirmed, "escalated": a.escalated, "summary": a.candidate.summary,
+            "verdicts": [{"judge": v.judge, "role": v.role, "verdict": v.verdict, "reason": v.reason}
+                         for v in a.verdicts]}
+
+
 def _real_votes(adj: dict) -> int:
     return sum(1 for v in adj.get("verdicts", []) if v["verdict"] in ("confirmed", "refuted"))
 
 
-def _completed_keys(outdir) -> set:
-    """(file, line-bucket) that were GENUINELY judged by a prior pass — i.e. got >=2 real (non-error)
-    votes. A candidate whose judge calls were REFUSED at the spend cap (force-refuted on errors) is NOT
-    complete and must be re-judged by a resume, not skipped. This is the difference between "459
-    adjudicated" and "296 actually evaluated" (the rest were budget-starved)."""
-    f = outdir / "adjudications.json"
-    if not f.exists():
-        return set()
-    return {(a["file"], a["line"] // 10) for a in json.loads(f.read_text()) if _real_votes(a) >= 2}
+def _completed_keys(records: list, sig_to_cat: dict) -> set:
+    """Full dedup keys `(file, line-bucket, category)` that were GENUINELY judged (>=2 real votes). A
+    candidate whose judge calls were refused at the cap (force-refuted on errors) is NOT complete and
+    must be re-judged. Category comes from the record, or is backfilled from `sig_to_cat` (a
+    (file,line,summary)->category map from the re-clustered candidates) for older receipts that predate
+    the category field — so the count matches the true budget-starved set, not a line-bucket approximation."""
+    done = set()
+    for a in records:
+        if _real_votes(a) < 2:
+            continue
+        cat = a.get("category")
+        if cat is None:
+            cat = sig_to_cat.get((a["file"], a["line"], a.get("summary", "")), "")
+        done.add(_cand_key(a["file"], a["line"], cat))
+    return done
 
 
 def _resume_council(outdir, shard_area, args, guard: SpendGuard) -> int:
@@ -177,8 +203,11 @@ def _resume_council(outdir, shard_area, args, guard: SpendGuard) -> int:
     raw = [Finding(**d) for d in json.loads(raw_f.read_text())]
     all_cands = D.cluster(raw, shard_area)
     corroborated = [c for c in all_cands if c.agree_count >= args.min_agree]
-    done = _completed_keys(outdir)
-    remaining = [c for c in corroborated if (c.file, c.line // 10) not in done]
+    # (file,line,summary)->category, to backfill category onto older receipts that predate the field.
+    sig_to_cat = {(c.file, c.line, c.summary): c.category for c in corroborated}
+    prior = json.loads((outdir / "adjudications.json").read_text()) if (outdir / "adjudications.json").exists() else []
+    done = _completed_keys(prior, sig_to_cat)
+    remaining = [c for c in corroborated if _cand_key(c.file, c.line, c.category) not in done]
     print(f"resume: {len(corroborated)} corroborated (≥{args.min_agree}); "
           f"{len(done)} genuinely judged already; re-/newly judging {len(remaining)} "
           f"(incl. budget-starved) under cap ${args.cap:.2f}")
@@ -189,17 +218,18 @@ def _resume_council(outdir, shard_area, args, guard: SpendGuard) -> int:
     new_adjs = run_council(remaining, guard, args.workers)
     new_conf = [a for a in new_adjs if a.confirmed]
 
-    # Merge adjudications by (file, line-bucket): a re-judged candidate OVERWRITES its prior
-    # budget-starved record rather than duplicating it (the receipt stays one row per candidate).
-    def _rec(a):
-        return {"file": a.candidate.file, "line": a.candidate.line, "confirmed": a.confirmed,
-                "escalated": a.escalated, "summary": a.candidate.summary,
-                "verdicts": [{"judge": v.judge, "role": v.role, "verdict": v.verdict, "reason": v.reason}
-                             for v in a.verdicts]}
-    prior = json.loads((outdir / "adjudications.json").read_text()) if (outdir / "adjudications.json").exists() else []
-    by_key = {(a["file"], a["line"] // 10): a for a in prior}
+    # Merge adjudications by full dedup key: a re-judged candidate OVERWRITES its prior budget-starved
+    # record rather than duplicating it (the receipt stays one row per candidate). Backfill category on
+    # prior records so their keys align with the new ones.
+    by_key = {}
+    for a in prior:
+        cat = a.get("category")
+        if cat is None:
+            cat = sig_to_cat.get((a["file"], a["line"], a.get("summary", "")), "")
+            a = {**a, "category": cat}
+        by_key[_cand_key(a["file"], a["line"], cat)] = a
     for a in new_adjs:
-        by_key[(a.candidate.file, a.candidate.line // 10)] = _rec(a)
+        by_key[_cand_key(a.candidate.file, a.candidate.line, a.candidate.category)] = _adj_record(a)
     (outdir / "adjudications.json").write_text(json.dumps(list(by_key.values()), indent=2))
 
     # Append newly-confirmed issue payloads to the saved set (dedup by fingerprint).
@@ -242,6 +272,19 @@ def main(argv=None) -> int:
     if args.max_shards > 0:
         shard_list = shard_list[:args.max_shards]
     shard_area = {s.shard_id: s.area_label for s in shard_list}
+    outdir = RECEIPTS / f"crossfam-{args.stamp}"
+
+    # Non-preflight modes that operate on a PRIOR run's receipts — dispatched before the preflight gate
+    # (they don't need --run; the paid full review does). file-only makes no paid calls; resume-council
+    # does, so it still needs a key + guard.
+    if args.file_only:
+        return _file_only(outdir, args.stamp, args.live)
+    if args.resume_council:
+        if not OR.has_key():
+            print("✗ no OPENROUTER_API_KEY — cannot resume the paid council.")
+            return 1
+        outdir.mkdir(parents=True, exist_ok=True)
+        return _resume_council(outdir, shard_area, args, SpendGuard(args.cap))
 
     if not args.run:
         return preflight(shard_list, args.cap)
@@ -252,17 +295,7 @@ def main(argv=None) -> int:
 
     guard = SpendGuard(args.cap)
     only = {x.strip() for x in args.only.split(",") if x.strip()} or None
-    outdir = RECEIPTS / f"crossfam-{args.stamp}"
     outdir.mkdir(parents=True, exist_ok=True)
-
-    # File-only: skip the paid finder+council pass entirely and (re)file from a prior run's saved
-    # issue_payloads.json — used to review a dry run's output, then file it without re-paying, or to
-    # replay a filing that failed partway. Idempotent via fingerprints.
-    if args.file_only:
-        return _file_only(outdir, args.stamp, args.live)
-
-    if args.resume_council:
-        return _resume_council(outdir, shard_area, args, guard)
 
     # 1. Finders
     finder_results = run_finders(shard_list, only, guard, args.workers)
@@ -308,11 +341,7 @@ def main(argv=None) -> int:
         print(f"⚠ spend cap hit during council: {e}")
         adjs = []
     confirmed = [a for a in adjs if a.confirmed]
-    (outdir / "adjudications.json").write_text(json.dumps(
-        [{"file": a.candidate.file, "line": a.candidate.line, "confirmed": a.confirmed,
-          "escalated": a.escalated, "summary": a.candidate.summary,
-          "verdicts": [{"judge": v.judge, "role": v.role, "verdict": v.verdict, "reason": v.reason}
-                       for v in a.verdicts]} for a in adjs], indent=2))
+    (outdir / "adjudications.json").write_text(json.dumps([_adj_record(a) for a in adjs], indent=2))
     print(f"\nconfirmed: {len(confirmed)}/{len(adjs)} · total spend ${guard.settled():.3f}")
 
     # 4. File issues — build every payload FIRST and persist it, so a filing failure (rate limit,

@@ -290,6 +290,30 @@ def test_body_captures_which_models_found_it_for_later_analysis():
     assert [j["verdict"] for j in meta["judges"]] == ["confirmed", "refuted", "confirmed"]
 
 
+def test_completed_keys_distinguishes_category_and_requires_two_real_votes():
+    from tools.crossfam_review import run as RUN
+    # same file + same 10-line bucket, DIFFERENT category: one genuinely judged, one budget-starved.
+    recs = [
+        {"file": "a.py", "line": 100, "category": "correctness",
+         "verdicts": [{"verdict": "confirmed"}, {"verdict": "refuted"}]},          # 2 real votes → done
+        {"file": "a.py", "line": 105, "category": "security",
+         "verdicts": [{"verdict": "confirmed"}, {"verdict": "error"}]},            # 1 real vote → NOT done
+    ]
+    done = RUN._completed_keys(recs, {})
+    assert RUN._cand_key("a.py", 100, "correctness") in done
+    assert RUN._cand_key("a.py", 105, "security") not in done       # starved, distinct category → re-judge
+    assert len(done) == 1
+
+
+def test_completed_keys_backfills_category_by_summary_for_legacy_records():
+    from tools.crossfam_review import run as RUN
+    # a legacy record with NO category field is resolved via the (file,line,summary)->category map.
+    recs = [{"file": "b.py", "line": 20, "summary": "boom",
+             "verdicts": [{"verdict": "confirmed"}, {"verdict": "confirmed"}]}]
+    done = RUN._completed_keys(recs, {("b.py", 20, "boom"): "race"})
+    assert RUN._cand_key("b.py", 20, "race") in done
+
+
 def test_create_issue_dry_run_makes_no_network_call():
     cand = D.cluster([_f("google/x", "a.py", 5)])[0]
     adj = C.Adjudication(candidate=cand, confirmed=True)
