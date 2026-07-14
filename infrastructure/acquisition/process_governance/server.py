@@ -52,6 +52,7 @@ from infrastructure.acquisition.stage8_aggregate import aggregate as AGG        
 from infrastructure.acquisition.stage8_aggregate import closing_argument as CA8  # noqa: E402  (gate@8 closing-argument assembler)
 from infrastructure.acquisition.stage8_aggregate import approval as APV8         # noqa: E402  (gate@8 approval record)
 from infrastructure.acquisition.stage8_aggregate.models import Stage8Approval    # noqa: E402,F401  (precious gate@8 decision — register for init_precious_schema)
+from infrastructure.acquisition.stage8_aggregate.models import BandExclusion     # noqa: E402,F401  (precious gate@8 exclude-from-band #257 — register for init_precious_schema)
 
 
 def _refresh_filtered(con, district_id: str) -> None:
@@ -575,6 +576,20 @@ def _backup_followups(con) -> int:
     tmp.write_text(json.dumps(data, indent=2))
     tmp.replace(out)
     return len(data)
+
+
+def _backup_band_exclusions(con) -> int:
+    """Back the precious gate@8 band-exclusions (#257) to a tracked JSON (the labels.json pattern) — a
+    standing 'this school is not in this band' human judgment must survive a DB wipe and carry a git
+    history. Atomic write; pytest quarantine-redirected (issue #178)."""
+    rows = con.execute(text(
+        "SELECT exclusion_id, district_id, band, norm_school, school, reason, actor, created_at "
+        "FROM band_exclusion ORDER BY exclusion_id")).mappings().all()
+    out = paths.guard_tracked_backup(paths.BAND_EXCLUSIONS_JSON)
+    tmp = out.with_name(out.name + ".tmp")
+    tmp.write_text(json.dumps([dict(r) for r in rows], indent=2))
+    tmp.replace(out)
+    return len(rows)
 
 
 def _backup_stage8_approvals(con) -> int:
@@ -2010,6 +2025,64 @@ async def aggregate_override(payload: dict):
                     {"d": det, "f": fact_id})
         con.commit()
     return {"ok": True, "fact_id": fact_id}
+
+
+@app.post("/api/aggregate/exclude")
+async def aggregate_exclude(payload: dict):
+    """#257: record a standing human 'exclude school from band' (with a REQUIRED reason) — the human
+    sibling of the automatic exclude-but-surface detectors (#245/#237). District-grain, keyed
+    (district_id, band, norm_school), so it survives follow-up re-extraction (a fact-attached exclusion
+    would vanish with the next winning fact and re-pollute the band). OPERATIVE immediately: the closing
+    argument recomputes the band mode over the non-excluded schools; the excluded fact stays visible
+    (struck-through) and the exclusion enters the receipt + staleness fingerprint. Re-excluding the same
+    (band, school) replaces the record (fresh reason/actor/timestamp). 400 on a missing field or an
+    unknown band."""
+    from infrastructure.acquisition.common.school_match import norm_school, norm_school_strict
+
+    did, band = payload.get("district_id"), payload.get("band")
+    school, reason = (payload.get("school") or "").strip(), (payload.get("reason") or "").strip()
+    actor = payload.get("actor", "ian")
+    if not did or not school or not reason:
+        raise HTTPException(400, "district_id, school and a non-empty reason are required")
+    if band not in AGG.BANDS:
+        raise HTTPException(400, f"band must be one of {AGG.BANDS}")
+    # guard on the STRICT normalization (a pure-stopword name like 'schools' is the #245 degenerate
+    # class — already out of every rollup, so excluding it is meaningless); the stored KEY uses the
+    # non-strict norm_school, the same axis the merge and the builder match on.
+    if not norm_school_strict(school):
+        raise HTTPException(400, f"school name {school!r} is degenerate (#245) — nothing to exclude")
+    key = norm_school(school)
+    with gdb.session_scope() as con:
+        con.execute(text("DELETE FROM band_exclusion WHERE district_id = :d AND band = :b "
+                         "AND norm_school = :n"), {"d": did, "b": band, "n": key})
+        con.execute(text("INSERT INTO band_exclusion (district_id, band, norm_school, school, reason, "
+                         "actor, created_at) VALUES (:d, :b, :n, :s, :r, :a, :t)"),
+                    {"d": did, "b": band, "n": key, "s": school, "r": reason, "a": actor, "t": _u7()})
+        _backup_band_exclusions(con)
+        con.commit()
+    return {"ok": True, "district_id": did, "band": band, "norm_school": key}
+
+
+@app.post("/api/aggregate/exclude/restore")
+async def aggregate_exclude_restore(payload: dict):
+    """#257: lift a standing band-exclusion (reversible-before-freeze). A hard DELETE is correct for
+    auditability here: every gate@8 decision froze the exclusions operative at that moment into its
+    receipt, so history is preserved where it matters — the receipts — while the live picture returns
+    the school to its band's mode. 404 if no such exclusion."""
+    from infrastructure.acquisition.common.school_match import norm_school
+
+    did, band, school = payload.get("district_id"), payload.get("band"), (payload.get("school") or "").strip()
+    if not did or not school or band not in AGG.BANDS:
+        raise HTTPException(400, "district_id, band and school are required")
+    with gdb.session_scope() as con:
+        n = con.execute(text("DELETE FROM band_exclusion WHERE district_id = :d AND band = :b "
+                             "AND norm_school = :n"),
+                        {"d": did, "b": band, "n": norm_school(school)}).rowcount
+        if not n:
+            raise HTTPException(404, f"no exclusion for {school!r} in {band} of {did}")
+        _backup_band_exclusions(con)
+        con.commit()
+    return {"ok": True}
 
 
 @app.post("/api/aggregate/decision/{district_id}")

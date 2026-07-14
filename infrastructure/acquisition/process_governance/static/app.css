@@ -560,3 +560,6 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 .s8-negative h3 { margin: 0 0 8px; }
 .s8-negative ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: var(--fs-sm); }
 .s8-override-error { color: var(--status-danger); margin-top: 3px; font-weight: 600; }
+/* #257: an excluded school is struck through, still visible — out of the mode, never out of sight */
+.s8-excluded td { text-decoration: line-through; color: var(--text-secondary); }
+.s8-excluded td .s8-excluded-note { text-decoration: none; color: var(--status-danger); margin-top: 3px; }

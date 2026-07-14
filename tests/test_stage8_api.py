@@ -94,3 +94,61 @@ def test_override_404_when_fact_missing(monkeypatch):
     r = client.post("/api/aggregate/override",
                     json={"fact_id": 999, "reason": "wrong bell", "start_time": "08:00"})
     assert r.status_code == 404
+
+
+# ---------------------------------------------------------------- #257 exclude-from-band
+def test_exclude_requires_fields_and_valid_band():
+    r1 = client.post("/api/aggregate/exclude", json={"district_id": "D1", "band": "elementary",
+                                                     "school": "Kinston"})            # no reason
+    r2 = client.post("/api/aggregate/exclude", json={"district_id": "D1", "band": "college",
+                                                     "school": "Kinston", "reason": "x"})  # bad band
+    r3 = client.post("/api/aggregate/exclude", json={"band": "elementary",
+                                                     "school": "Kinston", "reason": "x"})   # no district
+    assert r1.status_code == 400 and r2.status_code == 400 and r3.status_code == 400
+
+
+def test_exclude_upserts_and_backs_up(monkeypatch):
+    # DELETE (replace-on-re-exclude) -> INSERT -> backup SELECT (quarantined under pytest) -> commit
+    con = _Con([_Result(), _Result(), _Result(rows=[])])
+    _use(monkeypatch, con)
+    r = client.post("/api/aggregate/exclude",
+                    json={"district_id": "0100810", "band": "elementary",
+                          "school": "Kinston School", "reason": "presents as a high school (2025-26)"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["ok"] and body["norm_school"]        # normalized key computed server-side
+
+
+def test_exclude_rejects_name_that_normalizes_to_nothing():
+    r = client.post("/api/aggregate/exclude",
+                    json={"district_id": "D1", "band": "elementary",
+                          "school": "Schools", "reason": "x"})   # pure stopword name (#245 class)
+    assert r.status_code == 400
+
+
+def test_restore_404s_when_no_exclusion(monkeypatch):
+    _use(monkeypatch, _Con([_Result(rowcount=0)]))
+    r = client.post("/api/aggregate/exclude/restore",
+                    json={"district_id": "D1", "band": "elementary", "school": "Kinston"})
+    assert r.status_code == 404
+
+
+def test_restore_deletes_and_backs_up(monkeypatch):
+    _use(monkeypatch, _Con([_Result(rowcount=1), _Result(rows=[])]))
+    r = client.post("/api/aggregate/exclude/restore",
+                    json={"district_id": "D1", "band": "elementary", "school": "Kinston"})
+    assert r.status_code == 200 and r.json()["ok"]
+
+
+def test_stage8_console_carries_the_exclusion_ui_markers():
+    """UI-visibility regression (the console-features rule): the #257 exclude-from-band affordances
+    must not silently disappear from the gate@8 console. Source-presence check on the data-feat
+    markers + the struck-through render class."""
+    from pathlib import Path
+    js = (Path(SRV.__file__).parent / "static" / "stage8.js").read_text()
+    for marker in ('data-feat="exclude"', 'data-feat="restore-exclusion"',
+                   'data-feat="excluded-reason"', 'data-feat="excluded-row"',
+                   'data-feat="band-exclusions"', "/api/aggregate/exclude"):
+        assert marker in js, f"stage8.js lost the #257 marker {marker!r}"
+    css = (Path(SRV.__file__).parent / "static" / "app.css").read_text()
+    assert "line-through" in css and ".s8-excluded" in css
