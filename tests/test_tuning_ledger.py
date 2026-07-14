@@ -8,10 +8,11 @@ from infrastructure.acquisition.stage5_filter import tuning_ledger as TL  # noqa
 
 
 def _scorecard(cfg, labels, data, a_prec, a_rec, ab_prec=0.5, ab_rec=None, cat=0.43, topo=0.8,
-               records=150, labeled=150, targets=41, districts=12, reject_q=None):
+               records=150, labeled=150, targets=41, districts=12, reject_q=None, outcome_rate=None):
     """A minimal scorecard in the harness's output shape (only the fields the ledger reads). `ab_rec`
     (the A+B recall the floor defends, #208) defaults to a_rec for the legacy fixtures. `reject_q` adds the
-    #214 exploration_cohort section (None => omit it, exercising the legacy/missing-section path)."""
+    #214 exploration_cohort section, `outcome_rate` the #91 extract_outcome section (None => omit it,
+    exercising the legacy/missing-section path)."""
     ab_rec = a_rec if ab_rec is None else ab_rec
     card = {
         "generated_at": "2026-06-25T00:00:00Z",
@@ -27,7 +28,28 @@ def _scorecard(cfg, labels, data, a_prec, a_rec, ab_prec=0.5, ab_rec=None, cat=0
     if reject_q is not None:
         card["exploration_cohort"] = {"cohort_size": 300, "sampled_n": 15, "rejection_quality": reject_q,
                                       "false_negative_rate": round(1.0 - reject_q, 6), "fnr_upper_bound_95": None}
+    if outcome_rate is not None:
+        card["extract_outcome"] = {"reps": 20, "any_accepted_rate": outcome_rate, "unjoined": 0,
+                                   "outcomes": {"any_accepted": int(outcome_rate * 20), "mixed": 1,
+                                                "all_unresolved": 20 - int(outcome_rate * 20)}}
     return card
+
+
+# ----------------------------- #91: extract-outcome calibration delta -----------------------------
+def test_episode_diffs_extract_outcome_calibration():
+    # a scoring change that moved the PAID-outcome headline (P(any_accepted)) now shows in the episode.
+    before = _scorecard("cfgA", "lab1", "dat1", a_prec=0.85, a_rec=0.98, outcome_rate=0.70)
+    after = _scorecard("cfgB", "lab1", "dat1", a_prec=0.90, a_rec=0.98, outcome_rate=0.80)
+    ep = TL.build_episode(before, after, knobs_touched=["x"], rationale="r", decided_by="chat")
+    assert round(ep["deltas"]["extract_outcome_calibration"], 4) == 0.10
+
+
+def test_episode_extract_outcome_is_none_on_legacy_scorecards():
+    # scorecards predating the section (or with a not-yet-computable None rate) -> delta None, never a raise.
+    before = _scorecard("cfgA", "lab1", "dat1", a_prec=0.85, a_rec=0.98)   # no extract_outcome
+    after = _scorecard("cfgB", "lab1", "dat1", a_prec=0.90, a_rec=0.98, outcome_rate=0.80)
+    ep = TL.build_episode(before, after, knobs_touched=["x"], rationale="r", decided_by="chat")
+    assert ep["deltas"]["extract_outcome_calibration"] is None
 
 
 # ----------------------------- #214: exploration-cohort delta + illusion guard -----------------------------

@@ -151,13 +151,88 @@ def test_empty_inputs_dont_crash():
     assert harness.topology_report([])["coarse_agreement"] is None
 
 
+# ---- #91: extract-outcome calibration ----
+# rows are (rec_key, status, tier, fired, is_target) over production school_fact rows joined back to
+# the current record/label tables (tier None = unjoined; is_target None = unlabeled).
+def test_extract_outcome_classifies_reps_and_reports_the_headline_rate():
+    rows = [
+        ("d:1", "accepted", "A", [], True), ("d:1", "accepted", "A", [], True),      # pure any_accepted
+        ("d:2", "accepted", "A", [], True), ("d:2", "unresolved", "A", [], True),    # mixed (still success)
+        ("d:3", "unresolved", "B", [], False),                                       # all_unresolved
+    ]
+    eo = harness.extract_outcome_calibration(rows)
+    assert eo["reps"] == 3
+    assert eo["outcomes"] == {"any_accepted": 2, "mixed": 1, "all_unresolved": 1}
+    assert eo["any_accepted_rate"] == 0.6667      # mixed counts as success for the headline
+
+
+def test_extract_outcome_per_tier_calibration():
+    rows = [("d:1", "accepted", "A", [], None), ("d:2", "unresolved", "A", [], None),
+            ("d:3", "accepted", "B", [], None)]
+    pt = harness.extract_outcome_calibration(rows)["per_tier"]
+    assert pt["A"] == {"reps": 2, "any_accepted": 1, "rate": 0.5}
+    assert pt["B"] == {"reps": 1, "any_accepted": 1, "rate": 1.0}
+
+
+def test_extract_outcome_unjoined_is_reported_not_silently_excluded():
+    # a rep whose record row is gone (re-ingest dropped/re-keyed it): tier None. It still counts in the
+    # headline rate (the outcome needs no join) but is REPORTED as unjoined — no-silent-caps — and
+    # excluded from the join-dependent tables (per-tier, detectors, disagreement).
+    rows = [("d:1", "accepted", "A", ["lf_time_table"], True),
+            ("gone:1", "accepted", None, [], None)]
+    eo = harness.extract_outcome_calibration(rows)
+    assert eo["reps"] == 2 and eo["unjoined"] == 1
+    assert eo["any_accepted_rate"] == 1.0
+    assert sum(v["reps"] for v in eo["per_tier"].values()) == 1
+    assert eo["detectors_vs_outcome"]["n"] == 1
+
+
+def test_extract_outcome_disagreement_cells_carry_the_rec_keys():
+    rows = [("d:1", "unresolved", "A", [], True),      # labeled target, extraction never delivered
+            ("d:2", "accepted", "D", [], False),       # tier-D reject that extracted anyway (#214 blind spot)
+            ("d:3", "unresolved", "B", [], None)]      # unlabeled + unresolved -> NEITHER cell (None != True)
+    dis = harness.extract_outcome_calibration(rows)["disagreement"]
+    assert dis["labeled_target_all_unresolved"] == {"n": 1, "rec_keys": ["d:1"]}
+    assert dis["rejected_but_accepted"] == {"n": 1, "rec_keys": ["d:2"]}
+
+
+def test_extract_outcome_detectors_scored_against_the_paid_outcome():
+    # the SAME detector_diagnostics helper, but 'correct' now means polarity-right vs the OUTCOME:
+    # a target LF firing on a rep that extracted is a hit; on one that didn't, a miss.
+    rows = [("d:1", "accepted", "A", ["lf_time_table"], True),
+            ("d:2", "unresolved", "A", ["lf_time_table"], True)]
+    det = harness.extract_outcome_calibration(rows)["detectors_vs_outcome"]
+    d = det["per_detector"]["lf_time_table"]
+    assert d["fires"] == 2 and d["accuracy"] == 0.5
+    assert d["on_target"] == 1 and d["on_nontarget"] == 1   # 'target' here = any_accepted
+
+
+def test_extract_outcome_empty_reports_zeros_not_a_crash():
+    eo = harness.extract_outcome_calibration([])
+    assert eo["reps"] == 0 and eo["unjoined"] == 0
+    assert eo["outcomes"] == {"any_accepted": 0, "mixed": 0, "all_unresolved": 0}
+    assert eo["any_accepted_rate"] is None
+    assert eo["per_tier"] == {}
+    assert eo["disagreement"]["labeled_target_all_unresolved"]["n"] == 0
+
+
 def _seed_mini(sess):
-    """The three tables harness.score/fingerprints read, as CONNECTION-SCOPED TEMP tables on the
-    governance session (auto-dropped at close — never touches real governance data)."""
+    """The tables harness.score/fingerprints read, as CONNECTION-SCOPED TEMP tables on the
+    governance session (auto-dropped at close — never touches real governance data). The Stage-7
+    outcome tables (#91) are shadowed too, so real school_fact rows can't leak into the assertions."""
     sess.execute(text("CREATE TEMP TABLE record (rec_key text, tier text, category_hypothesis text, signals_json text)"))
     sess.execute(text("CREATE TEMP TABLE label (rec_key text, primary_label text, status text, facets_json text)"))
     sess.execute(text("""CREATE TEMP TABLE district (district_id text, name text, guessed_topology text,
                                labeled_topology text, nces_school_count integer)"""))
+    sess.execute(text("CREATE TEMP TABLE extraction (extraction_id integer, run_kind text)"))
+    sess.execute(text("CREATE TEMP TABLE school_fact (fact_id integer, extraction_id integer, rec_key text, status text)"))
+    sess.execute(text("INSERT INTO extraction VALUES (1, 'production'), (2, 'probe')"))
+    # d:1 mixed (accepted + unresolved); gone:x unjoined (no record row); the probe row + the NULL
+    # rec_key row must both be excluded from the section AND the outcome fingerprint.
+    sess.execute(text("""INSERT INTO school_fact VALUES
+        (1, 1, 'd:1', 'accepted'), (2, 1, 'd:1', 'unresolved'),
+        (3, 1, 'gone:x', 'accepted'),
+        (4, 2, 'd:2', 'accepted'), (5, 1, NULL, 'accepted')"""))
     # signals_json carries the V2 fired detectors (REQ-113) the harness reads for per-detector diagnostics.
     sess.execute(text("""INSERT INTO record VALUES
         ('d:1','A','school_bell_table','{\"detectors\": [{\"name\": \"lf_time_table\"}]}'),
@@ -176,7 +251,31 @@ def test_score_and_fingerprints_are_deterministic(gov_session):
     assert s1["category_accuracy"]["overall"] == 1.0   # both guesses match labels here
     fp1 = harness.fingerprints(con)
     fp2 = harness.fingerprints(con)
-    assert fp1 == fp2 and set(fp1) == {"config", "label_set", "data"}
+    assert fp1 == fp2 and set(fp1) == {"config", "label_set", "data", "outcome"}
+
+
+@govdb
+def test_score_reads_production_outcomes_and_reports_unjoined(gov_session):
+    # #91: from _seed_mini's school_fact — d:1 (mixed, joins to a tier-A record) + gone:x (accepted, no
+    # record row -> unjoined) are the two considered reps; the probe run and the NULL-rec_key fact are out.
+    eo = harness.score(_seed_mini(gov_session))["extract_outcome"]
+    assert eo["reps"] == 2 and eo["unjoined"] == 1
+    assert eo["outcomes"] == {"any_accepted": 2, "mixed": 1, "all_unresolved": 0}
+    assert eo["per_tier"] == {"A": {"reps": 1, "any_accepted": 1, "rate": 1.0}}
+
+
+@govdb
+def test_outcome_fingerprint_is_stable_and_status_sensitive(gov_session):
+    # same rows -> same hash (asserted above); a changed status -> a DIFFERENT hash, so an accrued or
+    # corrected outcome can never silently reuse a prior scorecard's identity.
+    con = _seed_mini(gov_session)
+    before = harness.fingerprints(con)
+    con.execute(text("UPDATE school_fact SET status = 'unresolved' WHERE fact_id = 1"))
+    after = harness.fingerprints(con)
+    assert after["outcome"] != before["outcome"]
+    assert after["data"] == before["data"]          # the other fingerprints don't see outcome rows
+    con.execute(text("UPDATE school_fact SET status = 'accepted' WHERE fact_id = 1"))
+    assert harness.fingerprints(con)["outcome"] == before["outcome"]
 
 
 @govdb

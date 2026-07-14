@@ -304,16 +304,18 @@ episodes), config-as-data with `provenance`.
    often it fires), **accuracy** (precision when it fires), **polarity**, **overlap/conflict** (where two
    detectors disagree). This is the prerequisite for tuning anything, and it's what makes "you and me
    having chats to adjust weights" a data-grounded conversation instead of guesswork.
-2. **WHEN STAGE 8 LANDS: outcome feedback.** Stage 7's council extraction is now built and scored against
-   curated GT (`STAGE7_EXTRACT_DESIGN_2026-06.md` §0), so the *did the representation we sent actually
-   extract correctly* signal exists in principle — but it isn't wired into this harness yet. Note the
-   aggregation ALGORITHM itself already exists and runs live inline inside gate@7 today
-   (`stage8_aggregate/aggregate.py`'s `district_bands_from_facts`/`merge_fact_runs`/
-   `detect_single_school_over_extraction` — see `STAGE8_AGGREGATE_DESIGN_2026-06.md`); what's missing is
-   the STANDALONE Stage 8 stage/gate@8/console this harness's outcome-feedback wiring is waiting on. It
-   flows into the **same** ledger/harness (not a separate system) once wired: the deterministic decision
-   becomes a *proxy* whose calibration against the paid outcome is measured (the SUPG recall-floor
-   discipline). (tracked: #91)
+2. **BUILT (#91, 2026-07-14): outcome feedback.** With Stage 8/gate@8 landed, the *did the representation
+   we sent actually extract* signal is now wired into this harness: `harness.score()` emits an
+   `extract_outcome` section — per dispatched-and-extracted rep (production `school_fact` rows joined
+   back on `rec_key`, probes excluded), the any-accepted/mixed/all-unresolved outcome, the headline
+   P(any_accepted), the per-tier calibration table, the per-detector grid recomputed against the paid
+   outcome, the two disagreement cells (labeled-target-but-all-unresolved; rejected-but-accepted), and
+   an `unjoined` count (no-silent-caps). A fourth `outcome` fingerprint keeps scorecards re-derivable
+   as outcomes accrue, and the ledger diffs `extract_outcome_calibration` per episode. It flows into the
+   **same** ledger/harness (not a separate system), exactly as planned: the deterministic decision is a
+   *proxy* whose calibration against the paid outcome is measured. Measurement only — v1 changes no
+   scoring config; the outcome signal is per-rep `school_fact.status`, not gate@8 approval (which lags).
+   The read is raw SQL on the shared governance DB — stage5 never imports stage7 (the layering contract).
 3. **LATER (documented, deferred — the scale endgame, `STAGE5_TUNING_NOTES`):** a learned combiner
    (Snorkel `LabelModel`, inferring per-detector accuracy from agreement without gold labels for every
    point) replaces the hand-weighted vote **once diagnostics justify it**; hierarchical partial-pooling
@@ -677,7 +679,8 @@ existing plain-text footer capture is already sufficient for the heading-proximi
 | **Reset labels** (`POST /api/reset-labels` + `build_signals.reset_labels_bulk`, record/district scope, reverses the cluster cascade, no calibration row) | **BUILT (#228, 2026-07-11)** — see §4 |
 | **Empty-domain admission guard** (`common/discover.py` `domain_of()`/`is_scoping_domain()`, refuses blank/junk-domain districts at Stage-1 batch build) | **BUILT (#229, 2026-07-11)** — see §4 |
 | **Millard contamination remediation** (`process_governance/remediate_contamination.py`, manifest-first dry-run-by-default cleanup tool) | **BUILT (#227, 2026-07-11)** — see §4 |
-| Learned `LabelModel` combiner · hierarchical/vendor pooling · online-FDR drift · Stage-7/8 outcome feedback | **DEFERRED (scale endgame)** |
+| **Stage-7/8 outcome feedback** (`harness.extract_outcome_calibration` — P(any_accepted) headline + per-tier calibration + detectors-vs-outcome + the two disagreement cells + `unjoined`; fourth `outcome` fingerprint; `extract_outcome_calibration` ledger delta) | **BUILT (#91, 2026-07-14)** — measurement only; see §5 item 2 |
+| Learned `LabelModel` combiner · hierarchical/vendor pooling · online-FDR drift | **DEFERRED (scale endgame)** |
 
 ---
 
