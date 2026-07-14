@@ -78,6 +78,25 @@ class TestPlausibility:
         assert SY.DB_CHECK_MINUTES_MAX > SY.GROSS_MINUTES_MAX
 
 
+class TestCurrentSchoolYearDerivation:
+    def test_july_first_rolls_over(self):
+        from datetime import date
+        assert SY.current_school_year(date(2026, 6, 30)) == "2025-26"
+        assert SY.current_school_year(date(2026, 7, 1)) == "2026-27"
+
+    def test_spring_belongs_to_prior_start_year(self):
+        from datetime import date
+        assert SY.current_school_year(date(2027, 1, 15)) == "2026-27"
+        assert SY.current_school_year(date(2026, 12, 31)) == "2026-27"
+
+    def test_module_constant_matches_derivation(self):
+        assert SY.CURRENT_SCHOOL_YEAR == SY.current_school_year()
+
+    def test_acceptable_bell_years_floor_at_first_post_covid_year(self):
+        assert SY.ACCEPTABLE_BELL_YEARS[-1] == "2023-24"
+        assert SY.ACCEPTABLE_BELL_YEARS[0] == SY.CURRENT_SCHOOL_YEAR
+
+
 class TestConstants:
     def test_current_year_is_well_formed_and_post_covid(self):
         assert SY.is_acceptable_data_year(SY.CURRENT_SCHOOL_YEAR)

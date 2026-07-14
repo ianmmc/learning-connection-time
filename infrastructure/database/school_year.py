@@ -11,22 +11,42 @@ the YYYY-YY format, but code should compare via start_year(), never lexicographi
 from __future__ import annotations
 
 import re
+from datetime import date
+
+
+def _format_year(start: int) -> str:
+    return f"{start}-{(start + 1) % 100:02d}"
+
+
+def current_school_year(today: date | None = None) -> str:
+    """The school year in effect on `today` (default: now). Fiscal-year-like: July 1 rolls it
+    over, so 2026-06-30 -> '2025-26' and 2026-07-01 -> '2026-27'. Derived, never hand-bumped —
+    the pre-2026-07 manual constant went stale exactly one rollover after it was written."""
+    d = today or date.today()
+    start = d.year if d.month >= 7 else d.year - 1
+    return _format_year(start)
+
 
 # --- The years -------------------------------------------------------------------------------
 
-CURRENT_SCHOOL_YEAR = "2026-27"     # bump once per year; the only place it is written
-NCES_PRIMARY_YEAR = "2023-24"       # primary NCES CCD enrollment/staffing dataset (CLAUDE.md)
+CURRENT_SCHOOL_YEAR = current_school_year()  # derived at import; call current_school_year() in long-lived processes
+NCES_PRIMARY_YEAR = "2024-25"       # primary NCES CCD enrollment/staffing dataset — bump on INGEST
+                                    # (a data event, not a calendar event), verified against
+                                    # lct_calculations rows on the new year (CLAUDE.md Rule 6)
 SPED_BASELINE_YEAR = "2017-18"      # IDEA 618 / CRDC baseline — EXEMPT from the blend window
 PRE_COVID_FALLBACK_YEAR = "2018-19" # preferred over any COVID year when nothing recent exists
 
 # Rule #2: never use COVID-era data (abnormal schedules).
 COVID_EXCLUDED_YEARS = frozenset({"2019-20", "2020-21", "2021-22", "2022-23"})
 
-# Bell-schedule search order: current first, all post-COVID years interchangeable. 2023-24 stays
-# acceptable while it is still the NCES primary year, but note the blend window arbitrates the
-# actual combination per calculation: a 2026-27 bell schedule + the 2023-24 CCD is span 3 (> 2),
-# so it cannot blend until a newer CCD import bumps NCES_PRIMARY_YEAR.
-ACCEPTABLE_BELL_YEARS = ("2026-27", "2025-26", "2024-25", "2023-24")
+# Bell-schedule search order: current first, all post-COVID years interchangeable, floored at
+# 2023-24 (the first post-COVID year). Derived so it self-rolls with the current year. The blend
+# window still arbitrates the actual combination per calculation (e.g. a 2026-27 bell schedule
+# needs a CCD within span 2).
+_BELL_FLOOR_START = 2023
+ACCEPTABLE_BELL_YEARS = tuple(
+    _format_year(y) for y in range(int(CURRENT_SCHOOL_YEAR[:4]), _BELL_FLOOR_START - 1, -1)
+)
 
 # --- The blend window (REQ-026, semantics decided by Ian 2026-07-01) --------------------------
 # Data blended for one calculation may span at most THREE CONSECUTIVE school years:
