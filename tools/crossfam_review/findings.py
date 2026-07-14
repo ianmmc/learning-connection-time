@@ -17,6 +17,21 @@ SEVERITIES = ("critical", "major", "minor")
 # Map our severity vocabulary onto the repo's existing sev:* labels (gh label list, 2026-07-13).
 SEV_LABEL = {"critical": "sev:critical", "major": "sev:major", "minor": "sev:minor"}
 
+# The line-neighborhood the dedup identity buckets by. ONE constant, used by every place that computes
+# the coarse "same defect" key — Finding.key(), run._completed_keys/_resume_council, github.fingerprint —
+# so changing the bucket width can never silently desync those callers (each used to hardcode `// 10`).
+LINE_BUCKET = 10
+
+
+def dedup_key(file, line, category) -> tuple:
+    """The canonical coarse identity for dedup/resume/fingerprint: (file, line-bucket, lower-cased
+    category). Tolerates a non-int `line` (e.g. a str from a hand-edited receipt) by bucketing to 0."""
+    try:
+        lb = int(line) // LINE_BUCKET
+    except (TypeError, ValueError):
+        lb = 0
+    return (str(file or ""), lb, (category or "").strip().lower())
+
 # A single finding object: a {...} span mentioning "summary" (the one always-present field). Non-greedy,
 # no nested braces — matches the salvage regex style in stage7_extract.parse._SCHED_OBJ.
 _FINDING_OBJ = re.compile(r'\{[^{}]*?"summary"[^{}]*?\}', re.DOTALL)
@@ -36,9 +51,9 @@ class Finding:
     confidence: str = ""            # the model's own hedge, if given (verbatim)
 
     def key(self) -> tuple:
-        """Coarse identity for dedup: same file + same ~line-neighborhood + same category. Line is
-        bucketed to 10 so two models citing lines 41 and 44 of the same bug collapse together."""
-        return (self.file, self.line // 10, self.category.strip().lower())
+        """Coarse identity for dedup: same file + same ~line-neighborhood + same category (so two
+        models citing lines 41 and 44 of the same bug collapse). The single shared `dedup_key`."""
+        return dedup_key(self.file, self.line, self.category)
 
     def to_dict(self) -> dict:
         return asdict(self)

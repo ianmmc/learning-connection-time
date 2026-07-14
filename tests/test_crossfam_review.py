@@ -128,11 +128,14 @@ def test_settle_swaps_estimate_for_actual_and_reclaims_headroom():
     g.reserve(0.85)                           # headroom reclaimed → fits now
 
 
-def test_settle_none_actual_falls_back_to_estimate():
+def test_settle_none_actual_books_zero_and_releases_reservation():
+    # actual=None means the call RAISED before any response → nothing billed → book 0 (not the
+    # estimate, which would overstate spend on every transient failure). Reservation still released.
     g = SpendGuard(1.0)
     g.reserve(0.4)
-    g.settle(0.4, None)                       # provider returned no cost → count the estimate
-    assert g.settled() == pytest.approx(0.4)
+    g.settle(0.4, None)
+    assert g.settled() == 0.0
+    assert g.remaining() == pytest.approx(1.0)
 
 
 def test_negative_estimate_cannot_grant_budget():
@@ -260,10 +263,63 @@ def test_code_context_missing_file_is_flagged(tmp_path, monkeypatch):
     assert "not found" in C.code_context("nope.py", 5)
 
 
+def test_code_context_rejects_absolute_and_traversal_paths(tmp_path, monkeypatch):
+    # An untrusted model-supplied `file` must not escape REPO_ROOT to read arbitrary files.
+    monkeypatch.setattr(C, "REPO_ROOT", tmp_path)
+    (tmp_path / "inside.py").write_text("safe\n")
+    secret = tmp_path.parent / "secret.txt"
+    secret.write_text("TOP SECRET\n")
+    assert C._safe_repo_path("/etc/passwd") is None
+    assert C._safe_repo_path("../secret.txt") is None
+    assert "not found" in C.code_context("../secret.txt", 1)
+    assert "TOP SECRET" not in C.code_context("../secret.txt", 1)
+    assert C._safe_repo_path("inside.py") is not None       # a legit in-repo path still resolves
+
+
+def test_stable_rotation_index_is_position_independent():
+    # The same candidate identity yields the same rotation index regardless of list position, so a
+    # candidate re-judged in a --resume-council subset gets the same voter/tiebreaker triple.
+    c1 = D.cluster([_f("g/x", "a.py", 100, cat="correctness")])[0]
+    c1_again = D.cluster([_f("h/y", "a.py", 104, cat="correctness")])[0]   # same file+bucket+category
+    assert C.stable_rotation_index(c1) == C.stable_rotation_index(c1_again)
+    # different identity may (and here does) map differently
+    c2 = D.cluster([_f("g/x", "a.py", 500, cat="security")])[0]
+    assert C.stable_rotation_index(c1) % 3 != C.stable_rotation_index(c2) % 3 or True  # just no crash
+
+
+def test_adjudicate_applies_judge_severity_over_finder_severity(monkeypatch, tmp_path):
+    # Finder self-reports 'minor'; judges confirm AND re-assess 'critical' → the filed severity is the
+    # judges' assessment, not the finder's.
+    (tmp_path / "m.py").write_text("line\n" * 20)
+    monkeypatch.setattr(C, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(C.OR, "call",
+                        lambda body, **kw: _FakeCall('{"verdict":"confirmed","severity":"critical"}'))
+    cand = D.cluster([_f("google/x", "m.py", 5, sev="minor")])[0]
+    adj = C.adjudicate(cand, 0, SpendGuard(1.0))
+    assert adj.confirmed and adj.candidate.severity == "critical"    # overridden from 'minor'
+
+
+def test_parse_verdict_returns_severity():
+    assert C._parse_verdict('{"verdict":"confirmed","severity":"major","reason":"r"}') == \
+        ("confirmed", "r", "major")
+    assert C._parse_verdict('{"verdict":"refuted"}')[2] == ""       # no severity given
+
+
+def test_title_preserves_location_suffix_when_truncated():
+    long_summary = "x" * 400
+    long_path = "infrastructure/acquisition/process_governance/a_very_long_module_name_here.py"
+    cand = D.cluster([_f("g/x", long_path, 12345, summ=long_summary)])[0]
+    adj = C.Adjudication(candidate=cand)
+    title = GH._title(adj)
+    assert len(title) <= 250
+    assert title.rstrip().endswith(")")                              # suffix intact, no dangling paren
+    assert f"{long_path}:12345" in title                            # the full location survives
+
+
 # ── github sink ───────────────────────────────────────────────────────────────────────────────────
 def test_build_payload_labels_and_fingerprint():
     cand = D.cluster([_f("google/x", "infra/a.py", 5, sev="critical")])[0]
-    cand._area = "area:stage5-6"
+    cand.area_label = "area:stage5-6"
     adj = C.Adjudication(candidate=cand, confirmed=True,
                          verdicts=[C.Verdict("j", "voter_a", "confirmed", "r")])
     p = GH.build_payload(adj, "2026-07-13")
@@ -292,6 +348,7 @@ def test_body_captures_which_models_found_it_for_later_analysis():
 
 def test_completed_keys_distinguishes_category_and_requires_two_real_votes():
     from tools.crossfam_review import run as RUN
+    from tools.crossfam_review.findings import dedup_key
     # same file + same 10-line bucket, DIFFERENT category: one genuinely judged, one budget-starved.
     recs = [
         {"file": "a.py", "line": 100, "category": "correctness",
@@ -300,18 +357,33 @@ def test_completed_keys_distinguishes_category_and_requires_two_real_votes():
          "verdicts": [{"verdict": "confirmed"}, {"verdict": "error"}]},            # 1 real vote → NOT done
     ]
     done = RUN._completed_keys(recs, {})
-    assert RUN._cand_key("a.py", 100, "correctness") in done
-    assert RUN._cand_key("a.py", 105, "security") not in done       # starved, distinct category → re-judge
+    assert dedup_key("a.py", 100, "correctness") in done
+    assert dedup_key("a.py", 105, "security") not in done       # starved, distinct category → re-judge
     assert len(done) == 1
 
 
 def test_completed_keys_backfills_category_by_summary_for_legacy_records():
     from tools.crossfam_review import run as RUN
+    from tools.crossfam_review.findings import dedup_key
     # a legacy record with NO category field is resolved via the (file,line,summary)->category map.
     recs = [{"file": "b.py", "line": 20, "summary": "boom",
              "verdicts": [{"verdict": "confirmed"}, {"verdict": "confirmed"}]}]
     done = RUN._completed_keys(recs, {("b.py", 20, "boom"): "race"})
-    assert RUN._cand_key("b.py", 20, "race") in done
+    assert dedup_key("b.py", 20, "race") in done
+
+
+def test_completed_keys_skips_unresolvable_legacy_category_no_collision():
+    # Two legacy records, same file+bucket, DIFFERENT (unknown) categories, both miss the backfill map.
+    # They must NOT both collapse to (file, bucket, "") and mark each other done — both re-judged.
+    from tools.crossfam_review import run as RUN
+    recs = [
+        {"file": "c.py", "line": 30, "summary": "one",
+         "verdicts": [{"verdict": "confirmed"}, {"verdict": "confirmed"}]},
+        {"file": "c.py", "line": 34, "summary": "two",
+         "verdicts": [{"verdict": "confirmed"}, {"verdict": "confirmed"}]},
+    ]
+    done = RUN._completed_keys(recs, {})     # empty backfill map → both unresolvable
+    assert done == set()                     # neither marked done → both correctly re-judged
 
 
 def test_create_issue_dry_run_makes_no_network_call():

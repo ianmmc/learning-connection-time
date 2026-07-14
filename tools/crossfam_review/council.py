@@ -16,7 +16,8 @@ from pathlib import Path
 
 from tools.crossfam_review import client as OR
 from tools.crossfam_review import prompts as P
-from tools.crossfam_review.dedup import Candidate
+from tools.crossfam_review.dedup import Candidate, _SEV_RANK
+from tools.crossfam_review.findings import _norm_sev, _strip_fences, dedup_key
 from tools.crossfam_review.roster import Model, rotation_for
 from tools.crossfam_review.schemas import JUDGE_RESPONSE_FORMAT
 from tools.crossfam_review.shards import REPO_ROOT
@@ -34,6 +35,7 @@ class Verdict:
     role: str            # voter_a | voter_b | tiebreaker
     verdict: str         # confirmed | refuted | error
     reason: str = ""
+    severity: str = ""   # the judge's OWN re-assessed severity (schema-forced); "" if none/errored
     cost_usd: float = 0.0
 
 
@@ -46,10 +48,28 @@ class Adjudication:
     escalated: bool = False
 
 
+def _safe_repo_path(file: str):
+    """Resolve `file` (an UNTRUSTED, model-supplied path) to a real path INSIDE REPO_ROOT, or None if
+    it's absent, absolute, or escapes the repo via `..`. Without this, `REPO_ROOT / "/etc/passwd"`
+    discards REPO_ROOT entirely (pathlib) and `../../..` walks out — and `code_context` would then read
+    that file and ship its contents to three external judge APIs, a disclosure reachable purely from a
+    finder's hallucinated/adversarial `file` field (schemas.py types it only as a string)."""
+    if not file:
+        return None
+    root = REPO_ROOT.resolve()
+    try:
+        p = (root / file).resolve()
+        p.relative_to(root)      # raises ValueError if p is not within root
+    except (ValueError, OSError):
+        return None
+    return p
+
+
 def code_context(file: str, line: int) -> str:
     """The cited region: `line ± _CONTEXT_RADIUS`, or the file head if no usable line. Empty banner if
-    the file is gone (a finding on a moved/deleted path — the judge will refute for lack of evidence)."""
-    p = (REPO_ROOT / file) if file else None
+    the file is gone/outside the repo (a finding on a moved/deleted/traversal path — the judge refutes
+    for lack of evidence)."""
+    p = _safe_repo_path(file)
     if not p or not p.exists() or not p.is_file():
         return f"<<file not found: {file}>>"
     try:
@@ -65,28 +85,28 @@ def code_context(file: str, line: int) -> str:
     return f"===== {file} (lines {lo + 1}-{hi}) =====\n" + "\n".join(numbered)
 
 
-def _parse_verdict(content: str) -> tuple[str, str]:
-    """(verdict, reason) from a judge reply. Tolerant: JSON first, then substring sniff. Unknown →
-    'refuted' (conservative: an unparseable verdict must not confirm a finding onto the tracker)."""
+def _parse_verdict(content: str) -> tuple[str, str, str]:
+    """(verdict, reason, severity) from a judge reply. Tolerant: JSON first (reusing findings'
+    `_strip_fences` — the one fence-stripper, not a third inline copy), then substring sniff. Unknown →
+    'refuted' (conservative: an unparseable verdict must not confirm a finding onto the tracker). The
+    judge's own re-assessed `severity` (schema-forced) is captured here so it can override the finder's
+    possibly-wrong self-report on the filed issue; "" when absent/unparseable."""
     import json
-    import re
     if not content:
-        return "refuted", "empty judge reply"
-    t = content.strip()
-    if t.startswith("```"):
-        t = re.sub(r"^```[a-zA-Z0-9]*\s*", "", t)
-        t = re.sub(r"\s*```$", "", t).strip()
+        return "refuted", "empty judge reply", ""
+    t = _strip_fences(content)
     try:
         d = json.loads(t)
         v = str(d.get("verdict", "")).strip().lower()
         if v in ("confirmed", "refuted"):
-            return v, str(d.get("reason", "")).strip()
+            sev = _norm_sev(d.get("severity")) if d.get("severity") else ""
+            return v, str(d.get("reason", "")).strip(), sev
     except Exception:
         pass
     low = content.lower()
     if "confirm" in low and "refut" not in low:
-        return "confirmed", content.strip()[:300]
-    return "refuted", content.strip()[:300]
+        return "confirmed", content.strip()[:300], ""
+    return "refuted", content.strip()[:300], ""
 
 
 def _ask_judge(model: Model, role: str, cand: Candidate, ctx: str, guard: SpendGuard) -> Verdict:
@@ -108,8 +128,8 @@ def _ask_judge(model: Model, role: str, cand: Candidate, ctx: str, guard: SpendG
             res.prompt_tokens, res.completion_tokens)
         if not res.ok:
             return Verdict(model.id, role, "error", reason=res.error or "call failed", cost_usd=actual)
-        verdict, reason = _parse_verdict(res.content)
-        return Verdict(model.id, role, verdict, reason=reason, cost_usd=actual)
+        verdict, reason, severity = _parse_verdict(res.content)
+        return Verdict(model.id, role, verdict, reason=reason, severity=severity, cost_usd=actual)
     except OR.BillingAuthError:
         raise
     except Exception as e:  # noqa: BLE001
@@ -133,9 +153,27 @@ def _tally(verdicts: list[Verdict]) -> bool:
     return conf > ref
 
 
+def stable_rotation_index(cand: Candidate) -> int:
+    """A rotation index derived from the candidate's OWN identity (dedup key), not its position in the
+    list being judged — so a candidate gets the SAME voter/tiebreaker triple whether it's judged in a
+    full run or re-judged during a --resume-council pass (which enumerates only the un-judged subset).
+    Deterministic across processes: a hash of the key string, not Python's salted `hash()`."""
+    import hashlib
+    raw = "|".join(str(x) for x in dedup_key(cand.file, cand.line, cand.category))
+    return int(hashlib.sha1(raw.encode("utf-8")).hexdigest(), 16)
+
+
+def _judged_severity(verdicts: list[Verdict]) -> str:
+    """The most-severe severity among the judges that CONFIRMED (and gave one) — the council's own
+    re-assessment, which overrides the finder's self-report on a confirmed finding. "" if none gave one."""
+    sevs = [v.severity for v in verdicts if v.verdict == "confirmed" and v.severity]
+    return min(sevs, key=lambda s: _SEV_RANK.get(s, 3)) if sevs else ""
+
+
 def adjudicate(cand: Candidate, index: int, guard: SpendGuard) -> Adjudication:
     """Run the rotating cascade on one candidate. Two voters; escalate to the tie-breaker only on a
-    split. `index` drives the deterministic role rotation."""
+    split. `index` drives the deterministic role rotation (callers pass `stable_rotation_index(cand)`
+    so the assignment is identity-stable across resume passes, not list-position-dependent)."""
     voter_a, voter_b, tiebreaker = rotation_for(index)
     ctx = code_context(cand.file, cand.line)
     adj = Adjudication(candidate=cand)
@@ -155,5 +193,11 @@ def adjudicate(cand: Candidate, index: int, guard: SpendGuard) -> Adjudication:
         adj.escalated = True
 
     adj.confirmed = _tally(adj.verdicts)
+    if adj.confirmed:
+        # Apply the judges' own re-assessed severity over the finder's (possibly-wrong) self-report —
+        # the one point in the pipeline meant to catch a finder mis-grading a bug's severity.
+        js = _judged_severity(adj.verdicts)
+        if js:
+            cand.severity = js
     adj.cost_usd = sum(v.cost_usd for v in adj.verdicts)
     return adj

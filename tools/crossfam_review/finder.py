@@ -52,9 +52,11 @@ def _settle_cost(model: Model, res: OR.CallResult, estimate: float) -> float:
     return estimate
 
 
-def run_finder(model: Model, shard: Shard, guard: SpendGuard) -> FinderResult:
+def run_finder(model: Model, shard: Shard, guard: SpendGuard, rendered: str | None = None) -> FinderResult:
     """One (model, shard) review. Reserves an estimate, calls, settles the real cost, parses findings
-    and stamps each with the model + shard. A guard refusal returns skipped=True (no call made)."""
+    and stamps each with the model + shard. A guard refusal returns skipped=True (no call made).
+    `rendered` is the shard payload; the caller passes it once per shard (identical for all finders) so
+    it isn't re-built per (model, shard) — falls back to rendering here if omitted (tests)."""
     estimate = model.cost(shard.est_tokens + 600, _EST_COMPLETION_TOKENS)
     try:
         guard.reserve(estimate)
@@ -64,7 +66,7 @@ def run_finder(model: Model, shard: Shard, guard: SpendGuard) -> FinderResult:
 
     body = {"model": model.id,
             "messages": [{"role": "system", "content": P.FINDER_SYSTEM},
-                         P.finder_user_message(shard.render())],
+                         P.finder_user_message(shard.render() if rendered is None else rendered)],
             "response_format": FINDER_RESPONSE_FORMAT}
     actual = None
     try:
@@ -79,14 +81,23 @@ def run_finder(model: Model, shard: Shard, guard: SpendGuard) -> FinderResult:
             return FinderResult(model.id, shard.shard_id, [], ok=True, cost_usd=actual, empty=True,
                                 finish_reason=res.finish_reason, error="empty content (reasoning-only?)")
         findings = parse_findings(res.content)
+        stamped = []
         for f in findings:
             f.model = model.id
             f.shard_id = shard.shard_id
-            if not f.file:                       # a finding with no path can't be filed — anchor to shard
-                f.file = shard.rel_files()[0] if shard.files else ""
+            if not f.file:
+                # No path given. A single-file shard is unambiguous — anchor to that file. In a
+                # MULTI-file shard we cannot tell which file it means, so DROP it rather than
+                # misattribute to shard.files[0] (which would show the judge the wrong file's code and
+                # cause a legit finding to be wrongly refuted).
+                if len(shard.files) == 1:
+                    f.file = shard.rel_files()[0]
+                else:
+                    continue
+            stamped.append(f)
         # A non-empty reply that parsed to nothing is a possible parse-miss worth the audit trail; a
         # reply that parsed fine still keeps its raw content as a receipt (auditability, commandment #1).
-        return FinderResult(model.id, shard.shard_id, findings, ok=True, cost_usd=actual,
+        return FinderResult(model.id, shard.shard_id, stamped, ok=True, cost_usd=actual,
                             raw_content=res.content, finish_reason=res.finish_reason)
     except OR.BillingAuthError:
         raise                                    # key/balance dead — the orchestrator must halt the run

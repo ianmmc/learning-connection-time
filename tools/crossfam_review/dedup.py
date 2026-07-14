@@ -32,17 +32,14 @@ class Candidate:
     failure_scenario: str
     members: list[Finding] = field(default_factory=list)
     families: set[str] = field(default_factory=set)
+    # The GitHub area:* label, set by cluster() from the representative finding's shard. A plain public
+    # field (not a property over a privately-set `_area`): it's populated by external assignment anyway,
+    # so the property added indirection with no encapsulation benefit.
+    area_label: str = ""
 
     @property
     def agree_count(self) -> int:
         return len(self.families)
-
-    @property
-    def area_label(self) -> str:
-        # set by cluster() from the shard's area; stored on the representative finding's shard.
-        return self._area
-
-    _area: str = ""
 
 
 def _family(model_id: str) -> str:
@@ -67,7 +64,7 @@ def cluster(findings: list[Finding], shard_area: dict[str, str] | None = None) -
             summary=rep.summary, failure_scenario=rep.failure_scenario,
             members=list(members), families={_family(m.model) for m in members if m.model},
         )
-        c._area = shard_area.get(rep.shard_id, "")
+        c.area_label = shard_area.get(rep.shard_id, "")
         cands.append(c)
 
     cands.sort(key=lambda c: (_SEV_RANK.get(c.severity, 3), -c.agree_count, c.file, c.line))

@@ -18,9 +18,10 @@ import subprocess
 from dataclasses import dataclass
 
 from tools.crossfam_review.council import Adjudication
-from tools.crossfam_review.findings import SEV_LABEL
+from tools.crossfam_review.findings import SEV_LABEL, dedup_key
 
 REPO = "ianmmc/learning-connection-time"
+_TITLE_MAX = 250   # GitHub issue-title practical cap
 
 
 def campaign_label(stamp: str) -> str:
@@ -30,7 +31,8 @@ def campaign_label(stamp: str) -> str:
 
 def fingerprint(adj: Adjudication) -> str:
     c = adj.candidate
-    raw = f"{c.file}|{c.line // 10}|{c.category.lower()}|{c.summary.strip().lower()[:80]}"
+    f, lb, cat = dedup_key(c.file, c.line, c.category)   # the ONE shared coarse key (not a 4th copy)
+    raw = f"{f}|{lb}|{cat}|{c.summary.strip().lower()[:80]}"
     return hashlib.sha1(raw.encode("utf-8")).hexdigest()[:12]
 
 
@@ -43,11 +45,19 @@ class IssuePayload:
 
 
 def _title(adj: Adjudication) -> str:
+    """`[crossfam] <summary> (<file>:<line>)`, capped at _TITLE_MAX with the LOCATION SUFFIX PRESERVED:
+    the summary is truncated to whatever room the (always-parenthesized) location leaves, so the final
+    cap never cuts through the '(file:line)' and leaves a dangling paren."""
     c = adj.candidate
-    loc = f"{c.file}:{c.line}" if c.line else c.file
-    t = f"[crossfam] {c.summary.rstrip('.')}"
-    # keep titles readable + append a short location hint
-    return (t[:210] + f" ({loc})")[:250]
+    prefix = "[crossfam] "
+    loc = f"{c.file}:{c.line}" if c.line else (c.file or "?")
+    suffix = f" ({loc})"
+    if len(prefix) + len(suffix) > _TITLE_MAX:          # pathological: the path alone overruns — elide it
+        keep = _TITLE_MAX - len(prefix) - len(" (…)")
+        suffix = f" (…{loc[-keep:]})" if keep > 0 else ""
+    body_budget = max(0, _TITLE_MAX - len(prefix) - len(suffix))
+    summary = c.summary.rstrip(".")[:body_budget]
+    return (prefix + summary + suffix)[:_TITLE_MAX]
 
 
 def _finder_models(adj: Adjudication) -> list[str]:
@@ -72,7 +82,8 @@ def _meta_marker(adj: Adjudication) -> str:
         "severity": c.severity,
         "category": c.category,
         "escalated": adj.escalated,
-        "judges": [{"judge": v.judge, "role": v.role, "verdict": v.verdict} for v in adj.verdicts],
+        "judges": [{"judge": v.judge, "role": v.role, "verdict": v.verdict, "severity": v.severity}
+                   for v in adj.verdicts],
     }
     return "<!-- crossfam-meta:" + json.dumps(meta, separators=(",", ":")) + " -->"
 
@@ -136,8 +147,11 @@ def existing_fingerprints(stamp: str, live: bool) -> set[str]:
     if not live:
         return set()
     out = subprocess.run(
+        # A campaign label can accumulate thousands of issues across repeated runs/resumes; the old
+        # --limit 500 silently dropped fingerprints beyond that window, re-filing duplicates. `gh`
+        # paginates internally up to --limit, so a ceiling well above any real campaign fetches them all.
         ["gh", "issue", "list", "--repo", REPO, "--label", campaign_label(stamp),
-         "--state", "all", "--limit", "500", "--json", "body"],
+         "--state", "all", "--limit", "100000", "--json", "body"],
         check=False, capture_output=True, text=True)
     seen: set[str] = set()
     if out.returncode == 0 and out.stdout.strip():

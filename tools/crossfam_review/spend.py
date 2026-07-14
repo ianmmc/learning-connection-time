@@ -60,11 +60,14 @@ class SpendGuard:
             self._reserved += est
 
     def settle(self, estimate: float, actual: float | None) -> None:
-        """Release the reservation and book the real cost. `actual` None (OpenRouter returned no cost)
-        falls back to the estimate so spend is never under-counted. Called in a finally, so a failed
-        call still releases its reservation (actual 0)."""
+        """Release the reservation and book the real cost. Callers resolve `actual` themselves — a
+        completed-but-cost-less call passes the estimate (conservative), so `actual is None` here means
+        the call RAISED before any response, i.e. nothing was billed → book 0. (Booking the full
+        estimate on every transient/exception failure, as before, systematically overstated spend and
+        could prematurely trip the cap.) Called in a finally, so a failed call still releases its
+        reservation."""
         est = max(0.0, float(estimate))
-        real = est if actual is None else max(0.0, float(actual))
+        real = 0.0 if actual is None else max(0.0, float(actual))
         with self._lock:
             self._reserved = max(0.0, self._reserved - est)
             self._settled += real

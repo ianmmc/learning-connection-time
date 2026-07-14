@@ -27,9 +27,9 @@ This applies that same mechanism to code review. Rationale + budget: PROJECT_HIS
   Meta): each reviews every shard. Diversity, not count, is the point. (Z-AI's glm-4.7-flash was
   dropped after the smoke test — it streams reasoning the shared client can't capture and returned
   empty content; see `roster.py`.)
-- **Judge cascade** (`gemini-2.5-pro`, `gpt-5.1`, `deepseek-v4-pro`): two cross-family voters
-  adjudicate each candidate; a split escalates to the third. Roles **rotate per candidate** so no
-  model is permanently the tie-breaker.
+- **Judge cascade** (`gemini-2.5-pro`, `gpt-5.6-luna`, `deepseek-v4-pro`): two cross-family voters
+  adjudicate each candidate; a split escalates to the third. Roles **rotate per candidate** (by the
+  candidate's own identity, stable across resumes) so no model is permanently the tie-breaker.
 - **Spend guard**: a hard USD cap (`--cap`, default $10) enforced by reserve-then-settle; real cost
   comes from OpenRouter's `usage.cost`. Realistic full run ≈ $6.
 
@@ -45,8 +45,9 @@ python -m tools.crossfam_review.run --run
 # Full review + actually file issues under 'crossfam-review-<date>'
 python -m tools.crossfam_review.run --run --live
 
-# Cheap smoke test: first shard, one finder
-python -m tools.crossfam_review.run --run --max-shards 1 --only glm-4.7-flash --cap 0.50
+# Cheap smoke test: first shard, one finder (use a current roster model — a name not in the roster
+# runs 0 finders and silently "succeeds", masking a bad key/setup)
+python -m tools.crossfam_review.run --run --max-shards 1 --only gemini-2.5-flash-lite --cap 0.50
 ```
 
 Receipts (every stage's raw output — finder findings, candidates, verdicts, issues, spend) land under

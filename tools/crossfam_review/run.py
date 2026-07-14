@@ -9,7 +9,7 @@ Usage:
   python -m tools.crossfam_review.run                 # preflight only (free)
   python -m tools.crossfam_review.run --run           # full paid review, print issues
   python -m tools.crossfam_review.run --run --live    # full review + file issues
-  python -m tools.crossfam_review.run --run --max-shards 1 --only glm-4.7-flash
+  python -m tools.crossfam_review.run --run --max-shards 1 --only gemini-2.5-flash-lite
                                                                         # cheap smoke test
 
 Receipts (every stage's raw output) land under data/review/crossfam-<stamp>/ — the audit trail.
@@ -29,9 +29,11 @@ from tools.crossfam_review import dedup as D
 from tools.crossfam_review import finder as F
 from tools.crossfam_review import github_sink as GH
 from tools.crossfam_review import shards as S
-from tools.crossfam_review.findings import Finding
+from tools.crossfam_review.findings import Finding, dedup_key
 from tools.crossfam_review.roster import FINDERS, JUDGES
 from tools.crossfam_review.spend import BudgetExceeded, SpendGuard
+
+_MISSING = object()   # sentinel: a legacy record whose category can't be resolved (see _completed_keys)
 
 RECEIPTS = S.REPO_ROOT / "data" / "review"
 
@@ -87,8 +89,11 @@ def run_finders(shard_list, only: set[str] | None, guard: SpendGuard, workers: i
     tasks = [(m, s) for m in models for s in shard_list]
     results: list[F.FinderResult] = []
     print(f"finder pass: {len(models)} models × {len(shard_list)} shards = {len(tasks)} calls")
+    # Render each shard's payload ONCE (it's byte-identical for all finders) instead of re-reading and
+    # re-numbering every file once per (model, shard) — with 10 finders that was 10× the disk I/O.
+    rendered = {s.shard_id: s.render() for s in shard_list}
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        futs = {pool.submit(F.run_finder, m, s, guard): (m, s) for m, s in tasks}
+        futs = {pool.submit(F.run_finder, m, s, guard, rendered[s.shard_id]): (m, s) for m, s in tasks}
         done = 0
         for fut in as_completed(futs):
             try:
@@ -111,13 +116,19 @@ def run_council(candidates, guard: SpendGuard, workers: int) -> list:
     print(f"judge cascade: {len(candidates)} candidates")
     adjs: list[C.Adjudication] = []
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        futs = {pool.submit(C.adjudicate, c, i, guard): i for i, c in enumerate(candidates)}
+        # Rotation index is derived from each candidate's OWN identity, not its list position, so the
+        # voter/tiebreaker triple is stable whether judged in a full run or a --resume-council subset.
+        futs = {pool.submit(C.adjudicate, c, C.stable_rotation_index(c), guard): c for c in candidates}
         done = 0
         for fut in as_completed(futs):
             try:
                 adj = fut.result()
             except OR.BillingAuthError as e:
+                # Dead key/balance: cancel every not-yet-started judge call so shutdown(wait=True)
+                # doesn't run them all against the dead key. In-flight ones fail fast on the same 401/402.
                 print(f"\n✗ billing/auth failure — halting council: {e}")
+                for f in futs:
+                    f.cancel()
                 break
             adjs.append(adj)
             done += 1
@@ -127,28 +138,21 @@ def run_council(candidates, guard: SpendGuard, workers: int) -> list:
     return adjs
 
 
-def _file_only(outdir, stamp: str, live: bool, pace: float = 2.0) -> int:
-    """File issues from a prior run's persisted issue_payloads.json (no paid calls). Paced + rate-limit
-    aware: GitHub throttles rapid issue creation (secondary limit ~20-30/min), so live creates are
-    spaced `pace` seconds apart and a secondary-rate-limit error backs off 60s and retries once.
-    Idempotent via fingerprints — a partial run is safe to re-invoke; already-filed issues are skipped."""
+def file_payloads(outdir, payloads, stamp: str, live: bool, pace: float = 2.0) -> list:
+    """File a list of IssuePayload objects, paced + rate-limit aware. THE single filing path — used by
+    both the main `--run --live` flow and `--file-only`, so neither can spray GitHub's secondary rate
+    limit (~20-30/min) unpaced. Skips fingerprints already on the tracker (idempotent), spaces live
+    creates `pace` apart, backs off 60s + retries once on a secondary-rate-limit rejection, and
+    checkpoints issues.json after each create so a crash mid-batch loses nothing."""
     import time
-    src = outdir / "issue_payloads.json"
-    if not src.exists():
-        print(f"✗ no {src} — run the review first (dry) to produce it.")
-        return 1
-    saved = json.loads(src.read_text())
     GH.ensure_label(stamp, live)
     already = GH.existing_fingerprints(stamp, live)
-    todo = [p for p in saved if p["fingerprint"] not in already]
-    print(f"filing {len(todo)} of {len(saved)} payloads (live={live}, {len(already)} already on tracker) "
-          f"under '{GH.campaign_label(stamp)}'")
+    todo = [p for p in payloads if p.fingerprint not in already]
+    print(f"filing {len(todo)} of {len(payloads)} payloads (live={live}, {len(already)} already on "
+          f"tracker) under '{GH.campaign_label(stamp)}'")
     filed = []
-    for i, p in enumerate(todo, 1):
-        payload = GH.IssuePayload(title=p["title"], body=p["body"], labels=p["labels"],
-                                  fingerprint=p["fingerprint"])
+    for i, payload in enumerate(todo, 1):
         out = GH.create_issue(payload, live=live)
-        # Back off once on a GitHub secondary-rate-limit rejection, then retry the same payload.
         if live and "error" in out and "rate limit" in (out.get("error", "").lower()):
             print("  ⏳ secondary rate limit — backing off 60s…", flush=True)
             time.sleep(60)
@@ -162,18 +166,20 @@ def _file_only(outdir, stamp: str, live: bool, pace: float = 2.0) -> int:
     ok = sum(1 for o in filed if "url" in o or o.get("dry_run"))
     print(f"\n{'filed' if live else 'would file'} {ok}/{len(todo)} issues"
           + (f" ({len(filed) - ok} errored — re-run --file-only to retry)" if ok < len(filed) else ""))
+    return filed
+
+
+def _file_only(outdir, stamp: str, live: bool) -> int:
+    """File issues from a prior run's persisted issue_payloads.json (no paid calls) via `file_payloads`."""
+    src = outdir / "issue_payloads.json"
+    if not src.exists():
+        print(f"✗ no {src} — run the review first (dry) to produce it.")
+        return 1
+    saved = json.loads(src.read_text())
+    payloads = [GH.IssuePayload(title=p["title"], body=p["body"], labels=p["labels"],
+                                fingerprint=p["fingerprint"]) for p in saved]
+    file_payloads(outdir, payloads, stamp, live)
     return 0
-
-
-def _cand_key(file: str, line, category: str) -> tuple:
-    """The dedup identity, matching Finding.key(): (file, line-bucket, category). Keying on this full
-    tuple — NOT just (file, line-bucket) — is what lets a resume tell apart two findings in the same
-    10-line window but different categories (a correctness bug at :100 vs a security bug at :105)."""
-    try:
-        lb = int(line) // 10
-    except (TypeError, ValueError):
-        lb = 0
-    return (file, lb, (category or "").strip().lower())
 
 
 def _adj_record(a) -> dict:
@@ -189,20 +195,31 @@ def _real_votes(adj: dict) -> int:
     return sum(1 for v in adj.get("verdicts", []) if v["verdict"] in ("confirmed", "refuted"))
 
 
+def _record_category(a: dict, sig_to_cat: dict):
+    """A record's category, or a backfill from `sig_to_cat` for legacy receipts that predate the field,
+    or `_MISSING` if it can't be resolved. Returning `_MISSING` (rather than defaulting to "") is what
+    prevents two different-category legacy records in the same line-bucket from BOTH keying to
+    (file, bucket, "") and colliding — a collision would silently mark one 'done' and never re-judge it."""
+    cat = a.get("category")
+    if cat is not None:
+        return cat
+    return sig_to_cat.get((a["file"], a["line"], a.get("summary", "")), _MISSING)
+
+
 def _completed_keys(records: list, sig_to_cat: dict) -> set:
     """Full dedup keys `(file, line-bucket, category)` that were GENUINELY judged (>=2 real votes). A
     candidate whose judge calls were refused at the cap (force-refuted on errors) is NOT complete and
-    must be re-judged. Category comes from the record, or is backfilled from `sig_to_cat` (a
-    (file,line,summary)->category map from the re-clustered candidates) for older receipts that predate
-    the category field — so the count matches the true budget-starved set, not a line-bucket approximation."""
+    must be re-judged. A legacy record whose category can't be resolved is SKIPPED (left out of `done`)
+    so it gets re-judged — the conservative choice: better to re-judge (and pay) than to silently drop
+    a real un-judged candidate via an ambiguous "" key collision."""
     done = set()
     for a in records:
         if _real_votes(a) < 2:
             continue
-        cat = a.get("category")
-        if cat is None:
-            cat = sig_to_cat.get((a["file"], a["line"], a.get("summary", "")), "")
-        done.add(_cand_key(a["file"], a["line"], cat))
+        cat = _record_category(a, sig_to_cat)
+        if cat is _MISSING:
+            continue
+        done.add(dedup_key(a["file"], a["line"], cat))
     return done
 
 
@@ -221,7 +238,7 @@ def _resume_council(outdir, shard_area, args, guard: SpendGuard) -> int:
     sig_to_cat = {(c.file, c.line, c.summary): c.category for c in corroborated}
     prior = json.loads((outdir / "adjudications.json").read_text()) if (outdir / "adjudications.json").exists() else []
     done = _completed_keys(prior, sig_to_cat)
-    remaining = [c for c in corroborated if _cand_key(c.file, c.line, c.category) not in done]
+    remaining = [c for c in corroborated if dedup_key(c.file, c.line, c.category) not in done]
     print(f"resume: {len(corroborated)} corroborated (≥{args.min_agree}); "
           f"{len(done)} genuinely judged already; re-/newly judging {len(remaining)} "
           f"(incl. budget-starved) under cap ${args.cap:.2f}")
@@ -237,13 +254,16 @@ def _resume_council(outdir, shard_area, args, guard: SpendGuard) -> int:
     # prior records so their keys align with the new ones.
     by_key = {}
     for a in prior:
-        cat = a.get("category")
-        if cat is None:
-            cat = sig_to_cat.get((a["file"], a["line"], a.get("summary", "")), "")
-            a = {**a, "category": cat}
-        by_key[_cand_key(a["file"], a["line"], cat)] = a
+        cat = _record_category(a, sig_to_cat)
+        if cat is _MISSING:
+            # Can't resolve this legacy record's category; keep it verbatim under a summary-disambiguated
+            # key so it never collides with (or overwrites) a real (file, bucket, category) entry.
+            by_key[("~unkeyed", a["file"], a.get("line"), a.get("summary", ""))] = a
+            continue
+        a = a if a.get("category") is not None else {**a, "category": cat}
+        by_key[dedup_key(a["file"], a["line"], cat)] = a
     for a in new_adjs:
-        by_key[_cand_key(a.candidate.file, a.candidate.line, a.candidate.category)] = _adj_record(a)
+        by_key[dedup_key(a.candidate.file, a.candidate.line, a.candidate.category)] = _adj_record(a)
     (outdir / "adjudications.json").write_text(json.dumps(list(by_key.values()), indent=2))
 
     # Append newly-confirmed issue payloads to the saved set (dedup by fingerprint).
@@ -365,14 +385,7 @@ def main(argv=None) -> int:
     (outdir / "issue_payloads.json").write_text(json.dumps(
         [{"title": p.title, "body": p.body, "labels": p.labels, "fingerprint": p.fingerprint}
          for p in payloads], indent=2))
-    GH.ensure_label(args.stamp, args.live)
-    already = GH.existing_fingerprints(args.stamp, args.live)
-    filed = []
-    for payload in payloads:
-        if payload.fingerprint in already:
-            continue
-        filed.append(GH.create_issue(payload, live=args.live))
-    (outdir / "issues.json").write_text(json.dumps(filed, indent=2))
+    filed = file_payloads(outdir, payloads, args.stamp, args.live)
     (outdir / "run_meta.json").write_text(json.dumps({
         "stamp": args.stamp, "live": args.live, "cap": args.cap,
         "spend": guard.snapshot(), "finders": len(FINDERS),
