@@ -49,6 +49,10 @@ _METRIC_GETTERS = {
     # approved-set precision/recall deltas above are structurally blind to. A tuning move that lifts tier_A
     # precision while this FALLS is the illusion of improvement (FINDINGS §0), now visible in the episode.
     "reject_cohort_quality": lambda c: c["exploration_cohort"]["rejection_quality"],
+    # #91: the extract-outcome calibration — P(any_accepted) over dispatched-and-extracted reps, the
+    # PAID-outcome headline. An episode now shows whether a scoring change moved paid-outcome
+    # calibration, not just label agreement. None on legacy scorecards that predate the section.
+    "extract_outcome_calibration": lambda c: c["extract_outcome"]["any_accepted_rate"],
 }
 
 

@@ -2,9 +2,9 @@
 """Measurement harness (REQ-090) — score the current config + deterministic signals against the
 human labels, emitting a reproducible SCORECARD.
 
-A score is only meaningful as the tuple (config x label-set x data) -> metrics, so every scorecard
-stamps three fingerprints (config version, label-set hash, data/ingest snapshot) and is therefore
-re-derivable/auditable. Read-only over the governance Postgres signal tables (common/db.py). Run ON
+A score is only meaningful as the tuple (config x label-set x data x outcome) -> metrics, so every
+scorecard stamps four fingerprints (config version, label-set hash, data/ingest snapshot, and the
+Stage-7 extract-outcome rows — #91) and is therefore re-derivable/auditable. Read-only over the governance Postgres signal tables (common/db.py). Run ON
 DEMAND or at batch completion — never per-label-write.
 
 v1 scores the CURRENTLY-INGESTED state (the config that produced the live signal tables). To compare
@@ -136,6 +136,66 @@ def exploration_cohort(rows, p=EA.DEFAULT_SAMPLE_RATE, seed=EA.DEFAULT_SEED):
     q = EA.rejection_quality(sampled_labels)
     return {"cohort_size": len(audited), "sampled_n": len(sampled_labels),
             "seed": seed, "sample_rate": p, **q}
+
+
+def extract_outcome_calibration(rows):
+    """The #91 outcome-feedback wiring (STAGE5 §5 item 2) — calibrate the Stage-5 decision against the
+    PAID Stage-7 outcome. `rows` is an iterable of `(rec_key, status, tier, fired, is_target)` over
+    production-run `school_fact` rows joined back to the current record/label tables: one row per
+    per-school fact, `status` in {accepted, unresolved}; `tier`/`fired` are None/[] when the rep no
+    longer has a `record` row (re-ingest dropped/re-keyed it); `is_target` is None when unlabeled.
+
+    Per dispatched-and-extracted rep (rec_key), the outcome is `any_accepted` (>=1 accepted fact —
+    the headline success) vs `all_unresolved`; `mixed` (both accepted AND unresolved facts) is a
+    secondary count inside any_accepted. Reports: the headline rate, P(any_accepted | tier) — the
+    core calibration table, the Snorkel-style per-detector grid recomputed against the OUTCOME
+    (which detectors predict extraction success, not just human-target judgment — reuses
+    detector_diagnostics, so `accuracy` here reads 'polarity right vs the paid outcome'), and the
+    two disagreement cells that are the payload: labeled-target-but-all-unresolved (extraction
+    misses Stage-5 promises) and rejected-but-accepted (tier-D reps that extracted anyway — the
+    recall-floor blind spot #214 samples for). `unjoined` reps are REPORTED, never silently
+    excluded (no-silent-caps); they still count in the headline rate (the outcome needs no join).
+
+    Measurement only: an all_unresolved outcome is not proof Stage-5 was wrong — a genuine target
+    the council failed on is a Stage-7 problem; this table makes that distinction visible rather
+    than assuming it. The outcome signal is per-rep `school_fact.status`, NOT gate@8 approval
+    (district-grain approval lags and would starve the join)."""
+    by_rec = {}
+    for rec_key, status, tier, fired, is_target in rows:
+        d = by_rec.setdefault(rec_key, {"accepted": False, "unresolved": False,
+                                        "tier": tier, "fired": fired, "is_target": is_target})
+        d["accepted" if status == "accepted" else "unresolved"] = True
+    n = len(by_rec)
+    n_any = sum(1 for d in by_rec.values() if d["accepted"])
+    n_mixed = sum(1 for d in by_rec.values() if d["accepted"] and d["unresolved"])
+    per_tier = defaultdict(lambda: {"reps": 0, "any_accepted": 0})
+    unjoined = 0
+    det_rows = []
+    target_unresolved, rejected_accepted = [], []
+    for rk, d in sorted(by_rec.items()):
+        if d["tier"] is None:
+            unjoined += 1
+            continue
+        per_tier[d["tier"]]["reps"] += 1
+        per_tier[d["tier"]]["any_accepted"] += 1 if d["accepted"] else 0
+        det_rows.append((d["fired"] or [], d["accepted"]))
+        if d["is_target"] is True and not d["accepted"]:
+            target_unresolved.append(rk)
+        if d["tier"] == EA.REJECT_TIER and d["accepted"]:
+            rejected_accepted.append(rk)
+    return {
+        "reps": n,
+        "outcomes": {"any_accepted": n_any, "mixed": n_mixed, "all_unresolved": n - n_any},
+        "any_accepted_rate": _r(n_any / n if n else None),   # mixed counts as success (headline)
+        "per_tier": {t: {**v, "rate": _r(v["any_accepted"] / v["reps"] if v["reps"] else None)}
+                     for t, v in sorted(per_tier.items())},
+        "unjoined": unjoined,
+        "detectors_vs_outcome": detector_diagnostics(det_rows),
+        "disagreement": {
+            "labeled_target_all_unresolved": {"n": len(target_unresolved), "rec_keys": target_unresolved},
+            "rejected_but_accepted": {"n": len(rejected_accepted), "rec_keys": rejected_accepted},
+        },
+    }
 
 
 def category_accuracy(rows):
@@ -302,6 +362,33 @@ def _fired(sj):
     return [v["name"] for v in (json.loads(sj or "{}").get("detectors") or [])]
 
 
+# #91: the Stage-7 outcome tables, read via raw SQL like everything else here — stage packages are
+# independent siblings (the .importlinter layering contract), so stage5 never imports stage7_extract;
+# the shared governance DB is the sanctioned surface. to_regclass keeps a fresh/partial DB (Stage-7
+# tables not created yet) a zeros-report, never a raise — probing via a failed SELECT would poison
+# the enclosing transaction (assert_floor runs INSIDE the ingest transaction).
+def _stage7_tables_present(con):
+    return all(con.execute(text(
+        "SELECT to_regclass('school_fact'), to_regclass('extraction')")).one())
+
+
+def _extract_outcome_rows(con):
+    """Production-run school_fact rows joined back to the CURRENT record/label tables. Probe runs are
+    excluded (an experiment, not an outcome); a NULL rec_key (a pre-provenance fact) can't join and is
+    excluded here — the unjoined count covers reps whose record row is GONE, not facts that never
+    carried one. Empty list when the Stage-7 tables don't exist yet."""
+    if not _stage7_tables_present(con):
+        return []
+    return con.execute(text(
+        """SELECT sf.rec_key, sf.status, r.tier, r.signals_json, l.primary_label
+           FROM school_fact sf
+           JOIN extraction e ON e.extraction_id = sf.extraction_id
+           LEFT JOIN record r ON r.rec_key = sf.rec_key
+           LEFT JOIN label l ON l.rec_key = sf.rec_key
+                AND l.status != 'unlabeled' AND l.primary_label IS NOT NULL
+           WHERE e.run_kind = 'production' AND sf.rec_key IS NOT NULL""")).fetchall()
+
+
 def score(con):
     recs = _labeled_records(con)
     tier_rows = [(t, lab in TARGET) for t, _cat, lab, _sj, _fj, _rk in recs]
@@ -317,6 +404,12 @@ def score(con):
     # SAME randomized audit draw the live quota uses. Closes the 'illusion of improvement' hole (FINDINGS §0):
     # a measured-pass reads this beside the approved-set metrics, so recall collapse can't hide.
     reject_rows = [(rk, t, lab in TARGET) for t, _cat, lab, _sj, _fj, rk in recs]
+    # #91: the extract-outcome calibration — the Stage-5 decision vs the PAID Stage-7 outcome, per
+    # dispatched-and-extracted rep. tier None marks an unjoined rep (its record row is gone);
+    # is_target None marks unlabeled — both distinct from False.
+    outcome_rows = [(rk, st, tier, _fired(sj) if tier is not None else [],
+                     (lab in TARGET) if lab is not None else None)
+                    for rk, st, tier, sj, lab in _extract_outcome_rows(con)]
     topo_rows = con.execute(text(
         "SELECT name, guessed_topology, labeled_topology FROM district ORDER BY name")).fetchall()
     n_rec = con.execute(text("SELECT COUNT(*) FROM record")).scalar()
@@ -331,6 +424,7 @@ def score(con):
         "facet_detectors": facet_detector_diagnostics(facet_rows),
         "topology": topology_report(topo_rows),
         "exploration_cohort": exploration_cohort(reject_rows),
+        "extract_outcome": extract_outcome_calibration(outcome_rows),
     }
 
 
@@ -347,10 +441,19 @@ def fingerprints(con):
     data = con.execute(text("SELECT rec_key, tier, category_hypothesis FROM record ORDER BY rec_key")).fetchall()
     topo = con.execute(text(
         "SELECT district_id, guessed_topology, labeled_topology, nces_school_count FROM district ORDER BY district_id")).fetchall()
+    # #91: outcomes ACCRUE over time (each Stage-7 run appends facts), so the scorecard stays a
+    # re-derivable tuple only if the considered outcome rows are stamped like config/labels/data.
+    outcome = con.execute(text(
+        """SELECT sf.rec_key, sf.extraction_id, sf.status
+           FROM school_fact sf JOIN extraction e ON e.extraction_id = sf.extraction_id
+           WHERE e.run_kind = 'production' AND sf.rec_key IS NOT NULL
+           ORDER BY sf.rec_key, sf.extraction_id, sf.status""")).fetchall() \
+        if _stage7_tables_present(con) else []
     return {
         "config": _h(cfg),
         "label_set": _h("|".join("·".join(map(str, r)) for r in labels)),
         "data": _h("|".join("·".join(map(str, r)) for r in data + topo)),
+        "outcome": _h("|".join("·".join(map(str, r)) for r in outcome)),
     }
 
 
@@ -375,7 +478,8 @@ def write_scorecard(card, out_dir=None):
 def print_summary(card):
     c, t = card["counts"], card["tier_vs_target"]
     print(f"SCORECARD {card['generated_at']}  fingerprints: "
-          f"config={card['fingerprints']['config']} labels={card['fingerprints']['label_set']} data={card['fingerprints']['data']}")
+          f"config={card['fingerprints']['config']} labels={card['fingerprints']['label_set']} "
+          f"data={card['fingerprints']['data']} outcome={card['fingerprints'].get('outcome')}")
     print(f"  records={c['records']} labeled={c['labeled']} targets={c['targets']} districts={c['districts']}")
     print("  tier vs target (label in TARGET set):")
     for tier, v in t["per_tier"].items():
@@ -405,6 +509,20 @@ def print_summary(card):
         bound = f", FN-rate<{ec['fnr_upper_bound_95']} @95%" if ec.get("fnr_upper_bound_95") is not None else ""
         print(f"  exploration cohort (tier-{EA.REJECT_TIER} pruned tail): reject-quality/TNR="
               f"{rq if rq is not None else '—'} over {ec['sampled_n']}/{ec['cohort_size']} audited rejects{bound}")
+    eo = card.get("extract_outcome")
+    if eo and eo["reps"]:
+        # #91: the Stage-5 decision calibrated against the PAID Stage-7 outcome (production runs only).
+        o = eo["outcomes"]
+        print(f"  extract outcome (#91): any-accepted rate={eo['any_accepted_rate']} over {eo['reps']} "
+              f"extracted reps ({o['any_accepted']} any-accepted, {o['mixed']} mixed, "
+              f"{o['all_unresolved']} all-unresolved; {eo['unjoined']} unjoined)")
+        for tier, v in eo["per_tier"].items():
+            print(f"    tier {tier}: P(any_accepted)={v['rate']} ({v['any_accepted']}/{v['reps']})")
+        dis = eo["disagreement"]
+        tu, ra = dis["labeled_target_all_unresolved"], dis["rejected_but_accepted"]
+        if tu["n"] or ra["n"]:
+            print(f"    disagreement (the learning signal): {tu['n']} labeled-target-but-all-unresolved, "
+                  f"{ra['n']} rejected-but-accepted")
     tp = card["topology"]
     print(f"  topology coarse hub/per-school agreement: {tp['coarse_agreement']} ({tp['coarse_agree']}/{tp['coarse_den']})")
     diverge = {k: v for k, v in tp["pairs"].items() if GUESS_COARSE.get(v[0], "?") != LABEL_COARSE.get(v[1], "?")}
