@@ -149,7 +149,89 @@ def test_stage8_console_carries_the_exclusion_ui_markers():
     for marker in ('data-feat="exclude"', 'data-feat="restore-exclusion"',
                    'data-feat="excluded-reason"', 'data-feat="excluded-row"',
                    'data-feat="band-exclusions"', "/api/aggregate/exclude",
-                   'data-feat="name-level-mismatch"'):
+                   'data-feat="name-level-mismatch"',
+                   'data-feat="human-add"', 'data-feat="human-added"',
+                   'data-feat="human-add-remove"', 'data-feat="recover-band"',
+                   'data-feat="recoverable-band"', "/api/aggregate/human-add",
+                   "/api/aggregate/recover-band"):
         assert marker in js, f"stage8.js lost the #257 marker {marker!r}"
     css = (Path(SRV.__file__).parent / "static" / "app.css").read_text()
     assert "line-through" in css and ".s8-excluded" in css
+
+
+# ---------------------------------------------------------------- #474 human-add
+def test_human_add_requires_citation_and_both_times():
+    base = {"district_id": "D1", "band": "elementary", "school": "Battle Hill",
+            "start_time": "08:45", "end_time": "15:10", "reason": "council can't read the table"}
+    r1 = client.post("/api/aggregate/human-add", json=base)                          # no source_url
+    r2 = client.post("/api/aggregate/human-add", json={**base, "source_url": "https://tusd.org/x",
+                                                       "end_time": ""})              # one time only
+    assert r1.status_code == 400 and "source" in r1.json()["detail"].lower()
+    assert r2.status_code == 400
+
+
+def test_human_add_enforces_the_plausibility_gate():
+    r = client.post("/api/aggregate/human-add", json={
+        "district_id": "D1", "band": "elementary", "school": "Battle Hill",
+        "start_time": "08:45", "end_time": "10:00",                     # gross 75 — implausible
+        "source_url": "https://tusd.org/x", "reason": "r"})
+    assert r.status_code == 400 and "implausible" in r.json()["detail"]
+
+
+def test_human_add_refused_when_school_is_excluded(monkeypatch):
+    # #257 and #474 must never fight silently: an excluded (band, school) refuses a hand-add
+    _use(monkeypatch, _Con([_Result(rows=[{"reason": "reconfigured"}])]))
+    r = client.post("/api/aggregate/human-add", json={
+        "district_id": "D1", "band": "elementary", "school": "Kinston",
+        "start_time": "08:45", "end_time": "15:10",
+        "source_url": "https://x.org/doc", "reason": "r"})
+    assert r.status_code == 409 and "excluded" in r.json()["detail"]
+
+
+def test_human_add_upserts_and_backs_up(monkeypatch):
+    # exclusion check (none) -> DELETE -> INSERT -> backup SELECT -> commit
+    _use(monkeypatch, _Con([_Result(rows=[]), _Result(), _Result(), _Result(rows=[])]))
+    r = client.post("/api/aggregate/human-add", json={
+        "district_id": "3416500", "band": "elementary", "school": "Battle Hill",
+        "start_time": "08:45", "end_time": "15:10",
+        "source_url": "https://tusd.org/hub.pdf", "reason": "re-extraction failed; table is an image"})
+    assert r.status_code == 200 and r.json()["gross"] == 385
+
+
+def test_human_add_remove_404s_when_absent(monkeypatch):
+    _use(monkeypatch, _Con([_Result(rowcount=0)]))
+    r = client.post("/api/aggregate/human-add/remove",
+                    json={"district_id": "D1", "band": "elementary", "school": "Battle Hill"})
+    assert r.status_code == 404
+
+
+# ---------------------------------------------------------------- #473 recover-band
+def test_recover_band_validates_fields():
+    r = client.post("/api/aggregate/recover-band", json={"district_id": "D1", "band": "elementary"})
+    assert r.status_code == 400
+
+
+def test_recover_band_maps_executor_refusal(monkeypatch):
+    monkeypatch.setattr(SRV.EX, "recover_band_dispatch",
+                        lambda *a, **k: {"ok": False, "reason": "record X not found"})
+    r = client.post("/api/aggregate/recover-band", json={
+        "district_id": "D1", "band": "elementary", "rec_key": "D1:hub", "file": "camelot_hybrid.txt"})
+    assert r.status_code == 400 and "not found" in r.json()["detail"]
+
+
+def test_recover_band_depth_guard_is_409(monkeypatch):
+    monkeypatch.setattr(SRV.EX, "recover_band_dispatch",
+                        lambda *a, **k: {"ok": False, "blocked": True, "reason": "depth guard"})
+    r = client.post("/api/aggregate/recover-band", json={
+        "district_id": "D1", "band": "elementary", "rec_key": "D1:hub", "file": "camelot_hybrid.txt"})
+    assert r.status_code == 409
+
+
+def test_recover_band_success_passthrough(monkeypatch):
+    monkeypatch.setattr(SRV.EX, "recover_band_dispatch",
+                        lambda *a, **k: {"ok": True, "handoff_hash": "abc123", "request_id": 9,
+                                         "file": "camelot_hybrid.txt", "next": "run at gate@7"})
+    r = client.post("/api/aggregate/recover-band", json={
+        "district_id": "3416500", "band": "elementary", "rec_key": "3416500:hub",
+        "file": "camelot_hybrid.txt"})
+    assert r.status_code == 200 and r.json()["handoff_hash"] == "abc123"

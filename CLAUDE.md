@@ -111,44 +111,32 @@ live in the governance DB; `handoff_<hash>_<ts>.json` under `data/acquisition/ha
 `district_status.json` into every commit — on a fresh clone run `git config core.hooksPath .githooks`
 (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-13):** the console runs the pipeline live through **gate@8** (Stage 6 redesign
-PR #256 + Stage 8 `closing_argument`/`approval.py` are on `main` and in active daily use — Ian is
-hand-reviewing real districts at gate@8 now, e.g. Coffee County `0100810`, TUSD `3416500`, Dickinson 1
-`3800038`). Epic #209 (runtime guardrails) and the #236/#237 aggregation-quality pair are fully shipped
-and merged (detail in `docs/PROJECT_HISTORY.md`'s 2026-07-12/13 entries) — no open PR/merge-gap concern
-outstanding on that arc.
+**Current status (2026-07-14):** the console runs the pipeline live through **gate@8**, which now has all
+four **editorial primitives** in daily use — #257 exclude-from-band, #258 name-level mismatch flags,
+#473 recover-band re-extraction, #474 cited-source human-add (PRs #487–#490; both motivating districts
+**approved live**: Coffee County `0100810` via exclusions, TUSD `3416500` via the first recover-band
+round-trip). New precious tables/backups joined the sweep: `band_exclusion` → `band_exclusions.json`,
+`human_added_fact` → `human_added_facts.json`. The **tracker is reorganized** (2026-07-14 triage): every
+open issue sits under one of 14 epics, grouped by the file/module a fix touches; the crossfam candidates
+remain individually unverified — triage-as-you-fix, closure-with-rationale is a first-class outcome.
+Foundations hardened first: stacked-PR guardrails + CI-on-all-PR-bases (#251, PR #483), shared-config
+JSON Schema fitness functions (REQ-124, PR #485), and the test-suite quality sweep (PR #486 — tautologies
+killed, theater deleted, 23 salvaged tests now actually run). Full story: `docs/PROJECT_HISTORY.md`'s
+2026-07-14 entry.
 
-**New standalone tool: `tools/crossfam_review/`** — a cross-family external code-review harness (10
-non-Claude OpenRouter finders + a rotating 3-family judge cascade, applying the extraction council's
-own REQ-056 diversity thesis to code review). Built, hardened through 3 rounds of smoke-test bugs, run
-as a full campaign (**214 confirmed findings filed as GitHub issues #259–#472**, label
-`crossfam-review-2026-07-13`), then itself given a max-effort review (14 fixes, most severe a
-path-traversal in the judge's file-reading) before merging as **PR #477** (merged `e5c22c8`). Full story:
-`docs/PROJECT_HISTORY.md`'s 2026-07-13 entry; effectiveness analysis:
-`docs/technical-notes/CROSSFAM_EXTERNAL_REVIEW_2026-07-13.md`. **The 214 filed `[crossfam]` issues are
-unreviewed by a human** — each is a corroborated-and-judge-confirmed *candidate*, not a verified bug;
-triage before acting on any of them (their `crossfam-meta` marker names which finders/judges backed each
-one). Two gate@8 methodology gaps surfaced while reviewing real districts and were logged (not built):
-**#257** (human "exclude school from band," for a school that's stale-reconfigured out of a band —
-Coffee County) and **#473/#474** ("recover band" via targeted re-extraction + a cited-source human-add
-fallback — TUSD). Both #257 and #473/#474's motivating districts (Coffee County, TUSD) are **deliberately
-left un-approved and un-rejected** pending those primitives. Two standalone-extraction trackers opened
-for later (not started): **#475** (crossfam_review → public `openrouter-external-review` package) and
-**#476** (the in-repo import-linter/arch-manifest work → public "fuzzy-environmental-dependencies").
-
-**Next (RESUME HERE — 2026-07-13):** No build is in flight. Candidates, in no particular priority order:
-(a) **triage the 214 `[crossfam]` issues** (#259–#472) — most are probably real given the corroboration
-bar, but none are human-verified yet, and a few already look Stage-8-console-specific (#403 aggregate.py,
-#337/#263/#450 stage8.js) worth an early look since that's where Ian is actively working; (b) build the
-**gate@8 editorial primitives** (#257 remove-from-band, #473 re-extract-into-band, #474 human-add
-fallback) — motivated by real districts sitting un-approved right now; (c) the Stage 8 aggregation
-epic's remaining backlog (#88/#89/#90, #253/#254 band-distortion issues); (d) the charter-segmentation
-track (#243/#244/#245/#246), Council Lab (#80/#81), #104 part b (confidence-escalating auto for gates
-other than 5). Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) →
-`git config core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) +
-`pytest -q -m "not integration"` (expect **1302** pass) + `pytest -q -m govdb` (Postgres up). Full detail:
-`docs/PROJECT_HISTORY.md` (newest two entries), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`,
-`STAGE8_AGGREGATE_DESIGN_2026-06.md`.
+**Next (RESUME HERE — 2026-07-14):** **PR #490 (#473/#474 + TUSD receipts + a copy fix) is open, ready to
+merge** — merge it first. The agreed epic sequence (infrastructure → present-backwards through the
+pipeline → LCT foundation → Stage 9): **now in epic #478's tail** — (a) **#253** (combined-scope facts +
+K-8 topology distort the modal denominator — Santa Fe) and **#254** (school-year precedence in the fact
+merge; needs a v3 `school_year` extraction field) — design-first, they change the Stage-8 artifacts
+(#484's datacontract work waits on them); (b) **#91** (extract-outcome feedback → Stage-5 tuning). Then
+epics **#119** (Stage 7, +stage7.js pull-forwards) → **#106** (Stage 5/6) → **#111** (Stages 1-4) →
+liveness gate → **#479/#480** (LCT foundation sweeps) → **#92** (Stage 9 build). Parked: #475/#476
+(public extractions), #103/#80 (ramp-up/Council Lab), #484. Resume-essentials: `pip install -e .` →
+Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh clone only) →
+`lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect **~1353** pass) +
+`pytest -q -m govdb` (expect **216**, Postgres up). Full detail: `docs/PROJECT_HISTORY.md` (newest entry),
+`PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`, `STAGE8_AGGREGATE_DESIGN_2026-06.md`.
 
 ---
 

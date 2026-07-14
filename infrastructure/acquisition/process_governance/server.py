@@ -53,6 +53,7 @@ from infrastructure.acquisition.stage8_aggregate import closing_argument as CA8 
 from infrastructure.acquisition.stage8_aggregate import approval as APV8         # noqa: E402  (gate@8 approval record)
 from infrastructure.acquisition.stage8_aggregate.models import Stage8Approval    # noqa: E402,F401  (precious gate@8 decision — register for init_precious_schema)
 from infrastructure.acquisition.stage8_aggregate.models import BandExclusion     # noqa: E402,F401  (precious gate@8 exclude-from-band #257 — register for init_precious_schema)
+from infrastructure.acquisition.stage8_aggregate.models import HumanAddedFact    # noqa: E402,F401  (precious gate@8 human-add #474 — register for init_precious_schema)
 
 
 def _refresh_filtered(con, district_id: str) -> None:
@@ -586,6 +587,20 @@ def _backup_band_exclusions(con) -> int:
         "SELECT exclusion_id, district_id, band, norm_school, school, reason, actor, created_at "
         "FROM band_exclusion ORDER BY exclusion_id")).mappings().all()
     out = paths.guard_tracked_backup(paths.BAND_EXCLUSIONS_JSON)
+    tmp = out.with_name(out.name + ".tmp")
+    tmp.write_text(json.dumps([dict(r) for r in rows], indent=2))
+    tmp.replace(out)
+    return len(rows)
+
+
+def _backup_human_added(con) -> int:
+    """Back the precious gate@8 hand-entered facts (#474) to a tracked JSON (the labels.json
+    pattern) — a single-source human assertion feeding a published metric must survive a DB wipe and
+    carry a git history. Atomic write; pytest quarantine-redirected (issue #178)."""
+    rows = con.execute(text(
+        "SELECT added_id, district_id, band, norm_school, school, start_time, end_time, source_url, "
+        "reason, actor, created_at FROM human_added_fact ORDER BY added_id")).mappings().all()
+    out = paths.guard_tracked_backup(paths.HUMAN_ADDED_FACTS_JSON)
     tmp = out.with_name(out.name + ".tmp")
     tmp.write_text(json.dumps([dict(r) for r in rows], indent=2))
     tmp.replace(out)
@@ -2083,6 +2098,95 @@ async def aggregate_exclude_restore(payload: dict):
         _backup_band_exclusions(con)
         con.commit()
     return {"ok": True}
+
+
+@app.post("/api/aggregate/human-add")
+async def aggregate_human_add(payload: dict):
+    """#474: hand-enter a school's times into a band — the LAST-RESORT fallback when re-extraction
+    (#473) can't recover data the reviewer can see in a captured artifact. Single-source and
+    council-unvalidated, so the bar is higher than an override: a CITED SOURCE (http/https URL or
+    artifact id) is required alongside the reason, BOTH times are required (a new school has no
+    council endpoint to fall back on), and the pair passes the same canonical gross_from_times +
+    REQ-055 PLAUSIBLE gate as every extracted value. Votes in the band mode immediately (§2a.3);
+    rendered visibly tagged; in the receipt + staleness fingerprint. Re-adding the same
+    (band, school) replaces. An existing #257 exclusion on the same (band, school) is refused —
+    lift the exclusion first (the two records must never fight silently)."""
+    from infrastructure.acquisition.common.school_match import norm_school, norm_school_strict
+
+    did, band = payload.get("district_id"), payload.get("band")
+    school = (payload.get("school") or "").strip()
+    start, end = (payload.get("start_time") or "").strip(), (payload.get("end_time") or "").strip()
+    source, reason = (payload.get("source_url") or "").strip(), (payload.get("reason") or "").strip()
+    actor = payload.get("actor", "ian")
+    if not did or not school or not reason:
+        raise HTTPException(400, "district_id, school and a non-empty reason are required")
+    if band not in AGG.BANDS:
+        raise HTTPException(400, f"band must be one of {AGG.BANDS}")
+    if not source:
+        raise HTTPException(400, "a cited source (source_url) is REQUIRED for a hand-entered value (#474)")
+    if not (start and end):
+        raise HTTPException(400, "both start_time and end_time are required for a hand-added school")
+    if not norm_school_strict(school):
+        raise HTTPException(400, f"school name {school!r} is degenerate (#245)")
+    gross, err = AGG.gross_from_times(start, end)
+    if err:
+        raise HTTPException(400, f"hand-entered times rejected ({err}): {start!r}–{end!r} must both "
+                                 f"parse as HH:MM and give a gross inside {AGG.PLAUSIBLE} min")
+    key = norm_school(school)
+    with gdb.session_scope() as con:
+        excl = con.execute(text("SELECT reason FROM band_exclusion WHERE district_id = :d "
+                                "AND band = :b AND norm_school = :n"),
+                           {"d": did, "b": band, "n": key}).mappings().first()
+        if excl:
+            raise HTTPException(409, f"{school!r} is excluded from {band} (#257: {excl['reason']}) — "
+                                     f"restore the exclusion before hand-adding")
+        con.execute(text("DELETE FROM human_added_fact WHERE district_id = :d AND band = :b "
+                         "AND norm_school = :n"), {"d": did, "b": band, "n": key})
+        con.execute(text("INSERT INTO human_added_fact (district_id, band, norm_school, school, "
+                         "start_time, end_time, source_url, reason, actor, created_at) "
+                         "VALUES (:d, :b, :n, :s, :st, :en, :u, :r, :a, :t)"),
+                    {"d": did, "b": band, "n": key, "s": school, "st": start, "en": end,
+                     "u": source, "r": reason, "a": actor, "t": _u7()})
+        _backup_human_added(con)
+        con.commit()
+    return {"ok": True, "district_id": did, "band": band, "norm_school": key, "gross": gross}
+
+
+@app.post("/api/aggregate/human-add/remove")
+async def aggregate_human_add_remove(payload: dict):
+    """#474: withdraw a hand-entered school (reversible-before-freeze; history lives in the frozen
+    receipts, same posture as #257 restore). 404 if no such entry."""
+    from infrastructure.acquisition.common.school_match import norm_school
+
+    did, band, school = payload.get("district_id"), payload.get("band"), (payload.get("school") or "").strip()
+    if not did or not school or band not in AGG.BANDS:
+        raise HTTPException(400, "district_id, band and school are required")
+    with gdb.session_scope() as con:
+        n = con.execute(text("DELETE FROM human_added_fact WHERE district_id = :d AND band = :b "
+                             "AND norm_school = :n"),
+                        {"d": did, "b": band, "n": norm_school(school)}).rowcount
+        if not n:
+            raise HTTPException(404, f"no hand-added entry for {school!r} in {band} of {did}")
+        _backup_human_added(con)
+        con.commit()
+    return {"ok": True}
+
+
+@app.post("/api/aggregate/recover-band")
+async def aggregate_recover_band(payload: dict):
+    """#473: gate@8 'recover band' — stage a re-extraction of the NAMED already-captured rep for a
+    band that came out empty while its siblings were extracted from the same doc (the TUSD class).
+    Mints an approved 7->6 request (lineage) + an immutable dispatch; the PAID extraction is then run
+    at gate@7 (budget-gated) — this endpoint spends nothing. Benchmark-walled + depth-guarded in the
+    executor."""
+    did, band = payload.get("district_id"), payload.get("band")
+    rec_key, file = payload.get("rec_key"), payload.get("file")
+    if not did or band not in AGG.BANDS or not rec_key or not file:
+        raise HTTPException(400, "district_id, band, rec_key and file are required")
+    out = EX.recover_band_dispatch(did, band, rec_key, file, actor=payload.get("actor", "ian"))
+    if not out.get("ok"):
+        raise HTTPException(409 if out.get("blocked") else 400, out.get("reason", "recover-band failed"))
+    return out
 
 
 @app.post("/api/aggregate/decision/{district_id}")

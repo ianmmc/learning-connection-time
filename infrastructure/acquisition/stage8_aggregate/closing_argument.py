@@ -144,7 +144,7 @@ def _council_evidence(evidence_json):
 def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
                            nces_total, nces_by_level, schools_by_band,
                            evidence_by_reckey=None, capture_events=None, roster_names=None,
-                           exclusions=None):
+                           exclusions=None, human_added=None):
     """Compose the closing argument for one district from already-gathered ingredients. PURE.
 
     Inputs:
@@ -202,6 +202,24 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
          for r in agg if (r["band"], _norm(r["school"])) in excl_of),
         key=lambda e: (e["band"], _norm(e["school"])))
 
+    # #474: hand-entered schools (the last-resort fallback to #473 re-extraction) VOTE in the mode like
+    # any human determination (§2a.3) — the API validated times/plausibility/citation before storing;
+    # the defensive re-derivation here mirrors _effective_times' posture (a legacy/hand-written row
+    # that no longer parses is dropped from the mode, never silently trusted). An exclusion on the same
+    # (band, school) beats the add — a struck school can't be re-injected by a stale hand-entry.
+    human_of = {}
+    for ha in (human_added or []):
+        key = (ha["band"], _norm(ha["school"]))
+        if key in excl_of:
+            continue
+        gross, err = AGG.gross_from_times(ha.get("start_time"), ha.get("end_time"))
+        if err:
+            continue
+        human_of[key] = ha
+        included_agg.append({"band": ha["band"], "school": ha["school"], "start": ha["start_time"],
+                             "end": ha["end_time"], "gross": gross, "models": [],
+                             "method": "human_added"})
+
     bands = AGG.district_bands_from_facts(included_agg)
     degenerate = AGG.degenerate_school_facts(agg)
     contamination = AGG.detect_single_school_over_extraction(agg, nces_total, roster_names)
@@ -228,6 +246,19 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
     for band, b in bands.items():
         schools = []
         for sc in b["schools"]:
+            ha = human_of.get((band, _norm(sc["school"])))
+            if ha:
+                # #474: a hand-entered school has no council fields — it carries its citation instead,
+                # rendered visibly tagged (the mirror of #257's struck-but-visible treatment).
+                schools.append({**sc, "rec_key": None, "fact_id": None,
+                                "council_start_time": None, "council_end_time": None,
+                                "council_gross": None, "evidence": None, "council_evidence": None,
+                                "human_override": None, "override_applied": False,
+                                "override_error": None,
+                                "human_added": {"source_url": ha.get("source_url"),
+                                                "reason": ha.get("reason"), "actor": ha.get("actor"),
+                                                "created_at": ha.get("created_at")}})
+                continue
             f, ov, eff = fact_of.get((band, _norm(sc["school"])), ({}, None, {}))
             # sc.start_time/end_time/gross are the OVERRIDE-EFFECTIVE values (they came through `agg`);
             # carry the COUNCIL original alongside so the row can show "council read X → override Y".
@@ -294,6 +325,22 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
             seen_mm.add((m["school"], r["band"]))
             mismatches.append({**m, "surface": "fact", "band": r["band"]})
 
+    # #473 detector: an unsatisfied band whose SIBLING bands hold accepted facts from an
+    # already-captured rep — a strong "the data may be in that doc, re-read it" flag (the TUSD
+    # signature: the hub artifact that filled middle+high also contains the elementary schedules).
+    # A heuristic surfaced for the reviewer, not a certainty — same posture as #258.
+    sibling_reps, seen_rk = [], set()
+    for f, ov, eff in enriched:
+        rk = f.get("rec_key")
+        if not rk or rk in seen_rk:
+            continue
+        seen_rk.add(rk)
+        ev = _school_evidence(f) or {}
+        sibling_reps.append({"rec_key": rk, "url": ev.get("url"),
+                             "source_file": f.get("source_file")})
+    recoverable = ([{"band": band, "from_reps": sibling_reps}
+                    for band in sorted(claimed - satisfied)] if sibling_reps else [])
+
     # The negative space — the honest half of the closing argument (design note §2c.4): what we did
     # NOT resolve, so the picture never reads as "we covered everything."
     negative_space = {
@@ -305,6 +352,9 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
         "band_exclusions": applied_exclusions,
         # #258: name-vs-NCES-level/band mismatch flags (detect-and-flag, never auto-reject)
         "name_level_mismatches": mismatches,
+        # #473: unsatisfied bands with sibling-band facts from an already-captured rep — recover
+        # candidates (re-extract the rep at gate@8; #474 hand-add is the fallback)
+        "recoverable_bands": recoverable,
         "claimed_bands": sorted(claimed),
         "unsatisfied_bands": sorted(claimed - satisfied),
         "coverage_gaps": {b: out_bands[b]["sampling"] for b in out_bands
@@ -357,13 +407,17 @@ def fingerprint(ca):
         e = s.get("excluded")
         return (e.get("reason"), e.get("actor")) if e else None
 
+    def _ha(s):
+        h = s.get("human_added")
+        return (h.get("source_url"), h.get("reason")) if h else None
+
     basis = []
     for band in sorted(ca.get("bands", {})):
         b = ca["bands"][band]
         # key=str-of-tuple: determinism is all the sort needs, and it can't raise on a None-vs-tuple
         # comparison if two entries ever tie on (school, gross)
-        schools = sorted(((s.get("school"), s.get("gross"), _ov(s), _ex(s)) for s in b.get("schools", [])),
-                         key=str)
+        schools = sorted(((s.get("school"), s.get("gross"), _ov(s), _ex(s), _ha(s))
+                          for s in b.get("schools", [])), key=str)
         basis.append((band, b.get("gross_minutes"), schools))
     exclusions = sorted(((e.get("band"), e.get("school"), e.get("reason"))
                          for e in ca.get("negative_space", {}).get("band_exclusions", [])), key=str)
@@ -475,9 +529,15 @@ def load_closing_argument(session, district_id):
         FROM band_exclusion WHERE district_id = :d ORDER BY band, norm_school
     """), {"d": district_id}).all()]
 
+    # #474: the district's hand-entered schools (precious human_added_fact table).
+    human_added = [dict(r._mapping) for r in session.execute(text("""
+        SELECT band, school, norm_school, start_time, end_time, source_url, reason, actor, created_at
+        FROM human_added_fact WHERE district_id = :d ORDER BY band, norm_school
+    """), {"d": district_id}).all()]
+
     return build_closing_argument(
         district_id, merged_accepted=accepted, merged_unresolved=unresolved,
         nces_total=meta.get("nces_total"), nces_by_level=nces_by_level,
         schools_by_band=schools_by_band, evidence_by_reckey=by_rk,
         capture_events=capture_events, roster_names=roster_names,
-        exclusions=exclusions)
+        exclusions=exclusions, human_added=human_added)

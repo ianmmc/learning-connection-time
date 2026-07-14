@@ -563,3 +563,5 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 /* #257: an excluded school is struck through, still visible — out of the mode, never out of sight */
 .s8-excluded td { text-decoration: line-through; color: var(--text-secondary); }
 .s8-excluded td .s8-excluded-note { text-decoration: none; color: var(--status-danger); margin-top: 3px; }
+/* #474: a hand-entered school is loudly tagged — single-source, citation attached */
+.s8-human-added { color: var(--status-warning, #b45309); margin-top: 3px; font-weight: 600; }

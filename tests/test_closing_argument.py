@@ -368,3 +368,84 @@ class TestNameLevelMismatch:
             nces_by_level={"Elementary": 3}, schools_by_band=sbb)
         flagged = {m["school"] for m in out["negative_space"]["name_level_mismatches"]}
         assert flagged == {"Zion Chapel High School", "Sunrise High School"}
+
+
+class TestHumanAddedFacts:
+    """#474: last-resort hand-entered schools/bands — cited-source, plausibility-gated upstream,
+    voting in the mode like any human determination (§2a.3), visibly tagged, in the fingerprint."""
+
+    KW = dict(merged_unresolved=[], nces_total=3, nces_by_level={"Elementary": 2, "Middle": 1},
+              schools_by_band={})
+
+    def _ha(self, band, school, start, end, url="https://tusd.org/hub.pdf"):
+        return {"band": band, "school": school, "start_time": start, "end_time": end,
+                "source_url": url, "reason": "elementary table unreadable by council",
+                "actor": "ian", "created_at": "2026-07-14T00:00:00Z"}
+
+    def test_human_add_fills_an_empty_band_and_votes(self):
+        # TUSD shape: middle extracted, elementary empty — two hand-adds create the band
+        acc = [_fact("middle", "kawameeh", 424)]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc,
+            human_added=[self._ha("elementary", "battle hill", "08:45", "15:10"),
+                         self._ha("elementary", "washington", "08:45", "15:10")], **self.KW)
+        el = out["bands"]["elementary"]
+        assert el["gross_minutes"] == 385 and el["method"] == "modal"
+        assert el["sampling"]["n_sampled"] == 2
+        rows = el["schools"]
+        assert all(r.get("human_added") for r in rows)
+        assert all(r["human_added"]["source_url"] == "https://tusd.org/hub.pdf" for r in rows)
+        # elementary no longer unsatisfied
+        assert "elementary" not in out["negative_space"]["unsatisfied_bands"]
+
+    def test_human_add_votes_alongside_extracted_facts(self):
+        acc = [_fact("middle", "a", 424), _fact("middle", "b", 430)]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc,
+            human_added=[self._ha("middle", "c", "08:00", "15:10")], **self.KW)  # 430
+        m = out["bands"]["middle"]
+        assert m["gross_minutes"] == 430 and m["method"] == "modal"   # the hand-add broke the tie
+        assert sum(1 for r in m["schools"] if r.get("human_added")) == 1
+
+    def test_exclusion_beats_human_add_on_same_school(self):
+        # belt-and-braces: an excluded (band, school) can't be re-injected by a stale hand-add
+        acc = []
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc,
+            human_added=[self._ha("elementary", "battle hill", "08:45", "15:10")],
+            exclusions=[{"band": "elementary", "school": "battle hill", "reason": "r",
+                         "actor": "ian", "created_at": "2026-07-14T00:00:00Z"}], **self.KW)
+        assert "elementary" not in out["bands"]
+
+    def test_human_add_changes_fingerprint(self):
+        acc = [_fact("middle", "a", 424)]
+        fp1 = CA.fingerprint(CA.build_closing_argument("D", merged_accepted=acc, **self.KW))
+        fp2 = CA.fingerprint(CA.build_closing_argument(
+            "D", merged_accepted=acc,
+            human_added=[self._ha("elementary", "battle hill", "08:45", "15:10")], **self.KW))
+        assert fp1 != fp2
+
+
+class TestRecoverableBandDetector:
+    """#473 detector: an unsatisfied band whose SIBLING bands were extracted from an already-captured
+    rep is flagged 'the data may be there, re-read it' — surfaced for the reviewer, like #258."""
+
+    def test_tusd_shape_flags_elementary_with_the_sibling_rep(self):
+        acc = [_fact("middle", "kawameeh", 424, rec_key="D:hub"),
+               _fact("high", "uhs", 430, rec_key="D:hub")]
+        ev = {"D:hub": {"url": "https://tusd.org/hub", "reps": []}}
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=6,
+            nces_by_level={"Elementary": 3, "Middle": 2, "High": 1},
+            schools_by_band={}, evidence_by_reckey=ev)
+        rb = out["negative_space"]["recoverable_bands"]
+        assert [r["band"] for r in rb] == ["elementary"]
+        assert rb[0]["from_reps"][0]["rec_key"] == "D:hub"
+        assert rb[0]["from_reps"][0]["url"] == "https://tusd.org/hub"
+
+    def test_no_flag_when_all_claimed_bands_satisfied(self):
+        acc = [_fact("elementary", "e", 400, rec_key="D:hub")]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=1,
+            nces_by_level={"Elementary": 1}, schools_by_band={})
+        assert out["negative_space"]["recoverable_bands"] == []

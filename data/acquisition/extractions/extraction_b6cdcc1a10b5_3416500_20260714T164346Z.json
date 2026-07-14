@@ -1,0 +1,474 @@
+{
+  "handoff_hash": "b6cdcc1a10b5",
+  "district": {
+    "district_id": "3416500",
+    "name": "Township of Union School District",
+    "reps": [
+      {
+        "rec_key": "3416500:1cb2b717e4",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": true,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:15",
+                "school_name": "Franklin Pre-K Center",
+                "confidence": "high",
+                "evidence_quote": "8:55 AM 3:15 PM",
+                "source_locus": "Franklin Pre-K Center",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:15",
+                "school_name": "Elementary Schools",
+                "confidence": "high",
+                "evidence_quote": "8:55 AM 3:15 PM",
+                "source_locus": "Elementary Schools",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "14:30",
+                "school_name": "Burnet/Kawameeh",
+                "confidence": "high",
+                "evidence_quote": "7:59 AM 2:30 PM",
+                "source_locus": "Burnet/Kawameeh",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              {
+                "grade_level": "high",
+                "start_time": "08:26",
+                "end_time": "14:35",
+                "school_name": "Union High School",
+                "confidence": "high",
+                "evidence_quote": "8:26 AM 2:35 PM",
+                "source_locus": "Union High School",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            ],
+            "prompt_tokens": 1476,
+            "completion_tokens": 490,
+            "cost_usd": 0.0003436,
+            "latency_ms": 13262,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784047386-ljk6tKscfjPHR0I6vVQv",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "07:59",
+                "end_time": "14:30",
+                "school_name": "Burnet/Kawameeh",
+                "confidence": "high",
+                "evidence_quote": "New Start Time | New Dismissal Time Drop-Off Time Time Time 7:59 AM 2:30 PM 7:15 AM 9:59 AM 11:59 AM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:15",
+                "school_name": "Franklin Pre-K Center",
+                "confidence": "high",
+                "evidence_quote": "New Start Time | New Dismissal Time Drop-Off Time Time Time 8:55 AM 3:15 PM 8:00 AM 10:55 AM 12:55 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:15",
+                "school_name": "Elementary Schools",
+                "confidence": "high",
+                "evidence_quote": "New Start Time | New Dismissal Breakfast Delayed Opening | Early Dismissal Time Drop-Off Time Time Time 8:55 AM 3:15 PM 8:00 AM 10:55 AM 12:55 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:35",
+                "end_time": "13:47",
+                "school_name": "Union High School",
+                "confidence": "high",
+                "evidence_quote": "Start Time Dismissal Time (Period 1) (Period 8) Drop-Off Time | Time Time 7:35 AM 1:47 PM 7:05 AM 9:35 AM 11:35 AM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            ],
+            "prompt_tokens": 1494,
+            "completion_tokens": 572,
+            "cost_usd": 0.00012046,
+            "latency_ms": 20592,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784047398-beEZmDNwhicekIPtJjqm",
+            "truncation_retried": false
+          },
+          {
+            "model": "qwen/qwen3-235b-a22b-2507",
+            "role": "judge",
+            "ok": true,
+            "error": null,
+            "n_facts": 4,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:15",
+                "school_name": "Franklin Pre-K Center",
+                "confidence": "high",
+                "evidence_quote": "8:55 AM 3:15 PM 8:00 AM 10:55 AM 12:55 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:15",
+                "school_name": "Elementary Schools",
+                "confidence": "high",
+                "evidence_quote": "8:55 AM 3:15 PM 8:00 AM 10:55 AM 12:55 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              {
+                "grade_level": "middle",
+                "start_time": "07:59",
+                "end_time": "14:30",
+                "school_name": "Burnet/Kawameeh",
+                "confidence": "high",
+                "evidence_quote": "7:59 AM 2:30 PM 7:15 AM 9:59 AM 11:59 AM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              {
+                "grade_level": "high",
+                "start_time": "07:35",
+                "end_time": "13:47",
+                "school_name": "Union High School",
+                "confidence": "high",
+                "evidence_quote": "7:35 AM 1:47 PM 7:05 AM 9:35 AM 11:35 AM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            ],
+            "prompt_tokens": 1467,
+            "completion_tokens": 354,
+            "cost_usd": 0.00033735,
+            "latency_ms": 17973,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784047421-ALup7rA13fMZtbgXrar6",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "franklin pre k center",
+            "start": "08:55",
+            "end": "15:15",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "8:55 AM 3:15 PM",
+                "locus": "Franklin Pre-K Center",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "New Start Time | New Dismissal Time Drop-Off Time Time Time 8:55 AM 3:15 PM 8:00 AM 10:55 AM 12:55 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "3416500:1cb2b717e4",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "middle",
+            "school": "burnetkawameeh",
+            "start": "07:59",
+            "end": "14:30",
+            "gross": 391,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "7:59 AM 2:30 PM 7:15 AM 9:59 AM 11:59 AM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "3416500:1cb2b717e4",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "high",
+            "school": "union",
+            "start": "07:35",
+            "end": "13:47",
+            "gross": 372,
+            "models": [
+              "judge"
+            ],
+            "method": "judge",
+            "evidence": {
+              "judge": {
+                "quote": "7:35 AM 1:47 PM 7:05 AM 9:35 AM 11:35 AM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "3416500:1cb2b717e4",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": [
+          {
+            "band": "elementary",
+            "school": "elementary schools",
+            "reason": "degenerate_school_name",
+            "starts": {
+              "google/gemini-2.5-flash-lite": "08:55",
+              "mistralai/mistral-small-24b-instruct-2501": "08:55"
+            },
+            "ends": {
+              "google/gemini-2.5-flash-lite": "15:15",
+              "mistralai/mistral-small-24b-instruct-2501": "15:15"
+            },
+            "rec_key": "3416500:1cb2b717e4",
+            "source_file": "tesseract_raster.txt"
+          },
+          {
+            "band": "elementary",
+            "school": "burnetkawameeh",
+            "starts": {
+              "mistralai/mistral-small-24b-instruct-2501": "07:59"
+            },
+            "ends": {
+              "mistralai/mistral-small-24b-instruct-2501": "14:30"
+            },
+            "rec_key": "3416500:1cb2b717e4",
+            "source_file": "tesseract_raster.txt"
+          }
+        ]
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "franklin pre k center",
+        "start": "08:55",
+        "end": "15:15",
+        "gross": 380,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "8:55 AM 3:15 PM",
+            "locus": "Franklin Pre-K Center",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "New Start Time | New Dismissal Time Drop-Off Time Time Time 8:55 AM 3:15 PM 8:00 AM 10:55 AM 12:55 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "3416500:1cb2b717e4",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "middle",
+        "school": "burnetkawameeh",
+        "start": "07:59",
+        "end": "14:30",
+        "gross": 391,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "7:59 AM 2:30 PM 7:15 AM 9:59 AM 11:59 AM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "3416500:1cb2b717e4",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "high",
+        "school": "union",
+        "start": "07:35",
+        "end": "13:47",
+        "gross": 372,
+        "models": [
+          "judge"
+        ],
+        "method": "judge",
+        "evidence": {
+          "judge": {
+            "quote": "7:35 AM 1:47 PM 7:05 AM 9:35 AM 11:35 AM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "3416500:1cb2b717e4",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "unresolved": [
+      {
+        "band": "elementary",
+        "school": "elementary schools",
+        "reason": "degenerate_school_name",
+        "starts": {
+          "google/gemini-2.5-flash-lite": "08:55",
+          "mistralai/mistral-small-24b-instruct-2501": "08:55"
+        },
+        "ends": {
+          "google/gemini-2.5-flash-lite": "15:15",
+          "mistralai/mistral-small-24b-instruct-2501": "15:15"
+        },
+        "rec_key": "3416500:1cb2b717e4",
+        "source_file": "tesseract_raster.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "burnetkawameeh",
+        "starts": {
+          "mistralai/mistral-small-24b-instruct-2501": "07:59"
+        },
+        "ends": {
+          "mistralai/mistral-small-24b-instruct-2501": "14:30"
+        },
+        "rec_key": "3416500:1cb2b717e4",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "n_reps": 1,
+    "n_judged": 1,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 380,
+        "start_time": "08:55",
+        "end_time": "15:15",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "franklin pre k center",
+            "start_time": "08:55",
+            "end_time": "15:15",
+            "gross": 380,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "middle": {
+        "gross_minutes": 391,
+        "start_time": "07:59",
+        "end_time": "14:30",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "burnetkawameeh",
+            "start_time": "07:59",
+            "end_time": "14:30",
+            "gross": 391,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 372,
+        "start_time": "07:35",
+        "end_time": "13:47",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "union",
+            "start_time": "07:35",
+            "end_time": "13:47",
+            "gross": 372,
+            "models": [
+              "judge"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 3,
+      "judge_calls": 1,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 4437,
+      "completion_tokens": 1416,
+      "cost_usd": 0.00080141
+    },
+    "state": "NJ"
+  }
+}

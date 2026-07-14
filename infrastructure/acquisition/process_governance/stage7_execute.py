@@ -700,6 +700,75 @@ def compose_alternate_bundle(district_id: str, *, actor: str = "ian", root=None,
     return _run_bundle_or_own(lambda s: _bundle_alternate(s, district_id, actor, root), session)
 
 
+def _dispatch_recover_band(s, district_id: str, band: str, rec_key: str, file: str,
+                           actor: str, root) -> dict:
+    """#473 core (session-in): gate@8 'recover band' — re-dispatch the NAMED, ALREADY-SENT rep (the
+    hub doc that filled the sibling bands) so the council re-reads it for the missing band. Stage-7
+    re-extraction, NOT re-discovery: the artifact is on disk. Full-rep re-extraction is safe with no
+    band-targeted prompting because merge_fact_runs is fill-gaps-never-overwrite (property-tested):
+    new facts for the missing band fill the hole; re-read sibling facts can't evict the earliest
+    accepted. Mints an APPROVED 7->6 ExtractionRequest for lineage (the gate@8 click IS the human
+    approval — same posture as the override/exclude actions), then freezes an immutable one-record
+    dispatch and flips the request executed. The PAID extraction stays a separate, budget-gated
+    Stage-7 run at gate@7 — this action only stages the work. Benchmark-walled, ROUNDS depth-guarded
+    like every 7->6."""
+    if _benchmark_district_ids(s, [district_id]):
+        return {"ok": False, "reason": f"district {district_id} is a benchmark district (batch_00000)"}
+    b = BUD.load_budget()
+    used = _executed_rounds_76(s, district_id)
+    if b.rounds_exhausted(used):
+        return {"ok": False, "blocked": True,
+                "reason": f"depth guard: {used} round(s) already executed for {district_id} 7->6 "
+                          f"(max {b.max_request_rounds})"}
+    meta = REL.load_district(s, district_id)
+    if not meta:
+        return {"ok": False, "reason": f"district {district_id} not in the release store"}
+    recs = REL.load_records_by_key(s, [rec_key])
+    rec = recs[0] if recs else None
+    if not rec:
+        return {"ok": False, "reason": f"record {rec_key} not found in the release store"}
+    rep = next((r for r in (rec.get("reps") or []) if r.get("filename") == file), None)
+    if not rep:
+        return {"ok": False, "reason": f"rep {file!r} not found on record {rec_key}"}
+    kind = rep.get("file_kind")
+    if kind != "text" and not CONTENT.is_image_kind(kind):
+        return {"ok": False, "reason": f"rep {file!r} has kind {kind!r} — not dispatchable (#140)"}
+
+    req = M7.ExtractionRequest(
+        district_id=district_id, handoff_hash=rec.get("handoff_hash") or "", altitude="representation",
+        route=RQ.ROUTE_ALT_REP, target=rec_key, band=band,
+        params_json=json.dumps({"file": file, "origin": "gate8_recover_band"}),
+        reason=f"gate@8 recover-band (#473): {band} empty; sibling bands extracted from this rep",
+        status="approved", reviewed_by=actor)
+    s.add(req)
+    s.flush()
+
+    councils = C6.load_configs()
+    cost_model = COST6.load_cost_model()
+    districts_input, overrides = build_alternate_input(meta, rec, {"file": file, "kind": kind})
+    package = PKG6.assemble_package(districts_input, councils, cost_model, overrides)
+    if not package["cost"]["n_reps"]:
+        return {"ok": False, "reason": "the recover-band rep produced an empty dispatch package"}
+    package["verified_only"] = False
+    fps = {district_id: REL.district_fingerprints(s, district_id)}
+    doc = HND.freeze(package, councils, fps, created_by=actor)
+    path = (Path(root) if root else HND.DEFAULT_ROOT) / HND.handoff_filename(doc)
+    # Commit-order (#143): every DB statement first, the immutable file last.
+    H6.record_dispatch(s, doc, path, actor=actor, metas={district_id: meta})
+    _flip(s, [req.request_id], doc["handoff_hash"])
+    HND.write(doc, root=root)
+    return {"ok": True, "handoff_hash": doc["handoff_hash"], "path": str(path),
+            "request_id": req.request_id, "file": file,
+            "next": "trigger the extraction from the Stage 6 (Dispatch) console — the new dispatch is listed there; results then land at gate@7 (paid, budget-gated)"}
+
+
+def recover_band_dispatch(district_id: str, band: str, rec_key: str, file: str, *,
+                          actor: str = "ian", root=None, session=None) -> dict:
+    """#473 entry point (inject-or-own, same idiom as compose_alternate_bundle)."""
+    return _run_bundle_or_own(
+        lambda s: _dispatch_recover_band(s, district_id, band, rec_key, file, actor, root), session)
+
+
 def execute_alternate_dispatch(request_id: int, *, actor: str = "ian", root=None, session=None) -> dict:
     """Fire an APPROVED 7->6 directive — by bundling its WHOLE district's approved 7->6s into one round
     (#153: approve the several you want, execute one, they all go as a single cyclic round so the depth
