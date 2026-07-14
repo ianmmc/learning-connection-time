@@ -134,6 +134,9 @@ def main(argv=None) -> int:
     ap.add_argument("--workers", type=int, default=8, help="concurrent API calls")
     ap.add_argument("--max-shards", type=int, default=0, help="review only the first N shards (smoke test)")
     ap.add_argument("--only", default="", help="comma-separated finder model ids/short-names to run")
+    ap.add_argument("--min-agree", type=int, default=1,
+                    help="only adjudicate candidates flagged by >= this many finder families "
+                         "(2+ focuses the council on cross-family-corroborated findings; default 1 = all)")
     ap.add_argument("--stamp", default=date.today().isoformat(), help="campaign stamp (default today)")
     args = ap.parse_args(argv)
 
@@ -176,12 +179,20 @@ def main(argv=None) -> int:
         print(f"⚠ {len(errs)} finder calls errored: {sorted({r.model for r in errs})}")
 
     # 2. Dedup
-    candidates = D.cluster(raw, shard_area)
+    all_candidates = D.cluster(raw, shard_area)
     (outdir / "candidates.json").write_text(json.dumps(
         [{"file": c.file, "line": c.line, "severity": c.severity, "category": c.category,
           "summary": c.summary, "agree_count": c.agree_count,
-          "families": sorted(c.families)} for c in candidates], indent=2))
-    print(f"unique candidates: {len(candidates)}")
+          "families": sorted(c.families)} for c in all_candidates], indent=2))
+    # Corroboration filter: with many finders, a real bug tends to be flagged by SEVERAL families,
+    # while singletons are mostly one model's noise. Adjudicating only candidates ≥ min_agree focuses
+    # the expensive judge council on the cross-family-corroborated set — higher signal AND far cheaper
+    # (the whole REQ-056 thesis). Singletons stay in candidates.json for optional later review.
+    candidates = [c for c in all_candidates if c.agree_count >= args.min_agree]
+    dropped = len(all_candidates) - len(candidates)
+    print(f"unique candidates: {len(all_candidates)}  "
+          f"(adjudicating {len(candidates)} with ≥{args.min_agree} families; "
+          f"{dropped} singletons held back in candidates.json)")
 
     # 3. Judge cascade
     try:
