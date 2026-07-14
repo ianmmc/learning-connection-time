@@ -148,6 +148,28 @@ class TestMode:
         val, method = A.aggregate_band([400, 400, 400, 405])
         assert val == 400 and method == "modal"
 
+    def test_none_gross_facts_dont_crash_the_band_rollup(self):
+        """#403: a fact with gross=None reaching district_bands_from_facts must not TypeError —
+        aggregate_band already ignores None VALUES, but the representative-school min() over
+        `abs(f['gross'] - val)` didn't. The None-gross fact stays visible in schools[] (it's an
+        accepted fact; hiding it would be a silent drop) but can't be the representative."""
+        base = {"band": "elementary", "start": "08:00", "end": "15:00", "models": ["x", "y"],
+                "method": "council_agree"}
+        mixed = [{**base, "school": "a", "gross": 420},
+                 {**base, "school": "b", "gross": None, "start": None, "end": None}]
+        bands = A.district_bands_from_facts(mixed)
+        assert bands["elementary"]["gross_minutes"] == 420
+        assert bands["elementary"]["start_time"] == "08:00"   # rep must be the non-None fact
+        assert {s["school"] for s in bands["elementary"]["schools"]} == {"a", "b"}
+
+    def test_all_none_gross_band_is_omitted_not_crashed(self):
+        """#403 sibling: a band whose every accepted fact has gross=None has nothing aggregable —
+        omit it (same posture as an empty band), don't TypeError on min() over an empty candidate
+        set or on abs(None - None)."""
+        f = {"band": "middle", "school": "m", "start": None, "end": None, "gross": None,
+             "models": ["x"], "method": "council_agree"}
+        assert A.district_bands_from_facts([f]) == {}
+
 
 # ---------------------------------------------------------------- REQ-056 mode stability
 class TestModeStability:

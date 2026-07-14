@@ -302,8 +302,14 @@ def district_bands_from_facts(accepted):
         if not facts: continue
         grosses = [f["gross"] for f in facts]
         val, method = aggregate_band(grosses)
+        # #403: aggregate_band ignores None VALUES, so val is None only when every fact's gross is
+        # None — nothing aggregable, omit the band (same posture as an empty band). A None-gross fact
+        # must not crash (or win) the representative min() below; it stays in schools[] though — it's
+        # an accepted fact, and hiding it would be a silent drop.
+        if val is None: continue
         # representative start/end = those of a school whose gross is closest to the modal value
-        rep = min(facts, key=lambda f: abs(f["gross"] - val))
+        rep = min((f for f in facts if f["gross"] is not None),
+                  key=lambda f: abs(f["gross"] - val))
         out[band] = {"gross_minutes": val, "start_time": rep["start"], "end_time": rep["end"],
                      "n_schools": len(facts), "method": method,
                      "schools": [{"school": f["school"], "start_time": f["start"], "end_time": f["end"],
