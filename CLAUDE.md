@@ -111,71 +111,44 @@ live in the governance DB; `handoff_<hash>_<ts>.json` under `data/acquisition/ha
 `district_status.json` into every commit — on a fresh clone run `git config core.hooksPath .githooks`
 (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-12):** the console runs the pipeline live through **`gate@7`**. The **"whittle
-down open issues" hygiene campaign is fully CLOSED** (Batches 1–6 + #124, PRs #177–#199, #206), as is
-**epic #123** (tech-debt/hygiene, closed via #127's `node:test` harness, PR #239). **Epic #209** (runtime
-guardrails for the manual→auto transition, framed by the four commandments) has shipped **Phase 0/1/2**
-(PRs #217/#218/#220): #208 recall floor, #210/REQ-121 gate-decision calibration log (live at gate@5/6/7),
-#211/REQ-120 exploration-quota control law (**live wiring now SHIPPED** — see below), #212/#213 group-aware
-promotion gate + safe-promotion machinery (**dormant**, activation tracked as one checklist, #219). **Epic
-#200** (shift-left defect prevention: #201–#204) **MERGED (PR #221)**.
+**Current status (2026-07-13):** the console runs the pipeline live through **gate@8** (Stage 6 redesign
+PR #256 + Stage 8 `closing_argument`/`approval.py` are on `main` and in active daily use — Ian is
+hand-reviewing real districts at gate@8 now, e.g. Coffee County `0100810`, TUSD `3416500`, Dickinson 1
+`3800038`). Epic #209 (runtime guardrails) and the #236/#237 aggregation-quality pair are fully shipped
+and merged (detail in `docs/PROJECT_HISTORY.md`'s 2026-07-12/13 entries) — no open PR/merge-gap concern
+outstanding on that arc.
 
-**Epic #209 BUILD-COMPLETE AND MERGED (2026-07-13, PR #250)** — all of Phase 0/1/2 is on `main`: #208
-recall floor, #210 calibration log, **#211 exploration quota + #214 measured-pass (both CLOSED)**, #212/#213
-promotion gate + safe-promotion machinery (dormant). **#104 part (a)** (the per-gate manual/auto `gate_mode`
-Settings store + console toggle) is also on `main`; part (b) — confidence-escalating auto for gates other
-than 5 — remains open, future work. **The aggregation-quality pair #236/#237 is CLOSED and merged** (PR
-#247): #236 shipped (`norm_school` strips US district-type suffixes); #237 was mis-diagnosed as a topology
-bug and resolved instead via `detect_single_school_over_extraction` (a gate@7 cross-LEA contamination
-detector, detect-and-flag, never auto-reject) — spun off the charter-segmentation track (#243/#244/#245/
-#246, still open). #238 (deferred efficiency follow-ups) also still open.
+**New standalone tool: `tools/crossfam_review/`** — a cross-family external code-review harness (10
+non-Claude OpenRouter finders + a rotating 3-family judge cascade, applying the extraction council's
+own REQ-056 diversity thesis to code review). Built, hardened through 3 rounds of smoke-test bugs, run
+as a full campaign (**214 confirmed findings filed as GitHub issues #259–#472**, label
+`crossfam-review-2026-07-13`), then itself given a max-effort review (14 fixes, most severe a
+path-traversal in the judge's file-reading) before merging as **PR #477** (merged `e5c22c8`). Full story:
+`docs/PROJECT_HISTORY.md`'s 2026-07-13 entry; effectiveness analysis:
+`docs/technical-notes/CROSSFAM_EXTERNAL_REVIEW_2026-07-13.md`. **The 214 filed `[crossfam]` issues are
+unreviewed by a human** — each is a corroborated-and-judge-confirmed *candidate*, not a verified bug;
+triage before acting on any of them (their `crossfam-meta` marker names which finders/judges backed each
+one). Two gate@8 methodology gaps surfaced while reviewing real districts and were logged (not built):
+**#257** (human "exclude school from band," for a school that's stale-reconfigured out of a band —
+Coffee County) and **#473/#474** ("recover band" via targeted re-extraction + a cited-source human-add
+fallback — TUSD). Both #257 and #473/#474's motivating districts (Coffee County, TUSD) are **deliberately
+left un-approved and un-rejected** pending those primitives. Two standalone-extraction trackers opened
+for later (not started): **#475** (crossfam_review → public `openrouter-external-review` package) and
+**#476** (the in-repo import-linter/arch-manifest work → public "fuzzy-environmental-dependencies").
 
-**Before merging, a 34-agent max-effort review (16 finders + 20 verifiers + 2 sweeps) found 15 CONFIRMED
-bugs in the #247/#248 arc — including in code that already had passing unit tests.** Most severe:
-`gate_mode.set_license_state`'s fresh-row INSERT hardcoded `configured_mode='manual'`, which would have
-silently and permanently pinned a globally-auto-configured gate to manual the moment its first license
-write fired — defeating #211's own inheritance model the instant anyone used it as designed. Also fixed:
-`norm_school` both over-merged distinct schools ("Meridian Consolidated School" == "Meridian School") and
-under-stripped hyphenated suffixes — opposite failure modes from the same regex, both undoing #236's stated
-purpose; the fix made `norm_school` idempotent with `merge_fact_runs`/#237's detector re-normalizing
-*persisted* keys at read time (self-healing against future stopword-list drift, no backfill needed). Also:
-an un-isolated demote-hook transaction, an unindexed full-scan query on every label save regardless of
-dormancy, a `javascript:` URI XSS vector in Settings, and a misfiled test-class insertion (caught
-independently by 5/16 finder agents). All fixed, verified, pushed before merge.
-
-**Then a second, distinct incident: the merge itself landed on the wrong branch.** The gate-automation PR
-was stacked on the aggregation-quality PR's branch; its base was never retargeted to `main` after the
-parent merged, so GitHub merged its 12 commits into the now-orphaned feature branch — showing as "merged"
-everywhere while `main` had none of the code. Caught by verifying `main`'s actual file contents before
-starting the doc-tower resync below (not by any UI signal). Fixed by cherry-picking the identical,
-already-reviewed commits onto a fresh branch off the real `main` (content verified byte-identical) and
-landing that as **PR #250** — now merged. **Lesson, applies going forward: after a stacked PR's parent
-merges, verify the child's base was actually retargeted before trusting its "merged" status.** Full
-incident + all 15 findings: `docs/PROJECT_HISTORY.md`'s 2026-07-13 entry;
-`PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b carries the code-level fix detail.
-
-**The full stage-design-notes tower + `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` + `ACQUISITION_PIPELINE.md`
-(incl. the Mermaid diagram) were resynced against current `main` 2026-07-13** (a 5-agent parallel
-audit-then-rewrite pass, each doc verified against real file:line evidence, not assumed from a prior
-session's narrative) — treat every doc under `docs/technical-notes/acquisition-pipeline-stage-design-notes/`
-plus those two as current as of commit `d5c3ed9`.
-
-**Next (RESUME HERE — 2026-07-13):** Epic #209 and the #236/#237 pair are both fully shipped and merged —
-**no PR/issue-closing decision remains** (that was the prior blocker; it's resolved). The **next BUILD is
-Stage 8** (#89/#90) — the fact-based aggregation *algorithm* is live inside gate@7 today
-(`stage8_aggregate/aggregate.py`), but the standalone stage / gate@8 / console is not built; ordering
-constraint (epic #209): gate@8's calibrated-confidence gate must exist before gates 6/7 relax. Backlog: the
-charter track (#243/#244/#245/#246), Council Lab (#80/#81), #238, #104 part b; deferred within #209 (gated
-on unbuilt stages/data): drift monitors, budget-governor hardening, Stage-9 write-boundary invariants,
-per-gate transition thresholds; and the *dedicated* `run_kind=exploration_audit` queue MODE in the Stage-5
-tree (the Settings pending list is today's working surface, sufficient while census-labeling labels every
-reject). Untracked, left for Ian: earlier-run receipts under `data/acquisition/{extractions,handoffs}/`.
-Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config core.hooksPath
-.githooks` (fresh clone only) → `lint-imports` (expect 4 kept/0 broken) + `pytest -q -m "not integration"`
-(expect **1211** pass) + `pytest -q -m govdb` (expect **187**, Postgres up). Full detail:
-`PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (§11b), `STAGE5_FILTER_DESIGN_2026-06.md` §5a/§5d,
-`STAGE8_AGGREGATE_DESIGN_2026-06.md` §1a (what Stage 8 needs to build on), `docs/PROJECT_HISTORY.md`
-(newest entry — the review + merge-gap incident).
+**Next (RESUME HERE — 2026-07-13):** No build is in flight. Candidates, in no particular priority order:
+(a) **triage the 214 `[crossfam]` issues** (#259–#472) — most are probably real given the corroboration
+bar, but none are human-verified yet, and a few already look Stage-8-console-specific (#403 aggregate.py,
+#337/#263/#450 stage8.js) worth an early look since that's where Ian is actively working; (b) build the
+**gate@8 editorial primitives** (#257 remove-from-band, #473 re-extract-into-band, #474 human-add
+fallback) — motivated by real districts sitting un-approved right now; (c) the Stage 8 aggregation
+epic's remaining backlog (#88/#89/#90, #253/#254 band-distortion issues); (d) the charter-segmentation
+track (#243/#244/#245/#246), Council Lab (#80/#81), #104 part b (confidence-escalating auto for gates
+other than 5). Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) →
+`git config core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) +
+`pytest -q -m "not integration"` (expect **1302** pass) + `pytest -q -m govdb` (Postgres up). Full detail:
+`docs/PROJECT_HISTORY.md` (newest two entries), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`,
+`STAGE8_AGGREGATE_DESIGN_2026-06.md`.
 
 ---
 
