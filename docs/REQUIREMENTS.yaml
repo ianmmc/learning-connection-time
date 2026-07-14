@@ -2505,11 +2505,11 @@ requirements:
       behavior. That per-gate auto path + cost-gating are follow-on work (#211 first, for gate@5)."
 
   - id: REQ-109
-    github_issue: "#90 — per-band satisfaction / completion grain (doc-migration 2026-07)"
+    github_issue: "#90 — per-band satisfaction / completion grain (doc-migration 2026-07, CLOSED 2026-07-13)"
     description: Two batch types (first-run / follow-up) + completion grain = district x BAND; the pipeline is cyclic
     type: functional
     priority: must
-    status: accepted
+    status: tested
     acceptance_criteria:
       - first-run batches exclude already-attempted districts (the original already_attempted intent); follow-up batches re-include attempted districts, targeting their unsatisfied BANDS
       - A district can recur across batches; both batch types are hard-capped at 12 districts (a stages-1-4 blast-radius control)
@@ -2517,10 +2517,13 @@ requirements:
       - Directions from gate@7/gate@8 route back to Stage 1 (the follow-up batch_*.json is created there, reviewable at gate@1) — 7/8 never mint a batch straight to discovery
       - Only re-routing EXISTING representations bypasses Stage 1 (7->6 re-extract via a different council config; 8->6 add an existing-rep URL to a new dispatch)
     created: "2026-06-27T00:00:00Z"
-    updated: "2026-06-27T00:00:00Z"
-    notes: "Decided 2026-06-27 (governance §11d, flow diagram). Not yet built — follow-up batches + per-band
-      satisfaction need the Stage 8 results that don't exist yet; first-run behavior is current. The Dunseith
-      case (one captured page stated band-level minutes, schools became moot) is why the grain is band, not school."
+    updated: "2026-07-13T00:00:00Z"
+    notes: "Decided 2026-06-27 (governance §11d, flow diagram). BUILT (verified against live code 2026-07-13
+      triage, #90 closed): stage1_queue/queue_batch.py batch_type first-run/follow-up/benchmark +
+      build_followup_batch targeting unsatisfied bands, 12-district cap; stage8_aggregate/closing_argument.py
+      computes claimed_bands/unsatisfied_bands/min_band_coverage (the district x band satisfaction grain +
+      gate@8 confidence proxy). The Dunseith case (one captured page stated band-level minutes, schools became
+      moot) is why the grain is band, not school."
 
   - id: REQ-100
     github_issue: "#100 — console staleness surface (doc-migration 2026-07)"
