@@ -449,3 +449,106 @@ class TestRecoverableBandDetector:
             "D", merged_accepted=acc, merged_unresolved=[], nces_total=1,
             nces_by_level={"Elementary": 1}, schools_by_band={})
         assert out["negative_space"]["recoverable_bands"] == []
+
+
+class TestBandRosterDenominator:
+    """#253 Part B: the live band-SERVING denominator replaces the clean-LEVEL count when the
+    roster is supplied; the LEVEL count stays alongside for continuity + fallback."""
+
+    _ROSTERS = {"middle": {"total": 9, "by_source": {"level_clean": 2, "grade_span": 7},
+                           "schools": ["Ortiz Middle", "Milagro Middle", "Gonzales K8"]},
+                "_unattributed": [], "_year": "2024_25"}
+
+    def test_roster_denominator_replaces_level_count(self):
+        # the Santa Fe signature: 4 sampled, LEVEL says 2 (200%), the serving roster says 9
+        acc = [_fact("middle", s, 445) for s in ("milagro", "ortiz", "k8 schools", "milagro and ortiz schools")]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=25,
+            nces_by_level={"Middle": 2}, schools_by_band={}, band_rosters=self._ROSTERS)
+        s = out["bands"]["middle"]["sampling"]
+        assert s["n_total"] == 9 and s["n_total_level_only"] == 2
+        assert s["coverage"] == round(4 / 9, 3)          # not 2.0
+        assert s["denominator"]["source"] == "band_roster"
+        assert s["denominator"]["by_source"] == {"level_clean": 2, "grade_span": 7}
+        assert s["denominator"]["nces_year"] == "2024_25"
+
+    def test_no_roster_falls_back_to_level_count_marked_as_such(self):
+        acc = [_fact("middle", "m1", 410)]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=3,
+            nces_by_level={"Middle": 2}, schools_by_band={}, band_rosters=None)
+        s = out["bands"]["middle"]["sampling"]
+        assert s["n_total"] == 2 and s["denominator"]["source"] == "nces_level"
+
+    def test_criteria_disclaimer_and_unattributed_surface(self):
+        acc = [_fact("middle", "m1", 410)]
+        rosters = {**self._ROSTERS, "_unattributed": ["Weird Ungraded Center"]}
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=3,
+            nces_by_level={}, schools_by_band={}, band_rosters=rosters)
+        assert "virtual" in out["provenance"]["denominator"]["criteria"]
+        assert out["provenance"]["denominator"]["source"] == "band_roster"
+        assert out["negative_space"]["unattributed_roster_schools"] == ["Weird Ungraded Center"]
+
+    def test_coverage_gap_uses_roster_total(self):
+        acc = [_fact("middle", "m1", 410)]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=9,
+            nces_by_level={"Middle": 2}, schools_by_band={}, band_rosters=self._ROSTERS)
+        assert out["negative_space"]["coverage_gaps"]["middle"]["n_total"] == 9
+
+
+class TestCombinedScopeFlags:
+    """#253 A1: combined-scope extracted names flag (detect-and-flag) — the row keeps its vote."""
+
+    def test_group_and_conjunction_flag_but_keep_voting(self):
+        acc = [_fact("middle", s, 445) for s in ("milagro", "ortiz")] + \
+              [_fact("middle", "k8 schools", 445), _fact("middle", "milagro and ortiz schools", 445)]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=25,
+            nces_by_level={"Middle": 2}, schools_by_band={})
+        cs = out["negative_space"]["combined_scope_facts"]
+        assert {c["school"] for c in cs} == {"k8 schools", "milagro and ortiz schools"}
+        assert all(not c["excluded"] for c in cs)
+        # still voting: all four count in the band
+        assert out["bands"]["middle"]["sampling"]["n_sampled"] == 4
+        rows = {s["school"]: s for s in out["bands"]["middle"]["schools"]}
+        assert rows["k8 schools"]["combined_scope"]["kind"] == "group_descriptor"
+        assert rows["milagro"]["combined_scope"] is None
+
+    def test_excluded_combined_scope_is_marked(self):
+        acc = [_fact("middle", "milagro", 445), _fact("middle", "k8 schools", 440)]
+        excl = [{"band": "middle", "school": "k8 schools", "reason": "duplicate of K-8 rows",
+                 "actor": "ian", "created_at": "2026-07-14"}]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=25,
+            nces_by_level={"Middle": 2}, schools_by_band={}, exclusions=excl)
+        cs = out["negative_space"]["combined_scope_facts"]
+        assert cs and cs[0]["excluded"] is True
+        assert out["bands"]["middle"]["sampling"]["n_sampled"] == 1  # exclusion still removes the vote
+
+    def test_conjunction_resolves_campuses_against_live_roster(self):
+        acc = [_fact("middle", "Milagro Middle and Edward Ortiz Middle", 445)]
+        rosters = {"middle": {"total": 2, "by_source": {"level_clean": 2, "grade_span": 0},
+                              "schools": ["MILAGRO MIDDLE", "EDWARD ORTIZ MIDDLE"]},
+                   "_unattributed": [], "_year": "2024_25"}
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=2,
+            nces_by_level={"Middle": 2}, schools_by_band={}, band_rosters=rosters)
+        cs = out["negative_space"]["combined_scope_facts"][0]
+        assert cs["kind"] == "conjunction"
+        assert set(cs["campuses"]) == {"MILAGRO MIDDLE", "EDWARD ORTIZ MIDDLE"}
+
+    def test_fingerprint_unmoved_by_flags(self):
+        # flags are derived observations, not determinations — an approval must not go stale
+        # because the detector shipped (denominator/coverage are likewise outside the basis)
+        acc = [_fact("middle", "k8 schools", 445)]
+        with_flag = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=2,
+            nces_by_level={"Middle": 2}, schools_by_band={})
+        no_ns = dict(with_flag)
+        no_ns["negative_space"] = {**with_flag["negative_space"], "combined_scope_facts": []}
+        for b in no_ns["bands"].values():
+            for s in b["schools"]:
+                s.pop("combined_scope", None)
+        assert CA.fingerprint(with_flag) == CA.fingerprint(no_ns)

@@ -153,7 +153,10 @@ def test_stage8_console_carries_the_exclusion_ui_markers():
                    'data-feat="human-add"', 'data-feat="human-added"',
                    'data-feat="human-add-remove"', 'data-feat="recover-band"',
                    'data-feat="recoverable-band"', "/api/aggregate/human-add",
-                   "/api/aggregate/recover-band"):
+                   "/api/aggregate/recover-band",
+                   # #253: combined-scope flags + the denominator provenance/criteria surfaces
+                   'data-feat="combined-scope"', 'data-feat="combined-scope-facts"',
+                   'data-feat="denominator-provenance"', 'data-feat="denominator-criteria"'):
         assert marker in js, f"stage8.js lost the #257 marker {marker!r}"
     css = (Path(SRV.__file__).parent / "static" / "app.css").read_text()
     assert "line-through" in css and ".s8-excluded" in css

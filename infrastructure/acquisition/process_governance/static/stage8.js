@@ -85,6 +85,7 @@
       ${renderHeader(ca, dec)}
       ${renderVerdict(dec)}
       <div class="s8-bands">${order.map((b) => renderBand(b, bands[b])).join("") || `<div class="empty">No accepted band facts.</div>`}</div>
+      ${renderDenominatorCriteria((ca.provenance || {}).denominator)}
       ${renderNegativeSpace(ca.negative_space || {}, ca.capture_events || [])}`;
   }
 
@@ -109,15 +110,30 @@
     </div>`;
   }
 
+  // #253: the denominator-criteria disclaimer (Ian, 2026-07-14) — the auditor must see WHAT the
+  // coverage denominators count, since virtual/alternative/adult campuses are deliberately absent.
+  function renderDenominatorCriteria(d) {
+    if (!d || !d.criteria) return "";
+    return `<p class="s8-note" data-feat="denominator-criteria">Denominator criteria: ${esc(d.criteria)}${d.source === "band_roster" && d.nces_year ? ` <span class="s8-muted">(live NCES ccd_sch ${esc(d.nces_year)})</span>` : d.source === "nces_level" ? ` <span class="s8-muted">(clean-LEVEL counts — live roster unavailable)</span>` : ""}</p>`;
+  }
+
   function renderBand(band, b) {
     const s = b.sampling || {};
+    // #253: the denominator's own provenance rides beside the coverage stat — a band-SERVING count
+    // (a K-8 counts toward middle) split by source, with the old clean-LEVEL count kept visible
+    // when it differs (the Santa Fe 4-of-2 → 4-of-9 correction must be legible, not silent).
+    const d = s.denominator || {};
+    const denomDetail = d.source === "band_roster" && d.by_source
+      ? ` <span class="s8-muted" data-feat="denominator-provenance">(${d.by_source.level_clean} by LEVEL + ${d.by_source.grade_span} by grade span${s.n_total_level_only != null && s.n_total_level_only !== s.n_total ? `; LEVEL alone read ${s.n_total_level_only}` : ""})</span>`
+      : d.source === "nces_level"
+      ? ` <span class="s8-muted" data-feat="denominator-provenance">(clean-LEVEL count)</span>` : "";
     return `<section class="s8-band">
       <div class="s8-band-head" data-feat="claim">
         <h3>${esc(band)}</h3>
         <span class="s8-claim"><strong>${b.gross_minutes} min/day</strong> · ${esc(b.start_time)}–${esc(b.end_time)} · <span class="s8-method">${esc(b.method)}</span></span>
       </div>
       <div class="s8-sampling" data-feat="sampling">
-        Sampled <strong>${s.n_sampled}</strong> of <strong>${s.n_total == null ? "?" : s.n_total}</strong> schools ·
+        Sampled <strong>${s.n_sampled}</strong> of <strong>${s.n_total == null ? "?" : s.n_total}</strong> schools${denomDetail} ·
         coverage ${pct(s.coverage)} · school agreement (plurality) ${pct(s.plurality_share)}
       </div>
       <table class="s8-schools"><thead><tr><th>School</th><th>Times</th><th>Gross</th><th>Models</th><th>Evidence</th><th></th></tr></thead>
@@ -165,6 +181,11 @@
     // council behind it, so the tag + source must be impossible to miss in the record and receipt.
     const humanAdd = sc.human_added
       ? `<div class="s8-human-added" data-feat="human-added">✚ human-added (${esc(sc.human_added.actor)}) — source: ${safeUrl(sc.human_added.source_url) ? `<a href="${esc(sc.human_added.source_url)}" target="_blank" rel="noopener">${esc(shortUrl(sc.human_added.source_url))}</a>` : esc(sc.human_added.source_url)} — ${esc(sc.human_added.reason)}</div>` : "";
+    // #253: a combined-scope name is a GROUP description counted as one pseudo-school — flagged
+    // loudly (it distorts the mode + n_sampled) but it KEEPS its vote until the reviewer disposes
+    // (exclude via #257 when redundant; the roster-template slot-projection is the future home).
+    const cs = sc.combined_scope
+      ? `<div class="s8-combined-scope" data-feat="combined-scope">⧉ combined-scope name (${esc(sc.combined_scope.kind === "group_descriptor" ? "grade-band group" : "multiple campuses")})${(sc.combined_scope.campuses || []).length ? ` — resolves to: ${sc.combined_scope.campuses.map(esc).join(", ")}` : ""} — a group description counted as ONE school; exclude (#257) if redundant with individual rows</div>` : "";
     const action = sc.excluded
       ? `<button class="btn btn-small" data-feat="restore-exclusion" data-restore-excl data-band="${esc(band)}" data-school="${esc(sc.school)}">Restore</button>`
       : sc.human_added
@@ -176,7 +197,7 @@
       <td>${applied ? `<span class="s8-override" title="human override — council read ${esc(sc.council_start_time)}–${esc(sc.council_end_time)}">✎ ${times}</span>` : times}</td>
       <td>${applied ? `<span class="s8-override">${esc(sc.gross)}</span>` : esc(sc.gross)}</td>
       <td class="s8-muted">${(sc.models || []).map((m) => esc(m.split("/").pop())).join(", ")}</td>
-      <td data-feat="evidence">${url}${reader}${quote}${stated}${overrideMark}${ovErr}${excl}${humanAdd}</td>
+      <td data-feat="evidence">${url}${reader}${quote}${stated}${overrideMark}${ovErr}${cs}${excl}${humanAdd}</td>
       <td>${action}</td>
     </tr>`;
   }
@@ -201,6 +222,8 @@
           <button class="btn btn-small" data-feat="recover-band" data-recover data-band="${esc(r.band)}" data-reckey="${esc(rep.rec_key)}" data-file="${esc(rep.source_file || "")}">Re-extract for ${esc(r.band)}</button>
           <button class="btn btn-small" data-feat="human-add" data-ha-add data-band="${esc(r.band)}">Add by hand (fallback, #474)</button>`;
       }).join("<br>")}</li>`);
+    if ((ns.combined_scope_facts || []).length)
+      rows.push(`<li data-feat="combined-scope-facts"><strong>Combined-scope facts (#253):</strong> ${ns.combined_scope_facts.map((m) => `${esc(m.school)} in ${esc(m.band)} (${esc(m.kind === "group_descriptor" ? "grade-band group" : "multiple campuses")}${(m.campuses || []).length ? `: ${m.campuses.map(esc).join(", ")}` : ""})${m.excluded ? " — already excluded" : ""}`).join("; ")} — group descriptions counted as one school each; still voting in the mode until disposed.</li>`);
     if ((ns.name_level_mismatches || []).length)
       rows.push(`<li data-feat="name-level-mismatch"><strong>Name/level mismatch flags (#258):</strong> ${ns.name_level_mismatches.map((m) => `${esc(m.school)} reads as ${m.implied_bands.map(esc).join("/")} but sits in ${esc(m.band)}${m.nces_level ? ` (NCES: ${esc(m.nces_level)})` : ""}`).join("; ")} — a name token is a hint, not ground truth; consider #257 exclude if confirmed.</li>`);
     const gaps = Object.entries(ns.coverage_gaps || {});
