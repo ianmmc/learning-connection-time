@@ -1,0 +1,22 @@
+[
+  {
+    "exclusion_id": 1,
+    "district_id": "0100810",
+    "band": "elementary",
+    "norm_school": "kinston k12",
+    "school": "kinston k12",
+    "reason": "reconfigured to high school per district site 2025-26",
+    "actor": "ian",
+    "created_at": "2026-07-14T15:51:05Z"
+  },
+  {
+    "exclusion_id": 2,
+    "district_id": "0100810",
+    "band": "elementary",
+    "norm_school": "zion chapel k12",
+    "school": "zion chapel k12",
+    "reason": "reconfigured to high school per district site 2025-26",
+    "actor": "ian",
+    "created_at": "2026-07-14T15:51:17Z"
+  }
+]
