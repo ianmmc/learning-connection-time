@@ -291,6 +291,8 @@ class TestStaffDataValidation(CaliforniaSEAConfig, SEAStaffValidationTests):
     ])
     def test_total_teachers_matches_expected(self, district_name):
         """Integration: Total teachers matches NCES reported value."""
+        pytest.skip("scaffold, never wired: asserted actual=expected (tautology, crossfam #400) — "
+                    "load the real value from staff_counts for this district to activate")
         expected = self.EXPECTED_DISTRICTS[district_name]["total_teachers"]
         actual = expected  # TODO: Replace with actual data loading
         tolerance = expected * self.STAFF_TOLERANCE_PCT
@@ -307,6 +309,8 @@ class TestEnrollmentDataValidation(CaliforniaSEAConfig, SEAEnrollmentValidationT
     ])
     def test_enrollment_matches_expected(self, district_name):
         """Integration: Enrollment matches NCES reported value."""
+        pytest.skip("scaffold, never wired: asserted actual=expected (tautology, crossfam #399) — "
+                    "load the real value from enrollment_by_grade to activate")
         expected = self.EXPECTED_DISTRICTS[district_name]["enrollment"]
         actual = expected  # TODO: Replace with actual data loading
         tolerance = expected * self.ENROLLMENT_TOLERANCE_PCT
@@ -336,6 +340,8 @@ class TestADAValidation(CaliforniaSEAConfig):
     ])
     def test_ada_matches_expected(self, district_name):
         """Integration: ADA matches CDE LCFF reported value."""
+        pytest.skip("scaffold, never wired: asserted actual=expected (tautology, crossfam #401) — "
+                    "load the real CDE LCFF ADA value to activate")
         expected = self.EXPECTED_DISTRICTS[district_name]["ada"]
         actual = expected  # TODO: Replace with actual data loading
         tolerance = expected * 0.05  # 5%
@@ -379,6 +385,8 @@ class TestLCTCalculations(CaliforniaSEAConfig, SEALCTCalculationTests):
         enrollment = data["enrollment"]
         minutes = data.get("instructional_minutes", self.DEFAULT_INSTRUCTIONAL_MINUTES)
 
+        pytest.skip("scaffold, never wired: asserted actual=expected (tautology, crossfam #402) — "
+                    "read the stored lct_calculations row to activate")
         expected_lct = calculate_lct(minutes, teachers, enrollment)
         actual_lct = expected_lct  # TODO: Replace with actual calculation
 
@@ -440,10 +448,9 @@ class TestDatabaseIntegration(CaliforniaSEAConfig):
 
     def test_cde_districts_have_st_leaid(self):
         """Integration: CDE districts stored with st_leaid in database."""
-        # TODO: Implement database query
-        pass
+        pytest.skip("scaffold, never implemented (empty body, crossfam #441) — "
+                    "query state_district_crosswalk for CA st_leaid to activate")
 
     def test_cde_ada_stored_in_database(self):
         """Integration: CDE ADA data stored alongside enrollment."""
-        # TODO: Implement database query
-        pass
+        pytest.skip("scaffold, never implemented (empty body, same class as crossfam #441)")

@@ -23,8 +23,11 @@ def session_or_skip():
         eng.connect().close()
     except Exception as e:
         pytest.skip(f"LCT Postgres unavailable: {type(e).__name__}")
-    trg = get_engine().connect().execute(text(
-        "SELECT 1 FROM pg_trigger WHERE tgname='trg_lct_temporal_validation'")).fetchone()
+    # `with` closes the trigger-check connection (crossfam #443: it was left open — one leaked
+    # connection per test; the engine itself is a process-global singleton, not disposed here).
+    with eng.connect() as c:
+        trg = c.execute(text(
+            "SELECT 1 FROM pg_trigger WHERE tgname='trg_lct_temporal_validation'")).fetchone()
     if not trg:
         pytest.skip("temporal trigger not installed (migration 008/018)")
     s = get_session_factory()()

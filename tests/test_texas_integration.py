@@ -275,6 +275,8 @@ class TestStaffDataValidation(TexasSEAConfig, SEAStaffValidationTests):
     ])
     def test_total_teachers_matches_expected(self, district_name):
         """Integration: Total teachers matches NCES reported value."""
+        pytest.skip("scaffold, never wired: asserted actual=expected (tautology, crossfam #324) — "
+                    "load the real value from staff_counts to activate")
         expected = self.EXPECTED_DISTRICTS[district_name]["total_teachers"]
         actual = expected  # TODO: Replace with actual data loading
         tolerance = expected * self.STAFF_TOLERANCE_PCT
@@ -297,6 +299,8 @@ class TestEnrollmentDataValidation(TexasSEAConfig, SEAEnrollmentValidationTests)
     ])
     def test_enrollment_matches_expected(self, district_name):
         """Integration: Enrollment matches NCES reported value."""
+        pytest.skip("scaffold, never wired: asserted actual=expected (tautology, crossfam #325) — "
+                    "load the real value from enrollment_by_grade to activate")
         expected = self.EXPECTED_DISTRICTS[district_name]["enrollment"]
         actual = expected  # TODO: Replace with actual data loading
         tolerance = expected * self.ENROLLMENT_TOLERANCE_PCT
@@ -337,6 +341,8 @@ class TestLCTCalculations(TexasSEAConfig, SEALCTCalculationTests):
         enrollment = data["enrollment"]
         minutes = data.get("instructional_minutes", self.DEFAULT_INSTRUCTIONAL_MINUTES)
 
+        pytest.skip("scaffold, never wired: asserted actual=expected (tautology, crossfam #448) — "
+                    "read the stored lct_calculations row to activate")
         expected_lct = calculate_lct(minutes, teachers, enrollment)
         actual_lct = expected_lct  # TODO: Replace with actual calculation
 

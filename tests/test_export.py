@@ -576,7 +576,14 @@ class TestExportFormats:
     """Tests for various export format options."""
 
     def test_exports_parquet_format(self):
-        """REQ-006: Supports Parquet format for efficient storage."""
+        """REQ-006: Supports Parquet format for efficient storage.
+
+        Real write + read-back through the same pandas/pyarrow path production uses
+        (calculate_lct_variants.py df.to_parquet). The old version asserted
+        `magic == b'PAR1' or len(bytes) > 0` against a SIMULATED helper — any non-empty
+        garbage passed (crossfam #471). pyarrow is optional in production too
+        (calculate_lct_variants.py:1650 prints an install hint), hence the importorskip."""
+        pytest.importorskip("pyarrow")
         # Arrange
         districts = [
             {"nces_id": "0622710", "enrollment_k12": 420532},
@@ -586,10 +593,14 @@ class TestExportFormats:
         # Act
         parquet_bytes = self._export_to_parquet(districts)
 
-        # Assert
-        assert parquet_bytes is not None
-        # Parquet files start with 'PAR1' magic bytes
-        assert parquet_bytes[:4] == b"PAR1" or len(parquet_bytes) > 0
+        # Assert — magic bytes AND actually readable as Parquet, content intact
+        assert parquet_bytes[:4] == b"PAR1"
+        import io
+
+        import pandas as pd
+
+        df = pd.read_parquet(io.BytesIO(parquet_bytes))
+        assert df.to_dict(orient="records") == districts
 
     def test_exports_with_compression(self):
         """REQ-006: Supports compressed export options."""
@@ -623,9 +634,14 @@ class TestExportFormats:
 
     # Helper methods
     def _export_to_parquet(self, districts: list) -> bytes:
-        """Simulated Parquet export."""
-        # In real implementation, would use pyarrow or pandas
-        return b"PAR1" + b"simulated_parquet_data"
+        """Real Parquet export via the same pandas path production uses (#471)."""
+        import io
+
+        import pandas as pd
+
+        buf = io.BytesIO()
+        pd.DataFrame(districts).to_parquet(buf, index=False)
+        return buf.getvalue()
 
     def _export_to_json_str(self, districts: list) -> str:
         """Export to JSON string."""

@@ -38,7 +38,8 @@ class TestCalculationRunTracking:
 
         # Assert
         assert calculation_run["run_id"] is not None
-        assert len(calculation_run["run_id"]) == 16  # YYYYMMDDTHHMMSSZassert calculation_run["year"] == year
+        assert len(calculation_run["run_id"]) == 16  # YYYYMMDDTHHMMSSZ
+        assert calculation_run["year"] == year
         assert calculation_run["run_type"] == run_type
         assert calculation_run["status"] == "running"
 
