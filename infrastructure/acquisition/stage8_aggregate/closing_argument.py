@@ -144,7 +144,7 @@ def _council_evidence(evidence_json):
 def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
                            nces_total, nces_by_level, schools_by_band,
                            evidence_by_reckey=None, capture_events=None, roster_names=None,
-                           exclusions=None, human_added=None):
+                           exclusions=None, human_added=None, band_rosters=None):
     """Compose the closing argument for one district from already-gathered ingredients. PURE.
 
     Inputs:
@@ -161,6 +161,11 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
           receipt is missing. Missing everywhere -> evidence: None (surfaced honestly).
       capture_events   : district-grain state_event stage-3 capture rows (list of {created_at, outcome}).
       roster_names     : flattened roster names for the contamination detector's keeper hint.
+      band_rosters     : #253 — SS.band_rosters_for_district's live ccd_sch fillability roster
+          ({band: {total, by_source, schools}, "_unattributed": [...], "_year": ...}), or None when
+          the CCD files aren't on disk. When present it is the band DENOMINATOR (a KG-08
+          'Elementary' K-8 counts toward middle — the Santa Fe 200%-coverage fix); when None the
+          old clean-LEVEL denominator stands, marked as such in the sampling provenance.
       exclusions       : #257 — the district's standing human band-exclusions, list of
           {band, school, reason, actor, created_at}. An excluded (band, school) is a fact whose
           OBSERVATION is correct but whose band membership is stale (the temporal grade-reconfiguration
@@ -224,6 +229,26 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
     degenerate = AGG.degenerate_school_facts(agg)
     contamination = AGG.detect_single_school_over_extraction(agg, nces_total, roster_names)
 
+    # #253 A1: combined-scope extracted names ('k8 schools', 'milagro and ortiz schools') — a group
+    # description landing as one pseudo-school row. Detect-and-flag (#237 posture): the flagged fact
+    # KEEPS its vote until the reviewer disposes (exclude via #257, or the roster-template
+    # slot-projection once built). Campus resolution matches against the FULL live roster when
+    # band_rosters is present (the Stage-1 roster_names list is only the selected subset).
+    cs_roster = list(roster_names or [])
+    for _b, _m in ((band_rosters or {}).items()):
+        if isinstance(_m, dict) and _m.get("schools"):
+            cs_roster.extend(_m["schools"])
+    cs_of, combined_scope = {}, []
+    for r in agg:
+        key = (r["band"], _norm(r["school"]))
+        if key in cs_of:
+            continue
+        m = SS.combined_scope_name(r["school"], cs_roster)
+        if m:
+            cs_of[key] = m
+            combined_scope.append({**m, "band": r["band"],
+                                   "excluded": key in excl_of})
+
     # per-(band, normalized-school) lookup off the winning merged fact — the merge already deduped to
     # one winner per (band, norm_school), so this is 1:1 with bands' school entries. The evidence
     # attached here is resolved from the WINNING fact itself: its own handoff's record when the loader
@@ -272,7 +297,8 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
                             "human_override": ov,
                             "override_applied": bool(ov) and not eff.get("error")
                                                 and bool(ov.get("start_time") or ov.get("end_time")),
-                            "override_error": eff.get("error")})
+                            "override_error": eff.get("error"),
+                            "combined_scope": cs_of.get((band, _norm(sc["school"])))})
         # #257: the band's excluded schools ride along AFTER the included rows — struck-through at
         # render, in the frozen receipt, NOT in the mode/count above (bands was built exclusion-first).
         for (xband, xnorm), e in sorted(excl_of.items()):
@@ -292,15 +318,32 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
                             "override_applied": bool(ov) and not eff.get("error")
                                                 and bool(ov.get("start_time") or ov.get("end_time")),
                             "override_error": eff.get("error"),
+                            "combined_scope": cs_of.get((band, xnorm)),
                             "excluded": e})
-        n_sampled, n_total = b["n_schools"], _band_denominator(band, nces_by_level)
+        # #253: the denominator is the LIVE band-SERVING roster when available (a KG-08 'Elementary'
+        # K-8 counts toward middle — Santa Fe's middle reads 4-of-9, not 4-of-2), with the old
+        # clean-LEVEL count kept alongside for continuity and as the fallback when the CCD files
+        # aren't on disk. The receipt carries the denominator's own provenance (design note §2c:
+        # "if the denominator is wrong, every sufficiency statistic lies").
+        n_sampled = b["n_schools"]
+        n_total_level = _band_denominator(band, nces_by_level)
+        broster = (band_rosters or {}).get(band)
+        if broster:
+            n_total = broster["total"]
+            denom = {"source": "band_roster", "by_source": broster["by_source"],
+                     "nces_year": (band_rosters or {}).get("_year")}
+        else:
+            n_total = n_total_level
+            denom = {"source": "nces_level", "by_source": None, "nces_year": None}
         out_bands[band] = {
             "gross_minutes": b["gross_minutes"], "start_time": b["start_time"],
             "end_time": b["end_time"], "method": b["method"],
             "sampling": {
                 "n_sampled": n_sampled, "n_total": n_total,
+                "n_total_level_only": n_total_level,
                 "coverage": round(n_sampled / n_total, 3) if n_total else None,
                 "plurality_share": _plurality_share(b["schools"]),
+                "denominator": denom,
             },
             "schools": schools,
         }
@@ -352,6 +395,9 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
         "band_exclusions": applied_exclusions,
         # #258: name-vs-NCES-level/band mismatch flags (detect-and-flag, never auto-reject)
         "name_level_mismatches": mismatches,
+        # #253: combined-scope extracted names (group descriptions counted as one pseudo-school) —
+        # flagged for review; the fact keeps its vote until the reviewer disposes
+        "combined_scope_facts": combined_scope,
         # #473: unsatisfied bands with sibling-band facts from an already-captured rep — recover
         # candidates (re-extract the rep at gate@8; #474 hand-add is the fallback)
         "recoverable_bands": recoverable,
@@ -365,12 +411,30 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
                                        if lvl not in SS.LEVEL_BAND},
     }
 
+    # #253: schools the live roster couldn't attribute to ANY band (unparseable span + ambiguous
+    # LEVEL) — the roster-side sibling of unattributed_level_schools; surfaced, never dropped.
+    if band_rosters and band_rosters.get("_unattributed"):
+        negative_space["unattributed_roster_schools"] = band_rosters["_unattributed"]
+
     return {
         "district_id": district_id,
         "bands": out_bands,
         "negative_space": negative_space,
         "capture_events": capture_events or [],
-        "provenance": {"nces_total": nces_total, "nces_by_level": nces_by_level or {}},
+        "provenance": {
+            "nces_total": nces_total, "nces_by_level": nces_by_level or {},
+            # #253: the denominator's own provenance (§2c) — source + the criteria disclaimer the
+            # console shows beside every coverage stat (Ian, 2026-07-14: the auditor must see what
+            # the denominator counts: virtual/alternative/adult campuses are excluded).
+            "denominator": {
+                "source": "band_roster" if band_rosters else "nces_level",
+                "nces_year": (band_rosters or {}).get("_year"),
+                "criteria": "Open, regular NCES schools only (virtual, alternative, special-ed and "
+                            "adult-ed campuses excluded; standalone preschools excluded). A school "
+                            "counts toward every band its NCES LEVEL or its own grade span serves — "
+                            "a K-8 counts toward elementary AND middle.",
+            },
+        },
     }
 
 
@@ -535,9 +599,17 @@ def load_closing_argument(session, district_id):
         FROM human_added_fact WHERE district_id = :d ORDER BY band, norm_school
     """), {"d": district_id}).all()]
 
+    # #253: the LIVE band-serving denominator roster (Ian, 2026-07-14: derive from ccd_sch live,
+    # never freeze — the approval receipt snapshots it at sign-off). None (missing CCD files) falls
+    # back to the clean-LEVEL denominator inside the builder, marked as such in the provenance.
+    try:
+        band_rosters = SS.band_rosters_for_district(district_id)
+    except Exception:
+        band_rosters = None
+
     return build_closing_argument(
         district_id, merged_accepted=accepted, merged_unresolved=unresolved,
         nces_total=meta.get("nces_total"), nces_by_level=nces_by_level,
         schools_by_band=schools_by_band, evidence_by_reckey=by_rk,
         capture_events=capture_events, roster_names=roster_names,
-        exclusions=exclusions, human_added=human_added)
+        exclusions=exclusions, human_added=human_added, band_rosters=band_rosters)

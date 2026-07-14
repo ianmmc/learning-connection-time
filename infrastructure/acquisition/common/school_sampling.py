@@ -13,7 +13,7 @@ for 95% confidence / 5% margin (worst-case p=0.5). Small N censuses naturally.
 
 Usage: school_sampling.py [--year 2024_25] [--ids id,id,...] [--summary]
 """
-import csv, sys, math, json, argparse
+import csv, sys, math, json, argparse, functools, re
 from pathlib import Path
 from collections import defaultdict
 
@@ -156,6 +156,81 @@ def real_bands_for_district(by_level, schools_by_band) -> set:
                 bands.add(b)
             bands |= bands_for_rescue(sc.get("gslo"), sc.get("gshi"))
     return bands
+
+# #253 A1: joiners + collective generics for combined-scope detection. A "combined-scope" extracted
+# name describes a GROUP of campuses, not one school — either a grade-band collective ("K-8 Schools",
+# "All Elementary Schools") or a conjunction listing several campuses ("Milagro and Ortiz Schools").
+_SCOPE_JOINERS = re.compile(r"\s+(?:and|&|\+)\s+|\s*/\s*|\s*,\s*")
+_SCOPE_GENERICS = ("schools", "campuses", "sites", "buildings")
+_SCOPE_QUANTIFIERS = ("all", "both")
+
+
+def combined_scope_name(school_name, roster_names=None):
+    """#253 detect-and-flag (never auto-reject): does this EXTRACTED school name denote MULTIPLE
+    campuses or a grade-band group rather than a single school? The Santa Fe signature: 'k8 schools'
+    (one page stating times for the district's K-8 schools collectively) and 'milagro and ortiz
+    schools' (one table listing both middle schools) each landed as its own row in the middle band —
+    pseudo-schools inflating n_schools and injecting extra modal votes off one combined table.
+
+    Two kinds, mirroring #258's pure-predicate shape:
+      - `group_descriptor`: a band token (K-8, elementary, middle, …) or an all/both quantifier
+        beside a collective plural ("schools"/"campuses"/…) — a description of a CLASS of campuses,
+        never a campus. `implied_bands` rides along from the band token when one is present.
+      - `conjunction`: joiner-split segments (and/&/,//) that RESOLVE to ≥2 distinct roster schools
+        via norm_school_strict (the trustworthy hint, same posture as #237's roster_matched). An
+        UNRESOLVED conjunction only flags when a collective plural is also present — 'Lewis and
+        Clark Elementary' is one school and must not flag on its 'and' alone.
+
+    Pure predicate: (school_name, roster_names) -> None | {school, kind, campuses, implied_bands}.
+    A flag is a hint for gate@8 review — the fact keeps its vote until the reviewer disposes
+    (exclude via #257, or the roster-template slot-projection once built)."""
+    from infrastructure.acquisition.common.school_match import norm_school_strict
+    raw = (school_name or "").strip()
+    if not raw:
+        return None
+    padded = " " + " ".join(raw.lower().replace("-", " ").replace(".", " ").split()) + " "
+    has_generic = any(f" {g} " in padded for g in _SCOPE_GENERICS)
+
+    band_tokens = None
+    for tokens, bset in _NAME_BAND_TOKENS:
+        if any(f" {t} " in padded for t in tokens):
+            band_tokens = bset
+            break
+    quantified = any(padded.startswith(f" {q} ") for q in _SCOPE_QUANTIFIERS)
+    # A band token + collective plural, or a bare quantified collective ("all schools"), with NO
+    # other identifying tokens left once the class words are gone — 'Kearny Elementary Schools'
+    # (a typo'd real campus) keeps its proper-name token and does not flag.
+    if has_generic and (band_tokens or quantified):
+        residue = norm_school_strict(raw)
+        # strip the band/quantifier class words themselves from the residue check
+        residue_words = [w for w in residue.split()
+                         if w not in ("k", "8", "k8", "12", "k12", "primary", "grade", "intermediate")
+                         and w not in _SCOPE_QUANTIFIERS]
+        if not residue_words:
+            return {"school": school_name, "kind": "group_descriptor", "campuses": [],
+                    "implied_bands": sorted(band_tokens or [])}
+
+    segments = [s for s in (_SCOPE_JOINERS.split(raw)) if s and s.strip()]
+    if len(segments) >= 2:
+        strict_roster = {}
+        for rn in (roster_names or []):
+            k = norm_school_strict(rn)
+            if k:
+                strict_roster.setdefault(k, rn)
+        campuses, seen = [], set()
+        for seg in segments:
+            k = norm_school_strict(seg)
+            if k and k in strict_roster and k not in seen:
+                seen.add(k)
+                campuses.append(strict_roster[k])
+        if len(campuses) >= 2:
+            return {"school": school_name, "kind": "conjunction", "campuses": campuses,
+                    "implied_bands": []}
+        if has_generic:
+            return {"school": school_name, "kind": "conjunction", "campuses": [],
+                    "implied_bands": []}
+    return None
+
 
 def _grade_num(idx):
     """GRADE_ORD index -> integer grade number; PK/KG both -> 0 (pre-grade-1)."""
@@ -328,6 +403,81 @@ def school_level_counts(year):
     return {did: {"total": v["total"], "by_level": dict(v["by_level"])} for did, v in out.items()}
 
 
+def latest_nces_year():
+    """The newest NCES CCD vintage on disk ('YYYY_YY' dir containing a ccd_sch file), or None.
+    Self-rolling like utilities/school_year: a new CCD drop is picked up without a code change."""
+    if not _NCES_DIR.is_dir():
+        return None
+    years = sorted((d.name for d in _NCES_DIR.iterdir()
+                    if re.fullmatch(r"\d{4}_\d{2}", d.name)
+                    and next(d.glob("ccd_sch_029_*_w_1a_*.csv"), None)), reverse=True)
+    return years[0] if years else None
+
+
+@functools.lru_cache(maxsize=2)
+def _district_schools(year):
+    """did(7-digit) -> [school dict, ...] for EVERY _eligible school — the shared CSV read behind
+    school_index() and band_rosters_for_district(). Cached (one ~full-corpus scan per year per
+    process; the gate@8 console calls this per district view). Callers must NOT mutate the result."""
+    by_district = defaultdict(list)
+    virtual_ids = _virtual_ids(year)
+    with open(_sch_file(year), encoding="utf-8-sig", errors="replace") as fh:
+        for row in csv.DictReader(fh):
+            if not _eligible(row, virtual_ids):
+                continue
+            by_district[row.get("LEAID", "").zfill(7)].append({
+                "school_id": row.get("NCESSCH", ""),
+                "name": row.get("SCH_NAME", ""),
+                "is_charter": row.get("CHARTER_TEXT", ""),
+                "level": row.get("LEVEL", ""),
+                "gslo": row.get("GSLO", ""),
+                "gshi": row.get("GSHI", ""),
+            })
+    return dict(by_district)
+
+
+def band_rosters_for_district(district_id, year=None):
+    """#253: the band-SERVING denominator roster, LIVE from ccd_sch (Ian, 2026-07-14: derive live,
+    never freeze — school counts change over the project's long horizon; the gate@8 approval receipt
+    snapshots the value at sign-off, which is where reproducibility lives).
+
+    A school SERVES a band when its clean LEVEL maps there OR its own grade span reaches it under
+    bands_for_rescue's conservative overlap — a KG-08 'Elementary'-tagged K-8 serves middle (Santa
+    Fe: 4 such schools, NCES tags them Elementary); a K-6 'Elementary' does NOT (the same grade-7
+    discrimination rescue exists for); a 'High' 07-12 serves middle too (the Jasper Co. gap-fill
+    class). This is FILLABILITY vocabulary — real_bands_for_district's signals 1+3 applied
+    per-school — deliberately NOT school_index()'s anti-dilution selection placement: selection asks
+    'which pool do we sample from', the denominator asks 'how many schools would full band coverage
+    require'. (school_index would put Santa Fe's K-8s in elementary only, reading middle as 2-of-2
+    covered — the exact 200%-coverage lie #253 exists to fix.)
+
+    Returns {band: {"total": n, "by_source": {"level_clean": n, "grade_span": n},
+                    "schools": [name, ...]}} plus "_unattributed": [name, ...] for schools serving
+    no band (unparseable span + ambiguous LEVEL) — surfaced, never silently dropped. Returns None
+    when the CCD files aren't on disk (caller falls back to the clean-LEVEL denominator)."""
+    year = year or latest_nces_year()
+    if not year:
+        return None
+    try:
+        schools = _district_schools(year).get(str(district_id).zfill(7), [])
+    except FileNotFoundError:
+        return None
+    out = {b: {"total": 0, "by_source": {"level_clean": 0, "grade_span": 0}, "schools": []}
+           for b in BANDS}
+    unattributed = []
+    for sc in schools:
+        lb = LEVEL_BAND.get((sc.get("level") or "").strip())
+        serves = ({lb} if lb else set()) | bands_for_rescue(sc.get("gslo"), sc.get("gshi"))
+        if not serves:
+            unattributed.append(sc.get("name", ""))
+            continue
+        for b in serves:
+            out[b]["total"] += 1
+            out[b]["by_source"]["level_clean" if b == lb else "grade_span"] += 1
+            out[b]["schools"].append(sc.get("name", ""))
+    return {**out, "_unattributed": unattributed, "_year": year}
+
+
 def school_index(year):
     """district_id -> band -> [{school_id, name, is_charter, level, gslo, gshi}, ...] for open,
     regular, non-preschool-only graded schools. gslo/gshi are included for human inspection
@@ -364,26 +514,12 @@ def school_index(year):
     Scott County VA).
     """
     idx = defaultdict(lambda: defaultdict(list))
-    by_district = defaultdict(list)  # did -> [school, ...] (every eligible school, LEVEL-clean or not)
-    virtual_ids = _virtual_ids(year)
-    with open(_sch_file(year), encoding="utf-8-sig", errors="replace") as fh:
-        for row in csv.DictReader(fh):
-            # Eligibility (open, regular, non-virtual, not standalone preschool) is the shared
-            # _eligible() predicate -- excludes e.g. Lake Preschool (PK-PK) / Clinton County Early
-            # Childhood Center (PK-KG) via GSHI in (PK,KG), narrower than excluding any PK-serving
-            # school (a K-5 with GSLO=PK, GSHI=05 still counts). Kept in lockstep with
-            # school_level_counts() so the band index and the LEVEL denominator agree.
-            if not _eligible(row, virtual_ids): continue
-            did = row.get("LEAID","").zfill(7)
-            school = {
-                "school_id": row.get("NCESSCH",""),
-                "name": row.get("SCH_NAME",""),
-                "is_charter": row.get("CHARTER_TEXT",""),
-                "level": row.get("LEVEL",""),
-                "gslo": row.get("GSLO",""),
-                "gshi": row.get("GSHI",""),
-            }
-            by_district[did].append(school)
+    # Eligibility (open, regular, non-virtual, not standalone preschool) is the shared _eligible()
+    # predicate inside _district_schools() -- excludes e.g. Lake Preschool (PK-PK) / Clinton County
+    # Early Childhood Center (PK-KG) via GSHI in (PK,KG), narrower than excluding any PK-serving
+    # school (a K-5 with GSLO=PK, GSHI=05 still counts). Kept in lockstep with
+    # school_level_counts() so the band index and the LEVEL denominator agree.
+    by_district = _district_schools(year)  # did -> [school, ...] (every eligible school)
 
     for did, schools in by_district.items():
         ambiguous = []
