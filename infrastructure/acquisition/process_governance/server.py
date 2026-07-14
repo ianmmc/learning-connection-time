@@ -31,6 +31,7 @@ from infrastructure.acquisition.common import calibration as CAL            # no
 from infrastructure.acquisition.common import gate_mode as GM               # noqa: E402  (per-gate manual/auto store — REQ-108, #104)
 from infrastructure.acquisition.stage5_filter import exploration_live as EAL  # noqa: E402  (gate@5 reject-audit demote-hook — REQ-120, #211)
 from infrastructure.acquisition.process_governance import gate_calibration as GCAL  # noqa: E402  (console→calibration vocab)
+from infrastructure.utilities import school_year as SY                      # noqa: E402  (calendar vocabulary — NOT the LCT DB; see pyproject importlinter note)
 from infrastructure.acquisition.common import school_sampling as SS         # noqa: E402  (add-school candidate lookup)
 from infrastructure.acquisition.stage1_queue import queue_batch as Q1       # noqa: E402  (build/persist a batch — REQ-102)
 from infrastructure.acquisition.stage1_queue import batch_store as BSTORE   # noqa: E402  (the batch working store)
@@ -633,6 +634,20 @@ def _backup_gate_mode(con) -> int:
     tmp.write_text(json.dumps([dict(r) for r in rows], indent=2))
     tmp.replace(out)
     return len(rows)
+
+
+@app.get("/api/data-years")
+def data_years():
+    """The data-year facts for the Settings panel (#254 adjacents): the derived current school year
+    (July-1 rollover — never hand-bumped), the NCES primary CCD vintage (hand-bumped on ingest), and
+    the acceptable bell-schedule years. Read-only vocabulary from utilities.school_year — surfacing it
+    here is what keeps a stale hardcoded year impossible to miss at the console."""
+    return {
+        "current_school_year": SY.current_school_year(),
+        "nces_primary_year": SY.NCES_PRIMARY_YEAR,
+        "acceptable_bell_years": list(SY.ACCEPTABLE_BELL_YEARS),
+        "covid_excluded_years": sorted(SY.COVID_EXCLUDED_YEARS),
+    }
 
 
 @app.get("/api/gate-mode")

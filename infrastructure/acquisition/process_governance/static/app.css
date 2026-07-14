@@ -510,6 +510,10 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
   background: transparent; color: var(--text-secondary); border: var(--border-hair) solid var(--border-subtle); }
 
 /* Settings — per-gate manual/auto toggle (#104) */
+.settings-nav { padding: 20px 12px; border-right: 1px solid var(--border, #ddd); }
+.settings-nav-item { padding: 8px 12px; border-radius: 6px; cursor: default; }
+.settings-nav-item.active { background: var(--surface-raised, rgba(127,127,127,.12)); font-weight: 600; }
+.settings-years { margin-top: 12px; }
 .settings-panel { max-width: 720px; padding: 20px 24px; }
 .settings-panel h2 { margin: 0 0 4px; }
 .settings-rows { margin-top: 16px; display: flex; flex-direction: column; gap: 6px; }
