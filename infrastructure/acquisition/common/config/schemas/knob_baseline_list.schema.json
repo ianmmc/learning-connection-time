@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Knob: baseline + tracked-additions list shape",
+  "description": "config_loader.py's second knob shape — a large list sharing one baseline provenance, with individually-justified additions (de_chrome_landmarks, stage5_neg_*, stage5_positive_kw). Additions carry the provenance fields except `evidence`, which is optional (existing additions omit it; the rationale field carries the citation).",
+  "type": "object",
+  "required": ["knob", "baseline", "values"],
+  "properties": {
+    "knob": {"type": "string"},
+    "description": {"type": "string"},
+    "baseline": {
+      "type": "object",
+      "required": ["added", "rationale", "approved_by", "loop_tier"],
+      "properties": {
+        "added": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+        "rationale": {"type": "string", "minLength": 1},
+        "approved_by": {"type": "string", "minLength": 1},
+        "loop_tier": {"type": "integer"}
+      }
+    },
+    "values": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "additions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["value", "added", "rationale", "approved_by", "loop_tier"],
+        "properties": {
+          "value": {"type": "string", "minLength": 1},
+          "added": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+          "rationale": {"type": "string", "minLength": 1},
+          "evidence": {"type": "string"},
+          "approved_by": {"type": "string", "minLength": 1},
+          "loop_tier": {"type": "integer"}
+        }
+      }
+    }
+  }
+}

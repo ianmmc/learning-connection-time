@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Knob: full per-entry provenance shape",
+  "description": "config_loader.py's first knob shape — every entry individually justified (cms_hosts, council_configs, stage2_query_templates). Extra top-level fields (governance, provenance, description) are permitted; the core contract is `knob` + `entries` with complete per-entry provenance (PROVENANCE_FIELDS).",
+  "type": "object",
+  "required": ["knob", "entries"],
+  "properties": {
+    "knob": {"type": "string"},
+    "description": {"type": "string"},
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["value", "added", "rationale", "evidence", "approved_by", "loop_tier"],
+        "properties": {
+          "added": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+          "rationale": {"type": "string", "minLength": 1},
+          "evidence": {"type": "string"},
+          "approved_by": {"type": "string", "minLength": 1},
+          "loop_tier": {"type": "integer"}
+        }
+      }
+    }
+  }
+}

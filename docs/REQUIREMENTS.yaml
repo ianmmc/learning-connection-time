@@ -3026,3 +3026,24 @@ requirements:
       case had been silently inert on the real code path while every test passed on an autoflush=True fixture;
       persist_run_session now flushes before returning, proven by a dedicated production-parity test that runs the
       real session config with no test-side flush."
+
+  - id: REQ-124
+    github_issue: "#205 part 1 (epic #482)"
+    description: Shared-config knobs (common/config/*.json) each validate against a declared JSON Schema — a malformed/renamed key fails the test suite, not a stage at runtime
+    type: constraint
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - arch-manifest.json gains a shared_config section (dir, schemas_dir, files[] of file -> schema) — the declaration is the review surface for the cross-language config edge (Python config_loader.py + Node capture_discovery.mjs read the same files)
+      - Every knob file under common/config/ must be declared (an undeclared new file fails); every declared file must exist
+      - Each knob validates against its schema; the two loader shapes (entries-with-provenance, baseline+values+additions) share shape schemas, bespoke knobs (budget, council_cost_model, stage5_attention) get their own
+      - Each knob's `knob` field equals its file stem (config_loader.load(name) and the doc's identity can never disagree)
+      - Schemas themselves are valid Draft 2020-12 (check_schema)
+    tests:
+      - tests/test_config_schemas.py
+    created: "2026-07-14T00:00:00Z"
+    updated: "2026-07-14T00:00:00Z"
+    notes: "#205 part 1. Verified by mutation at build time: a wrong-type cap + a deleted required cap key
+      in budget.json each turned the suite red. Part 2 (datacontract-cli contracts on the stage receipt
+      artifacts) deliberately deferred until #478 stabilizes the Stage 8 artifacts (#253/#254 change them) —
+      split to its own tracker issue."
