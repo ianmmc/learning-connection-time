@@ -44,6 +44,7 @@ GATE_MODE_JSON = STATUS_DIR / "gate_modes.json"         # precious, version-cont
 STAGE8_APPROVALS_JSON = STATUS_DIR / "stage8_approvals.json"  # precious, version-controlled (gate@8 decisions, #89)
 BAND_EXCLUSIONS_JSON = STATUS_DIR / "band_exclusions.json"   # precious, version-controlled (gate@8 exclude-from-band, #257)
 HUMAN_ADDED_FACTS_JSON = STATUS_DIR / "human_added_facts.json"  # precious, version-controlled (gate@8 human-add, #474)
+SLOT_ASSIGNMENTS_JSON = STATUS_DIR / "slot_assignments.json"  # precious, version-controlled (gate@8 slot dispositions, #499 REQ-145)
 SCORECARDS_DIR = STAGE5_DIR / "scorecards"              # harness output (config-vs-labels metrics)
 
 # --- config-as-data (versioned tunables; near code, intentionally NOT under DATA_ROOT) ---
@@ -67,7 +68,8 @@ def data_root_is_default() -> bool:
 # tracked backup"), so it is enforced HERE, once, at the exporters' shared path-resolution moment —
 # not re-implemented per test via monkeypatching (the epic-#133 lesson).
 TRACKED_BACKUPS = frozenset({STATUS_FILE, LABELS_JSON, CLUSTER_SPLITS_JSON, FOLLOWUP_FLAGS_JSON, GATE_MODE_JSON,
-                             STAGE8_APPROVALS_JSON, BAND_EXCLUSIONS_JSON, HUMAN_ADDED_FACTS_JSON})
+                             STAGE8_APPROVALS_JSON, BAND_EXCLUSIONS_JSON, HUMAN_ADDED_FACTS_JSON,
+                             SLOT_ASSIGNMENTS_JSON})
 _quarantine_noted: set = set()
 
 

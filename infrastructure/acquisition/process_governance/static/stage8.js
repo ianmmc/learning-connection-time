@@ -20,7 +20,7 @@
   // REVIEWED_FP: the fingerprint of the closing argument the reviewer is LOOKING at (from the GET).
   // Echoed to the decision POST, which 409s if the live facts moved after page-load — the verdict can
   // only ever attach to the picture the human actually read (PR #252 review round).
-  let inited = false, CURRENT = null, REVIEWED_FP = null;
+  let inited = false, CURRENT = null, REVIEWED_FP = null, LAST_BANDS = null;
 
   window.initStage8 = function () {
     if (!inited) { inited = true; renderShell(); }
@@ -73,6 +73,7 @@
     try { x = await api(`/api/aggregate/district/${did}`); }
     catch (e) { det.innerHTML = `<div class="empty err">${esc(e.message)}</div>`; return; }
     REVIEWED_FP = x.fingerprint || null;   // the picture the reviewer is now looking at
+    LAST_BANDS = (x.closing_argument || {}).bands || {};   // #499: slot lookups for the disposition prompts
     det.innerHTML = renderDetail(x);
     wire(det, did);
   }
@@ -136,7 +137,7 @@
         Sampled <strong>${s.n_sampled}</strong> of <strong>${s.n_total == null ? "?" : s.n_total}</strong> schools${denomDetail} ·
         coverage ${pct(s.coverage)} · school agreement (plurality) ${pct(s.plurality_share)}
       </div>
-      ${renderSlots(b)}
+      ${renderSlots(band, b)}
       <table class="s8-schools"><thead><tr><th>School</th><th>Times</th><th>Gross</th><th>Models</th><th>Evidence</th><th></th></tr></thead>
         <tbody>${(b.schools || []).map((sc) => renderSchool(sc, band)).join("")}</tbody></table>
       <button class="btn btn-small" data-feat="human-add" data-ha-add data-band="${esc(band)}">Add school by hand (cited — last resort, #474)</button>
@@ -148,7 +149,7 @@
   // this strip names the slots never heard from, ambiguous matches awaiting a disposition (PR-B),
   // and unmatched-extras (a fact naming a school NCES doesn't list — the roster can be wrong; the
   // overlay is never a cage). Charter slots carry the REQ-060 tag (the #243 Structure-C surface).
-  function renderSlots(b) {
+  function renderSlots(band, b) {
     const st = b.slot_stats, slots = b.slots || [], extras = b.slot_extras || [];
     if (!st) return "";
     const unfilled = slots.filter((s) => s.slot_state === "unfilled" && !(s.match && s.match.confidence === "ambiguous"));
@@ -157,10 +158,19 @@
       `<span class="s8-slot s8-slot-unfilled" data-feat="slot-unfilled" title="no accepted fact matches this NCES roster school">${esc(s.roster_school)}${s.is_charter === "Yes" ? ` <span class="s8-slot-charter" title="NCES charter (REQ-060: tagged, never excluded)">ch</span>` : ""}${s.gslo && s.gshi ? ` <span class="s8-muted">${esc(s.gslo)}–${esc(s.gshi)}</span>` : ""}</span>`;
     const unfilledRow = unfilled.length
       ? `<div class="s8-slot-row">Never heard from: ${unfilled.map(chip).join(" ")}</div>` : "";
+    // #499 REQ-145: an ambiguous fact gets a Resolve (assign to ONE candidate) + Not-this-slot
+    // (reject a candidate) pair; the projection refuses to guess, the human decides.
     const ambRow = ambiguous.length
-      ? `<div class="s8-slot-row">Ambiguous match: ${[...new Set(ambiguous.map((s) => s.match.school_display))].map((n) => `<span class="s8-slot s8-slot-ambiguous" data-feat="slot-ambiguous">${esc(n)}</span>`).join(" ")} — one extracted name matches several roster schools; resolution is a human disposition (PR-B).</div>` : "";
+      ? `<div class="s8-slot-row">Ambiguous match: ${[...new Set(ambiguous.map((s) => s.match.school_display))].map((n) => `<span class="s8-slot s8-slot-ambiguous" data-feat="slot-ambiguous">${esc(n)}</span>
+          <button class="btn btn-small" data-feat="slot-assign" data-slot-assign data-band="${esc(band)}" data-school="${esc(n)}">Resolve…</button>
+          <button class="btn btn-small" data-feat="slot-reject" data-slot-reject data-band="${esc(band)}" data-school="${esc(n)}">Not a slot…</button>`).join(" ")} — one extracted name matches several roster schools; assign it or reject candidates.</div>` : "";
+    // #499 REQ-145: an extra can be assigned to an unfilled slot (a name NCES spells differently)
+    // or confirmed REAL (the escape hatch: NCES missed the school; denominator +1). The Stage-2
+    // discovery-intent hint says which school's query surfaced the page it came from.
     const extraRow = extras.length
-      ? `<div class="s8-slot-row">Not in NCES roster: ${extras.map((x) => `<span class="s8-slot s8-slot-extra" data-feat="slot-extra" title="extracted fact matching no roster school — NCES may be wrong, or the name may need a disposition">${esc(x.school_display)}</span>`).join(" ")}</div>` : "";
+      ? `<div class="s8-slot-row">Not in NCES roster: ${extras.map((x) => `<span class="s8-slot s8-slot-extra" data-feat="slot-extra" title="extracted fact matching no roster school — NCES may be wrong, or the name may need a disposition">${esc(x.school_display)}</span>${(x.intent_schools || []).length ? ` <span class="s8-muted" data-feat="slot-intent-hint" title="Stage-2 discovery intent: the page this fact came from was found by querying for these roster schools">(found via ${x.intent_schools.map(esc).join(", ")})</span>` : ""}
+          <button class="btn btn-small" data-feat="slot-assign" data-slot-assign data-band="${esc(band)}" data-school="${esc(x.school_display)}">Assign to slot…</button>
+          <button class="btn btn-small" data-feat="slot-extra-confirm" data-slot-confirm data-band="${esc(band)}" data-school="${esc(x.school_display)}">Confirm real (not in NCES)</button>`).join(" ")}</div>` : "";
     return `<div class="s8-slots" data-feat="slot-view">
       <div data-feat="slot-stats"><span data-feat="slot-filled">${st.n_filled}</span> of ${st.n_slots} roster slots filled${st.n_ambiguous ? ` · ${st.n_ambiguous} ambiguous` : ""}${extras.length ? ` · ${extras.length} extra` : ""} <span class="s8-muted">(slot coverage ${pct(st.slot_coverage)})</span></div>
       ${unfilledRow}${ambRow}${extraRow}
@@ -301,6 +311,9 @@
     pushFlag("slot-drift-removed", "Roster drift — schools REMOVED since last approval (#499):", rd.removed,
       (s) => `${esc(s.name)} (${(s.bands || []).map(esc).join("/")})`,
       " — in the signed receipt but gone from the live NCES roster (closed or reclassified out).");
+    pushFlag("slot-orphaned-disposition", "Orphaned slot dispositions (#499):", ns.orphaned_slot_dispositions,
+      (o) => `${esc(o.school)} in ${esc(o.band)} — ${o.kind === "extra_now_in_roster" ? "the confirmed-extra now EXISTS in the NCES roster (retire it or the denominator double-counts)" : "its roster slot vanished from the live NCES roster (closed/reclassified)"} <button class="btn btn-small" data-feat="slot-disposition-remove" data-slot-retire data-band="${esc(o.band)}" data-school="${esc(o.school)}" data-slotid="${esc(o.roster_school_id || "")}">Retire</button>`,
+      " — dispositions are precious: surfaced for human retirement, never auto-deleted.");
     pushFlag("slot-drift-band-moved", "Roster drift — band membership MOVED since last approval (#499):", rd.band_moved,
       (s) => `${esc(s.name)}: ${(s.from || []).map(esc).join("/")} → ${(s.to || []).map(esc).join("/")}`,
       " — the school's serving-band set changed; re-review before the approval authorizes a write.");
@@ -351,6 +364,79 @@
       (btn.onclick = () => humanAddRemove(did, btn.dataset.band, btn.dataset.school)));
     det.querySelectorAll("[data-recover]").forEach((btn) =>
       (btn.onclick = () => recoverBand(did, btn.dataset.band, btn.dataset.reckey, btn.dataset.file)));
+    det.querySelectorAll("[data-slot-assign]").forEach((btn) =>
+      (btn.onclick = () => slotAssign(did, btn.dataset.band, btn.dataset.school)));
+    det.querySelectorAll("[data-slot-reject]").forEach((btn) =>
+      (btn.onclick = () => slotReject(did, btn.dataset.band, btn.dataset.school)));
+    det.querySelectorAll("[data-slot-confirm]").forEach((btn) =>
+      (btn.onclick = () => slotConfirmExtra(did, btn.dataset.band, btn.dataset.school)));
+    det.querySelectorAll("[data-slot-retire]").forEach((btn) =>
+      (btn.onclick = () => slotRetire(did, btn.dataset.band, btn.dataset.school, btn.dataset.slotid)));
+  }
+
+  // #499 REQ-145: the slot-disposition actions. Candidate/slot pickers are numbered prompts over
+  // the CURRENT closing argument (LAST_BANDS) — the human picks a number, the POST carries the
+  // NCESSCH id; reason is REQUIRED (the resolving knowledge, same rule as #257).
+  function slotChoices(band, factName) {
+    const b = LAST_BANDS[band] || {};
+    const amb = (b.slots || []).find((s) => s.match && s.match.confidence === "ambiguous" && s.match.school_display === factName);
+    if (amb) return amb.match.candidates || [];
+    return (b.slots || []).filter((s) => s.slot_state === "unfilled")
+      .map((s) => ({ school_id: s.school_id, roster_school: s.roster_school }));
+  }
+
+  function pickSlot(band, factName, verb) {
+    const choices = slotChoices(band, factName);
+    if (!choices.length) { alert("No candidate slots available."); return null; }
+    const menu = choices.map((c, i) => `${i + 1}. ${c.roster_school} (${c.school_id})`).join("\n");
+    const raw = window.prompt(`${verb} “${factName}” — pick a roster slot:\n${menu}\n\nEnter a number:`);
+    if (raw == null || !raw.trim()) return null;
+    const idx = Number(raw.trim()) - 1;
+    if (!Number.isInteger(idx) || idx < 0 || idx >= choices.length) { alert(`"${raw}" isn't a listed number.`); return null; }
+    return choices[idx];
+  }
+
+  async function slotAssign(did, band, school) {
+    const c = pickSlot(band, school, "Assign");
+    if (!c) return;
+    const reason = window.prompt(`Why does “${school}” belong to ${c.roster_school}? (required)`);
+    if (reason == null || !reason.trim()) { if (reason != null) alert("A disposition requires a reason."); return; }
+    try {
+      await api("/api/aggregate/slot-assign", postJSON({ district_id: did, band, school,
+        roster_school_id: c.school_id, disposition: "assign", reason: reason.trim(), actor: "ian" }));
+    } catch (e) { alert("Assign failed: " + e.message); return; }
+    await openDistrict(did);
+  }
+
+  async function slotReject(did, band, school) {
+    const c = pickSlot(band, school, "Reject a candidate for");
+    if (!c) return;
+    const reason = window.prompt(`Why is “${school}” NOT ${c.roster_school}? (required)`);
+    if (reason == null || !reason.trim()) { if (reason != null) alert("A disposition requires a reason."); return; }
+    try {
+      await api("/api/aggregate/slot-assign", postJSON({ district_id: did, band, school,
+        roster_school_id: c.school_id, disposition: "reject", reason: reason.trim(), actor: "ian" }));
+    } catch (e) { alert("Reject failed: " + e.message); return; }
+    await openDistrict(did);
+  }
+
+  async function slotConfirmExtra(did, band, school) {
+    const reason = window.prompt(`Confirm “${school}” is a REAL school NCES missed — evidence? (required; it will count in the ${band} denominator)`);
+    if (reason == null || !reason.trim()) { if (reason != null) alert("A disposition requires a reason."); return; }
+    try {
+      await api("/api/aggregate/slot-assign", postJSON({ district_id: did, band, school,
+        disposition: "confirm_extra", reason: reason.trim(), actor: "ian" }));
+    } catch (e) { alert("Confirm failed: " + e.message); return; }
+    await openDistrict(did);
+  }
+
+  async function slotRetire(did, band, school, slotId) {
+    if (!window.confirm(`Retire the slot disposition for “${school}” in ${band}?`)) return;
+    try {
+      await api("/api/aggregate/slot-assign/remove", postJSON({ district_id: did, band, school,
+        roster_school_id: slotId }));
+    } catch (e) { alert("Retire failed: " + e.message); return; }
+    await openDistrict(did);
   }
 
   // #474: hand-enter a school (LAST RESORT — #473 re-extraction first). Citation is REQUIRED; the

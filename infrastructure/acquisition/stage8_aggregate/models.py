@@ -95,3 +95,40 @@ class HumanAddedFact(gdb.Base):
 # one hand-entry per (district, band, school) — re-adding replaces, removing deletes
 Index("ux_human_added_fact_key", HumanAddedFact.district_id, HumanAddedFact.band,
       HumanAddedFact.norm_school, unique=True)
+
+
+class SlotAssignment(gdb.Base):
+    """#499 (REQ-145): a standing human SLOT DISPOSITION — the resolution the automatic slot
+    projection deliberately refuses to make (ramp-up posture: confident matches auto-assign,
+    ambiguity waits for the human). Three verbs:
+      assign        — bind an ambiguous/extra fact to one roster slot (roster_school_id = NCESSCH);
+      reject        — this fact does NOT belong to this slot (removes one candidate; if exactly one
+                      candidate remains, the projection may then fill it);
+      confirm_extra — the escape hatch: the unmatched-extra is a REAL school NCES missed; it becomes
+                      a human-confirmed slot and counts in the band denominator
+                      (roster_school_id = "" — empty, not NULL, so the unique key stays enforceable).
+    DISTRICT-grain like BandExclusion (survives follow-up re-extraction minting new fact rows);
+    keyed (district_id, band, roster_school_id, norm_school_fact) — re-posting the key replaces
+    (assign and reject on the same pair are contradictory by construction). Dispositions enter the
+    gate@8 fingerprint (#257 precedent: an assign moves which slot a vote lands on); a disposition
+    whose slot vanishes from the live roster is flagged ORPHANED for human retirement, never
+    auto-deleted.
+
+    PRECIOUS (git-backed to slot_assignments.json, swept by pre-commit)."""
+    __tablename__ = "slot_assignment"
+
+    assignment_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    district_id: Mapped[str] = mapped_column(String, index=True)
+    band: Mapped[str] = mapped_column(String)                        # elementary | middle | high
+    roster_school_id: Mapped[str] = mapped_column(String)           # NCESSCH; "" for confirm_extra
+    norm_school_fact: Mapped[str] = mapped_column(String)           # the fact key being disposed
+    school: Mapped[str] = mapped_column(String)                     # display name as the reviewer saw it
+    disposition: Mapped[str] = mapped_column(String)                # assign | reject | confirm_extra
+    reason: Mapped[str] = mapped_column(Text)                       # REQUIRED — the resolving knowledge
+    actor: Mapped[str] = mapped_column(String)
+    created_at: Mapped[str] = mapped_column(String, default=utcnow)
+
+
+# one disposition per (district, band, slot, fact) — re-posting replaces, removing deletes
+Index("ux_slot_assignment_key", SlotAssignment.district_id, SlotAssignment.band,
+      SlotAssignment.roster_school_id, SlotAssignment.norm_school_fact, unique=True)

@@ -853,3 +853,33 @@ class TestSlotSpine499:
             nces_by_level={"Elementary": 2}, schools_by_band={}, band_rosters=self._rosters(),
             last_receipt={"bands": {"elementary": {"gross_minutes": 400}}})   # no slots key
         assert "roster_drift" not in out["negative_space"]
+
+    def test_fingerprint_includes_slot_dispositions(self):
+        # REQ-145: a disposition is a human determination — recording one must stale a prior
+        # approval (the #257 exclusion precedent), while slot stats/drift stay excluded.
+        acc = [_fact("elementary", "oak", 400)]
+        base = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=2,
+            nces_by_level={"Elementary": 2}, schools_by_band={}, band_rosters=self._rosters())
+        disposed = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=2,
+            nces_by_level={"Elementary": 2}, schools_by_band={}, band_rosters=self._rosters(),
+            slot_assignments=[{"band": "elementary", "roster_school_id": "002",
+                               "norm_school_fact": "maple", "school": "maple",
+                               "disposition": "assign", "reason": "site says so",
+                               "actor": "ian", "created_at": "t"}])
+        assert CA.fingerprint(base) != CA.fingerprint(disposed)
+        assert disposed["negative_space"]["slot_assignments"][0]["disposition"] == "assign"
+
+    def test_contamination_sees_full_live_roster(self):
+        # PR-B: the #237 keeper hint matches against the FULL live roster, not just the Stage-1
+        # selected subset — an extracted school present only in the live roster now roster-matches.
+        acc = [_fact("elementary", "oak", 400, rec_key="D:o"),
+               _fact("elementary", "maple", 400, rec_key="D:m")]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=1,   # single-school LEA
+            nces_by_level={"Elementary": 1}, schools_by_band={},            # Stage-1 roster EMPTY
+            band_rosters=self._rosters())
+        cont = out["negative_space"]["contamination"]
+        assert cont["suspected"] is True
+        assert "oak" in cont["roster_matched"] and "maple" in cont["roster_matched"]
