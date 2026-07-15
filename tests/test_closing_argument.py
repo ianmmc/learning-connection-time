@@ -650,3 +650,27 @@ class TestSchoolYearSurfaces:
         assert all(s["superseded_by"]["gross"] == 445 for s in sup)
         assert len(out["negative_space"]["year_conflicts"]) == 2            # both schools flagged
         assert all(c["resolved"] for c in out["negative_space"]["year_conflicts"])
+class TestMismatchFlagCarriesSpanAndDedupes:
+    """#258 copy rework (Ian, 2026-07-14): the flag explains itself with the school's grade span
+    (a 7-12 'High' legitimately serves middle), and the roster/fact surfaces dedupe on the
+    NORMALIZED name — one school, one note, roster surface (span-bearing) wins."""
+
+    def test_span_rides_the_roster_flag_and_casing_dedupes(self):
+        acc = [_fact("middle", "riverside high school", 447)]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=3,
+            nces_by_level={"High": 1},
+            schools_by_band={"middle": {"schools": [
+                {"school": "RIVERSIDE HIGH SCHOOL", "level": "High", "gslo": "07", "gshi": "12"}]}})
+        mm = out["negative_space"]["name_level_mismatches"]
+        assert len(mm) == 1                       # roster + fact casings collapse to one note
+        assert mm[0]["surface"] == "roster"       # the span-bearing surface wins
+        assert (mm[0]["gslo"], mm[0]["gshi"]) == ("07", "12")
+
+    def test_fact_only_flag_still_fires_without_span(self):
+        acc = [_fact("elementary", "northside high", 410)]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=3,
+            nces_by_level={"Elementary": 2}, schools_by_band={})
+        mm = out["negative_space"]["name_level_mismatches"]
+        assert len(mm) == 1 and mm[0]["surface"] == "fact" and "gslo" not in mm[0]
