@@ -553,3 +553,25 @@ class TestDegenerateSchoolFacts:
         facts = [_s("", "high"), _s("schools", "high")]
         bands = A.district_bands_from_facts(facts)
         assert "high" not in bands
+
+
+def test_consensus_campus_names_union_across_models():
+    """#499 REQ-148 (v4): campus_names = sorted union of the verbatim names ANY model read; attached
+    only when non-empty (pre-v4 facts byte-identical); never part of the grouping key or a vote."""
+    from infrastructure.acquisition.stage8_aggregate.aggregate import consensus_school_facts
+    rows = {
+        "google/gemini-x": [{"grade_level": "middle", "start_time": "08:00", "end_time": "15:00",
+                             "school_name": "k8 schools",
+                             "campus_names": ["Milagro Middle", "Ortiz Middle"]}],
+        "mistralai/mist-x": [{"grade_level": "middle", "start_time": "08:00", "end_time": "15:00",
+                              "school_name": "k8 schools",
+                              "campus_names": ["Ortiz Middle", "Sunset K-8", "  "]}],
+    }
+    acc, unres = consensus_school_facts(rows)
+    assert len(acc) == 1
+    assert acc[0]["campus_names"] == ["Milagro Middle", "Ortiz Middle", "Sunset K-8"]
+    # absent everywhere -> key absent
+    for m in rows.values():
+        m[0].pop("campus_names")
+    acc2, _ = consensus_school_facts(rows)
+    assert "campus_names" not in acc2[0]

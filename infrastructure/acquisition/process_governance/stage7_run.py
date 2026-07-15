@@ -614,6 +614,8 @@ def persist_run_session(s, results: dict, *, created_by: str = "auto:stage7",
                 models_json=json.dumps(f.get("models") or []),
                 evidence_json=json.dumps(f["evidence"]) if f.get("evidence") else None,
                 school_year=f.get("school_year"), applies_to=f.get("applies_to"),   # v3 readings (#254)
+                campus_names_json=(json.dumps(f["campus_names"])
+                                   if f.get("campus_names") else None),      # v4 reading (#499)
                 rec_key=f.get("rec_key"), source_file=f.get("source_file")))
         for u in pd["unresolved"]:
             s.add(M7.SchoolFact(

@@ -317,3 +317,23 @@ class TestConflictLadder:
                                      {"n_sampled": 5, "plurality_share": 0.8,
                                       "gross_minutes": 400})
         assert v["rung"] == "unresolved"
+
+
+class TestCampusShorthand:
+    def test_page_shorthand_campus_fills_full_roster_name(self):
+        # REQ-148 (live Santa Fe, 2026-07-15): the page writes "Milagro"; the roster writes
+        # "Milagro Middle School" — the norm key joins them; a colliding key fills nothing.
+        rosters = _rosters({"middle": [
+            _rec("101", "Milagro Middle School", effective_band="middle"),
+            _rec("102", "Ortiz Middle School", effective_band="middle"),
+            _rec("103", "Washington Middle School", effective_band="middle"),
+            _rec("104", "Washington Academy", effective_band="middle")]})
+        bf = {"norm_school_fact": "milagro and ortiz", "school_display": "milagro and ortiz schools",
+              "kind": "conjunction", "campuses": ["Milagro", "Ortiz Middle", "Washington"]}
+        out = SP.project_slots(rosters, {"middle": ["milagro and ortiz schools"]},
+                               band_facts={"middle": bf})
+        by_id = {s["school_id"]: s for s in out["middle"]["slots"]}
+        assert by_id["101"]["slot_state"] == "filled"      # Milagro (shorthand) joins
+        assert by_id["102"]["slot_state"] == "filled"      # Ortiz Middle joins
+        assert by_id["103"]["slot_state"] == "unfilled"    # "Washington" collides (103/104) — no guess
+        assert by_id["104"]["slot_state"] == "unfilled"

@@ -109,3 +109,36 @@ def test_v3_prompts_forbid_year_inference_from_context():
             f"{pid}'s no-inference guard doesn't name all three forbidden inference sources"
         assert "null is the correct answer" in b or "null" in b, \
             f"{pid} doesn't say null is the honest answer when no year is stated"
+
+
+def test_v4_prompts_campus_names_verbatim_only_and_append_only():
+    """#499 REQ-148: v4 adds the campus_names reading — verbatim page copy only, never invention;
+    the registry is APPEND-ONLY (v1-v3 retained byte-for-byte semantics: old handoffs reference
+    them); the roster is NEVER injected into any prompt (the Fivay-High contamination guard: a
+    prompt-supplied name leaking into output would be indistinguishable from a correct match)."""
+    assert {"stage6.extract.v4", "stage6.extract.vision.v4"} <= set(P.SYSTEM_PROMPTS)
+    for pid in ("stage6.extract.v4", "stage6.extract.vision.v4"):
+        body = P.SYSTEM_PROMPTS[pid]
+        assert '"campus_names"' in body
+        assert "EXACTLY as the page writes it" in body
+        assert "never invent" in body
+        assert "[] is the correct answer" in body        # the honest empty
+    # append-only: v3 retained and still campus_names-free
+    assert '"campus_names"' not in P.SYSTEM_PROMPTS["stage6.extract.v3"]
+    assert '"campus_names"' not in P.SYSTEM_PROMPTS["stage6.extract.vision.v3"]
+    # vision variant keeps the spatial-read instruction
+    assert "IMAGE(S)" in P.SYSTEM_PROMPTS["stage6.extract.vision.v4"]
+    # no prompt ever carries a roster placeholder beyond the self-evident example
+    for pid, body in P.SYSTEM_PROMPTS.items():
+        assert "[SCHOOL NAME]" in body or "school_name" in body
+
+
+def test_council_config_production_switch_is_v4():
+    """The single production switch (council_configs.json) moved to v4 — text and vision."""
+    import json
+    from infrastructure.acquisition.common import paths
+    cfg = json.loads((paths.CONFIG_DIR / "council_configs.json").read_text())
+    prompt_ids = [(e.get("value") or {}).get("prompts", {}).get("default")
+                  for e in cfg.get("entries", []) if isinstance(e, dict)]
+    assert "stage6.extract.v4" in prompt_ids and "stage6.extract.vision.v4" in prompt_ids
+    assert not any(pid and pid.endswith(".v3") for pid in prompt_ids)

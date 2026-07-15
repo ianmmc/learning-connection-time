@@ -78,3 +78,29 @@ def test_no_real_school_names_in_leak_blacklist():
         assert name.startswith("[") and name.endswith("]"), (
             f"_PROMPT_LEAK_NAMES contains a non-placeholder entry {name!r} — real school names must "
             f"never be blacklisted (fix the prompt instead, #144)")
+
+
+def test_campus_names_verbatim_kept_and_placeholder_scrubbed():
+    # #499 REQ-148 (v4): campus_names passes through verbatim; the prompt-example placeholder gets
+    # the same leak guard as school_name; a non-list value normalizes away.
+    from infrastructure.acquisition.stage7_extract.parse import parse_schedules
+    out = parse_schedules(
+        '{"schedules":[{"grade_level":"middle","start_time":"08:00","end_time":"15:00",'
+        '"school_name":"k8 schools","campus_names":["Milagro Middle School","[SCHOOL NAME]","  "]}]}')
+    assert out[0]["campus_names"] == ["Milagro Middle School"]
+    out2 = parse_schedules(
+        '{"schedules":[{"grade_level":"middle","start_time":"08:00","end_time":"15:00",'
+        '"school_name":"k8 schools","campus_names":"not a list"}]}')
+    assert "campus_names" not in out2[0]
+    out3 = parse_schedules(
+        '{"schedules":[{"grade_level":"middle","start_time":"08:00","end_time":"15:00",'
+        '"school_name":"oak"}]}')
+    assert "campus_names" not in out3[0]          # pre-v4 rows byte-identical
+
+
+def test_campus_names_scrubbed_in_salvage_path():
+    from infrastructure.acquisition.stage7_extract.parse import parse_schedules
+    txt = ('{"schedules":[{"grade_level":"middle","start_time":"08:00","end_time":"15:00",'
+           '"school_name":"k8 schools","campus_names":["[SCHOOL NAME]","Ortiz MS"]}  TRUNCATED')
+    out = parse_schedules(txt)
+    assert out and out[0]["campus_names"] == ["Ortiz MS"]

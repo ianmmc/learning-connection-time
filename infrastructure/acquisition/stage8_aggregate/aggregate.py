@@ -300,6 +300,14 @@ def consensus_school_facts(model_rows, judge_rows=None):
             fact["school_year"] = format_school_year(years.pop())
         if any(str(r.get("applies_to") or "").strip().lower() == "multiple" for r in meta_rows):
             fact["applies_to"] = "multiple"
+        # #499 (v4, REQ-148): campus_names = the sorted UNION of the verbatim names any model read
+        # off the page (recall over precision here — downstream matching is deterministic against
+        # the roster, so a hallucinated/garbled name simply matches nothing; nothing arithmetic
+        # ever touches these). Attached only when non-empty — pre-v4 facts stay byte-identical.
+        camps = sorted({str(c).strip() for r in meta_rows
+                        for c in (r.get("campus_names") or []) if str(c).strip()})
+        if camps:
+            fact["campus_names"] = camps
         accepted.append(fact)
     return accepted, unresolved
 

@@ -101,6 +101,7 @@ _PRECIOUS_ALTERS = [
     # #254: per-fact school-year + applies-to READINGS from the v3 extraction prompt. Additive, NULL
     # for pre-v3 rows (going-forward only, no backfill — the evidence_json precedent above).
     "ALTER TABLE school_fact ADD COLUMN IF NOT EXISTS school_year text",
+    "ALTER TABLE school_fact ADD COLUMN IF NOT EXISTS campus_names_json text",
     "ALTER TABLE school_fact ADD COLUMN IF NOT EXISTS applies_to text",
     # #213 / PR #220 review: DB-enforce the config_pointer singleton (id = 1). create_all applies the
     # model's CheckConstraint on a FRESH table; this covers a table created before the constraint existed.

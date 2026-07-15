@@ -3634,3 +3634,29 @@ requirements:
       only trade which receipts read stale. The derive-from-receipts fix makes the stamp irrelevant
       to staleness while preserving it as audit history. The planned satisfied-signal REQ (PR-D)
       moves to REQ-148+."
+
+  - id: REQ-148
+    github_issue: "#499 (PR-E)"
+    description: "v4 extraction prompt — the per-schedule campus_names reading (verbatim page copy of a group schedule's covered schools); the roster is NEVER injected into prompts; campus_names feeds the slot spine's deterministic campus fill and scope-limits the conflict ladder."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "stage6.extract.v4 (+ vision.v4) = v3 + campus_names: names copied EXACTLY as the page writes them, [] when the group is stated without naming schools; REQ-054 preserved (a verbatim reading, never an inference; deterministic code does all matching)"
+      - "The roster is NEVER injected into any prompt (the Fivay-High lesson: a prompt-supplied name leaking into output is indistinguishable from a correct match — it would poison the matcher campus_names feeds); prompt registry is append-only (v1-v3 retained; council_configs.json is the single production switch, flipped to v4)"
+      - parse.py applies the placeholder leak guard to campus_names (both clean-parse and salvage paths); non-list values normalize away; pre-v4 rows stay byte-identical
+      - "Consensus: campus_names = sorted UNION of the verbatim names any model listed (recall over precision — junk matches no roster slot downstream); attached only when non-empty; never part of the grouping key, never a vote"
+      - SchoolFact.campus_names_json persists the union (nullable, _PRECIOUS_ALTERS, NULL pre-v4, no backfill — the evidence_json precedent)
+      - The band fact's campuses = union(name-side detector resolution, council campus_names) — feeding the campus fill; a blanket that NAMES its campuses claims only those, so a direct fact outside the stated list raises no slot conflict (the v4 contribution to the ladder's scope)
+    tests:
+      - tests/test_stage6_requests.py::test_v4_prompts_campus_names_verbatim_only_and_append_only
+      - tests/test_stage6_requests.py::test_council_config_production_switch_is_v4
+      - tests/test_stage7_parse.py::test_campus_names_verbatim_kept_and_placeholder_scrubbed
+      - tests/test_aggregate.py::test_consensus_campus_names_union_across_models
+      - tests/test_closing_argument.py::TestFingerprintGoldenHash::test_council_campus_names_union_into_band_fact_and_scope_limited_conflicts
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "The fourth slice of #499 (PR-E; delivery order A→B→C→E→D→F per Ian's plan review —
+      campus/exception evidence accrues before the satisfied signal consumes it). Bump cost:
+      re-reads are paid going forward only. Verified live against Santa Fe's k8-schools rep on
+      OpenRouter (authorized ≤$2.00, Ian 2026-07-15). The satisfied-signal REQ becomes REQ-149."

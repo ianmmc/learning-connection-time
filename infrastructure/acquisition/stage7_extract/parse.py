@@ -33,6 +33,23 @@ def _is_prompt_leak(sched: dict) -> bool:
     return str(sched.get("school_name", "")).strip().lower() in _PROMPT_LEAK_NAMES
 
 
+def _scrub_campus_names(sched: dict) -> dict:
+    """v4 (#499 REQ-148): campus_names gets the SAME placeholder leak guard as school_name — a
+    model echoing the prompt's example placeholder into the campus list would otherwise flow into
+    the slot-spine's campus fill. Non-list/absent values normalize away (pre-v4 rows untouched)."""
+    camps = sched.get("campus_names")
+    if isinstance(camps, list):
+        clean = [c for c in camps
+                 if str(c).strip() and str(c).strip().lower() not in _PROMPT_LEAK_NAMES]
+        if clean:
+            sched["campus_names"] = clean
+        else:
+            sched.pop("campus_names", None)
+    elif camps is not None:
+        sched.pop("campus_names", None)
+    return sched
+
+
 def _strip_fences(text: str) -> str:
     t = text.strip()
     if t.startswith("```"):
@@ -49,7 +66,7 @@ def _salvage(text: str) -> list[dict]:
         except Exception:
             continue
         if not _is_prompt_leak(obj):
-            out.append(obj)
+            out.append(_scrub_campus_names(obj))
     return out
 
 
@@ -69,4 +86,5 @@ def parse_schedules(content: str) -> list[dict]:
         scheds = obj
     else:
         scheds = []
-    return [s for s in scheds if isinstance(s, dict) and not _is_prompt_leak(s)]
+    return [_scrub_campus_names(s) for s in scheds
+            if isinstance(s, dict) and not _is_prompt_leak(s)]

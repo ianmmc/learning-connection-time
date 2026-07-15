@@ -95,6 +95,28 @@ _EXTRACT_VISION_V3 = _EXTRACT_V3.replace(
     "from the document text or images.",
     "by reading the document IMAGE(S) — read the schedule spatially (columns, tables, multi-column layouts).")
 
+# v4 (#499 PR-E, 2026-07-15, REQ-148): v3 + ONE per-schedule reading — `campus_names`: when a
+# schedule's own text covers a GROUP of schools, the names of those schools EXACTLY as the page
+# prints them. Feeds the slot-spine's deterministic campus fill (a "K-8 Schools" table that lists
+# its campuses fills those slots instead of blanket-projecting) and the conflict ladder's
+# hub-exception rung. REQ-054-safe: a verbatim copy of names printed on the page, never an
+# inference; the ROSTER IS NEVER INJECTED into the prompt (the Fivay-High lesson: a prompt-supplied
+# name leaking into output would be indistinguishable from a correct match — it would poison the
+# very matcher this feeds); matching stays deterministic downstream. v1-v3 retained unchanged (old
+# handoffs reference them); the council config is the single production switch.
+_EXTRACT_V4 = _EXTRACT_V3.replace(
+    """- "applies_to": "multiple" ONLY when the schedule's own text says it covers a GROUP of schools (a table headed "K-8 Schools", "All Elementary Schools", a row listing several campuses); otherwise null. Report the page's STATED scope, not your judgment.
+""",
+    """- "applies_to": "multiple" ONLY when the schedule's own text says it covers a GROUP of schools (a table headed "K-8 Schools", "All Elementary Schools", a row listing several campuses); otherwise null. Report the page's STATED scope, not your judgment.
+- "campus_names": ONLY when this schedule's own text covers a GROUP of schools, list each covered school's name EXACTLY as the page writes it (verbatim, in page order); otherwise []. Copy only names printed on the page — never invent, expand, or complete a name. If the page states the group WITHOUT naming its schools, [] is the correct answer.
+""").replace(
+    '"school_year":"2025-26","applies_to":null}]}',
+    '"school_year":"2025-26","applies_to":null,"campus_names":[]}]}')
+
+_EXTRACT_VISION_V4 = _EXTRACT_V4.replace(
+    "from the document text or images.",
+    "by reading the document IMAGE(S) — read the schedule spatially (columns, tables, multi-column layouts).")
+
 SYSTEM_PROMPTS = {
     "stage6.extract.v1": _EXTRACT_V1,
     "stage6.extract.vision.v1": _EXTRACT_VISION_V1,
@@ -102,6 +124,8 @@ SYSTEM_PROMPTS = {
     "stage6.extract.vision.v2": _EXTRACT_VISION_V2,
     "stage6.extract.v3": _EXTRACT_V3,
     "stage6.extract.vision.v3": _EXTRACT_VISION_V3,
+    "stage6.extract.v4": _EXTRACT_V4,
+    "stage6.extract.vision.v4": _EXTRACT_VISION_V4,
 }
 
 

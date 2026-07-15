@@ -1001,3 +1001,24 @@ class TestFingerprintGoldenHash:
     def test_fully_loaded_receipt_hash_is_pinned(self):
         # every human determination class populated — the forward shape
         assert CA.fingerprint(self.LOADED) == "4be74a6272136e06"
+
+    def test_council_campus_names_union_into_band_fact_and_scope_limited_conflicts(self):
+        _rosters = TestSlotSpine499()._rosters
+        # #499 REQ-148 (v4): the winning fact's campus_names unions into band_fact.campuses (feeding
+        # the campus fill), and a blanket that NAMES its campuses claims only those — a direct fact
+        # for a school OUTSIDE the stated list raises no conflict.
+        bf_fact = _fact("elementary", "all elementary schools", 380)
+        bf_fact["applies_to"] = "multiple"
+        bf_fact["campus_names"] = json.dumps(["Maple Elementary School"])  # persisted-JSON form
+        acc = [bf_fact, _fact("elementary", "oak", 400), _fact("elementary", "maple", 380)]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=2,
+            nces_by_level={"Elementary": 2}, schools_by_band={}, band_rosters=_rosters())
+        bf = out["bands"]["elementary"]["band_fact"]
+        assert bf["campuses"] == ["Maple Elementary School"]
+        # maple (in the stated list) agrees at 380 → no conflict; oak (400) is OUTSIDE the stated
+        # list → the blanket doesn't claim it → no conflict either
+        assert "slot_conflicts" not in out["negative_space"]
+        # and the named campus actually fills its slot via the campus fill
+        by_id = {s["school_id"]: s for s in out["bands"]["elementary"]["slots"]}
+        assert by_id["002"]["slot_state"] == "filled"

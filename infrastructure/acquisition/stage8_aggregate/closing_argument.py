@@ -411,10 +411,23 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
         if not m or key in excl_of or r["band"] in band_facts_in:
             continue
         w = fact_of.get(key)
+        # #499 v4 (REQ-148): the council's verbatim campus_names reading UNIONS with the name-side
+        # detector's roster-resolved campuses — both feed the deterministic campus fill (a junk or
+        # hallucinated name matches no roster slot and does nothing). Tolerates the parsed-list
+        # form (pure tests) and the persisted JSON column.
+        council_camps = []
+        if w:
+            cc = w[0].get("campus_names") or w[0].get("campus_names_json")
+            if isinstance(cc, str):
+                try:
+                    cc = json.loads(cc)
+                except (TypeError, ValueError):
+                    cc = []
+            council_camps = [c for c in (cc or []) if str(c).strip()]
         band_facts_in[r["band"]] = {
             "norm_school_fact": _norm(r["school"]), "school_display": r["school"],
             "kind": m.get("kind"), "source": m.get("source"),
-            "campuses": m.get("campuses") or [],
+            "campuses": sorted(set(m.get("campuses") or []) | set(council_camps)),
             "implied_bands": m.get("implied_bands") or [],
             "gross": r.get("gross"), "start_time": r.get("start"), "end_time": r.get("end"),
             "school_year": (w[0].get("school_year") if w else None)}
@@ -442,10 +455,16 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
                 # the fixed ladder (sufficiency → hub-exception → vintage). ADVICE only: rendered
                 # for the reviewer; both facts keep their votes (nothing auto-rejects).
                 if bf.get("gross") is not None:
+                    camp_base = {_norm(c) for c in (bf.get("campuses") or [])}
                     for s_ in p["slots"]:
                         mt = s_.get("match")
                         if not mt or mt.get("confidence") != "matched" \
                                 or "conjunction" in (mt.get("basis") or []):
+                            continue
+                        # v4 (REQ-148): a blanket that NAMES its campuses claims only those —
+                        # a direct fact for a school outside the stated list is no conflict.
+                        # Norm-key matching (page shorthand: live Santa Fe reads "Milagro").
+                        if camp_base and s_["norm_key"] not in camp_base:
                             continue
                         w = fact_of.get((band, mt["norm_school_fact"]))
                         d_gross = (w[2].get("gross") if w else None)
