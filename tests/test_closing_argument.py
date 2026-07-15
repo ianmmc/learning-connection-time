@@ -948,3 +948,50 @@ class TestSlotSpine499:
         frozen = copy.deepcopy(ca)
         frozen.get("negative_space", {}).pop("slot_assignments", None)
         assert CA.fingerprint(frozen) == CA.fingerprint(ca)
+
+
+class TestFingerprintGoldenHash:
+    """FITNESS FUNCTION (the 2026-07-14 mass-staleness incident): the fingerprint of these FIXED
+    synthetic receipts is pinned to literal hashes. If a change breaks this test, it ALTERS the
+    live fingerprint of every existing approval — every approved district flips to
+    'stale — re-review' with nothing for the human to re-review.
+
+    The incident: #257 (7ee1bd3) added _ex + an UNCONDITIONAL __band_exclusions__ basis entry,
+    silently staling all 17 prior approvals; #474 (138289b) added _ha the same day, staling the
+    one approved in between; PR-B's unconditional __slot_assignments__ nearly made it three
+    (caught by live review, PR-C). Nobody noticed for a day because staleness only renders when
+    a district is opened.
+
+    Before bumping a golden value you must EITHER (a) make the change backward-compatible — an
+    empty/absent input must hash exactly as before (conditional basis entries; never grow the
+    per-school tuple for rows that lack the new field) — OR (b) consciously accept mass
+    re-review and say so in the PR (at current district volume that's 'the price of development'
+    — Ian, 2026-07-15; at hundreds or thousands of districts it is not)."""
+
+    MINIMAL = {"district_id": "GOLDEN", "bands": {
+        "elementary": {"gross_minutes": 400, "schools": [
+            {"school": "oak", "gross": 400}, {"school": "maple", "gross": 390}]}},
+        "negative_space": {}}
+    LOADED = {"district_id": "GOLDEN", "bands": {
+        "elementary": {"gross_minutes": 400, "schools": [
+            {"school": "oak", "gross": 400,
+             "human_override": {"start_time": "08:00", "end_time": "14:40", "reason": "site"}},
+            {"school": "maple", "gross": 390,
+             "excluded": {"reason": "reconfigured", "actor": "ian"}},
+            {"school": "birch", "gross": 400,
+             "human_added": {"source_url": "https://x.test/bell",
+                             "reason": "council unreadable"}}]}},
+        "negative_space": {
+            "band_exclusions": [{"band": "elementary", "school": "maple",
+                                 "reason": "reconfigured"}],
+            "slot_assignments": [{"band": "elementary", "roster_school_id": "001",
+                                  "norm_school_fact": "oak", "school": "oak",
+                                  "disposition": "assign", "reason": "site", "actor": "ian"}]}}
+
+    def test_minimal_receipt_hash_is_pinned(self):
+        # a pre-#257-shaped receipt (no overrides/exclusions/adds/dispositions anywhere)
+        assert CA.fingerprint(self.MINIMAL) == "cf510ff67758a6aa"
+
+    def test_fully_loaded_receipt_hash_is_pinned(self):
+        # every human determination class populated — the forward shape
+        assert CA.fingerprint(self.LOADED) == "4be74a6272136e06"
