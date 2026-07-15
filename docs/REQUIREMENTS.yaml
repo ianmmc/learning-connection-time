@@ -3713,3 +3713,26 @@ requirements:
       pipeline: materialized at gate@1 (visible from batch creation), attributed at Stages 7/8
       (REQ-144/145/148), governed at gate@8 (REQ-146/147/149), and steering pursuit back into
       Stage 1 (this REQ). Epic #499 closes here."
+
+  - id: REQ-151
+    github_issue: "#120"
+    description: "Extraction-time mode-stability early-exit (district-grain): Stage 7 stops issuing paid council calls for a district once every fillable target band's running mode is stable; skipped reps are recorded as receipts, visible at gate@7, and remain dispatchable."
+    type: functional
+    priority: should
+    status: tested
+    acceptance_criteria:
+      - "After each rep, _run_district checks aggregate.mode_stable per fillable target band (claimed ∩ real, from district_target + school_sampling); when EVERY target band is stable, the remaining reps are skipped — recorded in the receipt's skipped_reps/early_exit (reason mode_stable), NEVER in reps (a skipped rep must not read as barren to the request loop)"
+      - "Unknown targets never exit: a missing district_target row, an empty fillable set, a target-lookup failure, or a disabled knob all degrade to the full census (unknown is never assumed satisfied)"
+      - "Probes (run_kind != production), GT-scored runs (gt_data passed), and batch_00000 members are exempt — measurement wants the census, not the shortcut"
+      - "extraction.n_reps_skipped (additive precious column, default 0) persists the count; the gate@7 header renders it (data-feat mode-stability-skip) so a band's n never reads as 'capture only found n'"
+      - "Params are config-as-data (stage7_mode_stability.json, schema-validated, arch-manifest-declared; window=5/min_n=3/min_share=0.6) — changed by PR, never console-editable; `enabled` is the ONE operational kill-switch, flippable from Settings (data-feat mode-stability-toggle, POST /api/stage7/mode-stability writes enabled + toggled_by/at back to the knob file)"
+    tests:
+      - tests/test_stage7_mode_stability.py
+      - tests/test_stage7_persist.py::test_persist_records_mode_stability_skip_count
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "Closes the extraction-time half of the sampling policy (METHODOLOGY.md 'Bell Schedule
+      Sampling Policy'; the queue-time cap=12/band half settled 2026-06-22). Auto-skip passes the
+      auto-act test (Ian, 2026-07-15): spend-conservative direction, failure observable at gate@8,
+      reversible via 7->6 re-dispatch of the skipped reps. Decision grain A (district: ALL fillable
+      target bands stable) — band-grain skip deferred until run data shows band-skew waste."

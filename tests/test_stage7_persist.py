@@ -73,6 +73,30 @@ def test_persist_writes_extraction_facts_and_event(gov_session):
     assert ev.state == "IA"    # #165: the extract event must carry the district state
 
 
+def test_persist_records_mode_stability_skip_count(gov_session):
+    """#120: an early-exited district's skipped-rep count lands on the extraction row (the console's
+    skip note reads it — a band's n must not read as 'capture only found n'). No skips ⇒ 0."""
+    gdb.init_precious_schema()
+    s = gov_session
+    run = _synthetic_run()
+    pd = run["districts"]["ZZTEST01"]
+    pd["skipped_reps"] = [{"rec_key": "ZZTEST01:s1", "file": "a.txt", "kind": "text",
+                           "council_id": "lc", "reason": "mode_stable"},
+                          {"rec_key": "ZZTEST01:s2", "file": "b.txt", "kind": "text",
+                           "council_id": "lc", "reason": "mode_stable"}]
+    pd["early_exit"] = {"reason": "mode_stable", "after_rep": 1, "n_reps_skipped": 2,
+                        "stable_bands": ["elementary"]}
+    summ = R7.persist_run_session(s, run, created_by="zz-test")
+    s.flush()
+    eid = summ["districts"][0]["extraction_id"]
+    assert s.execute(text("SELECT n_reps_skipped FROM extraction WHERE extraction_id = :e"),
+                     {"e": eid}).scalar() == 2
+    b = R7.persist_run_session(s, _synthetic_run(), created_by="zz-test")   # no skips ⇒ 0
+    s.flush()
+    assert s.execute(text("SELECT n_reps_skipped FROM extraction WHERE extraction_id = :e"),
+                     {"e": b["districts"][0]["extraction_id"]}).scalar() == 0
+
+
 def test_persist_appends_new_extraction_on_rerun(gov_session):
     gdb.init_precious_schema()
     s = gov_session

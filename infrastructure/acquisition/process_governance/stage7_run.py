@@ -25,6 +25,7 @@ from pathlib import Path
 from sqlalchemy import text
 
 from infrastructure.acquisition.common import budget as BUD
+from infrastructure.acquisition.common import config_loader as CFG
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import model_families as MF
@@ -142,7 +143,73 @@ def _group_reps_by_district(plan: list) -> dict:
     return by_did
 
 
-def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, use_judge: bool) -> dict:
+# ---------------------------------------------------------------------------
+# #120 — the extraction-time mode-stability early-exit (district-grain, decision A: Ian 2026-07-15).
+# The params are config-as-data (stage7_mode_stability.json — methodology, changed by PR); `enabled`
+# is the one operational field the Settings toggle may flip (the kill-switch).
+# ---------------------------------------------------------------------------
+def load_mode_stability() -> dict:
+    """The #120 knob's params. A missing/corrupt knob degrades to DISABLED — the full census is the
+    always-safe posture; never guess parameters."""
+    try:
+        return dict(CFG.load("stage7_mode_stability")["params"])
+    except Exception:  # noqa: BLE001 — degrade to the pre-#120 behavior, never crash a paid run
+        return {"enabled": False}
+
+
+def _bands_mode_stable(accepted: list, bands, p: dict) -> bool:
+    """True when EVERY band in `bands` has a stable running mode over the accepted facts so far
+    (arrival order — the order paid calls actually produced them). Empty/None `bands` is never
+    stable: unknown targets must not vacuously exit after the first rep."""
+    if not bands:
+        return False
+    for band in bands:
+        vals = [f["gross"] for f in accepted if f.get("band") == band and f.get("gross") is not None]
+        if not AGG.mode_stable(vals, window=p.get("window", 5), min_n=p.get("min_n", 3),
+                               min_share=p.get("min_share", 0.6)):
+            return False
+    return True
+
+
+def _early_exit_targets(district_ids) -> dict:
+    """{district_id: fillable target bands (claimed ∩ real)} for the #120 early-exit. A district is
+    ABSENT (→ no early exit, the full census) when its district_target row is missing (unknown is
+    never assumed satisfied) or it belongs to batch_00000 (the benchmark wants the census — GT
+    scoring measures the pipeline, the shortcut would measure the shortcut). Failure degrades to {}
+    — disabling the exit, never blocking the run."""
+    out: dict = {}
+    ids = list(district_ids)
+    if not ids:
+        return out
+    try:
+        with gdb.session_scope() as s:
+            walled = {r[0] for r in s.execute(
+                text("SELECT district_id FROM batch_district WHERE batch_id = 'batch_00000' "
+                     "AND district_id = ANY(:d)"), {"d": ids}).all()}
+            rows = s.execute(
+                text("SELECT district_id, lea_claimed_bands_json, schools_by_band_json, "
+                     "nces_by_level_json FROM district_target WHERE district_id = ANY(:d)"),
+                {"d": ids}).all()
+            for did, cj, sj, lj in rows:
+                if did in walled:
+                    continue
+                claimed = json.loads(cj) if cj else []
+                sbb = json.loads(sj) if sj else {}
+                by_level = json.loads(lj) if lj else {}
+                real = SS.real_bands_for_district(by_level, sbb,
+                                                  band_rosters=SS.band_rosters_for_district(did))
+                fillable = {b for b in claimed if b in real}
+                if fillable:
+                    out[did] = fillable
+    except Exception as e:  # noqa: BLE001 — advisory: no targets ⇒ no early exit, the run proceeds
+        print(f"[mode-stability] target lookup failed ({type(e).__name__}: {str(e)[:80]}) — "
+              f"early-exit disabled this run", flush=True)
+        return {}
+    return out
+
+
+def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, use_judge: bool,
+                  early_exit_bands=None, ms_params: dict = None) -> dict:
     """Run the full council over ONE district's reps and return its result dict (reps + per-model
     call detail, pooled accepted/unresolved facts, modal bands, telemetry). All the paid calls for a
     district happen here so the caller can persist it as a unit."""
@@ -216,6 +283,25 @@ def _run_district(did: str, name: str, rep_groups: list, councils: dict, ddir, u
         if rep_trunc:
             line += f"  ⚠ {rep_trunc} TRUNCATED"
         print(line, flush=True)
+
+        # #120 mode-stability early-exit (district-grain): once EVERY fillable target band's running
+        # mode is stable, the remaining reps are pure spend — stop, and record them as SKIPPED
+        # receipts (a separate list, never in `reps`: a skipped rep must not read as barren to the
+        # request loop, and it stays dispatchable via 7->6 if a human distrusts the value at gate@8).
+        if (i < n_total and ms_params and ms_params.get("enabled")
+                and _bands_mode_stable(pd["accepted"], early_exit_bands, ms_params)):
+            skipped = [{"rec_key": rg2.get("rec_key"), "file": rg2.get("file"),
+                        "kind": rg2.get("kind"), "council_id": rg2.get("council_id"),
+                        "reason": "mode_stable"} for rg2 in rep_groups[i:]]
+            pd["skipped_reps"] = skipped
+            pd["early_exit"] = {"reason": "mode_stable", "after_rep": i,
+                                "n_reps_skipped": len(skipped),
+                                "stable_bands": sorted(early_exit_bands),
+                                "params": {k: ms_params.get(k) for k in ("window", "min_n", "min_share")}}
+            print(f"  [rep {i}/{n_total}] {did} — mode stable on "
+                  f"{'/'.join(sorted(early_exit_bands))}; skipping {len(skipped)} remaining rep(s) "
+                  f"(#120)", flush=True)
+            break
 
     # Post-loop aggregation is guarded too (#183): a bug in band-modeling must not discard the reps
     # that already ran and were billed. On failure, keep the reps + telemetry (so the district still
@@ -346,6 +432,12 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
         cost_model = None
 
     run_kind = doc.get("run_kind") or "production"    # #148: probes (image_handoff_variant) stamp this
+    # #120: the mode-stability early-exit applies to PRODUCTION, non-GT-scored runs only — a probe
+    # measures a council variant and a GT run scores the pipeline; both want the full census.
+    ms_params = load_mode_stability()
+    ms_targets = (_early_exit_targets(by_district.keys())
+                  if ms_params.get("enabled") and run_kind == "production" and gt_data is None
+                  else {})
     results = {"handoff_hash": hh, "run_kind": run_kind, "districts": {}}
     for did in sorted(by_district):
         if did in done:
@@ -373,7 +465,8 @@ def run_council_streaming(doc: dict, *, use_judge: bool = True, persist: bool = 
         # BillingAuthError / SystemExit / KeyboardInterrupt still halt — they're not per-district.
         try:
             pd = _run_district(did, _district_name(doc, did), by_district[did], councils,
-                               ddirs.get(did), use_judge)
+                               ddirs.get(did), use_judge,
+                               early_exit_bands=ms_targets.get(did), ms_params=ms_params)
         except HALTING_EXCEPTIONS:
             raise                       # halt — never degrade a billing/auth failure to a skip (#189)
         except Exception as e:  # noqa: BLE001
@@ -598,7 +691,9 @@ def persist_run_session(s, results: dict, *, created_by: str = "auto:stage7",
         tel = pd.get("telemetry") or {}
         ex = M7.Extraction(
             handoff_hash=hh or "", district_id=did, created_by=created_by, run_kind=run_kind,
-            n_reps=pd.get("n_reps", 0), n_calls=tel.get("calls", 0),
+            n_reps=pd.get("n_reps", 0),
+            n_reps_skipped=len(pd.get("skipped_reps") or []),   # #120: the early-exit receipt count
+            n_calls=tel.get("calls", 0),
             n_judge_calls=tel.get("judge_calls", 0), n_errors=tel.get("errors", 0),
             prompt_tokens=tel.get("prompt_tokens", 0),
             completion_tokens=tel.get("completion_tokens", 0), cost_usd=tel.get("cost_usd", 0.0),

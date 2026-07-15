@@ -130,7 +130,8 @@
       {"file": "stage5_neg_calendar.json", "schema": "knob_baseline_list.schema.json"},
       {"file": "stage5_neg_sports.json", "schema": "knob_baseline_list.schema.json"},
       {"file": "stage5_neg_transport.json", "schema": "knob_baseline_list.schema.json"},
-      {"file": "stage5_positive_kw.json", "schema": "knob_baseline_list.schema.json"}
+      {"file": "stage5_positive_kw.json", "schema": "knob_baseline_list.schema.json"},
+      {"file": "stage7_mode_stability.json", "schema": "stage7_mode_stability.schema.json"}
     ]
   }
 }

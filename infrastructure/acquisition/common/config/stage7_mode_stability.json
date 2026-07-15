@@ -1,0 +1,14 @@
+{
+  "knob": "stage7_mode_stability",
+  "description": "#120 \u2014 the extraction-time mode-stability early-exit (the open half of the sampling policy, METHODOLOGY.md 'Bell Schedule Sampling Policy'). District-grain: Stage 7 stops issuing paid council calls for a district once EVERY fillable target band's running mode is stable (aggregate.mode_stable: cumulative mode on the \u00b115 grid unchanged over the last `window` schools AND holding \u2265 min_share of all values). Unsent reps are recorded as skipped receipts, visible at gate@7, and remain dispatchable (7->6). Probes, GT-scored runs, and batch_00000 are exempt \u2014 measurement wants the full census. Read by process_governance/stage7_run.py.",
+  "governance": "The numeric params are config-as-data ON PURPOSE (Ian, 2026-07-15): changing window/min_n/min_share mid-corpus changes what 'a stable mode' means district to district \u2014 methodology drift, reviewed by PR, with this file as the decision log. `enabled` is the ONE operational field the console may flip (Settings view, the gate-mode precedent): the kill-switch is observable and instantly reversible, and skipping is the spend-conservative direction (the auto-act test, #233 precedent) \u2014 a wrongly-locked mode is visible at gate@8 and reversible via re-dispatch of the skipped reps.",
+  "provenance": "bootstrap \u2014 window=5/min_n=3/min_share=0.6 as shipped (and unit-tested) in aggregate.mode_stable since the sampling-policy decision (2026-06); first wired live by #120.",
+  "params": {
+    "enabled": true,
+    "window": 5,
+    "min_n": 3,
+    "min_share": 0.6
+  },
+  "toggled_by": "ian",
+  "toggled_at": "2026-07-15T17:39:33Z"
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Knob: Stage 7 mode-stability early-exit (#120)",
+  "description": "Read by process_governance/stage7_run.py (load_mode_stability). `enabled` is the operational kill-switch the Settings toggle may flip (it also stamps toggled_by/toggled_at); the numeric params are methodology, changed by PR. Renaming a param key without updating stage7_run.py silently degrades to the defaults — this schema converts that into a suite failure.",
+  "type": "object",
+  "required": ["knob", "params"],
+  "properties": {
+    "knob": {"const": "stage7_mode_stability"},
+    "description": {"type": "string"},
+    "governance": {"type": "string"},
+    "provenance": {"type": "string"},
+    "toggled_by": {"type": "string"},
+    "toggled_at": {"type": "string"},
+    "params": {
+      "type": "object",
+      "required": ["enabled", "window", "min_n", "min_share"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "window": {"type": "integer", "minimum": 2},
+        "min_n": {"type": "integer", "minimum": 1},
+        "min_share": {"type": "number", "exclusiveMinimum": 0.5, "maximum": 1}
+      },
+      "additionalProperties": false
+    }
+  }
+}

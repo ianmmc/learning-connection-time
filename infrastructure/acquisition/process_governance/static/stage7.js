@@ -169,7 +169,7 @@
     return `
       <div class="s7-head">
         <h3>${esc(e.district_id)}</h3>
-        <div class="muted">${acc.length} accepted · ${unres.length} unresolved · ${usd(e.cost_usd)} · ${e.n_reps} rep${e.n_reps === 1 ? "" : "s"} · run ${esc(e.created_at)}</div>
+        <div class="muted">${acc.length} accepted · ${unres.length} unresolved · ${usd(e.cost_usd)} · ${e.n_reps} rep${e.n_reps === 1 ? "" : "s"}${e.n_reps_skipped ? ` · <span class="s7-skip" data-feat="mode-stability-skip">${e.n_reps_skipped} rep${e.n_reps_skipped === 1 ? "" : "s"} skipped — mode stable (#120)</span>` : ""} · run ${esc(e.created_at)}</div>
       </div>
       ${contaminationBanner(x.contamination)}
       <h4>Band rollup <span class="muted">(computed — Stage 8 owns the authoritative value)</span></h4>
