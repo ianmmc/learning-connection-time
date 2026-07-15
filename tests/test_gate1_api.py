@@ -152,6 +152,13 @@ def test_roster_spine_endpoint_shape(client, monkeypatch):
     null) when the CCD roster is unavailable. The roster is patched at closing_argument's own
     SS seam so the REAL load path (exclusions, dispositions, band facts) runs end to end."""
     from infrastructure.acquisition.process_governance import server as SRV
+    from infrastructure.acquisition.stage5_filter import build_signals as BS
+    # the real load path reads the REGENERABLE district/district_target signal tables — on a
+    # fresh CI database they only exist once some later test creates them (alphabetical order
+    # bit us live: this file runs before the stage7 ones); idempotent CREATE IF NOT EXISTS.
+    with gdb.session_scope() as con:
+        BS.ensure_signal_schema(con)
+        con.commit()
     rosters = {"high": {"total": 2, "by_source": {}, "schools": ["North SHS", "South SHS"],
                         "slot_recs": [
                             {"school_id": "X1", "name": "North SHS", "is_charter": "No",
