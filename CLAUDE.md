@@ -111,32 +111,35 @@ live in the governance DB; `handoff_<hash>_<ts>.json` under `data/acquisition/ha
 `district_status.json` into every commit — on a fresh clone run `git config core.hooksPath .githooks`
 (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-14):** the console runs the pipeline live through **gate@8**, which now has all
-four **editorial primitives** in daily use — #257 exclude-from-band, #258 name-level mismatch flags,
-#473 recover-band re-extraction, #474 cited-source human-add (PRs #487–#490; both motivating districts
-**approved live**: Coffee County `0100810` via exclusions, TUSD `3416500` via the first recover-band
-round-trip). New precious tables/backups joined the sweep: `band_exclusion` → `band_exclusions.json`,
-`human_added_fact` → `human_added_facts.json`. The **tracker is reorganized** (2026-07-14 triage): every
-open issue sits under one of 14 epics, grouped by the file/module a fix touches; the crossfam candidates
-remain individually unverified — triage-as-you-fix, closure-with-rationale is a first-class outcome.
-Foundations hardened first: stacked-PR guardrails + CI-on-all-PR-bases (#251, PR #483), shared-config
-JSON Schema fitness functions (REQ-124, PR #485), and the test-suite quality sweep (PR #486 — tautologies
-killed, theater deleted, 23 salvaged tests now actually run). Full story: `docs/PROJECT_HISTORY.md`'s
-2026-07-14 entry.
+**Current status (2026-07-15):** **epic #478 is fully CLOSED** — gate@8's four editorial primitives
+(#257/#258/#473/#474, both motivating districts approved live) plus its full tail: the **band-integrity
+family** — #253 (live NCES-derived band-serving denominator + combined-scope detector), #254 (v3
+`school_year`/`applies_to` readings + merge-precedence, unknown-year-coexists), #498 (the grade-band LEVEL
+carve-out, corpus-measured — one override + the 5-5/5-6/6-6 orphan ruling, plus a review-round fix for a
+real phantom-band correctness bug, REQ-143) — and #91 (Stage-5 extract-outcome calibration) + #229
+(console Exclusions view). **A retrospective requirements/tests audit + full doc-tower sweep then ran
+against current code as ground truth** (PR #501, open, CI green): 19 new `REQUIREMENTS.yaml` entries
+(REQ-125–REQ-143) formalizing gate@8's build that had only ever lived in GitHub issues, 29 new tests
+(including 2 standing fitness functions — `test_ci_workflows.py`, `test_suite_hygiene.py`), the 12
+`*_2026-06.md` living design-notes renamed (suffix dropped), and `ACQUISITION_PIPELINE.md`/`README.md`
+brought current (both had drifted badly — Stage 8 was still drawn "NOT BUILT," README still described the
+retired Crawlee+Ollama design as live). Full story: `docs/PROJECT_HISTORY.md`'s two newest entries.
 
-**Next (RESUME HERE — 2026-07-14):** **PR #490 (#473/#474 + TUSD receipts + a copy fix) is open, ready to
-merge** — merge it first. The agreed epic sequence (infrastructure → present-backwards through the
-pipeline → LCT foundation → Stage 9): **now in epic #478's tail** — (a) **#253** (combined-scope facts +
-K-8 topology distort the modal denominator — Santa Fe) and **#254** (school-year precedence in the fact
-merge; needs a v3 `school_year` extraction field) — design-first, they change the Stage-8 artifacts
-(#484's datacontract work waits on them); (b) **#91** (extract-outcome feedback → Stage-5 tuning). Then
-epics **#119** (Stage 7, +stage7.js pull-forwards) → **#106** (Stage 5/6) → **#111** (Stages 1-4) →
-liveness gate → **#479/#480** (LCT foundation sweeps) → **#92** (Stage 9 build). Parked: #475/#476
-(public extractions), #103/#80 (ramp-up/Council Lab), #484. Resume-essentials: `pip install -e .` →
-Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh clone only) →
-`lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect **~1353** pass) +
-`pytest -q -m govdb` (expect **216**, Postgres up). Full detail: `docs/PROJECT_HISTORY.md` (newest entry),
-`PIPELINE_GOVERNANCE_AND_STATE.md`, `STAGE8_AGGREGATE_DESIGN.md`.
+**Next (RESUME HERE — 2026-07-15):** **PR #501 (the requirements/docs sweep) is open, CI green, ready to
+merge** — merge it first, then sync off `docs/requirements-and-doctower-sweep` back to `main`. With #478
+fully closed, **the next workstream needs a decision, not just execution**: **#499** (the roster-template/
+school-slot spine #253's discussion motivated — Ian decided this is priority-now, not deferred, back-to-
+front build order: Stage 8 slot-view first, Stage 1 last) is the freshest agreed-priority item, but the
+OLDER standing epic sequence (infrastructure → present-backwards through the pipeline → LCT foundation →
+Stage 9) was never formally superseded: **#119** (Stage 7) → **#106** (Stage 5/6) → **#111** (Stages 1-4)
+→ liveness gate → **#479/#480** (LCT foundation sweeps) → **#92** (Stage 9 build). **Reconcile where #499
+slots into that sequence as the first order of business next session** — don't silently pick one. Parked:
+#475/#476 (public extractions), #103/#80 (ramp-up/Council Lab), #484 (datacontract Part 2 — #478's
+blocker cleared, needs its own REQ once scheduled). Resume-essentials: `pip install -e .` → Docker up
+(`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh clone only) → `lint-imports`
+(expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect **~1447** pass) + `pytest -q -m
+govdb` (expect **~218**, Postgres up). Full detail: `docs/PROJECT_HISTORY.md` (newest entries),
+`PIPELINE_GOVERNANCE_AND_STATE.md`, `STAGE8_AGGREGATE_DESIGN.md`, `docs/REQUIREMENTS.yaml` (REQ-125–143).
 
 ---
 
