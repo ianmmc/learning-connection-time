@@ -883,3 +883,68 @@ class TestSlotSpine499:
         cont = out["negative_space"]["contamination"]
         assert cont["suspected"] is True
         assert "oak" in cont["roster_matched"] and "maple" in cont["roster_matched"]
+
+    def test_band_fact_attaches_and_projects(self):
+        # REQ-146: a group-descriptor row becomes the band node's fact — one vote, projected slots
+        acc = [_fact("elementary", "k8 schools", 400), _fact("elementary", "oak", 400)]
+        rosters = {"elementary": {
+            "total": 3, "by_source": {"level_clean": 3, "grade_span": 0, "level_override": 0},
+            "schools": ["Oak Elementary School", "Maple Elementary School",
+                        "Birch Elementary School"],
+            "slot_recs": [
+                {"school_id": "001", "name": "Oak Elementary School", "is_charter": "No",
+                 "gslo": "KG", "gshi": "05", "level": "Elementary",
+                 "effective_band": "elementary", "source": "level_clean"},
+                {"school_id": "002", "name": "Maple Elementary School", "is_charter": "No",
+                 "gslo": "KG", "gshi": "05", "level": "Elementary",
+                 "effective_band": "elementary", "source": "level_clean"},
+                {"school_id": "003", "name": "Birch Elementary School", "is_charter": "No",
+                 "gslo": "KG", "gshi": "05", "level": "Elementary",
+                 "effective_band": "elementary", "source": "level_clean"}]},
+            "_year": "2024_25"}
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=3,
+            nces_by_level={"Elementary": 3}, schools_by_band={}, band_rosters=rosters)
+        el = out["bands"]["elementary"]
+        bf = el["band_fact"]
+        assert bf["kind"] == "group_descriptor" and bf["gross"] == 400
+        assert bf["projection"]["n_projected"] == 2            # maple + birch covered, not observed
+        assert el["slot_stats"]["n_filled"] == 1               # oak observed directly
+        # the band fact voted ONCE: n_sampled counts it as one school row, not per-slot
+        assert el["sampling"]["n_sampled"] == 2
+        # its name is band-grain, not an unmatched extra
+        assert el["slot_extras"] == []
+
+    def test_slot_conflict_resolved_by_ladder(self):
+        # a direct fact disagreeing with the blanket → negative_space.slot_conflicts with advice
+        acc = [_fact("elementary", "all elementary schools", 380),
+               _fact("elementary", "oak", 400), _fact("elementary", "maple", 400),
+               _fact("elementary", "birch", 400)]
+        rosters = self._rosters()
+        rosters["elementary"]["slot_recs"].append(
+            {"school_id": "003", "name": "Birch El Sch", "is_charter": "No", "gslo": "KG",
+             "gshi": "05", "level": "Elementary", "effective_band": "elementary",
+             "source": "level_clean"})
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=3,
+            nces_by_level={"Elementary": 3}, schools_by_band={}, band_rosters=rosters)
+        confs = out["negative_space"]["slot_conflicts"]
+        assert len(confs) == 3                                  # each direct slot vs the blanket
+        assert all(c["band_fact_gross"] == 380 and c["direct_gross"] == 400 for c in confs)
+        # mode 400 over 4 votes (3 direct + blanket 380): plurality 0.75, n_sampled 4 → rung (a)
+        assert all(c["rung"] == "sample_sufficiency" and c["leans"] == "direct" for c in confs)
+
+    def test_no_dispositions_fingerprint_is_backward_compatible(self):
+        # PR-C review-of-live-data regression: the empty-dispositions basis must hash exactly as a
+        # pre-REQ-145 receipt (no slot_assignments key) — otherwise every pre-#499 approval reads
+        # 'stale' with nothing for the human to re-review. The basis entry appears ONLY when a
+        # disposition exists. (The 2026-07-14 mass staleness is a PRE-#499 condition — verified by
+        # re-hashing the frozen receipts with 637920c-era code — but #499 must not add to it.)
+        import copy
+        acc = [_fact("elementary", "oak", 400)]
+        ca = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=2,
+            nces_by_level={"Elementary": 2}, schools_by_band={})
+        frozen = copy.deepcopy(ca)
+        frozen.get("negative_space", {}).pop("slot_assignments", None)
+        assert CA.fingerprint(frozen) == CA.fingerprint(ca)

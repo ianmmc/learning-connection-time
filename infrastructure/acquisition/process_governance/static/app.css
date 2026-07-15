@@ -579,3 +579,4 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 .s8-slot-ambiguous { border-color: var(--status-warning, #b45309); color: var(--status-warning, #b45309); }
 .s8-slot-extra { border-color: var(--text-brand); color: var(--text-brand); }
 .s8-slot-charter { font-size: 0.85em; color: var(--text-secondary); border: 1px solid var(--border-subtle); border-radius: 3px; padding: 0 3px; }
+.s8-slot-projected { border-style: dotted; color: var(--text-secondary); background: var(--surface-alt); }

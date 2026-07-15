@@ -177,7 +177,10 @@ def test_stage8_console_carries_the_exclusion_ui_markers():
                    'data-feat="slot-extra-confirm"', 'data-feat="slot-intent-hint"',
                    'data-feat="slot-disposition-remove"',
                    "/api/aggregate/slot-assign",
-                   'pushFlag("slot-orphaned-disposition"'):
+                   'pushFlag("slot-orphaned-disposition"',
+                   # #499 REQ-146: band-grain fact + projection + the conflict ladder
+                   'data-feat="band-fact"', 'data-feat="slot-projected"',
+                   'data-feat="conflict-rung"', 'pushFlag("slot-conflict"'):
         assert marker in js, f"stage8.js lost the marker {marker!r}"
     css = (Path(SRV.__file__).parent / "static" / "app.css").read_text()
     assert "line-through" in css and ".s8-excluded" in css

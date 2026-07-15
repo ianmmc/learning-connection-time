@@ -398,15 +398,69 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
     for r in included_agg:
         facts_by_band.setdefault(r["band"], []).append(
             {"school": r["school"], "rec_key": r.get("rec_key")})
+
+    # #499 REQ-146: the band-grain fact — the band's INCLUDED combined-scope row (a blanket group
+    # descriptor / council-stated scope, or a conjunction with resolved campuses). It attaches to
+    # the BAND NODE: votes once in the mode (it already does, as one row), never per projected
+    # slot; the projection marks the slots it covers. One per band (first by school key —
+    # deterministic); additional combined-scope rows keep their per-row flags.
+    band_facts_in = {}
+    for r in included_agg:
+        key = (r["band"], _norm(r["school"]))
+        m = cs_of.get(key)
+        if not m or key in excl_of or r["band"] in band_facts_in:
+            continue
+        w = fact_of.get(key)
+        band_facts_in[r["band"]] = {
+            "norm_school_fact": _norm(r["school"]), "school_display": r["school"],
+            "kind": m.get("kind"), "source": m.get("source"),
+            "campuses": m.get("campuses") or [],
+            "implied_bands": m.get("implied_bands") or [],
+            "gross": r.get("gross"), "start_time": r.get("start"), "end_time": r.get("end"),
+            "school_year": (w[0].get("school_year") if w else None)}
+
     slot_proj = (SP.project_slots(band_rosters, facts_by_band,
                                   assignments=slot_assignments,
-                                  intent_by_reckey=intent_by_reckey)
+                                  intent_by_reckey=intent_by_reckey,
+                                  band_facts=band_facts_in)
                  if band_rosters else {})
+    slot_conflicts = []
     for band, p in slot_proj.items():
         if band in out_bands:
             out_bands[band]["slots"] = p["slots"]
             out_bands[band]["slot_extras"] = p["extras"]
             out_bands[band]["slot_stats"] = p["stats"]
+            bf = band_facts_in.get(band)
+            if bf:
+                out_bands[band]["band_fact"] = {
+                    **bf,
+                    "projection": {
+                        "n_projected": p["stats"].get("n_projected", 0),
+                        "slot_keys": [s_["norm_key"] for s_ in p["slots"]
+                                      if s_.get("slot_state") == "projected"]}}
+                # #499 REQ-146: a directly-observed slot disagreeing with the blanket — resolve by
+                # the fixed ladder (sufficiency → hub-exception → vintage). ADVICE only: rendered
+                # for the reviewer; both facts keep their votes (nothing auto-rejects).
+                if bf.get("gross") is not None:
+                    for s_ in p["slots"]:
+                        mt = s_.get("match")
+                        if not mt or mt.get("confidence") != "matched" \
+                                or "conjunction" in (mt.get("basis") or []):
+                            continue
+                        w = fact_of.get((band, mt["norm_school_fact"]))
+                        d_gross = (w[2].get("gross") if w else None)
+                        if d_gross is None or d_gross == bf["gross"]:
+                            continue
+                        verdict = SP.resolve_slot_conflict(
+                            {"gross": d_gross, "school": s_["roster_school"],
+                             "school_year": (w[0].get("school_year") if w else None)},
+                            bf, out_bands[band]["sampling"] | {
+                                "gross_minutes": out_bands[band]["gross_minutes"]})
+                        slot_conflicts.append({
+                            "band": band, "school": mt.get("school_display"),
+                            "roster_school": s_["roster_school"],
+                            "direct_gross": d_gross, "band_fact_gross": bf["gross"],
+                            "band_fact_display": bf["school_display"], **verdict})
 
     # #258: name-vs-level mismatch flags, both surfaces. The ROSTER side catches the Coffee County
     # signature at its source ('Zion Chapel High School', NCES-tagged Other, placed in elementary by
@@ -502,6 +556,11 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
         "unattributed_level_schools": {lvl: n for lvl, n in (nces_by_level or {}).items()
                                        if lvl not in SS.LEVEL_BAND},
     }
+
+    # #499 REQ-146: slot conflicts — direct observation vs blanket statement, with the ladder's
+    # advice. Never a resolution: the reviewer disposes (override / exclude / more data).
+    if slot_conflicts:
+        negative_space["slot_conflicts"] = slot_conflicts
 
     # #499 REQ-145: the standing slot dispositions — surfaced (audit) and fingerprinted (a
     # disposition is a human determination that moves which slot a vote lands on); orphaned ones
@@ -631,10 +690,15 @@ def fingerprint(ca):
     # #499 REQ-145: slot dispositions are human determinations (an assign moves which slot a vote
     # lands on; a confirm_extra moves the denominator) — they stale an approval like an override
     # does. Slot STATS / roster drift stay excluded: NCES churn must never stale a signed decision.
+    # Appended ONLY when non-empty (PR-C review of live data): an unconditional append changed the
+    # live fingerprint of EVERY pre-#499 approval (TUSD, Coffee County, Santa Fe…) — no-dispositions
+    # districts read 'stale — re-review' with nothing for the human to re-review. The empty case
+    # must hash exactly as it did before REQ-145 existed.
     assignments = sorted(((a.get("band"), a.get("roster_school_id"), a.get("norm_school_fact"),
                            a.get("disposition"), a.get("reason"))
                           for a in ca.get("negative_space", {}).get("slot_assignments", [])), key=str)
-    basis.append(("__slot_assignments__", assignments))
+    if assignments:
+        basis.append(("__slot_assignments__", assignments))
     return hashlib.sha256(json.dumps(basis, sort_keys=True, default=str).encode()).hexdigest()[:16]
 
 

@@ -3579,3 +3579,30 @@ requirements:
       the intent prior adopted as tie-breaker only (Ian's observation — the deterministic join
       fact→rec_key→record.intended_schools_json existed end-to-end unused). Next: PR-C band-fact
       projection + conflict ladder (REQ-146)."
+
+  - id: REQ-146
+    github_issue: "#499 (PR-C)"
+    description: "Band-grain facts — a blanket statement attaches to the band node (votes ONCE, never per projected slot), projects onto unheard slots as a visible third state; slot conflicts resolve by the fixed ladder sample-sufficiency → hub-exception → vintage, as rendered ADVICE only."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "A band's INCLUDED combined-scope fact (name-side group_descriptor / council applies_to==multiple / conjunction) becomes bands[b].band_fact — band-grain: its name never fills a slot and is never an unmatched-extra; it votes exactly once in the band mode (the Santa Fe per-slot inflation #253 fixed must never return)"
+      - A conjunction's roster-resolved campuses FILL their named slots (basis conjunction) — one page stating times for N schools is N schools' coverage, still one vote
+      - A blanket kind projects slot_state "projected" onto every remaining unfilled slot (covered by the statement, not individually observed); ambiguous slots are NOT projected over (a direct fact awaiting disposition is stronger information than a blanket)
+      - "resolve_slot_conflict evaluates the FIXED rung order: (a) sample_sufficiency (n_sampled >= 3 AND plurality >= 0.6 — lean toward whichever side sits on the reliable mode; neither side on it decides nothing), then (b) hub_exception (the blanket's own source names the school as an exception — fed by v4's readings, passes through until then), then (c) vintage (#254: newer known year leans; dated beats undated; unknown-vs-unknown decides nothing); otherwise rung unresolved, leans None"
+      - The ladder's output is ADVICE — rendered in negative_space.slot_conflicts with rung + leans + note; both facts keep their votes until a human disposes (nothing auto-rejects)
+      - Console renders the band-fact line, projected chips, and conflict flags (data-feat band-fact / slot-projected / slot-conflict / conflict-rung), guarded by the console-features grep test
+    tests:
+      - tests/test_slot_spine.py::TestBandFactProjection
+      - tests/test_slot_spine.py::TestConflictLadder
+      - tests/test_closing_argument.py::TestSlotSpine499::test_band_fact_attaches_and_projects
+      - tests/test_closing_argument.py::TestSlotSpine499::test_slot_conflict_resolved_by_ladder
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "The third slice of #499 (PR-C). The conflict ladder's order was Ian's revised dictation
+      (2026-07-14, recorded on #253): band-sample sufficiency FIRST (confident band-level
+      declarations, not per-school accuracy), hub-exception second, vintage last. Ladder thresholds
+      are CONFLICT_MIN_SAMPLED/CONFLICT_MIN_PLURALITY constants in slot_spine.py. Rung (b) becomes
+      live when PR-E's v4 campus/exception readings land. #484's datacontract may resume after this
+      PR (the last artifact-shape changes)."

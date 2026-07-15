@@ -30,7 +30,7 @@ class TestProjectSlots:
         assert by_id["001"]["match"]["confidence"] == "matched"
         assert by_id["001"]["match"]["basis"] == ["exact_name"]
         assert by_id["002"]["slot_state"] == "unfilled" and by_id["002"]["match"] is None
-        assert el["stats"] == {"n_slots": 2, "n_filled": 1, "n_unfilled": 1,
+        assert el["stats"] == {"n_slots": 2, "n_filled": 1, "n_projected": 0, "n_unfilled": 1,
                                "n_extras": 0, "n_ambiguous": 0, "slot_coverage": 0.5}
 
     def test_unmatched_extra_is_first_class(self):
@@ -217,3 +217,103 @@ class TestDispositions:
                                assignments=[_asg("high", "", "lakeside", "confirm_extra")])
         kinds = [o["kind"] for o in out["high"]["orphaned_dispositions"]]
         assert "extra_now_in_roster" in kinds
+
+
+class TestBandFactProjection:
+    """REQ-146: band-grain facts — conjunction fills named slots; blankets project; the band
+    fact's own name is never an extra."""
+
+    def _rosters3(self):
+        return _rosters({"elementary": [_rec("001", "Milagro Elementary School"),
+                                        _rec("002", "Ortiz Elementary School"),
+                                        _rec("003", "Sunset Elementary School")]})
+
+    def test_conjunction_fills_named_slots(self):
+        bf = {"norm_school_fact": "milagro and ortiz", "school_display": "milagro and ortiz schools",
+              "kind": "conjunction",
+              "campuses": ["Milagro Elementary School", "Ortiz Elementary School"]}
+        out = SP.project_slots(self._rosters3(), {"elementary": ["milagro and ortiz schools"]},
+                               band_facts={"elementary": bf})
+        by_id = {s["school_id"]: s for s in out["elementary"]["slots"]}
+        assert by_id["001"]["slot_state"] == "filled"
+        assert by_id["001"]["match"]["basis"] == ["conjunction"]
+        assert by_id["002"]["slot_state"] == "filled"
+        assert by_id["003"]["slot_state"] == "unfilled"       # conjunction never blankets
+        assert out["elementary"]["extras"] == []              # the group name is not an extra
+        assert out["elementary"]["stats"]["n_filled"] == 2
+
+    def test_blanket_projects_onto_unheard_slots_only(self):
+        bf = {"norm_school_fact": "k8", "school_display": "k8 schools",
+              "kind": "group_descriptor", "campuses": []}
+        out = SP.project_slots(self._rosters3(),
+                               {"elementary": ["k8 schools", "milagro"]},
+                               band_facts={"elementary": bf})
+        by_id = {s["school_id"]: s for s in out["elementary"]["slots"]}
+        assert by_id["001"]["slot_state"] == "filled"          # direct fact wins the slot
+        assert by_id["002"]["slot_state"] == "projected"
+        assert by_id["002"]["projected_by"] == "k8"
+        assert by_id["003"]["slot_state"] == "projected"
+        st = out["elementary"]["stats"]
+        assert st["n_filled"] == 1 and st["n_projected"] == 2 and st["n_unfilled"] == 0
+
+    def test_blanket_does_not_project_over_ambiguous(self):
+        rosters = _rosters({"elementary": [_rec("001", "Washington Elementary School"),
+                                           _rec("002", "Washington Academy")]})
+        bf = {"norm_school_fact": "all elementary", "school_display": "All Elementary Schools",
+              "kind": "group_descriptor", "campuses": []}
+        out = SP.project_slots(rosters, {"elementary": ["All Elementary Schools", "washington"]},
+                               band_facts={"elementary": bf})
+        # the ambiguous direct fact is STRONGER information than the blanket — slots stay ambiguous
+        assert out["elementary"]["stats"]["n_ambiguous"] == 1
+        assert out["elementary"]["stats"]["n_projected"] == 0
+
+
+class TestConflictLadder:
+    """REQ-146: fixed rung order sufficiency → hub-exception → vintage; advice only."""
+
+    def test_rung_a_reliable_mode_direct_on_mode(self):
+        v = SP.resolve_slot_conflict({"gross": 400, "school": "Oak"}, {"gross": 380},
+                                     {"n_sampled": 4, "plurality_share": 0.75,
+                                      "gross_minutes": 400})
+        assert v["rung"] == "sample_sufficiency" and v["leans"] == "direct"
+
+    def test_rung_a_blanket_on_mode(self):
+        v = SP.resolve_slot_conflict({"gross": 380, "school": "Oak"}, {"gross": 400},
+                                     {"n_sampled": 4, "plurality_share": 0.75,
+                                      "gross_minutes": 400})
+        assert v["rung"] == "sample_sufficiency" and v["leans"] == "band_fact"
+
+    def test_rung_a_skipped_when_band_thin_then_b_fires(self):
+        # n < 3: sufficiency can't decide; the exception list (v4's reading) names the school
+        v = SP.resolve_slot_conflict({"gross": 400, "school": "Oak K-8"}, {"gross": 380},
+                                     {"n_sampled": 2, "plurality_share": 1.0,
+                                      "gross_minutes": 400},
+                                     exceptions=["Oak K-8"])
+        assert v["rung"] == "hub_exception" and v["leans"] == "direct"
+
+    def test_rung_c_vintage_newer_year_leans(self):
+        v = SP.resolve_slot_conflict({"gross": 400, "school": "Oak", "school_year": "2025-26"},
+                                     {"gross": 380, "school_year": "2024-25"},
+                                     {"n_sampled": 1, "plurality_share": None,
+                                      "gross_minutes": None})
+        assert v["rung"] == "vintage" and v["leans"] == "direct"
+
+    def test_rung_c_dated_beats_undated(self):
+        v = SP.resolve_slot_conflict({"gross": 400, "school": "Oak"},
+                                     {"gross": 380, "school_year": "2025-26"},
+                                     {"n_sampled": 1, "plurality_share": None,
+                                      "gross_minutes": None})
+        assert v["rung"] == "vintage" and v["leans"] == "band_fact"
+
+    def test_unresolved_when_no_rung_decides(self):
+        v = SP.resolve_slot_conflict({"gross": 400, "school": "Oak"}, {"gross": 380},
+                                     {"n_sampled": 2, "plurality_share": 1.0,
+                                      "gross_minutes": 400})
+        assert v["rung"] == "unresolved" and v["leans"] is None
+
+    def test_rung_a_neither_on_mode_falls_through(self):
+        # a reliable mode neither side sits on decides nothing (both are outliers)
+        v = SP.resolve_slot_conflict({"gross": 350, "school": "Oak"}, {"gross": 380},
+                                     {"n_sampled": 5, "plurality_share": 0.8,
+                                      "gross_minutes": 400})
+        assert v["rung"] == "unresolved"
