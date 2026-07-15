@@ -24,17 +24,19 @@
     loadDataYears();
     loadModes();
     loadExplorationAudit();
+    loadExclusions();
   };
 
   function renderShell() {
-    // Two-pane shape (Ian, 2026-07-14): the left pane is a settings-GROUP nav — one "General
-    // Settings" group today, kept (rather than collapsing to a single pane) so future groups can
-    // split out without another layout rework.
+    // Two-pane shape (Ian, 2026-07-14): the left pane is a settings-GROUP nav. Two groups today:
+    // General Settings and Exclusions (#229 UX rework — the standing excluded corpus reads here,
+    // not as a wall of names inline in every gate@1 batch view).
     $g("#settingsview").innerHTML = `
       <nav class="col settings-nav" aria-label="Settings groups">
-        <div class="settings-nav-item active">General Settings</div>
+        <div class="settings-nav-item active" data-group="general">General Settings</div>
+        <div class="settings-nav-item" data-group="exclusions" data-feat="exclusions-nav">Exclusions</div>
       </nav>
-      <section class="col col-center settings-panel">
+      <section class="col col-center settings-panel" data-group-panel="general">
         <h2>Data years <span class="muted">(derived — nothing here is hand-bumped except the NCES vintage)</span></h2>
         <div id="settings-years" class="settings-years"><div class="empty">Loading…</div></div>
         <h2 class="settings-audit-h">Gate automation <span class="muted">(ramp-up control surface)</span></h2>
@@ -49,7 +51,58 @@
           <strong>demotes to manual</strong> (census mode) — it never halts the pipeline. Today the audit is
           <strong>informational</strong>: gate@5 is manual (census-labeling), so the control law is inert.</p>
         <div id="settings-audit" class="settings-audit"><div class="empty">Loading…</div></div>
+      </section>
+      <section class="col col-center settings-panel hidden" data-group-panel="exclusions">
+        <h2>Exclusions <span class="muted">(the standing pre-queue refusals — derived live from NCES)</span></h2>
+        <p class="muted">Districts and schools every batch draw excludes by rule. The per-batch refusal
+          receipt still renders (collapsed) on each batch at gate@1; this is the corpus-wide view, so a
+          new batch never needs scrolling a wall of names to understand what was refused.</p>
+        <div id="settings-exclusions" class="settings-years"><div class="empty">Loading…</div></div>
       </section>`;
+    // Group switching: the nav is the one source of which panel shows (grows by adding a nav item
+    // + a matching data-group-panel section — no layout rework per group).
+    $g("#settingsview").querySelectorAll(".settings-nav-item").forEach((it) =>
+      it.addEventListener("click", () => {
+        $g("#settingsview").querySelectorAll(".settings-nav-item").forEach((e) =>
+          e.classList.toggle("active", e === it));
+        $g("#settingsview").querySelectorAll("[data-group-panel]").forEach((p) =>
+          p.classList.toggle("hidden", p.dataset.groupPanel !== it.dataset.group));
+      }));
+  }
+
+  // Settings → Exclusions (#229 UX rework): the standing excluded corpus + the rules, read-only.
+  async function loadExclusions() {
+    const box = $g("#settings-exclusions");
+    if (!box) return;
+    try {
+      const d = await api("/api/exclusions");
+      if (!d.available) {
+        box.innerHTML = `<div class="empty">Live corpus unavailable — ${esc(d.reason || "NCES files not on disk")}.</div>`;
+        return;
+      }
+      const nd = d.no_domain || {}, gg = d.grade_span_gap || {};
+      const states = Object.entries(nd.by_state || {}).sort((a, b) => b[1] - a[1]);
+      box.innerHTML = `
+        <div class="audit-grid">
+          <div class="audit-stat"><span class="audit-k">No usable NCES domain (#229)</span>
+            <span class="audit-v">${nd.count} district${nd.count === 1 ? "" : "s"} <span class="muted">(would run unscoped discovery — hard refusal)</span></span></div>
+          <div class="audit-stat"><span class="audit-k">Grade-span integrity gap</span>
+            <span class="audit-v">${gg.count} district${gg.count === 1 ? "" : "s"} <span class="muted">(a claimed band with no NCES school to fill it)</span></span></div>
+          <div class="audit-stat"><span class="audit-k">NCES vintage</span>
+            <span class="audit-v">${esc(d.nces_year)} <span class="muted">(live derivation)</span></span></div>
+        </div>
+        <p class="muted" data-feat="exclusions-criteria">School-level criteria: ${esc(d.school_criteria)}</p>
+        <details data-feat="exclusions-no-domain"><summary><strong>No-domain districts by state</strong> — ${states.map(([s, n]) => `${esc(s)} ${n}`).join(" · ")}</summary>
+          <ul class="audit-list">${(nd.districts || []).map((e) =>
+            `<li>${esc(e.name)} <span class="muted">[${esc(e.state)}] ${esc(e.district_id)} · website=${esc(JSON.stringify(e.website))}</span></li>`).join("")}</ul>
+        </details>
+        <details data-feat="exclusions-gap"><summary><strong>Grade-span-gap districts</strong> (${gg.count})</summary>
+          <ul class="audit-list">${(gg.districts || []).map((e) =>
+            `<li>${esc(e.name)} <span class="muted">[${esc(e.state)}] ${esc(e.district_id)} · gap: ${(e.gap_bands || []).map(esc).join(", ")}</span></li>`).join("")}</ul>
+        </details>`;
+    } catch (_) {
+      box.innerHTML = `<div class="empty">Failed to load the exclusions corpus.</div>`;
+    }
   }
 
   // Data-year facts (/api/data-years): the derived current school year + the NCES CCD vintage.

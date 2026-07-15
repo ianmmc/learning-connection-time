@@ -363,6 +363,14 @@ def _virtual_ids(year):
                 ids.add(row.get("NCESSCH", ""))
     return ids
 
+# #253/#229: the ONE human-readable statement of what the school-level eligibility criteria count —
+# shown wherever a denominator or exclusion figure appears (gate@8 sampling stats, the Settings
+# Exclusions view), so an auditor never has to guess what's absent from a count.
+SCHOOL_CRITERIA_TEXT = ("Open, regular NCES schools only (virtual, alternative, special-ed and "
+                        "adult-ed campuses excluded; standalone preschools excluded). A school "
+                        "counts toward every band its NCES LEVEL or its own grade span serves — "
+                        "a K-8 counts toward elementary AND middle.")
+
 REGULAR_SCH_TYPE = "Regular School"  # NCES SCH_TYPE_TEXT enum: Regular / Special Education /
 # Career and Technical / Alternative. Only "Regular School" is reliably representative of a
 # normal academic day for bell-schedule sampling purposes (decided 2026-06-22, after Olympic
