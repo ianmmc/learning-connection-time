@@ -10096,6 +10096,14 @@
     "updated_at": "2026-07-04T05:21:52Z"
   },
   {
+    "rec_key": "4832910:0983ac27a6",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T05:31:34Z"
+  },
+  {
     "rec_key": "4842720:8e07018c31",
     "primary_label": "target_absent",
     "facets_json": "{}",

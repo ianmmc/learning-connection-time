@@ -558,8 +558,8 @@ Consolidated 2026-07-02 from the former standalone `QA_DASHBOARD.md` (archived, 
 
 **Generate + view:**
 ```bash
-python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2023-24
-cat data/enriched/lct-calculations/lct_qa_report_2023_24_<timestamp>.json | jq
+python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2024-25
+cat data/enriched/lct-calculations/lct_qa_report_2024_25_<timestamp>.json | jq
 ```
 
 **Console output** (abbreviated):
@@ -921,7 +921,7 @@ LCT calculations use a **layered architecture** with State Education Agency (SEA
 
 | Source | Type | Latest Year | Coverage | Access |
 |--------|------|-------------|----------|--------|
-| NCES CCD | Federal | 2023-24 | National (17,842 districts) | CSV download |
+| NCES CCD | Federal | 2024-25 | National (17,842 districts; verified ingested 2026-07-14, 93,612 `lct_calculations` rows) | CSV download |
 | CRDC | Federal | 2021-22 | National (biennial) | Data portal |
 | Census School Finance | Federal | 2022-23 | National | CSV download |
 | State Portals | State | 2022-23 typical | State-specific | Varies |

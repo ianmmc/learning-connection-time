@@ -126,10 +126,11 @@ details: [DATABASE_SETUP.md → "Two databases"](DATABASE_SETUP.md#two-databases
 ### 3. Run Tests
 
 ```bash
-# Fast, resource-free suite (what CI's first job runs; ~700 tests)
+# Fast, resource-free suite (what CI's first job runs; ~1450 tests — check CLAUDE.md's
+# resume-essentials for the live count, it grows with every merged PR)
 pytest -q -m "not integration"
 
-# Governance-DB suite (needs Docker Postgres up; CI's second job)
+# Governance-DB suite (needs Docker Postgres up; CI's second job; ~218 tests, same caveat)
 pytest -q -m govdb
 
 # Everything, verbose
@@ -271,7 +272,7 @@ Not tracked here — it changes too fast for a static doc to keep up. Root `CLAU
 authority (what's built, what's running, what's next); day-to-day task tracking is in GitHub Issues/Projects.
 For the pipeline architecture itself (stable, not status): `docs/ACQUISITION_PIPELINE.md` (the map),
 `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE.md` (governance/DB/gate model), and each
-`docs/technical-notes/STAGE*_DESIGN_2026-06.md` (per-stage present state).
+`docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE*_DESIGN.md` (per-stage present state).
 
 ---
 

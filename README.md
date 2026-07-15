@@ -57,13 +57,18 @@ This reframes "20:1 student-teacher ratio" into a more visceral equity metric.
 # 1. Set up Python environment
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip install -e .
 
-# 2. Start the database (Docker)
+# 2. Fresh clone only: point git at the tracked pre-commit hook (sweeps precious
+#    acquisition-pipeline state into every commit — see docs/GETTING_STARTED.md §1b)
+git config core.hooksPath .githooks
+
+# 3. Start the database (Docker — never `brew services start postgresql`, the
+#    .env is configured for the Docker container)
 docker-compose up -d
 
-# 3. Calculate LCT metrics from the database
-python3 infrastructure/scripts/analyze/calculate_lct_variants.py --year 2023-24
+# 4. Calculate LCT metrics from the database
+python3 infrastructure/scripts/analyze/calculate_lct_variants.py --year 2024-25
 ```
 
 ### Check Current Campaign Progress
@@ -83,28 +88,32 @@ python infrastructure/scripts/enrich/enrichment_progress.py --state WY
 
 **1. Download** - Acquire data
 ```bash
-python infrastructure/scripts/download/fetch_nces_ccd.py --year 2023-24
+python infrastructure/scripts/download/fetch_nces_ccd.py --year 2024-25
 ```
 
 **2. Enrich** - Acquire actual bell schedules (optional)
 ```bash
-# Search-led discovery + tiered capture + cheap-cloud council extraction (gross bell-to-bell)
-# Orchestrated by the per-school-acquire skill. See: docs/ACQUISITION_PIPELINE.md
+# The 9-stage acquisition pipeline (Stages 1-8 built + running live; Stage 9 designed, not built)
+# runs through the governance console, not standalone scripts:
+docker-compose up -d
+python3 -m infrastructure.acquisition.process_governance.server   # -> http://localhost:8005
+# Queue a batch at gate@1, then walk it through gate@5 (capture review) -> gate@6 (dispatch) ->
+# gate@7 (extraction review) -> gate@8 (closing-argument approval). See: docs/ACQUISITION_PIPELINE.md
 ```
 
 **3. Extract** - Handle multi-part files
 ```bash
-python infrastructure/scripts/extract/split_large_files.py data/raw/federal/nces-ccd/2023_24/
+python infrastructure/scripts/extract/split_large_files.py data/raw/federal/nces-ccd/2024_25/
 ```
 
 **4. Transform** - Normalize to standard schema
 ```bash
-python infrastructure/scripts/transform/normalize_districts.py input.csv --source nces --year 2023-24
+python infrastructure/scripts/transform/normalize_districts.py input.csv --source nces --year 2024-25
 ```
 
 **5. Analyze** - Calculate LCT metrics (DB-first)
 ```bash
-python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2023-24
+python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2024-25
 ```
 
 **6. Track Progress** - Monitor enrichment campaign
@@ -161,13 +170,13 @@ python infrastructure/scripts/enrich/interactive_enrichment.py --status
 **Calculate LCT with QA Dashboard**
 ```bash
 # All variants with quality validation
-python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2023-24
+python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2024-25
 
 # With Parquet export (70-80% size reduction)
-python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2023-24 --parquet
+python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2024-25 --parquet
 
 # Incremental calculation (only changed districts)
-python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2023-24 --incremental
+python infrastructure/scripts/analyze/calculate_lct_variants.py --year 2024-25 --incremental
 ```
 
 **Generate Data Dictionary**
@@ -200,13 +209,16 @@ learning-connection-time/
 │   └── archive/          # Historical documentation
 │
 ├── infrastructure/        # Data processing scripts
+│   ├── acquisition/      # The 9-stage bell-schedule pipeline (Stages 1-8 built + live;
+│   │   │                 # Stage 9 designed, not built) + the governance console
+│   │   │                 # (process_governance/ — gate@1/5/6/7/8 human-review UI)
 │   ├── scripts/
 │   │   ├── download/     # Data acquisition
 │   │   ├── enrich/       # Bell schedule enrichment (+ new tools)
 │   │   ├── extract/      # Parsing and combining
 │   │   ├── transform/    # Cleaning and normalization
 │   │   └── analyze/      # Metric calculations
-│   ├── utilities/        # Common functions
+│   ├── utilities/        # Common functions (incl. school_year.py — the calendar single source of truth)
 │   └── quality-assurance/tests/
 │
 ├── pipelines/             # End-to-end workflows
@@ -276,7 +288,9 @@ State-specific data integrations provide enhanced detail beyond federal sources.
 
 ### Bell Schedules
 
-Actual instructional time data collected via local-first web scraping from district websites. See [ACQUISITION_PIPELINE.md](docs/ACQUISITION_PIPELINE.md) for methodology.
+Actual instructional time data collected via the 9-stage acquisition pipeline (search-led discovery,
+tiered capture, cheap-cloud council extraction, modal aggregation) from district/school websites, with
+human review gates at each critical step (`gate@1/5/6/7/8`). See [ACQUISITION_PIPELINE.md](docs/ACQUISITION_PIPELINE.md) for the full stage-by-stage design.
 
 ---
 
@@ -305,11 +319,16 @@ for level in ['elementary', 'middle', 'high']:
 
 ## 🔍 Usage Examples
 
-### Bell Schedule Acquisition (local-first)
+### Bell Schedule Acquisition (the 9-stage pipeline)
 ```bash
-# Start the acquisition services (FastAPI :8000 + Crawlee :3000), then queue
-# districts. Crawlee maps the site, Ollama ranks/triages, results are captured
-# locally — no per-token API cost. Full workflow and endpoints:
+# Search-led discovery -> tiered capture -> local filtering -> cheap-cloud council
+# extraction -> modal aggregation -> fail-loud statutory fallback. Runs through the
+# governance console (gate@1/5/6/7/8 human review), NOT the retired local-first
+# Crawlee+Ollama design (blind site-mapping + local-model ranking, archived
+# 2026-06-13 after benchmarking showed it doesn't find schedules reliably).
+docker-compose up -d
+python3 -m infrastructure.acquisition.process_governance.server   # -> http://localhost:8005
+# Full stage-by-stage workflow, the flow diagram, and gate semantics:
 #   docs/ACQUISITION_PIPELINE.md
 ```
 
