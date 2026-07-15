@@ -57,25 +57,45 @@ def record_decision(con, closing_argument, *, disposition, actor="ian", reason=N
     return approval_id
 
 
-def latest_decision(con, district_id):
-    """The newest gate@8 decision for a district, or None if never decided. dict-shaped."""
+def latest_decision(con, district_id, *, with_receipt=False):
+    """The newest gate@8 decision for a district, or None if never decided. dict-shaped.
+    `with_receipt=True` adds the frozen receipt_json (large — callers that only badge skip it)."""
+    cols = "approval_id, district_id, disposition, actor, reason, facts_fingerprint, created_at"
+    if with_receipt:
+        cols += ", receipt_json"
     row = con.execute(text(
-        "SELECT approval_id, district_id, disposition, actor, reason, facts_fingerprint, created_at "
-        "FROM stage8_approval WHERE district_id=:d ORDER BY approval_id DESC LIMIT 1"),
-        {"d": district_id}).mappings().first()
+        f"SELECT {cols} FROM stage8_approval WHERE district_id=:d "
+        "ORDER BY approval_id DESC LIMIT 1"), {"d": district_id}).mappings().first()
     return dict(row) if row else None
 
 
 def decision_status(con, district_id, *, current_fingerprint=None):
     """The console/Stage-9 view of a district's gate@8 state: {decided, disposition, is_approved,
-    is_stale, ...}. `is_stale` is True when the latest decision's frozen fingerprint no longer matches
-    the live facts (`current_fingerprint`) — a re-extraction changed the picture after the decision, so
-    the approval no longer authorizes a write until re-reviewed (§2b re-write boundary)."""
-    latest = latest_decision(con, district_id)
+    is_stale, ...}. `is_stale` is True when the picture CHANGED after the decision — a re-extraction,
+    override, exclusion or disposition moved the determination, so the approval no longer authorizes
+    a write until re-reviewed (§2b re-write boundary).
+
+    DERIVED FROM THE RECEIPT (REQ-147, the 2026-07-14 staleness incident): staleness re-hashes the
+    FROZEN receipt under the CURRENT fingerprint() and compares that to the live hash — both sides
+    the same code vintage, so a fingerprint-basis evolution (#257's _ex, #474's _ha, REQ-145's
+    dispositions) can never fake staleness on an unchanged picture. The stored facts_fingerprint is
+    the historical audit stamp of what the code said at decision time — kept, surfaced, but NOT the
+    staleness comparator. An unparseable/absent receipt falls back to the stamp comparison (honest:
+    with no signed content to re-derive, the stamp is all there is)."""
+    latest = latest_decision(con, district_id, with_receipt=True)
     if not latest:
         return {"decided": False, "disposition": None, "is_approved": False, "is_stale": False,
                 "latest": None}
-    is_stale = bool(current_fingerprint) and current_fingerprint != latest["facts_fingerprint"]
+    receipt_fp = None
+    try:
+        receipt = json.loads(latest.get("receipt_json") or "")
+        if isinstance(receipt, dict) and receipt.get("bands") is not None:
+            receipt_fp = CA.fingerprint(receipt)
+    except (TypeError, ValueError):
+        receipt_fp = None
+    baseline = receipt_fp or latest["facts_fingerprint"]
+    is_stale = bool(current_fingerprint) and current_fingerprint != baseline
+    latest.pop("receipt_json", None)   # never ship the multi-KB receipt in a status badge
     return {"decided": True, "disposition": latest["disposition"],
             "is_approved": latest["disposition"] == "approved" and not is_stale,
             "is_stale": is_stale, "latest": latest}

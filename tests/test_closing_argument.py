@@ -966,7 +966,13 @@ class TestFingerprintGoldenHash:
     empty/absent input must hash exactly as before (conditional basis entries; never grow the
     per-school tuple for rows that lack the new field) — OR (b) consciously accept mass
     re-review and say so in the PR (at current district volume that's 'the price of development'
-    — Ian, 2026-07-15; at hundreds or thousands of districts it is not)."""
+    — Ian, 2026-07-15; at hundreds or thousands of districts it is not).
+
+    ASYMMETRY RULE (Ian, 2026-07-15: false positives over false negatives): with REQ-147's
+    derived staleness, the one false-NEGATIVE channel is a basis REMOVAL — both sides go equally
+    blind to a difference a human cares about. A removal changes these pinned hashes exactly like
+    an addition, so it cannot land silently; treat a failing golden hash on a basis SHRINK as a
+    hard stop, not a bump-and-go."""
 
     MINIMAL = {"district_id": "GOLDEN", "bands": {
         "elementary": {"gross_minutes": 400, "schools": [

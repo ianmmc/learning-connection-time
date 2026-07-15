@@ -3606,3 +3606,31 @@ requirements:
       are CONFLICT_MIN_SAMPLED/CONFLICT_MIN_PLURALITY constants in slot_spine.py. Rung (b) becomes
       live when PR-E's v4 campus/exception readings land. #484's datacontract may resume after this
       PR (the last artifact-shape changes)."
+
+  - id: REQ-147
+    github_issue: "#499 (PR-C review round — the 2026-07-14 staleness incident)"
+    description: "INVARIANT — gate@8 staleness means THE PICTURE CHANGED, never THE CODE CHANGED: is_stale derives from re-hashing the frozen receipt under the current fingerprint() (both sides one code vintage), and any fingerprint-basis change must hash empty/absent inputs identically to before, guarded by pinned golden hashes."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "decision_status compares fingerprint(frozen receipt_json) against the live fingerprint — the same code vintage on both sides — so a fingerprint-basis evolution (#257's _ex, #474's _ha, REQ-145's dispositions were three instances in two days) can never flip an unchanged approval to 'stale — re-review'"
+      - The stored facts_fingerprint is retained as the historical audit stamp of decision time (never mutated, never re-stamped); an unparseable/absent receipt falls back to the stamp comparison
+      - "New fingerprint inputs are backward-compatible by construction: a basis entry appears ONLY when non-empty, and the per-school tuple never grows for rows lacking the new field — empty ⇒ absent ⇒ hash-identical"
+      - "Two pinned golden hashes (a pre-#257-shaped minimal receipt + a fully-loaded receipt) fail loudly on any hash-affecting change; bumping a golden value requires either restoring backward-compat or a conscious, announced mass re-review (acceptable at ~21 approved districts — 'the price of development'; NOT acceptable at production volume: Ian, 2026-07-15)"
+      - A real content change (re-extraction, override, exclusion, disposition moving the determination) still reads stale — derived staleness is a strictly tighter comparison, not a weaker one
+    tests:
+      - tests/test_stage8_approval.py::test_staleness_derives_from_receipt_not_the_stored_stamp
+      - tests/test_stage8_approval.py::test_staleness_falls_back_to_stamp_when_receipt_unparseable
+      - tests/test_stage8_approval.py::test_decision_status_never_ships_the_receipt
+      - tests/test_closing_argument.py::TestFingerprintGoldenHash
+      - tests/test_closing_argument.py::TestSlotSpine499::test_no_dispositions_fingerprint_is_backward_compatible
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "Root cause pinned by worktree bisect re-hashing the 21 frozen receipts under successive
+      code vintages: #257 (7ee1bd3) and #474 (138289b) each expanded the fingerprint basis
+      unconditionally on 2026-07-14, retroactively changing 18 approvals' live hashes; the eras are
+      mutually incompatible (3/4/5-element per-school tuples), so retroactive conditionality could
+      only trade which receipts read stale. The derive-from-receipts fix makes the stamp irrelevant
+      to staleness while preserving it as audit history. The planned satisfied-signal REQ (PR-D)
+      moves to REQ-148+."
