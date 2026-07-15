@@ -9248,6 +9248,22 @@
     "updated_at": "2026-07-11T05:20:44Z"
   },
   {
+    "rec_key": "4220130:0a3842ed47",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T06:12:50Z"
+  },
+  {
+    "rec_key": "4220130:0ab84ab910",
+    "primary_label": "school_bell_table",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"_pages\": \"5\", \"_pages_list\": [5]}",
+    "note": "2015-16 school year. Dated.",
+    "status": "labeled",
+    "updated_at": "2026-07-15T06:06:56Z"
+  },
+  {
     "rec_key": "4220130:1d9f9e991a",
     "primary_label": "unusable",
     "facets_json": "{}",
@@ -9256,12 +9272,52 @@
     "updated_at": "2026-07-11T05:17:09Z"
   },
   {
+    "rec_key": "4220130:29d5469291",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T05:58:48Z"
+  },
+  {
     "rec_key": "4220130:3b07c3dd5c",
     "primary_label": "unusable",
     "facets_json": "{}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-11T05:17:09Z"
+  },
+  {
+    "rec_key": "4220130:3fb29cd64e",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T06:12:55Z"
+  },
+  {
+    "rec_key": "4220130:458fd47cc7",
+    "primary_label": "school_bell_table",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"_pages\": \"5\", \"_pages_list\": [5]}",
+    "note": "Dated, but not ruled out.",
+    "status": "labeled",
+    "updated_at": "2026-07-15T06:02:58Z"
+  },
+  {
+    "rec_key": "4220130:595d489678",
+    "primary_label": "school_bell_table",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"_pages\": \"5\", \"_pages_list\": [5]}",
+    "note": "Note that the high school is grades 7-12.",
+    "status": "labeled",
+    "updated_at": "2026-07-15T06:06:16Z"
+  },
+  {
+    "rec_key": "4220130:5a12e8c925",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T06:01:52Z"
   },
   {
     "rec_key": "4220130:5c8addcb66",
@@ -9280,12 +9336,52 @@
     "updated_at": "2026-07-11T05:24:17Z"
   },
   {
+    "rec_key": "4220130:5eb5a403d9",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T06:01:29Z"
+  },
+  {
+    "rec_key": "4220130:6b43a74131",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T06:12:11Z"
+  },
+  {
+    "rec_key": "4220130:762b79b017",
+    "primary_label": "district_hub_by_band",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"transportation\": \"yes\", \"_pages\": \"11\", \"_pages_list\": [11]}",
+    "note": "Not ideal given COVID-19 years, but it certainly looks like the handbook reflects their in-person schedule from 8:00 am to 3:00 pm.",
+    "status": "labeled",
+    "updated_at": "2026-07-15T06:11:27Z"
+  },
+  {
+    "rec_key": "4220130:7b2e8c3ec1",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T06:00:25Z"
+  },
+  {
     "rec_key": "4220130:89c87945c6",
     "primary_label": "target_absent",
     "facets_json": "{\"news_feed\": \"yes\"}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-11T05:24:56Z"
+  },
+  {
+    "rec_key": "4220130:9312ad76f2",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "Promising looking link to a parent-student handbook.",
+    "status": "labeled",
+    "updated_at": "2026-07-15T06:01:14Z"
   },
   {
     "rec_key": "4220130:9dde1d14e8",
@@ -9304,6 +9400,14 @@
     "updated_at": "2026-07-11T05:25:52Z"
   },
   {
+    "rec_key": "4220130:a6bda00430",
+    "primary_label": "target_absent",
+    "facets_json": "{\"sports\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T06:11:52Z"
+  },
+  {
     "rec_key": "4220130:a977a38d67",
     "primary_label": "unusable",
     "facets_json": "{}",
@@ -9320,12 +9424,36 @@
     "updated_at": "2026-07-11T05:26:24Z"
   },
   {
+    "rec_key": "4220130:b1717f6796",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T05:59:46Z"
+  },
+  {
     "rec_key": "4220130:b2de920975",
     "primary_label": "unusable",
     "facets_json": "{}",
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-11T05:17:09Z"
+  },
+  {
+    "rec_key": "4220130:e2bb1a5ab9",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T06:13:01Z"
+  },
+  {
+    "rec_key": "4220130:e2bf4b143b",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T06:01:37Z"
   },
   {
     "rec_key": "4220130:e2cb1192c4",

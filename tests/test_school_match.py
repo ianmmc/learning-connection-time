@@ -122,3 +122,25 @@ class TestEmptyKeyGuard:
         assert norm_school_strict("School District") == ""
         assert norm_school_strict("The School District") == ""
         assert norm_school_strict("Union Hill ISD") == norm_school("Union Hill ISD")  # same when non-junk
+
+
+class TestNcesAbbreviationTails:
+    """#499 PR-A (REQ-144): CCD SCH_NAME abbreviations strip as TRAILING runs only, so a roster
+    slot and its extracted fact share a key — while the Spanish article survives mid-name."""
+
+    def test_nces_abbreviated_roster_names_match_extracted_names(self):
+        from infrastructure.acquisition.common.school_match import norm_school
+        assert norm_school("Liberty Bell El Sch") == norm_school("liberty bell")
+        assert norm_school("Hopewell El Sch") == norm_school("hopewell elementary school")
+        assert norm_school("Southern Lehigh SHS") == norm_school("southern lehigh high school")
+        assert norm_school("Roosevelt El") == norm_school("roosevelt")
+
+    def test_el_survives_mid_name(self):
+        from infrastructure.acquisition.common.school_match import norm_school
+        assert "el camino" in norm_school("El Camino High School")
+        assert norm_school("El Dorado El Sch") == norm_school("el dorado")
+
+    def test_idempotent(self):
+        from infrastructure.acquisition.common.school_match import norm_school
+        for n in ("Liberty Bell El Sch", "Southern Lehigh SHS", "El Camino High School"):
+            assert norm_school(norm_school(n)) == norm_school(n)

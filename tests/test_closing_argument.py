@@ -779,3 +779,77 @@ class TestNeverSilentlyDropsAFact:
         for e in out["negative_space"]["band_exclusions"]:
             found.add((e["band"], e["school"]))
         assert originally_accepted <= found, f"vanished without a trace: {originally_accepted - found}"
+
+
+class TestSlotSpine499:
+    """#499 PR-A (REQ-144): the slot projection in the artifact + roster drift vs the last receipt."""
+
+    def _rosters(self):
+        return {"elementary": {
+                    "total": 2, "by_source": {"level_clean": 2, "grade_span": 0, "level_override": 0},
+                    "schools": ["Oak Elementary School", "Maple Elementary School"],
+                    "slot_recs": [
+                        {"school_id": "001", "name": "Oak Elementary School", "is_charter": "No",
+                         "gslo": "KG", "gshi": "05", "level": "Elementary",
+                         "effective_band": "elementary", "source": "level_clean"},
+                        {"school_id": "002", "name": "Maple Elementary School", "is_charter": "Yes",
+                         "gslo": "KG", "gshi": "05", "level": "Elementary",
+                         "effective_band": "elementary", "source": "level_clean"}]},
+                "_year": "2024_25"}
+
+    def test_slots_ride_in_the_band_and_unheard_in_negative_space(self):
+        acc = [_fact("elementary", "oak", 400)]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=2,
+            nces_by_level={"Elementary": 2}, schools_by_band={}, band_rosters=self._rosters())
+        el = out["bands"]["elementary"]
+        assert el["slot_stats"]["n_filled"] == 1 and el["slot_stats"]["n_unfilled"] == 1
+        by_id = {s["school_id"]: s for s in el["slots"]}
+        assert by_id["001"]["slot_state"] == "filled"
+        assert by_id["002"]["slot_state"] == "unfilled" and by_id["002"]["is_charter"] == "Yes"
+        assert out["negative_space"]["unheard_slots"] == {"elementary": 1}
+
+    def test_excluded_fact_does_not_fill_a_slot(self):
+        acc = [_fact("elementary", "oak", 400), _fact("elementary", "maple", 400)]
+        excl = [{"band": "elementary", "school": "maple", "reason": "reconfigured", "actor": "ian",
+                 "created_at": "t"}]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=2,
+            nces_by_level={"Elementary": 2}, schools_by_band={}, band_rosters=self._rosters(),
+            exclusions=excl)
+        by_id = {s["school_id"]: s for s in out["bands"]["elementary"]["slots"]}
+        assert by_id["002"]["slot_state"] == "unfilled"   # the human struck maple from the band
+
+    def test_fingerprint_ignores_slots_and_drift(self):
+        # Roster drift must NOT stale an approval (the drift surface reports it instead) — the
+        # fingerprint of the same determination with and without a roster must be identical.
+        acc = [_fact("elementary", "oak", 400)]
+        base = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=2,
+            nces_by_level={"Elementary": 2}, schools_by_band={})
+        with_slots = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=2,
+            nces_by_level={"Elementary": 2}, schools_by_band={}, band_rosters=self._rosters())
+        assert CA.fingerprint(base) == CA.fingerprint(with_slots)
+
+    def test_roster_drift_vs_last_receipt(self):
+        acc = [_fact("elementary", "oak", 400)]
+        # the signed receipt knew Oak + Elm; live roster has Oak + Maple -> Elm removed, Maple added
+        receipt = {"bands": {"elementary": {"slots": [
+            {"school_id": "001", "roster_school": "Oak Elementary School"},
+            {"school_id": "007", "roster_school": "Elm Elementary School"}]}}}
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=2,
+            nces_by_level={"Elementary": 2}, schools_by_band={}, band_rosters=self._rosters(),
+            last_receipt=receipt)
+        d = out["negative_space"]["roster_drift"]
+        assert [a["school_id"] for a in d["added"]] == ["002"]
+        assert [r["school_id"] for r in d["removed"]] == ["007"]
+
+    def test_pre_499_receipt_reports_no_drift(self):
+        acc = [_fact("elementary", "oak", 400)]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=2,
+            nces_by_level={"Elementary": 2}, schools_by_band={}, band_rosters=self._rosters(),
+            last_receipt={"bands": {"elementary": {"gross_minutes": 400}}})   # no slots key
+        assert "roster_drift" not in out["negative_space"]

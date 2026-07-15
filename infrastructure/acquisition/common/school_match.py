@@ -37,6 +37,13 @@ _DISTRICT_TAIL = re.compile(
     r"(?:^|\s)(?:(?:unified|consolidated|independent|community|county)\s+)*(?:schools?\s+)?"
     r"(?:district|isd|usd|cisd|cusd|ccsd|ufsd|csd|psd|sd)$")
 
+# NCES SCH_NAME abbreviation TAILS (#499 PR-A, REQ-144) — the CCD directory abbreviates level/type
+# words the full-word list above never sees ("Liberty Bell El Sch", "Southern Lehigh SHS"), so a
+# roster slot and its extracted fact ("liberty bell") could never share a key. Stripped ONLY as a
+# TRAILING run: "El" is also the Spanish article ("El Camino High" must keep it mid-name; a
+# trailing "Roosevelt El" is safely the abbreviation). Fixed-point loop below handles cascades.
+_NCES_TAIL = re.compile(r"(?:^|\s)(?:(?:el|elem|sch|schs|shs|jshs|jhs|ihs)\s*)+$")
+
 
 def _base(name) -> str:
     """Lowercase, transliterate accents (NFKD: José -> jose, not the mangled 'jos'), turn hyphens/
@@ -61,7 +68,7 @@ def norm_school_strict(name) -> str:
         return ""
     s = _base(name)
     while True:
-        t = re.sub(r"\s+", " ", _GENERIC.sub("", _DISTRICT_TAIL.sub("", s))).strip()
+        t = re.sub(r"\s+", " ", _GENERIC.sub("", _DISTRICT_TAIL.sub("", _NCES_TAIL.sub("", s)))).strip()
         if t == s:
             return t
         s = t

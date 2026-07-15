@@ -24,6 +24,7 @@ from collections import Counter
 
 from infrastructure.acquisition.common import paths
 from infrastructure.acquisition.common import school_sampling as SS
+from infrastructure.acquisition.common import slot_spine as SP
 from infrastructure.acquisition.common.school_match import norm_school as _norm
 from infrastructure.acquisition.stage8_aggregate import aggregate as AGG
 
@@ -145,7 +146,7 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
                            nces_total, nces_by_level, schools_by_band,
                            evidence_by_reckey=None, capture_events=None, roster_names=None,
                            exclusions=None, human_added=None, band_rosters=None,
-                           merged_superseded=None, year_conflicts=None):
+                           merged_superseded=None, year_conflicts=None, last_receipt=None):
     """Compose the closing argument for one district from already-gathered ingredients. PURE.
 
     Inputs:
@@ -181,6 +182,10 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
       year_conflicts   : #254 — AGG.detect_year_conflicts over the raw cross-run rows: the
           (band, school) groups mixing known years or known/unknown, each side carrying its
           source_file as a format HINT for the reviewer (never an automatic rule).
+      last_receipt     : #499 — the parsed receipt_json of the district's LATEST gate@8 approval
+          (or None). The roster-drift baseline: live slots diffed against the last slot list a
+          human signed (schools closing/opening/reclassifying over the long horizon). Pre-#499
+          receipts carry no slots — drift honestly reports nothing to diff against.
 
     Returns the closing-argument dict (see the module/design note); self-contained, JSON-serialisable,
     ready to render at gate@8 and to FREEZE into the immutable approval receipt.
@@ -373,6 +378,22 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
             "schools": schools,
         }
 
+    # #499 (REQ-144): the slot projection — each band's LIVE roster crossed with its INCLUDED facts
+    # (mode-voting rows + human adds; an excluded fact doesn't fill a slot — the human struck it from
+    # the band). Coverage gaps become identified unfilled slots, not count arithmetic; facts matching
+    # no slot are first-class unmatched-extras (the roster is an overlay, never a cage). Slots ride
+    # per band in the artifact (and thus the frozen receipt) but stay OUT of fingerprint() — roster
+    # drift must not stale an approval (the drift surface below reports it instead).
+    facts_by_band = {}
+    for r in included_agg:
+        facts_by_band.setdefault(r["band"], []).append(r["school"])
+    slot_proj = SP.project_slots(band_rosters, facts_by_band) if band_rosters else {}
+    for band, p in slot_proj.items():
+        if band in out_bands:
+            out_bands[band]["slots"] = p["slots"]
+            out_bands[band]["slot_extras"] = p["extras"]
+            out_bands[band]["slot_stats"] = p["stats"]
+
     # #258: name-vs-level mismatch flags, both surfaces. The ROSTER side catches the Coffee County
     # signature at its source ('Zion Chapel High School', NCES-tagged Other, placed in elementary by
     # Stage 1); the FACTS side catches a level-token extracted name landing in a contradicting band
@@ -467,6 +488,24 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
         "unattributed_level_schools": {lvl: n for lvl, n in (nces_by_level or {}).items()
                                        if lvl not in SS.LEVEL_BAND},
     }
+
+    # #499: slots never heard from, per band — the negative space gains IDENTIFIED gaps (which
+    # schools, not just how many), including bands with no accepted facts at all (they have no
+    # out_bands entry to carry a slot list, but their whole roster is unheard).
+    unheard = {band: p["stats"]["n_unfilled"] for band, p in slot_proj.items()
+               if p["stats"]["n_unfilled"]}
+    if unheard:
+        negative_space["unheard_slots"] = unheard
+
+    # #499: roster DRIFT vs the last approved receipt — the last slot list a human signed is the
+    # baseline (the receipt chain is the longitudinal record); school_id-keyed, so renames don't
+    # false-positive. None (pre-#499 receipt / no approval) reports nothing — the honest null.
+    if slot_proj and last_receipt:
+        receipt_slots = {b: (m or {}).get("slots") or []
+                         for b, m in (last_receipt.get("bands") or {}).items()}
+        drift = SP.roster_drift({b: p["slots"] for b, p in slot_proj.items()}, receipt_slots)
+        if drift:
+            negative_space["roster_drift"] = drift
 
     # #253: schools the live roster couldn't attribute to ANY band (unparseable span + ambiguous
     # LEVEL) — the roster-side sibling of unattributed_level_schools; surfaced, never dropped.
@@ -686,10 +725,23 @@ def load_closing_argument(session, district_id):
     except Exception:
         band_rosters = None
 
+    # #499: the latest approval's frozen receipt — the roster-drift baseline (the last slot list a
+    # human signed). Missing table / no approval / unparseable receipt all mean "no baseline".
+    try:
+        row = session.execute(text("""
+            SELECT receipt_json FROM stage8_approval
+            WHERE district_id = :d AND disposition = 'approved'
+            ORDER BY approval_id DESC LIMIT 1
+        """), {"d": district_id}).first()
+        last_receipt = json.loads(row[0]) if row and row[0] else None
+    except Exception:
+        last_receipt = None
+
     return build_closing_argument(
         district_id, merged_accepted=accepted, merged_unresolved=unresolved,
         nces_total=meta.get("nces_total"), nces_by_level=nces_by_level,
         schools_by_band=schools_by_band, evidence_by_reckey=by_rk,
         capture_events=capture_events, roster_names=roster_names,
         exclusions=exclusions, human_added=human_added, band_rosters=band_rosters,
-        merged_superseded=superseded, year_conflicts=year_conflicts)
+        merged_superseded=superseded, year_conflicts=year_conflicts,
+        last_receipt=last_receipt)

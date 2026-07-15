@@ -165,7 +165,13 @@ def test_stage8_console_carries_the_exclusion_ui_markers():
                    'pushFlag("band-exclusions"', 'pushFlag("name-level-mismatch"',
                    'pushFlag("combined-scope-facts"', 'pushFlag("level-override"',
                    'pushFlag("stale-roster-band"',
-                   'pushFlag("superseded-facts"', 'pushFlag("year-conflicts"'):
+                   'pushFlag("superseded-facts"', 'pushFlag("year-conflicts"',
+                   # #499 (REQ-144): the slot spine — the strip, its states, and the drift flags
+                   'data-feat="slot-view"', 'data-feat="slot-stats"', 'data-feat="slot-filled"',
+                   'data-feat="slot-unfilled"', 'data-feat="slot-ambiguous"',
+                   'data-feat="slot-extra"', 'data-feat="slot-unheard"',
+                   'pushFlag("slot-drift-added"', 'pushFlag("slot-drift-removed"',
+                   'pushFlag("slot-drift-band-moved"'):
         assert marker in js, f"stage8.js lost the marker {marker!r}"
     css = (Path(SRV.__file__).parent / "static" / "app.css").read_text()
     assert "line-through" in css and ".s8-excluded" in css

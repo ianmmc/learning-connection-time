@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-15T05:44:04Z",
+  "last_updated": "2026-07-15T05:50:16Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -9218,10 +9218,10 @@
       "name": "Redbank Valley SD",
       "state": "PA",
       "furthest_stage": 7,
-      "stage_name": "capture",
-      "outcome": "captured_all",
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00019",
       "history": [
         {
           "stage": 1,
@@ -9390,6 +9390,18 @@
           "at": "2026-07-15T05:38:08Z",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_partial",
+          "at": "2026-07-15T05:50:07Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-07-15T05:50:16Z"
         }
       ],
       "notes": "gate@1 auto-approved (follow-up autoflow) batch_00019"
