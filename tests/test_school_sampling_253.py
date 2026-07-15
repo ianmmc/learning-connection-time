@@ -183,3 +183,60 @@ class TestOrphanRulingMiddleFamily:
         spans = {(GO["KG"], GO["03"]), (GO["04"], GO["06"]), (GO["07"], GO["08"]), (GO["09"], GO["12"])}
         g = SS.recursive_band_groups(spans)
         assert g == {"elementary": [0, 1], "middle": [2], "high": [3]}
+
+
+class TestReviewRoundFixes:
+    """PR #500 review round: the signal-1 phantom band, the span-aware #258 predicate, and the
+    loader's effective-band stamp."""
+
+    def test_roster_replaces_carveout_blind_signal1(self):
+        # the 0604650 class: by_level says Middle:1 but that school is a 04-06 intermediate —
+        # with the live roster supplied, middle is NOT claimed (no phantom for the spend gate)
+        rosters = {"elementary": {"total": 1, "by_source": {}, "schools": ["Strawberry"]},
+                   "middle": {"total": 0, "by_source": {}, "schools": []},
+                   "high": {"total": 0, "by_source": {}, "schools": []},
+                   "_unattributed": [], "_level_overrides": [], "_year": "2024_25"}
+        got = SS.real_bands_for_district({"Elementary": 3, "Middle": 1}, {}, band_rosters=rosters)
+        assert got == {"elementary"}
+        # fallback (no roster — CCD off disk): the old aggregate signal stands
+        got = SS.real_bands_for_district({"Elementary": 3, "Middle": 1}, {})
+        assert got == {"elementary", "middle"}
+
+    def test_stale_stage1_placement_still_claims_via_signal2(self):
+        # a pre-#498 batch placed the intermediate under middle — signal 2 keeps the claim
+        # (surfaced as a stale-roster note at gate@8, not silently dropped)
+        rosters = {"elementary": {"total": 1, "by_source": {}, "schools": []},
+                   "middle": {"total": 0, "by_source": {}, "schools": []},
+                   "high": {"total": 0, "by_source": {}, "schools": []},
+                   "_unattributed": [], "_level_overrides": [], "_year": "2024_25"}
+        sbb = {"middle": {"schools": [{"school": "Liberati", "level": "Middle",
+                                       "gslo": "04", "gshi": "06"}]}}
+        got = SS.real_bands_for_district({"Middle": 1}, sbb, band_rosters=rosters)
+        assert "middle" in got
+
+    def test_mismatch_predicate_is_span_aware_both_directions(self):
+        # the two review-round repro cases: a carved-out school named 'Middle' OR 'Elementary'
+        # no longer false-positives against its own correct elementary placement
+        assert SS.name_level_mismatch("Liberati Middle School", "Middle", ["elementary"],
+                                      gslo="04", gshi="06") is None
+        assert SS.name_level_mismatch("Liberati Elementary School", "Middle", ["elementary"],
+                                      gslo="04", gshi="06") is None
+        # the flag's real prey is untouched: Coffee County (high-named, ambiguous LEVEL, in
+        # elementary) and Hammarskjold (elementary-named, genuine 5-6 middle) still flag
+        assert SS.name_level_mismatch("Zion Chapel High School", "Other", ["elementary"],
+                                      gslo="PK", gshi="12") is not None
+        assert SS.name_level_mismatch("Hammarskjold Upper Elementary School", "Middle",
+                                      ["middle"], gslo="05", gshi="06") is not None
+        # span-less callers (the extracted-fact surface) behave exactly as before
+        assert SS.name_level_mismatch("Northside High", None, ["elementary"]) is not None
+
+    def test_loader_stamps_effective_band(self, nces):
+        _write_year(nces, "2024_25", [
+            _sch("Liberati Intermediate", "Middle", "04", "06", sid="S1"),
+            _sch("Real Middle", "Middle", "07", "08", sid="S2"),
+        ])
+        by_did = SS._district_schools("2024_25")
+        stamped = {s["name"]: (s["effective_band"], s["level_overridden"])
+                   for s in by_did["1234567"]}
+        assert stamped["Liberati Intermediate"] == ("elementary", True)
+        assert stamped["Real Middle"] == ("middle", False)

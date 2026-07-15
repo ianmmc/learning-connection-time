@@ -143,26 +143,30 @@ def test_restore_deletes_and_backs_up(monkeypatch):
 def test_stage8_console_carries_the_exclusion_ui_markers():
     """UI-visibility regression (the console-features rule): the #257 exclude-from-band affordances
     must not silently disappear from the gate@8 console. Source-presence check on the data-feat
-    markers + the struck-through render class."""
+    markers + the struck-through render class. The negative-space flag lists render through the
+    shared pushFlag helper (PR #500 review round), so THOSE feats appear in source as pushFlag's
+    first argument ('band-exclusions', ...) rather than an inline data-feat attribute — the grep
+    asserts the call-site literal, which disappearing still means the feature disappeared."""
     from pathlib import Path
     js = (Path(SRV.__file__).parent / "static" / "stage8.js").read_text()
     for marker in ('data-feat="exclude"', 'data-feat="restore-exclusion"',
                    'data-feat="excluded-reason"', 'data-feat="excluded-row"',
-                   'data-feat="band-exclusions"', "/api/aggregate/exclude",
-                   'data-feat="name-level-mismatch"',
+                   "/api/aggregate/exclude",
                    'data-feat="human-add"', 'data-feat="human-added"',
                    'data-feat="human-add-remove"', 'data-feat="recover-band"',
                    'data-feat="recoverable-band"', "/api/aggregate/human-add",
                    "/api/aggregate/recover-band",
-                   # #253: combined-scope flags + the denominator provenance/criteria surfaces
-                   'data-feat="combined-scope"', 'data-feat="combined-scope-facts"',
-                   # #498: the intermediate carve-out note
-                   'data-feat="level-override"',
+                   # #253: the per-row combined-scope flag + denominator provenance/criteria
+                   'data-feat="combined-scope"',
                    'data-feat="denominator-provenance"', 'data-feat="denominator-criteria"',
-                   # #254: the per-school year chip + the year-supersede/conflict surfaces
-                   'data-feat="school-year"', 'data-feat="superseded-facts"',
-                   'data-feat="year-conflicts"'):
-        assert marker in js, f"stage8.js lost the #257 marker {marker!r}"
+                   # #254: the per-school year chip
+                   'data-feat="school-year"',
+                   # the pushFlag-rendered negative-space lists (call-site feat literals)
+                   'pushFlag("band-exclusions"', 'pushFlag("name-level-mismatch"',
+                   'pushFlag("combined-scope-facts"', 'pushFlag("level-override"',
+                   'pushFlag("stale-roster-band"',
+                   'pushFlag("superseded-facts"', 'pushFlag("year-conflicts"'):
+        assert marker in js, f"stage8.js lost the marker {marker!r}"
     css = (Path(SRV.__file__).parent / "static" / "app.css").read_text()
     assert "line-through" in css and ".s8-excluded" in css
 

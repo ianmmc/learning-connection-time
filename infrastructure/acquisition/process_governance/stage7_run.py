@@ -709,8 +709,11 @@ def _district_request_inputs(session, result: dict):
     # real_bands (#175/#176): the bands SERVED by ≥1 real NCES school — derived by the ONE shared
     # helper (it owns the sbb traversal too, so the detector's gate and the compose gate in
     # stage7_execute can never diverge on the definition). Fillability, incl. Stage 1's gap-fill.
+    # #498 (PR #500 review round): the LIVE roster rides along so the carve-out-blind aggregate
+    # signal can't keep the spend gate chasing a phantom band (56-district corpus class).
     by_level = json.loads(row[2]) if row and row[2] else {}
-    real_bands = SS.real_bands_for_district(by_level, sbb)
+    real_bands = SS.real_bands_for_district(by_level, sbb,
+                                            band_rosters=SS.band_rosters_for_district(did))
     alts = {}
     for rec_key, sent_files in sent.items():
         # Dispatchable kinds only (#140): binaries (pdf/bin) and chrome segments are usable=1 in the
@@ -822,7 +825,8 @@ def withdraw_satisfied_requests(session, district_id: str) -> list:
         claimed = json.loads(row[0]) if row[0] else []
         sbb = json.loads(row[1]) if row[1] else {}
         by_level = json.loads(row[2]) if row[2] else {}
-        real_bands = SS.real_bands_for_district(by_level, sbb)
+        real_bands = SS.real_bands_for_district(by_level, sbb,
+                                                band_rosters=SS.band_rosters_for_district(district_id))
         fillable = [b for b in claimed if b in real_bands]
         no_gap_left = all(b in covered for b in fillable)   # vacuously True when nothing fillable
     withdrawn, now = [], M7.utcnow()

@@ -674,3 +674,45 @@ class TestMismatchFlagCarriesSpanAndDedupes:
             nces_by_level={"Elementary": 2}, schools_by_band={})
         mm = out["negative_space"]["name_level_mismatches"]
         assert len(mm) == 1 and mm[0]["surface"] == "fact" and "gslo" not in mm[0]
+
+
+class TestReviewRoundFixes:
+    """PR #500 review round: the roster-aware claimed set and the stale Stage-1 placement note."""
+
+    _ROSTERS_NO_MIDDLE = {
+        "elementary": {"total": 1, "by_source": {"level_clean": 0, "grade_span": 0,
+                                                 "level_override": 1}, "schools": ["Liberati"]},
+        "middle": {"total": 0, "by_source": {"level_clean": 0, "grade_span": 0,
+                                             "level_override": 0}, "schools": []},
+        "high": {"total": 0, "by_source": {"level_clean": 0, "grade_span": 0,
+                                           "level_override": 0}, "schools": []},
+        "_unattributed": [],
+        "_level_overrides": [{"school": "Liberati Intermediate", "nces_level": "Middle",
+                              "gslo": "04", "gshi": "06", "band": "elementary",
+                              "instead_of": "middle"}],
+        "_year": "2024_25"}
+
+    def test_phantom_middle_not_claimed_with_live_roster(self):
+        # by_level says Middle:1 (the intermediate) — with the roster supplied, the claimed set
+        # doesn't include middle, so it can't read as an unsatisfied band
+        out = CA.build_closing_argument(
+            "D", merged_accepted=[_fact("elementary", "liberati", 400)], merged_unresolved=[],
+            nces_total=1, nces_by_level={"Middle": 1}, schools_by_band={},
+            band_rosters=self._ROSTERS_NO_MIDDLE)
+        assert "middle" not in out["negative_space"]["claimed_bands"]
+        assert out["negative_space"]["unsatisfied_bands"] == []
+
+    def test_stale_stage1_placement_is_noted(self):
+        # a pre-#498 batch queued the intermediate under middle: the claim survives (signal 2,
+        # never silently dropped) AND the disagreement is surfaced as a stale-roster note
+        sbb = {"middle": {"schools": [{"school": "Liberati Intermediate", "level": "Middle",
+                                       "gslo": "04", "gshi": "06"}]}}
+        out = CA.build_closing_argument(
+            "D", merged_accepted=[_fact("elementary", "liberati", 400)], merged_unresolved=[],
+            nces_total=1, nces_by_level={"Middle": 1}, schools_by_band=sbb,
+            band_rosters=self._ROSTERS_NO_MIDDLE)
+        assert "middle" in out["negative_space"]["claimed_bands"]
+        (note,) = out["negative_space"]["stale_roster_bands"]
+        assert note["stage1_band"] == "middle" and note["live_band"] == "elementary"
+        # and the carved-out school no longer #258-flags against its own placement
+        assert out["negative_space"]["name_level_mismatches"] == []
