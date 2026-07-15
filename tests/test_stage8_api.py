@@ -178,6 +178,11 @@ def test_stage8_console_carries_the_exclusion_ui_markers():
                    'data-feat="slot-disposition-remove"',
                    "/api/aggregate/slot-assign",
                    'pushFlag("slot-orphaned-disposition"',
+                   # review round 2: per-KIND orphan copy + the displaced/duplicate extras — the
+                   # old grep only pinned the pushFlag call-site, so a kind falling into the
+                   # wrong message branch was invisible to the suite
+                   "assign_shadowed:", "assign_fact_absent:", "still_in_district_roster",
+                   'data-feat="slot-extra-displaced"', 'data-feat="slot-extra-duplicate"',
                    # #499 REQ-146: band-grain fact + projection + the conflict ladder
                    'data-feat="band-fact"', 'data-feat="slot-projected"',
                    'data-feat="conflict-rung"', 'pushFlag("slot-conflict"',
@@ -218,13 +223,26 @@ def test_human_add_refused_when_school_is_excluded(monkeypatch):
 
 
 def test_human_add_upserts_and_backs_up(monkeypatch):
-    # exclusion check (none) -> DELETE -> INSERT -> backup SELECT -> commit
-    _use(monkeypatch, _Con([_Result(rows=[]), _Result(), _Result(), _Result(rows=[])]))
+    # exclusion check (none) -> accepted-fact dup check (none) -> DELETE -> INSERT -> backup -> commit
+    _use(monkeypatch, _Con([_Result(rows=[]), _Result(rows=[]), _Result(), _Result(),
+                            _Result(rows=[])]))
     r = client.post("/api/aggregate/human-add", json={
         "district_id": "3416500", "band": "elementary", "school": "Battle Hill",
         "start_time": "08:45", "end_time": "15:10",
         "source_url": "https://tusd.org/hub.pdf", "reason": "re-extraction failed; table is an image"})
     assert r.status_code == 200 and r.json()["gross"] == 385
+
+
+def test_human_add_refused_when_school_already_has_an_accepted_fact(monkeypatch):
+    # Review round 2: a hand-add duplicating a still-accepted council fact would double-vote the
+    # mode and silently duplicate in the projection — corrections go through the override.
+    _use(monkeypatch, _Con([_Result(rows=[]),                              # no exclusion
+                            _Result(rows=[{"school": "Battle Hill El Sch"}])]))  # accepted fact
+    r = client.post("/api/aggregate/human-add", json={
+        "district_id": "3416500", "band": "elementary", "school": "Battle Hill",
+        "start_time": "08:45", "end_time": "15:10",
+        "source_url": "https://tusd.org/hub.pdf", "reason": "r"})
+    assert r.status_code == 409 and "override" in r.json()["detail"]
 
 
 def test_human_add_remove_404s_when_absent(monkeypatch):
@@ -289,7 +307,9 @@ def test_slot_assign_validation():
 
 
 def test_slot_assign_upserts_and_backs_up(monkeypatch):
-    # DELETE (replace-on-repost) -> INSERT -> backup SELECT (quarantined under pytest) -> commit
+    # DELETE (replace-on-repost) -> INSERT -> backup SELECT (quarantined under pytest) -> commit.
+    # CCD-absent (roster None) skips the live-slot check — best-effort, never blocks.
+    monkeypatch.setattr(SRV.SS_SAMPLING, "band_rosters_for_district", lambda d: None)
     _use(monkeypatch, _Con([_Result(), _Result(), _Result(rows=[])]))
     r = client.post("/api/aggregate/slot-assign",
                     json={"district_id": "0100810", "band": "elementary", "school": "Washington",
@@ -298,6 +318,27 @@ def test_slot_assign_upserts_and_backs_up(monkeypatch):
     assert r.status_code == 200
     body = r.json()
     assert body["ok"] and body["norm_school_fact"] == "washington" and body["disposition"] == "assign"
+
+
+def test_slot_assign_rejects_a_slot_id_not_in_the_live_roster(monkeypatch):
+    # Epic-#499 review round: a mistyped/stale slot_id must 400 at write time — inserted, it
+    # would surface only later as an orphan, byte-identical to legitimate roster drift.
+    rosters = {"elementary": {"slot_recs": [
+        {"school_id": "010081000001", "name": "Washington Elementary School", "is_charter": "No",
+         "gslo": "KG", "gshi": "05", "level": "Elementary", "effective_band": "elementary",
+         "source": "level_clean"}]}, "_year": "2024_25"}
+    monkeypatch.setattr(SRV.SS_SAMPLING, "band_rosters_for_district", lambda d: rosters)
+    _use(monkeypatch, _Con([_Result(), _Result(), _Result(rows=[])]))
+    bad = client.post("/api/aggregate/slot-assign",
+                      json={"district_id": "0100810", "band": "elementary", "school": "Washington",
+                            "roster_school_id": "999NOTASLOT", "disposition": "assign",
+                            "reason": "x"})
+    assert bad.status_code == 400 and "not a live" in bad.json()["detail"]
+    good = client.post("/api/aggregate/slot-assign",
+                       json={"district_id": "0100810", "band": "elementary", "school": "Washington",
+                             "roster_school_id": "010081000001", "disposition": "assign",
+                             "reason": "x"})
+    assert good.status_code == 200
 
 
 def test_slot_assign_remove_404s_when_absent(monkeypatch):

@@ -132,13 +132,19 @@
     const bands = d.included
       ? BANDS.filter((b) => d.schools_by_band[b]).map((b) => bandBlock(d, b, draft)).join("")
       : "";
+    // #499 REQ-150: the roster spine — the district's full live NCES hierarchy, visible from
+    // the start (lazy-fetched on expand; selected schools marked from the batch's own rows).
+    const spine = d.included
+      ? `<details class="q-roster-spine" data-feat="s1-roster-spine" data-did="${d.district_id}">
+           <summary class="muted">Roster spine — every in-scope NCES school, live (expand)</summary>
+           <div class="q-spine-body muted">Loading…</div></details>` : "";
     return `<div class="q-district${d.included ? "" : " excluded"}">
       <div class="q-district-head">
         <div class="q-dtitle"><span class="q-dname">${esc(d.name)}</span>
           <span class="q-dmeta">${esc(d.state)} · enr ${fmtnum(d.enrollment_k12)} · ${denom}</span>
           ${d.included ? "" : `<span class="badge badge-red">rejected</span>`}</div>
         ${toggle}</div>
-      ${bands}</div>`;
+      ${bands}${spine}</div>`;
   }
 
   function bandBlock(d, band, draft) {
@@ -162,6 +168,34 @@
   }
 
   function wireDetail() {
+    // #499 REQ-150: lazy-load a district's roster spine on first expand (one call per district,
+    // only when the human asks — a batch render never fans out N roster reads).
+    $g("#q-detail").querySelectorAll("[data-feat='s1-roster-spine']").forEach((det) => {
+      det.addEventListener("toggle", async () => {
+        if (!det.open || det.dataset.loaded) return;
+        det.dataset.loaded = "1";
+        const body = det.querySelector(".q-spine-body");
+        const selected = new Set();
+        ((VIEW && VIEW.districts) || []).forEach((d) => {
+          if (d.district_id !== det.dataset.did) return;
+          Object.values(d.schools_by_band || {}).forEach((bd) =>
+            (bd.schools || []).forEach((s) => { if (s.included) selected.add(s.school_id); }));
+        });
+        try {
+          const r = await api(`/api/queue/${CURRENT}/roster/${det.dataset.did}`);
+          // slot_state comes from the SAME projection gate@8 renders (exclusions, human adds,
+          // dispositions, band-fact "projected" all applied) — the two gates can't disagree.
+          const TITLES = { unfilled: "no accepted fact has ever matched this school",
+                           projected: "covered by a band-level blanket statement, not individually observed" };
+          const chip = (s) => `<span class="q-spine-slot${s.slot_state === "unfilled" ? " q-spine-unfilled" : ""}${s.slot_state === "projected" ? " q-spine-projected" : ""}${selected.has(s.school_id) ? " q-spine-selected" : ""}"
+              data-feat="${s.slot_state === "unfilled" ? "s1-slot-unfilled" : "s1-slot-filled"}"${selected.has(s.school_id) ? ' data-feat2="s1-slot-selected"' : ""}
+              title="${TITLES[s.slot_state] || "has an accepted fact"}${selected.has(s.school_id) ? " · selected in THIS batch" : ""}">${esc(s.roster_school)}${selected.has(s.school_id) ? " ✓" : ""}${s.is_charter === "Yes" ? ` <span class="q-spine-ch">ch</span>` : ""} <span class="muted">${esc(s.gslo || "")}–${esc(s.gshi || "")}</span></span>`;
+          body.innerHTML = Object.entries(r.bands).map(([b, m]) =>
+            `<div class="q-spine-band"><b>${esc(b)}</b> <span class="muted">(${m.stats.n_filled} filled / ${m.stats.n_unfilled} unfilled of ${m.stats.n_slots})</span><br/>${m.slots.map(chip).join(" ")}</div>`).join("")
+            + `<p class="muted q-spine-criteria">${esc(r.criteria)} (live NCES ccd_sch ${esc(r.nces_year)})</p>`;
+        } catch (e) { body.textContent = `Roster unavailable: ${e.message}`; }
+      });
+    });
     const ap = $g("#q-approve"); if (ap) ap.onclick = approve;
     const ab = $g("#q-abandon"); if (ab) ab.onclick = abandon;
     const ro = $g("#q-reopen"); if (ro) ro.onclick = reopen;

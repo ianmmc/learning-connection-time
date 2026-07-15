@@ -403,7 +403,11 @@ def _sch_file(year):
 def _lea_file(year):
     matches = sorted((_NCES_DIR / year).glob("ccd_lea_029_*.csv"))
     if len(matches) != 1:
-        raise SystemExit(f"expected exactly one ccd_lea_029_*.csv in {_NCES_DIR / year}, found {matches}")
+        # FileNotFoundError like the _sch_file/_virtual_file siblings — a missing/ambiguous data
+        # file is an ordinary exception callers can catch, never a process exit (the old
+        # SystemExit slipped past every `except Exception` best-effort guard; epic-#499 review).
+        raise FileNotFoundError(
+            f"expected exactly one ccd_lea_029_*.csv in {_NCES_DIR / year}, found {matches}")
     return matches[0]
 
 def _virtual_file(year):
@@ -736,7 +740,13 @@ def charter_lookup(did, year="2024_25"):
         for row in csv.DictReader(fh):
             if row.get("LEAID","").zfill(7) != str(did).zfill(7): continue
             if row.get("SY_STATUS","") not in OPEN: continue
-            out[norm(row.get("SCH_NAME",""))] = "Yes" if row.get("CHARTER_TEXT") == "Yes" else "No"
+            key = norm(row.get("SCH_NAME",""))
+            # norm_school strips NCES abbreviation tails (El/Sch/SHS...), so two sibling schools
+            # CAN collide on one key ('Roosevelt El' / 'Roosevelt Sch') — never let a 'No'
+            # overwrite a 'Yes': dropping a charter tag on collision would quietly violate
+            # REQ-060 (tag charters, never exclude) for the losing school (epic-#499 review).
+            if out.get(key) != "Yes":
+                out[key] = "Yes" if row.get("CHARTER_TEXT") == "Yes" else "No"
     return out
 
 def main():

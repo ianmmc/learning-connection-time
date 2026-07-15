@@ -330,18 +330,23 @@ class Gathered(NamedTuple):
     real: dict
     batch_id: str | None
     benchmark_excluded: list
-    satisfied: dict = {}      # REQ-149: {district_id: {band,...}} satisfied at gate@8, live
+    # None-default like every other dict input in this module (epic-#499 review round): a NamedTuple
+    # field default is ONE object shared by every instance that omits it — a `= {}` here is the
+    # mutable-default footgun waiting for the first in-place `g.satisfied[did] = ...`.
+    satisfied: dict | None = None    # REQ-149: {district_id: {band,...}} satisfied at gate@8, live
 
     @classmethod
     def empty(cls, rows=None, benchmark_excluded=None):
         return cls(rows or [], {}, {}, set(), {}, {}, None, benchmark_excluded or [])
 
 
-def _gather(session, handoff_hash: str, max_rounds=None) -> "Gathered":
+def _gather(session, handoff_hash: str, max_rounds=None, ca_cache: dict = None) -> "Gathered":
     """Read the detector inputs on `session`: the approved NEW-work rows (benchmark districts
     EXCLUDED — the wall, #134), per-district claimed + real bands (ONE district_target read),
     the executed-round history (depth guard), the districts to defer (un-executed 7->6, #159),
-    the LIVE covered bands (the #176/#175 coverage/phantom gate), and the next free batch id."""
+    the LIVE covered bands (the #176/#175 coverage/phantom gate), and the next free batch id.
+    `ca_cache` (optional {district_id: closing_argument}) is shared with the compose caller so the
+    per-district closing-argument assembly runs ONCE per compose, not once per consumer."""
     rows = _approved_newwork(session, handoff_hash)
     if not rows:
         return Gathered.empty()
@@ -358,27 +363,77 @@ def _gather(session, handoff_hash: str, max_rounds=None) -> "Gathered":
     exec_rounds = _executed_rounds(session, dids)
     defer_76 = _defer_76_districts(session, dids, max_rounds)
     covered = _covered_bands_now(session, dids)
-    satisfied = _satisfied_bands_now(session, dids)
+    satisfied = _satisfied_bands_now(session, dids, ca_cache=ca_cache)
     batch_id = f"batch_{BSTORE.next_batch_number(session):05d}"
     return Gathered(rows, claimed, exec_rounds, defer_76, covered, real, batch_id,
                     benchmark_excluded, satisfied)
 
 
-def _satisfied_bands_now(session, district_ids: list) -> dict:
+def _load_ca_cached(session, did, cache):
+    """One closing-argument assembly per district per compose — the loader is ~9 sequential
+    queries plus CCD file reads, and compose consumes it twice (satisfied, then unfilled slots).
+    record_drift_event=False (review round 2): compose is a planner, and its dry_run preview
+    promises NO writes — the roster_drift audit event is gate@8's to record, never a compose
+    side effect."""
+    if cache is not None and did in cache:
+        return cache[did]
+    ca = CA8.load_closing_argument(session, did, record_drift_event=False)
+    if cache is not None:
+        cache[did] = ca
+    return ca
+
+
+def _satisfied_bands_now(session, district_ids: list, ca_cache: dict = None) -> dict:
     """{district_id: {band,...}} whose gate@8 satisfied signal (REQ-149) is True RIGHT NOW — the
-    live closing argument per district (the same live-read posture as _covered_bands_now; compose
-    touches <= cap districts, so the per-district assembly cost is bounded). Best-effort per
-    district: a failure means NO suppression for that district — the covered_bands hard gate still
-    applies, so a failure can only cost money, never coverage."""
+    live closing argument per district (the same live-read posture as _covered_bands_now).
+    COST HONESTY (epic-#499 review round): this runs over EVERY district holding an approved
+    new-work directive — the pre-cap set, because suppression decides WHICH districts make the
+    cap cut — so its cost scales with the approved-request backlog, not plan_followup's cap.
+    Fine at today's volume; the batched ANY(:d) rewrite (the _covered_bands_now shape) is the
+    known next step if the backlog grows to hundreds. Best-effort per district: a failure means
+    NO suppression for that district — the covered_bands hard gate still applies, so a failure
+    can only cost money, never coverage."""
     out: dict = {}
     for did in district_ids:
         try:
-            ca = CA8.load_closing_argument(session, did)
+            ca = _load_ca_cached(session, did, ca_cache)
             sat = {b for b, ob in (ca.get("bands") or {}).items()
                    if (ob.get("satisfied") or {}).get("satisfied")}
             if sat:
                 out[did] = sat
         except Exception:  # noqa: BLE001 — best-effort; the hard gate remains
+            continue
+    return out
+
+
+def _unfilled_slots_now(session, district_ids: list, ca_cache: dict = None) -> dict:
+    """{district_id: {band: [school_id, ...]}} — the live gate@8 slot projection's UNFILLED slots
+    (#499 REQ-150): the roster's own gap list, read at compose for the plan's target districts
+    (bounded by the cap; the closing arguments are cache-shared with _satisfied_bands_now).
+    Reads the artifact's full slot_projection — NOT bands[b].slots — so a claimed band with ZERO
+    accepted facts (no bands entry at all, the population slot-grain pursuit most needs to reach)
+    still contributes its whole unheard roster (epic-#499 review round). Feeds
+    build_followup_batch's preferred_by_did; best-effort per district — absence degrades to the
+    #162 untried heuristic, never blocks."""
+    out: dict = {}
+    for did in district_ids:
+        try:
+            ca = _load_ca_cached(session, did, ca_cache)
+            per_band = {}
+            for band, p in (ca.get("slot_projection") or {}).items():
+                # `not match` (review round 2): an AMBIGUOUS slot also reads slot_state
+                # "unfilled", but the pipeline already HOLDS a fact for it — it's waiting on a
+                # human disposition, not on more paid discovery. Pursuing it re-buys data we
+                # have, every compose, until someone clicks. Truly unheard = unfilled AND no
+                # match attached (the same predicate the blanket projection uses).
+                ids = [s_["school_id"] for s_ in (p.get("slots") or [])
+                       if s_.get("slot_state") == "unfilled" and not s_.get("match")
+                       and s_.get("school_id")]
+                if ids:
+                    per_band[band] = ids
+            if per_band:
+                out[did] = per_band
+        except Exception:  # noqa: BLE001 — best-effort; the untried heuristic remains
             continue
     return out
 
@@ -438,13 +493,15 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
     b = BUD.load_budget()
 
     def _work(s) -> dict:
-        g = _gather(s, handoff_hash, b.max_request_rounds)
+        ca_cache: dict = {}    # one closing-argument load per district per compose (shared below)
+        g = _gather(s, handoff_hash, b.max_request_rounds, ca_cache=ca_cache)
         if not g.rows:
             return {**_empty_result(), "benchmark_excluded": g.benchmark_excluded}
 
         plan = plan_followup(g.rows, claimed_bands=g.claimed, executed_rounds=g.exec_rounds,
                              cap=cap, max_rounds=b.max_request_rounds, defer_76=g.defer_76,
-                             covered_bands=g.covered, real_bands=g.real, satisfied_bands=g.satisfied)
+                             covered_bands=g.covered, real_bands=g.real,
+                             satisfied_bands=g.satisfied or {})
         if not dry_run:
             # A suppressed directive is RESOLVED, not skipped: its band is covered/phantom (or the
             # district has no fillable gap left), so it could otherwise never leave 'approved' — it
@@ -463,8 +520,17 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
         target_dids = list(plan["targets"])
         attempted = _attempted_schools(s, target_dids)
         seed_urls = _seed_urls_by_district([r for r in g.rows if r["district_id"] in set(target_dids)])
+        # #499 REQ-150: slot-grain pursuit — the live projection's unfilled slots, restricted to
+        # the plan's target bands, ride into selection as the preferred set.
+        unfilled = _unfilled_slots_now(s, target_dids, ca_cache=ca_cache)
+        slot_targets = {did: {b: unfilled[did][b] for b in bands
+                              if b in unfilled.get(did, {})}
+                        for did, bands in plan["targets"].items() if unfilled.get(did)}
+        slot_targets = {did: m for did, m in slot_targets.items() if m}
+        plan["slot_targets"] = slot_targets
         batch_doc, skipped = Q1.build_followup_batch(year, g.batch_id, plan["targets"],
-                                                     attempted_by_did=attempted, seed_urls_by_did=seed_urls)
+                                                     attempted_by_did=attempted, seed_urls_by_did=seed_urls,
+                                                     preferred_by_did=slot_targets)
         if not batch_doc["districts"]:            # every target district was un-buildable (no coverage)
             return {**_empty_result(), "spilled": plan["spilled"], "blocked": plan["blocked"],
                     "deferred": plan["deferred"], "suppressed": plan["suppressed"], "skipped": skipped,

@@ -169,8 +169,14 @@
     // #499 REQ-145: an extra can be assigned to an unfilled slot (a name NCES spells differently)
     // or confirmed REAL (the escape hatch: NCES missed the school; denominator +1). The Stage-2
     // discovery-intent hint says which school's query surfaced the page it came from.
+    // Review round 2: a displaced or duplicate extra is NOT "not in NCES" — say why it's here.
+    // displaced_by: its slot was claimed by a human assign for another fact (review THAT assign,
+    // don't re-assign this one blind). duplicate_vote: a second fact with the identical key (a
+    // hand-add duplicating a council fact) — retire the hand-add, no assign/confirm affordances.
     const extraRow = extras.length
-      ? `<div class="s8-slot-row">Not in NCES roster: ${extras.map((x) => `<span class="s8-slot s8-slot-extra" data-feat="slot-extra" title="extracted fact matching no roster school — NCES may be wrong, or the name may need a disposition">${esc(x.school_display)}</span>${(x.intent_schools || []).length ? ` <span class="s8-muted" data-feat="slot-intent-hint" title="Stage-2 discovery intent: the page this fact came from was found by querying for these roster schools">(found via ${x.intent_schools.map(esc).join(", ")})</span>` : ""}
+      ? `<div class="s8-slot-row">Not in NCES roster: ${extras.map((x) => x.confidence === "duplicate_vote"
+          ? `<span class="s8-slot s8-slot-extra" data-feat="slot-extra-duplicate" title="a second fact with the same normalized name as the slot's current match — a duplicate vote (likely a hand-add duplicating a council fact); retire one of the two">${esc(x.school_display)} <span class="s8-muted">duplicate of the slot's current fact</span></span>`
+          : `<span class="s8-slot s8-slot-extra" data-feat="slot-extra" title="extracted fact matching no roster school — NCES may be wrong, or the name may need a disposition">${esc(x.school_display)}</span>${x.displaced_by ? ` <span class="s8-muted" data-feat="slot-extra-displaced" title="this fact exact-matched its roster slot, but a human assign bound a different fact there — review that assign before re-disposing this one">(displaced by the assign carrying “${esc(x.displaced_by)}”)</span>` : ""}${(x.intent_schools || []).length ? ` <span class="s8-muted" data-feat="slot-intent-hint" title="Stage-2 discovery intent: the page this fact came from was found by querying for these roster schools">(found via ${x.intent_schools.map(esc).join(", ")})</span>` : ""}
           <button class="btn btn-small" data-feat="slot-assign" data-slot-assign data-band="${esc(band)}" data-school="${esc(x.school_display)}">Assign to slot…</button>
           <button class="btn btn-small" data-feat="slot-extra-confirm" data-slot-confirm data-band="${esc(band)}" data-school="${esc(x.school_display)}">Confirm real (not in NCES)</button>`).join(" ")}</div>` : "";
     // #499 REQ-146: the band-grain fact — a blanket statement lives on the BAND, votes once,
@@ -323,8 +329,19 @@
     pushFlag("slot-conflict", "Slot conflicts (#499):", ns.slot_conflicts,
       (c) => `${esc(c.roster_school)} in ${esc(c.band)}: direct reading ${esc(c.direct_gross)} min vs blanket “${esc(c.band_fact_display)}” ${esc(c.band_fact_gross)} min — <span data-feat="conflict-rung">${esc(c.rung)}</span>${c.leans ? ` leans ${esc(c.leans === "direct" ? "the direct reading" : "the blanket")}` : ""} (${esc(c.note)})`,
       " — the ladder's ADVICE (sufficiency → hub-exception → vintage); both facts keep their votes until you dispose (override / exclude / more data).");
+    // Review round 2: per-KIND copy — the old binary ternary told a reviewer the school
+    // "closed/reclassified" even for an assign_shadowed (the slot is alive, two assigns
+    // collide) — a factually wrong basis for the Retire decision.
+    const ORPHAN_MSG = {
+      extra_now_in_roster: () => "the confirmed-extra now EXISTS in the NCES roster (retire it or the denominator double-counts)",
+      assign_shadowed: (o) => `its slot now carries a DIFFERENT fact (“${esc(o.slot_carries || "")}”) — two standing assigns collide on one slot; retire the one that's wrong`,
+      assign_fact_absent: () => "its assigned fact is no longer among the band's included facts (excluded, rejected, or superseded) — the assign binds nothing until re-extraction, or retire it",
+      slot_gone_from_roster: (o) => o.still_in_district_roster
+        ? "its roster slot moved to ANOTHER band (reclassified) — re-dispose under the new band"
+        : "its roster slot is not in the live NCES roster (closed — or the slot id was never valid)",
+    };
     pushFlag("slot-orphaned-disposition", "Orphaned slot dispositions (#499):", ns.orphaned_slot_dispositions,
-      (o) => `${esc(o.school)} in ${esc(o.band)} — ${o.kind === "extra_now_in_roster" ? "the confirmed-extra now EXISTS in the NCES roster (retire it or the denominator double-counts)" : "its roster slot vanished from the live NCES roster (closed/reclassified)"} <button class="btn btn-small" data-feat="slot-disposition-remove" data-slot-retire data-band="${esc(o.band)}" data-school="${esc(o.school)}" data-slotid="${esc(o.roster_school_id || "")}">Retire</button>`,
+      (o) => `${esc(o.school)} in ${esc(o.band)} — ${(ORPHAN_MSG[o.kind] || ORPHAN_MSG.slot_gone_from_roster)(o)} <button class="btn btn-small" data-feat="slot-disposition-remove" data-slot-retire data-band="${esc(o.band)}" data-school="${esc(o.school)}" data-slotid="${esc(o.roster_school_id || "")}">Retire</button>`,
       " — dispositions are precious: surfaced for human retirement, never auto-deleted.");
     pushFlag("slot-drift-band-moved", "Roster drift — band membership MOVED since last approval (#499):", rd.band_moved,
       (s) => `${esc(s.name)}: ${(s.from || []).map(esc).join("/")} → ${(s.to || []).map(esc).join("/")}`,

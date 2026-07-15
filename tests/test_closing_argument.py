@@ -950,6 +950,113 @@ class TestSlotSpine499:
         assert CA.fingerprint(frozen) == CA.fingerprint(ca)
 
 
+class TestEpicReviewFixes499:
+    """Epic-#499 post-merge review round (2026-07-15) — the artifact-level fixes."""
+
+    def _rosters2(self):
+        return {"elementary": {
+                    "total": 1, "by_source": {"level_clean": 1, "grade_span": 0, "level_override": 0},
+                    "schools": ["Oak Elementary School"],
+                    "slot_recs": [
+                        {"school_id": "001", "name": "Oak Elementary School", "is_charter": "No",
+                         "gslo": "KG", "gshi": "05", "level": "Elementary",
+                         "effective_band": "elementary", "source": "level_clean"}]},
+                "middle": {
+                    "total": 1, "by_source": {"level_clean": 1, "grade_span": 0, "level_override": 0},
+                    "schools": ["Central Middle School"],
+                    "slot_recs": [
+                        {"school_id": "051", "name": "Central Middle School", "is_charter": "No",
+                         "gslo": "06", "gshi": "08", "level": "Middle",
+                         "effective_band": "middle", "source": "level_clean"}]},
+                "_year": "2024_25"}
+
+    def test_slot_projection_covers_zero_fact_bands(self):
+        # A claimed band with ZERO facts has no bands entry — its slots must still ride in the
+        # top-level slot_projection (the population slot-grain pursuit most needs to reach).
+        acc = [_fact("elementary", "oak", 400)]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=2,
+            nces_by_level={"Elementary": 1, "Middle": 1}, schools_by_band={},
+            band_rosters=self._rosters2())
+        assert "middle" not in out["bands"]                       # no facts -> no band entry
+        mids = out["slot_projection"]["middle"]["slots"]
+        assert [s["school_id"] for s in mids] == ["051"]
+        assert mids[0]["slot_state"] == "unfilled"
+        assert out["negative_space"]["unheard_slots"]["middle"] == 1
+
+    def test_human_added_fact_conflicts_with_blanket(self):
+        # A #474 hand-added direct observation disagreeing with the band blanket IS a slot
+        # conflict — fact_of only indexes council winners, so the lookup must fall through to
+        # included_agg (where human adds vote).
+        acc = [_fact("elementary", "all elementary schools", 380)]
+        ha = [{"band": "elementary", "school": "oak", "start_time": "08:00", "end_time": "14:40",
+               "source_url": "https://d.org/bell", "reason": "site pdf", "actor": "ian",
+               "created_at": "t"}]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=1,
+            nces_by_level={"Elementary": 1}, schools_by_band={},
+            band_rosters=self._rosters2(), human_added=ha)
+        confs = out["negative_space"]["slot_conflicts"]
+        assert len(confs) == 1
+        assert confs[0]["direct_gross"] == 400 and confs[0]["band_fact_gross"] == 380
+
+    def test_load_is_a_pure_read_when_drift_recording_is_off(self, monkeypatch):
+        # Review round 2: load_closing_argument commits a roster_drift state_event as a side
+        # effect — callers that promise "nothing persisted" (the gate@1 spine GET, compose's
+        # live-read helpers incl. dry-run previews) pass record_drift_event=False and must
+        # execute ZERO INSERTs; the default (gate@8's review surface) still records it.
+        executed = []
+
+        class _Stub:
+            def execute(self, stmt, params=None):
+                sql = str(stmt)
+                executed.append(sql)
+
+                class _R:
+                    def all(self_r):
+                        return []
+
+                    def mappings(self_r):
+                        return self_r
+
+                    def first(self_r):
+                        return None
+
+                    def scalar(self_r):
+                        # a prior approval exists -> the drift INSERT is licensed when enabled
+                        return "2026-01-01T00:00:00Z" if "stage8_approval" in sql else None
+                return _R()
+
+        drifted = {"district_id": "D", "bands": {}, "slot_projection": {},
+                   "negative_space": {"roster_drift": {"added": [{"school_id": "X"}],
+                                                       "removed": [], "band_moved": []}},
+                   "capture_events": [], "provenance": {}}
+        monkeypatch.setattr(CA, "build_closing_argument", lambda *a, **k: drifted)
+        monkeypatch.setattr(CA.SS, "band_rosters_for_district", lambda d: None)
+
+        CA.load_closing_argument(_Stub(), "D", record_drift_event=False)
+        assert not any("INSERT" in s.upper() for s in executed)
+
+        executed.clear()
+        CA.load_closing_argument(_Stub(), "D")          # default: gate@8 records the event
+        assert any("INSERT INTO state_event" in s for s in executed)
+
+    def test_drift_baseline_prefers_receipt_slot_projection(self):
+        # A receipt's slot_projection covers ALL bands (incl. zero-fact ones); the drift diff
+        # must use it when present so drift on a factless band is visible.
+        acc = [_fact("elementary", "oak", 400)]
+        receipt = {"bands": {"elementary": {"gross_minutes": 400}},     # no slots under bands
+                   "slot_projection": {"middle": {"slots": [
+                       {"school_id": "051", "roster_school": "Central Middle School"},
+                       {"school_id": "099", "roster_school": "Closed Middle School"}]}}}
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=2,
+            nces_by_level={"Elementary": 1, "Middle": 1}, schools_by_band={},
+            band_rosters=self._rosters2(), last_receipt=receipt)
+        d = out["negative_space"]["roster_drift"]
+        assert any(r["school_id"] == "099" for r in d["removed"])       # the closed school shows
+
+
 class TestFingerprintGoldenHash:
     """FITNESS FUNCTION (the 2026-07-14 mass-staleness incident): the fingerprint of these FIXED
     synthetic receipts is pinned to literal hashes. If a change breaks this test, it ALTERS the

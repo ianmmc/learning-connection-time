@@ -45,3 +45,30 @@ def test_virtual_file_same_slice_and_error(nces):
     (nces / "2023_24").mkdir()
     with pytest.raises(FileNotFoundError, match="ccd_sch_129"):
         SS._virtual_file("2023_24")
+
+
+def test_lea_file_missing_raises_filenotfound_not_systemexit(nces):
+    # Epic-#499 review round (altitude): a missing/ambiguous CCD file is an ordinary
+    # FileNotFoundError like the _sch_file/_virtual_file siblings — the old SystemExit slipped
+    # past every best-effort `except Exception` guard downstream.
+    (nces / "2024_25").mkdir()
+    with pytest.raises(FileNotFoundError, match="ccd_lea_029"):
+        SS._lea_file("2024_25")
+
+
+def test_charter_lookup_collision_never_drops_a_yes(nces):
+    # Epic-#499 review round: norm_school strips NCES abbreviation tails, so two sibling
+    # schools can collide on one key ('Roosevelt El' / 'Roosevelt Sch') — the charter tag must
+    # survive the collision in BOTH row orders (REQ-060: tag charters, never exclude).
+    d = nces / "2024_25"
+    d.mkdir()
+    f = d / "ccd_sch_029_2425_w_1a_073025.csv"
+    f.write_text(
+        "LEAID,SY_STATUS,SCH_NAME,CHARTER_TEXT\n"
+        "0100001,1,Roosevelt El,Yes\n"
+        "0100001,1,Roosevelt Sch,No\n"          # same norm key, charter tag first
+        "0100001,1,Liberty Bell,No\n"
+        "0100001,1,Liberty Bell El Sch,Yes\n")  # same norm key, charter tag second
+    look = SS.charter_lookup("0100001", year="2024_25")
+    assert look["roosevelt"] == "Yes"
+    assert look["liberty bell"] == "Yes"
