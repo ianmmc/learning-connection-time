@@ -948,6 +948,37 @@ def queue_get(batch_id: str):
             raise HTTPException(404, f"no such batch {batch_id}")
 
 
+@app.get("/api/queue/{batch_id}/roster/{district_id}")
+def queue_roster_spine(batch_id: str, district_id: str):
+    """#499 REQ-150: the district's LIVE roster spine for the gate@1 panel — every in-scope NCES
+    school per band (slot_recs) with its live slot_state (unfilled = no accepted fact has ever
+    matched it; the follow-up pursuit target list). Live compute, nothing persisted — the template
+    visible from the start (batch_id is for the URL shape/audit only; the roster is never frozen
+    per batch). 404 when CCD files are absent (the honest null — the caller shows 'roster
+    unavailable', never a fabricated list)."""
+    rosters = SS_SAMPLING.band_rosters_for_district(district_id)
+    if not rosters:
+        raise HTTPException(404, "live NCES roster unavailable (CCD files not on disk)")
+    from infrastructure.acquisition.common import slot_spine as SP
+    facts_by_band: dict = {}
+    with gdb.session_scope() as con:
+        for did_band in con.execute(text(
+                "SELECT DISTINCT f.band, f.school FROM school_fact f "
+                "JOIN extraction e ON e.extraction_id = f.extraction_id "
+                "WHERE f.district_id = :d AND f.status = 'accepted' AND e.run_kind = 'production'"),
+                {"d": district_id}):
+            facts_by_band.setdefault(did_band[0], []).append(did_band[1])
+    proj = SP.project_slots(rosters, facts_by_band)
+    return {"district_id": district_id,
+            "nces_year": rosters.get("_year"),
+            "criteria": SS_SAMPLING.SCHOOL_CRITERIA_TEXT,
+            "bands": {b: {"slots": [{k: s_[k] for k in ("school_id", "roster_school", "gslo",
+                                                        "gshi", "is_charter", "slot_state")}
+                                    for s_ in p["slots"]],
+                          "stats": p["stats"]}
+                      for b, p in proj.items()}}
+
+
 @app.post("/api/queue/{batch_id}/edit")
 async def queue_edit(batch_id: str, payload: dict):
     """gate@1 soft edit: reject_district | reject_school | add_school. Mutates the working store,

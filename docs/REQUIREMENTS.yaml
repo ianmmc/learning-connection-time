@@ -3687,3 +3687,29 @@ requirements:
       gate-owner decision recorded here when it happens; the receipt-carried thresholds mean old
       approvals stay interpretable after any retune. PR-F (Stage-1 surfacing + slot-grain pursuit)
       closes the epic as REQ-150."
+
+  - id: REQ-150
+    github_issue: "#499 (PR-F — closes the epic)"
+    description: "The template visible from the start — gate@1 renders each district's full live NCES roster spine (selected + unfilled marked, criteria disclaimer); pursuit goes slot-grain: follow-up selection prefers the projection's UNFILLED SLOTS over the merely-untried heuristic."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "GET /api/queue/{batch}/roster/{district} serves the LIVE roster spine (slot_recs projected against accepted facts — filled/unfilled per slot, charter tag, spans, SCHOOL_CRITERIA_TEXT + nces_year); 404 when CCD files are absent (the honest null); nothing persisted — the roster is never frozen per batch"
+      - Gate@1 renders a per-district lazy-expanded spine panel (one fetch per district only when opened); selected-in-THIS-batch schools marked from the batch's own rows; unfilled slots dashed; data-feat markers s1-roster-spine / s1-slot-selected / s1-slot-unfilled / s1-slot-filled guarded by a console-features grep test
+      - "build_followup_batch gains preferred_by_did ({district: {band: [school_id]}}): when present for a band, selection restricts to those UNFILLED slots FIRST — the sharpening of #162: a school tried-but-never-attributed is still a gap, so 'attempted' must not deprioritize it; query_strategy = new_schools if any preferred slot is untried else widen_queries; absent/unmatched preference degrades to the #162 untried logic unchanged"
+      - "compose_followup_batch computes slot_targets = the live projection's unfilled slots ∩ the plan's target bands (_unfilled_slots_now, the _covered_bands_now posture; best-effort per district — failure degrades to the untried heuristic, never blocks) and passes them as the preference; slot_targets rides in the plan result for the preview modal"
+      - "batch_school's selected-subset semantics are UNCHANGED (load-bearing for _attempted_schools); the spine is an overlay, never a rewrite of Stage-1 selection"
+    tests:
+      - tests/test_followup_builder.py::test_preferred_unfilled_slots_beat_untried
+      - tests/test_followup_builder.py::test_preferred_untried_slot_keeps_new_schools_strategy
+      - tests/test_followup_builder.py::test_no_preferred_info_degrades_to_untried_heuristic
+      - tests/test_stage7_execute.py::test_compose_slot_targets_restricted_to_plan_targets
+      - tests/test_gate1_api.py::test_roster_spine_endpoint_shape
+      - tests/test_gate1_api.py::test_gate1_console_carries_the_roster_spine_markers
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "The sixth and final slice of #499 (order A→B→C→E→D→F). With this the spine spans the
+      pipeline: materialized at gate@1 (visible from batch creation), attributed at Stages 7/8
+      (REQ-144/145/148), governed at gate@8 (REQ-146/147/149), and steering pursuit back into
+      Stage 1 (this REQ). Epic #499 closes here."

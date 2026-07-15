@@ -86,3 +86,43 @@ def test_followup_skips_a_junk_domain_that_normalizes_to_a_nonsense_host(monkeyp
     monkeypatch.setattr(Q1, "load_enrollment", lambda: {"D1": 5000})
     doc, skipped = Q1.build_followup_batch("2024_25", "batch_00099", {"D1": ["high"]})
     assert doc["districts"] == [] and len(skipped) == 1 and "#229" in skipped[0]["reason"]
+
+
+# --- #499 REQ-150: slot-grain pursuit — preferred (unfilled-slot) schools beat the untried heuristic ---
+
+def test_preferred_unfilled_slots_beat_untried(monkeypatch):
+    # s1 was ATTEMPTED but never attributed (an unfilled slot); s2 is untried. The gap list wins:
+    # selection restricts to the unfilled slot even though it was already tried.
+    idx = {"D1": {"high": [_sch("s1", "Tried-but-unfilled High", "high"),
+                           _sch("s2", "Fresh High", "high")]}}
+    _patch_nces(monkeypatch, idx)
+    doc, _ = Q1.build_followup_batch(
+        "2024_25", "batch_00099", {"D1": ["high"]},
+        attempted_by_did={"D1": {"s1"}}, preferred_by_did={"D1": {"high": ["s1"]}})
+    d = doc["districts"][0]
+    assert [s["school_id"] for s in d["schools_by_band"]["high"]["schools"]] == ["s1"]
+    # every preferred slot was already tried -> widen queries is the remaining lever
+    assert d["schools_by_band"]["high"]["query_strategy"] == "widen_queries"
+
+
+def test_preferred_untried_slot_keeps_new_schools_strategy(monkeypatch):
+    idx = {"D1": {"high": [_sch("s1", "A High", "high"), _sch("s2", "B High", "high")]}}
+    _patch_nces(monkeypatch, idx)
+    doc, _ = Q1.build_followup_batch(
+        "2024_25", "batch_00099", {"D1": ["high"]},
+        attempted_by_did={"D1": {"s1"}}, preferred_by_did={"D1": {"high": ["s2"]}})
+    d = doc["districts"][0]
+    assert [s["school_id"] for s in d["schools_by_band"]["high"]["schools"]] == ["s2"]
+    assert d["schools_by_band"]["high"]["query_strategy"] == "new_schools"
+
+
+def test_no_preferred_info_degrades_to_untried_heuristic(monkeypatch):
+    # a preferred id no longer in the index (roster drift) matches nothing -> #162 path unchanged
+    idx = {"D1": {"high": [_sch("s1", "A High", "high"), _sch("s2", "B High", "high")]}}
+    _patch_nces(monkeypatch, idx)
+    doc, _ = Q1.build_followup_batch(
+        "2024_25", "batch_00099", {"D1": ["high"]},
+        attempted_by_did={"D1": {"s1"}}, preferred_by_did={"D1": {"high": ["gone-id"]}})
+    d = doc["districts"][0]
+    assert [s["school_id"] for s in d["schools_by_band"]["high"]["schools"]] == ["s2"]
+    assert d["schools_by_band"]["high"]["query_strategy"] == "new_schools"

@@ -144,3 +144,46 @@ def test_abandon_refuses_ever_approved_via_api(client):
     assert client.post(f"/api/queue/{BID}/abandon", json={"actor": "ian"}).status_code == 409
     assert client.post(f"/api/queue/{BID}/reopen", json={"actor": "ian"}).json()["status"] == "draft"
     assert client.post(f"/api/queue/{BID}/abandon", json={"actor": "ian"}).status_code == 409   # bypass closed
+
+
+def test_roster_spine_endpoint_shape(client, monkeypatch):
+    """#499 REQ-150: the gate@1 roster-spine endpoint — live slot_recs projected against accepted
+    facts; 404 (honest null) when the CCD roster is unavailable."""
+    from infrastructure.acquisition.process_governance import server as SRV
+    rosters = {"high": {"total": 2, "by_source": {}, "schools": ["North SHS", "South SHS"],
+                        "slot_recs": [
+                            {"school_id": "X1", "name": "North SHS", "is_charter": "No",
+                             "gslo": "09", "gshi": "12", "level": "High",
+                             "effective_band": "high", "source": "level_clean"},
+                            {"school_id": "X2", "name": "South SHS", "is_charter": "Yes",
+                             "gslo": "09", "gshi": "12", "level": "High",
+                             "effective_band": "high", "source": "level_clean"}]},
+               "_year": "2024_25"}
+    monkeypatch.setattr(SRV.SS_SAMPLING, "band_rosters_for_district", lambda d: rosters)
+    r = client.get(f"/api/queue/{BID}/roster/ZZTESTA")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["nces_year"] == "2024_25" and "criteria" in body
+    slots = {s["school_id"]: s for s in body["bands"]["high"]["slots"]}
+    assert slots["X2"]["is_charter"] == "Yes"
+    assert all(s["slot_state"] in ("filled", "unfilled") for s in slots.values())
+
+    monkeypatch.setattr(SRV.SS_SAMPLING, "band_rosters_for_district", lambda d: None)
+    assert client.get(f"/api/queue/{BID}/roster/ZZTESTA").status_code == 404
+
+
+def test_gate1_console_carries_the_roster_spine_markers():
+    """UI-visibility regression (the console-features rule) for the #499 gate@1 spine panel."""
+    from pathlib import Path
+    from infrastructure.acquisition.process_governance import server as SRV
+    js = (Path(SRV.__file__).parent / "static" / "gate1.js").read_text()
+    for marker in ("data-feat='s1-roster-spine'", 'data-feat="s1-roster-spine"'):
+        if marker in js:
+            break
+    else:
+        raise AssertionError("gate1.js lost the s1-roster-spine marker")
+    for marker in ('s1-slot-unfilled', 's1-slot-selected', 's1-slot-filled',
+                   "/roster/", "q-spine-criteria"):
+        assert marker in js, f"gate1.js lost the marker {marker!r}"
+    css = (Path(SRV.__file__).parent / "static" / "app.css").read_text()
+    assert ".q-spine-unfilled" in css and ".q-spine-selected" in css

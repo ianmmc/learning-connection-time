@@ -243,7 +243,8 @@ def build_batch(year: str, n: int, batch_id: str, registry: dict) -> tuple[dict,
 
 
 def build_followup_batch(year: str, batch_id: str, targets: dict, *,
-                         attempted_by_did: dict = None, seed_urls_by_did: dict = None) -> tuple[dict, list]:
+                         attempted_by_did: dict = None, seed_urls_by_did: dict = None,
+                         preferred_by_did: dict = None) -> tuple[dict, list]:
     """Build a TARGETED follow-up batch (batch_type='follow-up') from explicit district×band targets —
     the Stage-1 landing point for the request-more-evidence back-edges 7->2/7->3/7->1 (governance §11d:
     any NEW capture/discovery routes through a reviewable Stage-1 batch, never straight to discovery).
@@ -268,6 +269,13 @@ def build_followup_batch(year: str, batch_id: str, targets: dict, *,
         set and tag `query_strategy='widen_queries'` — the signal Stage 2 reads to run the
         differentiated SERP query set (#160) instead of the default. (Rendering stays in Stage 2:
         the stages are independent layers — Stage 1 must not import Stage 2's query renderer.)
+      * preferred_by_did {district_id: {band: [school_id, ...]}} (#499 REQ-150): the band's
+        UNFILLED SLOTS from the live gate@8 projection — schools the roster expects but no accepted
+        fact has ever matched. When present for a band, selection restricts to those slots FIRST
+        (the sharpening of #162: a school tried-but-never-attributed is still a gap — 'attempted'
+        must not deprioritize it). query_strategy: 'new_schools' if any preferred slot is untried,
+        else 'widen_queries' (every unfilled slot was already tried — differentiated queries are
+        the remaining lever). Absent/empty -> the #162 untried logic below, unchanged.
       * seed_urls_by_did {district_id: [url, ...]} (#161): explicit URLs to capture (from 7->3
         recapture directives) — carried onto the district entry for Stage 3 to capture directly,
         skipping discovery. Dormant plumbing today (no producer of target_urls yet, per Ian) but wired.
@@ -275,6 +283,7 @@ def build_followup_batch(year: str, batch_id: str, targets: dict, *,
     Returns (batch_doc, skipped) where skipped = [{district_id, reason}]."""
     attempted_by_did = attempted_by_did or {}
     seed_urls_by_did = seed_urls_by_did or {}
+    preferred_by_did = preferred_by_did or {}
     lea = S.lea_info(year)
     sch_idx = S.school_index(year)
     level_counts = S.school_level_counts(year)
@@ -303,8 +312,19 @@ def build_followup_batch(year: str, batch_id: str, targets: dict, *,
         # #162: per band prefer UNTRIED schools; fall back to the full set (and widen queries) when
         # every eligible school has already been attempted.
         attempted = attempted_by_did.get(did, set())
+        preferred = preferred_by_did.get(did, {})
         restricted, query_strategy = {}, {}
         for b in want:
+            # #499 REQ-150: unfilled slots first — the roster's own gap list beats the attempted
+            # heuristic (tried-but-never-attributed is still a gap).
+            pref_ids = set(preferred.get(b) or ())
+            pref = [c for c in dsi[b] if c["school_id"] in pref_ids]
+            if pref:
+                restricted[b] = pref
+                query_strategy[b] = ("new_schools"
+                                     if any(c["school_id"] not in attempted for c in pref)
+                                     else "widen_queries")
+                continue
             untried = [c for c in dsi[b] if c["school_id"] not in attempted]
             if untried:
                 restricted[b] = untried

@@ -580,3 +580,11 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 .s8-slot-extra { border-color: var(--text-brand); color: var(--text-brand); }
 .s8-slot-charter { font-size: 0.85em; color: var(--text-secondary); border: 1px solid var(--border-subtle); border-radius: 3px; padding: 0 3px; }
 .s8-slot-projected { border-style: dotted; color: var(--text-secondary); background: var(--surface-alt); }
+/* #499 REQ-150: the gate@1 roster spine — the full live hierarchy, selected/unfilled marked */
+.q-roster-spine { margin-top: 6px; font-size: var(--fs-xs); }
+.q-spine-band { margin: 6px 0; }
+.q-spine-slot { display: inline-block; padding: 1px 7px; margin: 1px; border-radius: 10px; border: 1px solid var(--border-subtle); }
+.q-spine-unfilled { border-style: dashed; color: var(--text-secondary); }
+.q-spine-selected { border-color: var(--action-primary); font-weight: 600; }
+.q-spine-ch { font-size: 0.85em; color: var(--text-secondary); border: 1px solid var(--border-subtle); border-radius: 3px; padding: 0 3px; }
+.q-spine-criteria { margin-top: 6px; }

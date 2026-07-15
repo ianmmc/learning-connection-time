@@ -383,6 +383,29 @@ def _satisfied_bands_now(session, district_ids: list) -> dict:
     return out
 
 
+def _unfilled_slots_now(session, district_ids: list) -> dict:
+    """{district_id: {band: [school_id, ...]}} — the live gate@8 slot projection's UNFILLED slots
+    (#499 REQ-150): the roster's own gap list, read at compose (the _covered_bands_now posture,
+    bounded by the cap). Feeds build_followup_batch's preferred_by_did so pursuit aims at
+    identified slots, not just untried schools. Best-effort per district — absence degrades to
+    the #162 untried heuristic, never blocks."""
+    out: dict = {}
+    for did in district_ids:
+        try:
+            ca = CA8.load_closing_argument(session, did)
+            per_band = {}
+            for band, ob in (ca.get("bands") or {}).items():
+                ids = [s_["school_id"] for s_ in (ob.get("slots") or [])
+                       if s_.get("slot_state") == "unfilled" and s_.get("school_id")]
+                if ids:
+                    per_band[band] = ids
+            if per_band:
+                out[did] = per_band
+        except Exception:  # noqa: BLE001 — best-effort; the untried heuristic remains
+            continue
+    return out
+
+
 def _flip(session, swept_ids: list, executed_ref: str) -> None:
     """Flip the swept directives to 'executed' with `executed_ref` (the follow-up batch_id, or the
     7->6 dispatch's handoff_hash) as their lineage, guarded on status='approved' so a partial retry
@@ -463,8 +486,17 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
         target_dids = list(plan["targets"])
         attempted = _attempted_schools(s, target_dids)
         seed_urls = _seed_urls_by_district([r for r in g.rows if r["district_id"] in set(target_dids)])
+        # #499 REQ-150: slot-grain pursuit — the live projection's unfilled slots, restricted to
+        # the plan's target bands, ride into selection as the preferred set.
+        unfilled = _unfilled_slots_now(s, target_dids)
+        slot_targets = {did: {b: unfilled[did][b] for b in bands
+                              if b in unfilled.get(did, {})}
+                        for did, bands in plan["targets"].items() if unfilled.get(did)}
+        slot_targets = {did: m for did, m in slot_targets.items() if m}
+        plan["slot_targets"] = slot_targets
         batch_doc, skipped = Q1.build_followup_batch(year, g.batch_id, plan["targets"],
-                                                     attempted_by_did=attempted, seed_urls_by_did=seed_urls)
+                                                     attempted_by_did=attempted, seed_urls_by_did=seed_urls,
+                                                     preferred_by_did=slot_targets)
         if not batch_doc["districts"]:            # every target district was un-buildable (no coverage)
             return {**_empty_result(), "spilled": plan["spilled"], "blocked": plan["blocked"],
                     "deferred": plan["deferred"], "suppressed": plan["suppressed"], "skipped": skipped,

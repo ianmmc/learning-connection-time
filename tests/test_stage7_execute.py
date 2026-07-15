@@ -684,3 +684,24 @@ def test_satisfied_is_additional_not_replacement():
                             covered_bands={"D1": {"elementary"}},
                             satisfied_bands={"D1": {"high"}})
     assert plan["targets"] == {"D1": ["middle"]}     # covered AND satisfied both excluded
+
+
+@pytest.mark.govdb
+def test_compose_slot_targets_restricted_to_plan_targets(gov_session, monkeypatch):
+    # REQ-150: slot_targets = the live unfilled slots ∩ the plan's target bands; absent projection
+    # data degrades to no preference (build_followup_batch's #162 path).
+    monkeypatch.setattr(EX, "_unfilled_slots_now",
+                        lambda s, dids: {"D1": {"high": ["X9"], "elementary": ["X1"]}})
+    captured = {}
+    real_build = EX.Q1.build_followup_batch
+    def spy(year, batch_id, targets, **kw):
+        captured.update(kw)
+        return real_build(year, batch_id, targets, **kw)
+    monkeypatch.setattr(EX.Q1, "build_followup_batch", spy)
+    monkeypatch.setattr(EX, "_gather", lambda s, hh, mr: EX.Gathered(
+        rows=[{"request_id": 1, "district_id": "D1", "route": "7->2", "band": "high"}],
+        claimed={"D1": ["high"]}, exec_rounds={}, defer_76=set(), covered={}, real={},
+        batch_id="batch_99999", benchmark_excluded=[], satisfied={}))
+    out = EX.compose_followup_batch(session=gov_session, dry_run=True)
+    # only the targeted band's unfilled slots ride as the preference (elementary is not a target)
+    assert captured.get("preferred_by_did") == {"D1": {"high": ["X9"]}}
