@@ -115,26 +115,30 @@ The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.jso
 .githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
 (`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-15):** **Epic #499 is CLOSED** — the roster-template/school-slot spine,
-Stages 1–8, shipped as six PRs (#502–#507, REQ-144–REQ-150): live slot projection at gate@8 (filled /
-projected / unfilled / ambiguous / extras, `slot_projection` top-level in the closing argument),
-precious human slot dispositions (`slot_assignment` + `slot_assignments.json` sweep), Stage-2
-discovery-intent tie-break, band-grain facts + the conflict ladder (advice-only), v4 prompts'
-verbatim `campus_names`, the per-band "satisfied" follow-up suppressor, and gate@1's lazy roster-spine
-panel + slot-grain pursuit (`preferred_by_did`). **Two max-effort review rounds ran against the merged
-epic — 22 confirmed findings fixed**, headline lessons: one projection/one read path for both gates;
-reads must be reads (`load_closing_argument(record_drift_event=False)` for GETs/previews); staleness
-now derives from re-hashing the frozen receipt (REQ-147, immune to fingerprint-basis evolution,
-golden-hash-guarded). PR #501 (requirements/docs sweep, REQ-125–143) merged earlier the same day.
-Full story: `docs/PROJECT_HISTORY.md`'s newest entry.
+**Current status (2026-07-15):** **Epic #119 is CLOSED** (Stage 7 extraction quality & validation) —
+the standing epic sequence's first pick after #499. Landed as PRs #508–#511: parse-robustness fixes
+(#362/#276, `parse.py` salvage now uses `json.JSONDecoder.raw_decode` instead of a brace-blind regex),
+the gate@7 single-school-LEA contamination banner (#246), the extraction-time mode-stability
+early-exit (#120, REQ-151 — district-grain auto-skip once every fillable band's running mode is
+stable, config-as-data params + a Settings kill-switch), and the #121 snake-topology re-test (Broward/
+Orange column-snake hub docs verified RESOLVED by REQ-054's per-school extraction — known-failure
+table row 4 updated with measured numbers, no code change needed). Three crossfam bug reports
+(#259/#361/#363) triage-closed as by-design/invalid/won't-fix with rationale on each issue. Follow-on
+work spun out rather than done inline: **#512** (Stage 5 snake-detector + labeling mechanism — sits
+with #233/#241) and `MODEL_FIELD_NOTES.md` (**PR #513, OPEN** — per-model field evidence ahead of the
+Council Lab; merge when reviewed, it's docs-only/no code dependency). Full story: this session's
+transcript; no PROJECT_HISTORY entry yet (queue one at the next natural stopping point — the
+per-PR commit messages + REQ-151 carry the detail for now).
 
-**Next (RESUME HERE — 2026-07-15):** With #499 landed, **the standing epic sequence resumes and needs
-its next pick confirmed with Ian**: **#119** (Stage 7) → **#106** (Stage 5/6) → **#111** (Stages 1-4)
-→ liveness gate → **#479/#480** (LCT foundation sweeps) → **#92** (Stage 9 build). Also now UNBLOCKED:
-**#484** (datacontract Part 2 — was waiting on #499's artifact-shape changes, which are done; needs its
-own REQ once scheduled). Parked: #475/#476 (public extractions), #103/#80 (ramp-up/Council Lab).
-Deferred-by-design from the #499 reviews (documented in code, revisit on volume): batching
-`_satisfied_bands_now`'s per-district loads (`ANY(:d)` shape) once the approved-request backlog grows.
+**Next (RESUME HERE — 2026-07-15):** **#106** (Stage 5/6 filter & dispatch refinements) is next in
+the confirmed sequence, then **#111** (Stages 1-4) → liveness gate → **#479/#480** (LCT foundation
+sweeps) → **#92** (Stage 9 build). #106 is an epic shell (school-year currency, drift detection,
+facet-level scoring, cross-config escalation) — **pull its sub-issues before scoping work**, the way
+#119 and #499 were opened. Also unblocked/pending: **#484** (datacontract Part 2), **#513** (merge
+when reviewed). Parked: #475/#476 (public extractions), #103/#80 (ramp-up/Council Lab — #512 and
+`MODEL_FIELD_NOTES.md` are prep for this). Deferred-by-design from the #499 reviews (documented in
+code, revisit on volume): batching `_satisfied_bands_now`'s per-district loads (`ANY(:d)` shape) once
+the approved-request backlog grows.
 Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config
 core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
 -m "not integration"` (expect **~1540** pass) + `pytest -q -m govdb` (expect **~225**, Postgres up).
