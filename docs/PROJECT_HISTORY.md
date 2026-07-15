@@ -322,6 +322,43 @@ With epic #478 fully closed, two questions the fast pace of the preceding week h
 
 **The doc-tower pass** worked stage-design-notes outward: renamed 12 `*_2026-06.md` documents (living documents wrongly wearing a dated-snapshot suffix — four genuinely dated research docs deliberately kept theirs) and swept every cross-reference, which surfaced its own lesson twice — the first sweep filtered by file extension (`.py/.md/.js/.json`) and missed `REQUIREMENTS.yaml` (a `.yaml`), `pyproject.toml`, `requirements.txt`, and a `.dependency-cruiser.cjs`; only a second, **extension-less repo-wide grep** caught the stragglers, which is the check that should have run first. `docs/ACQUISITION_PIPELINE.md` — the doc whose Mermaid diagram is a primary way this project is understood at a glance — had the widest drift: Stage 8 was still drawn as a single unlabeled node captioned "algorithm live inline inside gate@7, standalone stage NOT built," months out of date. Rebuilt as a full subgraph matching the density of Stages 1–7, and validated with an actual `mermaid-cli` render rather than eyeballing the syntax — which caught a real parse bug (a bare `(#93)` inside a bracket-node label breaks Mermaid's shape parser) that a manual review would very plausibly have shipped. `README.md` — flagged specifically as stale and GitHub-facing — still described the *retired* Crawlee+Ollama local-first design as the live acquisition method, directly contradicting the very doc it linked to for detail; replaced with the current console-driven flow. *Lesson: an audit whose job is "check the paperwork" is worth running as a code-grounded exercise, not a memory exercise — half its real findings (the phantom-band bug, the calibration docstring, the Mermaid parse error, the extension-filtered rename miss) were bugs or breakage, not staleness, and none of them would have surfaced from reading the docs against each other.* Authority: `docs/REQUIREMENTS.yaml` (REQ-125–REQ-143), the renamed `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE*_DESIGN.md` + `PIPELINE_GOVERNANCE_AND_STATE.md`, `docs/ACQUISITION_PIPELINE.md` (Stage 8 section + Mermaid), `README.md`/`GETTING_STARTED.md`/`TERMINOLOGY.md`/`METHODOLOGY.md`.
 
+### Epic #499 — the roster-template/school-slot spine: coverage becomes structural, and two adversarial review rounds earn their keep (2026-07-15)
+
+The workstream #253's band-denominator discussion motivated, built in one session across six PRs
+(#502–#507, REQ-144–REQ-150): each district's full in-scope NCES hierarchy is materialized as **slots**
+that discovery/extraction results attribute onto — so a coverage gap is an *identified school*, not
+count arithmetic. Key design calls that will outlive the code details: the spine is **live-compute-only**
+(never persisted; the gate@8 receipt is the only frozen copy, and the receipt chain doubles as the
+longitudinal roster-drift record — derive-from-receipts over stamp-stored, again); only **human
+dispositions** (`slot_assignment`: assign/reject/confirm_extra) are precious; resolution precedence is
+**human disposition > exact name > Stage-2-intent tie-break > ambiguous-waits** ("weight, never
+override"); a band-level blanket statement attaches to the **band node**, votes once, and *projects*
+onto unheard slots (a visible third state); the conflict ladder (sufficiency → hub-exception → vintage)
+renders **advice only**; and the roster is **never injected into prompts** (REQ-054 — v4's
+`campus_names` reads the page verbatim instead, and deterministic norm-key matching does the joining).
+Follow-up pursuit went slot-grain: compose prefers *identified unfilled slots* over merely-untried
+schools, and the "satisfied" signal (REQ-149, the #90 pull-in) is an additional suppressor beside the
+covered-bands hard gate, never a replacement.
+
+**The review lesson is the durable part.** Two max-effort multi-agent review rounds ran against the
+merged epic; 22 findings confirmed and fixed, and the second round's biggest catches were bugs the
+*first round's own fixes* introduced or missed — the pattern to remember: (1) **one projection, one
+read path** — a parallel hand-rolled query for the "same" view (gate@1's spine endpoint vs gate@8's
+closing argument) silently diverged on every human editorial action; the fix was exposing the full
+`slot_projection` in the artifact and making every consumer reshape it; (2) **reads must be reads** —
+consolidating onto `load_closing_argument` wired its roster-drift audit write into a GET and a dry-run
+preview; purity is now caller-declared (`record_drift_event=False`); (3) **fix the whole class, not the
+instance** — round 1 guarded three of `project_slots`' four fact branches against duplicate keys; round
+2 found the fourth (confirm_extra denominator double-count) plus the endpoint-level root cause (a #474
+hand-add duplicating a still-accepted council fact now 409s — corrections go through the override); (4)
+**a Python-side signal the UI never renders is half a fix** — `assign_shadowed`/`displaced_by` existed
+in the artifact while the console showed factually wrong copy, and the grep-style UI test passed
+throughout because it pinned only the call-site literal, not the per-kind text. Also fixed at the
+source, downgraded from a defensive catch: `_lea_file` raising `SystemExit` for an ordinary missing
+CSV (it slipped past every best-effort `except Exception`). Authority: `docs/REQUIREMENTS.yaml`
+REQ-144–150, `STAGE8_AGGREGATE_DESIGN.md`, `infrastructure/acquisition/common/slot_spine.py`'s module
+docstring, issues #499/#502–#507.
+
 ---
 
 ## Part 3 — Live Roadmap & Carry-Forward Ideas (recorded, largely unexecuted)

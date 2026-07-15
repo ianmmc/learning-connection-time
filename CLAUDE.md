@@ -105,41 +105,41 @@ Playwright before shipping visuals (Python playwright isn't installed — drive 
 `infrastructure/scraper`). CI runs two jobs: the DB-free suite + `governance-db` (`pytest -m govdb` on a
 Postgres service container).
 
-**Precious state + backups:** `label` (incl. `facets_json`) / `cluster_split` / `followup_flag` / `handoff`
-live in the governance DB; `handoff_<hash>_<ts>.json` under `data/acquisition/handoffs/` is immutable;
-`saved_view` holds UI prefs. The tracked `.githooks/pre-commit` sweeps `labels.json` +
-`district_status.json` into every commit — on a fresh clone run `git config core.hooksPath .githooks`
-(`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript (`GETTING_STARTED.md` §1a).
+**Precious state + backups:** `label` (incl. `facets_json`) / `cluster_split` / `followup_flag` /
+`handoff` + the gate@8 human-judgment tables (`stage8_approval` incl. frozen receipts, `band_exclusion`,
+`human_added_fact`, `slot_assignment`, `gate_mode`) live in the governance DB;
+`handoff_<hash>_<ts>.json` under `data/acquisition/handoffs/` is immutable; `saved_view` holds UI prefs.
+The tracked `.githooks/pre-commit` sweeps the git-backed JSON twins (`labels.json`,
+`district_status.json`, `stage8_approvals.json`, `band_exclusions.json`, `human_added_facts.json`,
+`slot_assignments.json`, …) into every commit — on a fresh clone run `git config core.hooksPath
+.githooks` (`GETTING_STARTED.md` §1b). Stage 4 needs poppler/tesseract/ghostscript
+(`GETTING_STARTED.md` §1a).
 
-**Current status (2026-07-15):** **epic #478 is fully CLOSED** — gate@8's four editorial primitives
-(#257/#258/#473/#474, both motivating districts approved live) plus its full tail: the **band-integrity
-family** — #253 (live NCES-derived band-serving denominator + combined-scope detector), #254 (v3
-`school_year`/`applies_to` readings + merge-precedence, unknown-year-coexists), #498 (the grade-band LEVEL
-carve-out, corpus-measured — one override + the 5-5/5-6/6-6 orphan ruling, plus a review-round fix for a
-real phantom-band correctness bug, REQ-143) — and #91 (Stage-5 extract-outcome calibration) + #229
-(console Exclusions view). **A retrospective requirements/tests audit + full doc-tower sweep then ran
-against current code as ground truth** (PR #501, open, CI green): 19 new `REQUIREMENTS.yaml` entries
-(REQ-125–REQ-143) formalizing gate@8's build that had only ever lived in GitHub issues, 29 new tests
-(including 2 standing fitness functions — `test_ci_workflows.py`, `test_suite_hygiene.py`), the 12
-`*_2026-06.md` living design-notes renamed (suffix dropped), and `ACQUISITION_PIPELINE.md`/`README.md`
-brought current (both had drifted badly — Stage 8 was still drawn "NOT BUILT," README still described the
-retired Crawlee+Ollama design as live). Full story: `docs/PROJECT_HISTORY.md`'s two newest entries.
+**Current status (2026-07-15):** **Epic #499 is CLOSED** — the roster-template/school-slot spine,
+Stages 1–8, shipped as six PRs (#502–#507, REQ-144–REQ-150): live slot projection at gate@8 (filled /
+projected / unfilled / ambiguous / extras, `slot_projection` top-level in the closing argument),
+precious human slot dispositions (`slot_assignment` + `slot_assignments.json` sweep), Stage-2
+discovery-intent tie-break, band-grain facts + the conflict ladder (advice-only), v4 prompts'
+verbatim `campus_names`, the per-band "satisfied" follow-up suppressor, and gate@1's lazy roster-spine
+panel + slot-grain pursuit (`preferred_by_did`). **Two max-effort review rounds ran against the merged
+epic — 22 confirmed findings fixed**, headline lessons: one projection/one read path for both gates;
+reads must be reads (`load_closing_argument(record_drift_event=False)` for GETs/previews); staleness
+now derives from re-hashing the frozen receipt (REQ-147, immune to fingerprint-basis evolution,
+golden-hash-guarded). PR #501 (requirements/docs sweep, REQ-125–143) merged earlier the same day.
+Full story: `docs/PROJECT_HISTORY.md`'s newest entry.
 
-**Next (RESUME HERE — 2026-07-15):** **PR #501 (the requirements/docs sweep) is open, CI green, ready to
-merge** — merge it first, then sync off `docs/requirements-and-doctower-sweep` back to `main`. With #478
-fully closed, **the next workstream needs a decision, not just execution**: **#499** (the roster-template/
-school-slot spine #253's discussion motivated — Ian decided this is priority-now, not deferred, back-to-
-front build order: Stage 8 slot-view first, Stage 1 last) is the freshest agreed-priority item, but the
-OLDER standing epic sequence (infrastructure → present-backwards through the pipeline → LCT foundation →
-Stage 9) was never formally superseded: **#119** (Stage 7) → **#106** (Stage 5/6) → **#111** (Stages 1-4)
-→ liveness gate → **#479/#480** (LCT foundation sweeps) → **#92** (Stage 9 build). **Reconcile where #499
-slots into that sequence as the first order of business next session** — don't silently pick one. Parked:
-#475/#476 (public extractions), #103/#80 (ramp-up/Council Lab), #484 (datacontract Part 2 — #478's
-blocker cleared, needs its own REQ once scheduled). Resume-essentials: `pip install -e .` → Docker up
-(`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh clone only) → `lint-imports`
-(expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect **~1447** pass) + `pytest -q -m
-govdb` (expect **~218**, Postgres up). Full detail: `docs/PROJECT_HISTORY.md` (newest entries),
-`PIPELINE_GOVERNANCE_AND_STATE.md`, `STAGE8_AGGREGATE_DESIGN.md`, `docs/REQUIREMENTS.yaml` (REQ-125–143).
+**Next (RESUME HERE — 2026-07-15):** With #499 landed, **the standing epic sequence resumes and needs
+its next pick confirmed with Ian**: **#119** (Stage 7) → **#106** (Stage 5/6) → **#111** (Stages 1-4)
+→ liveness gate → **#479/#480** (LCT foundation sweeps) → **#92** (Stage 9 build). Also now UNBLOCKED:
+**#484** (datacontract Part 2 — was waiting on #499's artifact-shape changes, which are done; needs its
+own REQ once scheduled). Parked: #475/#476 (public extractions), #103/#80 (ramp-up/Council Lab).
+Deferred-by-design from the #499 reviews (documented in code, revisit on volume): batching
+`_satisfied_bands_now`'s per-district loads (`ANY(:d)` shape) once the approved-request backlog grows.
+Resume-essentials: `pip install -e .` → Docker up (`docker-compose up -d`) → `git config
+core.hooksPath .githooks` (fresh clone only) → `lint-imports` (expect **4 kept/0 broken**) + `pytest -q
+-m "not integration"` (expect **~1540** pass) + `pytest -q -m govdb` (expect **~225**, Postgres up).
+Full detail: `docs/PROJECT_HISTORY.md` (newest entry), `STAGE8_AGGREGATE_DESIGN.md`,
+`PIPELINE_GOVERNANCE_AND_STATE.md`, `docs/REQUIREMENTS.yaml` (REQ-144–150).
 
 ---
 
