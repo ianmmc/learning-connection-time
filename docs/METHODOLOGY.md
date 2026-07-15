@@ -1293,7 +1293,13 @@ segments map to the **elementary** band (the Southern Lehigh shape, #498):
 | PK\|K\|1-3 | 4-6 | 7-8 | 9-11\|12\|13 |
 | PK\|K\|1-3 | 4-5 | 6-8 | 9-11\|12\|13 |
 | PK\|K\|1-2 | 3-6 | 7-8 | 9-11\|12\|13 |
-| PK\|K\|1-4 | 5-6 *(TBD-Ian: 5-6 beside a 7-8 is MIDDLE per the standard — is it upper-elementary only when the district also has a separate 6-8/7-8? draft rows pending ruling)* | 7-8 | 9-11\|12\|13 |
+
+A 5-6 tier is NOT upper elementary — it maps to **middle** (RULED 2026-07-15, below), so a
+K-4 · 5-6 · 7-8 · 9-12 district is four schools over three bands with TWO middle segments:
+
+| elementary | middle (two segments) | high |
+| ---------- | --------------------- | ------------- |
+| PK\|K\|1-4 | 5-6 · 7-8 | 9-11\|12\|13 |
 
 Five-band (… · lower high · upper high) — both high segments map to the **high** band:
 
@@ -1310,8 +1316,12 @@ full corpus this is the *only* hard LEVEL-vs-span disagreement class that exists
 `Elementary` starting ≥5 — is zero), and NCES's `Middle` tag on 5-6 schools *agrees* with this
 standard, so 05-06 is deliberately NOT overridden. Every override application is surfaced as a
 gate@8 note, never silent (`effective_level_band`, `common/school_sampling.py`). **Boundary orphans
-pending Ian's ruling:** grade-5-only spans (15 schools), grade-6-only spans (73 schools), and
-5-6-without-a-7-8 districts.
+RULED (Ian, 2026-07-15): 5-5, 6-6, and 5-6 are all MIDDLE schools**, unconditionally (Hammarskjold
+Upper Elementary NJ — LEVEL=Middle 05-06 — is the pinned specimen). Consequence for the span rules:
+**a span starting at grade 5+ is middle-family and never counts elementary** (`bands_for_rescue`
+elementary now requires starting ≤ grade 4; `recursive_band_groups`' elementary prefix likewise) —
+corpus-measured effect: 129 schools across 123 districts lose a spurious elementary membership
+(05-08 Middles, 05-12 secondaries leaked in by the old start-at-5 rule); nothing else moves.
 
 *(Migrated 2026-06-27 from `docs/scratch-paper/Recognized Grade Bands for Fallback Scenarios.md`;
 four/five-band shapes + the #498 carve-out added 2026-07-15.)*

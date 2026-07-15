@@ -112,7 +112,7 @@ class TestIntermediateCarveOut:
         assert SS.effective_level_band("Middle", "02", "06") == "elementary"
 
     def test_five_six_and_orphans_stay_untouched(self):
-        # 5-6 is middle per the standard (NCES agrees); orphans await the METHODOLOGY ruling
+        # 5-6 is middle per the standard (NCES agrees); orphans RULED middle (Ian 2026-07-15)
         assert SS.effective_level_band("Middle", "05", "06") == "middle"
         assert SS.effective_level_band("Middle", "06", "06") == "middle"
         assert SS.effective_level_band("Middle", "05", "05") == "middle"
@@ -150,3 +150,36 @@ class TestIntermediateCarveOut:
         idx = SS.school_index("2024_25")["1234567"]
         assert [s["name"] for s in idx["middle"]] == ["Real Middle"]
         assert "Liberati Intermediate" in [s["name"] for s in idx["elementary"]]
+
+
+class TestOrphanRulingMiddleFamily:
+    """#498 orphan ruling (Ian, 2026-07-15): 5-5, 5-6, and 6-6 are all MIDDLE — a span starting
+    at grade 5+ is middle-family and never counts elementary."""
+
+    def test_rescue_bands_middle_family_spans(self):
+        assert SS.bands_for_rescue("05", "06") == {"middle"}
+        assert SS.bands_for_rescue("05", "05") == {"middle"}
+        assert SS.bands_for_rescue("06", "06") == {"middle"}
+        assert SS.bands_for_rescue("05", "08") == {"middle"}          # no elementary leak
+        assert SS.bands_for_rescue("05", "12") == {"middle", "high"}  # ditto
+
+    def test_rescue_low_starts_unchanged(self):
+        # the West Bonner discipline is intact: PK-06 stays pure elementary; PK-07 reaches middle
+        assert SS.bands_for_rescue("PK", "06") == {"elementary"}
+        assert SS.bands_for_rescue("PK", "07") == {"elementary", "middle"}
+        assert SS.bands_for_rescue("04", "06") == {"elementary"}      # intermediate span
+        assert SS.bands_for_rescue("KG", "08") == {"elementary", "middle"}
+
+    def test_partition_prefix_stops_before_a_grade5_segment(self):
+        # K-4 / 5-6 / 7-8 / 9-12: only K-4 folds into elementary; 5-6 AND 7-8 are middle
+        GO = SS.GRADE_ORD
+        spans = {(GO["KG"], GO["04"]), (GO["05"], GO["06"]), (GO["07"], GO["08"]), (GO["09"], GO["12"])}
+        g = SS.recursive_band_groups(spans)
+        assert g == {"elementary": [0], "middle": [1, 2], "high": [3]}
+
+    def test_partition_prefix_still_folds_intermediate_tiers(self):
+        # K-3 / 4-6 / 7-8 / 9-12: both leading tiers are elementary (the Southern Lehigh shape)
+        GO = SS.GRADE_ORD
+        spans = {(GO["KG"], GO["03"]), (GO["04"], GO["06"]), (GO["07"], GO["08"]), (GO["09"], GO["12"])}
+        g = SS.recursive_band_groups(spans)
+        assert g == {"elementary": [0, 1], "middle": [2], "high": [3]}

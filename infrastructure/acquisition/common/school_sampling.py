@@ -52,22 +52,26 @@ def bands_for(gslo, gshi):
 
 def bands_for_rescue(gslo, gshi):
     """Like bands_for(), but for the conservative any-overlap RESCUE only (districts whose
-    grade spans don't form a clean partition): a school must reach grade 7 to count as
-    touching middle -- topping out at grade 6 alone is treated as pure elementary, mirroring
-    the same distinction recursive_band_groups() already makes for clean partitions via its
-    top<=6 leading-prefix collapse. bands_for() itself is left as the literal grade-6-8
-    definition for other callers (e.g. LEA-level claimed-band checks) -- this is specifically
-    about per-school rescue-candidate selection, not the district's overall claimed span.
-    Found 2026-06-22: West Bonner County ID's PRIEST RIVER ELEMENTARY and IDAHO HILL
-    ELEMENTARY (both PK-06) were wrongly rescued into middle's candidate pool under plain
-    bands_for() just because grade 6 sits in BANDS['middle']'s nominal range, while PRIEST
-    LAKE ELEMENTARY (PK-07) and PRIEST RIVER LAMANNA HIGH (07-12) -- which actually reach
-    grade 7 -- correctly do belong there."""
+    grade spans don't form a clean partition). Two boundary disciplines:
+      - A school topping at grade 6 that STARTS low is pure elementary (found 2026-06-22:
+        West Bonner County ID's PRIEST RIVER/IDAHO HILL ELEMENTARY, both PK-06, were wrongly
+        rescued into middle just because grade 6 sits in BANDS['middle']'s nominal range,
+        while PRIEST LAKE ELEMENTARY PK-07 and LAMANNA HIGH 07-12 -- which reach grade 7 --
+        correctly belong there).
+      - A span STARTING at grade 5+ is a MIDDLE-FAMILY school, never elementary (#498 ruling,
+        Ian 2026-07-15: 5-5, 5-6, and 6-6 are all middle -- Hammarskjold Upper Elementary NJ,
+        LEVEL=Middle 05-06, is the pinned specimen -- and a 5-8 is middle only, not
+        elementary+middle). Elementary attribution therefore requires starting at grade <=4.
+    bands_for() itself is left as the literal grade-6-8 definition for other callers (e.g.
+    LEA-level claimed-band checks) -- this is specifically about per-school rescue-candidate
+    selection, not the district's overall claimed span."""
     lo, hi = GRADE_ORD.get(norm(gslo)), GRADE_ORD.get(norm(gshi))
     if lo is None or hi is None or hi < lo: return set()
     bands = set()
-    if lo <= GRADE_ORD["05"]: bands.add("elementary")
-    if lo <= GRADE_ORD["08"] and hi >= GRADE_ORD["07"]: bands.add("middle")
+    if lo <= GRADE_ORD["04"]: bands.add("elementary")
+    if ((lo <= GRADE_ORD["08"] and hi >= GRADE_ORD["07"])
+            or (GRADE_ORD["05"] <= lo and hi <= GRADE_ORD["06"])):
+        bands.add("middle")
     if hi >= GRADE_ORD["09"]: bands.add("high")
     return bands
 
@@ -323,12 +327,16 @@ def recursive_band_groups(spans):
 
     elem_end = -1
     i = 0
-    while i < n and tops[i] <= 6:
+    # #498 ruling (Ian 2026-07-15): a segment STARTING at grade 5+ is middle-family (5-6 beside a
+    # 7-8 is a middle school, not an upper-elementary tier), so the elementary prefix additionally
+    # requires the segment to START at grade <=4 — a K-3 / 4-6 / 7-8 / 9-12 four-band district
+    # folds both leading tiers into elementary, but K-4 / 5-6 / 7-8 / 9-12 folds only K-4.
+    while i < n and tops[i] <= 6 and los[i] <= 4:
         elem_end = i
         i += 1
 
     if elem_end == -1:
-        elem = [0] if los[0] <= 5 else []
+        elem = [0] if los[0] <= 4 else []
         start = 0  # segment[0] itself still needs the middle/high check below
     else:
         elem = list(range(elem_end + 1))
