@@ -290,6 +290,22 @@ def test_gate7_console_knows_the_withdrawn_status():
     assert 'r.status === "withdrawn"' in js, "requestCard must badge the withdrawn status explicitly"
 
 
+def test_gate7_console_renders_the_contamination_banner():
+    """#246 + the UI-visibility rule: the #237 single-school-LEA contamination flag ships on the
+    district-detail API but must also be VISIBLE at gate@7 — a detect-and-flag-only signal the
+    reviewer can't see is a signal that doesn't exist. Source-presence check on the banner markers
+    (the stage8 marker-test convention) + the warning style."""
+    from pathlib import Path
+    repo = Path(__file__).resolve().parent.parent   # the test_arch_manifest.py convention (cwd-proof)
+    js = (repo / "infrastructure/acquisition/process_governance/static/stage7.js").read_text()
+    for marker in ('x.contamination', 'data-feat="contamination-banner"',
+                   'data-feat="contamination-schools"', 'data-feat="contamination-keeper"',
+                   "n_distinct_schools", "roster_matched"):
+        assert marker in js, f"stage7.js lost the contamination-banner marker {marker!r}"
+    css = (repo / "infrastructure/acquisition/process_governance/static/app.css").read_text()
+    assert ".s7-contam" in css, "app.css lost the contamination-banner warning style"
+
+
 def test_reopening_a_withdrawn_request_reruns_the_premise_check(monkeypatch):
     """#240 review: a Reopen (status->pending) must re-run the #233 premise check — if the gap is
     still satisfied the row re-withdraws immediately with a fresh note (no silent resurrection of
