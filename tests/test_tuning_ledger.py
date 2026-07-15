@@ -223,3 +223,20 @@ def test_record_from_files_builds_and_appends(tmp_path):
 
 def test_read_missing_ledger_returns_empty(tmp_path):
     assert TL.read_episodes(tmp_path / "nope.jsonl") == []
+
+
+def test_append_fsyncs_so_a_crash_cannot_lose_a_recorded_episode(tmp_path, monkeypatch):
+    """#357: the ledger docstring promises a DURABLE append-only record, but a plain write+close can
+    leave the just-'recorded' episode in the OS page cache — a crash/power-loss before flush loses or
+    truncates it. append_episode must flush+fsync the fd so a returned append is durable (the
+    batch_store #50 posture, applied to precious append-only audit state). No silent degradation."""
+    synced = []
+    real_fsync = TL.os.fsync
+    monkeypatch.setattr(TL.os, "fsync", lambda fd: synced.append(fd) or real_fsync(fd))
+    led = tmp_path / "ledger.jsonl"
+    ep = TL.build_episode(_scorecard("a", "l", "d", 0.85, 0.98),
+                          _scorecard("b", "l", "d", 0.90, 0.98),
+                          knobs_touched=["x"], rationale="durable", decided_by="chat")
+    TL.append_episode(ep, led)
+    assert synced, "append_episode must fsync the ledger fd so a crash can't lose the episode (#357)"
+    assert TL.read_episodes(led)[0]["rationale"] == "durable"   # still a plain readable JSONL append

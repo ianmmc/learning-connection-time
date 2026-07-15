@@ -516,11 +516,20 @@ def compute_signals(record_dir: Path, texts: list, roster_norm: list, files: dic
     falls back to the full text, so segmentation can never make things worse."""
     # Gather text: best (max n_times, usable) for time density; union of usable reps for keywords.
     usable = [t for t in texts if t.get("usable") and t.get("text_file")]
+    _read_cache: dict = {}
     def read(t):
+        # #353: memoize by text_file — a usable rep is read for full_best/full_all AND (for table
+        # sources) once more in the table_reps filter + value; without caching a table rep was read
+        # up to 4× from disk. One read per file; the cache is per-record-call (never stale).
+        fn = t["text_file"]
+        if fn in _read_cache:
+            return _read_cache[fn]
         try:
-            return (record_dir / t["text_file"]).read_text(errors="replace")
+            txt = (record_dir / fn).read_text(errors="replace")
         except Exception:
-            return ""
+            txt = ""
+        _read_cache[fn] = txt
+        return txt
     best = max(usable, key=lambda t: t.get("n_times", 0), default=None)
     full_best = read(best) if best else ""
     full_all = "\n".join(read(t) for t in usable)

@@ -23,6 +23,7 @@ Usage:
 """
 import argparse
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -120,7 +121,9 @@ def append_episode(episode, ledger_path=None):
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as fh:
         fh.write(json.dumps(episode) + "\n")
-    return path
+        fh.flush()
+        os.fsync(fh.fileno())   # #357: this is DURABLE audit state — a returned append must survive
+    return path                 # a crash (the batch_store #50 posture, applied to append-only JSONL)
 
 
 def read_episodes(ledger_path=None):
