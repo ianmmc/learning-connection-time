@@ -375,18 +375,25 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
     # (extracted names often differ from roster names — Coffee County's came through as 'zion chapel
     # k12', which correctly does NOT flag: a K-12 name serves any band). Detect-and-flag only (#237
     # posture): surfaced for the human, never dropped.
+    # Dedup on the NORMALIZED name (same axis as the merge): the roster's 'RIVERSIDE HIGH SCHOOL'
+    # and the extracted 'riverside high school' are one school — one note, roster surface wins
+    # (it carries the NCES level + grade span the copy explains itself with).
     mismatches, seen_mm = [], set()
     for band, meta in (schools_by_band or {}).items():
         for sc in (meta or {}).get("schools") or []:
             name = sc.get("school") or sc.get("name")
             m = SS.name_level_mismatch(name, sc.get("level"), [band])
-            if m and (m["school"], band) not in seen_mm:
-                seen_mm.add((m["school"], band))
-                mismatches.append({**m, "surface": "roster", "band": band})
+            if m and (_norm(m["school"]), band) not in seen_mm:
+                seen_mm.add((_norm(m["school"]), band))
+                # gslo/gshi ride along so the console can EXPLAIN the flag per case (Ian,
+                # 2026-07-14: a 7-12 'High' legitimately serves middle — the copy must say the
+                # placement can be right, not imply contradiction; the span is what shows it)
+                mismatches.append({**m, "surface": "roster", "band": band,
+                                   "gslo": sc.get("gslo"), "gshi": sc.get("gshi")})
     for r in agg:
         m = SS.name_level_mismatch(r["school"], None, [r["band"]])
-        if m and (m["school"], r["band"]) not in seen_mm:
-            seen_mm.add((m["school"], r["band"]))
+        if m and (_norm(m["school"]), r["band"]) not in seen_mm:
+            seen_mm.add((_norm(m["school"]), r["band"]))
             mismatches.append({**m, "surface": "fact", "band": r["band"]})
 
     # #473 detector: an unsatisfied band whose SIBLING bands hold accepted facts from an

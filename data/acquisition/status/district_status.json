@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-14T23:56:27Z",
+  "last_updated": "2026-07-15T01:31:03Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -839,16 +839,25 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-14T23:56:27Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-15T00:27:22Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
         }
       ],
-      "notes": ""
+      "notes": "reject district 0406070"
     },
     "0500012": {
       "name": "RIVERSIDE SCHOOL DISTRICT",
       "state": "AR",
-      "furthest_stage": 7,
-      "stage_name": "process",
-      "outcome": "processed_all",
+      "furthest_stage": 8,
+      "stage_name": "aggregate",
+      "outcome": null,
       "topology": null,
       "batch_id": null,
       "history": [
@@ -980,6 +989,15 @@
           "stage_name": "process",
           "outcome": "processed_all",
           "at": "2026-07-06T03:51:48Z"
+        },
+        {
+          "stage": 8,
+          "stage_name": "aggregate",
+          "outcome": null,
+          "at": "2026-07-15T01:20:40Z",
+          "checkpoint": "gate@8",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
       "notes": "gate@1 auto-approved (follow-up autoflow) batch_00010"
@@ -3520,9 +3538,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-14T23:56:27Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-15T00:27:11Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
         }
       ],
-      "notes": ""
+      "notes": "reject district 1731410"
     },
     "1737350": {
       "name": "Triad CUSD 2",
@@ -4963,9 +4990,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-14T23:56:27Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-15T00:26:53Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
         }
       ],
-      "notes": ""
+      "notes": "reject district 2600950"
     },
     "2600992": {
       "name": "Blue Water Middle College",
@@ -5838,9 +5874,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-14T23:56:27Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-15T00:27:49Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
         }
       ],
-      "notes": ""
+      "notes": "reject district 2932190"
     },
     "3008860": {
       "name": "Denton Elem",
@@ -6376,9 +6421,9 @@
     "3405970": {
       "name": "Glen Rock Public School District",
       "state": "NJ",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 5,
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00018",
       "history": [
@@ -6387,9 +6432,74 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-14T23:56:27Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-15T00:28:32Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-15T00:29:01Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-15T00:30:12Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-07-15T01:05:31Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-07-15T01:07:31Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-15T01:17:53Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-15T01:19:48Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_all",
+          "at": "2026-07-15T01:22:20Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-07-15T01:23:57Z"
         }
       ],
-      "notes": ""
+      "notes": "gate@1 approved batch_00018"
     },
     "3410890": {
       "name": "Mt. Ephraim School District",
@@ -7307,9 +7417,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-14T23:56:27Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-15T00:27:00Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
         }
       ],
-      "notes": ""
+      "notes": "reject district 3601175"
     },
     "3601176": {
       "name": "KIPP FREEDOM CHARTER SCHOOL",
@@ -7631,9 +7750,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-14T23:56:27Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-15T00:26:38Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
         }
       ],
-      "notes": ""
+      "notes": "reject district 3700106"
     },
     "3700385": {
       "name": "KIPP Durham College Preparatory",
@@ -8253,9 +8381,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-14T23:56:27Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-15T00:27:38Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
         }
       ],
-      "notes": ""
+      "notes": "reject district 3904519"
     },
     "3904705": {
       "name": "Evergreen Local",
@@ -8613,9 +8750,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-14T23:56:27Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-15T00:26:54Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
         }
       ],
-      "notes": ""
+      "notes": "reject district 4006330"
     },
     "4026640": {
       "name": "SOUTH COFFEYVILLE",
@@ -9113,9 +9259,9 @@
     "4222350": {
       "name": "Southern Lehigh SD",
       "state": "PA",
-      "furthest_stage": 1,
-      "stage_name": "queue",
-      "outcome": "queued",
+      "furthest_stage": 5,
+      "stage_name": "filter",
+      "outcome": "ingested",
       "topology": null,
       "batch_id": "batch_00018",
       "history": [
@@ -9124,9 +9270,83 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-14T23:56:27Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-15T00:28:09Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-15T00:28:32Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-15T00:29:01Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-15T00:31:14Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-07-15T01:05:31Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-07-15T01:08:16Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-15T01:17:53Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-15T01:19:48Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 4,
+          "stage_name": "process",
+          "outcome": "processed_partial",
+          "at": "2026-07-15T01:23:52Z"
+        },
+        {
+          "stage": 5,
+          "stage_name": "filter",
+          "outcome": "ingested",
+          "at": "2026-07-15T01:23:57Z"
         }
       ],
-      "notes": ""
+      "notes": "gate@1 approved batch_00018"
     },
     "4222860": {
       "name": "Stroudsburg Area SD",
@@ -9664,9 +9884,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-14T23:56:27Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-15T00:27:01Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
         }
       ],
-      "notes": ""
+      "notes": "reject district 4831230"
     },
     "4832910": {
       "name": "NORMANGEE ISD",
@@ -10518,9 +10747,9 @@
     "5103060": {
       "name": "Prince Edward County Public Schools",
       "state": "VA",
-      "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "furthest_stage": 8,
+      "stage_name": "aggregate",
+      "outcome": null,
       "topology": null,
       "batch_id": null,
       "history": [
@@ -10601,6 +10830,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-11T17:19:22Z"
+        },
+        {
+          "stage": 8,
+          "stage_name": "aggregate",
+          "outcome": null,
+          "at": "2026-07-15T00:33:47Z",
+          "checkpoint": "gate@8",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
       "notes": "bb177cd7c381"
@@ -11204,9 +11442,18 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-07-14T23:56:27Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-15T00:26:45Z",
+          "checkpoint": "gate@1",
+          "event_type": "edited",
+          "actor": "ian"
         }
       ],
-      "notes": ""
+      "notes": "reject district 5900100"
     },
     "7200030": {
       "name": "PUERTO RICO DEPARTMENT OF EDUCATION",

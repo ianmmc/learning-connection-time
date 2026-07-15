@@ -236,7 +236,11 @@
     if ((ns.year_conflicts || []).length)
       rows.push(`<li data-feat="year-conflicts"><strong>School-year conflicts (#254):</strong> ${ns.year_conflicts.map((c) => `${esc(c.school)} in ${esc(c.band)} mixes ${c.years.map(esc).join(" vs ")}${c.mixes_unknown ? " vs undated" : ""} (${(c.sides || []).map((s) => `${esc(s.school_year || "undated")}${s.source_file ? ` via ${esc(s.source_file)}` : ""}`).join("; ")})${c.resolved ? " — resolved by year precedence" : " — unresolved: undated facts coexist"}`).join("; ")} — the source format is a hint, not a rule; verify which reading is current.</li>`);
     if ((ns.name_level_mismatches || []).length)
-      rows.push(`<li data-feat="name-level-mismatch"><strong>Name/level mismatch flags (#258):</strong> ${ns.name_level_mismatches.map((m) => `${esc(m.school)} reads as ${m.implied_bands.map(esc).join("/")} but sits in ${esc(m.band)}${m.nces_level ? ` (NCES: ${esc(m.nces_level)})` : ""}`).join("; ")} — a name token is a hint, not ground truth; consider #257 exclude if confirmed.</li>`);
+      // Copy rephrased (Ian, 2026-07-14): the flag's most common TRUE case is legitimate — a 7-12
+      // "High" school genuinely serves the middle band — so the text states that possibility (with
+      // the school's actual span when known) instead of implying contradiction. The failure case
+      // it exists for (Coffee County: a stale NCES tag after reconfiguration) is named explicitly.
+      rows.push(`<li data-feat="name-level-mismatch"><strong>Name/level notes (#258):</strong> ${ns.name_level_mismatches.map((m) => `${esc(m.school)} is named ${m.implied_bands.map(esc).join("/")} but serves ${esc(m.band)}${m.nces_level || (m.gslo && m.gshi) ? ` (NCES: ${[m.nces_level && esc(m.nces_level), m.gslo && m.gshi && `grades ${esc(m.gslo)}–${esc(m.gshi)}`].filter(Boolean).join(", ")})` : ""}`).join("; ")} — often legitimate: a school can serve bands its name doesn't say (a 7-12 high school covers middle). The failure case is a stale NCES tag after a grade reconfiguration — #257 exclude if that's what you see.</li>`);
     const gaps = Object.entries(ns.coverage_gaps || {});
     if (gaps.length)
       rows.push(`<li><strong>Coverage gaps:</strong> ${gaps.map(([b, g]) => `${esc(b)} ${g.n_sampled}/${g.n_total}`).join(", ")} — bands resting on a thin sample.</li>`);

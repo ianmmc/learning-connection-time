@@ -1,0 +1,15 @@
+[
+  {
+    "added_id": 1,
+    "district_id": "0500012",
+    "band": "middle",
+    "norm_school": "riverside",
+    "school": "riverside high school",
+    "start_time": "07:49",
+    "end_time": "15:16",
+    "source_url": "https://docs.google.com/spreadsheets/d/1ZAOc2JcrsRBvXCmzTha8_YDTXlXcXNIr/edit?gid=571537827#gid=571537827, linked from \"Distict Calendar\" entry in District Information menu at https://www.riversiderebels.net/",
+    "reason": "Incomplete website and blended grades for K-6 elementary schools and 7-12 high school",
+    "actor": "ian",
+    "created_at": "2026-07-15T01:00:02Z"
+  }
+]
