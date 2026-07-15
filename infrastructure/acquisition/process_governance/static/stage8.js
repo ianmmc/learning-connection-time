@@ -124,7 +124,7 @@
     // when it differs (the Santa Fe 4-of-2 → 4-of-9 correction must be legible, not silent).
     const d = s.denominator || {};
     const denomDetail = d.source === "band_roster" && d.by_source
-      ? ` <span class="s8-muted" data-feat="denominator-provenance">(${d.by_source.level_clean} by LEVEL + ${d.by_source.grade_span} by grade span${s.n_total_level_only != null && s.n_total_level_only !== s.n_total ? `; LEVEL alone read ${s.n_total_level_only}` : ""})</span>`
+      ? ` <span class="s8-muted" data-feat="denominator-provenance">(${d.by_source.level_clean} by LEVEL + ${d.by_source.grade_span} by grade span${d.by_source.level_override ? ` + ${d.by_source.level_override} reclassified (#498)` : ""}${s.n_total_level_only != null && s.n_total_level_only !== s.n_total ? `; LEVEL alone read ${s.n_total_level_only}` : ""})</span>`
       : d.source === "nces_level"
       ? ` <span class="s8-muted" data-feat="denominator-provenance">(clean-LEVEL count)</span>` : "";
     return `<section class="s8-band">
@@ -217,8 +217,16 @@
       rows.push(`<li><strong>${ns.unresolved.length} unresolved</strong> (band, school) pair(s) — the council couldn't reach cross-family consensus.</li>`);
     if ((ns.degenerate_school_facts || []).length)
       rows.push(`<li><strong>${ns.degenerate_school_facts.length} degenerate school name(s)</strong> dropped (#245).</li>`);
-    if ((ns.band_exclusions || []).length)
-      rows.push(`<li data-feat="band-exclusions"><strong>Human band-exclusions (#257):</strong> ${ns.band_exclusions.map((e) => `${esc(e.school)} ⊘ ${esc(e.band)} — ${esc(e.reason)}`).join("; ")}.</li>`);
+    // One renderer for the simple flag lists (PR #500 review round: the idiom was copy-pasted per
+    // flag type — a bug in the shared shape (escaping, separator, empty-guard) had to be fixed N
+    // times). Each call site keeps its feat token as a LITERAL: the UI-visibility regression test
+    // greps for it.
+    const pushFlag = (feat, label, items, itemFn, trailing = ".") => {
+      if ((items || []).length)
+        rows.push(`<li data-feat="${feat}"><strong>${label}</strong> ${items.map(itemFn).join("; ")}${trailing}</li>`);
+    };
+    pushFlag("band-exclusions", "Human band-exclusions (#257):", ns.band_exclusions,
+      (e) => `${esc(e.school)} ⊘ ${esc(e.band)} — ${esc(e.reason)}`);
     if ((ns.recoverable_bands || []).length)
       rows.push(`<li data-feat="recoverable-band"><strong>Recoverable band(s) (#473):</strong> ${ns.recoverable_bands.map((r) => {
         const rep = (r.from_reps || [])[0] || {};
@@ -226,21 +234,34 @@
           <button class="btn btn-small" data-feat="recover-band" data-recover data-band="${esc(r.band)}" data-reckey="${esc(rep.rec_key)}" data-file="${esc(rep.source_file || "")}">Re-extract for ${esc(r.band)}</button>
           <button class="btn btn-small" data-feat="human-add" data-ha-add data-band="${esc(r.band)}">Add by hand (fallback, #474)</button>`;
       }).join("<br>")}</li>`);
-    if ((ns.combined_scope_facts || []).length)
-      rows.push(`<li data-feat="combined-scope-facts"><strong>Combined-scope facts (#253):</strong> ${ns.combined_scope_facts.map((m) => `${esc(m.school)} in ${esc(m.band)} (${esc(csKind(m.kind))}${csSource(m.source)}${(m.campuses || []).length ? `: ${m.campuses.map(esc).join(", ")}` : ""})${m.excluded ? " — already excluded" : ""}`).join("; ")} — group descriptions counted as one school each; still voting in the mode until disposed.</li>`);
+    // #498: the intermediate carve-out — an NCES 'Middle' tag on an upper-elementary span is
+    // reclassified by rule; every application is shown (never a silent reclassification).
+    pushFlag("level-override", "Grade-band overrides (#498):", ns.level_overrides,
+      (o) => `${esc(o.school)} counted as ${esc(o.band)} (NCES says ${esc(o.nces_level)}, but grades ${esc(o.gslo)}–${esc(o.gshi)} is an intermediate/upper-elementary span)`);
+    // #498 staleness (PR #500 review round): the Stage-1 roster snapshot disagrees with the live
+    // classification for this school — the batch predates the carve-out; re-queue refreshes it.
+    pushFlag("stale-roster-band", "Stale Stage-1 band placements (#498):", ns.stale_roster_bands,
+      (s) => `${esc(s.school)} was queued under ${esc(s.stage1_band)} but the live classification says ${esc(s.live_band)} (NCES ${esc(s.nces_level)}, grades ${esc(s.gslo)}–${esc(s.gshi)})`,
+      " — this batch predates the #498 ruling; coverage math uses the live roster, the Stage-1 snapshot refreshes on re-queue.");
+    pushFlag("combined-scope-facts", "Combined-scope facts (#253):", ns.combined_scope_facts,
+      (m) => `${esc(m.school)} in ${esc(m.band)} (${esc(csKind(m.kind))}${csSource(m.source)}${(m.campuses || []).length ? `: ${m.campuses.map(esc).join(", ")}` : ""})${m.excluded ? " — already excluded" : ""}`,
+      " — group descriptions counted as one school each; still voting in the mode until disposed.");
     // #254: year-superseded facts — WHY the stale rows left the mode (both years, both grosses).
-    if ((ns.superseded_facts || []).length)
-      rows.push(`<li data-feat="superseded-facts"><strong>Year-superseded facts (#254):</strong> ${ns.superseded_facts.map((f) => `${esc(f.school)} in ${esc(f.band)}: ${esc(f.school_year || "?")} @ ${esc(f.gross)} min superseded by ${esc((f.superseded_by || {}).school_year || "?")} @ ${esc((f.superseded_by || {}).gross)} min`).join("; ")} — a page stating a NEWER school year displaced these from the mode; they remain in the record.</li>`);
+    pushFlag("superseded-facts", "Year-superseded facts (#254):", ns.superseded_facts,
+      (f) => `${esc(f.school)} in ${esc(f.band)}: ${esc(f.school_year || "?")} @ ${esc(f.gross)} min superseded by ${esc((f.superseded_by || {}).school_year || "?")} @ ${esc((f.superseded_by || {}).gross)} min`,
+      " — a page stating a NEWER school year displaced these from the mode; they remain in the record.");
     // #254: year-conflict flags — groups mixing year knowledge; source_file is a format HINT for
     // the reviewer, never an automatic rule (a live webpage can host stale facts — Santa Fe).
-    if ((ns.year_conflicts || []).length)
-      rows.push(`<li data-feat="year-conflicts"><strong>School-year conflicts (#254):</strong> ${ns.year_conflicts.map((c) => `${esc(c.school)} in ${esc(c.band)} mixes ${c.years.map(esc).join(" vs ")}${c.mixes_unknown ? " vs undated" : ""} (${(c.sides || []).map((s) => `${esc(s.school_year || "undated")}${s.source_file ? ` via ${esc(s.source_file)}` : ""}`).join("; ")})${c.resolved ? " — resolved by year precedence" : " — unresolved: undated facts coexist"}`).join("; ")} — the source format is a hint, not a rule; verify which reading is current.</li>`);
-    if ((ns.name_level_mismatches || []).length)
-      // Copy rephrased (Ian, 2026-07-14): the flag's most common TRUE case is legitimate — a 7-12
-      // "High" school genuinely serves the middle band — so the text states that possibility (with
-      // the school's actual span when known) instead of implying contradiction. The failure case
-      // it exists for (Coffee County: a stale NCES tag after reconfiguration) is named explicitly.
-      rows.push(`<li data-feat="name-level-mismatch"><strong>Name/level notes (#258):</strong> ${ns.name_level_mismatches.map((m) => `${esc(m.school)} is named ${m.implied_bands.map(esc).join("/")} but serves ${esc(m.band)}${m.nces_level || (m.gslo && m.gshi) ? ` (NCES: ${[m.nces_level && esc(m.nces_level), m.gslo && m.gshi && `grades ${esc(m.gslo)}–${esc(m.gshi)}`].filter(Boolean).join(", ")})` : ""}`).join("; ")} — often legitimate: a school can serve bands its name doesn't say (a 7-12 high school covers middle). The failure case is a stale NCES tag after a grade reconfiguration — #257 exclude if that's what you see.</li>`);
+    pushFlag("year-conflicts", "School-year conflicts (#254):", ns.year_conflicts,
+      (c) => `${esc(c.school)} in ${esc(c.band)} mixes ${c.years.map(esc).join(" vs ")}${c.mixes_unknown ? " vs undated" : ""} (${(c.sides || []).map((s) => `${esc(s.school_year || "undated")}${s.source_file ? ` via ${esc(s.source_file)}` : ""}`).join("; ")})${c.resolved ? " — resolved by year precedence" : " — unresolved: undated facts coexist"}`,
+      " — the source format is a hint, not a rule; verify which reading is current.");
+    // Copy rephrased (Ian, 2026-07-14): the flag's most common TRUE case is legitimate — a 7-12
+    // "High" school genuinely serves the middle band — so the text states that possibility (with
+    // the school's actual span when known) instead of implying contradiction. The failure case
+    // it exists for (Coffee County: a stale NCES tag after reconfiguration) is named explicitly.
+    pushFlag("name-level-mismatch", "Name/level notes (#258):", ns.name_level_mismatches,
+      (m) => `${esc(m.school)} is named ${m.implied_bands.map(esc).join("/")} but serves ${esc(m.band)}${m.nces_level || (m.gslo && m.gshi) ? ` (NCES: ${[m.nces_level && esc(m.nces_level), m.gslo && m.gshi && `grades ${esc(m.gslo)}–${esc(m.gshi)}`].filter(Boolean).join(", ")})` : ""}`,
+      " — often legitimate: a school can serve bands its name doesn't say (a 7-12 high school covers middle). The failure case is a stale NCES tag after a grade reconfiguration — #257 exclude if that's what you see.");
     const gaps = Object.entries(ns.coverage_gaps || {});
     if (gaps.length)
       rows.push(`<li><strong>Coverage gaps:</strong> ${gaps.map(([b, g]) => `${esc(b)} ${g.n_sampled}/${g.n_total}`).join(", ")} — bands resting on a thin sample.</li>`);

@@ -234,7 +234,9 @@ def _district_target_bands(session, district_ids: list) -> tuple:
             "SELECT district_id, lea_claimed_bands_json, nces_by_level_json, schools_by_band_json "
             "FROM district_target WHERE district_id = ANY(:d)"), {"d": list(district_ids)}):
         claimed[did] = _json_col(cb, [])
-        real[did] = SS.real_bands_for_district(_json_col(by_level_j, {}), _json_col(sbb_j, {}))
+        # #498 (PR #500 review round): live roster rides along — see stage7_run's twin call sites.
+        real[did] = SS.real_bands_for_district(_json_col(by_level_j, {}), _json_col(sbb_j, {}),
+                                               band_rosters=SS.band_rosters_for_district(did))
     return claimed, real
 
 

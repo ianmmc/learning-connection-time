@@ -1285,7 +1285,46 @@ Single combined (all three in one school):
 | -------------------------- |
 | PK\|K\|1-10\|11\|12\|13 |
 
-*(Migrated 2026-06-27 from `docs/scratch-paper/Recognized Grade Bands for Fallback Scenarios.md`.)*
+Four-band (lower elementary · upper elementary/intermediate · middle · high) — both elementary
+segments map to the **elementary** band (the Southern Lehigh shape, #498):
+
+| lower elementary | upper elementary / intermediate | middle | high |
+| ---------------- | ------------------------------- | ------ | ------------- |
+| PK\|K\|1-3 | 4-6 | 7-8 | 9-11\|12\|13 |
+| PK\|K\|1-3 | 4-5 | 6-8 | 9-11\|12\|13 |
+| PK\|K\|1-2 | 3-6 | 7-8 | 9-11\|12\|13 |
+
+A 5-6 tier is NOT upper elementary — it maps to **middle** (RULED 2026-07-15, below), so a
+K-4 · 5-6 · 7-8 · 9-12 district is four schools over three bands with TWO middle segments:
+
+| elementary | middle (two segments) | high |
+| ---------- | --------------------- | ------------- |
+| PK\|K\|1-4 | 5-6 · 7-8 | 9-11\|12\|13 |
+
+Five-band (… · lower high · upper high) — both high segments map to the **high** band:
+
+| lower elementary | upper elem / intermediate | middle | lower high | upper high |
+| ---------------- | ------------------------- | ------ | ---------- | ---------- |
+| PK\|K\|1-3 | 4-6 | 7-8 | 9-10 | 11-12\|13 |
+| PK\|K\|1-4 | 5-6 | 7-8 | 9 *(freshman campus)* | 10-12\|13 |
+
+**The #498 LEVEL carve-out (DECIDED 2026-07-15):** NCES `LEVEL` stays the primary band signal (the
+2026-06-22 anti-dilution decision), with exactly ONE corpus-profiled override: `LEVEL="Middle"` on an
+**intermediate span (starts ≤ grade 4 AND tops ≤ grade 6)** classifies as **elementary** ("upper
+elementary" — the Liberati class, ~330 schools / 0.4% of the 2024-25 corpus). Measured against the
+full corpus this is the *only* hard LEVEL-vs-span disagreement class that exists (the reverse edge —
+`Elementary` starting ≥5 — is zero), and NCES's `Middle` tag on 5-6 schools *agrees* with this
+standard, so 05-06 is deliberately NOT overridden. Every override application is surfaced as a
+gate@8 note, never silent (`effective_level_band`, `common/school_sampling.py`). **Boundary orphans
+RULED (Ian, 2026-07-15): 5-5, 6-6, and 5-6 are all MIDDLE schools**, unconditionally (Hammarskjold
+Upper Elementary NJ — LEVEL=Middle 05-06 — is the pinned specimen). Consequence for the span rules:
+**a span starting at grade 5+ is middle-family and never counts elementary** (`bands_for_rescue`
+elementary now requires starting ≤ grade 4; `recursive_band_groups`' elementary prefix likewise) —
+corpus-measured effect: 129 schools across 123 districts lose a spurious elementary membership
+(05-08 Middles, 05-12 secondaries leaked in by the old start-at-5 rule); nothing else moves.
+
+*(Migrated 2026-06-27 from `docs/scratch-paper/Recognized Grade Bands for Fallback Scenarios.md`;
+four/five-band shapes + the #498 carve-out added 2026-07-15.)*
 
 ---
 

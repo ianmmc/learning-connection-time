@@ -52,22 +52,26 @@ def bands_for(gslo, gshi):
 
 def bands_for_rescue(gslo, gshi):
     """Like bands_for(), but for the conservative any-overlap RESCUE only (districts whose
-    grade spans don't form a clean partition): a school must reach grade 7 to count as
-    touching middle -- topping out at grade 6 alone is treated as pure elementary, mirroring
-    the same distinction recursive_band_groups() already makes for clean partitions via its
-    top<=6 leading-prefix collapse. bands_for() itself is left as the literal grade-6-8
-    definition for other callers (e.g. LEA-level claimed-band checks) -- this is specifically
-    about per-school rescue-candidate selection, not the district's overall claimed span.
-    Found 2026-06-22: West Bonner County ID's PRIEST RIVER ELEMENTARY and IDAHO HILL
-    ELEMENTARY (both PK-06) were wrongly rescued into middle's candidate pool under plain
-    bands_for() just because grade 6 sits in BANDS['middle']'s nominal range, while PRIEST
-    LAKE ELEMENTARY (PK-07) and PRIEST RIVER LAMANNA HIGH (07-12) -- which actually reach
-    grade 7 -- correctly do belong there."""
+    grade spans don't form a clean partition). Two boundary disciplines:
+      - A school topping at grade 6 that STARTS low is pure elementary (found 2026-06-22:
+        West Bonner County ID's PRIEST RIVER/IDAHO HILL ELEMENTARY, both PK-06, were wrongly
+        rescued into middle just because grade 6 sits in BANDS['middle']'s nominal range,
+        while PRIEST LAKE ELEMENTARY PK-07 and LAMANNA HIGH 07-12 -- which reach grade 7 --
+        correctly belong there).
+      - A span STARTING at grade 5+ is a MIDDLE-FAMILY school, never elementary (#498 ruling,
+        Ian 2026-07-15: 5-5, 5-6, and 6-6 are all middle -- Hammarskjold Upper Elementary NJ,
+        LEVEL=Middle 05-06, is the pinned specimen -- and a 5-8 is middle only, not
+        elementary+middle). Elementary attribution therefore requires starting at grade <=4.
+    bands_for() itself is left as the literal grade-6-8 definition for other callers (e.g.
+    LEA-level claimed-band checks) -- this is specifically about per-school rescue-candidate
+    selection, not the district's overall claimed span."""
     lo, hi = GRADE_ORD.get(norm(gslo)), GRADE_ORD.get(norm(gshi))
     if lo is None or hi is None or hi < lo: return set()
     bands = set()
-    if lo <= GRADE_ORD["05"]: bands.add("elementary")
-    if lo <= GRADE_ORD["08"] and hi >= GRADE_ORD["07"]: bands.add("middle")
+    if lo <= _IM_START_ORD: bands.add("elementary")
+    if ((lo <= GRADE_ORD["08"] and hi >= GRADE_ORD["07"])
+            or (lo > _IM_START_ORD and hi <= _IM_TOP_ORD)):
+        bands.add("middle")
     if hi >= GRADE_ORD["09"]: bands.add("high")
     return bands
 
@@ -81,10 +85,13 @@ LEVEL_BAND = {"Elementary": "elementary", "Middle": "middle", "High": "high"}
 # #258: name-token -> implied band(s). ORDER MATTERS: "junior high" must claim its words before the
 # bare "high" pattern sees them. Tokens are whole-word phrases (padded match) so "Highland"/"Middleton"
 # never trigger. K-8/K-12 imply multi-band service — a K-12-named school legitimately sits in ANY band,
-# so it can never mismatch (the flag is for a SINGLE-level name in the wrong place).
+# so it can never mismatch (the flag is for a SINGLE-level name in the wrong place). "Intermediate"
+# implies elementary OR middle (#498, corpus-measured: real Intermediate schools sit on BOTH sides of
+# the boundary — 04-06 upper-elementary AND 05-06 middle — so it gets the K-8 multi-band treatment).
 _NAME_BAND_TOKENS = (
     (("junior high", "jr high"), {"middle"}),
-    (("middle", "intermediate"), {"middle"}),
+    (("intermediate",), {"elementary", "middle"}),
+    (("middle",), {"middle"}),
     (("high",), {"high"}),
     (("elementary", "primary", "grade school"), {"elementary"}),
     (("k 8", "k8"), {"elementary", "middle"}),
@@ -92,7 +99,7 @@ _NAME_BAND_TOKENS = (
 )
 
 
-def name_level_mismatch(school_name, nces_level, bands):
+def name_level_mismatch(school_name, nces_level, bands, gslo=None, gshi=None):
     """#258 detect-and-flag (never auto-reject): does this school's NAME carry a level token that
     contradicts its NCES LEVEL tag or an assigned band? The Coffee County signature: 'Zion Chapel
     High School' tagged Other PK-12, contaminating the elementary band — the name contradicted the
@@ -100,8 +107,15 @@ def name_level_mismatch(school_name, nces_level, bands):
     exist), so the return is a flag for human review at a gate, never a drop. Handles the recurring
     temporal-reconfiguration class where the NCES tag lags reality (#257 is the correction half).
 
-    Pure predicate: (school_name, nces_level, bands) -> None | {school, implied_bands, nces_level,
-    conflicts: [{kind: 'nces_level'|'band', ...}]}."""
+    #498 (PR #500 review round): the predicate is SPAN-AWARE when the caller can supply gslo/gshi
+    (the roster surface can; the extracted-fact surface can't). Two false-positive classes died
+    here: (a) the LEVEL side checks the EFFECTIVE band (carve-out applied), so a 'Middle'-tagged
+    04-06 school placed in elementary no longer conflicts with its own correct placement; (b) a
+    'middle'-named school on an intermediate span implies {elementary, middle} — its name is
+    NCES's own over-assignment written on the building; flagging it against the ruled placement
+    would re-litigate #498 on every review. Without a span, behavior is unchanged.
+
+    Pure predicate: (...) -> None | {school, implied_bands, nces_level, conflicts}."""
     padded = " " + " ".join((school_name or "").lower().replace("-", " ").replace(".", " ").split()) + " "
     implied = None
     for tokens, bset in _NAME_BAND_TOKENS:
@@ -110,8 +124,10 @@ def name_level_mismatch(school_name, nces_level, bands):
             break
     if not implied:
         return None
+    if implied == {"middle"} and is_intermediate_span(gslo, gshi):
+        implied = {"elementary", "middle"}
     conflicts = []
-    level_band = LEVEL_BAND.get((nces_level or "").strip())
+    level_band = effective_level_band(nces_level, gslo, gshi)
     if level_band and level_band not in implied:
         conflicts.append({"kind": "nces_level", "level": nces_level, "level_band": level_band})
     for b in sorted(set(bands or [])):
@@ -123,14 +139,50 @@ def name_level_mismatch(school_name, nces_level, bands):
             "nces_level": nces_level, "conflicts": conflicts}
 
 
-def primary_bands_for(level, gslo, gshi):
-    """A school's PRIMARY band(s): LEVEL-mapped (single band) when clean, else grade-range
-    overlap (bands_for(), possibly multiple bands) for combined/ambiguous LEVEL values."""
+# #498 boundary — ONE home for the intermediate/upper-elementary span definition (PR #500 review
+# round: the same 4/6 pair was independently hardcoded in three functions). Expressed as plain
+# grade numbers (PK/KG count as 0); span functions compare GRADE_ORD ordinals via the zero-padded
+# keys below, recursive_band_groups compares _grade_num() integers directly.
+INTERMEDIATE_MAX_START = 4   # a span starting at grade 5+ is middle-family, never elementary
+INTERMEDIATE_MAX_TOP = 6     # a span topping above grade 6 is not an elementary-side span
+_IM_START_ORD = GRADE_ORD[f"{INTERMEDIATE_MAX_START:02d}"]
+_IM_TOP_ORD = GRADE_ORD[f"{INTERMEDIATE_MAX_TOP:02d}"]
+
+
+def is_intermediate_span(gslo, gshi):
+    """#498: the intermediate / upper-elementary span — starts at grade ≤4 AND tops at grade ≤6
+    (Liberati: 04-06). Deliberately NOT 05-06 (5-6 is middle when it feeds a 7-8 — Ian's standard,
+    and NCES's Middle tag agrees there); the 05-05/06-06 orphans were RULED middle (2026-07-15)."""
+    lo, hi = GRADE_ORD.get(norm(gslo)), GRADE_ORD.get(norm(gshi))
+    if lo is None or hi is None or hi < lo:
+        return False
+    return lo <= _IM_START_ORD and hi <= _IM_TOP_ORD
+
+
+def effective_level_band(level, gslo, gshi):
+    """#498 (DECIDED Ian 2026-07-15): the clean-LEVEL band with the ONE corpus-profiled override —
+    LEVEL='Middle' on an intermediate span (starts ≤4, tops ≤6) is an upper-ELEMENTARY school
+    (~330 schools nationally, 0.4%; NCES over-assigns Middle to intermediates — measured against
+    the full 2024-25 corpus, where this is the ONLY hard LEVEL-vs-span disagreement class that
+    exists; the reverse edge is zero). LEVEL stays primary everywhere else (the 2026-06-22
+    anti-dilution decision) — this is a scalpel, not an inversion. Every caller that places or
+    counts schools should use THIS, not LEVEL_BAND directly; overrides are surfaced
+    detect-and-flag at gate@8 (the #257/#258 posture). Returns the band or None (ambiguous)."""
     b = LEVEL_BAND.get((level or "").strip())
+    if b == "middle" and is_intermediate_span(gslo, gshi):
+        return "elementary"
+    return b
+
+
+def primary_bands_for(level, gslo, gshi):
+    """A school's PRIMARY band(s): LEVEL-mapped (single band) when clean — with the #498
+    intermediate carve-out applied — else grade-range overlap (bands_for(), possibly multiple
+    bands) for combined/ambiguous LEVEL values."""
+    b = effective_level_band(level, gslo, gshi)
     return {b} if b else bands_for(gslo, gshi)
 
 
-def real_bands_for_district(by_level, schools_by_band) -> set:
+def real_bands_for_district(by_level, schools_by_band, band_rosters=None) -> set:
     """The bands a district can ACTUALLY satisfy — each SERVED by ≥1 real NCES school. This is
     FILLABILITY, not primary-label classification, so it must agree with `school_index`'s own
     placement — including the gap-fill: Jasper Co.'s 'High'-LEVEL 07-12 school also fills middle
@@ -144,14 +196,29 @@ def real_bands_for_district(by_level, schools_by_band) -> set:
       3. each placed school's clean LEVEL band + its `bands_for_rescue` grade span (the same
          conservative overlap school_index rescues with — a K-6 does NOT reach middle).
     The single definition of "real bands" for the Stage-7 request loop's coverage gates
-    (`stage7_extract/requests.py` holds the gate policy)."""
-    bands = {LEVEL_BAND[lvl] for lvl in (by_level or {}) if lvl in LEVEL_BAND}
+    (`stage7_extract/requests.py` holds the gate policy).
+
+    #498 (PR #500 review round — the signal-1 phantom): signal 1's AGGREGATE LEVEL counts carry no
+    per-school spans, so they cannot apply the intermediate carve-out — 56 corpus districts (e.g.
+    0604650, whose only 'Middle'-tagged school is a 04-06 intermediate) would claim a middle band
+    NO real school serves, and Stage 7's phantom-suppression gate (`target_bands = claimed ∩ real`)
+    would keep SPENDING against it. So when the caller supplies the LIVE serving roster
+    (`band_rosters_for_district`, span-aware by construction), the roster REPLACES signal 1 — same
+    all-criteria-schools coverage, carve-out applied. Signal 1's raw form survives only as the
+    fallback when the CCD files aren't on disk. Signals 2/3 are unchanged; a STALE Stage-1
+    placement (a pre-#498 batch) can still claim a band via signal 2 — that class is surfaced as a
+    stale-roster note at gate@8, not silently dropped (fill-gaps-not-overwrite applies to receipts
+    too)."""
+    if band_rosters:
+        bands = {b for b in BANDS if (band_rosters.get(b) or {}).get("total", 0) > 0}
+    else:
+        bands = {LEVEL_BAND[lvl] for lvl in (by_level or {}) if lvl in LEVEL_BAND}
     for band, meta in (schools_by_band or {}).items():
         schools = (meta or {}).get("schools") or []
         if band in BANDS and schools:
             bands.add(band)
         for sc in schools:
-            b = LEVEL_BAND.get((sc.get("level") or "").strip())
+            b = effective_level_band(sc.get("level"), sc.get("gslo"), sc.get("gshi"))
             if b:
                 bands.add(b)
             bands |= bands_for_rescue(sc.get("gslo"), sc.get("gshi"))
@@ -287,12 +354,17 @@ def recursive_band_groups(spans):
 
     elem_end = -1
     i = 0
-    while i < n and tops[i] <= 6:
+    # #498 ruling (Ian 2026-07-15): a segment STARTING at grade 5+ is middle-family (5-6 beside a
+    # 7-8 is a middle school, not an upper-elementary tier), so the elementary prefix additionally
+    # requires the segment to START at grade <=4 — a K-3 / 4-6 / 7-8 / 9-12 four-band district
+    # folds both leading tiers into elementary, but K-4 / 5-6 / 7-8 / 9-12 folds only K-4.
+    # Boundary numbers are the shared #498 constants (one home), as plain grade ints here.
+    while i < n and tops[i] <= INTERMEDIATE_MAX_TOP and los[i] <= INTERMEDIATE_MAX_START:
         elem_end = i
         i += 1
 
     if elem_end == -1:
-        elem = [0] if los[0] <= 5 else []
+        elem = [0] if los[0] <= INTERMEDIATE_MAX_START else []
         start = 0  # segment[0] itself still needs the middle/high check below
     else:
         elem = list(range(elem_end + 1))
@@ -397,7 +469,13 @@ def school_level_counts(year):
     LEVEL field (Elementary/Middle/High/Secondary/Other/Not reported/...). This is the transparent
     topology denominator -- the count of schools we'd actually try to schedule -- NOT ccd_lea's
     self-reported figure and NOT the derived 3-band assignment. 'total' == school_index() distinct
-    count (same eligibility). A blank/missing LEVEL is bucketed as 'Not reported'."""
+    count (same eligibility). A blank/missing LEVEL is bucketed as 'Not reported'.
+
+    #498 note (PR #500 review round): DELIBERATELY raw -- the #498 intermediate carve-out is NOT
+    applied here, by design: this is the receipt of what NCES says, and it feeds the gate@8
+    'n_total_level_only' continuity figure. Expect it to DISAGREE with band_rosters_for_district's
+    carve-out-aware totals for Liberati-class districts (a 'Middle'-tagged 04-06 counts under
+    Middle here, under elementary there); the gate@8 override note is the reconciliation."""
     virtual_ids = _virtual_ids(year)
     out = defaultdict(lambda: {"total": 0, "by_level": defaultdict(int)})
     with open(_sch_file(year), encoding="utf-8-sig", errors="replace") as fh:
@@ -426,20 +504,30 @@ def latest_nces_year():
 def _district_schools(year):
     """did(7-digit) -> [school dict, ...] for EVERY _eligible school — the shared CSV read behind
     school_index() and band_rosters_for_district(). Cached (one ~full-corpus scan per year per
-    process; the gate@8 console calls this per district view). Callers must NOT mutate the result."""
+    process; the gate@8 console calls this per district view). Callers must NOT mutate the result.
+
+    #498 (PR #500 review round): each record is STAMPED with `effective_band` (the carve-out
+    answer) and `level_overridden` at load time — the override travels with the school, so a
+    future consumer of this loader cannot silently reach for LEVEL_BAND.get(...) and reintroduce
+    the pre-#498 behavior; the drift the review found in real_bands_for_district's signal 1 was
+    exactly that class. Raw `level`/`gslo`/`gshi` stay verbatim (the receipt of what NCES says)."""
     by_district = defaultdict(list)
     virtual_ids = _virtual_ids(year)
     with open(_sch_file(year), encoding="utf-8-sig", errors="replace") as fh:
         for row in csv.DictReader(fh):
             if not _eligible(row, virtual_ids):
                 continue
+            level, gslo, gshi = row.get("LEVEL", ""), row.get("GSLO", ""), row.get("GSHI", "")
+            eff = effective_level_band(level, gslo, gshi)
             by_district[row.get("LEAID", "").zfill(7)].append({
                 "school_id": row.get("NCESSCH", ""),
                 "name": row.get("SCH_NAME", ""),
                 "is_charter": row.get("CHARTER_TEXT", ""),
-                "level": row.get("LEVEL", ""),
-                "gslo": row.get("GSLO", ""),
-                "gshi": row.get("GSHI", ""),
+                "level": level,
+                "gslo": gslo,
+                "gshi": gshi,
+                "effective_band": eff,
+                "level_overridden": eff != LEVEL_BAND.get(level.strip()),
             })
     return dict(by_district)
 
@@ -459,10 +547,12 @@ def band_rosters_for_district(district_id, year=None):
     require'. (school_index would put Santa Fe's K-8s in elementary only, reading middle as 2-of-2
     covered — the exact 200%-coverage lie #253 exists to fix.)
 
-    Returns {band: {"total": n, "by_source": {"level_clean": n, "grade_span": n},
-                    "schools": [name, ...]}} plus "_unattributed": [name, ...] for schools serving
-    no band (unparseable span + ambiguous LEVEL) — surfaced, never silently dropped. Returns None
-    when the CCD files aren't on disk (caller falls back to the clean-LEVEL denominator)."""
+    Returns {band: {"total": n, "by_source": {"level_clean": n, "grade_span": n,
+                    "level_override": n}, "schools": [name, ...]}} plus "_unattributed": [name, ...]
+    for schools serving no band (unparseable span + ambiguous LEVEL) — surfaced, never silently
+    dropped — and "_level_overrides": the #498 intermediate carve-outs applied (detect-and-flag:
+    every override is visible at gate@8, never silent). Returns None when the CCD files aren't on
+    disk (caller falls back to the clean-LEVEL denominator)."""
     year = year or latest_nces_year()
     if not year:
         return None
@@ -470,20 +560,28 @@ def band_rosters_for_district(district_id, year=None):
         schools = _district_schools(year).get(str(district_id).zfill(7), [])
     except FileNotFoundError:
         return None
-    out = {b: {"total": 0, "by_source": {"level_clean": 0, "grade_span": 0}, "schools": []}
-           for b in BANDS}
-    unattributed = []
+    out = {b: {"total": 0, "by_source": {"level_clean": 0, "grade_span": 0, "level_override": 0},
+               "schools": []} for b in BANDS}
+    unattributed, overrides = [], []
     for sc in schools:
-        lb = LEVEL_BAND.get((sc.get("level") or "").strip())
+        # lb/is_override come from the loader's per-school stamp (one derivation, one home);
+        # is_override is a school-level invariant, computed once, not re-derived per band.
+        lb, is_override = sc.get("effective_band"), bool(sc.get("level_overridden"))
+        if is_override:   # the #498 carve-out fired — record it for the flag surface
+            overrides.append({"school": sc.get("name", ""), "nces_level": sc.get("level"),
+                              "gslo": sc.get("gslo"), "gshi": sc.get("gshi"),
+                              "band": lb, "instead_of": LEVEL_BAND.get((sc.get("level") or "").strip())})
         serves = ({lb} if lb else set()) | bands_for_rescue(sc.get("gslo"), sc.get("gshi"))
         if not serves:
             unattributed.append(sc.get("name", ""))
             continue
         for b in serves:
             out[b]["total"] += 1
-            out[b]["by_source"]["level_clean" if b == lb else "grade_span"] += 1
+            src = ("level_override" if (b == lb and is_override)
+                   else "level_clean" if b == lb else "grade_span")
+            out[b]["by_source"][src] += 1
             out[b]["schools"].append(sc.get("name", ""))
-    return {**out, "_unattributed": unattributed, "_year": year}
+    return {**out, "_unattributed": unattributed, "_level_overrides": overrides, "_year": year}
 
 
 def school_index(year):
@@ -532,7 +630,9 @@ def school_index(year):
     for did, schools in by_district.items():
         ambiguous = []
         for school in schools:
-            b = LEVEL_BAND.get(school["level"].strip())
+            # #498: the LEVEL-clean pass uses the loader's carve-out stamp — a 'Middle'-tagged
+            # 04-06 is a clean ELEMENTARY placement here (Liberati class), not ambiguous.
+            b = school.get("effective_band")
             if b:
                 idx[did][b].append(school)
             else:

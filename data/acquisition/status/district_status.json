@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-15T01:31:03Z",
+  "last_updated": "2026-07-15T03:26:33Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -9259,11 +9259,11 @@
     "4222350": {
       "name": "Southern Lehigh SD",
       "state": "PA",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00018",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -9344,9 +9344,33 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-15T01:23:57Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "dispatch",
+          "outcome": null,
+          "at": "2026-07-15T01:48:34Z",
+          "checkpoint": "gate@6",
+          "event_type": "draft_add_district",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-15T01:55:46Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-15T01:59:58Z"
         }
       ],
-      "notes": "gate@1 approved batch_00018"
+      "notes": "54d8be261eca"
     },
     "4222860": {
       "name": "Stroudsburg Area SD",

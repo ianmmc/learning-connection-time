@@ -280,7 +280,11 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
             ev = {**ev, "source_file": f["source_file"]}
         return ev
 
-    claimed = SS.real_bands_for_district(nces_by_level, schools_by_band)
+    # #498 (PR #500 review round): the LIVE roster replaces the carve-out-blind aggregate signal 1
+    # inside real_bands_for_district, so a district whose only 'Middle'-tagged schools are
+    # intermediates can't claim a phantom middle band here (or in the Stage-7 spend gate, whose
+    # callers pass the same roster).
+    claimed = SS.real_bands_for_district(nces_by_level, schools_by_band, band_rosters=band_rosters)
     satisfied = set(bands.keys())
 
     out_bands = {}
@@ -382,7 +386,11 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
     for band, meta in (schools_by_band or {}).items():
         for sc in (meta or {}).get("schools") or []:
             name = sc.get("school") or sc.get("name")
-            m = SS.name_level_mismatch(name, sc.get("level"), [band])
+            # #498 (PR #500 review round): the roster surface passes the SPAN, so the predicate
+            # checks the EFFECTIVE level and a middle-named intermediate doesn't false-positive
+            # against its own correct carve-out placement.
+            m = SS.name_level_mismatch(name, sc.get("level"), [band],
+                                       gslo=sc.get("gslo"), gshi=sc.get("gshi"))
             if m and (_norm(m["school"]), band) not in seen_mm:
                 seen_mm.add((_norm(m["school"]), band))
                 # gslo/gshi ride along so the console can EXPLAIN the flag per case (Ian,
@@ -464,6 +472,28 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
     # LEVEL) — the roster-side sibling of unattributed_level_schools; surfaced, never dropped.
     if band_rosters and band_rosters.get("_unattributed"):
         negative_space["unattributed_roster_schools"] = band_rosters["_unattributed"]
+    # #498: the intermediate carve-out fired — every LEVEL override is a visible, auditable note
+    # (detect-and-flag), never a silent reclassification.
+    if band_rosters and band_rosters.get("_level_overrides"):
+        negative_space["level_overrides"] = band_rosters["_level_overrides"]
+        # PR #500 review round: schools_by_band is a Stage-1 SNAPSHOT (persisted at queue time,
+        # read verbatim by Stages 2/7/8), so a district queued before #498 landed can still carry
+        # a carved-out school under its OLD band there while the live roster above reclassifies
+        # it. Surface the disagreement instead of letting the same view silently mix vintages —
+        # the reviewer sees WHY (e.g. a stale 'middle' claim) and the re-queue path refreshes it.
+        # (#499's roster-template work is the structural home; this is the honest interim.)
+        stale = []
+        ov_by_norm = {_norm(o["school"]): o for o in band_rosters["_level_overrides"]}
+        for sbb_band, meta in (schools_by_band or {}).items():
+            for sc in (meta or {}).get("schools") or []:
+                name = sc.get("school") or sc.get("name")
+                o = ov_by_norm.get(_norm(name))
+                if o and sbb_band == o["instead_of"]:
+                    stale.append({"school": name, "stage1_band": sbb_band,
+                                  "live_band": o["band"], "nces_level": o["nces_level"],
+                                  "gslo": o["gslo"], "gshi": o["gshi"]})
+        if stale:
+            negative_space["stale_roster_bands"] = stale
 
     return {
         "district_id": district_id,
