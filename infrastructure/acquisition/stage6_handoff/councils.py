@@ -29,7 +29,13 @@ class ConfigError(ValueError):
 def validate(cfg: dict) -> None:
     """Raise ConfigError unless `cfg` is a well-formed cross-family council (2 distinct-family
     voters + a third-family judge). The first thing Stage 6 enforces; the spec lives in the tests."""
-    cid = cfg.get("id", "<no-id>")
+    cid = cfg.get("id")
+    # #358: council_configs is bound only to the generic knob_entries envelope schema (it does not
+    # constrain an entry's value shape), so an id-less config passes schema validation and then
+    # KeyErrors at load_configs' `cfg["id"]`. Require a real id HERE so the failure is a clear
+    # config-load ConfigError, not a KeyError deeper in.
+    if not isinstance(cid, str) or not cid:
+        raise ConfigError(f"council config missing a non-empty string 'id': {cfg!r}")
     voters = cfg.get("voters") or []
     if len(voters) != 2:
         raise ConfigError(f"council '{cid}': must have exactly two voters, got {len(voters)}")

@@ -94,6 +94,22 @@ def test_judge_required():
         councils.validate(cfg)
 
 
+def test_config_missing_id_rejected_at_validate():
+    """#358: council_configs is bound only to the generic knob_entries envelope schema, which does
+    NOT constrain an entry's value shape — so a config with no `id` passes schema validation, then
+    load_configs' `cfg[\"id\"]` KeyErrors. validate() must require a non-empty string id up front so
+    the failure is a clear ConfigError at config-load, not a KeyError deeper in."""
+    cfg = _cfg(["google/gemini-2.5-flash-lite", "mistralai/mistral-small-24b-instruct-2501"],
+               "qwen/qwen3-235b-a22b-2507")
+    del cfg["id"]
+    with pytest.raises(councils.ConfigError, match="id"):
+        councils.validate(cfg)
+    cfg2 = _cfg(["google/gemini-2.5-flash-lite", "mistralai/mistral-small-24b-instruct-2501"],
+                "qwen/qwen3-235b-a22b-2507", cid="")
+    with pytest.raises(councils.ConfigError, match="id"):
+        councils.validate(cfg2)
+
+
 def test_missing_prompt_rejected():
     # family-valid but no prompts -> would KeyError at request assembly (Stage 7); caught at load.
     cfg = _cfg(["google/gemini-2.5-flash-lite", "mistralai/mistral-small-24b-instruct-2501"],

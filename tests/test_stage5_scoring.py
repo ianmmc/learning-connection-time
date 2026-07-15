@@ -100,6 +100,26 @@ def test_signals_compute_over_dechromed_main_not_full_page(tmp_path):
     assert "bell schedule" in sig_dech["positive_kw"]
 
 
+def test_table_rep_read_once_not_twice(tmp_path, monkeypatch):
+    """#353: the table_reps comprehension called read(t) twice per qualifying rep — once in the
+    `'---' in read(t)` filter, once for the value — doubling disk I/O for every table-source rep.
+    Assert the table rep's file is read exactly once during compute_signals."""
+    tbl = "Period 1 08:00-08:50\n---\nGrant High 08:00 to 15:00 bell schedule dismissal"
+    (tmp_path / "camelot.txt").write_text(tbl)
+    texts = [{"usable": True, "text_file": "camelot.txt", "source": "camelot_hybrid",
+              "n_chars": len(tbl), "n_times": 4}]
+    reads = {}
+    import pathlib
+    real = pathlib.Path.read_text
+    def counting_read_text(self, *a, **k):
+        reads[self.name] = reads.get(self.name, 0) + 1
+        return real(self, *a, **k)
+    monkeypatch.setattr(pathlib.Path, "read_text", counting_read_text)
+    BS.compute_signals(tmp_path, texts, [], {}, main_text=None)
+    assert reads.get("camelot.txt", 0) == 1, (
+        f"table rep read {reads.get('camelot.txt')}× — should be once (#353)")
+
+
 def test_dechrome_falls_back_when_main_too_thin(tmp_path):
     full = "School hours 8:00 AM to 3:00 PM bell schedule dismissal arrival every school day here."
     (tmp_path / "page.txt").write_text(full)
