@@ -180,15 +180,20 @@ def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_re
                                "confidence": "unmatched_extra",
                                "intent_schools": intent.get(rk, [])})
 
-        # REQ-146: a conjunction's RESOLVED campuses fill their named slots — one page stating
-        # times for N schools genuinely is N schools' schedules (the fact still votes ONCE in the
-        # mode; slot fill is coverage truth, not a vote). Campus names are roster-verbatim (the
-        # #253 detector resolved them against the roster), so RAW-name equality suffices.
+        # REQ-146/148: a band fact's campuses fill their named slots — one page stating times
+        # for N schools genuinely is N schools' schedules (the fact still votes ONCE in the mode;
+        # slot fill is coverage truth, not a vote). Matching is on the NORM key: detector campuses
+        # are roster-verbatim, but v4 council campus_names are page-verbatim SHORTHAND ("Milagro"
+        # for "Milagro Middle School" — the live Santa Fe reading, 2026-07-15), which only the
+        # level-word-stripping key can join. A campus key colliding with >1 slot fills NOTHING
+        # (the same no-guess rule as ambiguous facts).
         if bf and bf.get("campuses"):
-            camp_base = {_base(c) for c in bf["campuses"]}
-            for s_ in slots:
-                if s_["slot_state"] == "unfilled" and not s_["match"] \
-                        and _base(s_["roster_school"]) in camp_base:
+            for c in bf["campuses"]:
+                ck = norm_school(c)
+                hits_c = [s_ for s_ in by_key.get(ck, [])
+                          if s_["slot_state"] == "unfilled" and not s_["match"]]
+                if len(hits_c) == 1 and len(by_key.get(ck, [])) == 1:
+                    s_ = hits_c[0]
                     s_["slot_state"] = "filled"
                     s_["match"] = {"norm_school_fact": bf["norm_school_fact"],
                                    "school_display": bf.get("school_display", ""),

@@ -79,6 +79,9 @@ class SchoolFact(gdb.Base):
     # precedent). Deliberately UNindexed like every _PRECIOUS_ALTERS column (see run_kind above).
     school_year: Mapped[str | None] = mapped_column(String, nullable=True)
     applies_to: Mapped[str | None] = mapped_column(String, nullable=True)
+    # v4 council reading (#499 REQ-148): the page's own VERBATIM campus list when the schedule
+    # covers a group — sorted union across models (JSON list). NULL pre-v4; same no-backfill rule.
+    campus_names_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     # unresolved: the per-model disagreement (starts/ends by model) or an implausible-gross note
     detail_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     # provenance + review
