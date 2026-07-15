@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-15T03:26:33Z",
+  "last_updated": "2026-07-15T05:43:27Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -1842,10 +1842,10 @@
       "name": "Aspen Ridge Public District",
       "state": "CA",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "discover",
+      "outcome": "found_all",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00020",
       "history": [
         {
           "stage": 1,
@@ -2026,9 +2026,38 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-11T21:52:40Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-15T05:41:48Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-15T05:41:48Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-15T05:41:48Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-15T05:43:27Z"
         }
       ],
-      "notes": "9e786ee44873"
+      "notes": "gate@1 auto-approved (follow-up autoflow) batch_00020"
     },
     "0616080": {
       "name": "Greenfield Union Elementary",
@@ -9029,11 +9058,11 @@
     "4207560": {
       "name": "Derry Area SD",
       "state": "PA",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00006",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -9105,9 +9134,33 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-12T19:30:47Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "dispatch",
+          "outcome": null,
+          "at": "2026-07-15T05:32:54Z",
+          "checkpoint": "gate@6",
+          "event_type": "draft_add_district",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-15T05:33:02Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-15T05:36:02Z"
         }
       ],
-      "notes": "gate@1 approved batch_00006"
+      "notes": "432d1ce8ffea"
     },
     "4207680": {
       "name": "Dover Area SD",
@@ -9131,8 +9184,8 @@
       "name": "Redbank Valley SD",
       "state": "PA",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "capture",
+      "outcome": "captured_all",
       "topology": null,
       "batch_id": null,
       "history": [
@@ -9252,9 +9305,60 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-11T21:40:32Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-15T05:36:22Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-15T05:36:22Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-15T05:36:22Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 2,
+          "stage_name": "discover",
+          "outcome": "found_all",
+          "at": "2026-07-15T05:37:49Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "capture",
+          "outcome": null,
+          "at": "2026-07-15T05:37:49Z",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 3,
+          "stage_name": "capture",
+          "outcome": "captured_all",
+          "at": "2026-07-15T05:38:08Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "process",
+          "outcome": null,
+          "at": "2026-07-15T05:38:08Z",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "27b64cab58a9"
+      "notes": "gate@1 auto-approved (follow-up autoflow) batch_00019"
     },
     "4222350": {
       "name": "Southern Lehigh SD",
@@ -10304,11 +10408,11 @@
     "4900025": {
       "name": "North Star Academy",
       "state": "UT",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00006",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -10380,9 +10484,33 @@
           "stage_name": "filter",
           "outcome": "ingested",
           "at": "2026-07-12T19:30:47Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "dispatch",
+          "outcome": null,
+          "at": "2026-07-15T05:32:54Z",
+          "checkpoint": "gate@6",
+          "event_type": "draft_add_district",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": null,
+          "outcome": null,
+          "at": "2026-07-15T05:33:02Z",
+          "checkpoint": "gate@6",
+          "event_type": "dispatched",
+          "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-15T05:36:38Z"
         }
       ],
-      "notes": "gate@1 approved batch_00006"
+      "notes": "432d1ce8ffea"
     },
     "4900540": {
       "name": "Millard District",

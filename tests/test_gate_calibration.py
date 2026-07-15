@@ -1,14 +1,21 @@
-"""REQ-121 / issue #210 — the gate@5/6/7 calibration WIRING (console → calibration records).
+"""REQ-121/REQ-126 / issue #210 — the gate@5/6/7/8 calibration WIRING (console → calibration records).
 
 Pure builder tests (the console→calibration vocab translation, DB-free) + govdb integration tests that
 drive each gate's REAL write path and assert a calibration_event row lands with the right proxy/decision/
-agreed/slice. gate@8 (approving extracted TIMES) is deferred until Stage 8 is built (Ian, 2026-07-10)."""
+agreed/slice. gate@8 (approving the whole closing argument) wired 2026-07-14 — see REQ-126; its endpoint
+test is DB-free (the fake-session harness from test_stage8_api.py), not govdb, since the closing-argument
+assembly itself is monkeypatched exactly as test_stage8_api.py's own decision tests already do."""
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import text
 
 from infrastructure.acquisition.common import db as gdb
 from infrastructure.acquisition.process_governance import gate_calibration as GCAL
+from infrastructure.acquisition.process_governance import server as SRV
 from infrastructure.acquisition.process_governance import stage6_dispatch as BR
+from tests.test_stage7_api import _Con, _Result, _use
+
+_client = TestClient(SRV.app)
 
 
 
@@ -79,6 +86,62 @@ def test_gate7_uses_the_council_agreement_ratio_and_skips_pending():
                                      n_accepted=0, n_unresolved=0, created_at="t") is None
     assert GCAL.gate7_request_record(request_id=8, district_id="d", status="approved",
                                      n_accepted=0, n_unresolved=0, created_at="t")["proxy_value"] is None
+
+
+def test_gate8_decision_record_maps_disposition_to_human_decision():
+    # REQ-126: auto_recommendation is ALWAYS None (gate@8 has no auto policy yet) — 'agreed' is
+    # therefore undefined for every gate@8 row, by design, not an oversight.
+    approved = GCAL.gate8_decision_record(district_id="d", disposition="approved", min_coverage=0.44,
+                                          state="PA", run_kind="production", created_at="t")
+    assert approved["gate"] == "gate@8" and approved["item_id"] == "district:d"
+    assert approved["proxy_name"] == "min_band_coverage" and approved["proxy_value"] == 0.44
+    assert approved["human_decision"] == "accept" and approved["auto_recommendation"] is None
+    assert approved["agreed"] is None and approved["state"] == "PA"
+    sent_back = GCAL.gate8_decision_record(district_id="d", disposition="sent_back", min_coverage=0.12,
+                                           created_at="t")
+    assert sent_back["human_decision"] == "reject"
+
+
+def test_gate8_decision_record_returns_none_on_a_non_terminal_disposition():
+    assert GCAL.gate8_decision_record(district_id="d", disposition="pending", min_coverage=0.5,
+                                      created_at="t") is None
+
+
+# ============================= gate@8 endpoint wiring (DB-free, fake session) =============================
+def _decide(monkeypatch, disposition, min_coverage=0.75):
+    """Drives the real /api/aggregate/decision/{id} endpoint with a monkeypatched closing-argument
+    assembly (test_stage8_api.py's own pattern) and a fake session — proving the endpoint's WIRING
+    (gate8_decision_record built + record_calibration called on approve/send-back), not re-testing
+    closing_argument's own logic (test_closing_argument.py's job) or approval.record_decision's own
+    logic (test_stage8_approval.py's job)."""
+    ca = {"district_id": "D1", "bands": {"elementary": {"gross_minutes": 400,
+          "sampling": {"coverage": min_coverage}, "schools": [{"school": "a", "gross": 400}]}}}
+    monkeypatch.setattr(SRV.CA8, "load_closing_argument", lambda con, did: ca)
+    monkeypatch.setattr(SRV.APV8, "record_decision", lambda *a, **k: 42)
+    monkeypatch.setattr(SRV, "_backup_stage8_approvals", lambda con: 0)
+    calls = []
+    monkeypatch.setattr(SRV.CAL, "record_calibration", lambda con, rec: calls.append(rec))
+    _use(monkeypatch, _Con([_Result(rows=[{"name": "Test District", "state": "PA"}])]))
+    live_fp = SRV.CA8.fingerprint(ca)
+    r = _client.post(f"/api/aggregate/decision/D1",
+                     json={"disposition": disposition, "expected_fingerprint": live_fp,
+                           "reason": "thin coverage" if disposition == "sent_back" else None})
+    assert r.status_code == 200
+    return calls
+
+
+def test_gate8_approve_writes_calibration_event(monkeypatch):
+    calls = _decide(monkeypatch, "approved", min_coverage=0.75)
+    assert len(calls) == 1
+    rec = calls[0]
+    assert rec["gate"] == "gate@8" and rec["item_id"] == "district:D1"
+    assert rec["human_decision"] == "accept" and rec["proxy_value"] == 0.75 and rec["state"] == "PA"
+
+
+def test_gate8_send_back_writes_calibration_event(monkeypatch):
+    calls = _decide(monkeypatch, "sent_back", min_coverage=0.20)
+    assert len(calls) == 1
+    assert calls[0]["human_decision"] == "reject" and calls[0]["proxy_value"] == 0.20
 
 
 # ============================= govdb integration (real write paths) =============================

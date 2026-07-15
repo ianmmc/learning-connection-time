@@ -4,7 +4,7 @@
 > gate@1 console (batch working store + edit/approve API + frontend) — what the code does today.
 > **Audience:** anyone building on or debugging Stage 1; anyone tracing why a district is/isn't in a batch.
 > **Companions:** `ACQUISITION_PIPELINE.md` (the 9-stage map + flow diagram), `METHODOLOGY.md` (Rule 6
-> CTC / Rule 7 grade-span-gap / the sampling-policy rationale), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
+> CTC / Rule 7 grade-span-gap / the sampling-policy rationale), `PIPELINE_GOVERNANCE_AND_STATE.md`
 > (§3 state_event, §11 gates / batch types / district×band grain).
 > **Update this when:** Stage 1's code behavior changes. Design turns and superseded approaches belong in
 > §7 (Decision log), not here — this doc's body (§1–§6) is present-state only.
@@ -151,7 +151,7 @@ Cross-stage per-district state lives in the Postgres **`state_event` append-log*
 view); `district_status.py`'s `load()`/`save()` read/write it while `record_stage()`/`already_attempted()`
 stay pure in-memory dict ops (so the stage scripts are unchanged). `district_status.json` is the
 regenerable, version-controlled backup. **Pre-queue exclusions are deliberately NOT recorded** — they're
-live filters. See `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §3.
+live filters. See `PIPELINE_GOVERNANCE_AND_STATE.md` §3.
 
 ### 2g. Batch types + completion grain = district × BAND (governance §11d)
 Batches are **first-run** (cold-start stratified draw; excludes already-attempted districts),
@@ -166,7 +166,7 @@ from a `gate@8`/`gate@7` direction (never minted straight to discovery by 7/8), 
 `gate@1`. **BUILT (REQ-118, 2026-07-04):** the concrete targeted builder is `build_followup_batch(year,
 batch_id, targets)` in `queue_batch.py` — distinct from `build_batch()`'s stratified cold-start draw —
 called by `stage7_execute.compose_followup_batch()` when a human approves a 7→2/7→3/7→1 directive at
-gate@7 (`STAGE7_EXTRACT_DESIGN_2026-06.md` §3F).
+gate@7 (`STAGE7_EXTRACT_DESIGN.md` §3F).
 
 ### 2h. `batch_type="benchmark"` — the special case (`batch_00000`, 2026-07-02)
 A third batch type, built for the 27 curated-GT districts: `stage1_queue/benchmark_batch.py` builds a
@@ -177,7 +177,7 @@ discovery, no fetching. Created + approved in one step (`create_and_inject()`), 
 normal draft→edit→approve flow. **The wall:** `batch_type == "benchmark"` marks the batch permanently;
 benchmark districts must never be Stage-9-written or counted in funnel/enrichment statistics — they are
 an accuracy yardstick (per-school times hand-verified against these exact files), not coverage, and
-several source documents are deliberately older school years. See `STAGE6_DISPATCH_DESIGN_2026-06.md`
+several source documents are deliberately older school years. See `STAGE6_DISPATCH_DESIGN.md`
 §3C C.6.
 
 `create_and_inject()` never calls `reserve_next_batch()` — it goes straight `create_batch()` +

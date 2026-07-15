@@ -1,7 +1,7 @@
 /**
  * dependency-cruiser rules for the Node capture layer (REQ-098 step 5).
  * The JS analog of import-linter for the Python side. Run: `npm run lint:deps`.
- * See docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §10.
+ * See docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE.md §10.
  */
 module.exports = {
   forbidden: [

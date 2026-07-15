@@ -25,7 +25,7 @@ reject set)` and the outcome is the human's label already in `label` (precious, 
 auditability replay ("you rejected class X; your own random audit surfaced it N times") needs nothing
 persisted beyond what the endpoints already return — seed, rec_key, tier, score, outcome.
 
-Design authority: STAGE5_FILTER_DESIGN_2026-06.md §5a; PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §11b;
+Design authority: STAGE5_FILTER_DESIGN.md §5a; PIPELINE_GOVERNANCE_AND_STATE.md §11b;
 production-quality-control-research/FINDINGS-AND-DECISIONS.md §0/§1.
 """
 from sqlalchemy import text

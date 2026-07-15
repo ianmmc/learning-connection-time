@@ -5,7 +5,7 @@
 > today. Code is ground truth; this note narrates it.
 > **Audience:** anyone building on or debugging Stage 5; anyone tracing why a record scored a given
 > tier/decision, or why a label field means what it means.
-> **Companions:** `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (state model, gates, the console);
+> **Companions:** `PIPELINE_GOVERNANCE_AND_STATE.md` (state model, gates, the console);
 > `STAGE5_TUNING_NOTES_2026-06.md` (tuning methods + citations); `docs/technical-notes/filtering-research/`
 > (the weak-supervision / labeling-functions research V2 is grounded in); `STAGE4_PROCESS_DESIGN` (upstream);
 > `STAGE6_DISPATCH_DESIGN` (downstream — the release decision this stage emits).
@@ -253,7 +253,7 @@ what the record's tier says auto would currently do (`release.decide`'s tier gat
 (no unilateral-auto data point), D→reject) and persists it via `common.calibration.record_calibration` on
 the same DB transaction as the label write. This is the mechanism that surfaces the survivorship signal
 directly: a tier-D record (auto would reject) that a human labels a real target logs `agreed=False` — a
-false negative auto would have made. See `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b for the full
+false negative auto would have made. See `PIPELINE_GOVERNANCE_AND_STATE.md` §11b for the full
 calibration-log design; gate@6 and gate@7 get the analogous hooks.
 
 **Reset labels — an honest path back to `unlabeled` (#228).** A label can be wrong in a way neither
@@ -330,7 +330,7 @@ episodes), config-as-data with `provenance`.
 **The one-sentence thesis:** *the filter may run only as autonomously as its reject audit is currently
 validating it — and the moment that validation lapses, autonomy falls back one supervision level rather
 than the pipeline halting.* This is not a metric we watch; it is a **control law** that licenses gate@5's
-autonomy and revokes it automatically. Full governance context: `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
+autonomy and revokes it automatically. Full governance context: `PIPELINE_GOVERNANCE_AND_STATE.md`
 §11b; decision record: `production-quality-control-research/FINDINGS-AND-DECISIONS.md` §0/§1.
 
 **Why it is NOT a current hole (the census-labeling immunity).** The selective-labels / "illusion of
@@ -545,7 +545,7 @@ evidence of equivalence). Wired advisory into `frontier gate()` + `frontier --ga
 the pipeline still reads `CONFIG_DIR` directly. Actuation (pointer-drives-live-config) is gated on the unbuilt
 gate-mode persistence, tracked with every other dormant guardrail in the **guardrail-activation checklist
 (#219)**. The minor/major re-ingest shadow is likewise deferred (knob changes are human-curated + rare; the
-automated tuning path is detector-params). Authority: this section; `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
+automated tuning path is detector-params). Authority: this section; `PIPELINE_GOVERNANCE_AND_STATE.md`
 §11b; issues #212/#213/#219.
 
 **Review-hardened (PR #220's max-effort round, 2026-07-10 — 11 findings, all fixed).** The highest-severity:

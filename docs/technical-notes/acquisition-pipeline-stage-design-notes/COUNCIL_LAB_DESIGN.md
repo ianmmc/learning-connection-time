@@ -6,11 +6,11 @@
 > §1–§6 hold the design rationale + the workload backlog, with items still genuinely open flagged inline.
 > **Audience:** anyone building on or debugging the Lab; anyone A/B-testing a prompt, council, judge,
 > cost model, or reader-routing rule against the frozen corpus.
-> **Companions:** `STAGE6_DISPATCH_DESIGN_2026-06.md` §0/§3 (the runtime *consumer* — councils/routing/cost
-> it reads), `STAGE7_EXTRACT_DESIGN_2026-06.md` §0/§4 (extraction + the request loop it also feeds),
+> **Companions:** `STAGE6_DISPATCH_DESIGN.md` §0/§3 (the runtime *consumer* — councils/routing/cost
+> it reads), `STAGE7_EXTRACT_DESIGN.md` §0/§4 (extraction + the request loop it also feeds),
 > `models-and-council-composition/` (the council research + the batch_00000 full-run report + the fresh
 > vision/non-reasoning model catalogs), `EXTRACTION_BENCHMARK_FINDINGS.md` (model leaderboard + costs),
-> `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b (the ramp-up model this promotes under).
+> `PIPELINE_GOVERNANCE_AND_STATE.md` §11b (the ramp-up model this promotes under).
 > **Update this when:** the Lab's code behavior, artifacts, or workload backlog changes. Design turns and
 > superseded approaches belong in §7 (Provenance / decision log), not here.
 
@@ -90,7 +90,7 @@ config-as-data artifact + its `provenance`.
 **Package boundary note:** `stage6_handoff/` is a shared package — `councils.py`, `cost.py`, and
 `prompts.py` are the config-as-data surface the Lab produces and this doc covers; `handoff.py`,
 `models.py`, `package.py`, `requests.py`, and `routing.py` in the same directory are STAGE6_DISPATCH's
-runtime-path files (the request-loop mechanics), out of scope here — see `STAGE6_DISPATCH_DESIGN_2026-06.md`.
+runtime-path files (the request-loop mechanics), out of scope here — see `STAGE6_DISPATCH_DESIGN.md`.
 
 ---
 

@@ -1,5 +1,5 @@
 """Stage 8 — the "closing argument": assemble one district's per-band determination into a
-reviewable + freezable evidence package (STAGE8_AGGREGATE_DESIGN_2026-06 §2).
+reviewable + freezable evidence package (STAGE8_AGGREGATE_DESIGN §2).
 
 The metaphor (Ian, 2026-07-13): gate@8 is an attorney's closing argument — state the claim, marshal
 the evidence, confront the gaps honestly. This module builds that package for one district so a human

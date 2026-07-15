@@ -62,6 +62,16 @@ class TestBlendWindow:
         assert SY.within_blend_window([])
         assert SY.within_blend_window([None, "2025-26"])
 
+    def test_current_bell_schedule_blends_with_the_live_nces_primary_year(self):
+        # REQ-026/REQ-136: pins the PR #491 rollover arithmetic as a durable regression guard, tied to
+        # the LIVE constants rather than a one-off manual check — the coupling recurs every rollover.
+        assert SY.within_blend_window([SY.CURRENT_SCHOOL_YEAR, SY.NCES_PRIMARY_YEAR])
+
+    def test_a_stale_nces_primary_year_would_have_failed_the_window(self):
+        # the exact failure the 2026-07-14 NCES_PRIMARY_YEAR bump (2023-24 -> 2024-25) fixed: a
+        # 2026-27 bell schedule against the THEN-current 2023-24 vintage is span 3, out of window.
+        assert not SY.within_blend_window(["2026-27", "2023-24"])
+
 
 class TestPlausibility:
     def test_req055_band(self):
@@ -95,6 +105,28 @@ class TestCurrentSchoolYearDerivation:
     def test_acceptable_bell_years_floor_at_first_post_covid_year(self):
         assert SY.ACCEPTABLE_BELL_YEARS[-1] == "2023-24"
         assert SY.ACCEPTABLE_BELL_YEARS[0] == SY.CURRENT_SCHOOL_YEAR
+
+    def test_current_school_year_constant_is_derived_not_a_literal(self):
+        """REQ-136 regression guard. test_module_constant_matches_derivation above only proves
+        CURRENT_SCHOOL_YEAR equals current_school_year() TODAY, in this process — a hand-bumped
+        literal (the pre-2026-07 bug class) would pass that check right up until the next July 1 in
+        PRODUCTION, not in CI. This inspects the module SOURCE and fails immediately if the constant
+        is ever rebound to a string literal instead of a call expression."""
+        import ast
+        import inspect
+
+        from infrastructure.utilities import school_year as _real_module   # not the database/ shim —
+        # the shim re-exports via `from ... import (...)`, which carries no Assign node to inspect
+        tree = ast.parse(inspect.getsource(_real_module))
+        assign = next(
+            node for node in ast.walk(tree)
+            if isinstance(node, ast.Assign)
+            and any(isinstance(t, ast.Name) and t.id == "CURRENT_SCHOOL_YEAR" for t in node.targets))
+        assert isinstance(assign.value, ast.Call), (
+            "CURRENT_SCHOOL_YEAR must be assigned from a call to current_school_year() — found a "
+            f"{type(assign.value).__name__} instead (a hardcoded literal would silently go stale "
+            "at the next July-1 rollover, exactly the bug this module exists to prevent)")
+        assert getattr(assign.value.func, "id", None) == "current_school_year"
 
 
 class TestConstants:

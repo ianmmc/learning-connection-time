@@ -240,3 +240,31 @@ class TestReviewRoundFixes:
                    for s in by_did["1234567"]}
         assert stamped["Liberati Intermediate"] == ("elementary", True)
         assert stamped["Real Middle"] == ("middle", False)
+
+
+class TestCorpusGoldenCounts:
+    """REQ-142 (2026-07-15 audit sweep): the #498 carve-out's blast radius was measured ONCE against
+    the real 2024-25 CCD (330 intermediate-carve-out overrides nationally) and recorded only in commit
+    messages/PR bodies — nothing pinned it. Runs against the REAL on-disk corpus (2024-25 CCD is
+    git-tracked, negated out of the data/raw/ .gitignore specifically so this is always available) so a
+    future NCES refresh or an edit to effective_level_band that silently shifts this count fails CI
+    instead of going unnoticed until the next hand audit. A tolerance band, not an exact pin, since NCES
+    vintages do occasionally get corrected file-in-place without a version bump.
+
+    (The PR's OTHER measured figure — 129 schools/123 districts losing a spurious elementary membership
+    from the grade-5+ rescue-rule tightening — is a diff against the PRE-#498 rule, not an invariant of
+    current-state code alone; some candidate schools resolve via recursive_band_groups's clean-partition
+    path rather than the conservative bands_for_rescue fallback, so a simple current-side predicate
+    overcounts. Not pinned here for that reason — a live re-diff against the pre-#498 commit, as done to
+    verify this test file's own numbers, is the honest way to re-check it if #498's rules change again.)"""
+
+    def test_intermediate_override_count_matches_pinned_measurement(self):
+        year = SS.latest_nces_year()
+        if year is None:
+            pytest.skip("NCES CCD files not present on disk")
+        n = sum(1 for schools in SS._district_schools(year).values()
+               for sc in schools if sc.get("level_overridden"))
+        assert 300 <= n <= 360, (
+            f"intermediate carve-out override count drifted to {n} (pinned measurement: 330, "
+            f"2024-25 CCD) — a real NCES change or a code change to effective_level_band; verify "
+            f"which before updating this tolerance band")

@@ -3,7 +3,7 @@
 Deliberately self-contained: this module does NOT import `infrastructure.database` (the production
 LCT side). Two databases, two connection modules, zero coupling — which is exactly what the
 import-linter contract enforces (acquisition must not import the LCT layer) and what the
-"isolated governance DB" decision calls for. See PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §1a/§10.
+"isolated governance DB" decision calls for. See PIPELINE_GOVERNANCE_AND_STATE.md §1a/§10.
 
 Holds: the PRECIOUS tables (label, cluster_split, and the future state_event) as SQLAlchemy models
 on `Base`, plus the REGENERABLE signal/cross-stage cache tables that the Stage-5 ingest creates via

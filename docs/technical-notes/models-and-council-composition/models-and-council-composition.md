@@ -7,7 +7,7 @@
 > estimates. Where a finding implies a config change, it is a **hypothesis for the Council Lab (#80) to
 > test**, not an adopted decision.
 > **Audience:** anyone tuning council composition, routing, or the extraction prompt; the Council Lab.
-> **Companions:** `STAGE7_EXTRACT_DESIGN_2026-06.md` (the stage), `STAGE6_DISPATCH_DESIGN_2026-06.md` §2a
+> **Companions:** `STAGE7_EXTRACT_DESIGN.md` (the stage), `STAGE6_DISPATCH_DESIGN.md` §2a
 > (the lab), §3A (council seeds — the composition this report tests), `EXTRACTION_BENCHMARK_FINDINGS.md`
 > (the pre-pipeline model leaderboard this supersedes for clean data), GitHub #80 (Council Lab), #81
 > (spray A/B), #82 (image-judge bug).

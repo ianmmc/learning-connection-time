@@ -21,7 +21,7 @@ gate stays manual until its own auto path is built (#211 for gate@5) — and it 
 license layering (that is `exploration_audit.resolve_gate_mode`'s job, wired live in #211).
 `effective_gate_mode` here returns the configured mode with the global-default fallback; that is the one
 lookup a gate/guardrail calls today, and it always resolves to manual until a human sets a gate auto.
-Design authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §11b.
+Design authority: PIPELINE_GOVERNANCE_AND_STATE.md §11b.
 """
 from sqlalchemy import String, text
 from sqlalchemy.orm import Mapped, mapped_column

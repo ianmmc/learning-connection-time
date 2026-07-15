@@ -20,7 +20,7 @@ durable record goes to its proper home, so CLAUDE.md never accretes:
 - **Decisions / lessons / rationale (high-level)** → `docs/PROJECT_HISTORY.md` — one ADR-style entry, *not* one per fix.
 - **Granular per-requirement status** → `docs/REQUIREMENTS.yaml`.
 - **Per-stage mechanics + evolution** → the stage design notes (`docs/technical-notes/STAGE*_DESIGN_*.md`) / the flow-diagram decision log.
-- **Architecture / governance** → the governance authority doc (`docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`).
+- **Architecture / governance** → the governance authority doc (`docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE.md`).
 
 ## Instructions
 

@@ -41,7 +41,7 @@ exploration cohort**, or the discipline itself can bless the illusion (retroacti
 > champion→challenger reject-quality warning in `--gate`), and a `tuning_ledger` `reject_cohort_quality`
 > delta + advisory `reject_quality_regressed` flag — all over the SAME reproducible audit draw the live
 > quota (#211) uses. Retroactive #108 re-verify: reject-quality/TNR = 1.0 under the live config (the
-> approved-set win hid no pruned-tail collapse). Detail: `STAGE5_FILTER_DESIGN_2026-06.md` §5d.
+> approved-set win hid no pruned-tail collapse). Detail: `STAGE5_FILTER_DESIGN.md` §5d.
 
 ---
 

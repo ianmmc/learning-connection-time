@@ -5,7 +5,7 @@
 > for short grid-style bell-schedule PDFs. Migrated 2026-06-27 from the retired `docs/scratch-paper/`.
 > This is the *literature survey that preceded* the Stage-4 tool choice — NOT the design. The actual
 > decision (the empirical spike against all 150 captured PDFs, the kept/dropped roster, the heavy-ML
-> rejection) lives in `STAGE4_PROCESS_DESIGN_2026-06.md` §3. Kept for the methods + citations if we ever
+> rejection) lives in `STAGE4_PROCESS_DESIGN.md` §3. Kept for the methods + citations if we ever
 > revisit the tooling.
 
 ---

@@ -15,9 +15,9 @@ description: SUPERSEDED (2026-07-06) — Stage 2 now runs as a deterministic hea
 > Stage 2 anymore (the retired providers + `_openrouter_key` were removed, #87); Wave 2 needs only the
 > `claude` CLI. Also superseded below: the "never redo" rule — a **follow-up batch** now redoes
 > discovery deliberately, with union-merged manifests (#174). Authority:
-> `STAGE2_DISCOVER_DESIGN_2026-06.md`.
+> `STAGE2_DISCOVER_DESIGN.md`.
 
-Written explicitly so the procedure survives across sessions without relying on conversational nuance (the full design was negotiated in detail on 2026-06-23 — see `docs/ACQUISITION_PIPELINE.md` Stage 2 and `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE2_DISCOVER_DESIGN_2026-06.md` §6 for the decision trail; this skill is the executable form of that design, not a paraphrase of it).
+Written explicitly so the procedure survives across sessions without relying on conversational nuance (the full design was negotiated in detail on 2026-06-23 — see `docs/ACQUISITION_PIPELINE.md` Stage 2 and `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE2_DISCOVER_DESIGN.md` §6 for the decision trail; this skill is the executable form of that design, not a paraphrase of it).
 
 **Supersedes** `.claude/skills/per-school-acquire/` and `per-school-acquire-training/` — both obsolete, see their headers.
 

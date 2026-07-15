@@ -1,6 +1,6 @@
 # Project Terminology Guide
 
-**Last Updated:** 2026-07-01
+**Last Updated:** 2026-07-15
 
 The canonical vocabulary for the Learning Connection Time (LCT) project — the file an auditor or new
 developer should read first. It standardizes the terms used across `docs/ACQUISITION_PIPELINE.md`,
@@ -71,6 +71,23 @@ CP-A/B/C names): **gate@1 (Queue)** — right districts/schools/bands (was CP-A)
 requests/recommendations · **gate@8 (Aggregate)** — per-band results correct + honestly labeled
 (the effective old CP-C; the Stage-9 DB write is then mechanical, ungated). Each gate is
 manual/auto (auto = confidence-escalating).
+
+### gate@8 editorial primitives — human-in-the-loop, never destructive
+Four DETECT-AND-FLAG-or-CORRECT actions at gate@8, built 2026-07-14 (epic #478): **exclude** (a school's
+band membership is stale — struck-through, never deleted, mode recomputes) · **name/level mismatch**
+(a school's name conflicts with its NCES level tag or band placement — flagged, never auto-rejected) ·
+**recover-band** (re-extract an already-captured rep when a sibling band's fact suggests the missing
+band's data is in the same document) · **human-add** (a last-resort, cited-source hand-entered fact that
+votes in the mode like any extracted one). Full design: `STAGE8_AGGREGATE_DESIGN.md` §3.
+
+### Band-integrity family — #253/#254/#498
+Three related fixes to what a "school" and a "school year" mean during aggregation: the band-serving
+**denominator** is derived LIVE from the current NCES vintage (never frozen); **combined-scope** names
+(a page stating times for a group of schools collectively) are detected and flagged rather than counted
+as one pseudo-school; **school-year precedence** lets a known-newer year supersede a known-older one in
+the fact merge (an undated fact never auto-loses — "unknown" is not "oldest"); and the **grade-band
+carve-out** corrects one corpus-profiled NCES `LEVEL` misclassification (an "Intermediate" 4-6 school
+tagged `Middle` is upper-elementary). Full design: `STAGE8_AGGREGATE_DESIGN.md` §2a, `METHODOLOGY.md`.
 
 ### Batch / `batch_NNNNN.json`
 One run's worth of targeting, produced by Stage 1 (`data/acquisition/queue/`). Carries the selected
@@ -159,7 +176,7 @@ districts stay eligible.
   plausible · **C** unlikely/negative-leaning · **D** drop-candidate (no times/unusable).
 - **Category hypothesis** vs **label** — the *hypothesis* is the script's weak guess at the primary
   label (noisy, hidden in the UI until the human labels, to avoid anchoring); the **label** is the
-  human's ground-truth judgment. (Full label taxonomy lives in `STAGE5_FILTER_DESIGN_2026-06.md`:
+  human's ground-truth judgment. (Full label taxonomy lives in `STAGE5_FILTER_DESIGN.md`:
   target-shape labels, non-target-reason labels incl. `community_calendar`/`embedded_feed`, and flags
   incl. `duplicate`, `buried_in_long_doc`, `building_hours_visible`, `target_image_only`.)
 - **Topology** — a district's schedule *shape*, kept as two separate values: **`guessed_topology`**

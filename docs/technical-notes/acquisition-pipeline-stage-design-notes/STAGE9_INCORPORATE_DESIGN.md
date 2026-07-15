@@ -5,9 +5,9 @@
 > acceptance, the COVID/malformed-year seam guard) is BUILT — see `DATABASE_SETUP.md` and the
 > fable-review lct-core hardening (migration 019, `queries.add_bell_schedule`).
 > **Audience:** whoever designs/builds Stage 9.
-> **Companions:** `ACQUISITION_PIPELINE.md` §9 (the slim map), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
+> **Companions:** `ACQUISITION_PIPELINE.md` §9 (the slim map), `PIPELINE_GOVERNANCE_AND_STATE.md`
 > §11, `DATABASE_SETUP.md` (the LCT DB schema — the "Two databases" section explains why this write
-> crosses into the separate production LCT database). Upstream: `STAGE8_AGGREGATE_DESIGN_2026-06.md` —
+> crosses into the separate production LCT database). Upstream: `STAGE8_AGGREGATE_DESIGN.md` —
 > note that doc is no longer a pure stub: `stage8_aggregate/aggregate.py` has a real, tested prototype,
 > and its 2026-07-11 addendum (added after this doc's own content was last substantially edited) covers
 > `merge_fact_runs`, directly relevant here — see §1a below.
@@ -43,7 +43,7 @@ gate@8 human call, not an automatic later-run override); among unresolved-only f
 This is squarely upstream of Stage 9's write: whatever aggregation feeds the Stage-9 landing zone —
 Stage 8 itself, or Stage 9's write logic directly if Stage 8's own gate/console isn't built first — needs
 an answer to "which run's facts win" for districts with more than one Stage-7 run, and `merge_fact_runs` is
-that answer. Per `STAGE8_AGGREGATE_DESIGN_2026-06.md`'s own addendum, Stage 9 (or the Stage 8 aggregation
+that answer. Per `STAGE8_AGGREGATE_DESIGN.md`'s own addendum, Stage 9 (or the Stage 8 aggregation
 feeding it) should **consume this merge, or its direct descendant, rather than re-deriving cumulative truth
 across runs independently**.
 

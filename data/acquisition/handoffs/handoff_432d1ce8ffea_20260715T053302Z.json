@@ -1,0 +1,266 @@
+{
+  "handoff_hash": "432d1ce8ffea",
+  "created_at": "2026-07-15T05:33:02Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "fingerprints": {
+    "4207560": {
+      "config": "34246fe4d735",
+      "labels": "2295df5d5e54",
+      "data": "8c0b5e811003"
+    },
+    "4900025": {
+      "config": "34246fe4d735",
+      "labels": "f1fc488e6271",
+      "data": "4ea976fb2524"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v3"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.0061200000000000004,
+    "n_reps": 6,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "4207560",
+      "name": "Derry Area SD",
+      "state": "PA",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "4207560:077d63f6ab",
+          "url": "https://4.files.edl.io/5490/07/19/23/192455-349b2df8-707b-40e6-b0df-4ba9c79392a8.pdf",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4207560:396fa05c77",
+          "url": "https://ms.dasd.us/apps/bell_schedules/index.jsp?rn=2568&id=24246",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4207560:44f05dc35a",
+          "url": "https://hs.dasd.us/apps/bell_schedules/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4207560:3e9e6adc56",
+          "url": "https://hs.dasd.us/apps/bell_schedules/index.jsp?id=20801",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4207560:97f8eeb06f",
+          "url": "https://gv.dasd.us/apps/bell_schedules/index.jsp?rn=1292&id=28046",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4207560:498a9ecba3",
+          "url": "https://gv.dasd.us/apps/bell_schedules/index.jsp?rn=8200&id=28048",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4207560:cfd139452a",
+          "url": "https://gv.dasd.us/apps/bell_schedules/index.jsp?rn=6467&id=28047",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4207560:1a38fed69f",
+          "url": "https://gv.dasd.us/apps/bell_schedules/printerfriendly.jsp",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4207560:d065f02d3f",
+          "url": "https://gv.dasd.us/apps/bell_schedules/",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "camelot_hybrid.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4207560:466804500a",
+          "url": "https://gv.dasd.us/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4207560:a2c78d80bb",
+          "url": "https://hs.dasd.us/apps/video/watch.jsp?v=310592",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4207560:d324721316",
+          "url": "https://www.dasd.us/apps/pages/index.jsp?uREC_ID=2049757&type=d&pREC_ID=2550703",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4207560:3602ed7014",
+          "url": "https://gv.dasd.us/apps/pages/index.jsp?uREC_ID=2017032&type=d",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4207560:43d2d85ac0",
+          "url": "https://hs.dasd.us/apps/pages/index.jsp?uREC_ID=2016970&type=d",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4207560:32f064d9e3",
+          "url": "https://www.dasd.us/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4207560:139da33d6a",
+          "url": "https://hs.dasd.us/apps/events/11821047/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 5,
+      "est_usd": 0.0051
+    },
+    {
+      "district_id": "4900025",
+      "name": "North Star Academy",
+      "state": "UT",
+      "topology": "single_school",
+      "records": [
+        {
+          "rec_key": "4900025:0c92d14654",
+          "url": "https://www.north-staracademy.com/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4900025:28a2376de6",
+          "url": "https://www.north-staracademy.com/events?id=55921410",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4900025:0caae627b2",
+          "url": "https://www.north-staracademy.com/page/calendars",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "tesseract_raster.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        }
+      ],
+      "n_send_reps": 1,
+      "est_usd": 0.00102
+    }
+  ]
+}

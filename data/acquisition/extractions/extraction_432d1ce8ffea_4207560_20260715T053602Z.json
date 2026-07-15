@@ -1,0 +1,794 @@
+{
+  "handoff_hash": "432d1ce8ffea",
+  "district": {
+    "district_id": "4207560",
+    "name": "Derry Area SD",
+    "reps": [
+      {
+        "rec_key": "4207560:077d63f6ab",
+        "file": "pdftotext.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:20",
+                "school_name": "Grandview Elementary School",
+                "confidence": "high",
+                "evidence_quote": "Morning Instruction . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9:10 am \u2013 11:10 am\nAfternoon Instruction . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12:55 pm \u2013 3:20 pm",
+                "source_locus": "Daily Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1221,
+            "completion_tokens": 226,
+            "cost_usd": 0.0002125,
+            "latency_ms": 15577,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784093603-X7HDhebSXkANaqJCrg5D",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:20",
+                "school_name": "Grandview Elementary School",
+                "confidence": "high",
+                "evidence_quote": "Morning Instruction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9:10 am \u2013 11:10 am Afternoon Instruction . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12:55 pm \u2013 3:20 pm",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": null,
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 1215,
+            "completion_tokens": 171,
+            "cost_usd": 7.443e-05,
+            "latency_ms": 17482,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784093618-ZWYZsRizZqrtrlcFpti4",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "grandview",
+            "start": "09:10",
+            "end": "15:20",
+            "gross": 370,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Morning Instruction . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9:10 am \u2013 11:10 am\nAfternoon Instruction . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12:55 pm \u2013 3:20 pm",
+                "locus": "Daily Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Morning Instruction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9:10 am \u2013 11:10 am Afternoon Instruction . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12:55 pm \u2013 3:20 pm",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": ""
+              }
+            },
+            "rec_key": "4207560:077d63f6ab",
+            "source_file": "pdftotext.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4207560:3e9e6adc56",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:45",
+                "end_time": "14:46",
+                "school_name": "Derry Area High School",
+                "confidence": "high",
+                "evidence_quote": "Late Bell\t7:45 AM\t\u2014\t\u2014\nPeriod 1 - Announcements/Attendance\t7:45 AM\t7:52 AM\t7 min\nPeriod 8\t2:06 PM\t2:46 PM\t40 min\nStudent Dismissal\t2:46 PM\t\u2014\t\u2014",
+                "source_locus": "2026-2027 Regular Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2348,
+            "completion_tokens": 237,
+            "cost_usd": 0.0003296,
+            "latency_ms": 14211,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784093634-gYH1uTdJsoavfMiHhb4c",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "high",
+                "start_time": "07:53",
+                "end_time": "14:46",
+                "school_name": "Derry Area High School",
+                "confidence": "high",
+                "evidence_quote": "Period 1 7:53 AM - 8:33 AM 40 min Period 8 2:06 PM - 2:46 PM 40 min",
+                "source_locus": "2026-2027 Regular Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2727,
+            "completion_tokens": 180,
+            "cost_usd": 0.00015075,
+            "latency_ms": 30921,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784093663-McCFL9DtkuJhFb9fLlKw",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "high",
+            "school": "derry area",
+            "start": "07:49",
+            "end": "14:46",
+            "gross": 417,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Late Bell\t7:45 AM\t\u2014\t\u2014\nPeriod 1 - Announcements/Attendance\t7:45 AM\t7:52 AM\t7 min\nPeriod 8\t2:06 PM\t2:46 PM\t40 min\nStudent Dismissal\t2:46 PM\t\u2014\t\u2014",
+                "locus": "2026-2027 Regular Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Period 1 7:53 AM - 8:33 AM 40 min Period 8 2:06 PM - 2:46 PM 40 min",
+                "locus": "2026-2027 Regular Bell Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2026-27"
+              }
+            },
+            "school_year": "2026-27",
+            "rec_key": "4207560:3e9e6adc56",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4207560:97f8eeb06f",
+        "file": "page.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:25",
+                "school_name": "Grandview Elementary",
+                "confidence": "high",
+                "evidence_quote": "Homeroom\t8:55 AM\t9:10 AM\nMorning Instruction\t9:10 AM\t11:10 AM\nAfternoon Instruction\t12:55 PM\t3:25 PM",
+                "source_locus": "25-26 Grandview Daily Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "25-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2051,
+            "completion_tokens": 207,
+            "cost_usd": 0.0002879,
+            "latency_ms": 13380,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784093678-EjLzH3la0V9HncvYZPyE",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:25",
+                "school_name": "Grandview Elementary",
+                "confidence": "high",
+                "evidence_quote": "Morning Instruction 9:10 AM \u2013 11:10 AM, Afternoon Instruction 12:55 PM \u2013 3:25 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2420,
+            "completion_tokens": 161,
+            "cost_usd": 0.00013388,
+            "latency_ms": 17175,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784093694-f4HNqxV3AScwbq3Aao5y",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "grandview",
+            "start": "09:02",
+            "end": "15:25",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Homeroom\t8:55 AM\t9:10 AM\nMorning Instruction\t9:10 AM\t11:10 AM\nAfternoon Instruction\t12:55 PM\t3:25 PM",
+                "locus": "25-26 Grandview Daily Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "25-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Morning Instruction 9:10 AM \u2013 11:10 AM, Afternoon Instruction 12:55 PM \u2013 3:25 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "4207560:97f8eeb06f",
+            "source_file": "page.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4207560:1a38fed69f",
+        "file": "camelot_hybrid.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 3,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:25",
+                "school_name": "Grandview",
+                "confidence": "high",
+                "evidence_quote": "Homeroom 8:55 AM Morning Instruction 9:10 AM Afternoon Instruction 12:55 PM 3:25 PM",
+                "source_locus": "25-26 Grandview Daily Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "14:00",
+                "school_name": "Grandview",
+                "confidence": "high",
+                "evidence_quote": "Period 1 9:00 AM Period 8 1:30 PM 2:00 PM",
+                "source_locus": "25-26 Remote Learning Day",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "10:00",
+                "end_time": "14:00",
+                "school_name": "Grandview",
+                "confidence": "high",
+                "evidence_quote": "Period 1 10:00 AM Period 8 1:35 PM 2:00 PM",
+                "source_locus": "25-26 Remote Learning Day Two-Hour Delay Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2541,
+            "completion_tokens": 506,
+            "cost_usd": 0.0004565,
+            "latency_ms": 14792,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784093710-f9ijm4YljzTbA7jRgPy8",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:25",
+                "school_name": "Grandview",
+                "confidence": "high",
+                "evidence_quote": "Morning Instruction 9:10 AM - 11:10 AM, Afternoon Instruction 12:55 PM - 3:25 PM",
+                "source_locus": "25-26 Grandview Daily Schedule",
+                "stated_minutes": 435,
+                "stated_minutes_quote": "instructional day: 435 minutes",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "09:00",
+                "end_time": "14:00",
+                "school_name": "Grandview",
+                "confidence": "high",
+                "evidence_quote": "Period 1 9:00 AM - 9:30 AM, Period 8 1:30 PM - 2:00 PM",
+                "source_locus": "25-26 Remote Learning Day",
+                "stated_minutes": 435,
+                "stated_minutes_quote": "instructional day: 435 minutes",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2477,
+            "completion_tokens": 349,
+            "cost_usd": 0.00015177,
+            "latency_ms": 19399,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784093725-XRl7kUP6mvYFqKGtJupA",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "grandview",
+            "start": "09:02",
+            "end": "15:25",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Homeroom 8:55 AM Morning Instruction 9:10 AM Afternoon Instruction 12:55 PM 3:25 PM",
+                "locus": "25-26 Grandview Daily Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Morning Instruction 9:10 AM - 11:10 AM, Afternoon Instruction 12:55 PM - 3:25 PM",
+                "locus": "25-26 Grandview Daily Schedule",
+                "stated_minutes": 435,
+                "stated_minutes_quote": "instructional day: 435 minutes",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "4207560:1a38fed69f",
+            "source_file": "camelot_hybrid.txt"
+          }
+        ],
+        "unresolved": []
+      },
+      {
+        "rec_key": "4207560:d065f02d3f",
+        "file": "camelot_hybrid.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:55",
+                "end_time": "15:25",
+                "school_name": "Grandview Elementary",
+                "confidence": "high",
+                "evidence_quote": "Homeroom 8:55 AM | 9:10 AM\nMorning Instruction 9:10 AM | 11:10 AM\nAfternoon Instruction 12:55 PM | 3:25 PM",
+                "source_locus": "25-26 Grandview Daily Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "25-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2423,
+            "completion_tokens": 198,
+            "cost_usd": 0.0003215,
+            "latency_ms": 15077,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784093745-2H2LHlCTnRZ8ZyJRreyx",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "09:10",
+                "end_time": "15:25",
+                "school_name": "Grandview",
+                "confidence": "high",
+                "evidence_quote": "Morning Instruction 9:10 AM - 11:10 AM, Afternoon Instruction 12:55 PM - 3:25 PM",
+                "source_locus": "25-26 Grandview Daily Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2373,
+            "completion_tokens": 170,
+            "cost_usd": 0.00013225,
+            "latency_ms": 16235,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784093759-QmTEmpocDUIY6IMiq2kd",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "grandview",
+            "start": "09:02",
+            "end": "15:25",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Homeroom 8:55 AM | 9:10 AM\nMorning Instruction 9:10 AM | 11:10 AM\nAfternoon Instruction 12:55 PM | 3:25 PM",
+                "locus": "25-26 Grandview Daily Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "25-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Morning Instruction 9:10 AM - 11:10 AM, Afternoon Instruction 12:55 PM - 3:25 PM",
+                "locus": "25-26 Grandview Daily Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "4207560:d065f02d3f",
+            "source_file": "camelot_hybrid.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "grandview",
+        "start": "09:10",
+        "end": "15:20",
+        "gross": 370,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Morning Instruction . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9:10 am \u2013 11:10 am\nAfternoon Instruction . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12:55 pm \u2013 3:20 pm",
+            "locus": "Daily Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Morning Instruction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9:10 am \u2013 11:10 am Afternoon Instruction . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12:55 pm \u2013 3:20 pm",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": ""
+          }
+        },
+        "rec_key": "4207560:077d63f6ab",
+        "source_file": "pdftotext.txt"
+      },
+      {
+        "band": "high",
+        "school": "derry area",
+        "start": "07:49",
+        "end": "14:46",
+        "gross": 417,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Late Bell\t7:45 AM\t\u2014\t\u2014\nPeriod 1 - Announcements/Attendance\t7:45 AM\t7:52 AM\t7 min\nPeriod 8\t2:06 PM\t2:46 PM\t40 min\nStudent Dismissal\t2:46 PM\t\u2014\t\u2014",
+            "locus": "2026-2027 Regular Bell Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Period 1 7:53 AM - 8:33 AM 40 min Period 8 2:06 PM - 2:46 PM 40 min",
+            "locus": "2026-2027 Regular Bell Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2026-27"
+          }
+        },
+        "school_year": "2026-27",
+        "rec_key": "4207560:3e9e6adc56",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "grandview",
+        "start": "09:02",
+        "end": "15:25",
+        "gross": 383,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Homeroom\t8:55 AM\t9:10 AM\nMorning Instruction\t9:10 AM\t11:10 AM\nAfternoon Instruction\t12:55 PM\t3:25 PM",
+            "locus": "25-26 Grandview Daily Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "25-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Morning Instruction 9:10 AM \u2013 11:10 AM, Afternoon Instruction 12:55 PM \u2013 3:25 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "4207560:97f8eeb06f",
+        "source_file": "page.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "grandview",
+        "start": "09:02",
+        "end": "15:25",
+        "gross": 383,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Homeroom 8:55 AM Morning Instruction 9:10 AM Afternoon Instruction 12:55 PM 3:25 PM",
+            "locus": "25-26 Grandview Daily Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Morning Instruction 9:10 AM - 11:10 AM, Afternoon Instruction 12:55 PM - 3:25 PM",
+            "locus": "25-26 Grandview Daily Schedule",
+            "stated_minutes": 435,
+            "stated_minutes_quote": "instructional day: 435 minutes",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "4207560:1a38fed69f",
+        "source_file": "camelot_hybrid.txt"
+      },
+      {
+        "band": "elementary",
+        "school": "grandview",
+        "start": "09:02",
+        "end": "15:25",
+        "gross": 383,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Homeroom 8:55 AM | 9:10 AM\nMorning Instruction 9:10 AM | 11:10 AM\nAfternoon Instruction 12:55 PM | 3:25 PM",
+            "locus": "25-26 Grandview Daily Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "25-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Morning Instruction 9:10 AM - 11:10 AM, Afternoon Instruction 12:55 PM - 3:25 PM",
+            "locus": "25-26 Grandview Daily Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "4207560:d065f02d3f",
+        "source_file": "camelot_hybrid.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 5,
+    "n_judged": 0,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 383,
+        "start_time": "09:02",
+        "end_time": "15:25",
+        "n_schools": 4,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "grandview",
+            "start_time": "09:10",
+            "end_time": "15:20",
+            "gross": 370,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "grandview",
+            "start_time": "09:02",
+            "end_time": "15:25",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "grandview",
+            "start_time": "09:02",
+            "end_time": "15:25",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          },
+          {
+            "school": "grandview",
+            "start_time": "09:02",
+            "end_time": "15:25",
+            "gross": 383,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      },
+      "high": {
+        "gross_minutes": 417,
+        "start_time": "07:49",
+        "end_time": "14:46",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "derry area",
+            "start_time": "07:49",
+            "end_time": "14:46",
+            "gross": 417,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 10,
+      "judge_calls": 0,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 21796,
+      "completion_tokens": 2405,
+      "cost_usd": 0.00225108
+    },
+    "state": "PA"
+  }
+}

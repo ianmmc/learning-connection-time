@@ -13,7 +13,7 @@ accept region, and calibration data accrues only forward in time (the #108 facet
 This module is the base-layer meter (cross-gate, like `district_status.StateEvent`): a precious
 item-grained `calibration_event` table + the PURE record-building and post-hoc θ-sweep the log must enable.
 Explicit NON-GOALS (deferred, governance-blocked): θ selection, the auto-escalation policy, per-gate α/δ
-targets. This is ONLY the instrument. Design authority: PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §11b;
+targets. This is ONLY the instrument. Design authority: PIPELINE_GOVERNANCE_AND_STATE.md §11b;
 production-quality-control-research/FINDINGS-AND-DECISIONS.md §0/§3.
 
 Live wiring (calling `record_calibration` from the gate@5/6/7 handlers so the corpus starts accruing) is a

@@ -6,7 +6,7 @@
 > usable, or why a district's Stage-4 run halted or quarantined.
 > **Companions:** `ACQUISITION_PIPELINE.md` §4 (the slim map + flow diagram), Stage 3's note (upstream
 > `captures.json` contract), Stage 5's note (downstream — the relevance/tiering layer this stage feeds).
-> `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (§3 state_event, §11/§12 gates + the Stage 4→5 seam).
+> `PIPELINE_GOVERNANCE_AND_STATE.md` (§3 state_event, §11/§12 gates + the Stage 4→5 seam).
 > **Update this when:** Stage 4's code behavior changes. Design turns and superseded approaches belong in
 > §6 (Decision log), not here.
 
@@ -264,7 +264,7 @@ view is instant, with no full-corpus rebuild and no perceived lag (the design go
 - None blocking. Tool roster and the always-run model are settled by the spike (§3); the
   duplicate-PDF-dedup and vision-escalation non-goals (§2d) are deliberate, not deferred work. The Stage
   4→5 handoff (§4b) is built and the Stage-5 console rework it feeds is also done (district-driven,
-  attention-first — see `STAGE5_FILTER_DESIGN_2026-06.md`).
+  attention-first — see `STAGE5_FILTER_DESIGN.md`).
 
 ---
 

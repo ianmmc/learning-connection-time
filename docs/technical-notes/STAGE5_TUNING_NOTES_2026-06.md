@@ -1,7 +1,7 @@
 # Stage 5 — tuning & learning-loop methods (reference)
 
 > **Distilled methods + citations** for the Stage-5 learning loop. The built design lives in
-> `STAGE5_FILTER_DESIGN_2026-06.md` (§2 detectors/combiner, §5 the loop); this note is the *method
+> `STAGE5_FILTER_DESIGN.md` (§2 detectors/combiner, §5 the loop); this note is the *method
 > reference* behind it — what to reach for as label coverage grows. Rewritten 2026-07-01; the raw
 > research transcripts (two Perplexity passes, June 2025) are in git history and the primary-source
 > citations survive below. V2 adds the weak-supervision / labeling-function layer (Part C), sourced from

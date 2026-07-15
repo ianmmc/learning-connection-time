@@ -2,10 +2,10 @@
 
 > **Authority:** the console's **cross-stage** surfaces — the view selector, the Pipeline Overview, and
 > Settings — as distinct from the per-stage views (those live in each `STAGE*_DESIGN_*.md`). The gate
-> model and state schema themselves are `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`'s authority; this note
+> model and state schema themselves are `PIPELINE_GOVERNANCE_AND_STATE.md`'s authority; this note
 > covers only the console-wide UI built on top of them.
 > **Audience:** whoever builds or extends the Overview/Settings surfaces.
-> **Companions:** `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11 (gates/console) + §7/§7a/§7b (app scope,
+> **Companions:** `PIPELINE_GOVERNANCE_AND_STATE.md` §11 (gates/console) + §7/§7a/§7b (app scope,
 > orchestration); the per-stage `STAGE*_DESIGN_*.md` notes (each stage's own view).
 > **Update this when:** the Overview surface is built, the view-selector mechanism changes, or a gate's
 > Settings toggle gains real auto-behavior (today the toggle persists intent only — see §1).
@@ -124,7 +124,7 @@ restricted to `http(s)://` (`safeUrl` in `settings.js`) — `esc()` alone HTML-e
 
 **Enforcement remains DORMANT today**: gate@5 is configured `manual` by default and no PR has flipped it —
 so `resolve_gate5_mode` always returns `"manual"`, nothing auto-suppresses, and the whole apparatus above is
-proven-live but inert. See `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b for the epic #209 build status
+proven-live but inert. See `PIPELINE_GOVERNANCE_AND_STATE.md` §11b for the epic #209 build status
 and #219's dormant→live activation checklist.
 
 ---
@@ -167,7 +167,7 @@ User stories this would satisfy:
 gate@1/6/7/8 each need their OWN calibrated auto path (governance §11b: **confidence-escalating** —
 auto-accept high confidence, auto-escalate/flag low confidence) before their toggle means anything beyond
 persisted intent. This is explicitly gated on the calibration log (§1, above) accruing enough decisions per
-gate to certify a threshold (rule of three — see `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b), and on
+gate to certify a threshold (rule of three — see `PIPELINE_GOVERNANCE_AND_STATE.md` §11b), and on
 gate@8 existing at all before gates 6/7 can safely relax (epic #209's ordering constraint).
 
 ### 2c. Open questions (unresolved, not yet worth a decision)
@@ -193,5 +193,5 @@ gate@8 existing at all before gates 6/7 can safely relax (epic #209's ordering c
   first cut: the license-write inheritance clobber (`configured_mode` is now nullable), an un-isolated
   demote-hook transaction (now SAVEPOINT-wrapped), and a double-computing status endpoint (now one draw).
   Landing required a second corrective PR (#250) after the original PR merged into a stale feature branch
-  instead of `main` — see `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b and `docs/PROJECT_HISTORY.md`'s
+  instead of `main` — see `PIPELINE_GOVERNANCE_AND_STATE.md` §11b and `docs/PROJECT_HISTORY.md`'s
   2026-07-13 entry for the incident.
