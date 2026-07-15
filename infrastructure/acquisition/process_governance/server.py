@@ -9,6 +9,7 @@ Run:  uvicorn server:app --reload --port 8005   (from this directory)
   or  python3 server.py
 """
 import contextlib
+import functools
 import json
 import os
 import re
@@ -32,6 +33,7 @@ from infrastructure.acquisition.common import gate_mode as GM               # no
 from infrastructure.acquisition.stage5_filter import exploration_live as EAL  # noqa: E402  (gate@5 reject-audit demote-hook — REQ-120, #211)
 from infrastructure.acquisition.process_governance import gate_calibration as GCAL  # noqa: E402  (console→calibration vocab)
 from infrastructure.utilities import school_year as SY                      # noqa: E402  (calendar vocabulary — NOT the LCT DB; see pyproject importlinter note)
+from infrastructure.acquisition.common import school_sampling as SS_SAMPLING  # noqa: E402  (latest NCES vintage + criteria text — Settings Exclusions view)
 from infrastructure.acquisition.common import school_sampling as SS         # noqa: E402  (add-school candidate lookup)
 from infrastructure.acquisition.stage1_queue import queue_batch as Q1       # noqa: E402  (build/persist a batch — REQ-102)
 from infrastructure.acquisition.stage1_queue import batch_store as BSTORE   # noqa: E402  (the batch working store)
@@ -634,6 +636,48 @@ def _backup_gate_mode(con) -> int:
     tmp.write_text(json.dumps([dict(r) for r in rows], indent=2))
     tmp.replace(out)
     return len(rows)
+
+
+@functools.lru_cache(maxsize=2)
+def _exclusions_snapshot(year):
+    """The STANDING pre-queue exclusion corpus, derived live per NCES vintage (#229 UX rework,
+    Ian 2026-07-14): the districts every batch draw refuses — no-usable-domain (#229) and
+    grade-span-integrity — computed by the SAME eligible_pool + is_scoping_domain path the batch
+    build uses (empty registry: the corpus-wide view, ignoring already-attempted). Cached per year
+    (full lea/school CSV scans); the per-batch refusal receipts in Batch.meta_json are unchanged —
+    this view is where a human READS the standing fact, the receipt is where it's FROZEN."""
+    from infrastructure.acquisition.common.discover import domain_of, is_scoping_domain
+    # empty registry SHAPE (not {}): already_attempted reads registry["districts"] — the corpus-wide
+    # view deliberately ignores what's already been queued
+    pool, _idx, gap_excluded = Q1.eligible_pool(year, {"districts": {}})
+    no_domain = sorted(
+        ({"district_id": did, "name": info["name"], "state": info["state"],
+          "website": info["website"]}
+         for did, info in pool.items()
+         if not is_scoping_domain(domain_of(info["website"]))),
+        key=lambda e: (e["state"], e["name"]))
+    by_state = {}
+    for e in no_domain:
+        by_state[e["state"]] = by_state.get(e["state"], 0) + 1
+    return {
+        "available": True, "nces_year": year,
+        "no_domain": {"count": len(no_domain), "by_state": by_state, "districts": no_domain},
+        "grade_span_gap": {"count": len(gap_excluded), "districts": gap_excluded},
+        "school_criteria": SS_SAMPLING.SCHOOL_CRITERIA_TEXT,
+    }
+
+
+@app.get("/api/exclusions")
+def exclusions_view():
+    """Settings → Exclusions: the standing pre-queue exclusion rules + the live excluded corpus.
+    Degrades honestly when the NCES CSVs aren't on disk ({available: False}) — never a 500."""
+    year = SS_SAMPLING.latest_nces_year()
+    if not year:
+        return {"available": False, "reason": "NCES CCD files not found on disk"}
+    try:
+        return _exclusions_snapshot(year)
+    except FileNotFoundError as e:
+        return {"available": False, "reason": str(e)}
 
 
 @app.get("/api/data-years")

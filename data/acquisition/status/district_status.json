@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-14T16:43:46Z",
+  "last_updated": "2026-07-14T23:56:27Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -821,6 +821,24 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-06-23T02:09:36Z"
+        }
+      ],
+      "notes": ""
+    },
+    "0406070": {
+      "name": "Payson Unified District (4209)",
+      "state": "AZ",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00018",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-14T23:56:27Z"
         }
       ],
       "notes": ""
@@ -3488,6 +3506,24 @@
       ],
       "notes": "f33790e63820"
     },
+    "1731410": {
+      "name": "Porta CUSD 202",
+      "state": "IL",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00018",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-14T23:56:27Z"
+        }
+      ],
+      "notes": ""
+    },
     "1737350": {
       "name": "Triad CUSD 2",
       "state": "IL",
@@ -4913,6 +4949,24 @@
       ],
       "notes": "gate@1 approved batch_00005"
     },
+    "2600950": {
+      "name": "Reach Charter Academy",
+      "state": "MI",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00018",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-14T23:56:27Z"
+        }
+      ],
+      "notes": ""
+    },
     "2600992": {
       "name": "Blue Water Middle College",
       "state": "MI",
@@ -5770,6 +5824,24 @@
       ],
       "notes": "reject district 2921720"
     },
+    "2932190": {
+      "name": "WINFIELD R-IV",
+      "state": "MO",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00018",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-14T23:56:27Z"
+        }
+      ],
+      "notes": ""
+    },
     "3008860": {
       "name": "Denton Elem",
       "state": "MT",
@@ -6301,6 +6373,24 @@
       ],
       "notes": "1 not_recovered (capture interrupted before completion)"
     },
+    "3405970": {
+      "name": "Glen Rock Public School District",
+      "state": "NJ",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00018",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-14T23:56:27Z"
+        }
+      ],
+      "notes": ""
+    },
     "3410890": {
       "name": "Mt. Ephraim School District",
       "state": "NJ",
@@ -6349,9 +6439,9 @@
     "3416500": {
       "name": "Township of Union School District",
       "state": "NJ",
-      "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "furthest_stage": 8,
+      "stage_name": "aggregate",
+      "outcome": null,
       "topology": null,
       "batch_id": null,
       "history": [
@@ -6447,6 +6537,15 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-14T16:43:46Z"
+        },
+        {
+          "stage": 8,
+          "stage_name": "aggregate",
+          "outcome": null,
+          "at": "2026-07-14T16:51:11Z",
+          "checkpoint": "gate@8",
+          "event_type": "approved",
+          "actor": "ian"
         }
       ],
       "notes": "b6cdcc1a10b5"
@@ -7194,6 +7293,24 @@
       ],
       "notes": "27b64cab58a9"
     },
+    "3601175": {
+      "name": "CYPRESS HILLS ASCEND CHARTER SCHOOL",
+      "state": "NY",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00018",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-14T23:56:27Z"
+        }
+      ],
+      "notes": ""
+    },
     "3601176": {
       "name": "KIPP FREEDOM CHARTER SCHOOL",
       "state": "NY",
@@ -7499,6 +7616,24 @@
         }
       ],
       "notes": "51849a4688a4"
+    },
+    "3700106": {
+      "name": "Success Institute Charter School",
+      "state": "NC",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00018",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-14T23:56:27Z"
+        }
+      ],
+      "notes": ""
     },
     "3700385": {
       "name": "KIPP Durham College Preparatory",
@@ -8104,6 +8239,24 @@
       ],
       "notes": "a2bc80c004ca"
     },
+    "3904519": {
+      "name": "Amherst Exempted Village",
+      "state": "OH",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00018",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-14T23:56:27Z"
+        }
+      ],
+      "notes": ""
+    },
     "3904705": {
       "name": "Evergreen Local",
       "state": "OH",
@@ -8445,6 +8598,24 @@
         }
       ],
       "notes": "gate@1 approved batch_00013"
+    },
+    "4006330": {
+      "name": "CAMERON",
+      "state": "OK",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00018",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-14T23:56:27Z"
+        }
+      ],
+      "notes": ""
     },
     "4026640": {
       "name": "SOUTH COFFEYVILLE",
@@ -8938,6 +9109,24 @@
         }
       ],
       "notes": "27b64cab58a9"
+    },
+    "4222350": {
+      "name": "Southern Lehigh SD",
+      "state": "PA",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00018",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-14T23:56:27Z"
+        }
+      ],
+      "notes": ""
     },
     "4222860": {
       "name": "Stroudsburg Area SD",
@@ -9457,6 +9646,24 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-06-23T02:09:36Z"
+        }
+      ],
+      "notes": ""
+    },
+    "4831230": {
+      "name": "MONTE ALTO ISD",
+      "state": "TX",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00018",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-14T23:56:27Z"
         }
       ],
       "notes": ""
@@ -10979,6 +11186,24 @@
           "stage_name": "queue",
           "outcome": "queued",
           "at": "2026-06-23T02:09:36Z"
+        }
+      ],
+      "notes": ""
+    },
+    "5900100": {
+      "name": "Tucker Elementary School",
+      "state": "BI",
+      "furthest_stage": 1,
+      "stage_name": "queue",
+      "outcome": "queued",
+      "topology": null,
+      "batch_id": "batch_00018",
+      "history": [
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-14T23:56:27Z"
         }
       ],
       "notes": ""

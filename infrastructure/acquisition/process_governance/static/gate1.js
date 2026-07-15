@@ -108,10 +108,16 @@
     else if (!draft) html += `<div class="q-locked">Approved — editing is locked. Re-open to make changes.</div>`;
     // #229: districts refused at draw time for a blank/junk NCES domain (they'd run UNSCOPED
     // discovery — the Millard contamination class, #227). Persisted in Batch.meta_json, so this
-    // renders on every open, not just at create — the draw is never silently short.
+    // renders on every open, not just at create — the draw is never silently short. COLLAPSED to
+    // the count by default (Ian, 2026-07-14: scrolling hundreds of refused names on every batch is
+    // a human-factors cost, not auditability — the full receipt is one click away here, and the
+    // STANDING corpus reads in Settings → Exclusions).
     if (v.domain_excluded && v.domain_excluded.length) {
-      html += `<div class="q-locked q-domain-excluded"><b>${v.domain_excluded.length} district${v.domain_excluded.length === 1 ? "" : "s"} refused — no usable NCES domain (#229):</b> ${
-        v.domain_excluded.map((e) => `${esc(e.name)} [${esc(e.state)}] (${esc(e.district_id)}, website=${esc(JSON.stringify(e.website))})`).join(" · ")}</div>`;
+      html += `<details class="q-locked q-domain-excluded" data-feat="domain-excluded-collapsed">
+        <summary><b>${v.domain_excluded.length} district${v.domain_excluded.length === 1 ? "" : "s"} refused — no usable NCES domain (#229)</b>
+          <span class="muted">— expand for this batch's refusal receipt; the standing corpus lives in Settings → Exclusions</span></summary>
+        ${v.domain_excluded.map((e) => `${esc(e.name)} [${esc(e.state)}] (${esc(e.district_id)}, website=${esc(JSON.stringify(e.website))})`).join(" · ")}
+      </details>`;
     }
     html += v.districts.map((d) => districtBlock(d, draft)).join("");
     $g("#q-detail").innerHTML = html;

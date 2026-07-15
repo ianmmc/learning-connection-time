@@ -429,10 +429,7 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
             "denominator": {
                 "source": "band_roster" if band_rosters else "nces_level",
                 "nces_year": (band_rosters or {}).get("_year"),
-                "criteria": "Open, regular NCES schools only (virtual, alternative, special-ed and "
-                            "adult-ed campuses excluded; standalone preschools excluded). A school "
-                            "counts toward every band its NCES LEVEL or its own grade span serves — "
-                            "a K-8 counts toward elementary AND middle.",
+                "criteria": SS.SCHOOL_CRITERIA_TEXT,
             },
         },
     }
