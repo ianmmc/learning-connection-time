@@ -146,7 +146,8 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
                            nces_total, nces_by_level, schools_by_band,
                            evidence_by_reckey=None, capture_events=None, roster_names=None,
                            exclusions=None, human_added=None, band_rosters=None,
-                           merged_superseded=None, year_conflicts=None, last_receipt=None):
+                           merged_superseded=None, year_conflicts=None, last_receipt=None,
+                           slot_assignments=None, intent_by_reckey=None):
     """Compose the closing argument for one district from already-gathered ingredients. PURE.
 
     Inputs:
@@ -186,6 +187,13 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
           (or None). The roster-drift baseline: live slots diffed against the last slot list a
           human signed (schools closing/opening/reclassifying over the long horizon). Pre-#499
           receipts carry no slots — drift honestly reports nothing to diff against.
+      slot_assignments : #499 REQ-145 — the district's standing SlotAssignment rows (precious):
+          human slot dispositions (assign / reject / confirm_extra) applied inside the projection;
+          they enter the fingerprint (a disposition moves which slot a vote lands on, #257
+          precedent) and are surfaced in negative_space.slot_assignments.
+      intent_by_reckey : #499 REQ-145 — {rec_key: [intended school name, ...]} from Stage-2
+          discovery (record.intended_schools_json): the ambiguity tie-breaker + extras provenance.
+          Weight, never override — intent alone never creates a match.
 
     Returns the closing-argument dict (see the module/design note); self-contained, JSON-serialisable,
     ready to render at gate@8 and to FREEZE into the immutable approval receipt.
@@ -206,7 +214,7 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
     # truth for the per-band value, degenerate filter, and contamination flag.
     agg = [{"band": f["band"], "school": f["school"],
             "start": eff["start"], "end": eff["end"], "gross": eff["gross"],
-            "models": _models(f), "method": f.get("method"),
+            "models": _models(f), "method": f.get("method"), "rec_key": f.get("rec_key"),
             "applies_to": f.get("applies_to")} for f, ov, eff in enriched]
 
     # #257: apply the standing human band-exclusions BEFORE the mode — an excluded (band, norm_school)
@@ -241,17 +249,19 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
 
     bands = AGG.district_bands_from_facts(included_agg)
     degenerate = AGG.degenerate_school_facts(agg)
-    contamination = AGG.detect_single_school_over_extraction(agg, nces_total, roster_names)
-
-    # #253 A1: combined-scope extracted names ('k8 schools', 'milagro and ortiz schools') — a group
-    # description landing as one pseudo-school row. Detect-and-flag (#237 posture): the flagged fact
-    # KEEPS its vote until the reviewer disposes (exclude via #257, or the roster-template
-    # slot-projection once built). Campus resolution matches against the FULL live roster when
-    # band_rosters is present (the Stage-1 roster_names list is only the selected subset).
+    # The FULL live roster (Stage-1 roster_names is only the selected subset) — shared by the #237
+    # keeper hint (#499 PR-B: contaminants ≡ slot extras, so both see the same roster) and the #253
+    # campus resolution below.
     cs_roster = list(roster_names or [])
     for _b, _m in ((band_rosters or {}).items()):
         if isinstance(_m, dict) and _m.get("schools"):
             cs_roster.extend(_m["schools"])
+    contamination = AGG.detect_single_school_over_extraction(agg, nces_total, cs_roster)
+
+    # #253 A1: combined-scope extracted names ('k8 schools', 'milagro and ortiz schools') — a group
+    # description landing as one pseudo-school row. Detect-and-flag (#237 posture): the flagged fact
+    # KEEPS its vote until the reviewer disposes (exclude via #257, or the roster-template
+    # slot-projection once built).
     cs_of, combined_scope = {}, []
     for r in agg:
         key = (r["band"], _norm(r["school"]))
@@ -386,8 +396,12 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
     # drift must not stale an approval (the drift surface below reports it instead).
     facts_by_band = {}
     for r in included_agg:
-        facts_by_band.setdefault(r["band"], []).append(r["school"])
-    slot_proj = SP.project_slots(band_rosters, facts_by_band) if band_rosters else {}
+        facts_by_band.setdefault(r["band"], []).append(
+            {"school": r["school"], "rec_key": r.get("rec_key")})
+    slot_proj = (SP.project_slots(band_rosters, facts_by_band,
+                                  assignments=slot_assignments,
+                                  intent_by_reckey=intent_by_reckey)
+                 if band_rosters else {})
     for band, p in slot_proj.items():
         if band in out_bands:
             out_bands[band]["slots"] = p["slots"]
@@ -488,6 +502,19 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
         "unattributed_level_schools": {lvl: n for lvl, n in (nces_by_level or {}).items()
                                        if lvl not in SS.LEVEL_BAND},
     }
+
+    # #499 REQ-145: the standing slot dispositions — surfaced (audit) and fingerprinted (a
+    # disposition is a human determination that moves which slot a vote lands on); orphaned ones
+    # (slot gone from the live roster / extra now in the roster) flagged for human retirement.
+    if slot_assignments:
+        negative_space["slot_assignments"] = sorted(
+            ({k: a.get(k) for k in ("band", "roster_school_id", "norm_school_fact", "school",
+                                    "disposition", "reason", "actor")}
+             for a in slot_assignments), key=lambda a: (a["band"], str(a["norm_school_fact"])))
+    orphaned = [dict(o, band=band) for band, p in slot_proj.items()
+                for o in p.get("orphaned_dispositions", [])]
+    if orphaned:
+        negative_space["orphaned_slot_dispositions"] = orphaned
 
     # #499: slots never heard from, per band — the negative space gains IDENTIFIED gaps (which
     # schools, not just how many), including bands with no accepted facts at all (they have no
@@ -601,6 +628,13 @@ def fingerprint(ca):
     exclusions = sorted(((e.get("band"), e.get("school"), e.get("reason"))
                          for e in ca.get("negative_space", {}).get("band_exclusions", [])), key=str)
     basis.append(("__band_exclusions__", exclusions))
+    # #499 REQ-145: slot dispositions are human determinations (an assign moves which slot a vote
+    # lands on; a confirm_extra moves the denominator) — they stale an approval like an override
+    # does. Slot STATS / roster drift stay excluded: NCES churn must never stale a signed decision.
+    assignments = sorted(((a.get("band"), a.get("roster_school_id"), a.get("norm_school_fact"),
+                           a.get("disposition"), a.get("reason"))
+                          for a in ca.get("negative_space", {}).get("slot_assignments", [])), key=str)
+    basis.append(("__slot_assignments__", assignments))
     return hashlib.sha256(json.dumps(basis, sort_keys=True, default=str).encode()).hexdigest()[:16]
 
 
@@ -717,6 +751,32 @@ def load_closing_argument(session, district_id):
         FROM human_added_fact WHERE district_id = :d ORDER BY band, norm_school
     """), {"d": district_id}).all()]
 
+    # #499 REQ-145: the district's standing slot dispositions (precious slot_assignment table) —
+    # tolerated absent (table not yet created on a fresh DB).
+    try:
+        slot_assignments = [dict(r._mapping) for r in session.execute(text("""
+            SELECT band, roster_school_id, norm_school_fact, school, disposition, reason, actor,
+                   created_at
+            FROM slot_assignment WHERE district_id = :d ORDER BY band, norm_school_fact
+        """), {"d": district_id}).all()]
+    except Exception:
+        slot_assignments = []
+
+    # #499 REQ-145: the Stage-2 discovery-intent map — which roster school(s) each captured URL was
+    # discovered FOR (record.intended_schools_json, a REGENERABLE signal table: tolerated absent;
+    # the projection degrades to name-only matching, never blocks).
+    try:
+        intent_by_reckey = {}
+        for r in session.execute(text(
+                "SELECT rec_key, intended_schools_json FROM record "
+                "WHERE district_id = :d AND intended_schools_json IS NOT NULL"),
+                {"d": district_id}).all():
+            names = json.loads(r[1]) if r[1] else []
+            if names:
+                intent_by_reckey[r[0]] = names
+    except Exception:
+        intent_by_reckey = {}
+
     # #253: the LIVE band-serving denominator roster (Ian, 2026-07-14: derive from ccd_sch live,
     # never freeze — the approval receipt snapshots it at sign-off). None (missing CCD files) falls
     # back to the clean-LEVEL denominator inside the builder, marked as such in the provenance.
@@ -737,11 +797,40 @@ def load_closing_argument(session, district_id):
     except Exception:
         last_receipt = None
 
-    return build_closing_argument(
+    ca = build_closing_argument(
         district_id, merged_accepted=accepted, merged_unresolved=unresolved,
         nces_total=meta.get("nces_total"), nces_by_level=nces_by_level,
         schools_by_band=schools_by_band, evidence_by_reckey=by_rk,
         capture_events=capture_events, roster_names=roster_names,
         exclusions=exclusions, human_added=human_added, band_rosters=band_rosters,
         merged_superseded=superseded, year_conflicts=year_conflicts,
-        last_receipt=last_receipt)
+        last_receipt=last_receipt, slot_assignments=slot_assignments,
+        intent_by_reckey=intent_by_reckey)
+
+    # #499 REQ-145: record ONE roster_drift state_event per drift-since-approval — idempotent
+    # (skipped if a drift event already exists after the last approval), spend-zero, observable
+    # (rides into district_status.json via the sweep), so drift is auditable without the console.
+    # Best-effort: a failure here must never break the read path.
+    if ca.get("negative_space", {}).get("roster_drift"):
+        try:
+            approved_at = session.execute(text(
+                "SELECT created_at FROM stage8_approval WHERE district_id = :d "
+                "AND disposition = 'approved' ORDER BY approval_id DESC LIMIT 1"),
+                {"d": district_id}).scalar()
+            already = session.execute(text(
+                "SELECT 1 FROM state_event WHERE district_id = :d AND event_type = 'roster_drift' "
+                "AND created_at > :t LIMIT 1"), {"d": district_id, "t": approved_at or ""}).first()
+            if approved_at and not already:
+                from infrastructure.acquisition.common.timeutil import utcnow
+                d = ca["negative_space"]["roster_drift"]
+                session.execute(text(
+                    "INSERT INTO state_event (district_id, stage, stage_name, checkpoint, "
+                    "event_type, actor, note, created_at) VALUES (:d, 8, 'aggregate', 'gate@8', "
+                    "'roster_drift', 'auto:stage8', :n, :t)"),
+                    {"d": district_id, "t": utcnow(),
+                     "n": f"live ccd_sch roster drifted since last approval: "
+                          f"+{len(d.get('added', []))} added, -{len(d.get('removed', []))} removed, "
+                          f"{len(d.get('band_moved', []))} band-moved"})
+        except Exception:
+            pass
+    return ca

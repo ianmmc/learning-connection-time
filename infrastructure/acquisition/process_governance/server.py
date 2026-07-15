@@ -57,6 +57,7 @@ from infrastructure.acquisition.stage8_aggregate import approval as APV8        
 from infrastructure.acquisition.stage8_aggregate.models import Stage8Approval    # noqa: E402,F401  (precious gate@8 decision — register for init_precious_schema)
 from infrastructure.acquisition.stage8_aggregate.models import BandExclusion     # noqa: E402,F401  (precious gate@8 exclude-from-band #257 — register for init_precious_schema)
 from infrastructure.acquisition.stage8_aggregate.models import HumanAddedFact    # noqa: E402,F401  (precious gate@8 human-add #474 — register for init_precious_schema)
+from infrastructure.acquisition.stage8_aggregate.models import SlotAssignment    # noqa: E402,F401  (precious gate@8 slot disposition #499 REQ-145 — register for init_precious_schema)
 
 
 def _refresh_filtered(con, district_id: str) -> None:
@@ -604,6 +605,20 @@ def _backup_human_added(con) -> int:
         "SELECT added_id, district_id, band, norm_school, school, start_time, end_time, source_url, "
         "reason, actor, created_at FROM human_added_fact ORDER BY added_id")).mappings().all()
     out = paths.guard_tracked_backup(paths.HUMAN_ADDED_FACTS_JSON)
+    tmp = out.with_name(out.name + ".tmp")
+    tmp.write_text(json.dumps([dict(r) for r in rows], indent=2))
+    tmp.replace(out)
+    return len(rows)
+
+
+def _backup_slot_assignments(con) -> int:
+    """Back the precious gate@8 slot dispositions (#499 REQ-145) to a tracked JSON (the labels.json
+    pattern) — a standing 'this fact IS/IS NOT that roster slot' human judgment must survive a DB
+    wipe and carry a git history. Atomic write; pytest quarantine-redirected (issue #178)."""
+    rows = con.execute(text(
+        "SELECT assignment_id, district_id, band, roster_school_id, norm_school_fact, school, "
+        "disposition, reason, actor, created_at FROM slot_assignment ORDER BY assignment_id")).mappings().all()
+    out = paths.guard_tracked_backup(paths.SLOT_ASSIGNMENTS_JSON)
     tmp = out.with_name(out.name + ".tmp")
     tmp.write_text(json.dumps([dict(r) for r in rows], indent=2))
     tmp.replace(out)
@@ -2227,6 +2242,73 @@ async def aggregate_human_add_remove(payload: dict):
         if not n:
             raise HTTPException(404, f"no hand-added entry for {school!r} in {band} of {did}")
         _backup_human_added(con)
+        con.commit()
+    return {"ok": True}
+
+
+@app.post("/api/aggregate/slot-assign")
+async def aggregate_slot_assign(payload: dict):
+    """#499 REQ-145: record a standing human SLOT DISPOSITION — the resolution the projection
+    refuses to auto-make. Verbs: 'assign' (bind fact→slot), 'reject' (fact is NOT that slot),
+    'confirm_extra' (the extra is a real school NCES missed — becomes a human-confirmed slot,
+    denominator +1; roster_school_id must be empty). District-grain (survives re-extraction),
+    keyed (district, band, slot, fact); re-posting replaces. Reason REQUIRED (the resolving
+    knowledge). Enters the receipt + staleness fingerprint."""
+    from infrastructure.acquisition.common.school_match import norm_school, norm_school_strict
+    from infrastructure.acquisition.common.slot_spine import DISPOSITIONS
+
+    did, band = payload.get("district_id"), payload.get("band")
+    school = (payload.get("school") or "").strip()          # the FACT's display name
+    slot_id = (payload.get("roster_school_id") or "").strip()
+    disposition = payload.get("disposition")
+    reason, actor = (payload.get("reason") or "").strip(), payload.get("actor", "ian")
+    if not did or not school or not reason:
+        raise HTTPException(400, "district_id, school and a non-empty reason are required")
+    if band not in AGG.BANDS:
+        raise HTTPException(400, f"band must be one of {AGG.BANDS}")
+    if disposition not in DISPOSITIONS:
+        raise HTTPException(400, f"disposition must be one of {DISPOSITIONS}")
+    if disposition in ("assign", "reject") and not slot_id:
+        raise HTTPException(400, f"{disposition} requires roster_school_id (the NCESSCH slot key)")
+    if disposition == "confirm_extra" and slot_id:
+        raise HTTPException(400, "confirm_extra takes no roster_school_id — it CREATES the slot")
+    if not norm_school_strict(school):
+        raise HTTPException(400, f"school name {school!r} is degenerate (#245) — nothing to dispose")
+    key = norm_school(school)
+    with gdb.session_scope() as con:
+        con.execute(text("DELETE FROM slot_assignment WHERE district_id = :d AND band = :b "
+                         "AND roster_school_id = :s AND norm_school_fact = :n"),
+                    {"d": did, "b": band, "s": slot_id, "n": key})
+        con.execute(text(
+            "INSERT INTO slot_assignment (district_id, band, roster_school_id, norm_school_fact, "
+            "school, disposition, reason, actor, created_at) "
+            "VALUES (:d, :b, :s, :n, :sc, :dp, :r, :a, :t)"),
+            {"d": did, "b": band, "s": slot_id, "n": key, "sc": school, "dp": disposition,
+             "r": reason, "a": actor, "t": _u7()})
+        _backup_slot_assignments(con)
+        con.commit()
+    return {"ok": True, "district_id": did, "band": band, "norm_school_fact": key,
+            "disposition": disposition}
+
+
+@app.post("/api/aggregate/slot-assign/remove")
+async def aggregate_slot_assign_remove(payload: dict):
+    """#499 REQ-145: retire a standing slot disposition (reversible-before-freeze; the orphan
+    flags' resolution path). Hard DELETE — history lives in the frozen receipts. 404 if absent."""
+    from infrastructure.acquisition.common.school_match import norm_school
+
+    did, band = payload.get("district_id"), payload.get("band")
+    school = (payload.get("school") or "").strip()
+    slot_id = (payload.get("roster_school_id") or "").strip()
+    if not did or not school or band not in AGG.BANDS:
+        raise HTTPException(400, "district_id, band and school are required")
+    with gdb.session_scope() as con:
+        n = con.execute(text("DELETE FROM slot_assignment WHERE district_id = :d AND band = :b "
+                             "AND roster_school_id = :s AND norm_school_fact = :n"),
+                        {"d": did, "b": band, "s": slot_id, "n": norm_school(school)}).rowcount
+        if not n:
+            raise HTTPException(404, f"no slot disposition for {school!r} in {band} of {did}")
+        _backup_slot_assignments(con)
         con.commit()
     return {"ok": True}
 

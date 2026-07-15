@@ -171,7 +171,13 @@ def test_stage8_console_carries_the_exclusion_ui_markers():
                    'data-feat="slot-unfilled"', 'data-feat="slot-ambiguous"',
                    'data-feat="slot-extra"', 'data-feat="slot-unheard"',
                    'pushFlag("slot-drift-added"', 'pushFlag("slot-drift-removed"',
-                   'pushFlag("slot-drift-band-moved"'):
+                   'pushFlag("slot-drift-band-moved"',
+                   # #499 REQ-145: the slot-disposition affordances + intent hint + orphan flag
+                   'data-feat="slot-assign"', 'data-feat="slot-reject"',
+                   'data-feat="slot-extra-confirm"', 'data-feat="slot-intent-hint"',
+                   'data-feat="slot-disposition-remove"',
+                   "/api/aggregate/slot-assign",
+                   'pushFlag("slot-orphaned-disposition"'):
         assert marker in js, f"stage8.js lost the marker {marker!r}"
     css = (Path(SRV.__file__).parent / "static" / "app.css").read_text()
     assert "line-through" in css and ".s8-excluded" in css
@@ -253,3 +259,53 @@ def test_recover_band_success_passthrough(monkeypatch):
         "district_id": "3416500", "band": "elementary", "rec_key": "3416500:hub",
         "file": "camelot_hybrid.txt"})
     assert r.status_code == 200 and r.json()["handoff_hash"] == "abc123"
+
+
+# ---------------------------------------------------------------- #499 REQ-145 slot dispositions
+def test_slot_assign_validation():
+    r1 = client.post("/api/aggregate/slot-assign", json={"district_id": "D1", "band": "elementary",
+                                                         "school": "Oak", "disposition": "assign",
+                                                         "reason": "x"})   # assign needs a slot id
+    r2 = client.post("/api/aggregate/slot-assign", json={"district_id": "D1", "band": "elementary",
+                                                         "school": "Oak", "roster_school_id": "001",
+                                                         "disposition": "confirm_extra",
+                                                         "reason": "x"})   # confirm_extra takes none
+    r3 = client.post("/api/aggregate/slot-assign", json={"district_id": "D1", "band": "elementary",
+                                                         "school": "Oak", "roster_school_id": "001",
+                                                         "disposition": "maybe", "reason": "x"})
+    r4 = client.post("/api/aggregate/slot-assign", json={"district_id": "D1", "band": "elementary",
+                                                         "school": "Oak", "roster_school_id": "001",
+                                                         "disposition": "assign"})   # no reason
+    r5 = client.post("/api/aggregate/slot-assign", json={"district_id": "D1", "band": "elementary",
+                                                         "school": "Schools",
+                                                         "disposition": "confirm_extra",
+                                                         "reason": "x"})   # degenerate name (#245)
+    assert [r.status_code for r in (r1, r2, r3, r4, r5)] == [400, 400, 400, 400, 400]
+
+
+def test_slot_assign_upserts_and_backs_up(monkeypatch):
+    # DELETE (replace-on-repost) -> INSERT -> backup SELECT (quarantined under pytest) -> commit
+    _use(monkeypatch, _Con([_Result(), _Result(), _Result(rows=[])]))
+    r = client.post("/api/aggregate/slot-assign",
+                    json={"district_id": "0100810", "band": "elementary", "school": "Washington",
+                          "roster_school_id": "010081000001", "disposition": "assign",
+                          "reason": "district site lists it as the elementary campus"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["ok"] and body["norm_school_fact"] == "washington" and body["disposition"] == "assign"
+
+
+def test_slot_assign_remove_404s_when_absent(monkeypatch):
+    _use(monkeypatch, _Con([_Result(rowcount=0)]))
+    r = client.post("/api/aggregate/slot-assign/remove",
+                    json={"district_id": "D1", "band": "elementary", "school": "Washington",
+                          "roster_school_id": "001"})
+    assert r.status_code == 404
+
+
+def test_slot_assign_remove_deletes_and_backs_up(monkeypatch):
+    _use(monkeypatch, _Con([_Result(rowcount=1), _Result(rows=[])]))
+    r = client.post("/api/aggregate/slot-assign/remove",
+                    json={"district_id": "D1", "band": "elementary", "school": "Washington",
+                          "roster_school_id": "001"})
+    assert r.status_code == 200 and r.json()["ok"]

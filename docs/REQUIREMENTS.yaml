@@ -3549,3 +3549,33 @@ requirements:
       first). Slot rows carry is_charter (REQ-060 tag-never-exclude) — the school-grain charter
       surface #243/#244's Structure-C work can read. PR-B adds the SlotAssignment disposition table,
       the Stage-2 discovery-intent tie-breaker, full-roster #237, and the roster_drift state_event."
+
+  - id: REQ-145
+    github_issue: "#499 (PR-B)"
+    description: "Slot attribution — human slot dispositions (assign / reject / confirm_extra) are precious and enter the approval fingerprint; the Stage-2 discovery-intent prior tie-breaks ambiguity but never overrides a name match; orphaned dispositions are surfaced for human retirement, never auto-deleted."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - SlotAssignment is a precious district-grain table (survives re-extraction), keyed (district_id, band, roster_school_id, norm_school_fact), git-backed to slot_assignments.json; reason REQUIRED on every disposition; re-posting the key replaces
+      - "Resolution precedence in project_slots: human disposition > exact 1:1 name match > intent-tie-broken ambiguity > ambiguous-waits; assign binds the fact to the named slot; reject removes a candidate (a collapse to one survivor fills it with basis exact_name+disposition); confirm_extra creates a human-confirmed slot with roster_school_id \"\" and roster_source human_confirmed that COUNTS in the band denominator (Ian, 2026-07-15)"
+      - "The Stage-2 discovery-intent prior (record.intended_schools_json joined via the fact's rec_key) resolves an ambiguity ONLY when exactly one candidate slot's raw roster name is in the fact's intent set; zero or several intent hits keep the ambiguity; intent alone never creates a match (a district-wide page discovered via one school's query covers many schools); extras carry intent_schools as displayed provenance; the regenerable record table absent degrades to name-only, never blocks"
+      - Dispositions enter fingerprint() (negative_space.slot_assignments basis — an assign moves which slot a vote lands on, a confirm_extra moves the denominator; the #257 precedent); slot stats and roster drift stay excluded
+      - "Orphan surfacing, never auto-deletion: an assign/reject whose roster_school_id vanished from the live roster flags slot_gone_from_roster; a confirm_extra whose school appears in a later ccd_sch vintage flags extra_now_in_roster (double-count risk); the console offers Retire (DELETE; history lives in the frozen receipts)"
+      - The #237 contamination detector receives the FULL live roster (roster_matched sees beyond the Stage-1 selected subset)
+      - ONE roster_drift state_event is recorded per district per drift-since-approval (idempotent, best-effort, spend-zero) — drift is auditable from district_status.json without opening the console
+      - Console affordances (slot-assign / slot-reject / slot-extra-confirm / slot-intent-hint / slot-disposition-remove) are data-feat guarded by the console-features grep test
+    tests:
+      - tests/test_slot_spine.py::TestIntentTieBreak
+      - tests/test_slot_spine.py::TestDispositions
+      - tests/test_closing_argument.py::TestSlotSpine499::test_fingerprint_includes_slot_dispositions
+      - tests/test_closing_argument.py::TestSlotSpine499::test_contamination_sees_full_live_roster
+      - tests/test_stage8_api.py::test_slot_assign_validation
+      - tests/test_stage8_api.py::test_slot_assign_upserts_and_backs_up
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "The second slice of #499 (PR-B). Ian's decisions (2026-07-15, plan review): confirm_extra
+      adds +1 to the band denominator as human_confirmed; disposition verbs assign/reject/confirm_extra;
+      the intent prior adopted as tie-breaker only (Ian's observation — the deterministic join
+      fact→rec_key→record.intended_schools_json existed end-to-end unused). Next: PR-C band-fact
+      projection + conflict ladder (REQ-146)."

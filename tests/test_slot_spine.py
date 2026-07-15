@@ -102,3 +102,118 @@ class TestRosterDrift:
         d = SP.roster_drift(live, receipt)
         assert d["added"] == [{"school_id": "009", "name": "New Dawn", "bands": ["elementary"]}]
         assert d["removed"] == [] and d["band_moved"] == []
+
+
+def _asg(band, slot_id, fact, disposition, **kw):
+    return {"band": band, "roster_school_id": slot_id, "norm_school_fact": fact,
+            "school": kw.get("school", fact), "disposition": disposition,
+            "reason": kw.get("reason", "r"), "actor": "ian", "created_at": "t"}
+
+
+class TestIntentTieBreak:
+    """REQ-145: the Stage-2 discovery-intent prior — tie-breaker ONLY, weight never override."""
+
+    def _rosters(self):
+        return _rosters({"elementary": [_rec("001", "Washington Elementary School"),
+                                        _rec("002", "Washington Academy")]})
+
+    def test_exactly_one_intent_hit_resolves(self):
+        out = SP.project_slots(self._rosters(),
+                               {"elementary": [{"school": "washington", "rec_key": "rk1"}]},
+                               intent_by_reckey={"rk1": ["Washington Academy"]})
+        by_id = {s["school_id"]: s for s in out["elementary"]["slots"]}
+        assert by_id["002"]["slot_state"] == "filled"
+        assert by_id["002"]["match"]["basis"] == ["exact_name", "discovery_intent"]
+        assert by_id["001"]["slot_state"] == "unfilled" and by_id["001"]["match"] is None
+        assert out["elementary"]["stats"]["n_ambiguous"] == 0
+
+    def test_zero_intent_hits_stays_ambiguous(self):
+        out = SP.project_slots(self._rosters(),
+                               {"elementary": [{"school": "washington", "rec_key": "rk1"}]},
+                               intent_by_reckey={"rk1": ["Lincoln Elementary School"]})
+        assert out["elementary"]["stats"]["n_ambiguous"] == 1
+        assert out["elementary"]["stats"]["n_filled"] == 0
+
+    def test_both_candidates_in_intent_stays_ambiguous(self):
+        # the URL was discovered for BOTH candidates — intent can't distinguish, must not guess
+        out = SP.project_slots(self._rosters(),
+                               {"elementary": [{"school": "washington", "rec_key": "rk1"}]},
+                               intent_by_reckey={"rk1": ["Washington Academy",
+                                                         "Washington Elementary School"]})
+        assert out["elementary"]["stats"]["n_ambiguous"] == 1
+
+    def test_intent_never_creates_a_match_for_clean_facts(self):
+        # a clean 1:1 name match is matched on the name; intent doesn't change basis
+        rosters = _rosters({"high": [_rec("101", "North High School", effective_band="high")]})
+        out = SP.project_slots(rosters, {"high": [{"school": "north", "rec_key": "rk9"}]},
+                               intent_by_reckey={"rk9": ["North High School"]})
+        assert out["high"]["slots"][0]["match"]["basis"] == ["exact_name"]
+
+    def test_extras_carry_intent_provenance(self):
+        rosters = _rosters({"high": [_rec("101", "North High School", effective_band="high")]})
+        out = SP.project_slots(rosters, {"high": [{"school": "lakeside", "rec_key": "rk2"}]},
+                               intent_by_reckey={"rk2": ["North High School"]})
+        assert out["high"]["extras"][0]["intent_schools"] == ["North High School"]
+
+
+class TestDispositions:
+    """REQ-145: human dispositions — precedence over name/intent; the escape hatch counts."""
+
+    def _rosters(self):
+        return _rosters({"elementary": [_rec("001", "Washington Elementary School"),
+                                        _rec("002", "Washington Academy")]})
+
+    def test_assign_binds_ambiguous_fact(self):
+        out = SP.project_slots(self._rosters(), {"elementary": ["washington"]},
+                               assignments=[_asg("elementary", "001", "washington", "assign")])
+        by_id = {s["school_id"]: s for s in out["elementary"]["slots"]}
+        assert by_id["001"]["slot_state"] == "filled"
+        assert by_id["001"]["match"]["basis"] == ["disposition"]
+        assert by_id["001"]["match"]["disposition"]["kind"] == "assign"
+        assert out["elementary"]["stats"]["n_ambiguous"] == 0
+
+    def test_assign_beats_intent(self):
+        # disposition > intent: intent points at 002, the human said 001
+        out = SP.project_slots(self._rosters(),
+                               {"elementary": [{"school": "washington", "rec_key": "rk1"}]},
+                               assignments=[_asg("elementary", "001", "washington", "assign")],
+                               intent_by_reckey={"rk1": ["Washington Academy"]})
+        by_id = {s["school_id"]: s for s in out["elementary"]["slots"]}
+        assert by_id["001"]["slot_state"] == "filled"
+        assert by_id["002"]["slot_state"] == "unfilled"
+
+    def test_reject_collapses_ambiguity_to_survivor(self):
+        out = SP.project_slots(self._rosters(), {"elementary": ["washington"]},
+                               assignments=[_asg("elementary", "002", "washington", "reject")])
+        by_id = {s["school_id"]: s for s in out["elementary"]["slots"]}
+        assert by_id["001"]["slot_state"] == "filled"
+        assert by_id["001"]["match"]["basis"] == ["exact_name", "disposition"]
+        assert by_id["002"]["slot_state"] == "unfilled" and by_id["002"]["match"] is None
+
+    def test_confirm_extra_becomes_human_confirmed_slot_and_counts(self):
+        rosters = _rosters({"high": [_rec("101", "North High School", effective_band="high")]})
+        out = SP.project_slots(rosters, {"high": ["north", "lakeside"]},
+                               assignments=[_asg("high", "", "lakeside", "confirm_extra",
+                                                 school="Lakeside Academy")])
+        hi = out["high"]
+        assert hi["extras"] == []                              # no longer an extra
+        assert hi["stats"]["n_slots"] == 2                     # denominator +1 (Ian, 2026-07-15)
+        assert hi["stats"]["n_filled"] == 2
+        hc = [s for s in hi["slots"] if s["roster_source"] == "human_confirmed"]
+        assert len(hc) == 1 and hc[0]["school_id"] == ""
+        assert hc[0]["match"]["disposition"]["kind"] == "confirm_extra"
+
+    def test_orphaned_assign_flagged_when_slot_gone(self):
+        # the disposition references a school_id no longer in the live roster
+        out = SP.project_slots(self._rosters(), {"elementary": []},
+                               assignments=[_asg("elementary", "999", "washington", "assign")])
+        o = out["elementary"]["orphaned_dispositions"]
+        assert o[0]["kind"] == "slot_gone_from_roster" and o[0]["roster_school_id"] == "999"
+
+    def test_confirm_extra_flagged_when_nces_catches_up(self):
+        # the confirmed-extra's key NOW matches a real roster slot — double-count risk, flag it
+        rosters = _rosters({"high": [_rec("101", "Lakeside Academy", effective_band="high")]})
+        out = SP.project_slots(rosters, {"high": ["lakeside"]},
+                               assignments=[_asg("high", "", "lakeside", "confirm_extra")])
+        kinds = [o["kind"] for o in out["high"]["orphaned_dispositions"]]
+        assert "extra_now_in_roster" in kinds
