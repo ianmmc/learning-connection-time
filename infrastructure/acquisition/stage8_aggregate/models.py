@@ -1,4 +1,4 @@
-"""Stage 8 precious DB model: the gate@8 approval record (STAGE8_AGGREGATE_DESIGN_2026-06 §2b/§2c/§2e).
+"""Stage 8 precious DB model: the gate@8 approval record (STAGE8_AGGREGATE_DESIGN §2b/§2c/§2e).
 
 `stage8_approval` = one human decision on a district's whole closing argument — the attorney's-closing-
 argument verdict. Commit grain is PER-DISTRICT, all-or-nothing (§2e): LCT is a district-level metric, so a

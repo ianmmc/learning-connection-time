@@ -18,9 +18,9 @@
 > disappear from the view) and is now gate@7's canonical merge logic, not a stopgap. The eventual
 > standalone Stage 8 should keep consuming this function (or its direct descendant) rather than
 > re-solve "which run's facts win" independently.
-> **Companions:** `ACQUISITION_PIPELINE.md` §8 (the slim map), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
+> **Companions:** `ACQUISITION_PIPELINE.md` §8 (the slim map), `PIPELINE_GOVERNANCE_AND_STATE.md`
 > §11 (gates/console; §11e cyclic back-edges), `METHODOLOGY.md` (the metric: gross bell-to-bell, the mode).
-> Upstream: `STAGE7_EXTRACT_DESIGN_2026-06.md`. Downstream: `STAGE9_INCORPORATE_DESIGN_2026-06.md`.
+> Upstream: `STAGE7_EXTRACT_DESIGN.md`. Downstream: `STAGE9_INCORPORATE_DESIGN.md`.
 > **Update this when:** the standalone Stage 8 design decisions are made (append below) or the stage
 > is built end-to-end.
 
@@ -76,7 +76,7 @@ place (with tests) rather than deleted; treat them as legacy unless/until they'r
   Rows are grouped by `(band, normalized-school-name)` — school-name normalization uses
   `common.school_match.norm_school`, the SAME normalizer the Stage-7 GT validator uses, so the two
   must agree identically (REQ-117; and, since PR #247 deleted Stage 5's own separate duplicate, all
-  three stages now share the one function — see `STAGE7_EXTRACT_DESIGN_2026-06.md`). `norm_school`'s
+  three stages now share the one function — see `STAGE7_EXTRACT_DESIGN.md`). `norm_school`'s
   stripping rules were tightened in that same PR (suffix-anchored district-qualifier stripping,
   hyphen word-splitting, NFKD, ES/MS/HS): this grouping step is directly affected — e.g. "Meridian
   Consolidated School" and "Meridian School" now group as DIFFERENT schools here, where the old
@@ -377,7 +377,7 @@ A max-effort multi-angle review of the manual-gate build confirmed and fixed, be
 - **`gate@8` manual/auto** — auto = confidence-escalating, never writes minutes without confidence
   (governance §11b); blocked on #90 and #104 part b.
 - **Stage 9 write** (#93) — the mechanical upsert into the LCT DB downstream of an approval (its own stage;
-  `STAGE9_INCORPORATE_DESIGN_2026-06.md`).
+  `STAGE9_INCORPORATE_DESIGN.md`).
 - **Modal-aggregation quality (from the live Santa Fe review, 2026-07-13)** — two distortions that made a
   human override necessary where automation should have handled it: **#253** combined-scope facts
   (`k8 schools`, `milagro and ortiz schools`) counting as distinct schools + the K-8-topology-blind

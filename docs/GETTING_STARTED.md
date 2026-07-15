@@ -45,7 +45,7 @@ pip install -e .
 > **Architecture checks (optional, recommended in CI):** `lint-imports` enforces the
 > acquisition layering contracts (pyproject.toml), `vulture infrastructure/acquisition`
 > finds dead code, and `cd infrastructure/scraper && npm run lint:deps` checks the Node
-> capture layer. See `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §10.
+> capture layer. See `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE.md` §10.
 
 ### 1a. System dependencies (NOT pip-installable)
 
@@ -270,7 +270,7 @@ git commit -m "feat: Add new bell schedule parser"
 Not tracked here — it changes too fast for a static doc to keep up. Root `CLAUDE.md` is the live-status
 authority (what's built, what's running, what's next); day-to-day task tracking is in GitHub Issues/Projects.
 For the pipeline architecture itself (stable, not status): `docs/ACQUISITION_PIPELINE.md` (the map),
-`docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (governance/DB/gate model), and each
+`docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE.md` (governance/DB/gate model), and each
 `docs/technical-notes/STAGE*_DESIGN_2026-06.md` (per-stage present state).
 
 ---

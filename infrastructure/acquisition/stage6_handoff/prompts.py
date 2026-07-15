@@ -33,7 +33,7 @@ _EXTRACT_VISION_V1 = _EXTRACT_V1.replace(
 
 # v2 (Stage 8, 2026-07-13): grounds each extracted time in a VERBATIM source span + formalizes the
 # explicit-minutes second path — the evidence half of the gate@8 closing argument
-# (STAGE8_AGGREGATE_DESIGN_2026-06 §2a.6). Still bounded by REQ-054: the model READS times (and now
+# (STAGE8_AGGREGATE_DESIGN §2a.6). Still bounded by REQ-054: the model READS times (and now
 # quotes its source + reports a minutes number the document ITSELF states); deterministic code still
 # computes gross = end − start and the mode. No new confidence field — cross-family agreement
 # (REQ-056) is the confidence mechanism. v1 is retained unchanged: old handoffs reference it, and the

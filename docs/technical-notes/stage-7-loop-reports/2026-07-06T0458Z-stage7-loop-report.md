@@ -6,7 +6,7 @@
 > comparable across runs.
 > **This entry covers:** the first clean live non-benchmark exercise of the request-more-evidence loop
 > (GitHub #122), 2026-07-05 20:55Z → 2026-07-06 04:46Z — 23 fresh districts, 37 extraction runs, $0.195.
-> **Companion (present-state design, not this report):** `../acquisition-pipeline-stage-design-notes/STAGE7_EXTRACT_DESIGN_2026-06.md`.
+> **Companion (present-state design, not this report):** `../acquisition-pipeline-stage-design-notes/STAGE7_EXTRACT_DESIGN.md`.
 > Bugs are tracked as GitHub issues (linked inline); this report does not re-log them as to-dos.
 
 ---

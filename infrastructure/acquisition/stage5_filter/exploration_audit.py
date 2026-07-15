@@ -10,7 +10,7 @@ half (querying the reject population, presenting the randomized audit queue in t
 demote decision onto the gate@5 auto toggle) is the full #211 build; its enforcement stays dormant until
 gate@5 is actually set to auto.
 
-Design authority: STAGE5_FILTER_DESIGN_2026-06.md §5a; PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §11b;
+Design authority: STAGE5_FILTER_DESIGN.md §5a; PIPELINE_GOVERNANCE_AND_STATE.md §11b;
 production-quality-control-research/FINDINGS-AND-DECISIONS.md §0/§1.
 
 Four pure pieces, each killing a named failure mode:

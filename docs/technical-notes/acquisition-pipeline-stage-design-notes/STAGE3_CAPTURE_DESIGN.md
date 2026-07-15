@@ -7,7 +7,7 @@
 > captured partially, or is missing a representation.
 > **Companions:** `ACQUISITION_PIPELINE.md` §3 (the slim map + flow diagram), Stage 2's note (upstream
 > `candidates.json` contract), Stage 4's + Stage 5's notes (downstream — de-chrome *measurement* lives in
-> `STAGE5_FILTER_DESIGN_2026-06.md`), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (§3 state_event, §11 gates).
+> `STAGE5_FILTER_DESIGN.md`), `PIPELINE_GOVERNANCE_AND_STATE.md` (§3 state_event, §11 gates).
 > **Update this when:** Stage 3's code behavior changes. Design turns and superseded approaches belong in
 > §6 (Decision log), not here.
 
@@ -135,7 +135,7 @@ structure that identifies a footer is gone. **Segment, don't strip:** `segmentCh
 **additive** representations (`page.main/header/footer/nav.txt`) alongside the untouched full `page.txt`.
 Header/footer are kept because real *school hours* sometimes live there, not only confounding building
 hours. `backfill-segments` applies it to already-captured data. Measured: category-guess 0.43→0.60,
-topology 0.6→0.8 — a strong win (detail in `STAGE5_FILTER_DESIGN_2026-06.md`). Stage 5's V2 scoring
+topology 0.6→0.8 — a strong win (detail in `STAGE5_FILTER_DESIGN.md`). Stage 5's V2 scoring
 computes time signals over the **max-evidence source** (main ∪ chrome ∪ best raw rep), never main
 exclusively — de-chrome stays for keyword/category signal, never suppresses time evidence.
 

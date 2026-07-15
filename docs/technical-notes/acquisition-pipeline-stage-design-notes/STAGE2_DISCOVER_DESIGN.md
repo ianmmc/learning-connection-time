@@ -5,7 +5,7 @@
 > **Audience:** anyone building on or debugging Stage 2; anyone tracing why a school's candidates are
 > missing, mislabeled, or come from an unexpected provider.
 > **Companions:** `ACQUISITION_PIPELINE.md` §2 (the slim map + flow diagram),
-> `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` (§3 state_event, §7a cost framing, §11 gates/console).
+> `PIPELINE_GOVERNANCE_AND_STATE.md` (§3 state_event, §7a cost framing, §11 gates/console).
 > Stage 1's note for the upstream contract; Stage 3's for the downstream one.
 > **Update this when:** Stage 2's code behavior changes. Design turns and superseded approaches (incl.
 > the retired agent-wave architecture) belong in §5 (Decision log), not here.

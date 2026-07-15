@@ -159,7 +159,7 @@ districts stay eligible.
   plausible · **C** unlikely/negative-leaning · **D** drop-candidate (no times/unusable).
 - **Category hypothesis** vs **label** — the *hypothesis* is the script's weak guess at the primary
   label (noisy, hidden in the UI until the human labels, to avoid anchoring); the **label** is the
-  human's ground-truth judgment. (Full label taxonomy lives in `STAGE5_FILTER_DESIGN_2026-06.md`:
+  human's ground-truth judgment. (Full label taxonomy lives in `STAGE5_FILTER_DESIGN.md`:
   target-shape labels, non-target-reason labels incl. `community_calendar`/`embedded_feed`, and flags
   incl. `duplicate`, `buried_in_long_doc`, `building_hours_visible`, `target_image_only`.)
 - **Topology** — a district's schedule *shape*, kept as two separate values: **`guessed_topology`**

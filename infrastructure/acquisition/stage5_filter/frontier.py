@@ -20,7 +20,7 @@ harness (`tier_target_metrics`); scoring reuses the real combiner. Nothing reimp
 Overfitting guard (research-confirmed): LeaveOneGroupOut **by district** — records within a district
 are correlated (same CMS chrome/templates), so plain k-fold would leak. At small n the CV estimate is
 high-variance; it is REPORTED alongside the in-sample number, never a gate (CV detects overfit, it
-does not prevent it). See docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE5_FILTER_DESIGN_2026-06.md.
+does not prevent it). See docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE5_FILTER_DESIGN.md.
 
 Usage:
     python3 frontier.py            # grid over the detector-threshold knobs (canonical A+B floor, #208)

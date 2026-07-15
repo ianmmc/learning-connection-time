@@ -7,8 +7,8 @@
 > **Audience:** anyone building on or debugging Stage 6; anyone tracing a dispatch's routing/pricing/identity.
 > **Companions:** the Stage-6 **user stories are inline in §4**; `docs/technical-notes/models-and-council-composition/LLM_COUNCIL_RESEARCH_2026-06.md`
 > (diversity > count, cross-family consensus, judge > voter, cost cascades); `EXTRACTION_BENCHMARK_FINDINGS.md`
-> (model leaderboard + measured costs); `STAGE5_FILTER_DESIGN_2026-06.md` (upstream); `STAGE7_EXTRACT_DESIGN`
-> (downstream); `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11/§12 (cross-stage architecture authority).
+> (model leaderboard + measured costs); `STAGE5_FILTER_DESIGN.md` (upstream); `STAGE7_EXTRACT_DESIGN`
+> (downstream); `PIPELINE_GOVERNANCE_AND_STATE.md` §11/§12 (cross-stage architecture authority).
 > **Update this when:** Stage 6's code behavior changes. Design turns and superseded approaches belong in
 > §6 (Provenance / decision log), not here.
 
@@ -57,7 +57,7 @@ dispatch.
 | package assembly | `stage6_handoff/package.py` | release decision → routed + priced in-memory dispatch package (pure). Carries `pages` (the harvest-slice page range) through to the frozen doc (issue #38 — it used to drop at this step, so Stage 7 would have read the whole handbook PDF instead of the materialized slice). An unknown per-rep council override now **raises**, naming the bad id, instead of silently falling back to auto-routing (issue #54) |
 | release→routing bridge | `process_governance/stage6_dispatch.py` | reads the DB release decision (`release.load_district_records`/`decide`), enriches reps with size signals, assembles; the one module that imports **both** stage5 + stage6 (the §12 independence contract). The `district_status.json` backup export now happens only **after** the handoff file write succeeds (issue #39 — it used to export flushed-but-uncommitted events before the file write, so a failed write could leave phantom `dispatched` events in the git-swept backup) |
 | immutable artifact | `stage6_handoff/handoff.py` | `handoff_<hash>_<ts>.json` under `data/acquisition/handoffs/`; a **price-independent** content-identity hash (which also folds in the `verified_only` mode, below), now **order-insensitive** — districts/records/reps are sorted before hashing, so the same selection made in a different order hashes identically (issue #52). `write()` refuses to overwrite. `package_identity()` exposes the hash publicly for the preview→freeze check below |
-| dispatch record | `stage6_handoff/models.py` (precious `handoff` table) + `stage6_dispatch.record_dispatch` | the index row + a per-district `dispatched` gate@6 `state_event`, recorded **atomically on one session** (current_state is a view); the file is written **last** so a DB failure rolls back cleanly. An empty effective selection now **refuses** rather than freezing a 0-district handoff (issue #53). **Calibration hook (REQ-121/#210, built 2026-07-10):** the same session also writes a `calibration_event` row per district — the proxy is `n_send` (records that actually dispatched a rep, not merely decision-labeled `send` with none — a #218 review fix), the human decision is accept-only by construction (a district not selected leaves no row). Weak by design (auto is near-tautological here — see `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b) but logged for a forward-accruing corpus |
+| dispatch record | `stage6_handoff/models.py` (precious `handoff` table) + `stage6_dispatch.record_dispatch` | the index row + a per-district `dispatched` gate@6 `state_event`, recorded **atomically on one session** (current_state is a view); the file is written **last** so a DB failure rolls back cleanly. An empty effective selection now **refuses** rather than freezing a 0-district handoff (issue #53). **Calibration hook (REQ-121/#210, built 2026-07-10):** the same session also writes a `calibration_event` row per district — the proxy is `n_send` (records that actually dispatched a rep, not merely decision-labeled `send` with none — a #218 review fix), the human decision is accept-only by construction (a district not selected leaves no row). Weak by design (auto is near-tautological here — see `PIPELINE_GOVERNANCE_AND_STATE.md` §11b) but logged for a forward-accruing corpus |
 | request assembly (the seam) | `stage6_handoff/prompts.py` + `requests.py` | the ported extraction prompt (reads TIMES only, REQ-054) + a vision variant; `plan_requests` (the first-pass voter calls; judge deferred to Stage 7) + `build_request` (materialize) — the **package** stops here; it never issues the POST. `pages` now flows through to the plan (issue #38) |
 | gate@6 console | `process_governance/server.py` (`/api/dispatch*`, `/api/handoffs/{handoff_id}`, plus the retained `/api/handoff/{candidates,councils,preview,dispatch,inspect}` escape hatch) + `process_governance/stage6_draft_store.py` + `static/stage6.js` | **Superseded by the 2026-07-13 redesign — see §0b for the current architecture** (a persisted, reopenable **draft dispatch**: unified left-pane list of drafts + frozen dispatches, an always-populated editable/read-only center pane, server-persisted district selection + council overrides + verified-only mode, a receipt-derived `origin` badge). This row is kept only as history: the original build (2026-06-30 merge) shipped an ephemeral client-side selection — pick send-eligible districts (`n_send`/`n_verified`/`n_hold`) → **Preview** → **Approve & freeze**, with district removal as *client-side-only* preview editing (no server endpoint) and a flat recent-dispatches list. The **preview→freeze staleness check (issue #37)** and the **already-dispatched indicator (#171)** both survive unchanged in the new architecture (§0b) — just relocated onto the persisted draft. `serve_file`/`inspect` still resolve `source=="harvest_slice"` reps via `resolve_harvest_slice()` (new-location-first, legacy fallback). **Run-extraction control (#152):** now lives on the frozen-handoff detail pane (§0b) — see the dedicated row below |
 | **run-extraction background job (#152)** | `process_governance/server.py` (`_EXTRACT_JOBS`, `POST /api/extract/{handoff_hash}/run` at `extract_run`, `GET /api/extract/run/{handoff_hash}` at `extract_run_status`) | fires the actual **paid Stage-7 call** (`R7.run_council_streaming`) directly from a dispatched handoff, in a background thread keyed by `handoff_hash` in an in-process dict — "**the gate@6 dispatch approval IS the go-ahead — no separate approval**" (`extract_run`'s docstring). Resumable: districts already extracted for the handoff are skipped, so re-clicking after a partial run only retries what's left. States mirror #173's partial-failure semantics: `running` → `done` (clean) / `partial` (some districts failed, good ones durable) / `halted` (billing/auth or a control failure — e.g. no API key) / `error` (unexpected exception). Streams per-district progress events (accepted/unresolved counts, per-band gross minutes, cost) that the console polls into the handoff row. This is the one place gate@6 crosses the seam it otherwise respects — see §1 for why the routing/pricing/freeze boundary is unaffected |
@@ -329,7 +329,7 @@ over time** as the corpus grows, OpenRouter prices move, and new models/configs 
 | **Runtime dispatch path** | `councils` registry · `routing` · `cost` estimator · `package` · `stage6_dispatch` bridge · dispatch writer · dispatch · gate@6 | **per dispatch** | the **consumer** — routes + prices + freezes + dispatches |
 | **The council lab** | the model benchmark (`cost_benchmark`) · the measured **token model** · live **pricing** cache · a fingerprinted **run ledger** · later: accuracy/agreement scoring, routing-hypothesis tests | **periodic / on-demand** | the **producer** — measures, fits, and updates the config-as-data the runtime path reads |
 
-**The producer ("the Council Lab") is now its own concern — see `COUNCIL_LAB_DESIGN_2026-06.md`.** It
+**The producer ("the Council Lab") is now its own concern — see `COUNCIL_LAB_DESIGN.md`.** It
 emerged here but is genuinely cross-stage (Stage 4 reader-routing, Stage 6 councils/routing/cost, Stage 7
 prompts/judge, the Stage-8-grown GT yardstick), so its design — the cost benchmark (was §3C C.1–C.6, now
 that note §3), the composition re-benchmark (§3A "membership open", now that note §4), the prompt A/B, the
@@ -382,7 +382,7 @@ machinery exists to enable exactly this). **Amendment (GitHub #82, fixed 2026-07
 text-only and 404'd on every image judge call in the batch_00000 run; the image council's judge was
 swapped to `qwen/qwen3-vl-235b-a22b-instruct` (vision-capable, still a third family distinct from the
 Google/Mistral voters), and `councils.validate()` now hard-refuses any non-vision-capable model on an
-image-input council. Measured result: `COUNCIL_LAB_DESIGN_2026-06.md` §0.
+image-input council. Measured result: `COUNCIL_LAB_DESIGN.md` §0.
 
 **Per-model prompt variation (new requirement).** The same facts may need different prompt shaping per
 model. `prompts` is therefore per-model within a config, not one shared prompt — design the dispatch so a
@@ -517,7 +517,7 @@ the ledger can attribute a cost move to *us* (tokens) vs *OpenRouter* (price) se
 > later emit an accuracy read-out, but we do **not** wire accuracy now. Single-model calls here = the
 > **benchmark/testing mode** of §1 (in production we dispatch to councils, not lone models).
 
-**C.1–C.6 — the cost-benchmark harness design MIGRATED to `COUNCIL_LAB_DESIGN_2026-06.md` §3** (the
+**C.1–C.6 — the cost-benchmark harness design MIGRATED to `COUNCIL_LAB_DESIGN.md` §3** (the
 Council Lab is the producer that measures the token model; §2a). In brief, so this section stays
 self-contained: `stage6_handoff/cost_benchmark.py` (a script, gated on `OPENROUTER_API_KEY`) issues one
 real-extraction-prompt call per (model × rep) over a stratified sample (~40–60 reps across
@@ -632,7 +632,7 @@ observation record (issues #60/#61's deferral note explains the measured-pass ru
 
 ## 5. References
 - Stage 6 user stories — now inline in §4 (migrated 2026-06-27 from the retired apga doc).
-- `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §4/§5 (release/dispatch), §7a (council out-of-process).
+- `PIPELINE_GOVERNANCE_AND_STATE.md` §4/§5 (release/dispatch), §7a (council out-of-process).
 - `docs/technical-notes/models-and-council-composition/LLM_COUNCIL_RESEARCH_2026-06.md` — cross-family consensus, judge, cost cascade.
 - `EXTRACTION_BENCHMARK_FINDINGS.md` — model leaderboard + measured costs (the config candidates).
 - REQ-054 (read-times invariant), REQ-055 (gross metric), REQ-056 (cross-family consensus), REQ-051 (budget governor), REQ-094 (`filtered.json`).
@@ -646,7 +646,7 @@ Ian's routing commentary + the pencil sketch (`docs/diagrams/STAGE6-routing-penc
 per-model prompts (§3A), and the "request more evidence" loop + session-persistence question (§3F). The
 original free-form commentary is preserved in git history (and `docs/scratch-paper/STAGE6-Ian-thoughts-on-routing.md`)
 if the raw voice is ever needed. **Reconciliation principle applied:** code is truth, design notes narrate
-it, and per `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §1 the DB is the working store / JSON is a receipt —
+it, and per `PIPELINE_GOVERNANCE_AND_STATE.md` §1 the DB is the working store / JSON is a receipt —
 so this note no longer calls `filtered.json` Stage 6's "input."
 **2026-07-02 — six defects closed by adversarial review (fable review issues #36, #37, #38, #39, #52,
 #53, #54, #55).** Found by a fresh-eyes review, none by normal use: (1) the council family-diversity
@@ -675,7 +675,7 @@ neither may import the other), so `stage5_filter.release.best_send`'s handbook-s
 OWN yield comparison (the slice sends only when its `n_times` matches or beats the district's best general
 text rep), with a dedicated cross-layer test (`test_handbook_yield_rule_matches_rank_alternates_ordering`,
 `tests/test_release.py`) pinning the two independent implementations to the same ordering — a live-drift
-guard standing in for the reuse the layering forbids. See `STAGE7_EXTRACT_DESIGN_2026-06.md` §6 for the
+guard standing in for the reuse the layering forbids. See `STAGE7_EXTRACT_DESIGN.md` §6 for the
 full PR #240 decision-log entry (also #233/#234/#235, resolved in the same PR).
 
 **2026-07-13 — gate@6 console redesigned around a persisted draft dispatch (PR #256), then a 10-angle

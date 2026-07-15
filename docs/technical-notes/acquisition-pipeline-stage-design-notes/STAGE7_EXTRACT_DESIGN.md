@@ -6,11 +6,11 @@
 > ground truth); §1–§4 hold the design rationale, with items still genuinely open flagged inline.
 > **Audience:** anyone building on or debugging Stage 7; anyone tracing extraction/consensus/the
 > request loop.
-> **Companions:** `ACQUISITION_PIPELINE.md` §7 (the slim map), `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`
+> **Companions:** `ACQUISITION_PIPELINE.md` §7 (the slim map), `PIPELINE_GOVERNANCE_AND_STATE.md`
 > §11 (gates/console; §11b the ramp-up model), `models-and-council-composition/LLM_COUNCIL_RESEARCH_2026-06.md`
 > (council research), `models-and-council-composition/models-and-council-composition.md` (the
 > batch_00000 full-run report), `EXTRACTION_BENCHMARK_FINDINGS.md` (model leaderboard + costs).
-> Upstream: `STAGE6_DISPATCH_DESIGN_2026-06.md` §0a (the exact handoff shape Stage 7 consumes).
+> Upstream: `STAGE6_DISPATCH_DESIGN.md` §0a (the exact handoff shape Stage 7 consumes).
 > **Update this when:** Stage 7's code behavior changes. Design turns and superseded approaches
 > belong in §6 (Provenance / decision log), not here.
 
@@ -141,7 +141,7 @@ exercise against the #200/#209-hardened pipeline, not a distinct issue awaiting 
   false-positive/false-negative GT-matching gaps. The function is now idempotent (a fixed-point strip loop),
   which matters beyond Stage 7: Stage 8's `merge_fact_runs` and `detect_single_school_over_extraction`
   re-normalize PERSISTED `school_fact.school` keys through the current function at read time to self-heal
-  against exactly this kind of stopword-list version drift (`STAGE8_AGGREGATE_DESIGN_2026-06.md`).
+  against exactly this kind of stopword-list version drift (`STAGE8_AGGREGATE_DESIGN.md`).
   `stage5_filter/build_signals.py`'s own separate, weaker duplicate of `norm_school` was deleted in the same
   PR — Stage 5's topology denominator now shares the identical function with Stage 7/8, closing a
   three-stage drift risk the module's own docstring had warned about ("They MUST use the SAME function or
@@ -316,7 +316,7 @@ APPROVED directives into real back-edge work. Two mechanisms (§3F):
   assigned to an image-input council. A judge-replay measurement (Council Lab, `council_lab.py`) over
   the same 33 escalated reps confirmed the fix: **32/33 calls succeeded**, resolving **21/145**
   disagreements and improving accuracy to **89.1% band / 98.2% school** (see
-  `COUNCIL_LAB_DESIGN_2026-06.md` §0 for the full scorecard). #82 is closed.
+  `COUNCIL_LAB_DESIGN.md` §0 for the full scorecard). #82 is closed.
 - Full findings (per-model cost profiles, reader-source yield, the 3 real band misses root-caused, the
   spray-fabrication interaction with the request detector) are in
   `models-and-council-composition/models-and-council-composition.md`.
@@ -380,7 +380,7 @@ approve/reject/reopen/execute, lineage/blocked/deferred visibility, the compose 
   gate@8:** approving the council's extracted TIMES (`school_fact.human_determination`) is a Stage-8
   activity and is explicitly deferred until Stage 8 exists (#88/#89) — gate@7's calibration hook only
   scores the request-more-evidence directive, never the extracted values themselves. See
-  `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b for the full calibration-log design.
+  `PIPELINE_GOVERNANCE_AND_STATE.md` §11b for the full calibration-log design.
 
 ---
 
@@ -559,9 +559,9 @@ trigger (§0) — all surfaces call the same underlying functions.
 ---
 
 ## 5. References
-- `STAGE6_DISPATCH_DESIGN_2026-06.md` §0a (the handoff shape), §3F (the loop as first sketched from the
+- `STAGE6_DISPATCH_DESIGN.md` §0a (the handoff shape), §3F (the loop as first sketched from the
   Stage 6 side).
-- `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11 (gates/console), §11b (the ramp-up model), §11d
+- `PIPELINE_GOVERNANCE_AND_STATE.md` §11 (gates/console), §11b (the ramp-up model), §11d
   (follow-up batches route through Stage 1).
 - `models-and-council-composition/LLM_COUNCIL_RESEARCH_2026-06.md`,
   `models-and-council-composition/models-and-council-composition.md` (the batch_00000 report),
@@ -576,7 +576,7 @@ trigger (§0) — all surfaces call the same underlying functions.
   doc is the accurate present-state source; REQUIREMENTS.yaml's REQ-117/118 entries need a follow-up
   correction pass, tracked separately from this rewrite.
 - **Council Lab** (the producer that tunes the councils/prompts/cost the request loop routes on): design in
-  `COUNCIL_LAB_DESIGN_2026-06.md`; GitHub #80 (infra), #81 (spray A/B), #82 (image-council vision judge —
+  `COUNCIL_LAB_DESIGN.md`; GitHub #80 (infra), #81 (spray A/B), #82 (image-council vision judge —
   fixed), #85 (camelot reader-routing).
 - **Epic #163** (request-loop hardening + gate@7 console maturation, PR #167, closed) and its sub-issues:
   #158 (release cluster-drop, HIGH), #165 (current_state null-state), #160 (query-template config),
@@ -700,7 +700,7 @@ image-vs-text comparison → the request-detection engine → gate@7 console. Ke
   it. Two follow-on reads, both already tracked: resolution concentrates on small disagreements — dense
   hub-table pages still mostly unresolved (#85, #121) — and the image council still trails the text
   council on native-digital reps, reinforcing the route-by-modality experiment (#132). Full scorecard:
-  `COUNCIL_LAB_DESIGN_2026-06.md` §0; persisted record at
+  `COUNCIL_LAB_DESIGN.md` §0; persisted record at
   `data/acquisition/council_lab/judge_replay_a2bc80c004ca-image_partial.json`.
 - **Epic #163 — request-loop hardening + gate@7 console maturation (2026-07-04/05), PR #167 merged.**
   Triggered by Ian's manual shakedown of the request loop against real (non-benchmark) districts — the
@@ -903,7 +903,7 @@ image-vs-text comparison → the request-detection engine → gate@7 console. Ke
     for direct reuse).
   - **#233 — auto-withdraw, resolved.** See §0's `withdraw_satisfied_requests` entry above and REQ-123 for
     the mechanism; the design call (auto, not human-gated) is Ian's, with the full risk-asymmetry rationale
-    captured there and in `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §11b.
+    captured there and in `PIPELINE_GOVERNANCE_AND_STATE.md` §11b.
   - **The adversarial review of the first draft found real defects in the fixes themselves** — the kind a
     green test suite doesn't catch: (1) `withdraw_satisfied_requests` and `detect_and_persist_requests`'s
     covered-bands check could not see the SAME transaction's own just-persisted facts, because production

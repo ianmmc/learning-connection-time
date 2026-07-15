@@ -130,7 +130,7 @@ Chicago PS High School:           390 minutes (actual)
 - Documentation: URLs and sampling methodology recorded
 
 See **Bell Schedule Sampling Policy** (below) for the sampling methodology, and
-`docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE1_QUEUE_DESIGN_2026-06.md` for its Stage-1 implementation.
+`docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE1_QUEUE_DESIGN.md` for its Stage-1 implementation.
 
 #### 2. Staff Count (Multiple Scopes)
 
@@ -1238,7 +1238,7 @@ policy (low within-band variance), so a handful of schools usually pins a band's
 **Where this is implemented — two separate decisions:**
 - **Queue-time cap (Stage 1, settled):** ≤ 12 schools/band → full census; larger → cap at 12/band (seeded
   random sample, most-constrained-first overlap minimization). Implementation + rationale:
-  `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE1_QUEUE_DESIGN_2026-06.md` §3.
+  `docs/technical-notes/acquisition-pipeline-stage-design-notes/STAGE1_QUEUE_DESIGN.md` §3.
 - **Extraction-time mode-stability early-exit (Stage 7, open):** within the queued candidates, stop once
   the modal gross-minutes is stable (e.g. unchanged over the last ~5 schools) — LA elementary might resolve
   in ~8 of 12. Blocked on Stage 7's per-school extract→aggregate; the 95/±5 number stands only as the
@@ -1251,7 +1251,7 @@ For the cases `LEVEL` leaves unresolved (ambiguous `Other`/`Secondary`/`Not repo
 inconsistencies between the LEA-level grade span and the school-level levels), Stage 1's
 `recursive_band_groups()` partitions a district's distinct grade spans into bands. This table is the set of
 **recognized clean partition shapes** it was profiled/validated against (hand-built, then checked against the
-full 2024-25 NCES corpus — see `STAGE1_QUEUE_DESIGN_2026-06.md` §2c for the algorithm). `PK`/`K` lead
+full 2024-25 NCES corpus — see `STAGE1_QUEUE_DESIGN.md` §2c for the algorithm). `PK`/`K` lead
 elementary; grade `13` (an extra-year HS code) rides with high.
 
 Three-band (elementary · middle · high):

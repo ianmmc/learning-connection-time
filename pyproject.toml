@@ -10,7 +10,7 @@ requires-python = ">=3.10"
 # Dependencies are intentionally NOT declared here yet — they remain managed by requirements.txt
 # (`pip install -r requirements.txt`). This file exists so `pip install -e .` makes the source tree
 # importable as proper packages (`infrastructure.acquisition.*`), removing the sys.path.insert shims
-# (REQ-098, see docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §9a). Folding deps into
+# (REQ-098, see docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE.md §9a). Folding deps into
 # pyproject is a separate, later step.
 
 # --- Architecture contracts (REQ-098 step 4): `lint-imports` enforces these in CI. ---

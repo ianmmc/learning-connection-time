@@ -22,7 +22,7 @@ district merely queued (Stage 1) or searched (Stage 2) has had no real, costly a
 stays eligible for redraw (e.g. after a queue-time bug fix).
 
 Schema reference: data/acquisition/status/district_status.example.json
-Doc: docs/ACQUISITION_PIPELINE.md (Stage 1), docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §3
+Doc: docs/ACQUISITION_PIPELINE.md (Stage 1), docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE.md §3
 """
 import json
 

@@ -33,7 +33,7 @@ time-as-quality assumption, averaging deception): `docs/METHODOLOGY.md`.
 | Dev setup, fresh-checkout orientation, conventions | `docs/GETTING_STARTED.md` |
 | LCT calculation mechanics, SPED segmentation, QA | `docs/METHODOLOGY.md` |
 | The 9-stage acquisition pipeline, end to end | `docs/ACQUISITION_PIPELINE.md` (the map) → `docs/technical-notes/STAGE*_DESIGN_2026-06.md` (per-stage present state) |
-| Cross-stage architecture: DB/state/gate model | `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` |
+| Cross-stage architecture: DB/state/gate model | `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE.md` |
 | Why a decision was made, project history | `docs/PROJECT_HISTORY.md` |
 | Vocabulary | `docs/TERMINOLOGY.md` (read first) |
 
@@ -74,7 +74,7 @@ and catches real-data bugs code review misses. (governance §11b.)
 
 **Three batch types (Stage 1):** `first-run`, `follow-up`, and `benchmark` (the 27 curated-GT districts
 injected as `batch_00000` — permanently walled off from Stage-9 writes and funnel/enrichment stats; see
-`STAGE1_QUEUE_DESIGN_2026-06.md` §2h).
+`STAGE1_QUEUE_DESIGN.md` §2h).
 
 **Ground truth, hand-verified (gross, per-school):** `data/benchmark/gt_curation_*/gt_proposals.json` —
 940/943 schools human-verified. Process: council *proposes*, human *verifies* (REQ-059).
@@ -136,7 +136,7 @@ liveness gate → **#479/#480** (LCT foundation sweeps) → **#92** (Stage 9 bui
 Docker up (`docker-compose up -d`) → `git config core.hooksPath .githooks` (fresh clone only) →
 `lint-imports` (expect **4 kept/0 broken**) + `pytest -q -m "not integration"` (expect **~1353** pass) +
 `pytest -q -m govdb` (expect **216**, Postgres up). Full detail: `docs/PROJECT_HISTORY.md` (newest entry),
-`PIPELINE_GOVERNANCE_AND_STATE_2026-06.md`, `STAGE8_AGGREGATE_DESIGN_2026-06.md`.
+`PIPELINE_GOVERNANCE_AND_STATE.md`, `STAGE8_AGGREGATE_DESIGN.md`.
 
 ---
 
@@ -214,7 +214,7 @@ pytest tests/test_arch_manifest.py    # cross-boundary FITNESS functions vs arch
 > **Caveat (the recurring lesson):** the import tools see **Python/Node imports only**. They do NOT see the
 > *environmental* dependencies that often matter most — NCES CSV files read by path/year, **LCT DB
 > tables** accessed via the ORM, `subprocess`/`claude -p` calls, OpenRouter API hosts. After the import
-> graph, **read the code** for those edges. (Toolchain rationale: `PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` §10.)
+> graph, **read the code** for those edges. (Toolchain rationale: `PIPELINE_GOVERNANCE_AND_STATE.md` §10.)
 > **`arch-manifest.json` + `tests/test_arch_manifest.py` (#124) now close part of this gap:** the declared
 > ground truth for the cross-boundary edges (external processes, guarded entry points, client↔server rule
 > literals, stage receipts), enforced as fitness functions. **When you add such an edge, update the manifest**
@@ -256,7 +256,7 @@ This is the core briefing. Load the right doc for the task:
 | Data sources, SEA integrations, ID crosswalks, complex districts | `docs/DATA_SOURCES.md` · `docs/SEA_INTEGRATION_GUIDE.md` |
 | Data methodology (LCT, sampling, exclusions, temporal) | `docs/METHODOLOGY.md` |
 | The acquisition pipeline + per-stage design notes | `docs/ACQUISITION_PIPELINE.md` (map) → `docs/technical-notes/STAGE*_DESIGN_2026-06.md` |
-| Governance / state model / gate model / console | `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE_2026-06.md` |
+| Governance / state model / gate model / console | `docs/technical-notes/PIPELINE_GOVERNANCE_AND_STATE.md` |
 
 **Token Efficiency:** load only what the task needs.
 

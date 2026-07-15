@@ -92,7 +92,7 @@ mypy>=1.7.0
 
 # Architecture / dependency tooling (REQ-098 step 4) — run via `lint-imports` (contracts in
 # pyproject.toml) and `vulture infrastructure/acquisition`. Requires `pip install -e .` so the
-# `infrastructure.acquisition.*` packages resolve. See PIPELINE_GOVERNANCE_AND_STATE_2026-06.md §10.
+# `infrastructure.acquisition.*` packages resolve. See PIPELINE_GOVERNANCE_AND_STATE.md §10.
 import-linter>=2.0      # architecture contracts (layers / forbidden) over the import graph
 grimp>=3.0              # the import-graph builder import-linter sits on (queryable directly)
 vulture>=2.10           # dead-code / unused-import detection
