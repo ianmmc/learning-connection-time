@@ -1,0 +1,193 @@
+{
+  "handoff_hash": "432d1ce8ffea",
+  "district": {
+    "district_id": "4900025",
+    "name": "North Star Academy",
+    "reps": [
+      {
+        "rec_key": "4900025:0caae627b2",
+        "file": "tesseract_raster.txt",
+        "kind": "text",
+        "council_id": "low-cost-text",
+        "judged": false,
+        "calls": [
+          {
+            "model": "google/gemini-2.5-flash-lite",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 2,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "14:52",
+                "school_name": "North Star Academy",
+                "confidence": "high",
+                "evidence_quote": "Full Day Kindergarten and Grades 1]\n9 8:30-2:52 pm",
+                "source_locus": "Daily School Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              },
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "11:30",
+                "school_name": "North Star Academy",
+                "confidence": "high",
+                "evidence_quote": "AM Kindergarten 8:30 - 11:30 am",
+                "source_locus": "Daily School Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2329,
+            "completion_tokens": 308,
+            "cost_usd": 0.0003561,
+            "latency_ms": 15201,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784093777-7MLVUJo6xpSZc2UZSuXc",
+            "truncation_retried": false
+          },
+          {
+            "model": "mistralai/mistral-small-24b-instruct-2501",
+            "role": "voter",
+            "ok": true,
+            "error": null,
+            "n_facts": 1,
+            "facts": [
+              {
+                "grade_level": "elementary",
+                "start_time": "08:30",
+                "end_time": "14:52",
+                "school_name": "North Star Academy",
+                "confidence": "high",
+                "evidence_quote": "Full Day Kindergarten and Grades 1-5: 8:30 AM - 2:52 PM",
+                "source_locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26",
+                "applies_to": null
+              }
+            ],
+            "prompt_tokens": 2373,
+            "completion_tokens": 151,
+            "cost_usd": 0.00013073,
+            "latency_ms": 19724,
+            "finish_reason": "stop",
+            "generation_id": "gen-1784093794-x2MBwgNH0JLMIY65GNuc",
+            "truncation_retried": false
+          }
+        ],
+        "accepted": [
+          {
+            "band": "elementary",
+            "school": "north star",
+            "start": "08:30",
+            "end": "14:52",
+            "gross": 382,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "method": "council_agree",
+            "evidence": {
+              "google/gemini-2.5-flash-lite": {
+                "quote": "Full Day Kindergarten and Grades 1]\n9 8:30-2:52 pm",
+                "locus": "Daily School Schedule",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              },
+              "mistralai/mistral-small-24b-instruct-2501": {
+                "quote": "Full Day Kindergarten and Grades 1-5: 8:30 AM - 2:52 PM",
+                "locus": "",
+                "stated_minutes": null,
+                "stated_minutes_quote": "",
+                "school_year": "2025-26"
+              }
+            },
+            "school_year": "2025-26",
+            "rec_key": "4900025:0caae627b2",
+            "source_file": "tesseract_raster.txt"
+          }
+        ],
+        "unresolved": []
+      }
+    ],
+    "accepted": [
+      {
+        "band": "elementary",
+        "school": "north star",
+        "start": "08:30",
+        "end": "14:52",
+        "gross": 382,
+        "models": [
+          "google/gemini-2.5-flash-lite",
+          "mistralai/mistral-small-24b-instruct-2501"
+        ],
+        "method": "council_agree",
+        "evidence": {
+          "google/gemini-2.5-flash-lite": {
+            "quote": "Full Day Kindergarten and Grades 1]\n9 8:30-2:52 pm",
+            "locus": "Daily School Schedule",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          },
+          "mistralai/mistral-small-24b-instruct-2501": {
+            "quote": "Full Day Kindergarten and Grades 1-5: 8:30 AM - 2:52 PM",
+            "locus": "",
+            "stated_minutes": null,
+            "stated_minutes_quote": "",
+            "school_year": "2025-26"
+          }
+        },
+        "school_year": "2025-26",
+        "rec_key": "4900025:0caae627b2",
+        "source_file": "tesseract_raster.txt"
+      }
+    ],
+    "unresolved": [],
+    "n_reps": 1,
+    "n_judged": 0,
+    "bands": {
+      "elementary": {
+        "gross_minutes": 382,
+        "start_time": "08:30",
+        "end_time": "14:52",
+        "n_schools": 1,
+        "method": "modal",
+        "schools": [
+          {
+            "school": "north star",
+            "start_time": "08:30",
+            "end_time": "14:52",
+            "gross": 382,
+            "models": [
+              "google/gemini-2.5-flash-lite",
+              "mistralai/mistral-small-24b-instruct-2501"
+            ],
+            "human_determination": ""
+          }
+        ]
+      }
+    },
+    "telemetry": {
+      "calls": 2,
+      "judge_calls": 0,
+      "errors": 0,
+      "rep_errors": 0,
+      "truncated": 0,
+      "truncation_retries": 0,
+      "prompt_tokens": 4702,
+      "completion_tokens": 459,
+      "cost_usd": 0.00048682999999999995
+    },
+    "state": "UT"
+  }
+}

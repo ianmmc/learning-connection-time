@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "last_updated": "2026-07-15T05:33:02Z",
+  "last_updated": "2026-07-15T05:36:38Z",
   "districts": {
     "0100270": {
       "name": "Baldwin County",
@@ -9029,11 +9029,11 @@
     "4207560": {
       "name": "Derry Area SD",
       "state": "PA",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00006",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -9123,6 +9123,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-15T05:36:02Z"
         }
       ],
       "notes": "432d1ce8ffea"
@@ -9149,10 +9155,10 @@
       "name": "Redbank Valley SD",
       "state": "PA",
       "furthest_stage": 7,
-      "stage_name": "extract",
-      "outcome": "extracted",
+      "stage_name": "queue",
+      "outcome": "queued",
       "topology": null,
-      "batch_id": null,
+      "batch_id": "batch_00019",
       "history": [
         {
           "stage": 1,
@@ -9270,9 +9276,32 @@
           "stage_name": "extract",
           "outcome": "extracted",
           "at": "2026-07-11T21:40:32Z"
+        },
+        {
+          "stage": 1,
+          "stage_name": "queue",
+          "outcome": "queued",
+          "at": "2026-07-15T05:36:22Z"
+        },
+        {
+          "stage": null,
+          "stage_name": "queue",
+          "outcome": null,
+          "at": "2026-07-15T05:36:22Z",
+          "checkpoint": "gate@1",
+          "event_type": "approved",
+          "actor": "ian"
+        },
+        {
+          "stage": null,
+          "stage_name": "discover",
+          "outcome": null,
+          "at": "2026-07-15T05:36:22Z",
+          "event_type": "dispatched",
+          "actor": "ian"
         }
       ],
-      "notes": "27b64cab58a9"
+      "notes": "gate@1 auto-approved (follow-up autoflow) batch_00019"
     },
     "4222350": {
       "name": "Southern Lehigh SD",
@@ -10322,11 +10351,11 @@
     "4900025": {
       "name": "North Star Academy",
       "state": "UT",
-      "furthest_stage": 5,
-      "stage_name": "filter",
-      "outcome": "ingested",
+      "furthest_stage": 7,
+      "stage_name": "extract",
+      "outcome": "extracted",
       "topology": null,
-      "batch_id": "batch_00006",
+      "batch_id": null,
       "history": [
         {
           "stage": 1,
@@ -10416,6 +10445,12 @@
           "checkpoint": "gate@6",
           "event_type": "dispatched",
           "actor": "ian"
+        },
+        {
+          "stage": 7,
+          "stage_name": "extract",
+          "outcome": "extracted",
+          "at": "2026-07-15T05:36:38Z"
         }
       ],
       "notes": "432d1ce8ffea"
