@@ -98,6 +98,43 @@ def test_campus_names_verbatim_kept_and_placeholder_scrubbed():
     assert "campus_names" not in out3[0]          # pre-v4 rows byte-identical
 
 
+def test_non_list_schedules_value_returns_empty():
+    """#362: a valid-JSON reply whose 'schedules' value is not a list (null/scalar/dict) must
+    return [] — the contract for 'found nothing' — not TypeError out of the list comprehension."""
+    for payload in ('{"schedules": null}', '{"schedules": 42}', '{"schedules": false}',
+                    '{"schedules": "none found"}', '{"schedules": {"oops": 1}}'):
+        assert P.parse_schedules(payload) == [], payload
+
+
+def test_salvage_brace_inside_string_value():
+    """#276: a brace inside a string value must not truncate salvage — captured text carries
+    parens/brackets/braces in school names and notes."""
+    truncated = ('{"schedules":[{"grade_level":"high","start_time":"08:00","end_time":"15:00",'
+                 '"school_name":"P.S. 42 {Annex} High"},{"grade_level":"middle","start_time":"07:30",'
+                 '"end_time":"14:10","school_name":"B Middle"},{"grade_level":"eleme')
+    out = P.parse_schedules(truncated)
+    assert {o["school_name"] for o in out} == {"P.S. 42 {Annex} High", "B Middle"}
+
+
+def test_salvage_nested_object():
+    """#276: a schedule object carrying a nested dict must still be salvaged whole."""
+    truncated = ('{"schedules":[{"grade_level":"high","start_time":"08:00","end_time":"15:00",'
+                 '"school_name":"A High","meta":{"source":"handbook"}},{"grade_level":"eleme')
+    out = P.parse_schedules(truncated)
+    assert len(out) == 1 and out[0]["school_name"] == "A High"
+    assert out[0]["meta"] == {"source": "handbook"}
+
+
+def test_salvage_prose_wrapped_full_payload():
+    # clean parse fails on the surrounding prose; the complete wrapper parses mid-text and its
+    # schedules list is harvested
+    txt = ('Here are the schedules I found:\n'
+           '{"schedules":[{"grade_level":"high","start_time":"08:00","end_time":"15:00",'
+           '"school_name":"A High"}]}\nLet me know if you need anything else!')
+    out = P.parse_schedules(txt)
+    assert len(out) == 1 and out[0]["school_name"] == "A High"
+
+
 def test_campus_names_scrubbed_in_salvage_path():
     from infrastructure.acquisition.stage7_extract.parse import parse_schedules
     txt = ('{"schedules":[{"grade_level":"middle","start_time":"08:00","end_time":"15:00",'

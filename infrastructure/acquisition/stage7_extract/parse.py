@@ -15,8 +15,6 @@ from __future__ import annotations
 import json
 import re
 
-# A single schedule object: a {...} span (no nested braces) that mentions a start time.
-_SCHED_OBJ = re.compile(r'\{[^{}]*?"start_time"[^{}]*?\}', re.DOTALL)
 
 # Prompt-example leak guard: names a model can only have copied from the system prompt's few-shot
 # example, never read from a document. "Fivay High" (the pre-2026-07-03 example) leaked into live
@@ -58,15 +56,41 @@ def _strip_fences(text: str) -> str:
     return t.strip()
 
 
+def _sched_items(obj) -> list[dict] | None:
+    """The schedule dicts a decoded value carries, leak-scrubbed — or None if it isn't a schedule
+    carrier at all (scan its interior instead). A carrier is a dict with "start_time" (one schedule)
+    or a dict with a "schedules" list (a complete wrapper stranded in prose)."""
+    if not isinstance(obj, dict):
+        return None
+    if "start_time" in obj:
+        return [] if _is_prompt_leak(obj) else [_scrub_campus_names(obj)]
+    scheds = obj.get("schedules")
+    if isinstance(scheds, list):
+        return [_scrub_campus_names(s) for s in scheds
+                if isinstance(s, dict) and "start_time" in s and not _is_prompt_leak(s)]
+    return None
+
+
 def _salvage(text: str) -> list[dict]:
+    """Recover schedule objects from text the clean parse rejected, using the real JSON parser
+    (`raw_decode`) at each `{` — a regex can't cross braces inside string values, and captured
+    text carries braces in school names/notes (#276). Whatever parses and carries schedules is
+    consumed whole; anything else is scanned interior-first."""
     out = []
-    for m in _SCHED_OBJ.finditer(text):
+    dec = json.JSONDecoder()
+    i = text.find("{")
+    while i != -1:
         try:
-            obj = json.loads(m.group(0))
-        except Exception:
+            obj, end = dec.raw_decode(text, i)
+        except ValueError:
+            i = text.find("{", i + 1)
             continue
-        if not _is_prompt_leak(obj):
-            out.append(_scrub_campus_names(obj))
+        items = _sched_items(obj)
+        if items is None:
+            i = text.find("{", i + 1)      # not a carrier — look for nested candidates
+        else:
+            out.extend(items)
+            i = text.find("{", end)
     return out
 
 
@@ -81,10 +105,12 @@ def parse_schedules(content: str) -> list[dict]:
     except Exception:
         return _salvage(txt)
     if isinstance(obj, dict):
-        scheds = obj.get("schedules", [])
+        scheds = obj.get("schedules")
     elif isinstance(obj, list):
         scheds = obj
     else:
-        scheds = []
+        scheds = None
+    if not isinstance(scheds, list):   # {"schedules": null/scalar/dict} = "found nothing" (#362)
+        return []
     return [_scrub_campus_names(s) for s in scheds
             if isinstance(s, dict) and not _is_prompt_leak(s)]
