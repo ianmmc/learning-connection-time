@@ -3524,3 +3524,28 @@ requirements:
       middle band no real school serves. Kept as its own REQ (not folded into REQ-142) because it is a
       regression class about real_bands_for_district's SIGNAL COMPOSITION, independent of whether the
       carve-out threshold itself is ever revised again."
+
+  - id: REQ-144
+    github_issue: "#499 (PR-A)"
+    description: "Slot spine v1 — each band's LIVE NCES roster is projected as slots (filled / unfilled / ambiguous / unmatched-extra) crossed with the band's included facts, so coverage gaps are identified schools, not count arithmetic; roster drift is measured against the last APPROVED gate@8 receipt."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - The projection is a PURE function (common/slot_spine.py project_slots) over band_rosters_for_district's slot_recs (NCESSCH school_id, name, is_charter, span, per-placement source) and the band's included fact names; the join axis is norm_school on both sides — the single shared key (school_match.py), with charter_lookup's divergent private normalization consolidated onto it
+      - The spine is NEVER persisted — live from ccd_sch at every load; the gate@8 approval receipt (receipt_json) is the only frozen copy, and reproducibility lives there
+      - A fact whose key matches exactly one slot fills it (confidence matched, basis exact_name); a key colliding with >=2 slots attaches to every candidate as ambiguous and fills NONE (resolution is a human disposition, PR-B); a fact matching no slot is a FIRST-CLASS unmatched-extra (the roster is an overlay with an escape hatch, never a cage)
+      - An excluded (#257) fact does not fill a slot; slots/slot_stats ride per band in the artifact and negative_space.unheard_slots names the per-band unheard count including bands with no accepted facts at all
+      - fingerprint() excludes slots and drift — roster drift must NEVER stale an approval; the drift surface reports it instead
+      - roster_drift diffs live slots against the LAST APPROVED receipt's slot list, keyed on school_id (rename-immune), reporting added / removed / band_moved; a pre-#499 receipt (no slots) reports None — the honest null; the receipt chain is the longitudinal band-membership record (derive-from-receipts, no change-log table)
+      - Console slot strip + drift flags carry data-feat markers (slot-view/-stats/-filled/-unfilled/-ambiguous/-extra/-unheard, slot-drift-added/-removed/-band-moved) guarded by the console-features grep test
+    tests:
+      - tests/test_slot_spine.py
+      - tests/test_closing_argument.py::TestSlotSpine499
+      - tests/test_stage8_api.py::test_stage8_console_carries_the_exclusion_ui_markers
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "The first slice of #499's roster-template/spine (back-to-front build: Stage-8 slot view
+      first). Slot rows carry is_charter (REQ-060 tag-never-exclude) — the school-grain charter
+      surface #243/#244's Structure-C work can read. PR-B adds the SlotAssignment disposition table,
+      the Stage-2 discovery-intent tie-breaker, full-roster #237, and the roster_drift state_event."

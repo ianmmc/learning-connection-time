@@ -136,10 +136,35 @@
         Sampled <strong>${s.n_sampled}</strong> of <strong>${s.n_total == null ? "?" : s.n_total}</strong> schools${denomDetail} ·
         coverage ${pct(s.coverage)} · school agreement (plurality) ${pct(s.plurality_share)}
       </div>
+      ${renderSlots(b)}
       <table class="s8-schools"><thead><tr><th>School</th><th>Times</th><th>Gross</th><th>Models</th><th>Evidence</th><th></th></tr></thead>
         <tbody>${(b.schools || []).map((sc) => renderSchool(sc, band)).join("")}</tbody></table>
       <button class="btn btn-small" data-feat="human-add" data-ha-add data-band="${esc(band)}">Add school by hand (cited — last resort, #474)</button>
     </section>`;
+  }
+
+  // #499 (REQ-144): the band's roster SLOTS — the live NCES roster crossed with the accepted facts,
+  // so the gap is identified schools, not count arithmetic. Filled slots are the table rows below;
+  // this strip names the slots never heard from, ambiguous matches awaiting a disposition (PR-B),
+  // and unmatched-extras (a fact naming a school NCES doesn't list — the roster can be wrong; the
+  // overlay is never a cage). Charter slots carry the REQ-060 tag (the #243 Structure-C surface).
+  function renderSlots(b) {
+    const st = b.slot_stats, slots = b.slots || [], extras = b.slot_extras || [];
+    if (!st) return "";
+    const unfilled = slots.filter((s) => s.slot_state === "unfilled" && !(s.match && s.match.confidence === "ambiguous"));
+    const ambiguous = slots.filter((s) => s.match && s.match.confidence === "ambiguous");
+    const chip = (s) =>
+      `<span class="s8-slot s8-slot-unfilled" data-feat="slot-unfilled" title="no accepted fact matches this NCES roster school">${esc(s.roster_school)}${s.is_charter === "Yes" ? ` <span class="s8-slot-charter" title="NCES charter (REQ-060: tagged, never excluded)">ch</span>` : ""}${s.gslo && s.gshi ? ` <span class="s8-muted">${esc(s.gslo)}–${esc(s.gshi)}</span>` : ""}</span>`;
+    const unfilledRow = unfilled.length
+      ? `<div class="s8-slot-row">Never heard from: ${unfilled.map(chip).join(" ")}</div>` : "";
+    const ambRow = ambiguous.length
+      ? `<div class="s8-slot-row">Ambiguous match: ${[...new Set(ambiguous.map((s) => s.match.school_display))].map((n) => `<span class="s8-slot s8-slot-ambiguous" data-feat="slot-ambiguous">${esc(n)}</span>`).join(" ")} — one extracted name matches several roster schools; resolution is a human disposition (PR-B).</div>` : "";
+    const extraRow = extras.length
+      ? `<div class="s8-slot-row">Not in NCES roster: ${extras.map((x) => `<span class="s8-slot s8-slot-extra" data-feat="slot-extra" title="extracted fact matching no roster school — NCES may be wrong, or the name may need a disposition">${esc(x.school_display)}</span>`).join(" ")}</div>` : "";
+    return `<div class="s8-slots" data-feat="slot-view">
+      <div data-feat="slot-stats"><span data-feat="slot-filled">${st.n_filled}</span> of ${st.n_slots} roster slots filled${st.n_ambiguous ? ` · ${st.n_ambiguous} ambiguous` : ""}${extras.length ? ` · ${extras.length} extra` : ""} <span class="s8-muted">(slot coverage ${pct(st.slot_coverage)})</span></div>
+      ${unfilledRow}${ambRow}${extraRow}
+    </div>`;
   }
 
   function renderSchool(sc, band) {
@@ -262,6 +287,23 @@
     pushFlag("name-level-mismatch", "Name/level notes (#258):", ns.name_level_mismatches,
       (m) => `${esc(m.school)} is named ${m.implied_bands.map(esc).join("/")} but serves ${esc(m.band)}${m.nces_level || (m.gslo && m.gshi) ? ` (NCES: ${[m.nces_level && esc(m.nces_level), m.gslo && m.gshi && `grades ${esc(m.gslo)}–${esc(m.gshi)}`].filter(Boolean).join(", ")})` : ""}`,
       " — often legitimate: a school can serve bands its name doesn't say (a 7-12 high school covers middle). The failure case is a stale NCES tag after a grade reconfiguration — #257 exclude if that's what you see.");
+    // #499: slots never heard from, per band — includes bands with NO accepted facts at all
+    // (they render no band section above, but their whole roster is unheard).
+    const unheard = Object.entries(ns.unheard_slots || {});
+    if (unheard.length)
+      rows.push(`<li data-feat="slot-unheard"><strong>Unheard roster slots (#499):</strong> ${unheard.map(([b, n]) => `${esc(b)}: ${n}`).join(", ")} — NCES roster schools with no accepted fact (named per band above).</li>`);
+    // #499: roster drift vs the LAST APPROVED receipt — schools closing / opening / reclassifying
+    // since the last human sign-off (school_id-keyed; the receipt chain is the longitudinal record).
+    const rd = ns.roster_drift || {};
+    pushFlag("slot-drift-added", "Roster drift — schools ADDED since last approval (#499):", rd.added,
+      (s) => `${esc(s.name)} (${(s.bands || []).map(esc).join("/")})`,
+      " — new in the live NCES roster; the signed receipt predates them.");
+    pushFlag("slot-drift-removed", "Roster drift — schools REMOVED since last approval (#499):", rd.removed,
+      (s) => `${esc(s.name)} (${(s.bands || []).map(esc).join("/")})`,
+      " — in the signed receipt but gone from the live NCES roster (closed or reclassified out).");
+    pushFlag("slot-drift-band-moved", "Roster drift — band membership MOVED since last approval (#499):", rd.band_moved,
+      (s) => `${esc(s.name)}: ${(s.from || []).map(esc).join("/")} → ${(s.to || []).map(esc).join("/")}`,
+      " — the school's serving-band set changed; re-review before the approval authorizes a write.");
     const gaps = Object.entries(ns.coverage_gaps || {});
     if (gaps.length)
       rows.push(`<li><strong>Coverage gaps:</strong> ${gaps.map(([b, g]) => `${esc(b)} ${g.n_sampled}/${g.n_total}`).join(", ")} — bands resting on a thin sample.</li>`);

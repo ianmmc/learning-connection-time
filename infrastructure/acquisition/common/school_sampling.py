@@ -548,7 +548,12 @@ def band_rosters_for_district(district_id, year=None):
     covered — the exact 200%-coverage lie #253 exists to fix.)
 
     Returns {band: {"total": n, "by_source": {"level_clean": n, "grade_span": n,
-                    "level_override": n}, "schools": [name, ...]}} plus "_unattributed": [name, ...]
+                    "level_override": n}, "schools": [name, ...],
+                    "slot_recs": [{school_id, name, is_charter, gslo, gshi, level, effective_band,
+                    source}, ...]}} — slot_recs is the #499 slot-spine identity surface (REQ-144):
+    the same placements as `schools`, with the NCESSCH key (what receipts and drift compare on),
+    the span (so the console can explain a placement), the charter tag (REQ-060: tag, never
+    exclude), and per-placement `source`. Plus "_unattributed": [name, ...]
     for schools serving no band (unparseable span + ambiguous LEVEL) — surfaced, never silently
     dropped — and "_level_overrides": the #498 intermediate carve-outs applied (detect-and-flag:
     every override is visible at gate@8, never silent). Returns None when the CCD files aren't on
@@ -561,7 +566,7 @@ def band_rosters_for_district(district_id, year=None):
     except FileNotFoundError:
         return None
     out = {b: {"total": 0, "by_source": {"level_clean": 0, "grade_span": 0, "level_override": 0},
-               "schools": []} for b in BANDS}
+               "schools": [], "slot_recs": []} for b in BANDS}
     unattributed, overrides = [], []
     for sc in schools:
         # lb/is_override come from the loader's per-school stamp (one derivation, one home);
@@ -581,6 +586,14 @@ def band_rosters_for_district(district_id, year=None):
                    else "level_clean" if b == lb else "grade_span")
             out[b]["by_source"][src] += 1
             out[b]["schools"].append(sc.get("name", ""))
+            # #499 (REQ-144): the slot-spine identity row — same placement, with the NCESSCH key
+            # (drift/receipts compare on it), the span, and the charter tag (REQ-060: tag, never
+            # exclude; the slot view badges it — the Structure-C surface #243/#244 can read).
+            out[b]["slot_recs"].append({
+                "school_id": sc.get("school_id", ""), "name": sc.get("name", ""),
+                "is_charter": sc.get("is_charter", ""),
+                "gslo": sc.get("gslo"), "gshi": sc.get("gshi"), "level": sc.get("level"),
+                "effective_band": lb, "source": src})
     return {**out, "_unattributed": unattributed, "_level_overrides": overrides, "_year": year}
 
 
@@ -714,12 +727,10 @@ def lea_info(year):
 
 def charter_lookup(did, year="2024_25"):
     """{normalized_school_name: 'Yes'|'No'} for one LEA's open schools (NCES CHARTER_TEXT).
-    We TAG charters (NCES flag), never exclude (REQ-060); a name not found -> 'unknown'."""
-    import re
-    def norm(n):
-        n = re.sub(r"[^a-z0-9 ]", "", (n or "").lower())
-        n = re.sub(r"\b(elementary|middle|high|school|jr|junior|senior|academy|the|of|at)\b", "", n)
-        return re.sub(r"\s+", " ", n).strip()
+    We TAG charters (NCES flag), never exclude (REQ-060); a name not found -> 'unknown'.
+    Keys are `norm_school` — the ONE shared match axis (school_match.py); this had a private,
+    divergent re-implementation until #499 PR-A consolidated it (REQ-144)."""
+    from infrastructure.acquisition.common.school_match import norm_school as norm
     out = {}
     with open(_sch_file(year), encoding="utf-8-sig", errors="replace") as fh:
         for row in csv.DictReader(fh):

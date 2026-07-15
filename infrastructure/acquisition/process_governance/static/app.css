@@ -571,3 +571,11 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 /* #474: a hand-entered school is loudly tagged — single-source, citation attached */
 .s8-human-added { color: var(--status-warning, #b45309); margin-top: 3px; font-weight: 600; }
 .s8-combined-scope { color: var(--status-warning, #b45309); margin-top: 3px; }
+/* #499 (REQ-144): the slot strip — the live roster crossed with the facts; gaps are named slots */
+.s8-slots { font-size: var(--fs-xs); margin: 0 0 10px; padding: 8px; border: 1px solid var(--border-subtle); border-radius: 6px; background: var(--surface-page); }
+.s8-slot-row { margin-top: 5px; display: flex; flex-wrap: wrap; gap: 4px; align-items: baseline; }
+.s8-slot { display: inline-block; padding: 1px 7px; border-radius: 10px; border: 1px solid var(--border-strong); }
+.s8-slot-unfilled { border-style: dashed; color: var(--text-secondary); }
+.s8-slot-ambiguous { border-color: var(--status-warning, #b45309); color: var(--status-warning, #b45309); }
+.s8-slot-extra { border-color: var(--text-brand); color: var(--text-brand); }
+.s8-slot-charter { font-size: 0.85em; color: var(--text-secondary); border: 1px solid var(--border-subtle); border-radius: 3px; padding: 0 3px; }
