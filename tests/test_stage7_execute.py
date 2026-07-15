@@ -691,7 +691,7 @@ def test_compose_slot_targets_restricted_to_plan_targets(gov_session, monkeypatc
     # REQ-150: slot_targets = the live unfilled slots ∩ the plan's target bands; absent projection
     # data degrades to no preference (build_followup_batch's #162 path).
     monkeypatch.setattr(EX, "_unfilled_slots_now",
-                        lambda s, dids: {"D1": {"high": ["X9"], "elementary": ["X1"]}})
+                        lambda s, dids, **kw: {"D1": {"high": ["X9"], "elementary": ["X1"]}})
     captured = {}
     def spy(year, batch_id, targets, **kw):
         # stub, NOT the real builder — build_followup_batch reads the on-disk CCD CSVs,
@@ -699,7 +699,7 @@ def test_compose_slot_targets_restricted_to_plan_targets(gov_session, monkeypatc
         captured.update(kw)
         return {"districts": []}, []
     monkeypatch.setattr(EX.Q1, "build_followup_batch", spy)
-    monkeypatch.setattr(EX, "_gather", lambda s, hh, mr: EX.Gathered(
+    monkeypatch.setattr(EX, "_gather", lambda s, hh, mr, **kw: EX.Gathered(
         rows=[{"request_id": 1, "district_id": "D1", "route": "7->2", "band": "high"}],
         claimed={"D1": ["high"]}, exec_rounds={}, defer_76=set(), covered={}, real={},
         batch_id="batch_99999", benchmark_excluded=[], satisfied={}))
@@ -709,9 +709,53 @@ def test_compose_slot_targets_restricted_to_plan_targets(gov_session, monkeypatc
 
 
 @pytest.mark.parametrize("helper", ["_satisfied_bands_now", "_unfilled_slots_now"])
-def test_live_read_helpers_survive_the_ccd_loaders_systemexit(monkeypatch, helper):
-    # 'best-effort, never blocks' means BaseException too: the CCD CSV loader hard-exits
-    # (SystemExit) on a data-less checkout — the helpers must degrade to no-signal, not crash.
+def test_live_read_helpers_degrade_to_no_signal_on_loader_failure(monkeypatch, helper):
+    # 'best-effort, never blocks': any loader failure (a data-less checkout raises
+    # FileNotFoundError — fixed at the source, epic-#499 review round: _lea_file no longer uses
+    # SystemExit for an ordinary missing-file condition) degrades to no-signal, never a crash.
     monkeypatch.setattr(EX.CA8, "load_closing_argument",
-                        lambda s, did: (_ for _ in ()).throw(SystemExit("no ccd csv")))
+                        lambda s, did: (_ for _ in ()).throw(FileNotFoundError("no ccd csv")))
     assert getattr(EX, helper)(None, ["D1"]) == {}
+
+
+def test_lea_file_raises_an_ordinary_exception_not_systemexit(tmp_path, monkeypatch):
+    # Epic-#499 review round (the altitude finding): a missing/ambiguous CCD data file is an
+    # ordinary FileNotFoundError like _sch_file/_virtual_file — process-exit semantics slipped
+    # past every best-effort `except Exception` guard downstream.
+    from infrastructure.acquisition.common import school_sampling as S
+    monkeypatch.setattr(S, "_NCES_DIR", tmp_path)
+    (tmp_path / "2024_25").mkdir()
+    with pytest.raises(FileNotFoundError):
+        S._lea_file("2024_25")
+
+
+def test_compose_loads_each_closing_argument_once(monkeypatch):
+    # Epic-#499 review round: satisfied + unfilled share one per-compose cache — the ~9-query
+    # closing-argument assembly must run once per district, not once per consumer.
+    calls = []
+    def fake_load(s, did):
+        calls.append(did)
+        return {"bands": {}, "slot_projection": {}}
+    monkeypatch.setattr(EX.CA8, "load_closing_argument", fake_load)
+    cache = {}
+    EX._satisfied_bands_now(None, ["D1", "D2"], ca_cache=cache)
+    EX._unfilled_slots_now(None, ["D1", "D2"], ca_cache=cache)
+    assert calls == ["D1", "D2"]        # second consumer served from the cache
+
+
+def test_gathered_satisfied_default_is_not_a_shared_dict():
+    # Epic-#499 review round: a NamedTuple `= {}` default is ONE object shared by every
+    # instance — the mutable-default footgun. None-default, callers `or {}`.
+    assert EX.Gathered.empty().satisfied is None
+
+
+def test_unfilled_slots_covers_zero_fact_bands(monkeypatch):
+    # Epic-#499 review round: a claimed band with ZERO accepted facts has no ca['bands'] entry,
+    # but its whole roster is unheard — slot-grain pursuit must see it via slot_projection
+    # (the exact population the untried-heuristic fallback was worst for).
+    ca = {"bands": {},          # no facts anywhere
+          "slot_projection": {"middle": {"slots": [
+              {"school_id": "M1", "slot_state": "unfilled"},
+              {"school_id": "M2", "slot_state": "filled"}], "extras": [], "stats": {}}}}
+    monkeypatch.setattr(EX.CA8, "load_closing_argument", lambda s, did: ca)
+    assert EX._unfilled_slots_now(None, ["D1"]) == {"D1": {"middle": ["M1"]}}

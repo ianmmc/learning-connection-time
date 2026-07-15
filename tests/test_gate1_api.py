@@ -147,8 +147,10 @@ def test_abandon_refuses_ever_approved_via_api(client):
 
 
 def test_roster_spine_endpoint_shape(client, monkeypatch):
-    """#499 REQ-150: the gate@1 roster-spine endpoint — live slot_recs projected against accepted
-    facts; 404 (honest null) when the CCD roster is unavailable."""
+    """#499 REQ-150: the gate@1 roster-spine endpoint — the CLOSING ARGUMENT's slot projection
+    reshaped (epic-#499 review round: never a parallel raw-facts projection), and 404 (honest
+    null) when the CCD roster is unavailable. The roster is patched at closing_argument's own
+    SS seam so the REAL load path (exclusions, dispositions, band facts) runs end to end."""
     from infrastructure.acquisition.process_governance import server as SRV
     rosters = {"high": {"total": 2, "by_source": {}, "schools": ["North SHS", "South SHS"],
                         "slot_recs": [
@@ -159,17 +161,40 @@ def test_roster_spine_endpoint_shape(client, monkeypatch):
                              "gslo": "09", "gshi": "12", "level": "High",
                              "effective_band": "high", "source": "level_clean"}]},
                "_year": "2024_25"}
-    monkeypatch.setattr(SRV.SS_SAMPLING, "band_rosters_for_district", lambda d: rosters)
+    monkeypatch.setattr(SRV.CA8.SS, "band_rosters_for_district", lambda d: rosters)
     r = client.get(f"/api/queue/{BID}/roster/ZZTESTA")
     assert r.status_code == 200
     body = r.json()
     assert body["nces_year"] == "2024_25" and "criteria" in body
     slots = {s["school_id"]: s for s in body["bands"]["high"]["slots"]}
     assert slots["X2"]["is_charter"] == "Yes"
-    assert all(s["slot_state"] in ("filled", "unfilled") for s in slots.values())
+    assert all(s["slot_state"] in ("filled", "unfilled", "projected") for s in slots.values())
 
-    monkeypatch.setattr(SRV.SS_SAMPLING, "band_rosters_for_district", lambda d: None)
+    monkeypatch.setattr(SRV.CA8.SS, "band_rosters_for_district", lambda d: None)
     assert client.get(f"/api/queue/{BID}/roster/ZZTESTA").status_code == 404
+
+
+def test_roster_spine_is_the_gate8_projection_not_a_parallel_one(client, monkeypatch):
+    """Epic-#499 review round (the root-cause finding): the spine endpoint must reshape
+    load_closing_argument's slot_projection — the one place #257 exclusions, #474 human adds,
+    REQ-145 dispositions and REQ-146 band-fact projection are applied — so gate@1 and gate@8
+    can never disagree about the same district's slot states."""
+    from infrastructure.acquisition.process_governance import server as SRV
+    ca = {"slot_projection": {"high": {
+              "slots": [{"school_id": "X1", "roster_school": "North SHS", "norm_key": "north",
+                         "gslo": "09", "gshi": "12", "is_charter": "No",
+                         "roster_source": "level_clean", "slot_state": "projected",
+                         "match": None}],
+              "extras": [],
+              "stats": {"n_slots": 1, "n_filled": 0, "n_projected": 1, "n_unfilled": 0,
+                        "n_extras": 0, "n_ambiguous": 0, "slot_coverage": 0.0}}},
+          "provenance": {"denominator": {"nces_year": "2024_25"}}}
+    monkeypatch.setattr(SRV.CA8, "load_closing_argument", lambda con, d: ca)
+    body = client.get(f"/api/queue/{BID}/roster/ZZTESTA").json()
+    # the gate@8-only "projected" state passes straight through — proof the endpoint reads the
+    # assembled projection, not a raw accepted-facts rebuild (which can't produce "projected")
+    assert body["bands"]["high"]["slots"][0]["slot_state"] == "projected"
+    assert body["nces_year"] == "2024_25"
 
 
 def test_gate1_console_carries_the_roster_spine_markers():

@@ -218,6 +218,47 @@ class TestDispositions:
         kinds = [o["kind"] for o in out["high"]["orphaned_dispositions"]]
         assert "extra_now_in_roster" in kinds
 
+    def test_assign_wins_regardless_of_fact_order(self):
+        # Epic-#499 review round: an exact-name fill earlier in the loop must NOT shadow a later
+        # fact's human assign to that same slot — assigned facts are processed first.
+        rosters = _rosters({"elementary": [_rec("001", "Oak Elementary School")]})
+        # fact "oak" exact-matches slot 001; the HUMAN assigned fact "oak campus" to 001.
+        out = SP.project_slots(
+            rosters, {"elementary": ["oak", "oak campus"]},
+            assignments=[_asg("elementary", "001", "oak campus", "assign")])
+        s = out["elementary"]["slots"][0]
+        assert s["match"]["basis"] == ["disposition"]           # the human's fact holds the slot
+        assert s["match"]["norm_school_fact"] == "oak campus"
+        # the name-matched fact is displaced to extras — visible, never silently dropped
+        assert [x["norm_school_fact"] for x in out["elementary"]["extras"]] == ["oak"]
+
+    def test_second_assign_on_one_slot_surfaces_as_shadowed(self):
+        # Two standing assigns on one slot (the unique index permits it — norm_school_fact is in
+        # the key): the shadowed one must be VISIBLE for human retirement, never silently inert.
+        rosters = _rosters({"elementary": [_rec("001", "Oak Elementary School")]})
+        out = SP.project_slots(
+            rosters, {"elementary": ["first fact", "second fact"]},
+            assignments=[_asg("elementary", "001", "first fact", "assign"),
+                         _asg("elementary", "001", "second fact", "assign")])
+        el = out["elementary"]
+        assert el["slots"][0]["match"]["norm_school_fact"] == "first fact"
+        shadowed = [o for o in el["orphaned_dispositions"] if o["kind"] == "assign_shadowed"]
+        assert len(shadowed) == 1
+        assert shadowed[0]["norm_school_fact"] == "second fact"
+        assert shadowed[0]["slot_carries"] == "first fact"
+
+    def test_ambiguous_branch_never_overwrites_an_existing_match(self):
+        # Epic-#499 review round: a caller whose facts aren't norm-key-deduped (two entries
+        # colliding on one key) must not double-count n_ambiguous or overwrite the first fact's
+        # ambiguity record — the same defensive guard the single-hit branch always had.
+        rosters = _rosters({"elementary": [_rec("001", "Washington Elementary School"),
+                                           _rec("002", "Washington Academy")]})
+        out = SP.project_slots(rosters, {"elementary": ["washington", "washington"]})
+        el = out["elementary"]
+        assert el["stats"]["n_ambiguous"] == 1                  # one ambiguity, not two
+        for s in el["slots"]:
+            assert s["match"]["confidence"] == "ambiguous"
+
 
 class TestBandFactProjection:
     """REQ-146: band-grain facts — conjunction fills named slots; blankets project; the band

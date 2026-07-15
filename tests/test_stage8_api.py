@@ -289,7 +289,9 @@ def test_slot_assign_validation():
 
 
 def test_slot_assign_upserts_and_backs_up(monkeypatch):
-    # DELETE (replace-on-repost) -> INSERT -> backup SELECT (quarantined under pytest) -> commit
+    # DELETE (replace-on-repost) -> INSERT -> backup SELECT (quarantined under pytest) -> commit.
+    # CCD-absent (roster None) skips the live-slot check — best-effort, never blocks.
+    monkeypatch.setattr(SRV.SS_SAMPLING, "band_rosters_for_district", lambda d: None)
     _use(monkeypatch, _Con([_Result(), _Result(), _Result(rows=[])]))
     r = client.post("/api/aggregate/slot-assign",
                     json={"district_id": "0100810", "band": "elementary", "school": "Washington",
@@ -298,6 +300,27 @@ def test_slot_assign_upserts_and_backs_up(monkeypatch):
     assert r.status_code == 200
     body = r.json()
     assert body["ok"] and body["norm_school_fact"] == "washington" and body["disposition"] == "assign"
+
+
+def test_slot_assign_rejects_a_slot_id_not_in_the_live_roster(monkeypatch):
+    # Epic-#499 review round: a mistyped/stale slot_id must 400 at write time — inserted, it
+    # would surface only later as an orphan, byte-identical to legitimate roster drift.
+    rosters = {"elementary": {"slot_recs": [
+        {"school_id": "010081000001", "name": "Washington Elementary School", "is_charter": "No",
+         "gslo": "KG", "gshi": "05", "level": "Elementary", "effective_band": "elementary",
+         "source": "level_clean"}]}, "_year": "2024_25"}
+    monkeypatch.setattr(SRV.SS_SAMPLING, "band_rosters_for_district", lambda d: rosters)
+    _use(monkeypatch, _Con([_Result(), _Result(), _Result(rows=[])]))
+    bad = client.post("/api/aggregate/slot-assign",
+                      json={"district_id": "0100810", "band": "elementary", "school": "Washington",
+                            "roster_school_id": "999NOTASLOT", "disposition": "assign",
+                            "reason": "x"})
+    assert bad.status_code == 400 and "not a live" in bad.json()["detail"]
+    good = client.post("/api/aggregate/slot-assign",
+                       json={"district_id": "0100810", "band": "elementary", "school": "Washington",
+                             "roster_school_id": "010081000001", "disposition": "assign",
+                             "reason": "x"})
+    assert good.status_code == 200
 
 
 def test_slot_assign_remove_404s_when_absent(monkeypatch):

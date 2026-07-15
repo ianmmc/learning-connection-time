@@ -130,6 +130,33 @@ def test_district_detail_404_when_no_extraction(monkeypatch):
     assert client.get("/api/extract/district/ZZ").status_code == 404
 
 
+def test_contamination_sees_the_full_live_roster_at_gate7(monkeypatch):
+    # Epic-#499 review round: the gate@7 #237 twin matches against the FULL live roster (gate@8
+    # cs_roster parity, REQ-145) — a sibling school never selected into the Stage-1 batch still
+    # roster-matches, so the two gates can't disagree about the same contamination signal.
+    ext = _Result(rows=[{"extraction_id": 1, "handoff_hash": "h", "created_at": "t",
+                         "created_by": "x", "cost_usd": 0.003, "n_accepted": 2,
+                         "n_unresolved": 0, "n_reps": 1}])
+    facts = _Result(rows=[
+        {"extraction_id": 1, "handoff_hash": "h", "band": "elementary", "school": "oak",
+         "status": "accepted", "start_time": "08:00", "end_time": "14:00", "gross_minutes": 360,
+         "method": "council_agree", "models_json": '["m1"]', "detail_json": None,
+         "rec_key": "D1:aa", "source_file": "f"},
+        {"extraction_id": 1, "handoff_hash": "h", "band": "elementary", "school": "maple",
+         "status": "accepted", "start_time": "08:00", "end_time": "14:00", "gross_minutes": 360,
+         "method": "council_agree", "models_json": '["m1"]', "detail_json": None,
+         "rec_key": "D1:bb", "source_file": "f"}])
+    meta = _Result(rows=[{"nces": 1, "sbb": None}])   # single-school LEA, Stage-1 roster EMPTY
+    _use(monkeypatch, _Con([ext, facts, meta, _Result()]))
+    monkeypatch.setattr(SRV.SS_SAMPLING, "band_rosters_for_district",
+                        lambda d: {"elementary": {"schools": ["Oak Elementary School",
+                                                              "Maple Elementary School"]},
+                                   "_year": "2024_25"})
+    cont = client.get("/api/extract/district/D1").json()["contamination"]
+    assert cont["suspected"] is True
+    assert "oak" in cont["roster_matched"] and "maple" in cont["roster_matched"]
+
+
 # ------------------------------- request review (the mutation) -------------------------------
 def test_review_approve_updates(monkeypatch):
     # the UPDATE now RETURNs the row's identity (#218: feeds the gate@7 calibration hook — the

@@ -568,89 +568,72 @@ def stage5_facets():
         }
 
 
+def _backup_precious_table(con, select_sql: str, tracked_path) -> int:
+    """THE one precious-table→tracked-JSON exporter body (epic-#499 review round: six hand-copied
+    twins differing only in SQL + path — a future fix to the atomic-write/quarantine pattern that
+    missed one would silently strip #178 protection from that table). Atomic write (tmp+replace);
+    under pytest the tracked file is quarantine-redirected via guard_tracked_backup (issue #178)."""
+    rows = con.execute(text(select_sql)).mappings().all()
+    out = paths.guard_tracked_backup(tracked_path)
+    tmp = out.with_name(out.name + ".tmp")
+    tmp.write_text(json.dumps([dict(r) for r in rows], indent=2))
+    tmp.replace(out)
+    return len(rows)
+
+
 # ---- follow-up flags (the top attention tier — a directive on a district or a record) ----
 def _backup_followups(con) -> int:
     """Back the precious follow-up flags to a tracked JSON (the labels.json pattern), so a human
-    directive survives a DB wipe. Atomic write. Under pytest the tracked file is
-    quarantine-redirected (issue #178)."""
-    rows = con.execute(text("SELECT scope, target_id, district_id, directive, actor, created_at, resolved_at "
-                            "FROM followup_flag ORDER BY id")).mappings().all()
-    data = [dict(r) for r in rows]
-    out = paths.guard_tracked_backup(paths.FOLLOWUP_FLAGS_JSON)
-    tmp = out.with_name(out.name + ".tmp")
-    tmp.write_text(json.dumps(data, indent=2))
-    tmp.replace(out)
-    return len(data)
+    directive survives a DB wipe."""
+    return _backup_precious_table(
+        con, "SELECT scope, target_id, district_id, directive, actor, created_at, resolved_at "
+             "FROM followup_flag ORDER BY id", paths.FOLLOWUP_FLAGS_JSON)
 
 
 def _backup_band_exclusions(con) -> int:
-    """Back the precious gate@8 band-exclusions (#257) to a tracked JSON (the labels.json pattern) — a
-    standing 'this school is not in this band' human judgment must survive a DB wipe and carry a git
-    history. Atomic write; pytest quarantine-redirected (issue #178)."""
-    rows = con.execute(text(
-        "SELECT exclusion_id, district_id, band, norm_school, school, reason, actor, created_at "
-        "FROM band_exclusion ORDER BY exclusion_id")).mappings().all()
-    out = paths.guard_tracked_backup(paths.BAND_EXCLUSIONS_JSON)
-    tmp = out.with_name(out.name + ".tmp")
-    tmp.write_text(json.dumps([dict(r) for r in rows], indent=2))
-    tmp.replace(out)
-    return len(rows)
+    """Back the precious gate@8 band-exclusions (#257) to a tracked JSON — a standing 'this school
+    is not in this band' human judgment must survive a DB wipe and carry a git history."""
+    return _backup_precious_table(
+        con, "SELECT exclusion_id, district_id, band, norm_school, school, reason, actor, "
+             "created_at FROM band_exclusion ORDER BY exclusion_id", paths.BAND_EXCLUSIONS_JSON)
 
 
 def _backup_human_added(con) -> int:
-    """Back the precious gate@8 hand-entered facts (#474) to a tracked JSON (the labels.json
-    pattern) — a single-source human assertion feeding a published metric must survive a DB wipe and
-    carry a git history. Atomic write; pytest quarantine-redirected (issue #178)."""
-    rows = con.execute(text(
-        "SELECT added_id, district_id, band, norm_school, school, start_time, end_time, source_url, "
-        "reason, actor, created_at FROM human_added_fact ORDER BY added_id")).mappings().all()
-    out = paths.guard_tracked_backup(paths.HUMAN_ADDED_FACTS_JSON)
-    tmp = out.with_name(out.name + ".tmp")
-    tmp.write_text(json.dumps([dict(r) for r in rows], indent=2))
-    tmp.replace(out)
-    return len(rows)
+    """Back the precious gate@8 hand-entered facts (#474) to a tracked JSON — a single-source human
+    assertion feeding a published metric must survive a DB wipe and carry a git history."""
+    return _backup_precious_table(
+        con, "SELECT added_id, district_id, band, norm_school, school, start_time, end_time, "
+             "source_url, reason, actor, created_at FROM human_added_fact ORDER BY added_id",
+        paths.HUMAN_ADDED_FACTS_JSON)
 
 
 def _backup_slot_assignments(con) -> int:
-    """Back the precious gate@8 slot dispositions (#499 REQ-145) to a tracked JSON (the labels.json
-    pattern) — a standing 'this fact IS/IS NOT that roster slot' human judgment must survive a DB
-    wipe and carry a git history. Atomic write; pytest quarantine-redirected (issue #178)."""
-    rows = con.execute(text(
-        "SELECT assignment_id, district_id, band, roster_school_id, norm_school_fact, school, "
-        "disposition, reason, actor, created_at FROM slot_assignment ORDER BY assignment_id")).mappings().all()
-    out = paths.guard_tracked_backup(paths.SLOT_ASSIGNMENTS_JSON)
-    tmp = out.with_name(out.name + ".tmp")
-    tmp.write_text(json.dumps([dict(r) for r in rows], indent=2))
-    tmp.replace(out)
-    return len(rows)
+    """Back the precious gate@8 slot dispositions (#499 REQ-145) to a tracked JSON — a standing
+    'this fact IS/IS NOT that roster slot' human judgment must survive a DB wipe and carry a git
+    history."""
+    return _backup_precious_table(
+        con, "SELECT assignment_id, district_id, band, roster_school_id, norm_school_fact, school, "
+             "disposition, reason, actor, created_at FROM slot_assignment ORDER BY assignment_id",
+        paths.SLOT_ASSIGNMENTS_JSON)
 
 
 def _backup_stage8_approvals(con) -> int:
-    """Back the precious gate@8 approval decisions to a tracked JSON (the labels.json pattern) — a
-    published-LCT authorization is an auditable governance decision that must survive a DB wipe and carry
-    a git history. Append-only rows; atomic write; pytest quarantine-redirected (issue #178)."""
-    rows = con.execute(text(
-        "SELECT approval_id, district_id, disposition, actor, reason, facts_fingerprint, receipt_json, "
-        "created_at FROM stage8_approval ORDER BY approval_id")).mappings().all()
-    out = paths.guard_tracked_backup(paths.STAGE8_APPROVALS_JSON)
-    tmp = out.with_name(out.name + ".tmp")
-    tmp.write_text(json.dumps([dict(r) for r in rows], indent=2))
-    tmp.replace(out)
-    return len(rows)
+    """Back the precious gate@8 approval decisions to a tracked JSON — a published-LCT authorization
+    is an auditable governance decision that must survive a DB wipe and carry a git history.
+    Append-only rows."""
+    return _backup_precious_table(
+        con, "SELECT approval_id, district_id, disposition, actor, reason, facts_fingerprint, "
+             "receipt_json, created_at FROM stage8_approval ORDER BY approval_id",
+        paths.STAGE8_APPROVALS_JSON)
 
 
 # ---- per-gate manual/auto mode (the ramp-up control surface — REQ-108, #104) ----
 def _backup_gate_mode(con) -> int:
-    """Back the precious per-gate mode rows to a tracked JSON (the labels.json pattern) — setting a gate
-    auto is an auditable governance decision that must survive a DB wipe and carry a git history. Atomic
-    write; under pytest the tracked file is quarantine-redirected (issue #178)."""
-    rows = con.execute(text("SELECT gate, configured_mode, license_state, updated_at, actor "
-                            "FROM gate_mode ORDER BY gate")).mappings().all()
-    out = paths.guard_tracked_backup(paths.GATE_MODE_JSON)
-    tmp = out.with_name(out.name + ".tmp")
-    tmp.write_text(json.dumps([dict(r) for r in rows], indent=2))
-    tmp.replace(out)
-    return len(rows)
+    """Back the precious per-gate mode rows to a tracked JSON — setting a gate auto is an auditable
+    governance decision that must survive a DB wipe and carry a git history."""
+    return _backup_precious_table(
+        con, "SELECT gate, configured_mode, license_state, updated_at, actor "
+             "FROM gate_mode ORDER BY gate", paths.GATE_MODE_JSON)
 
 
 @functools.lru_cache(maxsize=2)
@@ -956,24 +939,21 @@ def queue_roster_spine(batch_id: str, district_id: str):
     visible from the start (batch_id is for the URL shape/audit only; the roster is never frozen
     per batch). 404 when CCD files are absent (the honest null — the caller shows 'roster
     unavailable', never a fabricated list)."""
-    rosters = SS_SAMPLING.band_rosters_for_district(district_id)
-    if not rosters:
-        raise HTTPException(404, "live NCES roster unavailable (CCD files not on disk)")
-    from infrastructure.acquisition.common import slot_spine as SP
-    facts_by_band: dict = {}
+    # THE one projection, not a parallel one (epic-#499 review round): an earlier draft rebuilt
+    # project_slots here from a raw accepted-facts query — bypassing the #257 exclusions, #474
+    # human adds, REQ-145 dispositions and REQ-146 band-fact projection gate@8 applies — so the
+    # two gates silently disagreed about the same district's slot states. load_closing_argument
+    # is the single assembled read path; this endpoint only reshapes its slot_projection.
     with gdb.session_scope() as con:
-        for did_band in con.execute(text(
-                "SELECT DISTINCT f.band, f.school FROM school_fact f "
-                "JOIN extraction e ON e.extraction_id = f.extraction_id "
-                "WHERE f.district_id = :d AND f.status = 'accepted' AND e.run_kind = 'production'"),
-                {"d": district_id}):
-            facts_by_band.setdefault(did_band[0], []).append(did_band[1])
-    proj = SP.project_slots(rosters, facts_by_band)
+        ca = CA8.load_closing_argument(con, district_id)
+    proj = ca.get("slot_projection") or {}
+    if not proj:
+        raise HTTPException(404, "live NCES roster unavailable (CCD files not on disk)")
     return {"district_id": district_id,
-            "nces_year": rosters.get("_year"),
+            "nces_year": (ca.get("provenance") or {}).get("denominator", {}).get("nces_year"),
             "criteria": SS_SAMPLING.SCHOOL_CRITERIA_TEXT,
-            "bands": {b: {"slots": [{k: s_[k] for k in ("school_id", "roster_school", "gslo",
-                                                        "gshi", "is_charter", "slot_state")}
+            "bands": {b: {"slots": [{k: s_.get(k) for k in ("school_id", "roster_school", "gslo",
+                                                            "gshi", "is_charter", "slot_state")}
                                     for s_ in p["slots"]],
                           "stats": p["stats"]}
                       for b, p in proj.items()}}
@@ -2023,6 +2003,18 @@ def extract_district(district_id: str):
                 # non-str input — e.g. a text->JSONB column migration handing back a pre-parsed dict —
                 # and the intent here is degrade-to-no-roster, never a 500.
                 roster = []
+        # Epic-#499 review round: the FULL live roster, matching gate@8's cs_roster (REQ-145's
+        # "detector sees beyond the Stage-1 selected subset" applies to BOTH call sites) — the
+        # narrow subset here made gate@7 flag contamination gate@8 correctly suppresses when the
+        # matching sibling school simply wasn't selected into the batch. CCD-absent degrades to
+        # the Stage-1 subset (the pre-#499 behavior).
+        try:
+            _br = SS_SAMPLING.band_rosters_for_district(district_id)
+        except Exception:
+            _br = None
+        for _b, _m in (_br or {}).items():
+            if isinstance(_m, dict) and _m.get("schools"):
+                roster += _m["schools"]
         contamination = AGG.detect_single_school_over_extraction(
             agg, meta["nces"] if meta else None, roster)
         # ALL of the district's directives, across every handoff (#137): pinning to the latest
@@ -2305,6 +2297,21 @@ async def aggregate_slot_assign(payload: dict):
         raise HTTPException(400, "confirm_extra takes no roster_school_id — it CREATES the slot")
     if not norm_school_strict(school):
         raise HTTPException(400, f"school name {school!r} is degenerate (#245) — nothing to dispose")
+    # Epic-#499 review round: an assign/reject must name a slot that EXISTS in the district's live
+    # roster at write time — a mistyped/stale slot_id would otherwise insert cleanly and surface
+    # only later as an orphan, byte-identical to legitimate roster drift (the data-entry mistake
+    # hides inside the drift signal). CCD-absent skips the check (best-effort, never blocks).
+    if disposition in ("assign", "reject"):
+        try:
+            _rosters = SS_SAMPLING.band_rosters_for_district(did)
+        except Exception:
+            _rosters = None
+        if _rosters is not None:
+            live_ids = {rc.get("school_id")
+                        for rc in ((_rosters.get(band) or {}).get("slot_recs") or [])}
+            if slot_id not in live_ids:
+                raise HTTPException(400, f"roster_school_id {slot_id!r} is not a live {band} "
+                                         f"slot for {did} — refresh the view and re-pick")
     key = norm_school(school)
     with gdb.session_scope() as con:
         con.execute(text("DELETE FROM slot_assignment WHERE district_id = :d AND band = :b "

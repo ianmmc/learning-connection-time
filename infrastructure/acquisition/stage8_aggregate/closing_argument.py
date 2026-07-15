@@ -468,6 +468,14 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
                             continue
                         w = fact_of.get((band, mt["norm_school_fact"]))
                         d_gross = (w[2].get("gross") if w else None)
+                        if d_gross is None:
+                            # #474 (epic-#499 review round): a HAND-ADDED fact lives in
+                            # included_agg but not fact_of (enriched indexes council winners
+                            # only) — a human's direct observation disagreeing with the blanket
+                            # is a conflict too, arguably the loudest kind.
+                            ig = next((r for r in included_agg if r["band"] == band
+                                       and _norm(r["school"]) == mt["norm_school_fact"]), None)
+                            d_gross = ig.get("gross") if ig else None
                         if d_gross is None or d_gross == bf["gross"]:
                             continue
                         verdict = SP.resolve_slot_conflict(
@@ -616,9 +624,12 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
     # #499: roster DRIFT vs the last approved receipt — the last slot list a human signed is the
     # baseline (the receipt chain is the longitudinal record); school_id-keyed, so renames don't
     # false-positive. None (pre-#499 receipt / no approval) reports nothing — the honest null.
+    # Baseline prefers the receipt's slot_projection (ALL bands, incl. zero-fact ones); older
+    # receipts carry slots only under bands — the fact-bearing subset — so drift on a band that
+    # had no facts at sign-off honestly can't be seen against them.
     if slot_proj and last_receipt:
-        receipt_slots = {b: (m or {}).get("slots") or []
-                         for b, m in (last_receipt.get("bands") or {}).items()}
+        rec_sp = last_receipt.get("slot_projection") or last_receipt.get("bands") or {}
+        receipt_slots = {b: (m or {}).get("slots") or [] for b, m in rec_sp.items()}
         drift = SP.roster_drift({b: p["slots"] for b, p in slot_proj.items()}, receipt_slots)
         if drift:
             negative_space["roster_drift"] = drift
@@ -653,6 +664,13 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
     return {
         "district_id": district_id,
         "bands": out_bands,
+        # #499 (epic review round): the FULL slot projection, every band — bands[b].slots only
+        # exists for fact-bearing bands, so a claimed band with ZERO facts (the population most
+        # in need of slot-grain pursuit) had no slot list anywhere in the artifact. This is THE
+        # one projection consumers read (gate@1 spine endpoint, _unfilled_slots_now); it rides
+        # into the receipt (the drift baseline covers zero-fact bands) and stays OUT of
+        # fingerprint() — roster churn must never stale a signed decision.
+        "slot_projection": slot_proj,
         "negative_space": negative_space,
         "capture_events": capture_events or [],
         "provenance": {

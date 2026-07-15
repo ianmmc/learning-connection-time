@@ -49,12 +49,18 @@ def test_all_exporters_route_through_the_guard():
     from infrastructure.acquisition.stage5_filter import build_signals as BS
     from infrastructure.acquisition.process_governance import server
 
-    for fn in (DS.export_status, BS.export_labels, BS.export_splits,
-               server._backup_followups, server._backup_gate_mode, server._backup_stage8_approvals,
-               server._backup_band_exclusions, server._backup_human_added,
-               server._backup_slot_assignments):
+    for fn in (DS.export_status, BS.export_labels, BS.export_splits):
         assert "guard_tracked_backup" in inspect.getsource(fn), (
             f"{fn.__module__}.{fn.__name__} writes a tracked precious backup without the #178 guard")
+    # server.py's table exporters route through the ONE shared body (epic-#499 review round:
+    # six hand-copied twins meant a pattern fix could miss one) — the guard lives in the helper,
+    # and every wrapper must call it.
+    assert "guard_tracked_backup" in inspect.getsource(server._backup_precious_table)
+    for fn in (server._backup_followups, server._backup_gate_mode, server._backup_stage8_approvals,
+               server._backup_band_exclusions, server._backup_human_added,
+               server._backup_slot_assignments):
+        assert "_backup_precious_table" in inspect.getsource(fn), (
+            f"{fn.__module__}.{fn.__name__} bypasses the shared #178-guarded exporter body")
 
 
 @pytest.mark.govdb

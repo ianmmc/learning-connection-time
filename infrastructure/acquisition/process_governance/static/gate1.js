@@ -183,9 +183,13 @@
         });
         try {
           const r = await api(`/api/queue/${CURRENT}/roster/${det.dataset.did}`);
-          const chip = (s) => `<span class="q-spine-slot${s.slot_state === "unfilled" ? " q-spine-unfilled" : ""}${selected.has(s.school_id) ? " q-spine-selected" : ""}"
+          // slot_state comes from the SAME projection gate@8 renders (exclusions, human adds,
+          // dispositions, band-fact "projected" all applied) — the two gates can't disagree.
+          const TITLES = { unfilled: "no accepted fact has ever matched this school",
+                           projected: "covered by a band-level blanket statement, not individually observed" };
+          const chip = (s) => `<span class="q-spine-slot${s.slot_state === "unfilled" ? " q-spine-unfilled" : ""}${s.slot_state === "projected" ? " q-spine-projected" : ""}${selected.has(s.school_id) ? " q-spine-selected" : ""}"
               data-feat="${s.slot_state === "unfilled" ? "s1-slot-unfilled" : "s1-slot-filled"}"${selected.has(s.school_id) ? ' data-feat2="s1-slot-selected"' : ""}
-              title="${s.slot_state === "unfilled" ? "no accepted fact has ever matched this school" : "has an accepted fact"}${selected.has(s.school_id) ? " · selected in THIS batch" : ""}">${esc(s.roster_school)}${selected.has(s.school_id) ? " ✓" : ""}${s.is_charter === "Yes" ? ` <span class="q-spine-ch">ch</span>` : ""} <span class="muted">${esc(s.gslo || "")}–${esc(s.gshi || "")}</span></span>`;
+              title="${TITLES[s.slot_state] || "has an accepted fact"}${selected.has(s.school_id) ? " · selected in THIS batch" : ""}">${esc(s.roster_school)}${selected.has(s.school_id) ? " ✓" : ""}${s.is_charter === "Yes" ? ` <span class="q-spine-ch">ch</span>` : ""} <span class="muted">${esc(s.gslo || "")}–${esc(s.gshi || "")}</span></span>`;
           body.innerHTML = Object.entries(r.bands).map(([b, m]) =>
             `<div class="q-spine-band"><b>${esc(b)}</b> <span class="muted">(${m.stats.n_filled} filled / ${m.stats.n_unfilled} unfilled of ${m.stats.n_slots})</span><br/>${m.slots.map(chip).join(" ")}</div>`).join("")
             + `<p class="muted q-spine-criteria">${esc(r.criteria)} (live NCES ccd_sch ${esc(r.nces_year)})</p>`;
