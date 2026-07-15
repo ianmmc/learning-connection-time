@@ -1,0 +1,265 @@
+{
+  "handoff_hash": "54d8be261eca",
+  "created_at": "2026-07-15T01:55:46Z",
+  "created_by": "ian",
+  "verified_only": false,
+  "fingerprints": {
+    "4222350": {
+      "config": "b4c7594a6794",
+      "labels": "a2d093b3892a",
+      "data": "e522fb8bfe79"
+    }
+  },
+  "councils": {
+    "low-cost-text": {
+      "id": "low-cost-text",
+      "name": "Low-cost text council",
+      "input_kinds": [
+        "text"
+      ],
+      "voters": [
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-small-24b-instruct-2501"
+      ],
+      "judge": "qwen/qwen3-235b-a22b-2507",
+      "consensus_rule": {
+        "cross_family": true,
+        "tolerance_min": 15,
+        "unit": "per_school_start_end_pair"
+      },
+      "prompts": {
+        "default": "stage6.extract.v3"
+      }
+    }
+  },
+  "cost": {
+    "total_usd": 0.0061200000000000004,
+    "n_reps": 6,
+    "provenance": "bootstrap"
+  },
+  "districts": [
+    {
+      "district_id": "4222350",
+      "name": "Southern Lehigh SD",
+      "state": "PA",
+      "topology": "per_school",
+      "records": [
+        {
+          "rec_key": "4222350:6d7cb780b4",
+          "url": "https://docs.google.com/document/d/1nw6lbm1a_ryleMeK0XB5TECxZTXBU7_zccFKRRDh5CU/edit?usp=sharing",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "md.md",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222350:de523f7438",
+          "url": "https://docs.google.com/document/d/1CFCMc2EHyQ20anFZbwsP7I8LlmLCyb9EAX7gmz7tEPo/edit?usp=sharing",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "md.md",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222350:4b822e153e",
+          "url": "https://docs.google.com/document/d/1YGx4d2hBycs_6rc1Dwt0XQH0W1Z5o_9CB3qIMG_6pBk/edit?usp=sharing",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222350:5443052bf4",
+          "url": "https://docs.google.com/document/d/1c3uz1KhNlHamnFCnlPoikCxfzMnCn6_6a9YEF3aFytk/edit?usp=sharing",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222350:fe0547fa35",
+          "url": "https://hw.slsd.org/fs/resource-manager/view/ca488eae-0172-4443-a352-a279a67ca32b",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "pdftotext.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222350:c03a9018d3",
+          "url": "https://jplis.slsd.org/our-school/jplis-faq",
+          "decision": "send",
+          "reason": "target-label:school_start_end_prose",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222350:b67e447312",
+          "url": "https://jplis.slsd.org/our-school/jplis-bell-schedule",
+          "decision": "send",
+          "reason": "target-label:school_start_end_list",
+          "reps": [
+            {
+              "file": "page.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222350:fa4cae5990",
+          "url": "https://hs.slsd.org/our-school/high-school-bell-schedule",
+          "decision": "send",
+          "reason": "target-label:school_bell_table",
+          "reps": [
+            {
+              "file": "tesseract_screenshot.txt",
+              "kind": "text",
+              "councils": [
+                "low-cost-text"
+              ],
+              "fidelity_suspect": false,
+              "route_reason": "text-council",
+              "est_usd": 0.00102
+            }
+          ]
+        },
+        {
+          "rec_key": "4222350:266b2c128b",
+          "url": "https://www.slsd.org/district-offices/transportation/early-dismissaldelay-information",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222350:41aeb566fe",
+          "url": "https://www.slsd.org/district-offices/human-resources/directions-for-obtaining-clearances/directions-for-volunteers",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222350:72bc46dcdb",
+          "url": "https://www.slsd.org/swmisc/summer-programs/liberty-trails",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222350:fe92d4b825",
+          "url": "https://hw.slsd.org/hopewell-elementary-calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222350:80c8cbc633",
+          "url": "https://www.slsd.org/",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222350:5351d06ffc",
+          "url": "mailto:campbellm@slsd.org",
+          "decision": "reject",
+          "reason": "non-target:unusable",
+          "reps": []
+        },
+        {
+          "rec_key": "4222350:0eb732ce80",
+          "url": "https://lb.slsd.org/our-school/staff-directory",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222350:b35af802d8",
+          "url": "https://hs.slsd.org/students/students-calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222350:2400504e1a",
+          "url": "https://lb.slsd.org/district-and-liberty-bell-calendars",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222350:74c6eb66fd",
+          "url": "https://www.slsd.org/calendar2",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222350:c02083e74c",
+          "url": "https://hs.slsd.org/high-school-calendar",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222350:8140cd2c31",
+          "url": "https://ms.slsd.org/our-school/ms-faq",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        },
+        {
+          "rec_key": "4222350:f390277cc2",
+          "url": "https://www.slsd.org/school-board/school-board-agendas-and-minutes",
+          "decision": "reject",
+          "reason": "non-target:target_absent",
+          "reps": []
+        }
+      ],
+      "n_send_reps": 6,
+      "est_usd": 0.0061200000000000004
+    }
+  ]
+}

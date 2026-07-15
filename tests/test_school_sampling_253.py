@@ -85,7 +85,7 @@ class TestBandRostersForDistrict:
         r = SS.band_rosters_for_district("1234567")
         assert r["_year"] == "2024_25"
         assert r["middle"]["total"] == 3
-        assert r["middle"]["by_source"] == {"level_clean": 1, "grade_span": 2}
+        assert r["middle"]["by_source"] == {"level_clean": 1, "grade_span": 2, "level_override": 0}
         assert set(r["middle"]["schools"]) == {"Ortiz Middle", "Gonzales K8", "Tech Classics"}
         assert r["elementary"]["total"] == 2          # K-8 + K-6; 07-12 High serves no elementary
         assert r["high"]["total"] == 1
@@ -101,3 +101,52 @@ class TestBandRostersForDistrict:
     def test_missing_files_return_none(self, nces):
         assert SS.latest_nces_year() is None
         assert SS.band_rosters_for_district("1234567") is None
+
+
+class TestIntermediateCarveOut:
+    """#498 (DECIDED 2026-07-15): LEVEL stays primary with ONE override — LEVEL=Middle on an
+    intermediate span (starts ≤4, tops ≤6) is upper ELEMENTARY. Every application is surfaced."""
+
+    def test_liberati_class_reclassifies(self):
+        assert SS.effective_level_band("Middle", "04", "06") == "elementary"
+        assert SS.effective_level_band("Middle", "02", "06") == "elementary"
+
+    def test_five_six_and_orphans_stay_untouched(self):
+        # 5-6 is middle per the standard (NCES agrees); orphans await the METHODOLOGY ruling
+        assert SS.effective_level_band("Middle", "05", "06") == "middle"
+        assert SS.effective_level_band("Middle", "06", "06") == "middle"
+        assert SS.effective_level_band("Middle", "05", "05") == "middle"
+        assert SS.effective_level_band("Middle", "06", "08") == "middle"
+
+    def test_other_levels_and_ambiguous_unaffected(self):
+        assert SS.effective_level_band("Elementary", "KG", "06") == "elementary"
+        assert SS.effective_level_band("High", "07", "12") == "high"
+        assert SS.effective_level_band("Other", "04", "06") is None   # ambiguous stays ambiguous
+
+    def test_intermediate_name_token_never_mismatches_either_side(self):
+        # 'Intermediate' implies elementary OR middle (corpus: real ones sit on both sides)
+        assert SS.name_level_mismatch("Pike Road Intermediate School", None, ["elementary"]) is None
+        assert SS.name_level_mismatch("Albertville Intermediate School", None, ["middle"]) is None
+
+    def test_roster_applies_and_surfaces_the_override(self, nces):
+        _write_year(nces, "2024_25", [
+            _sch("Liberati Intermediate", "Middle", "04", "06", sid="S1"),
+            _sch("Real Middle", "Middle", "07", "08", sid="S2"),
+        ])
+        r = SS.band_rosters_for_district("1234567")
+        assert r["middle"]["total"] == 1                    # only the real middle school
+        assert r["elementary"]["total"] == 1
+        assert r["elementary"]["by_source"]["level_override"] == 1
+        (ov,) = r["_level_overrides"]
+        assert ov["school"] == "Liberati Intermediate" and ov["band"] == "elementary" \
+            and ov["instead_of"] == "middle"
+
+    def test_school_index_places_intermediate_in_elementary(self, nces):
+        _write_year(nces, "2024_25", [
+            _sch("Liberati Intermediate", "Middle", "04", "06", sid="S1"),
+            _sch("Real Middle", "Middle", "07", "08", sid="S2"),
+            _sch("Some Elem", "Elementary", "KG", "03", sid="S3"),
+        ])
+        idx = SS.school_index("2024_25")["1234567"]
+        assert [s["name"] for s in idx["middle"]] == ["Real Middle"]
+        assert "Liberati Intermediate" in [s["name"] for s in idx["elementary"]]

@@ -1285,7 +1285,36 @@ Single combined (all three in one school):
 | -------------------------- |
 | PK\|K\|1-10\|11\|12\|13 |
 
-*(Migrated 2026-06-27 from `docs/scratch-paper/Recognized Grade Bands for Fallback Scenarios.md`.)*
+Four-band (lower elementary · upper elementary/intermediate · middle · high) — both elementary
+segments map to the **elementary** band (the Southern Lehigh shape, #498):
+
+| lower elementary | upper elementary / intermediate | middle | high |
+| ---------------- | ------------------------------- | ------ | ------------- |
+| PK\|K\|1-3 | 4-6 | 7-8 | 9-11\|12\|13 |
+| PK\|K\|1-3 | 4-5 | 6-8 | 9-11\|12\|13 |
+| PK\|K\|1-2 | 3-6 | 7-8 | 9-11\|12\|13 |
+| PK\|K\|1-4 | 5-6 *(TBD-Ian: 5-6 beside a 7-8 is MIDDLE per the standard — is it upper-elementary only when the district also has a separate 6-8/7-8? draft rows pending ruling)* | 7-8 | 9-11\|12\|13 |
+
+Five-band (… · lower high · upper high) — both high segments map to the **high** band:
+
+| lower elementary | upper elem / intermediate | middle | lower high | upper high |
+| ---------------- | ------------------------- | ------ | ---------- | ---------- |
+| PK\|K\|1-3 | 4-6 | 7-8 | 9-10 | 11-12\|13 |
+| PK\|K\|1-4 | 5-6 | 7-8 | 9 *(freshman campus)* | 10-12\|13 |
+
+**The #498 LEVEL carve-out (DECIDED 2026-07-15):** NCES `LEVEL` stays the primary band signal (the
+2026-06-22 anti-dilution decision), with exactly ONE corpus-profiled override: `LEVEL="Middle"` on an
+**intermediate span (starts ≤ grade 4 AND tops ≤ grade 6)** classifies as **elementary** ("upper
+elementary" — the Liberati class, ~330 schools / 0.4% of the 2024-25 corpus). Measured against the
+full corpus this is the *only* hard LEVEL-vs-span disagreement class that exists (the reverse edge —
+`Elementary` starting ≥5 — is zero), and NCES's `Middle` tag on 5-6 schools *agrees* with this
+standard, so 05-06 is deliberately NOT overridden. Every override application is surfaced as a
+gate@8 note, never silent (`effective_level_band`, `common/school_sampling.py`). **Boundary orphans
+pending Ian's ruling:** grade-5-only spans (15 schools), grade-6-only spans (73 schools), and
+5-6-without-a-7-8 districts.
+
+*(Migrated 2026-06-27 from `docs/scratch-paper/Recognized Grade Bands for Fallback Scenarios.md`;
+four/five-band shapes + the #498 carve-out added 2026-07-15.)*
 
 ---
 

@@ -464,6 +464,10 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
     # LEVEL) — the roster-side sibling of unattributed_level_schools; surfaced, never dropped.
     if band_rosters and band_rosters.get("_unattributed"):
         negative_space["unattributed_roster_schools"] = band_rosters["_unattributed"]
+    # #498: the intermediate carve-out fired — every LEVEL override is a visible, auditable note
+    # (detect-and-flag), never a silent reclassification.
+    if band_rosters and band_rosters.get("_level_overrides"):
+        negative_space["level_overrides"] = band_rosters["_level_overrides"]
 
     return {
         "district_id": district_id,

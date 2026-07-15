@@ -156,6 +156,8 @@ def test_stage8_console_carries_the_exclusion_ui_markers():
                    "/api/aggregate/recover-band",
                    # #253: combined-scope flags + the denominator provenance/criteria surfaces
                    'data-feat="combined-scope"', 'data-feat="combined-scope-facts"',
+                   # #498: the intermediate carve-out note
+                   'data-feat="level-override"',
                    'data-feat="denominator-provenance"', 'data-feat="denominator-criteria"',
                    # #254: the per-school year chip + the year-supersede/conflict surfaces
                    'data-feat="school-year"', 'data-feat="superseded-facts"',

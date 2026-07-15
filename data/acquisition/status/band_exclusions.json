@@ -18,5 +18,15 @@
     "reason": "reconfigured to high school per district site 2025-26",
     "actor": "ian",
     "created_at": "2026-07-14T15:51:17Z"
+  },
+  {
+    "exclusion_id": 3,
+    "district_id": "4222350",
+    "band": "middle",
+    "norm_school": "joseph p liberati",
+    "school": "joseph p liberati",
+    "reason": "This school is a grade 4-6 \"intermediate\" school that fits more appropriately in the elementary band.",
+    "actor": "ian",
+    "created_at": "2026-07-15T02:14:29Z"
   }
 ]

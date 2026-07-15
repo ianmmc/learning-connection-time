@@ -226,6 +226,10 @@
           <button class="btn btn-small" data-feat="recover-band" data-recover data-band="${esc(r.band)}" data-reckey="${esc(rep.rec_key)}" data-file="${esc(rep.source_file || "")}">Re-extract for ${esc(r.band)}</button>
           <button class="btn btn-small" data-feat="human-add" data-ha-add data-band="${esc(r.band)}">Add by hand (fallback, #474)</button>`;
       }).join("<br>")}</li>`);
+    if ((ns.level_overrides || []).length)
+      // #498: the intermediate carve-out — an NCES 'Middle' tag on an upper-elementary span is
+      // reclassified by rule; every application is shown (never a silent reclassification).
+      rows.push(`<li data-feat="level-override"><strong>Grade-band overrides (#498):</strong> ${ns.level_overrides.map((o) => `${esc(o.school)} counted as ${esc(o.band)} (NCES says ${esc(o.nces_level)}, but grades ${esc(o.gslo)}–${esc(o.gshi)} is an intermediate/upper-elementary span)`).join("; ")}.</li>`);
     if ((ns.combined_scope_facts || []).length)
       rows.push(`<li data-feat="combined-scope-facts"><strong>Combined-scope facts (#253):</strong> ${ns.combined_scope_facts.map((m) => `${esc(m.school)} in ${esc(m.band)} (${esc(csKind(m.kind))}${csSource(m.source)}${(m.campuses || []).length ? `: ${m.campuses.map(esc).join(", ")}` : ""})${m.excluded ? " — already excluded" : ""}`).join("; ")} — group descriptions counted as one school each; still voting in the mode until disposed.</li>`);
     // #254: year-superseded facts — WHY the stale rows left the mode (both years, both grosses).

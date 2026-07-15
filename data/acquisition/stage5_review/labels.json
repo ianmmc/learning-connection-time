@@ -5272,6 +5272,118 @@
     "updated_at": "2026-07-11T05:33:36Z"
   },
   {
+    "rec_key": "3405970:0ae5508cb1",
+    "primary_label": "target_absent",
+    "facets_json": "{\"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:37:37Z"
+  },
+  {
+    "rec_key": "3405970:14ac992e07",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:37:50Z"
+  },
+  {
+    "rec_key": "3405970:1bd8333006",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:37:59Z"
+  },
+  {
+    "rec_key": "3405970:1ca7da43fa",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:38:05Z"
+  },
+  {
+    "rec_key": "3405970:2981afc744",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:35:51Z"
+  },
+  {
+    "rec_key": "3405970:309f0e8f7f",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:37:14Z"
+  },
+  {
+    "rec_key": "3405970:5ae3673440",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:36:10Z"
+  },
+  {
+    "rec_key": "3405970:8a924a41e0",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:33:44Z"
+  },
+  {
+    "rec_key": "3405970:9c1e35d4a2",
+    "primary_label": "target_absent",
+    "facets_json": "{\"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:32:52Z"
+  },
+  {
+    "rec_key": "3405970:a36ee0e451",
+    "primary_label": "target_absent",
+    "facets_json": "{\"board\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:38:11Z"
+  },
+  {
+    "rec_key": "3405970:d0615abfb2",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:35:51Z"
+  },
+  {
+    "rec_key": "3405970:d64d0c6be6",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:37:24Z"
+  },
+  {
+    "rec_key": "3405970:d6b4ca9207",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:37:43Z"
+  },
+  {
+    "rec_key": "3405970:f4faefcf1d",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "Tricky. This is before-care and after-care. Arguably, we can infer that the start of school is 8:25 am from when before-care ends, but -- strictly speaking -- this isn't our target.",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:35:40Z"
+  },
+  {
     "rec_key": "3416500:1cb2b717e4",
     "primary_label": "district_hub_by_band",
     "facets_json": "{}",
@@ -8832,6 +8944,38 @@
     "updated_at": "2026-07-04T05:40:21Z"
   },
   {
+    "rec_key": "4031290:4d54d31e94",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:58:38Z"
+  },
+  {
+    "rec_key": "4031290:5651acefe7",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:58:10Z"
+  },
+  {
+    "rec_key": "4031290:703b303b2d",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:58:28Z"
+  },
+  {
+    "rec_key": "4031290:8019bff635",
+    "primary_label": "target_absent",
+    "facets_json": "{\"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:57:43Z"
+  },
+  {
     "rec_key": "4200874:162220b3fe",
     "primary_label": "target_absent",
     "facets_json": "{\"board\": \"yes\"}",
@@ -9198,6 +9342,182 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-11T05:18:33Z"
+  },
+  {
+    "rec_key": "4222350:0eb732ce80",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:47:16Z"
+  },
+  {
+    "rec_key": "4222350:2400504e1a",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:47:05Z"
+  },
+  {
+    "rec_key": "4222350:266b2c128b",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "Has bell schedule information, but not regular school day bell schedule.",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:42:21Z"
+  },
+  {
+    "rec_key": "4222350:41aeb566fe",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:42:45Z"
+  },
+  {
+    "rec_key": "4222350:4b822e153e",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "This is bell schedule, but it's an irregular \"Act 80\" schedule rather than a regular school day.",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:45:03Z"
+  },
+  {
+    "rec_key": "4222350:5351d06ffc",
+    "primary_label": "unusable",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:38:19Z"
+  },
+  {
+    "rec_key": "4222350:5443052bf4",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "This is a school bell table, but not a regular school day. It's an irregular 2 Hour Delay schedule.",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:45:40Z"
+  },
+  {
+    "rec_key": "4222350:6d7cb780b4",
+    "primary_label": "school_bell_table",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:45:51Z"
+  },
+  {
+    "rec_key": "4222350:72bc46dcdb",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:38:57Z"
+  },
+  {
+    "rec_key": "4222350:74c6eb66fd",
+    "primary_label": "target_absent",
+    "facets_json": "{\"academic_calendar\": \"yes\", \"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:47:35Z"
+  },
+  {
+    "rec_key": "4222350:80c8cbc633",
+    "primary_label": "target_absent",
+    "facets_json": "{\"board\": \"yes\", \"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:46:37Z"
+  },
+  {
+    "rec_key": "4222350:8140cd2c31",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:38:47Z"
+  },
+  {
+    "rec_key": "4222350:9976b52ce6",
+    "primary_label": "target_absent",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:47:16Z"
+  },
+  {
+    "rec_key": "4222350:b35af802d8",
+    "primary_label": "target_absent",
+    "facets_json": "{\"academic_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:46:57Z"
+  },
+  {
+    "rec_key": "4222350:b67e447312",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:40:23Z"
+  },
+  {
+    "rec_key": "4222350:c02083e74c",
+    "primary_label": "target_absent",
+    "facets_json": "{\"academic_calendar\": \"yes\", \"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:47:45Z"
+  },
+  {
+    "rec_key": "4222350:c03a9018d3",
+    "primary_label": "school_start_end_prose",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:40:54Z"
+  },
+  {
+    "rec_key": "4222350:de523f7438",
+    "primary_label": "school_bell_table",
+    "facets_json": "{}",
+    "note": "Borderline call. Not technically a regular school day, but the start and end are standard. It's the periods that are different.",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:44:16Z"
+  },
+  {
+    "rec_key": "4222350:f390277cc2",
+    "primary_label": "target_absent",
+    "facets_json": "{\"board\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:46:10Z"
+  },
+  {
+    "rec_key": "4222350:fa4cae5990",
+    "primary_label": "school_bell_table",
+    "facets_json": "{}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:41:13Z"
+  },
+  {
+    "rec_key": "4222350:fe0547fa35",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{\"buried_handbook\": \"yes\", \"_pages\": \"8\", \"_pages_list\": [8]}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:40:05Z"
+  },
+  {
+    "rec_key": "4222350:fe92d4b825",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:46:19Z"
   },
   {
     "rec_key": "4222860:0115cb4b01",
@@ -9822,6 +10142,30 @@
     "note": "",
     "status": "labeled",
     "updated_at": "2026-07-11T21:30:13Z"
+  },
+  {
+    "rec_key": "4900025:0c92d14654",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\", \"news_feed\": \"yes\"}",
+    "note": "",
+    "status": "labeled",
+    "updated_at": "2026-07-15T02:04:42Z"
+  },
+  {
+    "rec_key": "4900025:0caae627b2",
+    "primary_label": "school_start_end_list",
+    "facets_json": "{\"academic_calendar\": \"yes\"}",
+    "note": "Daily School schedule in lower left corner. Full grade range cut off. \n\nFull Day kindergarten and Grades 1 -\n\n9 8:30-2:52 pm",
+    "status": "labeled",
+    "updated_at": "2026-07-15T02:09:41Z"
+  },
+  {
+    "rec_key": "4900025:28a2376de6",
+    "primary_label": "target_absent",
+    "facets_json": "{\"community_calendar\": \"yes\"}",
+    "note": "School registration times, not regular bell schedule.",
+    "status": "labeled",
+    "updated_at": "2026-07-15T01:59:24Z"
   },
   {
     "rec_key": "4900540:b6de222ea5",
