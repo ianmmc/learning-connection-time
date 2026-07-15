@@ -23,6 +23,7 @@
     if (!inited) { inited = true; renderShell(); }
     loadDataYears();
     loadModes();
+    loadModeStability();
     loadExplorationAudit();
     loadExclusions();
   };
@@ -45,6 +46,12 @@
           the global default. Setting a gate here persists the decision — it does not change a gate's
           behavior until that gate's auto path is built.</p>
         <div id="settings-rows" class="settings-rows"><div class="empty">Loading…</div></div>
+        <h2 class="settings-audit-h">Stage 7 mode-stability early-exit <span class="muted">(#120 — spend shortcut)</span></h2>
+        <p class="muted">Stage 7 stops paying for a district's remaining reps once every fillable band's
+          running mode is stable; skipped reps are recorded and visible at gate@7, and stay dispatchable
+          (7→6). This switch is the operational <strong>kill-switch</strong> only — the numeric
+          parameters are config-as-data (<code>stage7_mode_stability.json</code>), changed by PR, never here.</p>
+        <div id="settings-modestab" class="settings-rows"><div class="empty">Loading…</div></div>
         <h2 class="settings-audit-h">gate@5 reject audit <span class="muted">(anti-survivorship license)</span></h2>
         <p class="muted">gate@5 auto stays licensed only while a rolling window holds ≥ N randomly-drawn,
           human-labeled rejects (the tier-D bucket auto would drop). Below the floor the license
@@ -124,6 +131,32 @@
         </div>`;
     } catch (_) {
       box.innerHTML = `<div class="empty">Failed to load data-year facts.</div>`;
+    }
+  }
+
+  // #120: the mode-stability early-exit — params read-only, `enabled` is the one flippable field.
+  async function loadModeStability() {
+    const box = $g("#settings-modestab");
+    if (!box) return;
+    try {
+      const d = await api("/api/stage7/mode-stability");
+      const p = d.params || {};
+      const prov = d.toggled_by ? `<span class="muted">last toggled by ${esc(d.toggled_by)}${d.toggled_at ? " · " + esc(d.toggled_at) : ""}</span>` : "";
+      box.innerHTML = `
+        <div class="audit-grid">
+          <div class="audit-stat"><span class="audit-k">Early-exit</span>
+            <span class="audit-v"><strong>${p.enabled ? "ON" : "OFF"}</strong>
+              <button class="btn ${p.enabled ? "btn-ghost" : "btn-secondary"} btn-mini" data-feat="mode-stability-toggle">${p.enabled ? "Turn off" : "Turn on"}</button> ${prov}</span></div>
+          <div class="audit-stat"><span class="audit-k">Parameters (read-only)</span>
+            <span class="audit-v">window=${p.window} · min_n=${p.min_n} · min_share=${p.min_share} <span class="muted">(config-as-data — change by PR)</span></span></div>
+        </div>`;
+      box.querySelector('[data-feat="mode-stability-toggle"]').onclick = async () => {
+        try { await api("/api/stage7/mode-stability", postJSON({ enabled: !p.enabled, actor: "ian" })); }
+        catch (e) { alert("Toggle failed: " + e.message); return; }
+        loadModeStability();
+      };
+    } catch (_) {
+      box.innerHTML = `<div class="empty">Failed to load the mode-stability knob.</div>`;
     }
   }
 

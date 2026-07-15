@@ -30,6 +30,8 @@ from infrastructure.acquisition.common import db as gdb                     # no
 from infrastructure.acquisition.common import district_status as DS         # noqa: E402  (state_event log — gate@1 audit events)
 from infrastructure.acquisition.common import calibration as CAL            # noqa: E402  (gate-decision calibration log — REQ-121)
 from infrastructure.acquisition.common import gate_mode as GM               # noqa: E402  (per-gate manual/auto store — REQ-108, #104)
+from infrastructure.acquisition.common import config_loader as CFGL         # noqa: E402  (#120 mode-stability knob — Settings toggle)
+from infrastructure.acquisition.common.timeutil import utcnow               # noqa: E402  (#120 toggle provenance stamp)
 from infrastructure.acquisition.stage5_filter import exploration_live as EAL  # noqa: E402  (gate@5 reject-audit demote-hook — REQ-120, #211)
 from infrastructure.acquisition.process_governance import gate_calibration as GCAL  # noqa: E402  (console→calibration vocab)
 from infrastructure.utilities import school_year as SY                      # noqa: E402  (calendar vocabulary — NOT the LCT DB; see pyproject importlinter note)
@@ -715,6 +717,34 @@ async def gate_mode_set(payload: dict):
         con.commit()
         _backup_gate_mode(con)
     return {"ok": True, "gate": gate, "mode": mode}
+
+
+@app.get("/api/stage7/mode-stability")
+def mode_stability_get():
+    """The #120 knob for the Settings panel: the numeric params (read-only in the console — they are
+    config-as-data, changed by PR) + the operational `enabled` kill-switch (the one field the toggle
+    below may flip)."""
+    doc = CFGL.load("stage7_mode_stability")
+    return {"params": doc["params"], "governance": doc.get("governance", ""),
+            "toggled_by": doc.get("toggled_by"), "toggled_at": doc.get("toggled_at")}
+
+
+@app.post("/api/stage7/mode-stability")
+async def mode_stability_toggle(payload: dict):
+    """Flip the #120 early-exit on/off (the operational kill-switch — the gate-mode precedent).
+    Writes ONLY `enabled` (+ toggled_by/at provenance) back to the git-tracked knob file — the
+    numeric params are never console-writable; the resulting file diff is the audit trail. The next
+    Stage-7 run reads the file fresh (no restart needed)."""
+    enabled = payload.get("enabled")
+    if not isinstance(enabled, bool):
+        raise HTTPException(400, "enabled must be a boolean")
+    kp = CFGL.knob_path("stage7_mode_stability")
+    doc = json.loads(kp.read_text())
+    doc["params"]["enabled"] = enabled
+    doc["toggled_by"] = payload.get("actor", "ian")
+    doc["toggled_at"] = utcnow()
+    kp.write_text(json.dumps(doc, indent=2) + "\n")
+    return {"ok": True, "enabled": enabled}
 
 
 @app.get("/api/exploration-audit")
@@ -1961,7 +1991,7 @@ def extract_district(district_id: str):
     with gdb.session_scope() as con:
         ext = con.execute(text(
             "SELECT extraction_id, handoff_hash, created_at, created_by, cost_usd, "
-            "n_accepted, n_unresolved, n_reps FROM extraction "
+            "n_accepted, n_unresolved, n_reps, n_reps_skipped FROM extraction "
             "WHERE district_id = :d AND run_kind = 'production' "     # #148: exclude probe runs
             "ORDER BY extraction_id DESC LIMIT 1"), {"d": district_id}).mappings().first()
         if not ext:

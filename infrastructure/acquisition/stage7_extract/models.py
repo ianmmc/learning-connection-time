@@ -41,6 +41,10 @@ class Extraction(gdb.Base):
     created_by: Mapped[str] = mapped_column(String, default="auto:stage7")
     # telemetry rollup (per-model per-call detail lives in the disk receipt)
     n_reps: Mapped[int] = mapped_column(Integer, default=0)
+    # #120: reps left unsent by the mode-stability early-exit (detail in the disk receipt's
+    # skipped_reps/early_exit). Deliberately UNindexed, like every _PRECIOUS_ALTERS column.
+    n_reps_skipped: Mapped[int] = mapped_column(Integer, default=0, server_default="0",
+                                                nullable=False)
     n_calls: Mapped[int] = mapped_column(Integer, default=0)
     n_judge_calls: Mapped[int] = mapped_column(Integer, default=0)
     n_errors: Mapped[int] = mapped_column(Integer, default=0)

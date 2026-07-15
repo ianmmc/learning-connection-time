@@ -495,6 +495,9 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
   font-size: var(--fs-sm); color: var(--color-amber-800, #92400e); }
 .s7-contam-head { font-weight: 700; margin-bottom: var(--space-1); }
 .s7-contam-schools { margin: var(--space-2) 0; }
+/* #120: the mode-stability skip note in the extraction header (a band's n must not read as "capture
+   only found n") */
+.s7-skip { color: var(--status-warning, #b45309); font-weight: 600; }
 /* #154 compose modal (in-Stage-7 review, no view-flipping; cancel/ESC/click-out all close) */
 .s7-modal { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.44);
   display: flex; align-items: center; justify-content: center; padding: var(--space-4); }
