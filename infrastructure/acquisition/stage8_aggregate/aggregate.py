@@ -136,6 +136,52 @@ def gross_from_times(start, end):
         return None, "implausible"
     return g, None
 
+# #254: deterministic school-year parsing — NEVER trust the model's formatting. The plausibility
+# window + the COVID wall come from the calendar single-source-of-truth (moved to
+# infrastructure.utilities.school_year precisely so acquisition can read it without breaching the
+# acquisition↛database import contract).
+from infrastructure.utilities.school_year import COVID_EXCLUDED_YEARS as _COVID_YEARS
+from infrastructure.utilities.school_year import current_school_year as _current_school_year
+
+_SY_4DIGIT = _re.compile(r"((?:19|20)\d{2})\s*[-–—/]\s*((?:19|20)?\d{2})(?!\d)")
+_SY_2DIGIT = _re.compile(r"(?<!\d)(\d{2})\s*[-–—/]\s*(\d{2})(?!\d)")
+_SY_FLOOR = 2023   # first post-COVID year — anything older is unusable for bell schedules
+
+
+def format_school_year(start: int) -> str:
+    """2025 -> '2025-26' (the canonical stored form)."""
+    return f"{start}-{(start + 1) % 100:02d}"
+
+
+def parse_school_year(s):
+    """Defensive parse of a model-returned `school_year` READING -> start-year int, or None.
+    The v3 prompt asks for 'YYYY-YY', but a model's formatting is never trusted (#254): accepts
+    '2025-26', '2025-2026', 'SY25-26', '2025/26', with surrounding prose. Requires a CONSECUTIVE
+    pair (a '2025-27' hallucination is garbage, not a year), rejects COVID years (Rule #2) and
+    anything outside [2023, current+1] — the same window ACCEPTABLE_BELL_YEARS spans, plus one
+    year of forward slack for a schedule published ahead of its year. None = unknown, which the
+    merge treats as COEXIST (never auto-oldest — Ian, 2026-07-14)."""
+    if not s:
+        return None
+    t = str(s).strip()
+    m = _SY_4DIGIT.search(t)
+    if m:
+        y1 = int(m.group(1))
+        y2 = int(m.group(2)) if len(m.group(2)) == 4 else (y1 // 100) * 100 + int(m.group(2))
+    else:
+        m = _SY_2DIGIT.search(t)
+        if not m:
+            return None
+        y1, y2 = 2000 + int(m.group(1)), 2000 + int(m.group(2))
+    if y2 != y1 + 1:
+        return None
+    if format_school_year(y1) in _COVID_YEARS:
+        return None
+    if not (_SY_FLOOR <= y1 <= int(_current_school_year()[:4]) + 1):
+        return None
+    return y1
+
+
 def _evidence_of(row):
     """Pull the v2 going-forward evidence fields off a raw model row (STAGE8 §2a.6): the verbatim
     quote the times were read from, an optional page/section locus, and any EXPLICITLY-stated daily
@@ -147,16 +193,27 @@ def _evidence_of(row):
         sm = int(sm) if sm not in (None, "") else None
     except (TypeError, ValueError):
         sm = None
-    return {"quote": (row.get("evidence_quote") or "").strip(),
-            "locus": (row.get("source_locus") or "").strip(),
-            "stated_minutes": sm,
-            "stated_minutes_quote": (row.get("stated_minutes_quote") or "").strip()}
+    out = {"quote": (row.get("evidence_quote") or "").strip(),
+           "locus": (row.get("source_locus") or "").strip(),
+           "stated_minutes": sm,
+           "stated_minutes_quote": (row.get("stated_minutes_quote") or "").strip()}
+    # #254 (v3): the raw per-model READINGS ride the same evidence carry — on a year DISAGREEMENT the
+    # fact stores school_year=None and the reviewer sees each model's reading here.
+    sy = (row.get("school_year") or "").strip() if row.get("school_year") else ""
+    at = (row.get("applies_to") or "").strip() if row.get("applies_to") else ""
+    if sy:
+        out["school_year"] = sy
+    if at:
+        out["applies_to"] = at
+    return out
 
 def _has_evidence(ev):
-    """True if a per-model evidence map carries anything worth persisting (any quote/locus/minutes).
-    stated_minutes checks `is not None`, not truthiness (PR #252 review) — a parsed 0 is garbage worth
-    SURFACING for review, not silently dropping, matching _council_evidence's own zero-safe filter."""
+    """True if a per-model evidence map carries anything worth persisting (any quote/locus/minutes,
+    or a v3 year/scope reading). stated_minutes checks `is not None`, not truthiness (PR #252 review)
+    — a parsed 0 is garbage worth SURFACING for review, not silently dropping, matching
+    _council_evidence's own zero-safe filter."""
     return any(e["quote"] or e["locus"] or e["stated_minutes"] is not None or e["stated_minutes_quote"]
+               or e.get("school_year") or e.get("applies_to")
                for e in ev.values())
 
 def consensus_school_facts(model_rows, judge_rows=None):
@@ -210,11 +267,13 @@ def consensus_school_facts(model_rows, judge_rows=None):
             start_m, end_m, method = js, je, "judge"
             models = ["judge"]
             ev = {"judge": _evidence_of(jgroups[(band, nschool)][0][4])}
+            meta_rows = [jgroups[(band, nschool)][0][4]]
         elif s_ok and e_ok:
             start_m = round(mean([v for _, v in sc[0]["members"]]))
             end_m   = round(mean([v for _, v in ec[0]["members"]]))
             models = sorted({m for m, _ in sc[0]["members"]} | {m for m, _ in ec[0]["members"]})
             ev = {m: _evidence_of(per_model[m][0][4]) for m in models if m in per_model}
+            meta_rows = [per_model[m][0][4] for m in sorted(per_model)]
         else:
             unresolved.append({"band": band, "school": nschool,
                                "starts": {m: v[0][2] for m, v in per_model.items()},
@@ -227,22 +286,45 @@ def consensus_school_facts(model_rows, judge_rows=None):
                 "start": f"{start_m//60:02d}:{start_m%60:02d}",
                 "end": f"{end_m//60:02d}:{end_m%60:02d}",
                 "gross": gross, "models": models, "method": method}
-        if _has_evidence(ev):   # only v2 rows carry it; v1 accepted facts stay byte-identical
+        if _has_evidence(ev):   # only v2+ rows carry it; v1 accepted facts stay byte-identical
             fact["evidence"] = ev
+        # #254 (v3): categorical corroboration — NEVER part of the (band, norm_school) grouping key
+        # and never a vote on times. school_year = the consensus reading when ALL models that read a
+        # PARSEABLE year agree (deterministic parse — the model's formatting is never trusted);
+        # disagreement -> no year on the fact, per-model readings stay in evidence above.
+        # applies_to = "multiple" when ANY model read a group-of-schools scope (a scope warning is a
+        # warning — OR semantics). Keys attached only when read, so pre-v3 facts stay byte-identical.
+        years = {parse_school_year(r.get("school_year")) for r in meta_rows}
+        years.discard(None)
+        if len(years) == 1:
+            fact["school_year"] = format_school_year(years.pop())
+        if any(str(r.get("applies_to") or "").strip().lower() == "multiple" for r in meta_rows):
+            fact["applies_to"] = "multiple"
         accepted.append(fact)
     return accepted, unresolved
 
-def merge_fact_runs(facts):
+def merge_fact_runs(facts, *, with_superseded=False):
     """Cumulative Stage-7 truth across a district's production runs (REQ-122, #232): follow-up
     rounds FILL GAPS, they never regress solid signal advancing to Stage 8. `facts`: school_fact
     dicts from ANY number of runs, each carrying `extraction_id` (run order), `band`, `school`,
-    `status`. Returns (accepted, unresolved), deduped per (band, school):
+    `status` (+ optionally the v3 `school_year` reading). Returns (accepted, unresolved) — or
+    (accepted, unresolved, superseded) when `with_superseded` — deduped per (band, school):
       - an ACCEPTED fact beats any unresolved for the same school, in either run order — a later
         thin retry cannot knock out an earlier solid extraction (the Brownsville 7→0 case);
-      - among multiple ACCEPTED: the EARLIEST run wins (fill-gaps-not-overwrite; correcting a
-        solid fact is a gate@8 human determination, never a silent later-run override);
+      - among multiple ACCEPTED (#254, the Santa Fe stale-page case): a fact with a known, MORE
+        RECENT parseable school_year supersedes a fact with a known OLDER one, regardless of
+        extraction order. Precedence applies ONLY between two KNOWN years (Ian, 2026-07-14:
+        unknown-year facts COEXIST — every pre-v3 fact is unknown, and absence of a printed year
+        is never evidence of staleness); ties and unknown cases fall through unchanged to
+      - the EARLIEST run wins (fill-gaps-not-overwrite; correcting a solid fact is a gate@8 human
+        determination, never a silent later-run override);
       - among UNRESOLVED only: the LATEST run wins (the freshest disagreement diagnostic).
-    Pure + deterministic (output sorted by (band, school)); the caller supplies rows from
+    Year-superseded facts are KEPT, not dropped — the third return list — so the closing argument
+    can surface WHY the stale rows left the mode (no-silent-caps). The never-regress rule is
+    untouched: year precedence only ever compares accepted vs accepted.
+    Pure + deterministic + order-independent (a group's winner is selected set-wise, not by a
+    pairwise fold — a known-vs-known / known-vs-unknown / eid triangle would otherwise make the
+    outcome depend on row order); output sorted by (band, school). The caller supplies rows from
     run_kind='production' extractions only.
 
     The dedup key RE-NORMALIZES the stored school string through the CURRENT norm_school (PR #247
@@ -250,23 +332,63 @@ def merge_fact_runs(facts):
     stopword list carry a stale key ('lincoln unified district' vs today's 'lincoln') — exact-string
     matching would treat the same physical school as two, fragmenting the cross-run merge with no
     backfill path. norm_school is idempotent, so re-normalizing current-vintage keys is a no-op."""
-    best = {}
+    groups = {}
     for f in facts:
-        key = (f["band"], _norm_school(f["school"]))
-        cur = best.get(key)
-        if cur is None:
-            best[key] = f; continue
-        acc_new, acc_cur = f["status"] == "accepted", cur["status"] == "accepted"
-        if acc_new and not acc_cur:
-            best[key] = f                                             # solid signal fills the gap
-        elif acc_new and acc_cur:
-            if f["extraction_id"] < cur["extraction_id"]: best[key] = f   # earliest accepted stands
-        elif not acc_new and not acc_cur:
-            if f["extraction_id"] > cur["extraction_id"]: best[key] = f   # freshest diagnostic
-        # unresolved-new vs accepted-current: keep current (never regress)
+        groups.setdefault((f["band"], _norm_school(f["school"])), []).append(f)
+    best, superseded = {}, []
+    for key, rows in groups.items():
+        acc = [f for f in rows if f["status"] == "accepted"]
+        if acc:
+            known = [y for f in acc if (y := parse_school_year(f.get("school_year"))) is not None]
+            newest = max(known) if known else None
+            survivors, losers = [], []
+            for f in acc:
+                y = parse_school_year(f.get("school_year"))
+                (losers if (y is not None and y < newest) else survivors).append(f)
+            superseded.extend(losers)
+            # earliest accepted stands among the survivors; min() is stable, so two rows from the
+            # SAME run keep the first row seen (the strict-< behavior the PR #221 mutants pinned)
+            best[key] = min(survivors, key=lambda f: f["extraction_id"])
+        else:
+            best[key] = max(rows, key=lambda f: f["extraction_id"])   # freshest diagnostic
     key_fn = lambda f: (f["band"], f["school"])  # noqa: E731
-    return (sorted((f for f in best.values() if f["status"] == "accepted"), key=key_fn),
-            sorted((f for f in best.values() if f["status"] != "accepted"), key=key_fn))
+    out = (sorted((f for f in best.values() if f["status"] == "accepted"), key=key_fn),
+           sorted((f for f in best.values() if f["status"] != "accepted"), key=key_fn))
+    if with_superseded:
+        return out + (sorted(superseded, key=lambda f: (f["band"], f["school"], f["extraction_id"])),)
+    return out
+
+
+def detect_year_conflicts(facts):
+    """#254 detect-and-flag: the (band, norm_school) groups whose ACCEPTED facts mix school-year
+    knowledge — two different KNOWN years (which precedence resolves; `resolved` True) or a
+    known/unknown mix (which COEXISTS unresolved; `resolved` False) — so the gate@8 reviewer sees
+    every ambiguity, including the ones the automation handled. Each side carries its
+    `source_file` as a FORMAT HINT for the human (Ian, 2026-07-14: a hint surfaced, never an
+    automatic rule — Santa Fe's own stale facts came from a live webpage). Input = the same raw
+    cross-run rows merge_fact_runs consumes; pure + deterministic."""
+    groups = {}
+    for f in facts:
+        if f["status"] != "accepted":
+            continue
+        groups.setdefault((f["band"], _norm_school(f["school"])), []).append(f)
+    out = []
+    for (band, nschool), rows in sorted(groups.items()):
+        parsed = [parse_school_year(f.get("school_year")) for f in rows]
+        known = {y for y in parsed if y is not None}
+        n_unknown = sum(1 for y in parsed if y is None)
+        if len(known) < 1 or (len(known) == 1 and n_unknown == 0):
+            continue                       # all-unknown, or one known year across the board: no mix
+        out.append({"band": band, "school": nschool,
+                    "years": sorted(format_school_year(y) for y in known),
+                    "mixes_unknown": n_unknown > 0,
+                    # two distinct KNOWN years resolve by precedence; a known/unknown mix coexists
+                    "resolved": len(known) >= 2 and n_unknown == 0,
+                    "sides": [{"extraction_id": f["extraction_id"],
+                               "school_year": f.get("school_year"),
+                               "gross": f.get("gross_minutes"),
+                               "source_file": f.get("source_file")} for f in rows]})
+    return out
 
 
 def degenerate_school_facts(accepted):

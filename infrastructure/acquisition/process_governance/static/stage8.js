@@ -172,6 +172,10 @@
     const overrideMark = ov
       ? `<div class="s8-override" data-feat="override-applied">✎ human override${applied
           ? ` (council read ${esc(sc.council_start_time)}–${esc(sc.council_end_time)}, ${esc(sc.council_gross)} min)` : ""} — ${esc(ov.reason || ov.note || "")}</div>` : "";
+    // #254: the school year the page ITSELF stated (council consensus reading) — a muted chip
+    // beside the times; absent for pre-v3 facts and pages that don't print one (the honest null).
+    const yr = sc.school_year
+      ? ` <span class="s8-muted s8-year-chip" data-feat="school-year" title="school year as stated on the page (council consensus)">${esc(sc.school_year)}</span>` : "";
     const times = `${esc(sc.start_time)}–${esc(sc.end_time)}`;
     // #257: an excluded school renders struck-through WITH its reason — a recorded, auditable human
     // decision (out of the mode/count, never out of sight). The action flips to Restore.
@@ -185,7 +189,7 @@
     // loudly (it distorts the mode + n_sampled) but it KEEPS its vote until the reviewer disposes
     // (exclude via #257 when redundant; the roster-template slot-projection is the future home).
     const cs = sc.combined_scope
-      ? `<div class="s8-combined-scope" data-feat="combined-scope">⧉ combined-scope name (${esc(sc.combined_scope.kind === "group_descriptor" ? "grade-band group" : "multiple campuses")})${(sc.combined_scope.campuses || []).length ? ` — resolves to: ${sc.combined_scope.campuses.map(esc).join(", ")}` : ""} — a group description counted as ONE school; exclude (#257) if redundant with individual rows</div>` : "";
+      ? `<div class="s8-combined-scope" data-feat="combined-scope">⧉ combined-scope name (${esc(csKind(sc.combined_scope.kind))}${csSource(sc.combined_scope.source)})${(sc.combined_scope.campuses || []).length ? ` — resolves to: ${sc.combined_scope.campuses.map(esc).join(", ")}` : ""} — a group description counted as ONE school; exclude (#257) if redundant with individual rows</div>` : "";
     const action = sc.excluded
       ? `<button class="btn btn-small" data-feat="restore-exclusion" data-restore-excl data-band="${esc(band)}" data-school="${esc(sc.school)}">Restore</button>`
       : sc.human_added
@@ -194,7 +198,7 @@
          <button class="btn btn-small" data-feat="exclude" data-exclude data-band="${esc(band)}" data-school="${esc(sc.school)}">Exclude</button>`;
     return `<tr${sc.excluded ? ' class="s8-excluded" data-feat="excluded-row"' : ""}>
       <td>${esc(sc.school)}</td>
-      <td>${applied ? `<span class="s8-override" title="human override — council read ${esc(sc.council_start_time)}–${esc(sc.council_end_time)}">✎ ${times}</span>` : times}</td>
+      <td>${applied ? `<span class="s8-override" title="human override — council read ${esc(sc.council_start_time)}–${esc(sc.council_end_time)}">✎ ${times}</span>` : times}${yr}</td>
       <td>${applied ? `<span class="s8-override">${esc(sc.gross)}</span>` : esc(sc.gross)}</td>
       <td class="s8-muted">${(sc.models || []).map((m) => esc(m.split("/").pop())).join(", ")}</td>
       <td data-feat="evidence">${url}${reader}${quote}${stated}${overrideMark}${ovErr}${cs}${excl}${humanAdd}</td>
@@ -223,7 +227,14 @@
           <button class="btn btn-small" data-feat="human-add" data-ha-add data-band="${esc(r.band)}">Add by hand (fallback, #474)</button>`;
       }).join("<br>")}</li>`);
     if ((ns.combined_scope_facts || []).length)
-      rows.push(`<li data-feat="combined-scope-facts"><strong>Combined-scope facts (#253):</strong> ${ns.combined_scope_facts.map((m) => `${esc(m.school)} in ${esc(m.band)} (${esc(m.kind === "group_descriptor" ? "grade-band group" : "multiple campuses")}${(m.campuses || []).length ? `: ${m.campuses.map(esc).join(", ")}` : ""})${m.excluded ? " — already excluded" : ""}`).join("; ")} — group descriptions counted as one school each; still voting in the mode until disposed.</li>`);
+      rows.push(`<li data-feat="combined-scope-facts"><strong>Combined-scope facts (#253):</strong> ${ns.combined_scope_facts.map((m) => `${esc(m.school)} in ${esc(m.band)} (${esc(csKind(m.kind))}${csSource(m.source)}${(m.campuses || []).length ? `: ${m.campuses.map(esc).join(", ")}` : ""})${m.excluded ? " — already excluded" : ""}`).join("; ")} — group descriptions counted as one school each; still voting in the mode until disposed.</li>`);
+    // #254: year-superseded facts — WHY the stale rows left the mode (both years, both grosses).
+    if ((ns.superseded_facts || []).length)
+      rows.push(`<li data-feat="superseded-facts"><strong>Year-superseded facts (#254):</strong> ${ns.superseded_facts.map((f) => `${esc(f.school)} in ${esc(f.band)}: ${esc(f.school_year || "?")} @ ${esc(f.gross)} min superseded by ${esc((f.superseded_by || {}).school_year || "?")} @ ${esc((f.superseded_by || {}).gross)} min`).join("; ")} — a page stating a NEWER school year displaced these from the mode; they remain in the record.</li>`);
+    // #254: year-conflict flags — groups mixing year knowledge; source_file is a format HINT for
+    // the reviewer, never an automatic rule (a live webpage can host stale facts — Santa Fe).
+    if ((ns.year_conflicts || []).length)
+      rows.push(`<li data-feat="year-conflicts"><strong>School-year conflicts (#254):</strong> ${ns.year_conflicts.map((c) => `${esc(c.school)} in ${esc(c.band)} mixes ${c.years.map(esc).join(" vs ")}${c.mixes_unknown ? " vs undated" : ""} (${(c.sides || []).map((s) => `${esc(s.school_year || "undated")}${s.source_file ? ` via ${esc(s.source_file)}` : ""}`).join("; ")})${c.resolved ? " — resolved by year precedence" : " — unresolved: undated facts coexist"}`).join("; ")} — the source format is a hint, not a rule; verify which reading is current.</li>`);
     if ((ns.name_level_mismatches || []).length)
       rows.push(`<li data-feat="name-level-mismatch"><strong>Name/level mismatch flags (#258):</strong> ${ns.name_level_mismatches.map((m) => `${esc(m.school)} reads as ${m.implied_bands.map(esc).join("/")} but sits in ${esc(m.band)}${m.nces_level ? ` (NCES: ${esc(m.nces_level)})` : ""}`).join("; ")} — a name token is a hint, not ground truth; consider #257 exclude if confirmed.</li>`);
     const gaps = Object.entries(ns.coverage_gaps || {});
@@ -240,6 +251,16 @@
       ${rows.length ? `<ul>${rows.join("")}</ul>` : `<p class="s8-note">No open gaps flagged — every claimed band has confident minutes.</p>`}
       <p class="s8-note" data-feat="capture">Pages captured: ${capLine}.</p>
     </section>`;
+  }
+
+  // #253/#254: one home for the combined-scope flag's wording — kind names the shape, source names
+  // WHO raised it (the deterministic name detector, the council's applies_to reading, or both).
+  function csKind(kind) {
+    return kind === "group_descriptor" ? "grade-band group"
+      : kind === "council_scope" ? "page states a multi-school scope" : "multiple campuses";
+  }
+  function csSource(source) {
+    return source === "council" ? "; council reading" : source === "name+council" ? "; name + council reading" : "";
   }
 
   function shortUrl(u) {

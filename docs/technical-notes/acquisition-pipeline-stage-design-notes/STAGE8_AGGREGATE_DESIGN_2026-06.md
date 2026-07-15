@@ -382,6 +382,18 @@ A max-effort multi-angle review of the manual-gate build confirmed and fixed, be
   human override necessary where automation should have handled it: **#253** combined-scope facts
   (`k8 schools`, `milagro and ortiz schools`) counting as distinct schools + the K-8-topology-blind
   coverage denominator (Santa Fe middle read "4 of 2 · 200%"); **#254** school-year precedence in
-  `merge_fact_runs` (a current-year fact should supersede a stale one, blocked on extracting the school
-  year — the aggregation-side cousin of #241). Override-feeds-mode (§2a.3) is the manual backstop for both
-  until they land.
+  `merge_fact_runs` — **as-built (2026-07-14)**: the `stage6.extract.v3` prompt reads two new per-schedule
+  READINGS (`school_year` normalized to "YYYY-YY", null when the page doesn't state one — never inferred
+  from URL/domain/date; `applies_to` = "multiple" when the page's own text states a group scope, feeding
+  the #253 flag surface). Consensus (`consensus_school_facts`) treats both as categorical corroboration —
+  never in the grouping key, never voting on times: year = all-parseable-readers-agree (disagreement →
+  null + per-model readings in `evidence_json`), scope = OR. Persisted as nullable
+  `school_fact.school_year`/`applies_to` (the `evidence_json` going-forward pattern, no backfill).
+  `merge_fact_runs` inserts year precedence between ACCEPTED facts only, above earliest-accepted-wins: a
+  known NEWER parseable year supersedes a known older one regardless of run order; unknown-year facts
+  COEXIST (never auto-oldest — every pre-v3 fact is unknown); the deterministic `parse_school_year`
+  window is [2023, current+1] with the COVID wall, off `infrastructure.utilities.school_year`.
+  Superseded facts are kept and surfaced in `negative_space.superseded_facts` (both years, both grosses);
+  `negative_space.year_conflicts` flags every group mixing year knowledge, each side's `source_file`
+  riding along as a format HINT for the reviewer, never an automatic rule (Santa Fe's stale facts came
+  from a live webpage). Override-feeds-mode (§2a.3) remains the manual backstop for the undated-mix case.
