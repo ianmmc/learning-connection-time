@@ -489,6 +489,12 @@ textarea.note:focus-visible { outline: none; box-shadow: var(--shadow-focus); bo
 .s7-blocked { color: var(--text-danger, #b42318); font-weight: 600; }
 .s7-deferred { color: var(--text-warn, #b54708); }
 .s7-req-blocked { opacity: 0.72; border-style: dashed; }
+/* #246 single-school-LEA contamination banner (#237 detector — detect-and-flag, human decides) */
+.s7-contam { background: var(--color-amber-100, #fef3c7); border: 1px solid var(--status-warning, #b45309);
+  border-radius: var(--radius-md); padding: var(--space-3); margin: var(--space-3) 0;
+  font-size: var(--fs-sm); color: var(--color-amber-800, #92400e); }
+.s7-contam-head { font-weight: 700; margin-bottom: var(--space-1); }
+.s7-contam-schools { margin: var(--space-2) 0; }
 /* #154 compose modal (in-Stage-7 review, no view-flipping; cancel/ESC/click-out all close) */
 .s7-modal { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.44);
   display: flex; align-items: center; justify-content: center; padding: var(--space-4); }

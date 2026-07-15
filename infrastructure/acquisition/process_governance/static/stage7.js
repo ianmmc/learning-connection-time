@@ -135,6 +135,25 @@
     return facts.map((f) => `<tr><td>${esc(f.band)}</td><td>${esc(f.school)}</td><td>${esc(f.start_time)}–${esc(f.end_time)}</td><td>${f.gross_minutes} min</td><td class="muted">${esc(f.method)}</td></tr>`).join("");
   }
 
+  // #246 (#237 detector): a single-school LEA that yielded >1 distinct school is SUSPECTED
+  // cross-LEA contamination (charter-network siblings on a shared CMO domain, or a blank-domain
+  // capture). Detect-and-flag only — the human decides; roster_matched is the one reliable keeper
+  // hint. Display-only: nothing here touches stored fact status.
+  function contaminationBanner(c) {
+    if (!c || !c.suspected) return "";
+    const keepers = c.roster_matched || [];
+    const keeperLine = keepers.length
+      ? `<div data-feat="contamination-keeper">Roster-matched keeper hint (the LEA's own roster — the reliable signal): ${keepers.map((s) => `<b>${esc(s)}</b>`).join(", ")}</div>`
+      : "";
+    return `<div class="s7-contam" data-feat="contamination-banner" role="alert">
+      <div class="s7-contam-head">⚠ Suspected cross-LEA contamination — needs human review</div>
+      <div>This is a <b>single-school LEA</b> (NCES count = 1), but extraction returned
+        <b>${c.n_distinct_schools} distinct schools</b> — sibling campuses from a shared network site,
+        or an unscoped capture. Do not trust this district's data until the real school is identified.</div>
+      <div class="s7-contam-schools" data-feat="contamination-schools">${(c.distinct_schools || []).map((s) => `<span class="s7-chip">${esc(s)}</span>`).join("")}</div>
+      ${keeperLine}</div>`;
+  }
+
   function renderDetail(x) {
     const e = x.extraction, reqs = x.requests || [];
     const pending = reqs.filter((r) => r.status === "pending").length;
@@ -152,6 +171,7 @@
         <h3>${esc(e.district_id)}</h3>
         <div class="muted">${acc.length} accepted · ${unres.length} unresolved · ${usd(e.cost_usd)} · ${e.n_reps} rep${e.n_reps === 1 ? "" : "s"} · run ${esc(e.created_at)}</div>
       </div>
+      ${contaminationBanner(x.contamination)}
       <h4>Band rollup <span class="muted">(computed — Stage 8 owns the authoritative value)</span></h4>
       ${bandTable(x.bands || {})}
       ${reqSection}
