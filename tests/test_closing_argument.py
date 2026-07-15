@@ -1000,6 +1000,47 @@ class TestEpicReviewFixes499:
         assert len(confs) == 1
         assert confs[0]["direct_gross"] == 400 and confs[0]["band_fact_gross"] == 380
 
+    def test_load_is_a_pure_read_when_drift_recording_is_off(self, monkeypatch):
+        # Review round 2: load_closing_argument commits a roster_drift state_event as a side
+        # effect — callers that promise "nothing persisted" (the gate@1 spine GET, compose's
+        # live-read helpers incl. dry-run previews) pass record_drift_event=False and must
+        # execute ZERO INSERTs; the default (gate@8's review surface) still records it.
+        executed = []
+
+        class _Stub:
+            def execute(self, stmt, params=None):
+                sql = str(stmt)
+                executed.append(sql)
+
+                class _R:
+                    def all(self_r):
+                        return []
+
+                    def mappings(self_r):
+                        return self_r
+
+                    def first(self_r):
+                        return None
+
+                    def scalar(self_r):
+                        # a prior approval exists -> the drift INSERT is licensed when enabled
+                        return "2026-01-01T00:00:00Z" if "stage8_approval" in sql else None
+                return _R()
+
+        drifted = {"district_id": "D", "bands": {}, "slot_projection": {},
+                   "negative_space": {"roster_drift": {"added": [{"school_id": "X"}],
+                                                       "removed": [], "band_moved": []}},
+                   "capture_events": [], "provenance": {}}
+        monkeypatch.setattr(CA, "build_closing_argument", lambda *a, **k: drifted)
+        monkeypatch.setattr(CA.SS, "band_rosters_for_district", lambda d: None)
+
+        CA.load_closing_argument(_Stub(), "D", record_drift_event=False)
+        assert not any("INSERT" in s.upper() for s in executed)
+
+        executed.clear()
+        CA.load_closing_argument(_Stub(), "D")          # default: gate@8 records the event
+        assert any("INSERT INTO state_event" in s for s in executed)
+
     def test_drift_baseline_prefers_receipt_slot_projection(self):
         # A receipt's slot_projection covers ALL bands (incl. zero-fact ones); the drift diff
         # must use it when present so drift on a factless band is visible.

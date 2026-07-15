@@ -371,10 +371,13 @@ def _gather(session, handoff_hash: str, max_rounds=None, ca_cache: dict = None) 
 
 def _load_ca_cached(session, did, cache):
     """One closing-argument assembly per district per compose — the loader is ~9 sequential
-    queries plus CCD file reads, and compose consumes it twice (satisfied, then unfilled slots)."""
+    queries plus CCD file reads, and compose consumes it twice (satisfied, then unfilled slots).
+    record_drift_event=False (review round 2): compose is a planner, and its dry_run preview
+    promises NO writes — the roster_drift audit event is gate@8's to record, never a compose
+    side effect."""
     if cache is not None and did in cache:
         return cache[did]
-    ca = CA8.load_closing_argument(session, did)
+    ca = CA8.load_closing_argument(session, did, record_drift_event=False)
     if cache is not None:
         cache[did] = ca
     return ca
@@ -418,8 +421,14 @@ def _unfilled_slots_now(session, district_ids: list, ca_cache: dict = None) -> d
             ca = _load_ca_cached(session, did, ca_cache)
             per_band = {}
             for band, p in (ca.get("slot_projection") or {}).items():
+                # `not match` (review round 2): an AMBIGUOUS slot also reads slot_state
+                # "unfilled", but the pipeline already HOLDS a fact for it — it's waiting on a
+                # human disposition, not on more paid discovery. Pursuing it re-buys data we
+                # have, every compose, until someone clicks. Truly unheard = unfilled AND no
+                # match attached (the same predicate the blanket projection uses).
                 ids = [s_["school_id"] for s_ in (p.get("slots") or [])
-                       if s_.get("slot_state") == "unfilled" and s_.get("school_id")]
+                       if s_.get("slot_state") == "unfilled" and not s_.get("match")
+                       and s_.get("school_id")]
                 if ids:
                     per_band[band] = ids
             if per_band:

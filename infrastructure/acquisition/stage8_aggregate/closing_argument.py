@@ -802,9 +802,14 @@ def _evidence_from_handoffs(district_id, handoff_hashes):
     return by_hash_rk, by_rk
 
 
-def load_closing_argument(session, district_id):
+def load_closing_argument(session, district_id, *, record_drift_event=True):
     """Gather one district's ingredients from the gov DB working store + the immutable handoff on
-    disk, and build its closing argument. `session` is a governance SQLAlchemy session/connection."""
+    disk, and build its closing argument. `session` is a governance SQLAlchemy session/connection.
+
+    `record_drift_event=False` makes this a PURE read (review round 2): the roster_drift
+    state_event write below belongs to the gate@8 review surface — callers that promise no
+    persistence (the gate@1 roster-spine GET, compose's live-read helpers incl. dry-run previews)
+    must not commit an audit row as a side effect of being viewed."""
     from sqlalchemy import text
 
     facts = [dict(r._mapping) for r in session.execute(text("""
@@ -923,7 +928,7 @@ def load_closing_argument(session, district_id):
     # (skipped if a drift event already exists after the last approval), spend-zero, observable
     # (rides into district_status.json via the sweep), so drift is auditable without the console.
     # Best-effort: a failure here must never break the read path.
-    if ca.get("negative_space", {}).get("roster_drift"):
+    if record_drift_event and ca.get("negative_space", {}).get("roster_drift"):
         try:
             approved_at = session.execute(text(
                 "SELECT created_at FROM stage8_approval WHERE district_id = :d "

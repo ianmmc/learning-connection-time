@@ -714,7 +714,7 @@ def test_live_read_helpers_degrade_to_no_signal_on_loader_failure(monkeypatch, h
     # FileNotFoundError — fixed at the source, epic-#499 review round: _lea_file no longer uses
     # SystemExit for an ordinary missing-file condition) degrades to no-signal, never a crash.
     monkeypatch.setattr(EX.CA8, "load_closing_argument",
-                        lambda s, did: (_ for _ in ()).throw(FileNotFoundError("no ccd csv")))
+                        lambda s, did, **kw: (_ for _ in ()).throw(FileNotFoundError("no ccd csv")))
     assert getattr(EX, helper)(None, ["D1"]) == {}
 
 
@@ -732,15 +732,19 @@ def test_lea_file_raises_an_ordinary_exception_not_systemexit(tmp_path, monkeypa
 def test_compose_loads_each_closing_argument_once(monkeypatch):
     # Epic-#499 review round: satisfied + unfilled share one per-compose cache — the ~9-query
     # closing-argument assembly must run once per district, not once per consumer.
-    calls = []
-    def fake_load(s, did):
+    calls, kwargs_seen = [], []
+    def fake_load(s, did, **kw):
         calls.append(did)
+        kwargs_seen.append(kw)
         return {"bands": {}, "slot_projection": {}}
     monkeypatch.setattr(EX.CA8, "load_closing_argument", fake_load)
     cache = {}
     EX._satisfied_bands_now(None, ["D1", "D2"], ca_cache=cache)
     EX._unfilled_slots_now(None, ["D1", "D2"], ca_cache=cache)
     assert calls == ["D1", "D2"]        # second consumer served from the cache
+    # review round 2: compose is a planner (and dry_run promises NO writes) — every load
+    # through the cache must be the pure-read variant, never recording the drift event.
+    assert all(kw.get("record_drift_event") is False for kw in kwargs_seen)
 
 
 def test_gathered_satisfied_default_is_not_a_shared_dict():
@@ -757,5 +761,20 @@ def test_unfilled_slots_covers_zero_fact_bands(monkeypatch):
           "slot_projection": {"middle": {"slots": [
               {"school_id": "M1", "slot_state": "unfilled"},
               {"school_id": "M2", "slot_state": "filled"}], "extras": [], "stats": {}}}}
-    monkeypatch.setattr(EX.CA8, "load_closing_argument", lambda s, did: ca)
+    monkeypatch.setattr(EX.CA8, "load_closing_argument", lambda s, did, **kw: ca)
     assert EX._unfilled_slots_now(None, ["D1"]) == {"D1": {"middle": ["M1"]}}
+
+
+def test_unfilled_slots_excludes_ambiguous_awaiting_disposition(monkeypatch):
+    # Review round 2: an ambiguous slot reads slot_state 'unfilled' but the pipeline already
+    # HOLDS a fact for it — pursuing it re-buys data we have, every compose, until a human
+    # disposes. Only truly-unheard slots (no match attached) are pursuit targets.
+    amb = {"norm_school_fact": "washington", "confidence": "ambiguous", "candidates": []}
+    ca = {"bands": {},
+          "slot_projection": {"elementary": {"slots": [
+              {"school_id": "W1", "slot_state": "unfilled", "match": amb},
+              {"school_id": "W2", "slot_state": "unfilled", "match": amb},
+              {"school_id": "U1", "slot_state": "unfilled", "match": None}],
+              "extras": [], "stats": {}}}}
+    monkeypatch.setattr(EX.CA8, "load_closing_argument", lambda s, did, **kw: ca)
+    assert EX._unfilled_slots_now(None, ["D1"]) == {"D1": {"elementary": ["U1"]}}

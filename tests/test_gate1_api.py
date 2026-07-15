@@ -196,12 +196,20 @@ def test_roster_spine_is_the_gate8_projection_not_a_parallel_one(client, monkeyp
               "stats": {"n_slots": 1, "n_filled": 0, "n_projected": 1, "n_unfilled": 0,
                         "n_extras": 0, "n_ambiguous": 0, "slot_coverage": 0.0}}},
           "provenance": {"denominator": {"nces_year": "2024_25"}}}
-    monkeypatch.setattr(SRV.CA8, "load_closing_argument", lambda con, d: ca)
+    seen_kw = {}
+
+    def fake_load(con, d, **kw):
+        seen_kw.update(kw)
+        return ca
+    monkeypatch.setattr(SRV.CA8, "load_closing_argument", fake_load)
     body = client.get(f"/api/queue/{BID}/roster/ZZTESTA").json()
     # the gate@8-only "projected" state passes straight through — proof the endpoint reads the
     # assembled projection, not a raw accepted-facts rebuild (which can't produce "projected")
     assert body["bands"]["high"]["slots"][0]["slot_state"] == "projected"
     assert body["nces_year"] == "2024_25"
+    # review round 2: a GET that promises "nothing persisted" must load the PURE-read variant —
+    # never committing a roster_drift state_event as a side effect of being viewed
+    assert seen_kw.get("record_drift_event") is False
 
 
 def test_gate1_console_carries_the_roster_spine_markers():

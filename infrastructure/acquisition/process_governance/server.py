@@ -944,8 +944,10 @@ def queue_roster_spine(batch_id: str, district_id: str):
     # human adds, REQ-145 dispositions and REQ-146 band-fact projection gate@8 applies — so the
     # two gates silently disagreed about the same district's slot states. load_closing_argument
     # is the single assembled read path; this endpoint only reshapes its slot_projection.
+    # record_drift_event=False (review round 2): this GET promises "nothing persisted" — the
+    # roster_drift state_event is gate@8's to record, never a side effect of a view.
     with gdb.session_scope() as con:
-        ca = CA8.load_closing_argument(con, district_id)
+        ca = CA8.load_closing_argument(con, district_id, record_drift_event=False)
     proj = ca.get("slot_projection") or {}
     if not proj:
         raise HTTPException(404, "live NCES roster unavailable (CCD files not on disk)")
@@ -2237,6 +2239,19 @@ async def aggregate_human_add(payload: dict):
         if excl:
             raise HTTPException(409, f"{school!r} is excluded from {band} (#257: {excl['reason']}) — "
                                      f"restore the exclusion before hand-adding")
+        # Review round 2: a hand-add duplicating a STILL-ACCEPTED council fact would put two rows
+        # for one school into the mode (a double vote) and the slot projection (a silently-dropped
+        # duplicate). Corrections to an extracted value go through the per-school OVERRIDE — #474
+        # is for schools the council MISSED, so an existing accepted fact refuses the add.
+        for r in con.execute(text(
+                "SELECT DISTINCT f.school FROM school_fact f "
+                "JOIN extraction e ON e.extraction_id = f.extraction_id "
+                "WHERE f.district_id = :d AND f.band = :b AND f.status = 'accepted' "
+                "AND e.run_kind = 'production'"), {"d": did, "b": band}):
+            if norm_school(r[0] or "") == key:
+                raise HTTPException(409, f"{school!r} already has an accepted council fact in "
+                                         f"{band} — correct it with the per-school override, "
+                                         f"not a hand-add (#474 is for schools the council missed)")
         con.execute(text("DELETE FROM human_added_fact WHERE district_id = :d AND band = :b "
                          "AND norm_school = :n"), {"d": did, "b": band, "n": key})
         con.execute(text("INSERT INTO human_added_fact (district_id, band, norm_school, school, "

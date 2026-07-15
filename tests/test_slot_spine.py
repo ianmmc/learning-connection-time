@@ -247,6 +247,62 @@ class TestDispositions:
         assert shadowed[0]["norm_school_fact"] == "second fact"
         assert shadowed[0]["slot_carries"] == "first fact"
 
+    def test_confirm_extra_never_mints_a_second_slot_for_the_same_key(self):
+        # Review round 2: a council fact + a #474 hand-add for the one confirmed school arrive
+        # as two facts with the same key — one human_confirmed slot, never a double-counted
+        # denominator.
+        out = SP.project_slots(
+            {"high": {"slot_recs": []}},
+            {"high": ["lakeside academy", "lakeside academy"]},
+            assignments=[_asg("high", "", "lakeside", "confirm_extra",
+                              school="Lakeside Academy")])
+        hi = out["high"]
+        assert hi["stats"]["n_slots"] == 1 and hi["stats"]["n_filled"] == 1
+
+    def test_identical_key_duplicate_surfaces_never_vanishes(self):
+        # Review round 2: a second fact with the SAME key as the slot's current match (a
+        # hand-add duplicating a still-accepted council fact) must surface as a duplicate-vote
+        # extra — the projection is an audit view, never a cage.
+        rosters = _rosters({"elementary": [_rec("001", "Oak Elementary School")]})
+        out = SP.project_slots(rosters, {"elementary": ["oak", "oak"]})
+        el = out["elementary"]
+        assert el["slots"][0]["slot_state"] == "filled"
+        assert len(el["extras"]) == 1
+        assert el["extras"][0]["confidence"] == "duplicate_vote"
+        assert el["extras"][0]["duplicate_of_slot"] == "001"
+
+    def test_inert_assign_surfaces_as_fact_absent(self):
+        # Review round 2: the assigned fact vanished from the band's included facts (#257
+        # exclusion / rejection / supersession) — the slot sits open and the assign binds
+        # nothing; without a flag the human never learns their standing answer went inert.
+        rosters = _rosters({"elementary": [_rec("001", "Oak Elementary School")]})
+        out = SP.project_slots(rosters, {"elementary": []},
+                               assignments=[_asg("elementary", "001", "oak campus", "assign")])
+        o = out["elementary"]["orphaned_dispositions"]
+        assert [x["kind"] for x in o] == ["assign_fact_absent"]
+        assert out["elementary"]["slots"][0]["slot_state"] == "unfilled"
+
+    def test_bound_assign_is_not_flagged_fact_absent(self):
+        rosters = _rosters({"elementary": [_rec("001", "Oak Elementary School")]})
+        out = SP.project_slots(rosters, {"elementary": ["oak campus"]},
+                               assignments=[_asg("elementary", "001", "oak campus", "assign")])
+        assert "orphaned_dispositions" not in out["elementary"]
+
+    def test_slot_gone_says_whether_reclassified_or_gone(self):
+        # Review round 2: a disposed slot that left THIS band but lives in another band is a
+        # reclassification, not a closure — the copy must not claim the school closed.
+        rosters = _rosters({"elementary": [_rec("001", "Oak School")],
+                            "middle": [_rec("002", "Oak Middle School",
+                                            effective_band="middle")]})
+        out = SP.project_slots(
+            rosters, {},
+            assignments=[_asg("elementary", "002", "oak middle", "assign"),   # moved to middle
+                         _asg("elementary", "999", "ghost", "assign")])       # gone entirely
+        o = {x["roster_school_id"]: x for x in out["elementary"]["orphaned_dispositions"]
+             if x["kind"] == "slot_gone_from_roster"}
+        assert o["002"]["still_in_district_roster"] is True
+        assert o["999"]["still_in_district_roster"] is False
+
     def test_ambiguous_branch_never_overwrites_an_existing_match(self):
         # Epic-#499 review round: a caller whose facts aren't norm-key-deduped (two entries
         # colliding on one key) must not double-count n_ambiguous or overwrite the first fact's

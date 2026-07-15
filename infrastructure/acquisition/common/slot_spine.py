@@ -85,6 +85,11 @@ def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_re
     for b in list(facts_by_band or {}) + [a.get("band") for a in asg]:
         if b and b not in bands:
             bands.append(b)
+    # Every school_id anywhere in the district's roster, cross-band — lets orphan surfacing say
+    # "reclassified to another band" vs "gone from the district entirely" (review round 2).
+    all_district_ids = {rc.get("school_id")
+                        for b in bands for rc in (rosters.get(b) or {}).get("slot_recs") or []
+                        if rc.get("school_id")}
 
     for band in bands:
         recs = (rosters.get(band) or {}).get("slot_recs") or []
@@ -118,20 +123,26 @@ def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_re
                     "actor": disposition.get("actor"), "at": disposition.get("created_at")}
 
         bf = bfacts.get(band)
-        extras, n_ambiguous = [], 0
+        extras, n_ambiguous, fact_keys_seen = [], 0, set()
         # Human ASSIGNs are processed FIRST (epic-#499 review round): "human disposition wins
         # outright" must not depend on fact iteration order — without this, a fact that
         # exact-name-fills a slot earlier in the loop silently shadows a later fact's assign
         # to that same slot. Stable sort: assigned facts keep their relative order, then the rest.
+        # ONE fk→sid index serves both the sort key and the loop's bind lookup (review round 2:
+        # the earlier shape scanned assign_of per fact twice — once for the key, once for bound).
         band_fact_rows = (facts_by_band or {}).get(band, [])
-        if assign_of:
-            def _is_assigned(f):
-                k = norm_school(_fact_entry(f)[0])
-                return any(fk == k and sid in by_id for (sid, fk) in assign_of)
-            band_fact_rows = sorted(band_fact_rows, key=lambda f: 0 if _is_assigned(f) else 1)
+        assign_slot_by_key = {}
+        for (sid_, fk_) in assign_of:
+            if fk_ not in assign_slot_by_key and sid_ in by_id:
+                assign_slot_by_key[fk_] = sid_
+        if assign_slot_by_key:
+            band_fact_rows = sorted(
+                band_fact_rows,
+                key=lambda f: 0 if norm_school(_fact_entry(f)[0]) in assign_slot_by_key else 1)
         for f in band_fact_rows:
             name, rk = _fact_entry(f)
             key = norm_school(name)
+            fact_keys_seen.add(key)
 
             # REQ-146: the band-grain fact is not a school — it never fills a slot by its own
             # name and never lands in extras; its campuses/projection are handled below.
@@ -140,8 +151,8 @@ def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_re
 
             # 1) a human ASSIGN wins outright — bind the fact to the named slot wherever the name
             #    match would have landed (ambiguous, extra, or a different exact match).
-            bound = next((by_id[sid] for (sid, fk) in assign_of
-                          if fk == key and sid in by_id), None)
+            _sid = assign_slot_by_key.get(key)
+            bound = by_id.get(_sid) if _sid else None
             if bound is not None and not bound["match"]:
                 _fill(bound, key, name, ["disposition"], assign_of[(bound["school_id"], key)])
                 continue
@@ -149,6 +160,12 @@ def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_re
             # 2) confirm_extra: the human said this fact is a REAL school NCES missed — it becomes
             #    a human-confirmed slot (denominator +1), not an extra and not a roster fill.
             if key in confirm_of:
+                # Review round 2: the SAME key twice (a council fact + a #474 hand-add for the
+                # one confirmed school) must not mint a SECOND human-confirmed slot — that
+                # double-counts the denominator. First fact creates it; siblings are duplicates.
+                if any(r["roster_source"] == "human_confirmed" and r["norm_key"] == key
+                       for r in by_key.get(key, [])):
+                    continue
                 a = confirm_of[key]
                 row = {"school_id": "", "roster_school": a.get("school") or name,
                        "norm_key": key, "gslo": None, "gshi": None, "is_charter": "",
@@ -165,15 +182,24 @@ def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_re
             if len(hits) == 1:
                 s = hits[0]
                 if s["match"]:
-                    # Same fact key twice can't happen post-merge (defensive skip). A DIFFERENT
-                    # key already holding the slot (a human assign displaced this name match) —
-                    # the displaced fact stays VISIBLE as an extra, never silently dropped
-                    # (epic-#499 review round).
                     if s["match"].get("norm_school_fact") != key:
+                        # A DIFFERENT key already holds the slot (a human assign displaced this
+                        # name match) — the displaced fact stays VISIBLE as an extra, never
+                        # silently dropped (epic-#499 review round).
                         extras.append({"norm_school_fact": key, "school_display": name,
                                        "confidence": "unmatched_extra",
                                        "intent_schools": intent.get(rk, []),
                                        "displaced_by": s["match"].get("norm_school_fact")})
+                    else:
+                        # The SAME key twice CAN happen despite the merge: merge_fact_runs
+                        # dedupes council rows only — a #474 hand-add duplicating a still-
+                        # accepted council fact arrives as a second row (review round 2; the
+                        # endpoint now 409s new ones, but standing rows must surface, not
+                        # vanish — the projection is an audit view, never a cage).
+                        extras.append({"norm_school_fact": key, "school_display": name,
+                                       "confidence": "duplicate_vote",
+                                       "intent_schools": intent.get(rk, []),
+                                       "duplicate_of_slot": s["school_id"]})
                     continue
                 basis = ["exact_name"]
                 if len(by_key.get(key, [])) > 1:
@@ -246,7 +272,12 @@ def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_re
             base = {k: a.get(k) for k in ("roster_school_id", "norm_school_fact",
                                           "school", "disposition", "reason")}
             if a["disposition"] in ("assign", "reject") and sid and sid not in by_id:
-                orphaned.append({**base, "kind": "slot_gone_from_roster"})
+                # Review round 2: say WHICH gone. Still elsewhere in the district roster ⇒
+                # reclassified to another band; absent everywhere ⇒ closed — or an id that was
+                # never valid (pre-validation rows, restored backups: the live view can't tell
+                # those apart from a closure, so the copy must state both hypotheses).
+                orphaned.append({**base, "kind": "slot_gone_from_roster",
+                                 "still_in_district_roster": sid in all_district_ids})
             # An ASSIGN whose slot ended up carrying a DIFFERENT fact (two standing assigns on
             # one slot — the unique index permits it, norm_school_fact is in the key): the
             # shadowed disposition must be VISIBLE for human retirement, never silently inert
@@ -256,6 +287,12 @@ def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_re
                 if m and m.get("norm_school_fact") != a.get("norm_school_fact"):
                     orphaned.append({**base, "kind": "assign_shadowed",
                                      "slot_carries": m.get("norm_school_fact")})
+                # Review round 2: an assign whose target fact never appeared in this band's
+                # included facts (excluded via #257, rejected, superseded) binds NOTHING — the
+                # slot sits open and the disposition is inert. Without this flag the human has
+                # no signal their standing answer stopped doing anything.
+                elif a.get("norm_school_fact") not in fact_keys_seen:
+                    orphaned.append({**base, "kind": "assign_fact_absent"})
             if a["disposition"] == "confirm_extra" and a.get("norm_school_fact") in {
                     s["norm_key"] for s in slots if s["roster_source"] != "human_confirmed"}:
                 orphaned.append({**base, "kind": "extra_now_in_roster"})
