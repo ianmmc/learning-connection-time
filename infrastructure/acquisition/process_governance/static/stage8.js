@@ -153,6 +153,7 @@
     const st = b.slot_stats, slots = b.slots || [], extras = b.slot_extras || [];
     if (!st) return "";
     const unfilled = slots.filter((s) => s.slot_state === "unfilled" && !(s.match && s.match.confidence === "ambiguous"));
+    const projected = slots.filter((s) => s.slot_state === "projected");
     const ambiguous = slots.filter((s) => s.match && s.match.confidence === "ambiguous");
     const chip = (s) =>
       `<span class="s8-slot s8-slot-unfilled" data-feat="slot-unfilled" title="no accepted fact matches this NCES roster school">${esc(s.roster_school)}${s.is_charter === "Yes" ? ` <span class="s8-slot-charter" title="NCES charter (REQ-060: tagged, never excluded)">ch</span>` : ""}${s.gslo && s.gshi ? ` <span class="s8-muted">${esc(s.gslo)}–${esc(s.gshi)}</span>` : ""}</span>`;
@@ -171,9 +172,16 @@
       ? `<div class="s8-slot-row">Not in NCES roster: ${extras.map((x) => `<span class="s8-slot s8-slot-extra" data-feat="slot-extra" title="extracted fact matching no roster school — NCES may be wrong, or the name may need a disposition">${esc(x.school_display)}</span>${(x.intent_schools || []).length ? ` <span class="s8-muted" data-feat="slot-intent-hint" title="Stage-2 discovery intent: the page this fact came from was found by querying for these roster schools">(found via ${x.intent_schools.map(esc).join(", ")})</span>` : ""}
           <button class="btn btn-small" data-feat="slot-assign" data-slot-assign data-band="${esc(band)}" data-school="${esc(x.school_display)}">Assign to slot…</button>
           <button class="btn btn-small" data-feat="slot-extra-confirm" data-slot-confirm data-band="${esc(band)}" data-school="${esc(x.school_display)}">Confirm real (not in NCES)</button>`).join(" ")}</div>` : "";
+    // #499 REQ-146: the band-grain fact — a blanket statement lives on the BAND, votes once,
+    // and projects onto the slots never individually heard from (a visible third state).
+    const bf = b.band_fact;
+    const bfRow = bf
+      ? `<div class="s8-slot-row" data-feat="band-fact">Band-level statement: <strong>“${esc(bf.school_display)}”</strong> ${esc(bf.start_time)}–${esc(bf.end_time)} (${esc(bf.gross)} min)${bf.school_year ? ` <span class="s8-muted">${esc(bf.school_year)}</span>` : ""} — one vote in the mode${(bf.projection || {}).n_projected ? `, projected onto ${bf.projection.n_projected} unheard slot(s)` : ""}${(bf.campuses || []).length ? `; names campuses: ${bf.campuses.map(esc).join(", ")}` : ""}.</div>` : "";
+    const projRow = projected.length
+      ? `<div class="s8-slot-row">Covered by the statement (not individually observed): ${projected.map((s) => `<span class="s8-slot s8-slot-projected" data-feat="slot-projected" title="no direct fact — the band-level statement claims this school">${esc(s.roster_school)}</span>`).join(" ")}</div>` : "";
     return `<div class="s8-slots" data-feat="slot-view">
-      <div data-feat="slot-stats"><span data-feat="slot-filled">${st.n_filled}</span> of ${st.n_slots} roster slots filled${st.n_ambiguous ? ` · ${st.n_ambiguous} ambiguous` : ""}${extras.length ? ` · ${extras.length} extra` : ""} <span class="s8-muted">(slot coverage ${pct(st.slot_coverage)})</span></div>
-      ${unfilledRow}${ambRow}${extraRow}
+      <div data-feat="slot-stats"><span data-feat="slot-filled">${st.n_filled}</span> of ${st.n_slots} roster slots filled${st.n_projected ? ` · ${st.n_projected} projected` : ""}${st.n_ambiguous ? ` · ${st.n_ambiguous} ambiguous` : ""}${extras.length ? ` · ${extras.length} extra` : ""} <span class="s8-muted">(slot coverage ${pct(st.slot_coverage)})</span></div>
+      ${bfRow}${unfilledRow}${ambRow}${projRow}${extraRow}
     </div>`;
   }
 
@@ -311,6 +319,9 @@
     pushFlag("slot-drift-removed", "Roster drift — schools REMOVED since last approval (#499):", rd.removed,
       (s) => `${esc(s.name)} (${(s.bands || []).map(esc).join("/")})`,
       " — in the signed receipt but gone from the live NCES roster (closed or reclassified out).");
+    pushFlag("slot-conflict", "Slot conflicts (#499):", ns.slot_conflicts,
+      (c) => `${esc(c.roster_school)} in ${esc(c.band)}: direct reading ${esc(c.direct_gross)} min vs blanket “${esc(c.band_fact_display)}” ${esc(c.band_fact_gross)} min — <span data-feat="conflict-rung">${esc(c.rung)}</span>${c.leans ? ` leans ${esc(c.leans === "direct" ? "the direct reading" : "the blanket")}` : ""} (${esc(c.note)})`,
+      " — the ladder's ADVICE (sufficiency → hub-exception → vintage); both facts keep their votes until you dispose (override / exclude / more data).");
     pushFlag("slot-orphaned-disposition", "Orphaned slot dispositions (#499):", ns.orphaned_slot_dispositions,
       (o) => `${esc(o.school)} in ${esc(o.band)} — ${o.kind === "extra_now_in_roster" ? "the confirmed-extra now EXISTS in the NCES roster (retire it or the denominator double-counts)" : "its roster slot vanished from the live NCES roster (closed/reclassified)"} <button class="btn btn-small" data-feat="slot-disposition-remove" data-slot-retire data-band="${esc(o.band)}" data-school="${esc(o.school)}" data-slotid="${esc(o.roster_school_id || "")}">Retire</button>`,
       " — dispositions are precious: surfaced for human retirement, never auto-deleted.");

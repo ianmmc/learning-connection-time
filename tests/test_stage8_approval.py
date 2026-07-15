@@ -70,3 +70,51 @@ def test_latest_decision_is_newest(gov_session):
     APV.record_decision(s, ca, disposition="approved")
     s.flush()
     assert APV.latest_decision(s, "9999004")["disposition"] == "approved"   # append-only, newest wins
+
+
+def test_staleness_derives_from_receipt_not_the_stored_stamp(gov_session):
+    """REQ-147 (the 2026-07-14 incident): a fingerprint-basis evolution between decision time and
+    now must NOT fake staleness on an unchanged picture. Simulate a legacy-era approval by
+    corrupting the stored stamp — the receipt still hashes equal to the live picture, so the
+    decision stays fresh; a real content change still goes stale."""
+    from sqlalchemy import text
+    gdb.init_precious_schema()
+    s = gov_session
+    ca = _ca(district_id="9999004", gross=420)
+    aid = APV.record_decision(s, ca, disposition="approved")
+    s.flush()
+    # a hash-function change at decision time == a stamp today's code can't reproduce
+    s.execute(text("UPDATE stage8_approval SET facts_fingerprint='legacy-era-hash' "
+                   "WHERE approval_id=:a"), {"a": aid})
+    fresh = APV.decision_status(s, "9999004", current_fingerprint=CA.fingerprint(ca))
+    assert fresh["is_stale"] is False and fresh["is_approved"] is True
+    # ...while a REAL content change is still caught
+    ca2 = _ca(district_id="9999004", gross=430)
+    stale = APV.decision_status(s, "9999004", current_fingerprint=CA.fingerprint(ca2))
+    assert stale["is_stale"] is True
+
+
+def test_staleness_falls_back_to_stamp_when_receipt_unparseable(gov_session):
+    from sqlalchemy import text
+    gdb.init_precious_schema()
+    s = gov_session
+    ca = _ca(district_id="9999005", gross=420)
+    aid = APV.record_decision(s, ca, disposition="approved")
+    s.flush()
+    s.execute(text("UPDATE stage8_approval SET receipt_json='not json' WHERE approval_id=:a"),
+              {"a": aid})
+    fp = CA.fingerprint(ca)
+    st = APV.decision_status(s, "9999005", current_fingerprint=fp)
+    assert st["is_stale"] is False            # the stamp (made with current code here) still matches
+    st2 = APV.decision_status(s, "9999005", current_fingerprint="moved" + fp)
+    assert st2["is_stale"] is True
+
+
+def test_decision_status_never_ships_the_receipt(gov_session):
+    gdb.init_precious_schema()
+    s = gov_session
+    ca = _ca(district_id="9999006")
+    APV.record_decision(s, ca, disposition="approved")
+    s.flush()
+    st = APV.decision_status(s, "9999006", current_fingerprint=CA.fingerprint(ca))
+    assert "receipt_json" not in st["latest"]

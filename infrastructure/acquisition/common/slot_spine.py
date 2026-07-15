@@ -19,6 +19,15 @@ resolution isn't).
 Resolution precedence (weight, never override): human disposition > exact 1:1 name match >
 intent-tie-broken ambiguity > ambiguous (waits for the human). Intent alone NEVER creates a
 match — a district-wide page discovered via one school's query legitimately covers many schools.
+
+Band-grain facts (REQ-146): a blanket statement ("All Elementary Schools", council
+applies_to=="multiple") attaches to the BAND NODE, votes ONCE in the mode (never per projected
+slot — the Santa Fe inflation #253 fixed), and PROJECTS onto the band's unfilled slots
+(slot_state "projected": covered by the statement, not individually observed). A conjunction
+("Milagro and Ortiz Schools") whose campuses resolve to roster slots FILLS those named slots
+(basis "conjunction"). Slot conflicts (a direct fact disagreeing with the blanket) resolve by the
+fixed ladder sufficiency → hub-exception → vintage — rendered ADVICE only; both facts keep their
+votes until a human disposes (ramp-up posture).
 """
 from __future__ import annotations
 
@@ -35,7 +44,8 @@ def _fact_entry(f):
     return f, None
 
 
-def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_reckey=None):
+def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_reckey=None,
+                  band_facts=None):
     """Cross each band's roster slots with its accepted fact names. PURE.
 
     Inputs:
@@ -51,6 +61,12 @@ def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_re
                        actor, created_at}. assign binds fact→slot; reject removes a candidate
                        (a collapse to one survivor fills it); confirm_extra turns an extra into a
                        human-confirmed slot (denominator +1, roster_source "human_confirmed").
+      band_facts     : REQ-146 — {band: {"norm_school_fact", "school_display", "kind",
+                       "campuses": [...]}} for the band's band-grain fact (group_descriptor /
+                       council scope / conjunction). The band-fact's own name is NOT an extra
+                       (it is band-grain, not an unmatched school); a conjunction's resolved
+                       campuses FILL their slots (basis "conjunction"); a blanket kind projects
+                       onto every remaining unfilled slot (slot_state "projected").
       intent_by_reckey : REQ-145 — {rec_key: [intended school name, ...]} from Stage-2 discovery
                        (record.intended_schools_json): which roster school(s) each URL was
                        discovered FOR. Tie-breaker ONLY. Intent names are Stage-1 roster verbatim,
@@ -64,6 +80,7 @@ def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_re
     rosters = band_rosters or {}
     asg = list(assignments or [])
     intent = intent_by_reckey or {}
+    bfacts = band_facts or {}
     bands = [b for b in rosters if not b.startswith("_")]
     for b in list(facts_by_band or {}) + [a.get("band") for a in asg]:
         if b and b not in bands:
@@ -100,10 +117,16 @@ def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_re
                     "kind": disposition["disposition"], "reason": disposition.get("reason"),
                     "actor": disposition.get("actor"), "at": disposition.get("created_at")}
 
+        bf = bfacts.get(band)
         extras, n_ambiguous = [], 0
         for f in (facts_by_band or {}).get(band, []):
             name, rk = _fact_entry(f)
             key = norm_school(name)
+
+            # REQ-146: the band-grain fact is not a school — it never fills a slot by its own
+            # name and never lands in extras; its campuses/projection are handled below.
+            if bf and key == bf.get("norm_school_fact"):
+                continue
 
             # 1) a human ASSIGN wins outright — bind the fact to the named slot wherever the name
             #    match would have landed (ambiguous, extra, or a different exact match).
@@ -157,6 +180,32 @@ def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_re
                                "confidence": "unmatched_extra",
                                "intent_schools": intent.get(rk, [])})
 
+        # REQ-146: a conjunction's RESOLVED campuses fill their named slots — one page stating
+        # times for N schools genuinely is N schools' schedules (the fact still votes ONCE in the
+        # mode; slot fill is coverage truth, not a vote). Campus names are roster-verbatim (the
+        # #253 detector resolved them against the roster), so RAW-name equality suffices.
+        if bf and bf.get("campuses"):
+            camp_base = {_base(c) for c in bf["campuses"]}
+            for s_ in slots:
+                if s_["slot_state"] == "unfilled" and not s_["match"] \
+                        and _base(s_["roster_school"]) in camp_base:
+                    s_["slot_state"] = "filled"
+                    s_["match"] = {"norm_school_fact": bf["norm_school_fact"],
+                                   "school_display": bf.get("school_display", ""),
+                                   "confidence": "matched", "basis": ["conjunction"]}
+
+        # REQ-146: a BLANKET band fact (group descriptor / council scope) projects onto every slot
+        # still unheard — a visible third state between filled and unfilled: covered by the
+        # statement, not individually observed. Ambiguous slots stay ambiguous (they have a
+        # direct fact waiting on a human, which is stronger information than a blanket).
+        n_projected = 0
+        if bf and bf.get("kind") in ("group_descriptor", "council_scope") :
+            for s_ in slots:
+                if s_["slot_state"] == "unfilled" and not s_["match"]:
+                    s_["slot_state"] = "projected"
+                    s_["projected_by"] = bf["norm_school_fact"]
+                    n_projected += 1
+
         # Orphan surfacing (REQ-145, never auto-deleted): an assign/reject whose slot vanished
         # from the live roster (school closed / reclassified out), and a confirm_extra whose
         # school NOW matches a real roster slot (NCES caught up — retiring it avoids a
@@ -177,7 +226,8 @@ def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_re
             "slots": slots,
             "extras": extras,
             "stats": {"n_slots": len(slots), "n_filled": n_filled,
-                      "n_unfilled": len(slots) - n_filled,
+                      "n_projected": n_projected,
+                      "n_unfilled": len(slots) - n_filled - n_projected,
                       "n_extras": len(extras), "n_ambiguous": n_ambiguous,
                       "slot_coverage": round(n_filled / len(slots), 3) if slots else None},
         }
@@ -185,6 +235,62 @@ def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_re
             band_out["orphaned_dispositions"] = orphaned
         out[band] = band_out
     return out
+
+
+# REQ-146: the conflict-resolution ladder (Ian, 2026-07-14, recorded on #253/#499) — FIXED rung
+# order, deterministic, and ADVICE only: `leans` is rendered for the reviewer; both facts keep
+# their votes until a human disposes (nothing auto-rejects, ramp-up posture).
+CONFLICT_MIN_SAMPLED = 3
+CONFLICT_MIN_PLURALITY = 0.6
+
+
+def resolve_slot_conflict(direct, band_fact, band_stats, *, exceptions=None,
+                          min_sampled=CONFLICT_MIN_SAMPLED,
+                          min_plurality=CONFLICT_MIN_PLURALITY):
+    """One slot's direct fact vs the band's blanket statement, gross disagreeing. PURE.
+
+    Rungs, in order (the first that can decide, decides):
+      (a) sample_sufficiency — the band already holds a reliable mode (n_sampled >= min_sampled
+          AND plurality >= min_plurality): the conflict resolves as exception-vs-outlier against
+          a trustworthy mode; lean toward whichever side SITS ON the mode. Populous bands live
+          here; bands with <= 3 schools are where the real determination problem lives.
+      (b) hub_exception — the blanket's own source names this school as an exception (a K-8/K-12
+          with different hours). `exceptions` is that list (v4 campus/exception readings feed it;
+          empty until then — the rung passes through, never guesses).
+      (c) vintage — #254's machinery: a KNOWN school year on one side only, or a newer year,
+          leans that side; unknown-vs-unknown decides nothing.
+    Undecided everywhere -> rung "unresolved", leans None (the honest null: collect more data).
+
+    direct     : {"gross", "school", "school_year"} — the slot's directly-observed fact.
+    band_fact  : {"gross", "school_year", ...} — the blanket.
+    band_stats : {"n_sampled", "plurality_share", "gross_minutes"} — the band's mode context.
+    Returns {"rung", "leans": "direct"|"band_fact"|None, "note"}."""
+    st = band_stats or {}
+    n, plu, mode = st.get("n_sampled") or 0, st.get("plurality_share"), st.get("gross_minutes")
+    if n >= min_sampled and plu is not None and plu >= min_plurality and mode is not None:
+        if direct.get("gross") == mode and band_fact.get("gross") != mode:
+            return {"rung": "sample_sufficiency", "leans": "direct",
+                    "note": f"band mode {mode} is reliable (n={n}, plurality {plu:.0%}) and the "
+                            f"direct reading sits on it"}
+        if band_fact.get("gross") == mode and direct.get("gross") != mode:
+            return {"rung": "sample_sufficiency", "leans": "band_fact",
+                    "note": f"band mode {mode} is reliable (n={n}, plurality {plu:.0%}) and the "
+                            f"blanket sits on it — the direct reading is the outlier"}
+    exc = { _base(e) for e in (exceptions or []) }
+    if exc and _base(direct.get("school", "")) in exc:
+        return {"rung": "hub_exception", "leans": "direct",
+                "note": "the blanket's own source names this school as an exception"}
+    dy, by = direct.get("school_year"), band_fact.get("school_year")
+    if dy and by and dy != by:
+        newer = "direct" if dy > by else "band_fact"
+        return {"rung": "vintage", "leans": newer,
+                "note": f"school years differ ({dy} vs {by}) — the newer reading leans"}
+    if bool(dy) != bool(by):
+        return {"rung": "vintage", "leans": "direct" if dy else "band_fact",
+                "note": "only one side states a school year — the dated reading leans"}
+    return {"rung": "unresolved", "leans": None,
+            "note": "no rung decides — collect more data (small band, no exception list, no "
+                    "year signal)"}
 
 
 def roster_drift(live_slots_by_band, receipt_slots_by_band):
