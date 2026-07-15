@@ -378,7 +378,9 @@ def _satisfied_bands_now(session, district_ids: list) -> dict:
                    if (ob.get("satisfied") or {}).get("satisfied")}
             if sat:
                 out[did] = sat
-        except Exception:  # noqa: BLE001 — best-effort; the hard gate remains
+        except (Exception, SystemExit):  # noqa: BLE001 — best-effort; the hard gate remains
+            # SystemExit included: the CCD CSV loader hard-exits when the files are absent
+            # (a data-less checkout) — for THIS helper that's just "no signal", never a crash.
             continue
     return out
 
@@ -401,7 +403,7 @@ def _unfilled_slots_now(session, district_ids: list) -> dict:
                     per_band[band] = ids
             if per_band:
                 out[did] = per_band
-        except Exception:  # noqa: BLE001 — best-effort; the untried heuristic remains
+        except (Exception, SystemExit):  # noqa: BLE001 — best-effort; the untried heuristic remains
             continue
     return out
 

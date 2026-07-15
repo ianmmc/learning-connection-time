@@ -693,10 +693,11 @@ def test_compose_slot_targets_restricted_to_plan_targets(gov_session, monkeypatc
     monkeypatch.setattr(EX, "_unfilled_slots_now",
                         lambda s, dids: {"D1": {"high": ["X9"], "elementary": ["X1"]}})
     captured = {}
-    real_build = EX.Q1.build_followup_batch
     def spy(year, batch_id, targets, **kw):
+        # stub, NOT the real builder — build_followup_batch reads the on-disk CCD CSVs,
+        # absent on CI; the assertion is about the kwargs compose passes, not the build.
         captured.update(kw)
-        return real_build(year, batch_id, targets, **kw)
+        return {"districts": []}, []
     monkeypatch.setattr(EX.Q1, "build_followup_batch", spy)
     monkeypatch.setattr(EX, "_gather", lambda s, hh, mr: EX.Gathered(
         rows=[{"request_id": 1, "district_id": "D1", "route": "7->2", "band": "high"}],
@@ -705,3 +706,12 @@ def test_compose_slot_targets_restricted_to_plan_targets(gov_session, monkeypatc
     out = EX.compose_followup_batch(session=gov_session, dry_run=True)
     # only the targeted band's unfilled slots ride as the preference (elementary is not a target)
     assert captured.get("preferred_by_did") == {"D1": {"high": ["X9"]}}
+
+
+@pytest.mark.parametrize("helper", ["_satisfied_bands_now", "_unfilled_slots_now"])
+def test_live_read_helpers_survive_the_ccd_loaders_systemexit(monkeypatch, helper):
+    # 'best-effort, never blocks' means BaseException too: the CCD CSV loader hard-exits
+    # (SystemExit) on a data-less checkout — the helpers must degrade to no-signal, not crash.
+    monkeypatch.setattr(EX.CA8, "load_closing_argument",
+                        lambda s, did: (_ for _ in ()).throw(SystemExit("no ccd csv")))
+    assert getattr(EX, helper)(None, ["D1"]) == {}
