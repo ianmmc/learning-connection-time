@@ -581,6 +581,17 @@ def build_closing_argument(district_id, *, merged_accepted, merged_unresolved,
     if slot_conflicts:
         negative_space["slot_conflicts"] = slot_conflicts
 
+    # #499 REQ-149: the per-band SATISFIED signal (the #90 pull-in, in slot vocabulary) — computed
+    # here so the receipt freezes it WITH its thresholds; consumed by plan_followup as an
+    # additional suppressor beside covered_bands (spend stops chasing a confident band).
+    for band, ob in out_bands.items():
+        st = dict((slot_proj.get(band) or {}).get("stats") or {})
+        st["n_sampled"] = ob["sampling"]["n_sampled"]
+        st["plurality_share"] = ob["sampling"]["plurality_share"]
+        ob["satisfied"] = SP.band_satisfied(
+            st, ob.get("band_fact"),
+            [c for c in slot_conflicts if c.get("band") == band])
+
     # #499 REQ-145: the standing slot dispositions — surfaced (audit) and fingerprinted (a
     # disposition is a human determination that moves which slot a vote lands on); orphaned ones
     # (slot gone from the live roster / extra now in the roster) flagged for human retirement.
