@@ -337,3 +337,45 @@ class TestCampusShorthand:
         assert by_id["102"]["slot_state"] == "filled"      # Ortiz Middle joins
         assert by_id["103"]["slot_state"] == "unfilled"    # "Washington" collides (103/104) — no guess
         assert by_id["104"]["slot_state"] == "unfilled"
+
+
+class TestBandSatisfied:
+    """REQ-149: satisfied ⇔ coverage OR concentration OR clean blanket; thresholds ride along."""
+
+    def test_coverage_arm_counts_projected(self):
+        v = SP.band_satisfied({"n_slots": 10, "n_filled": 3, "n_projected": 3,
+                               "n_sampled": 3, "plurality_share": 0.5}, None, [])
+        assert v["satisfied"] and v["basis"] == "coverage"      # (3+3)/10 = 0.6 boundary
+
+    def test_coverage_boundary_below(self):
+        v = SP.band_satisfied({"n_slots": 10, "n_filled": 3, "n_projected": 2,
+                               "n_sampled": 2, "plurality_share": 0.5}, None, [])
+        assert not v["satisfied"]
+
+    def test_plurality_arm_boundary(self):
+        ok = SP.band_satisfied({"n_slots": 0, "n_sampled": 3, "plurality_share": 0.6}, None, [])
+        assert ok["satisfied"] and ok["basis"] == "plurality"
+        thin = SP.band_satisfied({"n_slots": 0, "n_sampled": 2, "plurality_share": 1.0}, None, [])
+        assert not thin["satisfied"]                            # n < 3: the small-band problem
+        scattered = SP.band_satisfied({"n_slots": 0, "n_sampled": 5, "plurality_share": 0.4},
+                                      None, [])
+        assert not scattered["satisfied"]
+
+    def test_band_fact_arm_blocked_by_unresolved_conflict(self):
+        bf = {"norm_school_fact": "k8", "kind": "group_descriptor"}
+        clean = SP.band_satisfied({"n_slots": 0, "n_sampled": 1, "plurality_share": None}, bf, [])
+        assert clean["satisfied"] and clean["basis"] == "band_fact"
+        blocked = SP.band_satisfied({"n_slots": 0, "n_sampled": 1, "plurality_share": None}, bf,
+                                    [{"rung": "unresolved"}])
+        assert not blocked["satisfied"]
+        advised = SP.band_satisfied({"n_slots": 0, "n_sampled": 1, "plurality_share": None}, bf,
+                                    [{"rung": "vintage", "leans": "direct"}])
+        assert advised["satisfied"]                             # a DECIDED rung doesn't block
+
+    def test_no_roster_degrades_gracefully(self):
+        v = SP.band_satisfied({"n_sampled": 4, "plurality_share": 0.75}, None, [])
+        assert v["satisfied"] and v["basis"] == "plurality"     # arm (a) simply can't fire
+
+    def test_thresholds_ride_along(self):
+        v = SP.band_satisfied({}, None, [])
+        assert v["thresholds"] == {"min_coverage": 0.6, "min_plurality": 0.6, "min_sampled": 3}

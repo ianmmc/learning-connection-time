@@ -36,6 +36,7 @@ from infrastructure.acquisition.common import district_status as DS
 from infrastructure.acquisition.common import school_sampling as SS
 from infrastructure.acquisition.process_governance import stage6_dispatch as H6
 from infrastructure.acquisition.stage1_queue import batch_store as BSTORE
+from infrastructure.acquisition.stage8_aggregate import closing_argument as CA8
 from infrastructure.acquisition.stage1_queue import queue_batch as Q1
 from infrastructure.acquisition.stage5_filter import release as REL
 from infrastructure.acquisition.stage6_handoff import councils as C6
@@ -57,7 +58,8 @@ NEWWORK_ROUTES = (RQ.ROUTE_REDISCOVER, RQ.ROUTE_RECAPTURE, RQ.ROUTE_ADD_SCHOOLS)
 # ---------------------------------------------------------------------------
 def plan_followup(requests: list, *, claimed_bands: dict, executed_rounds: dict = None,
                   cap: int = 12, max_rounds: int = None, defer_76: set = None,
-                  covered_bands: dict = None, real_bands: dict = None) -> dict:
+                  covered_bands: dict = None, real_bands: dict = None,
+                  satisfied_bands: dict = None) -> dict:
     """Decide the follow-up batch from approved NEW-work request dicts — PURE (unit-testable, the real
     logic). Steps: filter to NEW-work routes → SUPPRESS a request that can no longer add coverage
     (#176 defense-in-depth: a banded request whose band is covered/phantom, OR a band-less one for a
@@ -75,6 +77,10 @@ def plan_followup(requests: list, *, claimed_bands: dict, executed_rounds: dict 
     defer_76:        {district_id, ...} with an un-executed 7->6 — their NEW-work requests are HELD
     covered_bands:   {district_id: {band, ...}} with accepted facts NOW (LIVE, re-read at compose — a
                      band another round covered between approval and execution must not re-fire; #176)
+    satisfied_bands: {district_id: {band, ...}} whose gate@8 satisfied signal is True (REQ-149, live at
+                     compose) — an ADDITIONAL suppressor beside covered_bands (Ian, 2026-07-15: the
+                     hard gate stays; satisfied is the stronger stop — a confident band attracts no
+                     more spend even while other bands keep the district in play)
     real_bands:      {district_id: {band, ...}} the district can actually satisfy (≥1 real school
                      SERVING the band — `school_sampling.real_bands_for_district`, fillability incl.
                      Stage 1's gap-fill). A banded request for a band absent here is a PHANTOM,
@@ -84,13 +90,15 @@ def plan_followup(requests: list, *, claimed_bands: dict, executed_rounds: dict 
     defer_76 = defer_76 or set()
     covered_bands = covered_bands or {}
     real_bands = real_bands or {}
+    satisfied_bands = satisfied_bands or {}
 
     def _fillable_gap(did) -> list:
         """The bands a follow-up for `did` could still fill, in claimed order: claimed ∩
         real-when-known − covered. The ONE predicate behind the band-less suppression + expansion."""
         fillable = [b for b in claimed_bands.get(did, []) if b in RQ.BANDS
                     and (did not in real_bands or b in real_bands[did])]
-        return [b for b in fillable if b not in covered_bands.get(did, ())]
+        return [b for b in fillable if b not in covered_bands.get(did, ())
+                and b not in satisfied_bands.get(did, ())]
 
     blocked, deferred, suppressed, eligible = [], [], [], []
     for r in requests:
@@ -106,6 +114,9 @@ def plan_followup(requests: list, *, claimed_bands: dict, executed_rounds: dict 
         if band:
             if band in covered_bands.get(did, ()):
                 reason = f"band '{band}' now has accepted facts — already covered"
+            elif band in satisfied_bands.get(did, ()):
+                reason = (f"band '{band}' is SATISFIED (REQ-149: confident mode/coverage at gate@8)"
+                          " — no more spend needed")
             elif did in real_bands and band not in real_bands[did]:
                 reason = f"band '{band}' is phantom (no school serves those grades) — unfillable"
         elif not _fillable_gap(did):
@@ -319,6 +330,7 @@ class Gathered(NamedTuple):
     real: dict
     batch_id: str | None
     benchmark_excluded: list
+    satisfied: dict = {}      # REQ-149: {district_id: {band,...}} satisfied at gate@8, live
 
     @classmethod
     def empty(cls, rows=None, benchmark_excluded=None):
@@ -346,8 +358,29 @@ def _gather(session, handoff_hash: str, max_rounds=None) -> "Gathered":
     exec_rounds = _executed_rounds(session, dids)
     defer_76 = _defer_76_districts(session, dids, max_rounds)
     covered = _covered_bands_now(session, dids)
+    satisfied = _satisfied_bands_now(session, dids)
     batch_id = f"batch_{BSTORE.next_batch_number(session):05d}"
-    return Gathered(rows, claimed, exec_rounds, defer_76, covered, real, batch_id, benchmark_excluded)
+    return Gathered(rows, claimed, exec_rounds, defer_76, covered, real, batch_id,
+                    benchmark_excluded, satisfied)
+
+
+def _satisfied_bands_now(session, district_ids: list) -> dict:
+    """{district_id: {band,...}} whose gate@8 satisfied signal (REQ-149) is True RIGHT NOW — the
+    live closing argument per district (the same live-read posture as _covered_bands_now; compose
+    touches <= cap districts, so the per-district assembly cost is bounded). Best-effort per
+    district: a failure means NO suppression for that district — the covered_bands hard gate still
+    applies, so a failure can only cost money, never coverage."""
+    out: dict = {}
+    for did in district_ids:
+        try:
+            ca = CA8.load_closing_argument(session, did)
+            sat = {b for b, ob in (ca.get("bands") or {}).items()
+                   if (ob.get("satisfied") or {}).get("satisfied")}
+            if sat:
+                out[did] = sat
+        except Exception:  # noqa: BLE001 — best-effort; the hard gate remains
+            continue
+    return out
 
 
 def _flip(session, swept_ids: list, executed_ref: str) -> None:
@@ -411,7 +444,7 @@ def compose_followup_batch(*, year: str = "2024_25", actor: str = "ian", handoff
 
         plan = plan_followup(g.rows, claimed_bands=g.claimed, executed_rounds=g.exec_rounds,
                              cap=cap, max_rounds=b.max_request_rounds, defer_76=g.defer_76,
-                             covered_bands=g.covered, real_bands=g.real)
+                             covered_bands=g.covered, real_bands=g.real, satisfied_bands=g.satisfied)
         if not dry_run:
             # A suppressed directive is RESOLVED, not skipped: its band is covered/phantom (or the
             # district has no fillable gap left), so it could otherwise never leave 'approved' — it

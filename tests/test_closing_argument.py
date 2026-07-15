@@ -1022,3 +1022,21 @@ class TestFingerprintGoldenHash:
         # and the named campus actually fills its slot via the campus fill
         by_id = {s["school_id"]: s for s in out["bands"]["elementary"]["slots"]}
         assert by_id["002"]["slot_state"] == "filled"
+
+    def test_satisfied_signal_in_artifact_with_thresholds(self):
+        # REQ-149: bands[b].satisfied rides in the artifact (and thus every receipt) WITH its
+        # thresholds; a 3-school unanimous band satisfies on the plurality arm even with a thin
+        # roster reach.
+        _rosters = TestSlotSpine499()._rosters
+        acc = [_fact("elementary", s, 400) for s in ("oak", "birch", "cedar")]
+        out = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=8,
+            nces_by_level={"Elementary": 8}, schools_by_band={}, band_rosters=_rosters())
+        sat = out["bands"]["elementary"]["satisfied"]
+        assert sat["satisfied"] is True and sat["basis"] == "plurality"
+        assert sat["thresholds"]["min_coverage"] == 0.6
+        # and it stays OUT of the fingerprint (a signal, not a determination)
+        no_sat = CA.build_closing_argument(
+            "D", merged_accepted=acc, merged_unresolved=[], nces_total=8,
+            nces_by_level={"Elementary": 8}, schools_by_band={})
+        assert CA.fingerprint(out) == CA.fingerprint(no_sat)

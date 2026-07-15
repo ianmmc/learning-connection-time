@@ -242,6 +242,46 @@ def project_slots(band_rosters, facts_by_band, *, assignments=None, intent_by_re
     return out
 
 
+# REQ-149 (#90 pull-in, REQ-109 anchor): the per-band SATISFIED signal, in slot vocabulary.
+# Thresholds approved as starting values (Ian, 2026-07-15, plan review) and carried in every
+# receipt so they are auditable and tunable without staleness.
+SATISFIED_MIN_COVERAGE = 0.60
+SATISFIED_MIN_PLURALITY = 0.60
+SATISFIED_MIN_SAMPLED = 3
+
+
+def band_satisfied(stats, band_fact, conflicts, *, min_coverage=SATISFIED_MIN_COVERAGE,
+                   min_plurality=SATISFIED_MIN_PLURALITY, min_sampled=SATISFIED_MIN_SAMPLED):
+    """Is this band's determination CONFIDENT enough to stop pursuing? PURE. Satisfied ⇔
+      (a) slot coverage — (n_filled + n_projected) / n_slots >= min_coverage ("we heard from, or
+          a blanket covers, most of the roster"); OR
+      (b) mode concentration — n_sampled >= min_sampled AND plurality_share >= min_plurality
+          ("the mode is reliable regardless of roster reach"); OR
+      (c) a clean blanket — a band fact present with NO unresolved slot conflicts.
+    Governing principle (Ian, #253/#499): confident band-level declarations, not per-school
+    accuracy. Consumed as an ADDITIONAL follow-up suppressor beside the covered_bands hard gate
+    (never a replacement — Ian, 2026-07-15). Returns {satisfied, basis, thresholds}.
+
+    stats: {n_slots, n_filled, n_projected, n_sampled, plurality_share} — slot stats merged with
+    the band's sampling context (n_slots may be 0/absent when the CCD roster is unavailable —
+    arm (a) simply cannot fire; the honest degradation).
+    conflicts: the band's slot_conflicts rows (rung/leans) — any with rung 'unresolved' blocks (c)."""
+    st = stats or {}
+    thresholds = {"min_coverage": min_coverage, "min_plurality": min_plurality,
+                  "min_sampled": min_sampled}
+    n_slots = st.get("n_slots") or 0
+    if n_slots:
+        cov = ((st.get("n_filled") or 0) + (st.get("n_projected") or 0)) / n_slots
+        if cov >= min_coverage:
+            return {"satisfied": True, "basis": "coverage", "thresholds": thresholds}
+    n, plu = st.get("n_sampled") or 0, st.get("plurality_share")
+    if n >= min_sampled and plu is not None and plu >= min_plurality:
+        return {"satisfied": True, "basis": "plurality", "thresholds": thresholds}
+    if band_fact and not any(c.get("rung") == "unresolved" for c in (conflicts or [])):
+        return {"satisfied": True, "basis": "band_fact", "thresholds": thresholds}
+    return {"satisfied": False, "basis": None, "thresholds": thresholds}
+
+
 # REQ-146: the conflict-resolution ladder (Ian, 2026-07-14, recorded on #253/#499) — FIXED rung
 # order, deterministic, and ADVICE only: `leans` is rendered for the reviewer; both facts keep
 # their votes until a human disposes (nothing auto-rejects, ramp-up posture).

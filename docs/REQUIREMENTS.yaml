@@ -3660,3 +3660,30 @@ requirements:
       campus/exception evidence accrues before the satisfied signal consumes it). Bump cost:
       re-reads are paid going forward only. Verified live against Santa Fe's k8-schools rep on
       OpenRouter (authorized ≤$2.00, Ian 2026-07-15). The satisfied-signal REQ becomes REQ-149."
+
+  - id: REQ-149
+    github_issue: "#499 (PR-D; supersedes #90 / REQ-109's satisfaction model)"
+    description: "The per-band SATISFIED signal, in slot vocabulary — satisfied ⇔ slot coverage ≥ 0.60 (filled + projected, over the live roster) OR (n_sampled ≥ 3 AND plurality ≥ 0.60) OR (a band fact with no unresolved slot conflicts); consumed by follow-up compose as an ADDITIONAL suppressor beside the covered_bands hard gate."
+    type: functional
+    priority: must
+    status: tested
+    acceptance_criteria:
+      - "band_satisfied (slot_spine.py) is PURE with the approved starting thresholds as constants (Ian, 2026-07-15: 0.60 / 0.60 / n≥3); the thresholds ride in bands[b].satisfied and therefore in every frozen receipt — auditable and tunable without staleness (the signal stays OUT of fingerprint(): it is derived advice, not a human determination)"
+      - "Arm (a) counts PROJECTED slots (covered by a blanket) toward coverage; with no CCD roster the arm simply cannot fire (honest degradation to arms b/c)"
+      - "Arm (c) is blocked by any UNRESOLVED slot conflict — a blanket contradicted by an undecided direct reading is not a clean declaration; a ladder-decided conflict does not block"
+      - "plan_followup takes satisfied_bands as an ADDITIONAL suppressor (Ian, 2026-07-15: covered_bands stays the hard gate, never replaced): a banded request for a satisfied band suppresses with a REQ-149 reason; the band-less fillable-gap expansion excludes satisfied bands"
+      - "_satisfied_bands_now reads the LIVE closing argument per compose district (the _covered_bands_now posture); per-district failures degrade to no-suppression — a failure can only cost money, never coverage"
+      - Console renders the per-band satisfied badge with its basis (data-feat band-satisfied), guarded by the console-features grep test
+    tests:
+      - tests/test_slot_spine.py::TestBandSatisfied
+      - tests/test_closing_argument.py::TestFingerprintGoldenHash::test_satisfied_signal_in_artifact_with_thresholds
+      - tests/test_stage7_execute.py::test_compose_suppresses_banded_request_for_satisfied_band
+      - tests/test_stage7_execute.py::test_satisfied_excluded_from_bandless_fillable_gap
+      - tests/test_stage7_execute.py::test_satisfied_is_additional_not_replacement
+    created: "2026-07-15T00:00:00Z"
+    updated: "2026-07-15T00:00:00Z"
+    notes: "The fifth slice of #499 (PR-D; order A→B→C→E→D→F). Retires #90's open question with the
+      slot vocabulary the template provides; REQ-109 is the historical anchor. Threshold tuning is a
+      gate-owner decision recorded here when it happens; the receipt-carried thresholds mean old
+      approvals stay interpretable after any retune. PR-F (Stage-1 surfacing + slot-grain pursuit)
+      closes the epic as REQ-150."

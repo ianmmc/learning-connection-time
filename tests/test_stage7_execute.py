@@ -654,3 +654,33 @@ def test_sent_files_by_rec_still_reads_the_legacy_single_field(gov_session):
               {"p": json.dumps({"sent_file": "old.txt"})})
     s.flush()
     assert EX._sent_files_by_rec(s, "ZZ231B") == {"ZZ231B:r1": {"old.txt"}}
+
+
+# --- REQ-149: the satisfied signal as an ADDITIONAL suppressor (never replacing covered) ---
+
+def test_compose_suppresses_banded_request_for_satisfied_band():
+    plan = EX.plan_followup([_req(1, "D1", "7->2", "high")], claimed_bands={},
+                            satisfied_bands={"D1": {"high"}})
+    assert plan["targets"] == {}
+    assert [s["request_id"] for s in plan["suppressed"]] == [1]
+    assert "SATISFIED" in plan["suppressed"][0]["reason"]
+
+
+def test_satisfied_excluded_from_bandless_fillable_gap():
+    # a band-less 7->3 expands to the fillable gap; a satisfied band is no longer a gap — with
+    # every claimed band satisfied, the recapture is suppressed outright.
+    plan = EX.plan_followup([_req(1, "D1", "7->3", None)],
+                            claimed_bands={"D1": ["elementary", "high"]},
+                            satisfied_bands={"D1": {"elementary", "high"}})
+    assert plan["targets"] == {}
+    assert [s["request_id"] for s in plan["suppressed"]] == [1]
+
+
+def test_satisfied_is_additional_not_replacement():
+    # Ian, 2026-07-15: covered_bands stays the hard gate. An unsatisfied band with no accepted
+    # facts still fires; a satisfied sibling narrows the expansion but never widens it.
+    plan = EX.plan_followup([_req(1, "D1", "7->3", None)],
+                            claimed_bands={"D1": ["elementary", "middle", "high"]},
+                            covered_bands={"D1": {"elementary"}},
+                            satisfied_bands={"D1": {"high"}})
+    assert plan["targets"] == {"D1": ["middle"]}     # covered AND satisfied both excluded
